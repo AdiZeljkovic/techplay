@@ -77,13 +77,13 @@ export default function CheckoutPage() {
                     <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle2 className="w-12 h-12 text-green-500" />
                     </div>
-                    <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-4">Order Confirmed!</h2>
-                    <p className="text-[var(--text-secondary)] mb-8 max-w-md mx-auto">
+                    <h2 className="text-3xl font-bold text-white mb-4">Order Confirmed!</h2>
+                    <p className="text-white/55 mb-8 max-w-md mx-auto">
                         Thank you for your purchase. We have received your order and are preparing it for shipment. You will receive a confirmation email shortly.
                     </p>
                     <Link
                         href="/shop"
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold rounded-xl hover:bg-[var(--accent-hover)] transition-all"
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold rounded-[var(--radius-card)] hover:bg-[var(--accent-hover)] transition-all"
                     >
                         <Package className="w-5 h-5" /> Continue Shopping
                     </Link>
@@ -97,14 +97,14 @@ export default function CheckoutPage() {
             <div className="min-h-screen">
                 <PageHero title="Checkout" icon={ShoppingCart} />
                 <div className="container-page py-20 text-center">
-                    <div className="w-24 h-24 bg-[var(--bg-elevated)] rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--border)]">
-                        <ShoppingCart className="w-10 h-10 text-[var(--text-muted)]" />
+                    <div className="w-24 h-24 bg-[var(--surface-2)] rounded-full flex items-center justify-center mx-auto mb-6 border border-[var(--line)]">
+                        <ShoppingCart className="w-10 h-10 text-white/35" />
                     </div>
-                    <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Your Cart is Empty</h2>
-                    <p className="text-[var(--text-secondary)] mb-8">Looks like you haven't added any gear yet.</p>
+                    <h2 className="text-2xl font-bold text-white mb-4">Your Cart is Empty</h2>
+                    <p className="text-white/55 mb-8">Looks like you haven't added any gear yet.</p>
                     <Link
                         href="/shop"
-                        className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold rounded-xl hover:bg-[var(--accent-hover)] transition-all"
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-[var(--accent)] text-white font-bold rounded-[var(--radius-card)] hover:bg-[var(--accent-hover)] transition-all"
                     >
                         Go to Shop
                     </Link>
@@ -128,68 +128,68 @@ export default function CheckoutPage() {
                     <div className="lg:col-span-2 space-y-8">
 
                         {/* Shipping Form */}
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
-                            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+                        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 md:p-8">
+                            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                                 <Truck className="w-5 h-5 text-[var(--accent)]" /> Shipping Details
                             </h2>
                             <form id="checkout-form" onSubmit={handleCODOrder} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Full Name</label>
+                                    <label className="block text-sm font-medium text-white/55 mb-2">Full Name</label>
                                     <input
                                         type="text"
                                         name="fullName"
                                         required
                                         value={shippingDetails.fullName}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
+                                        className="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
                                         placeholder="John Doe"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Phone Number</label>
+                                    <label className="block text-sm font-medium text-white/55 mb-2">Phone Number</label>
                                     <input
                                         type="tel"
                                         name="phone"
                                         required
                                         value={shippingDetails.phone}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
+                                        className="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
                                         placeholder="+387 61 123 456"
                                     />
                                 </div>
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Address</label>
+                                    <label className="block text-sm font-medium text-white/55 mb-2">Address</label>
                                     <input
                                         type="text"
                                         name="address"
                                         required
                                         value={shippingDetails.address}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
+                                        className="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
                                         placeholder="Street Name 123"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">City</label>
+                                    <label className="block text-sm font-medium text-white/55 mb-2">City</label>
                                     <input
                                         type="text"
                                         name="city"
                                         required
                                         value={shippingDetails.city}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
+                                        className="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
                                         placeholder="Sarajevo"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">Zip Code</label>
+                                    <label className="block text-sm font-medium text-white/55 mb-2">Zip Code</label>
                                     <input
                                         type="text"
                                         name="zipCode"
                                         required
                                         value={shippingDetails.zipCode}
                                         onChange={handleInputChange}
-                                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-4 py-3 text-[var(--text-primary)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
+                                        className="w-full bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-all"
                                         placeholder="71000"
                                     />
                                 </div>
@@ -197,38 +197,38 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Payment Method */}
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 md:p-8">
-                            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+                        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 md:p-8">
+                            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                                 <CreditCard className="w-5 h-5 text-[var(--accent)]" /> Payment Method
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <button
                                     type="button"
                                     onClick={() => setPaymentMethod('cod')}
-                                    className={`relative p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${paymentMethod === 'cod' ? 'border-[var(--accent)] bg-[var(--accent)]/5' : 'border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--text-muted)]'}`}
+                                    className={`relative p-4 rounded-[var(--radius-card)] border-2 transition-all flex items-center gap-3 ${paymentMethod === 'cod' ? 'border-[var(--accent)] bg-[var(--accent)]/5' : 'border-[var(--line)] bg-[var(--surface-2)] hover:border-[var(--text-muted)]'}`}
                                 >
                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'cod' ? 'border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
                                         {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-[var(--accent)]" />}
                                     </div>
                                     <div className="text-left">
-                                        <div className="font-bold text-[var(--text-primary)]">Cash on Delivery</div>
-                                        <div className="text-xs text-[var(--text-secondary)]">Pay when you receive package</div>
+                                        <div className="font-bold text-white">Cash on Delivery</div>
+                                        <div className="text-xs text-white/55">Pay when you receive package</div>
                                     </div>
-                                    <Truck className="ml-auto w-6 h-6 text-[var(--text-secondary)]" />
+                                    <Truck className="ml-auto w-6 h-6 text-white/55" />
                                 </button>
 
                                 <button
                                     type="button"
                                     onClick={() => setPaymentMethod('paypal')}
                                     disabled={!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}
-                                    className={`relative p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${paymentMethod === 'paypal' ? 'border-[#0070BA] bg-[#0070BA]/5' : 'border-[var(--border)] bg-[var(--bg-elevated)] hover:border-[var(--text-muted)]'} ${!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    className={`relative p-4 rounded-[var(--radius-card)] border-2 transition-all flex items-center gap-3 ${paymentMethod === 'paypal' ? 'border-[#0070BA] bg-[#0070BA]/5' : 'border-[var(--line)] bg-[var(--surface-2)] hover:border-[var(--text-muted)]'} ${!process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'paypal' ? 'border-[#0070BA]' : 'border-[var(--text-muted)]'}`}>
                                         {paymentMethod === 'paypal' && <div className="w-2.5 h-2.5 rounded-full bg-[#0070BA]" />}
                                     </div>
                                     <div className="text-left">
-                                        <div className="font-bold text-[var(--text-primary)]">PayPal</div>
-                                        <div className="text-xs text-[var(--text-secondary)]">Secure online payment</div>
+                                        <div className="font-bold text-white">PayPal</div>
+                                        <div className="text-xs text-white/55">Secure online payment</div>
                                     </div>
                                     {/* Simple PayPal Icon SVG could go here */}
                                     <span className="ml-auto font-bold text-[#003087] italic">Pay<span className="text-[#009cde]">Pal</span></span>
@@ -240,13 +240,13 @@ export default function CheckoutPage() {
 
                     {/* Right Column: Order Summary */}
                     <div className="lg:col-span-1">
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 sticky top-24">
-                            <h3 className="text-lg font-bold text-[var(--text-primary)] mb-6">Order Summary</h3>
+                        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 sticky top-24">
+                            <h3 className="text-lg font-bold text-white mb-6">Order Summary</h3>
 
                             <div className="space-y-4 mb-6 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                                 {items.map((item) => (
                                     <div key={item.id} className="flex gap-3">
-                                        <div className="relative w-16 h-16 bg-[var(--bg-elevated)] rounded-lg overflow-hidden border border-[var(--border)] flex-shrink-0">
+                                        <div className="relative w-16 h-16 bg-[var(--surface-2)] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] flex-shrink-0">
                                             {item.image_url ? (
                                                 <Image
                                                     src={getStorageUrl(item.image_url)}
@@ -256,7 +256,7 @@ export default function CheckoutPage() {
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center">
-                                                    <Package className="w-6 h-6 text-[var(--text-muted)] opacity-20" />
+                                                    <Package className="w-6 h-6 text-white/35 opacity-20" />
                                                 </div>
                                             )}
                                             <div className="absolute bottom-0 right-0 bg-[var(--accent)] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-tl-lg">
@@ -264,23 +264,23 @@ export default function CheckoutPage() {
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-medium text-[var(--text-primary)] line-clamp-2">{item.name}</h4>
+                                            <h4 className="text-sm font-medium text-white line-clamp-2">{item.name}</h4>
                                             <p className="text-sm text-[var(--accent)] font-bold">{item.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="border-t border-[var(--border)] pt-4 space-y-2 mb-6">
-                                <div className="flex justify-between text-[var(--text-secondary)]">
+                            <div className="border-t border-[var(--line)] pt-4 space-y-2 mb-6">
+                                <div className="flex justify-between text-white/55">
                                     <span>Subtotal</span>
                                     <span>{totalPrice.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</span>
                                 </div>
-                                <div className="flex justify-between text-[var(--text-secondary)]">
+                                <div className="flex justify-between text-white/55">
                                     <span>Shipping</span>
                                     <span className="text-green-500 font-medium">Free</span>
                                 </div>
-                                <div className="flex justify-between text-lg font-bold text-[var(--text-primary)] pt-2 border-t border-[var(--border)]">
+                                <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-[var(--line)]">
                                     <span>Total</span>
                                     <span>{totalPrice.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} KM</span>
                                 </div>
@@ -291,7 +291,7 @@ export default function CheckoutPage() {
                                     type="submit"
                                     form="checkout-form"
                                     disabled={isProcessing}
-                                    className="w-full py-4 bg-[var(--accent)] text-white font-bold rounded-xl hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full py-4 bg-[var(--accent)] text-white font-bold rounded-[var(--radius-card)] hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? (
                                         <>Processing...</>
@@ -338,14 +338,14 @@ export default function CheckoutPage() {
                                             />
                                         </PayPalScriptProvider>
                                     ) : (
-                                        <div className="text-red-500 text-center text-sm p-4 bg-red-500/10 rounded-xl border border-red-500/20">
+                                        <div className="text-red-500 text-center text-sm p-4 bg-red-500/10 rounded-[var(--radius-card)] border border-red-500/20">
                                             PayPal Client ID not configured.
                                         </div>
                                     )}
                                 </div>
                             )}
 
-                            <div className="mt-6 flex items-start gap-2 text-xs text-[var(--text-muted)]">
+                            <div className="mt-6 flex items-start gap-2 text-xs text-white/35">
                                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                                 <p>By placing an order, you agree to our Terms of Service and Privacy Policy.</p>
                             </div>

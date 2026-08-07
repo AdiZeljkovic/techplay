@@ -70,7 +70,7 @@ export default function ActivityFeed({ username, compact }: Props) {
 
             {isLoading && items.length === 0 ? (
                 <div className="space-y-2">
-                    {Array.from({ length: compact ? 5 : 8 }).map((_, i) => <div key={i} className="h-11 bg-white/[0.04] rounded-lg animate-pulse" />)}
+                    {Array.from({ length: compact ? 5 : 8 }).map((_, i) => <div key={i} className="h-11 bg-white/[0.04] rounded-[var(--radius-card)] animate-pulse" />)}
                 </div>
             ) : items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-white/30">
@@ -86,10 +86,10 @@ export default function ActivityFeed({ username, compact }: Props) {
                             const meta = TYPE_META[it.type] ?? { icon: ActivityIcon, color: "#9ca3af" };
                             const Icon = meta.icon;
                             const body = (
-                                <div className="relative flex items-center gap-3 rounded-lg hover:bg-white/[0.03] px-2 py-2.5 transition-colors">
+                                <div className="relative flex items-center gap-3 rounded-[var(--radius-card)] hover:bg-white/[0.03] px-2 py-2.5 transition-colors">
                                     {/* orange ring dot on the line */}
-                                    <span className="absolute -left-[22px] top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full border-2 border-[var(--accent)] bg-[var(--bg-card)]" />
-                                    <span className="w-7 h-7 rounded-md bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                                    <span className="absolute -left-[22px] top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full border-2 border-[var(--accent)] bg-[var(--surface-1)]" />
+                                    <span className="w-7 h-7 rounded-[var(--radius-inner)] bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
                                         <Icon className="w-3.5 h-3.5" style={{ color: meta.color }} />
                                     </span>
                                     <span className="flex-1 min-w-0 text-[13px] text-white/75 truncate">{it.title}</span>
@@ -105,7 +105,7 @@ export default function ActivityFeed({ username, compact }: Props) {
             {/* Compact: Load More */}
             {compact && items.length > 0 && items.length < total && (
                 <div className="flex justify-center mt-4">
-                    <button onClick={() => setLimit((l) => l + 6)} className="px-6 py-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/70 text-[11px] font-bold uppercase tracking-wider transition-colors">
+                    <button onClick={() => setLimit((l) => l + 6)} className="px-6 py-2.5 rounded-[var(--radius-card)] bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/70 text-[11px] font-bold uppercase tracking-wider transition-colors">
                         Load More Activity
                     </button>
                 </div>
@@ -114,9 +114,9 @@ export default function ActivityFeed({ username, compact }: Props) {
             {/* Full: pagination */}
             {!compact && lastPage > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6">
-                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-1.5 rounded-lg bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Prev</button>
+                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Prev</button>
                     <span className="text-[11px] text-white/40 tabular-nums">{page} / {lastPage}</span>
-                    <button onClick={() => setPage((p) => Math.min(lastPage, p + 1))} disabled={page >= lastPage} className="px-3 py-1.5 rounded-lg bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Next</button>
+                    <button onClick={() => setPage((p) => Math.min(lastPage, p + 1))} disabled={page >= lastPage} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Next</button>
                 </div>
             )}
         </div>

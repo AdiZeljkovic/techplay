@@ -206,15 +206,15 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     if (loading) {
         return (
             <div className="min-h-screen">
-                <div className="relative w-full min-h-[60vh] bg-gradient-to-b from-white/[0.04] to-[var(--bg-primary)] animate-pulse" />
+                <div className="relative w-full min-h-[60vh] bg-gradient-to-b from-white/[0.04] to-[var(--surface-0)] animate-pulse" />
                 <div className="max-w-6xl mx-auto px-4 py-10">
                     <div className="grid lg:grid-cols-3 gap-8">
                         <div className="lg:col-span-2 space-y-4">
                             {[160, 72, 72, 72].map((h, i) => (
-                                <div key={i} className="rounded-2xl bg-white/[0.04] animate-pulse" style={{ height: h }} />
+                                <div key={i} className="rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" style={{ height: h }} />
                             ))}
                         </div>
-                        <div className="h-80 rounded-2xl bg-white/[0.04] animate-pulse" />
+                        <div className="h-80 rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
                     </div>
                 </div>
             </div>
@@ -235,7 +235,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </div>
                     <h1 className="text-2xl font-bold text-white mb-2">Giveaway Not Found</h1>
                     <p className="text-white/40 text-sm leading-relaxed">This giveaway may have ended or doesn&apos;t exist.</p>
-                    <Link href="/" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-xl bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-hover)] transition-colors">
+                    <Link href="/" className="inline-flex items-center gap-2 mt-6 px-5 py-2.5 rounded-[var(--radius-card)] bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-hover)] transition-colors">
                         Back to Home
                     </Link>
                 </motion.div>
@@ -265,7 +265,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 transition={{ delay: idx * 0.05 }}
                 whileHover={{ scale: 1.02, transition: { duration: 0.15 } }}
                 whileTap={{ scale: 0.98 }}
-                className={`relative rounded-2xl border p-5 flex flex-col gap-4 transition-all duration-300 ${
+                className={`relative rounded-[var(--radius-panel)] border p-5 flex flex-col gap-4 transition-all duration-300 ${
                     isCompleted
                         ? 'border-green-500/25 bg-green-500/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.04)]'
                         : task.is_required
@@ -284,7 +284,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
 
                 {/* Icon + badges */}
                 <div className="flex items-start justify-between pt-1">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${
+                    <div className={`w-14 h-14 rounded-[var(--radius-card)] flex items-center justify-center text-2xl flex-shrink-0 ${
                         isCompleted ? 'bg-green-500/12' : 'bg-[var(--accent)]/8'
                     }`}>
                         {isCompleted ? <Check className="w-7 h-7 text-green-400" /> : <span>{task.icon}</span>}
@@ -296,7 +296,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             </span>
                         )}
                         {task.is_repeatable && (
-                            <span className="text-[10px] bg-tp-accent/10 text-tp-accent px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            <span className="text-[10px] bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                                 Daily
                             </span>
                         )}
@@ -319,7 +319,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     <button
                         onClick={() => handleCompleteTask(task.id, task.url)}
                         disabled={isCompleted || isCompleting || !giveaway.timing.is_active || !isEntered}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-sm font-bold transition-all duration-200 ${
                             isCompleted
                                 ? 'bg-green-500/10 text-green-400 cursor-default'
                                 : 'bg-gradient-to-r from-[var(--accent)] to-orange-500 text-white shadow-lg shadow-[var(--accent)]/15 hover:shadow-[var(--accent)]/25 disabled:opacity-30 disabled:cursor-not-allowed'
@@ -366,14 +366,14 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 {!heroBgImage && (
                     <div className="absolute inset-0 overflow-hidden">
                         <div className="absolute top-1/4 left-1/3 w-[500px] h-[500px] bg-[var(--accent)]/10 rounded-full blur-[120px]" />
-                        <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-tp-accent/5 rounded-full blur-[100px]" />
-                        <div className="absolute top-0 right-1/4 w-64 h-64 bg-tp-accent/4 rounded-full blur-[80px]" />
+                        <div className="absolute bottom-1/4 right-1/3 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[100px]" />
+                        <div className="absolute top-0 right-1/4 w-64 h-64 bg-[var(--accent)]/4 rounded-full blur-[80px]" />
                     </div>
                 )}
 
                 {/* Overlay layers */}
                 <div className="absolute inset-0 bg-black/65" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[var(--bg-primary)]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[var(--surface-0)]" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_55%,rgba(220,20,60,0.07),transparent)]" />
 
                 {/* Content */}
@@ -421,9 +421,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         className="flex justify-center mb-8"
                     >
                         <div className="relative">
-                            <div className="absolute -inset-6 rounded-3xl bg-[var(--accent)]/12 blur-2xl" />
-                            <div className="absolute -inset-3 rounded-2xl bg-[var(--accent)]/6 blur-xl animate-pulse" />
-                            <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-2xl border border-white/10 bg-black/50 backdrop-blur-md overflow-hidden flex items-center justify-center shadow-2xl">
+                            <div className="absolute -inset-6 rounded-[var(--radius-panel)] bg-[var(--accent)]/12 blur-2xl" />
+                            <div className="absolute -inset-3 rounded-[var(--radius-panel)] bg-[var(--accent)]/6 blur-xl animate-pulse" />
+                            <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-[var(--radius-panel)] border border-white/10 bg-black/50 backdrop-blur-md overflow-hidden flex items-center justify-center shadow-2xl">
                                 {giveaway.prize.image ? (
                                     <Image
                                         src={giveaway.prize.image}
@@ -487,7 +487,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 ].map((item) => (
                                     <div
                                         key={item.label}
-                                        className="flex flex-col items-center min-w-[72px] sm:min-w-[88px] md:min-w-[100px] px-3 py-4 rounded-2xl bg-black/50 backdrop-blur-md border border-white/10"
+                                        className="flex flex-col items-center min-w-[72px] sm:min-w-[88px] md:min-w-[100px] px-3 py-4 rounded-[var(--radius-panel)] bg-black/50 backdrop-blur-md border border-white/10"
                                     >
                                         <motion.span
                                             key={item.value}
@@ -542,13 +542,13 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         className="max-w-2xl mx-auto px-4 pt-8 pb-2"
                     >
                         <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 to-orange-500/15 rounded-2xl blur-xl" />
-                            <div className="relative rounded-2xl bg-[var(--bg-card)] border-2 border-yellow-500/30 p-6 text-center shadow-2xl">
+                            <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 to-orange-500/15 rounded-[var(--radius-panel)] blur-xl" />
+                            <div className="relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border-2 border-yellow-500/30 p-6 text-center shadow-2xl">
                                 <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-3 drop-shadow-[0_0_20px_rgba(250,204,21,0.4)]" />
                                 <h2 className="text-2xl font-black mb-4 bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent">
                                     We Have a Winner!
                                 </h2>
-                                <div className="inline-flex items-center gap-3 bg-white/[0.05] px-6 py-3 rounded-xl border border-yellow-500/20">
+                                <div className="inline-flex items-center gap-3 bg-white/[0.05] px-6 py-3 rounded-[var(--radius-card)] border border-yellow-500/20">
                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center text-white font-black text-xl shadow-lg">
                                         {giveaway.winner.username?.[0]?.toUpperCase() ?? "?"}
                                     </div>
@@ -575,7 +575,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 <motion.div
                                     initial={{ opacity: 0, y: 12 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
+                                    className="relative rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(220,20,60,0.05),transparent_60%)]" />
                                     <div className="relative">
@@ -588,7 +588,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                         </p>
                                         <Link
                                             href="/login"
-                                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-[var(--accent)]/20 hover:shadow-[var(--accent)]/30 hover:scale-[1.02] transition-all duration-300"
+                                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-[var(--radius-card)] shadow-lg shadow-[var(--accent)]/20 hover:shadow-[var(--accent)]/30 hover:scale-[1.02] transition-all duration-300"
                                         >
                                             <Zap className="w-4 h-4" />
                                             Login to Enter
@@ -599,7 +599,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 <motion.div
                                     initial={{ opacity: 0, y: 12 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
+                                    className="relative rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(220,20,60,0.05),transparent_60%)]" />
                                     <div className="relative">
@@ -615,7 +615,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                             whileTap={{ scale: 0.98 }}
                                             onClick={handleEnter}
                                             disabled={entering}
-                                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-[var(--accent)]/20 hover:shadow-[var(--accent)]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-[var(--radius-card)] shadow-lg shadow-[var(--accent)]/20 hover:shadow-[var(--accent)]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {entering ? (
                                                 <><Loader2 className="w-5 h-5 animate-spin" /> Entering...</>
@@ -707,7 +707,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                     const qualifies = entry && entry.total_points >= tier.min_points;
                                     const rankStyles = [
                                         'from-yellow-400 to-amber-500',
-                                        'from-slate-300 to-slate-500',
+                                        'from-white/60 to-white/35',
                                         'from-orange-600 to-amber-700',
                                     ];
                                     return (
@@ -716,13 +716,13 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                             initial={{ opacity: 0, y: 8 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ delay: idx * 0.05 }}
-                                            className={`flex items-center gap-4 rounded-2xl border p-4 transition-all duration-300 ${
+                                            className={`flex items-center gap-4 rounded-[var(--radius-panel)] border p-4 transition-all duration-300 ${
                                                 qualifies
                                                     ? 'border-green-500/25 bg-green-500/[0.04] shadow-[0_0_20px_rgba(16,185,129,0.04)]'
                                                     : 'border-white/[0.06] bg-white/[0.02]'
                                             }`}
                                         >
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm text-white flex-shrink-0 bg-gradient-to-br ${rankStyles[idx] ?? 'from-white/10 to-white/5'}`}>
+                                            <div className={`w-10 h-10 rounded-[var(--radius-card)] flex items-center justify-center font-black text-sm text-white flex-shrink-0 bg-gradient-to-br ${rankStyles[idx] ?? 'from-white/10 to-white/5'}`}>
                                                 {idx + 1}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -753,7 +753,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden"
+                                className="rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] overflow-hidden"
                             >
                                 <button
                                     onClick={() => setDescOpen(!descOpen)}
@@ -794,7 +794,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden"
+                                className="rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] overflow-hidden"
                             >
                                 <button
                                     onClick={() => setRulesOpen(!rulesOpen)}

@@ -25,28 +25,28 @@ const adSpecs = [
         dims: "970x250 + Background",
         desc: "Maximum impact. Own the top of the homepage and wrap the site experience.",
         icon: Layout,
-        color: "text-tp-accent"
+        color: "text-[var(--accent)]"
     },
     {
         name: "Leaderboard",
         dims: "728x90",
         desc: "High visibility across all pages. The industry standard/staple for brand awareness.",
         icon: Layers,
-        color: "text-tp-accent"
+        color: "text-[var(--accent)]"
     },
     {
         name: "Medium Rectangle",
         dims: "300x250",
         desc: "Integrated into the sidebar and article content. High click-through rates.",
         icon: MonitorSmartphone,
-        color: "text-tp-accent"
+        color: "text-[var(--accent)]"
     },
     {
         name: "Mobile Sticky",
         dims: "320x50 / 320x100",
         desc: "Persistent footer ad on mobile devices. Cannot be missed.",
         icon: Zap,
-        color: "text-tp-accent"
+        color: "text-[var(--accent)]"
     }
 ];
 
@@ -67,13 +67,13 @@ export default function MarketingClient() {
                         viewport={{ once: true }}
                         variants={fadeInUp}
                     >
-                        <h2 className="text-3xl md:text-5xl font-black text-[var(--text-primary)] mb-8 leading-tight">
+                        <h2 className="text-3xl md:text-5xl font-black text-white mb-8 leading-tight">
                             More Than Just <br className="hidden md:block" />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent)] to-[#FF7A3D]">
                                 Impressions
                             </span>
                         </h2>
-                        <p className="text-lg md:text-xl text-[var(--text-secondary)] mb-12 max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-lg md:text-xl text-white/55 mb-12 max-w-3xl mx-auto leading-relaxed">
                             TechPlay isn't just another content farm. We're a community-driven hub where
                             gamers come for deep dives, honest reviews, and tech analysis.
                             <br /><br />
@@ -85,11 +85,11 @@ export default function MarketingClient() {
 
                 {/* Background Glows */}
                 <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-[var(--accent)]/10 rounded-full blur-[120px] -z-0 pointer-events-none" />
-                <div className="absolute top-1/3 right-0 w-80 h-80 bg-tp-accent/5 rounded-full blur-[100px] -z-0 pointer-events-none" />
+                <div className="absolute top-1/3 right-0 w-80 h-80 bg-[var(--accent)]/5 rounded-full blur-[100px] -z-0 pointer-events-none" />
             </section>
 
             {/* Audience Demographics */}
-            <section className="py-20 bg-[var(--bg-secondary)] border-y border-[var(--border)]">
+            <section className="py-20 bg-[var(--surface-1)] border-y border-[var(--line)]">
                 <div className="container-page">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -100,60 +100,60 @@ export default function MarketingClient() {
                         <span className="px-4 py-2 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-bold text-sm uppercase tracking-wider">
                             Audience Profile
                         </span>
-                        <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mt-4">Who Reads TechPlay?</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mt-4">Who Reads TechPlay?</h2>
                     </motion.div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {/* Age */}
                         <motion.div
                             whileHover={{ y: -5 }}
-                            className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
+                            className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
+                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Users className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Young Professionals</h3>
-                            <p className="text-4xl font-black text-[var(--text-primary)] mb-2">72%</p>
-                            <p className="text-[var(--text-secondary)] text-sm">Aged 18-34</p>
+                            <h3 className="text-xl font-bold text-white mb-2">Young Professionals</h3>
+                            <p className="text-4xl font-black text-white mb-2">72%</p>
+                            <p className="text-white/55 text-sm">Aged 18-34</p>
                         </motion.div>
 
                         {/* Region */}
                         <motion.div
                             whileHover={{ y: -5 }}
-                            className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
+                            className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
+                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Globe className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Global Reach</h3>
-                            <p className="text-4xl font-black text-[var(--text-primary)] mb-2">Worldwide</p>
-                            <p className="text-[var(--text-secondary)] text-sm">US, EU, and Global Audience</p>
+                            <h3 className="text-xl font-bold text-white mb-2">Global Reach</h3>
+                            <p className="text-4xl font-black text-white mb-2">Worldwide</p>
+                            <p className="text-white/55 text-sm">US, EU, and Global Audience</p>
                         </motion.div>
 
                         {/* Tech Savvy */}
                         <motion.div
                             whileHover={{ y: -5 }}
-                            className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
+                            className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
+                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Cpu className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Hardware Enthusiasts</h3>
-                            <p className="text-4xl font-black text-[var(--text-primary)] mb-2">85%</p>
-                            <p className="text-[var(--text-secondary)] text-sm">PC & Console Gamers</p>
+                            <h3 className="text-xl font-bold text-white mb-2">Hardware Enthusiasts</h3>
+                            <p className="text-4xl font-black text-white mb-2">85%</p>
+                            <p className="text-white/55 text-sm">PC & Console Gamers</p>
                         </motion.div>
 
                         {/* Engagement */}
                         <motion.div
                             whileHover={{ y: -5 }}
-                            className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl text-center"
+                            className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] text-center"
                         >
-                            <div className="w-12 h-12 bg-tp-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-tp-accent">
+                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-panel)] flex items-center justify-center mx-auto mb-6 text-[var(--accent)]">
                                 <Gamepad2 className="w-6 h-6" />
                             </div>
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">Active Buyers</h3>
-                            <p className="text-4xl font-black text-[var(--text-primary)] mb-2">High</p>
-                            <p className="text-[var(--text-secondary)] text-sm">Purchase Intent</p>
+                            <h3 className="text-xl font-bold text-white mb-2">Active Buyers</h3>
+                            <p className="text-4xl font-black text-white mb-2">High</p>
+                            <p className="text-white/55 text-sm">Purchase Intent</p>
                         </motion.div>
                     </div>
                 </div>
@@ -168,8 +168,8 @@ export default function MarketingClient() {
                         className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center"
                     >
                         <div>
-                            <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mb-6">Standard Advertising Units</h2>
-                            <p className="text-[var(--text-secondary)] text-lg mb-10 leading-relaxed">
+                            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Standard Advertising Units</h2>
+                            <p className="text-white/55 text-lg mb-10 leading-relaxed">
                                 We support all IAB standard ad units, optimized for performance and visibility without ruining the user experience.
                             </p>
 
@@ -181,19 +181,19 @@ export default function MarketingClient() {
                                         whileInView={{ opacity: 1, x: 0 }}
                                         viewport={{ once: true }}
                                         transition={{ delay: index * 0.1 }}
-                                        className="flex items-start gap-4 p-4 rounded-2xl hover:bg-[var(--bg-elevated)] transition-colors"
+                                        className="flex items-start gap-4 p-4 rounded-[var(--radius-panel)] hover:bg-[var(--surface-2)] transition-colors"
                                     >
-                                        <div className={`p-3 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl ${spec.color}`}>
+                                        <div className={`p-3 bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] ${spec.color}`}>
                                             <spec.icon className="w-6 h-6" />
                                         </div>
                                         <div>
-                                            <h4 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                            <h4 className="text-lg font-bold text-white flex items-center gap-2">
                                                 {spec.name}
-                                                <span className="text-xs font-mono bg-[var(--bg-secondary)] px-2 py-1 rounded border border-[var(--border)] text-[var(--text-muted)]">
+                                                <span className="text-xs font-mono bg-[var(--surface-1)] px-2 py-1 rounded border border-[var(--line)] text-white/35">
                                                     {spec.dims}
                                                 </span>
                                             </h4>
-                                            <p className="text-[var(--text-secondary)] text-sm mt-1">{spec.desc}</p>
+                                            <p className="text-white/55 text-sm mt-1">{spec.desc}</p>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -201,7 +201,7 @@ export default function MarketingClient() {
                         </div>
 
                         {/* Visual "Map" of Ad Positions */}
-                        <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-3xl p-8 relative shadow-2xl">
+                        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 relative shadow-2xl">
                             <div className="absolute top-4 left-4 flex gap-2">
                                 <div className="w-3 h-3 rounded-full bg-red-500/20" />
                                 <div className="w-3 h-3 rounded-full bg-yellow-500/20" />
@@ -209,40 +209,40 @@ export default function MarketingClient() {
                             </div>
                             <div className="mt-6 flex flex-col gap-4 opacity-90">
                                 {/* Billboard */}
-                                <div className="w-full h-24 bg-tp-accent/15 border-2 border-dashed border-tp-accent/40 rounded-lg flex items-center justify-center text-tp-accent font-mono text-xs md:text-sm">
+                                <div className="w-full h-24 bg-[var(--accent)]/15 border-2 border-dashed border-[var(--accent)]/40 rounded-[var(--radius-card)] flex items-center justify-center text-[var(--accent)] font-mono text-xs md:text-sm">
                                     Billboard (970x250)
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex-1 space-y-4">
                                         {/* Content Mock */}
-                                        <div className="h-8 w-3/4 bg-[var(--bg-card)] rounded" />
-                                        <div className="h-4 w-full bg-[var(--bg-card)] rounded" />
-                                        <div className="h-4 w-5/6 bg-[var(--bg-card)] rounded" />
-                                        <div className="h-4 w-4/6 bg-[var(--bg-card)] rounded" />
+                                        <div className="h-8 w-3/4 bg-[var(--surface-1)] rounded" />
+                                        <div className="h-4 w-full bg-[var(--surface-1)] rounded" />
+                                        <div className="h-4 w-5/6 bg-[var(--surface-1)] rounded" />
+                                        <div className="h-4 w-4/6 bg-[var(--surface-1)] rounded" />
                                         {/* Native/In-Article */}
-                                        <div className="w-full h-16 bg-tp-accent/10 border-2 border-dashed border-tp-accent/30 rounded-lg flex items-center justify-center text-tp-accent/80 font-mono text-xs">
+                                        <div className="w-full h-16 bg-[var(--accent)]/10 border-2 border-dashed border-[var(--accent)]/30 rounded-[var(--radius-card)] flex items-center justify-center text-[var(--accent)]/80 font-mono text-xs">
                                             In-Article (Native)
                                         </div>
-                                        <div className="h-4 w-full bg-[var(--bg-card)] rounded" />
-                                        <div className="h-4 w-5/6 bg-[var(--bg-card)] rounded" />
+                                        <div className="h-4 w-full bg-[var(--surface-1)] rounded" />
+                                        <div className="h-4 w-5/6 bg-[var(--surface-1)] rounded" />
                                     </div>
                                     {/* Sidebar */}
                                     <div className="w-1/3 flex flex-col gap-4">
-                                        <div className="w-full aspect-square bg-tp-accent/8 border-2 border-dashed border-tp-accent/25 rounded-lg flex items-center justify-center text-tp-accent/70 font-mono text-center text-xs p-2">
+                                        <div className="w-full aspect-square bg-[var(--accent)]/8 border-2 border-dashed border-[var(--accent)]/25 rounded-[var(--radius-card)] flex items-center justify-center text-[var(--accent)]/70 font-mono text-center text-xs p-2">
                                             Medium Rectangle (300x250)
                                         </div>
-                                        <div className="flex-1 bg-[var(--bg-card)] rounded-lg opacity-50" />
+                                        <div className="flex-1 bg-[var(--surface-1)] rounded-[var(--radius-card)] opacity-50" />
                                     </div>
                                 </div>
                             </div>
-                            <p className="text-center text-[var(--text-muted)] text-xs mt-6">Schematic representation of key ad zones</p>
+                            <p className="text-center text-white/35 text-xs mt-6">Schematic representation of key ad zones</p>
                         </div>
                     </motion.div>
                 </div>
             </section>
 
             {/* Custom Solutions (Replaces Pricing) */}
-            <section className="py-24 bg-[var(--bg-elevated)] border-y border-[var(--border)] overflow-hidden">
+            <section className="py-24 bg-[var(--surface-2)] border-y border-[var(--line)] overflow-hidden">
                 <div className="container-page">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -254,8 +254,8 @@ export default function MarketingClient() {
                             <span className="px-4 py-2 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] font-bold text-sm uppercase tracking-wider">
                                 Tailored Solutions
                             </span>
-                            <h2 className="text-3xl md:text-5xl font-bold text-[var(--text-primary)] mt-6 mb-6">Beyond The Banner</h2>
-                            <p className="text-[var(--text-secondary)] text-lg">
+                            <h2 className="text-3xl md:text-5xl font-bold text-white mt-6 mb-6">Beyond The Banner</h2>
+                            <p className="text-white/55 text-lg">
                                 Display is great, but story is better. We specialize in custom integrations that
                                 cut through banner blindness.
                             </p>
@@ -263,28 +263,28 @@ export default function MarketingClient() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {/* Card 1 */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl group hover:border-[var(--accent)] transition-colors">
+                            <div className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] group hover:border-[var(--accent)] transition-colors">
                                 <Shield className="w-10 h-10 text-[var(--accent)] mb-6" />
-                                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Brand Storytelling</h3>
-                                <p className="text-[var(--text-secondary)] mb-6">
+                                <h3 className="text-2xl font-bold text-white mb-4">Brand Storytelling</h3>
+                                <p className="text-white/55 mb-6">
                                     Share your announcements through PR and promo articles. We give your launches the context they need, ensuring your message lands with impact.
                                 </p>
                             </div>
 
                             {/* Card 2 */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl group hover:border-[var(--accent)] transition-colors">
-                                <VideoIcon className="w-10 h-10 text-tp-accent mb-6" />
-                                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Video & Social</h3>
-                                <p className="text-[var(--text-secondary)] mb-6">
+                            <div className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] group hover:border-[var(--accent)] transition-colors">
+                                <VideoIcon className="w-10 h-10 text-[var(--accent)] mb-6" />
+                                <h3 className="text-2xl font-bold text-white mb-4">Video & Social</h3>
+                                <p className="text-white/55 mb-6">
                                     Short-form video content (Reels/TikTok) and social media blasts that reach gamers where they scroll.
                                 </p>
                             </div>
 
                             {/* Card 3 */}
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] p-8 rounded-3xl group hover:border-[var(--accent)] transition-colors">
-                                <MousePointerClick className="w-10 h-10 text-tp-accent mb-6" />
-                                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-4">Giveaways</h3>
-                                <p className="text-[var(--text-secondary)] mb-6">
+                            <div className="bg-[var(--surface-1)] border border-[var(--line)] p-8 rounded-[var(--radius-panel)] group hover:border-[var(--accent)] transition-colors">
+                                <MousePointerClick className="w-10 h-10 text-[var(--accent)] mb-6" />
+                                <h3 className="text-2xl font-bold text-white mb-4">Giveaways</h3>
+                                <p className="text-white/55 mb-6">
                                     High-engagement campaigns that drive massive traffic and social following. You provide the loot, we bring the crowd.
                                 </p>
                             </div>
@@ -301,21 +301,21 @@ export default function MarketingClient() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-6">Let's Talk Business</h2>
-                        <p className="text-[var(--text-secondary)] text-lg mb-10 leading-relaxed mx-auto max-w-2xl">
+                        <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Let's Talk Business</h2>
+                        <p className="text-white/55 text-lg mb-10 leading-relaxed mx-auto max-w-2xl">
                             We don't do "one size fits all" pricing. Every campaign is unique.
                             Tell us your budget and goals, and we'll craft a plan that works.
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                            <a href="mailto:marketing@techplay.gg" className="inline-flex items-center gap-2 h-[52px] px-8 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-tp-accent/20">
+                            <a href="mailto:marketing@techplay.gg" className="inline-flex items-center gap-2 h-[52px] px-8 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-[var(--accent)]/20">
                                 <Mail className="w-5 h-5" /> marketing@techplay.gg
                             </a>
-                            <button disabled className="inline-flex items-center gap-2 h-[52px] px-8 border border-[var(--border)] text-[var(--text-secondary)] font-bold rounded-lg uppercase tracking-[0.08em] text-[13px] opacity-50 cursor-not-allowed">
+                            <button disabled className="inline-flex items-center gap-2 h-[52px] px-8 border border-[var(--line)] text-white/55 font-bold rounded-[var(--radius-card)] uppercase tracking-[0.08em] text-[13px] opacity-50 cursor-not-allowed">
                                 <Download className="w-5 h-5" /> Download Media Kit (PDF)
                             </button>
                         </div>
-                        <p className="mt-8 text-[var(--text-muted)] text-sm">
+                        <p className="mt-8 text-white/35 text-sm">
                             Agency? Ask for our agency rate card.
                         </p>
                     </motion.div>

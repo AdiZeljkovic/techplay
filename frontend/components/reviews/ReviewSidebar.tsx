@@ -92,19 +92,19 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
     return (
         <div className="space-y-6">
             {/* Main Review Card - Wide Layout */}
-            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-2xl relative group">
+            <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] overflow-hidden shadow-2xl relative group">
                 {/* Glow Effect */}
                 <div className="absolute -inset-1 bg-gradient-to-b from-[var(--accent)]/10 to-transparent opacity-20 blur-xl px-1" />
 
-                <div className="relative md:grid md:grid-cols-12 bg-[var(--bg-card)] backdrop-blur-sm">
+                <div className="relative md:grid md:grid-cols-12 bg-[var(--surface-1)] backdrop-blur-sm">
 
                     {/* LEFT COLUMN: Radar & Visuals (5/12) */}
-                    <div className="md:col-span-5 bg-black/20 border-b md:border-b-0 md:border-r border-[var(--border)] flex flex-col">
+                    <div className="md:col-span-5 bg-black/20 border-b md:border-b-0 md:border-r border-[var(--line)] flex flex-col">
                         {/* Radar Chart Section */}
                         <div className="p-6 h-72 relative flex-1">
                             <ResponsiveContainer width="100%" height="100%">
                                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                                    <PolarGrid stroke="var(--border)" strokeOpacity={0.5} />
+                                    <PolarGrid stroke="var(--line)" strokeOpacity={0.5} />
                                     <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 'bold' }} />
                                     <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
                                     <Radar
@@ -120,12 +120,12 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                         </div>
 
                         {/* Score Footer in Left Col */}
-                        <div className="p-6 border-t border-[var(--border)] bg-gradient-to-br from-black/40 to-transparent flex items-center justify-between">
+                        <div className="p-6 border-t border-[var(--line)] bg-gradient-to-br from-black/40 to-transparent flex items-center justify-between">
                             <div className="text-left">
-                                <span className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-1">Total Score</span>
+                                <span className="block text-xs font-bold text-white/35 uppercase tracking-wider mb-1">Total Score</span>
                                 <div className={`text-4xl font-black ${scoreDetails.color} flex items-center gap-3`}>
                                     {Number(review_score || 0).toFixed(1)}
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${scoreDetails.gradient} text-white shadow-lg`}>
+                                    <div className={`w-12 h-12 rounded-[var(--radius-card)] flex items-center justify-center bg-gradient-to-br ${scoreDetails.gradient} text-white shadow-lg`}>
                                         <ScoreIcon className="w-6 h-6" />
                                     </div>
                                 </div>
@@ -141,9 +141,9 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                     <div className="md:col-span-7 flex flex-col">
 
                         {/* Header Info */}
-                        <div className="p-6 border-b border-[var(--border)]">
+                        <div className="p-6 border-b border-[var(--line)]">
                             <h3 className="text-2xl font-bold text-white leading-tight mb-2">{review_data.game_title}</h3>
-                            <div className="flex flex-wrap gap-4 text-xs font-medium text-[var(--text-secondary)]">
+                            <div className="flex flex-wrap gap-4 text-xs font-medium text-white/55">
                                 {review_data.developer && (
                                     <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-[var(--accent)]" /> {review_data.developer}</span>
                                 )}
@@ -155,23 +155,23 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                         </div>
 
                         {/* Platforms & Tested On */}
-                        <div className="px-6 py-4 bg-[var(--bg-elevated)]/30 border-b border-[var(--border)] flex flex-wrap gap-3 items-center">
-                            <span className="text-xs font-bold text-[var(--text-muted)] uppercase">Available On:</span>
+                        <div className="px-6 py-4 bg-[var(--surface-2)]/30 border-b border-[var(--line)] flex flex-wrap gap-3 items-center">
+                            <span className="text-xs font-bold text-white/35 uppercase">Available On:</span>
                             {review_data.platforms && review_data.platforms.map(p => (
-                                <span key={p} className="px-2 py-0.5 rounded bg-[var(--bg-card)] border border-[var(--border)] text-xs font-bold text-white flex items-center gap-1">
-                                    <Gamepad2 className="w-3 h-3 text-[var(--text-secondary)]" /> {p}
+                                <span key={p} className="px-2 py-0.5 rounded bg-[var(--surface-1)] border border-[var(--line)] text-xs font-bold text-white flex items-center gap-1">
+                                    <Gamepad2 className="w-3 h-3 text-white/55" /> {p}
                                 </span>
                             ))}
                             {review_data.tested_on && (
                                 <>
-                                    <span className="w-px h-4 bg-[var(--border)] mx-1" />
-                                    <span className="text-xs text-[var(--text-secondary)]">Tested on: <span className="text-white font-bold">{review_data.tested_on}</span></span>
+                                    <span className="w-px h-4 bg-[var(--line)] mx-1" />
+                                    <span className="text-xs text-white/55">Tested on: <span className="text-white font-bold">{review_data.tested_on}</span></span>
                                 </>
                             )}
                         </div>
 
                         {/* Pros & Cons Grid */}
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[var(--line)]">
                             {/* Good */}
                             <div className="p-5 bg-emerald-950/10">
                                 <h4 className="flex items-center gap-2 font-bold text-emerald-400 mb-3 text-xs uppercase tracking-wider">
@@ -203,12 +203,12 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
 
                         {/* CTA Footer */}
                         {review_data.store_link && (
-                            <div className="p-4 border-t border-[var(--border)] bg-[var(--bg-elevated)]/50">
+                            <div className="p-4 border-t border-[var(--line)] bg-[var(--surface-2)]/50">
                                 <a
                                     href={getStoreUrl(review_data.store_link)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold uppercase tracking-wider rounded-lg transition-all shadow-lg hover:shadow-[var(--accent)]/40 hover:-translate-y-0.5"
+                                    className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold uppercase tracking-wider rounded-[var(--radius-card)] transition-all shadow-lg hover:shadow-[var(--accent)]/40 hover:-translate-y-0.5"
                                 >
                                     <ShoppingCart className="w-4 h-4" />
                                     {review_data.price ? `Buy Now - ${review_data.price}` : 'Buy Now'}
@@ -221,12 +221,12 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
 
             {/* Trailer Embed */}
             {review_data.trailer_url && (
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-4 shadow-lg">
-                    <h4 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+                <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-4 shadow-lg">
+                    <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                         <div className="w-1 h-4 bg-red-500 rounded-full" />
                         Video Review / Trailer
                     </h4>
-                    <div className="relative aspect-video rounded-lg overflow-hidden bg-black">
+                    <div className="relative aspect-video rounded-[var(--radius-card)] overflow-hidden bg-black">
                         <iframe
                             src={review_data.trailer_url.replace('watch?v=', 'embed/')}
                             title="Trailer"

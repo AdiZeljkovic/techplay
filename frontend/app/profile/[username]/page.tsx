@@ -95,7 +95,7 @@ function ProfilePageInner() {
     if (isLoading || authLoading || (rawUsername === "me" && !currentUser)) {
         return (
             <div className="min-h-screen">
-                <div className="-mt-[86px] md:-mt-[82px] h-[460px] bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-primary)] animate-pulse" />
+                <div className="-mt-[86px] md:-mt-[82px] h-[460px] bg-gradient-to-b from-[var(--surface-1)] to-[var(--surface-0)] animate-pulse" />
                 <div className="container-page -mt-24 space-y-4">
                     <div className="flex items-end gap-6">
                         <div className="w-32 h-32 rounded-full bg-white/5" />
@@ -105,7 +105,7 @@ function ProfilePageInner() {
                         </div>
                     </div>
                     <div className="grid grid-cols-5 lg:grid-cols-10 gap-2.5">
-                        {Array.from({ length: 10 }).map((_, i) => <div key={i} className="h-20 bg-white/5 rounded-xl" />)}
+                        {Array.from({ length: 10 }).map((_, i) => <div key={i} className="h-20 bg-white/5 rounded-[var(--radius-card)]" />)}
                     </div>
                 </div>
             </div>
@@ -115,9 +115,9 @@ function ProfilePageInner() {
     if (!profile || !profile.user) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-                <User className="w-16 h-16 text-[var(--text-muted)]" />
-                <h1 className="text-2xl font-bold text-[var(--text-primary)]">User Not Found</h1>
-                <Link href="/" className="inline-flex items-center gap-2 h-[42px] px-5 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]">
+                <User className="w-16 h-16 text-white/35" />
+                <h1 className="text-2xl font-bold text-white">User Not Found</h1>
+                <Link href="/" className="inline-flex items-center gap-2 h-[42px] px-5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]">
                     Go Home
                 </Link>
             </div>

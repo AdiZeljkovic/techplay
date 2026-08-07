@@ -82,7 +82,7 @@ export default function LoyaltyCustomization({ data, isOwnProfile, username, xp 
             </div>
 
             {isOwnProfile && (
-                <button onClick={() => setOpen(true)} className="w-full py-2.5 rounded-lg border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
+                <button onClick={() => setOpen(true)} className="w-full py-2.5 rounded-[var(--radius-card)] border border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white text-[11px] font-bold uppercase tracking-wider transition-colors">
                     Customize Profile
                 </button>
             )}
@@ -125,7 +125,7 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
 
     return (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-start justify-center p-4 pt-[8vh]" onClick={onClose}>
-            <div className="w-full max-w-2xl rounded-2xl bg-[var(--bg-card)] border border-white/10 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full max-w-2xl rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-white/10 shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
                 <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
                     <h3 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-white"><Sparkles className="w-4 h-4 text-fuchsia-400" /> Customization</h3>
                     <div className="flex items-center gap-3">
@@ -153,7 +153,7 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {items.map((item) => (
-                                <div key={item.id} className="flex items-center gap-3 rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
+                                <div key={item.id} className="flex items-center gap-3 rounded-[var(--radius-card)] bg-white/[0.03] border border-white/[0.06] p-3">
                                     <Swatch item={item} />
                                     <div className="flex-1 min-w-0">
                                         <div className="text-[13px] font-bold text-white truncate">{item.name}</div>
@@ -167,14 +167,14 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
                                             item.type === "perk" ? (
                                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400"><Check className="w-3.5 h-3.5" /> Owned</span>
                                             ) : (
-                                                <button onClick={() => toggleEquip(item)} disabled={busy === item.id} className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${item.equipped ? "bg-[var(--accent)] text-white" : "bg-white/[0.06] text-white/70 hover:bg-white/[0.12]"}`}>
+                                                <button onClick={() => toggleEquip(item)} disabled={busy === item.id} className={`px-3 py-1.5 rounded-[var(--radius-card)] text-[10px] font-bold uppercase tracking-wider ${item.equipped ? "bg-[var(--accent)] text-white" : "bg-white/[0.06] text-white/70 hover:bg-white/[0.12]"}`}>
                                                     {busy === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : item.equipped ? "Equipped" : "Equip"}
                                                 </button>
                                             )
                                         ) : item.tier_locked ? (
                                             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white/30"><Lock className="w-3.5 h-3.5" /> Locked</span>
                                         ) : (
-                                            <button onClick={() => acquire(item)} disabled={busy === item.id || !item.affordable} className="px-3 py-1.5 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[10px] font-bold uppercase tracking-wider">
+                                            <button onClick={() => acquire(item)} disabled={busy === item.id || !item.affordable} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] disabled:opacity-40 disabled:cursor-not-allowed text-white text-[10px] font-bold uppercase tracking-wider">
                                                 {busy === item.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : item.affordable ? "Unlock" : "Need ⛁"}
                                             </button>
                                         )}
@@ -190,12 +190,12 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
 }
 
 function Swatch({ item }: { item: CustomizationCatalogItem }) {
-    if (item.asset) return <img src={item.asset} alt="" className="w-10 h-10 rounded-lg object-cover shrink-0" />;
+    if (item.asset) return <img src={item.asset} alt="" className="w-10 h-10 rounded-[var(--radius-card)] object-cover shrink-0" />;
     if (item.type === "theme" || item.type === "badge") {
-        return <div className="w-10 h-10 rounded-lg shrink-0" style={{ background: item.value ?? "#333" }} />;
+        return <div className="w-10 h-10 rounded-[var(--radius-card)] shrink-0" style={{ background: item.value ?? "#333" }} />;
     }
     if (item.type === "frame") {
-        return <div className="w-10 h-10 rounded-full shrink-0 p-[3px]" style={{ background: item.value ?? "#333" }}><div className="w-full h-full rounded-full bg-[var(--bg-card)]" /></div>;
+        return <div className="w-10 h-10 rounded-full shrink-0 p-[3px]" style={{ background: item.value ?? "#333" }}><div className="w-full h-full rounded-full bg-[var(--surface-1)]" /></div>;
     }
-    return <div className="w-10 h-10 rounded-lg shrink-0 bg-white/[0.06] flex items-center justify-center"><Star className="w-4 h-4 text-white/40" /></div>;
+    return <div className="w-10 h-10 rounded-[var(--radius-card)] shrink-0 bg-white/[0.06] flex items-center justify-center"><Star className="w-4 h-4 text-white/40" /></div>;
 }

@@ -81,7 +81,7 @@ export default function ProfileChecklist({ stats, listsCount, hasGamertags, stea
     if (doneCount === items.length) return null;
 
     return (
-        <div className="relative overflow-hidden rounded-2xl bg-[var(--bg-card)] border border-[var(--accent)]/25 p-5">
+        <div className="relative overflow-hidden rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--accent)]/25 p-5">
             <span className="absolute -top-12 -right-12 w-36 h-36 bg-[var(--accent)]/[0.08] blur-[50px] rounded-full pointer-events-none" />
 
             <div className="flex items-center justify-between mb-4">
@@ -111,7 +111,7 @@ export default function ProfileChecklist({ stats, listsCount, hasGamertags, stea
                             </span>
                         </>
                     );
-                    const cls = `flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg transition-colors text-left ${
+                    const cls = `flex items-center gap-2.5 w-full px-2.5 py-2 rounded-[var(--radius-card)] transition-colors text-left ${
                         item.done ? "cursor-default" : "hover:bg-white/[0.04]"
                     }`;
 

@@ -41,12 +41,12 @@ export default function AboutPage() {
                     className="text-center max-w-3xl mx-auto"
                 >
                     <h2 className="font-display text-3xl font-bold text-white mb-6 uppercase tracking-tight">What We Do</h2>
-                    <p className="text-lg text-[var(--text-secondary)] leading-relaxed mb-6">
+                    <p className="text-lg text-white/55 leading-relaxed mb-6">
                         We test hardware until it breaks. We play games until 4 AM to write honest reviews.
                         We dig through patch notes so you don't have to. And we do it because we genuinely care
                         about this stuff—not because some PR agency asked nicely.
                     </p>
-                    <p className="text-lg text-[var(--text-secondary)] leading-relaxed">
+                    <p className="text-lg text-white/55 leading-relaxed">
                         TechPlay exists to answer one simple question: "Is this actually worth buying?"
                         No fluff, no sponsored hot takes, just real opinions from people who spend their own money on gear.
                     </p>
@@ -76,13 +76,13 @@ export default function AboutPage() {
                             <motion.div
                                 key={idx}
                                 variants={fadeInUp}
-                                className="bg-[var(--bg-card)] p-8 rounded-2xl border border-[var(--border)] hover:border-[var(--accent)] transition-colors group"
+                                className="bg-[var(--surface-1)] p-8 rounded-[var(--radius-panel)] border border-[var(--line)] hover:border-[var(--accent)] transition-colors group"
                             >
-                                <div className="w-12 h-12 bg-[var(--bg-elevated)] rounded-xl flex items-center justify-center mb-6 text-[var(--accent)] group-hover:scale-110 transition-transform">
+                                <div className="w-12 h-12 bg-[var(--surface-2)] rounded-[var(--radius-card)] flex items-center justify-center mb-6 text-[var(--accent)] group-hover:scale-110 transition-transform">
                                     <item.icon className="w-6 h-6" />
                                 </div>
                                 <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                                <p className="text-[var(--text-secondary)]">{item.desc}</p>
+                                <p className="text-white/55">{item.desc}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -98,7 +98,7 @@ export default function AboutPage() {
                 >
                     <div>
                         <h2 className="text-3xl font-bold text-white mb-6">Our Story</h2>
-                        <div className="space-y-4 text-[var(--text-secondary)]">
+                        <div className="space-y-4 text-white/55">
                             <p>
                                 TechPlay started back in 2020 as a small blog covering local gaming news from the Balkans.
                                 Gaming has always been in our blood—late-night sessions, heated debates about which console is better,
@@ -113,14 +113,14 @@ export default function AboutPage() {
                                 and that weird indie game everyone's sleeping on. Gaming isn't just what we write about—it's what we do
                                 when the keyboards go silent.
                             </p>
-                            <p className="text-[var(--text-primary)] font-semibold">
+                            <p className="text-white font-semibold">
                                 We're not the biggest, but gaming runs in our veins. And we're just getting started.
                             </p>
                         </div>
                     </div>
-                    <div className="relative h-[400px] rounded-3xl overflow-hidden border border-[var(--border)]">
+                    <div className="relative h-[400px] rounded-[var(--radius-panel)] overflow-hidden border border-[var(--line)]">
                         {/* Gaming-themed visual background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-elevated)] via-[var(--bg-card)] to-[var(--bg-elevated)]">
+                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--surface-2)] via-[var(--surface-1)] to-[var(--surface-2)]">
                             {/* Grid pattern overlay */}
                             <div className="absolute inset-0 opacity-5" style={{
                                 backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
@@ -129,8 +129,8 @@ export default function AboutPage() {
 
                             {/* Glowing orbs */}
                             <div className="absolute top-10 left-10 w-32 h-32 bg-[var(--accent)]/20 rounded-full blur-3xl" />
-                            <div className="absolute bottom-20 right-20 w-40 h-40 bg-tp-accent/10 rounded-full blur-3xl" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-tp-accent/5 rounded-full blur-3xl" />
+                            <div className="absolute bottom-20 right-20 w-40 h-40 bg-[var(--accent)]/10 rounded-full blur-3xl" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--accent)]/5 rounded-full blur-3xl" />
 
                             {/* Floating gaming icons */}
                             <motion.div
@@ -138,7 +138,7 @@ export default function AboutPage() {
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                                 className="absolute top-12 left-[15%]"
                             >
-                                <div className="p-4 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg">
+                                <div className="p-4 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-panel)] border border-[var(--line)] shadow-lg">
                                     <Gamepad2 className="w-10 h-10 text-[var(--accent)]" />
                                 </div>
                             </motion.div>
@@ -148,8 +148,8 @@ export default function AboutPage() {
                                 transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                                 className="absolute top-16 right-[20%]"
                             >
-                                <div className="p-4 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-2xl border border-[var(--border)] shadow-lg">
-                                    <Monitor className="w-10 h-10 text-[#A1A1AA]" />
+                                <div className="p-4 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-panel)] border border-[var(--line)] shadow-lg">
+                                    <Monitor className="w-10 h-10 text-white/45" />
                                 </div>
                             </motion.div>
 
@@ -158,8 +158,8 @@ export default function AboutPage() {
                                 transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
                                 className="absolute top-1/3 left-[8%]"
                             >
-                                <div className="p-3 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-xl border border-[var(--border)] shadow-lg">
-                                    <Keyboard className="w-8 h-8 text-[#A1A1AA]" />
+                                <div className="p-3 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-card)] border border-[var(--line)] shadow-lg">
+                                    <Keyboard className="w-8 h-8 text-white/45" />
                                 </div>
                             </motion.div>
 
@@ -168,8 +168,8 @@ export default function AboutPage() {
                                 transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                                 className="absolute top-1/4 right-[10%]"
                             >
-                                <div className="p-3 bg-[var(--bg-card)]/80 backdrop-blur-sm rounded-xl border border-[var(--border)] shadow-lg">
-                                    <Cpu className="w-8 h-8 text-[#A1A1AA]" />
+                                <div className="p-3 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-card)] border border-[var(--line)] shadow-lg">
+                                    <Cpu className="w-8 h-8 text-white/45" />
                                 </div>
                             </motion.div>
 
@@ -183,26 +183,26 @@ export default function AboutPage() {
                                 >
                                     TP
                                 </motion.div>
-                                <p className="text-sm text-[var(--text-muted)] mt-2 tracking-widest uppercase">Est. 2020</p>
+                                <p className="text-sm text-white/35 mt-2 tracking-widest uppercase">Est. 2020</p>
                             </div>
                         </div>
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-primary)] via-transparent to-transparent"></div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-transparent to-transparent"></div>
 
                         {/* Stats overlay */}
                         <div className="absolute bottom-0 left-0 right-0 p-8">
                             <div className="flex justify-around text-center">
                                 <div>
                                     <div className="text-3xl font-black text-white">2020</div>
-                                    <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Founded</div>
+                                    <div className="text-xs text-white/35 uppercase tracking-wider">Founded</div>
                                 </div>
                                 <div>
                                     <div className="text-3xl font-black text-[var(--accent)]">0</div>
-                                    <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Sponsored Reviews</div>
+                                    <div className="text-xs text-white/35 uppercase tracking-wider">Sponsored Reviews</div>
                                 </div>
                                 <div>
                                     <div className="text-3xl font-black text-white">∞</div>
-                                    <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider">Gaming Hours</div>
+                                    <div className="text-xs text-white/35 uppercase tracking-wider">Gaming Hours</div>
                                 </div>
                             </div>
                         </div>
@@ -215,14 +215,14 @@ export default function AboutPage() {
                     whileInView="visible"
                     viewport={{ once: true }}
                     variants={staggerContainer}
-                    className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-3xl p-12 relative overflow-hidden"
+                    className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] p-12 relative overflow-hidden"
                 >
                     <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-3xl pointer-events-none" />
 
                     <div className="relative z-10">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl font-bold text-white mb-4">What You'll Find Here</h2>
-                            <p className="text-[var(--text-secondary)] max-w-2xl mx-auto">
+                            <p className="text-white/55 max-w-2xl mx-auto">
                                 We cover the full spectrum of gaming and tech. Here's what to expect:
                             </p>
                         </div>
@@ -249,12 +249,12 @@ export default function AboutPage() {
                                 <motion.div
                                     key={idx}
                                     variants={fadeInUp}
-                                    className="bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border)] hover:border-[var(--accent)] transition-colors"
+                                    className="bg-[var(--surface-1)] p-6 rounded-[var(--radius-panel)] border border-[var(--line)] hover:border-[var(--accent)] transition-colors"
                                 >
                                     <h3 className="text-lg font-bold text-white mb-4">{category.title}</h3>
                                     <ul className="space-y-2">
                                         {category.items.map((item, i) => (
-                                            <li key={i} className="text-sm text-[var(--text-secondary)] flex items-start gap-2">
+                                            <li key={i} className="text-sm text-white/55 flex items-start gap-2">
                                                 <span className="text-[var(--accent)] mt-1">•</span>
                                                 <span>{item}</span>
                                             </li>
@@ -265,12 +265,12 @@ export default function AboutPage() {
                         </div>
 
                         <div className="mt-12 text-center">
-                            <p className="text-[var(--text-muted)] mb-6">
+                            <p className="text-white/35 mb-6">
                                 Questions? Suggestions? Think we missed something important?
                             </p>
                             <a
                                 href="/contact"
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-xl transition-colors"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold rounded-[var(--radius-card)] transition-colors"
                             >
                                 Get in Touch
                                 <ArrowRight className="w-4 h-4" />

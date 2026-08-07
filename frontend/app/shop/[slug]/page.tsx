@@ -36,7 +36,7 @@ export default function ProductDetailPage() {
             <div className="min-h-screen">
                 <PageHero title="Loading..." icon={PackageOpen} />
                 <div className="container-page py-12">
-                    <div className="animate-pulse h-96 bg-[var(--bg-card)] rounded-2xl" />
+                    <div className="animate-pulse h-96 bg-[var(--surface-1)] rounded-[var(--radius-panel)]" />
                 </div>
             </div>
         )
@@ -64,7 +64,7 @@ export default function ProductDetailPage() {
 
             <div className="container-page py-12">
                 <div className="mb-8">
-                    <Link href="/shop" className="inline-flex items-center gap-2 text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors">
+                    <Link href="/shop" className="inline-flex items-center gap-2 text-white/55 hover:text-[var(--accent)] transition-colors">
                         <ArrowLeft className="w-4 h-4" />
                         Back to Products
                     </Link>
@@ -73,8 +73,8 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
                     {/* Product Image */}
                     <div className="relative group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-deep)] opacity-10 blur-2xl rounded-3xl" />
-                        <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl overflow-hidden aspect-square flex items-center justify-center p-8 shadow-2xl">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent)] to-[var(--accent-deep)] opacity-10 blur-2xl rounded-[var(--radius-panel)]" />
+                        <div className="relative bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] overflow-hidden aspect-square flex items-center justify-center p-8 shadow-2xl">
                             {product.image_url ? (
                                 <div className="relative w-full h-full">
                                     <Image
@@ -85,7 +85,7 @@ export default function ProductDetailPage() {
                                     />
                                 </div>
                             ) : (
-                                <div className="text-[var(--text-muted)] flex flex-col items-center">
+                                <div className="text-white/35 flex flex-col items-center">
                                     <PackageOpen className="w-24 h-24 opacity-20 mb-4" />
                                     <span>No Image Available</span>
                                 </div>
@@ -104,20 +104,20 @@ export default function ProductDetailPage() {
 
                     {/* Details */}
                     <div className="flex flex-col justify-center">
-                        <h1 className="text-4xl lg:text-5xl font-bold text-[var(--text-primary)] mb-6 leading-tight">
+                        <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
                             {product.name}
                         </h1>
 
                         <div className="flex items-center gap-6 mb-8">
                             <div className="text-4xl font-bold text-[var(--accent)]">
-                                {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} <span className="text-lg text-[var(--text-muted)]">KM</span>
+                                {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })} <span className="text-lg text-white/35">KM</span>
                             </div>
                             <div className={`px-4 py-1.5 rounded-full text-sm font-bold border ${product.stock > 0 ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
                             </div>
                         </div>
 
-                        <div className="prose prose-invert prose-lg text-[var(--text-secondary)] mb-10 max-w-none">
+                        <div className="prose prose-invert prose-lg text-white/55 mb-10 max-w-none">
                             <p>{product.description || "No description provided for this product."}</p>
                         </div>
 
@@ -126,19 +126,19 @@ export default function ProductDetailPage() {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0}
-                                className="flex-1 py-4 px-8 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--bg-elevated)] disabled:text-[var(--text-muted)] disabled:cursor-not-allowed"
+                                className="flex-1 py-4 px-8 rounded-[var(--radius-card)] font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-2)] disabled:text-white/35 disabled:cursor-not-allowed"
                             >
                                 <ShoppingCart className="w-6 h-6" /> Add to Cart
                             </button>
                         </div>
 
                         {/* Features / Assurance */}
-                        <div className="grid grid-cols-2 gap-4 pt-8 border-t border-[var(--border)]">
-                            <div className="flex items-center gap-3 text-[var(--text-secondary)]">
+                        <div className="grid grid-cols-2 gap-4 pt-8 border-t border-[var(--line)]">
+                            <div className="flex items-center gap-3 text-white/55">
                                 <Truck className="w-5 h-5 text-[var(--accent)]" />
                                 <span className="text-sm">Fast Delivery (24-48h)</span>
                             </div>
-                            <div className="flex items-center gap-3 text-[var(--text-secondary)]">
+                            <div className="flex items-center gap-3 text-white/55">
                                 <ShieldCheck className="w-5 h-5 text-[var(--accent)]" />
                                 <span className="text-sm">Official Warranty</span>
                             </div>

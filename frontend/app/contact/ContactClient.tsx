@@ -77,59 +77,59 @@ export default function ContactPage() {
                         viewport={{ once: true }}
                     >
                         <motion.div variants={fadeInUp} className="mb-12">
-                            <h2 className="font-display text-3xl font-bold text-zinc-900 dark:text-white mb-6 uppercase tracking-tight">Contact Information</h2>
-                            <p className="text-[var(--text-secondary)] text-lg leading-relaxed mb-8">
+                            <h2 className="font-display text-3xl font-bold text-white mb-6 uppercase tracking-tight">Contact Information</h2>
+                            <p className="text-white/55 text-lg leading-relaxed mb-8">
                                 We actually read our emails (shocking, we know). Whether you've got a news tip, want your game reviewed,
                                 or just found a typo that's driving you nuts—hit the right inbox below and we'll get back to you.
                             </p>
 
                             <div className="space-y-6">
-                                <div className="flex items-start gap-4 p-6 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl group hover:border-[var(--accent)] transition-colors">
-                                    <div className="p-3 bg-[var(--accent)]/10 rounded-xl text-[var(--accent)] group-hover:scale-110 transition-transform">
+                                <div className="flex items-start gap-4 p-6 bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] group hover:border-[var(--accent)] transition-colors">
+                                    <div className="p-3 bg-[var(--accent)]/10 rounded-[var(--radius-card)] text-[var(--accent)] group-hover:scale-110 transition-transform">
                                         <MessageSquare className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">General & Editorial</h3>
-                                        <p className="text-[var(--text-secondary)] text-sm mb-2">News tips, game review requests, press releases, or just saying hi.</p>
+                                        <h3 className="font-bold text-white text-lg mb-1">General & Editorial</h3>
+                                        <p className="text-white/55 text-sm mb-2">News tips, game review requests, press releases, or just saying hi.</p>
                                         <a href="mailto:redakcija@techplay.gg" className="text-[var(--accent)] font-medium hover:underline">redakcija@techplay.gg</a>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4 p-6 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl group hover:border-tp-accent/40 transition-colors">
-                                    <div className="p-3 bg-tp-accent/10 rounded-xl text-tp-accent group-hover:scale-110 transition-transform">
+                                <div className="flex items-start gap-4 p-6 bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] group hover:border-[var(--accent)]/40 transition-colors">
+                                    <div className="p-3 bg-[var(--accent)]/10 rounded-[var(--radius-card)] text-[var(--accent)] group-hover:scale-110 transition-transform">
                                         <Briefcase className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">Advertising & Partnerships</h3>
-                                        <p className="text-[var(--text-secondary)] text-sm mb-2">Want to advertise or partner with us? Let's talk rates and options.</p>
-                                        <a href="mailto:marketing@techplay.gg" className="text-tp-accent font-medium hover:underline">marketing@techplay.gg</a>
+                                        <h3 className="font-bold text-white text-lg mb-1">Advertising & Partnerships</h3>
+                                        <p className="text-white/55 text-sm mb-2">Want to advertise or partner with us? Let's talk rates and options.</p>
+                                        <a href="mailto:marketing@techplay.gg" className="text-[var(--accent)] font-medium hover:underline">marketing@techplay.gg</a>
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-4 p-6 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl group hover:border-tp-accent/40 transition-colors">
-                                    <div className="p-3 bg-tp-accent/10 rounded-xl text-tp-accent group-hover:scale-110 transition-transform">
+                                <div className="flex items-start gap-4 p-6 bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] group hover:border-[var(--accent)]/40 transition-colors">
+                                    <div className="p-3 bg-[var(--accent)]/10 rounded-[var(--radius-card)] text-[var(--accent)] group-hover:scale-110 transition-transform">
                                         <HelpCircle className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-[var(--text-primary)] text-lg mb-1">Technical Support</h3>
-                                        <p className="text-[var(--text-secondary)] text-sm mb-2">Site broken? Can't log in? Comments not working? We'll fix it.</p>
-                                        <a href="mailto:support@techplay.gg" className="text-tp-accent font-medium hover:underline">support@techplay.gg</a>
+                                        <h3 className="font-bold text-white text-lg mb-1">Technical Support</h3>
+                                        <p className="text-white/55 text-sm mb-2">Site broken? Can't log in? Comments not working? We'll fix it.</p>
+                                        <a href="mailto:support@techplay.gg" className="text-[var(--accent)] font-medium hover:underline">support@techplay.gg</a>
                                     </div>
                                 </div>
                             </div>
                         </motion.div>
 
-                        <motion.div variants={fadeInUp} className="bg-[var(--bg-card)] p-8 rounded-3xl border border-[var(--border)]">
-                            <h3 className="flex items-center gap-2 font-bold text-[var(--text-primary)] mb-4">
+                        <motion.div variants={fadeInUp} className="bg-[var(--surface-1)] p-8 rounded-[var(--radius-panel)] border border-[var(--line)]">
+                            <h3 className="flex items-center gap-2 font-bold text-white mb-4">
                                 <MapPin className="w-5 h-5 text-[var(--accent)]" />
                                 Visit Us / Mail Us
                             </h3>
-                            <address className="not-italic text-[var(--text-secondary)] space-y-1">
-                                <strong className="text-[var(--text-primary)]">Luminor Solutions</strong><br />
+                            <address className="not-italic text-white/55 space-y-1">
+                                <strong className="text-white">Luminor Solutions</strong><br />
                                 71000 Sarajevo<br />
                                 Bosnia and Herzegovina
                             </address>
-                            <div className="mt-4 pt-4 border-t border-[var(--border)] flex items-center gap-2 text-[var(--text-muted)] text-sm">
+                            <div className="mt-4 pt-4 border-t border-[var(--line)] flex items-center gap-2 text-white/35 text-sm">
                                 <Phone className="w-4 h-4" />
                                 <span>+387 62 574 783</span>
                             </div>
@@ -143,26 +143,26 @@ export default function ContactPage() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.6 }}
                     >
-                        <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-3xl p-8 md:p-10 relative overflow-hidden">
+                        <div className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 md:p-10 relative overflow-hidden">
                             {/* Decorative gradients */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-tp-accent/5 rounded-full blur-3xl -z-0 pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-tp-accent/3 rounded-full blur-3xl -z-0 pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--accent)]/5 rounded-full blur-3xl -z-0 pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[var(--accent)]/3 rounded-full blur-3xl -z-0 pointer-events-none" />
 
                             <div className="relative z-10">
-                                <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Send us a message</h3>
-                                <p className="text-[var(--text-secondary)] mb-8">We try to respond within 24-48 hours. Weekends might take a bit longer (we're human).</p>
+                                <h3 className="text-2xl font-bold text-white mb-2">Send us a message</h3>
+                                <p className="text-white/55 mb-8">We try to respond within 24-48 hours. Weekends might take a bit longer (we're human).</p>
 
                                 {isSent ? (
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        className="bg-green-500/10 border border-green-500/20 rounded-xl p-8 text-center"
+                                        className="bg-green-500/10 border border-green-500/20 rounded-[var(--radius-card)] p-8 text-center"
                                     >
                                         <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                                             <CheckCircle2 className="w-8 h-8 text-green-500" />
                                         </div>
-                                        <h4 className="text-xl font-bold text-[var(--text-primary)] mb-2">Message Sent!</h4>
-                                        <p className="text-[var(--text-secondary)]">
+                                        <h4 className="text-xl font-bold text-white mb-2">Message Sent!</h4>
+                                        <p className="text-white/55">
                                             Thank you for reaching out. We've received your message and will get back to you shortly.
                                         </p>
                                         <Button
@@ -176,29 +176,29 @@ export default function ContactPage() {
                                 ) : (
                                     <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
                                         {error && (
-                                            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-400">
+                                            <div className="bg-red-500/10 border border-red-500/20 rounded-[var(--radius-card)] p-4 flex items-center gap-3 text-red-400">
                                                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                                                 <p className="text-sm">{error}</p>
                                             </div>
                                         )}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <label htmlFor="name" className="text-sm font-medium text-[var(--text-secondary)]">Name</label>
-                                                <Input id="name" name="name" placeholder="John Doe" required className="bg-[var(--bg-primary)]" />
+                                                <label htmlFor="name" className="text-sm font-medium text-white/55">Name</label>
+                                                <Input id="name" name="name" placeholder="John Doe" required className="bg-[var(--surface-0)]" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label htmlFor="email" className="text-sm font-medium text-[var(--text-secondary)]">Email</label>
-                                                <Input id="email" name="email" type="email" placeholder="john@example.com" required className="bg-[var(--bg-primary)]" />
+                                                <label htmlFor="email" className="text-sm font-medium text-white/55">Email</label>
+                                                <Input id="email" name="email" type="email" placeholder="john@example.com" required className="bg-[var(--surface-0)]" />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label htmlFor="subject" className="text-sm font-medium text-[var(--text-secondary)]">Subject</label>
+                                            <label htmlFor="subject" className="text-sm font-medium text-white/55">Subject</label>
                                             <div className="relative">
                                                 <select
                                                     id="subject"
                                                     name="subject"
-                                                    className="w-full h-10 px-3 py-2 border border-[var(--border)] rounded-md text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] appearance-none"
+                                                    className="w-full h-10 px-3 py-2 border border-[var(--line)] rounded-[var(--radius-inner)] text-white focus:outline-none focus:ring-2 focus:ring-[var(--accent)] appearance-none"
                                                     required
                                                     defaultValue=""
                                                 >
@@ -209,14 +209,14 @@ export default function ContactPage() {
                                                     <option value="support">Technical Support</option>
                                                     <option value="feedback">Feedback</option>
                                                 </select>
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--text-muted)]">
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/35">
                                                     <ArrowRight className="w-4 h-4 rotate-90" />
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label htmlFor="message" className="text-sm font-medium text-[var(--text-secondary)]">Message</label>
+                                            <label htmlFor="message" className="text-sm font-medium text-white/55">Message</label>
                                             <Textarea id="message" name="message" placeholder="How can we help you?" required className="min-h-[150px]" />
                                         </div>
 
@@ -232,7 +232,7 @@ export default function ContactPage() {
                                             )}
                                         </Button>
 
-                                        <p className="text-xs text-[var(--text-muted)] text-center mt-4">
+                                        <p className="text-xs text-white/35 text-center mt-4">
                                             By sending this message, you agree to our Privacy Policy.
                                         </p>
                                     </form>

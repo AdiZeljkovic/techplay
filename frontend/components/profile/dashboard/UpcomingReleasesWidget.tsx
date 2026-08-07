@@ -49,7 +49,7 @@ export default function UpcomingReleasesWidget() {
             <div className="space-y-2">
                 {[...Array(3)].map((_, i) => (
                     <div key={i} className="flex gap-3 items-center animate-pulse">
-                        <div className="w-14 h-9 rounded-lg bg-white/[0.06] shrink-0" />
+                        <div className="w-14 h-9 rounded-[var(--radius-card)] bg-white/[0.06] shrink-0" />
                         <div className="flex-1 space-y-1.5">
                             <div className="h-3 bg-white/[0.06] rounded w-3/4" />
                             <div className="h-2 bg-white/[0.06] rounded w-1/3" />
@@ -81,10 +81,10 @@ export default function UpcomingReleasesWidget() {
                     <Link
                         key={game.slug}
                         href={`/calendar/${game.slug}`}
-                        className="group flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-white/[0.04] transition-colors"
+                        className="group flex items-center gap-3 rounded-[var(--radius-card)] px-2 py-2 hover:bg-white/[0.04] transition-colors"
                     >
                         {/* Thumbnail */}
-                        <div className="relative w-14 h-9 rounded-lg overflow-hidden shrink-0 bg-white/[0.05] border border-white/[0.06]">
+                        <div className="relative w-14 h-9 rounded-[var(--radius-card)] overflow-hidden shrink-0 bg-white/[0.05] border border-white/[0.06]">
                             {game.cover_url && (
                                 <Image
                                     src={game.cover_url}

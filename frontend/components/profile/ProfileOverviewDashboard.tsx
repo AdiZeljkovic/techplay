@@ -136,7 +136,7 @@ export default function ProfileOverviewDashboard({
                     <SectionCard title="Achievement Spotlight" action={{ label: "View All", href: "?tab=achievements" }}>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                             {recentUnlocked.map((ach) => (
-                                <div key={ach.id} className="rounded-xl bg-white/[0.03] border border-[var(--border)] p-4 flex flex-col items-center text-center hover:border-white/[0.14] transition-colors">
+                                <div key={ach.id} className="rounded-[var(--radius-card)] bg-white/[0.03] border border-[var(--line)] p-4 flex flex-col items-center text-center hover:border-white/[0.14] transition-colors">
                                     <div className="w-14 h-14 mb-3 flex items-center justify-center">
                                         {ach.icon_path ? (
                                             <img src={getStorageUrl(ach.icon_path)} alt={ach.name} className="w-14 h-14 object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]" />
@@ -185,7 +185,7 @@ export default function ProfileOverviewDashboard({
                 {clan && (
                     <SectionCard title="Clan">
                         <Link href={clan.slug ? `/clans/${clan.slug}` : "/clans"} className="group flex items-center gap-3.5">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.04] border border-[var(--border)] flex items-center justify-center shrink-0">
+                            <div className="w-12 h-12 rounded-[var(--radius-card)] overflow-hidden bg-white/[0.04] border border-[var(--line)] flex items-center justify-center shrink-0">
                                 {clan.logo ? (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img src={clan.logo} alt={clan.name} className="w-full h-full object-cover" />

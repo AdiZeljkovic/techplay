@@ -49,7 +49,7 @@ export default function SupportPage() {
                         <h2 className="text-3xl md:text-5xl font-bold text-white">
                             Level Up Your <span className="text-[var(--accent)]">Experience</span>
                         </h2>
-                        <p className="text-gray-400 text-lg leading-relaxed">
+                        <p className="text-white/45 text-lg leading-relaxed">
                             TechPlay is built by gamers, for gamers. Your support helps us remain independent, ad-free for members, and focused on high-quality content without clickbait.
                         </p>
                     </div>
@@ -70,29 +70,29 @@ export default function SupportPage() {
                     {/* Benefits / Why Support */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
                         <div className="text-center space-y-4">
-                            <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center text-teal-400 mx-auto mb-6">
+                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-teal-500/10 flex items-center justify-center text-teal-400 mx-auto mb-6">
                                 <Shield className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Ad-Free Experience</h3>
-                            <p className="text-gray-400">
+                            <p className="text-white/45">
                                 Browse TechPlay without interruptions. No banners, no pop-ups, just pure content.
                             </p>
                         </div>
                         <div className="text-center space-y-4">
-                            <div className="w-16 h-16 rounded-2xl bg-violet-500/10 flex items-center justify-center text-violet-400 mx-auto mb-6">
+                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-violet-500/10 flex items-center justify-center text-violet-400 mx-auto mb-6">
                                 <Star className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Exclusive Badges</h3>
-                            <p className="text-gray-400">
+                            <p className="text-white/45">
                                 Stand out in comments and forums with a unique profile badge showcasing your rank.
                             </p>
                         </div>
                         <div className="text-center space-y-4">
-                            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 mx-auto mb-6">
+                            <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-amber-500/10 flex items-center justify-center text-amber-500 mx-auto mb-6">
                                 <Zap className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Direct Impact</h3>
-                            <p className="text-gray-400">
+                            <p className="text-white/45">
                                 Your contribution directly funds hardware for reviews, server costs, and freelance writers.
                             </p>
                         </div>

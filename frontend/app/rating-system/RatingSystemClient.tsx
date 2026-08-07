@@ -22,7 +22,7 @@ const staggerContainer = {
 const ScoreCard = ({ score, title, description, color, bgGradient, icon: Icon }: any) => (
     <motion.div
         variants={fadeInUp}
-        className={`group relative overflow-hidden bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 hover:border-[var(--accent)] transition-all duration-300`}
+        className={`group relative overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 hover:border-[var(--accent)] transition-all duration-300`}
     >
         {/* Background glow */}
         <div className={`absolute -top-10 -right-10 w-40 h-40 ${color} opacity-5 rounded-full blur-3xl group-hover:opacity-10 transition-opacity`} />
@@ -30,18 +30,18 @@ const ScoreCard = ({ score, title, description, color, bgGradient, icon: Icon }:
         <div className="flex items-start justify-between mb-4 relative z-10">
             <div>
                 <span className={`text-4xl font-black ${color} block mb-1`}>{score}</span>
-                <h3 className="text-xl font-bold text-[var(--text-primary)]">{title}</h3>
+                <h3 className="text-xl font-bold text-white">{title}</h3>
             </div>
-            <div className={`w-14 h-14 rounded-2xl ${bgGradient} flex items-center justify-center text-white shadow-lg transform group-hover:rotate-6 transition-transform`}>
+            <div className={`w-14 h-14 rounded-[var(--radius-panel)] ${bgGradient} flex items-center justify-center text-white shadow-lg transform group-hover:rotate-6 transition-transform`}>
                 <Icon className="w-7 h-7" />
             </div>
         </div>
 
-        <div className="w-full h-1 bg-[var(--bg-elevated)] rounded-full mb-4 overflow-hidden">
+        <div className="w-full h-1 bg-[var(--surface-2)] rounded-full mb-4 overflow-hidden">
             <div className={`h-full ${color.replace('text-', 'bg-')} bg-current opacity-50`} style={{ width: score === '10' ? '100%' : score === '9' ? '90%' : score === '8' ? '80%' : score === '7' ? '70%' : '40%' }} />
         </div>
 
-        <p className="text-[var(--text-secondary)] leading-relaxed font-medium relative z-10">
+        <p className="text-white/55 leading-relaxed font-medium relative z-10">
             {description}
         </p>
     </motion.div>
@@ -71,12 +71,12 @@ export default function RatingSystemPage() {
                     <span className="inline-block py-1 px-3 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-sm font-bold uppercase tracking-wider mb-6">
                         The TechPlay Standard
                     </span>
-                    <h2 className="text-4xl md:text-6xl font-black text-[var(--text-primary)] mb-8 leading-tight">
+                    <h2 className="text-4xl md:text-6xl font-black text-white mb-8 leading-tight">
                         More Than Just a Number
                     </h2>
-                    <p className="text-xl text-[var(--text-secondary)] leading-relaxed max-w-2xl mx-auto">
+                    <p className="text-xl text-white/55 leading-relaxed max-w-2xl mx-auto">
                         We don't use complicated algorithms. Our 1-10 scale represents a gut check backed by rigorous analysis.
-                        It's about the <span className="text-[var(--text-primary)] font-bold">experience</span>, not just the technicalities.
+                        It's about the <span className="text-white font-bold">experience</span>, not just the technicalities.
                     </p>
                 </motion.div>
 
@@ -146,15 +146,15 @@ export default function RatingSystemPage() {
                     whileInView="visible"
                     viewport={{ once: true }}
                     variants={fadeInUp}
-                    className="relative bg-[var(--bg-elevated)] border border-[var(--border)] rounded-[3rem] p-10 md:p-20 overflow-hidden"
+                    className="relative bg-[var(--surface-2)] border border-[var(--line)] rounded-[3rem] p-10 md:p-20 overflow-hidden"
                 >
                     {/* Background decorations */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-tp-accent/5 rounded-full blur-[100px]" />
-                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-tp-accent/5 rounded-full blur-[100px]" />
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-[var(--accent)]/5 rounded-full blur-[100px]" />
 
                     <div className="relative z-10 text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-black text-[var(--text-primary)] mb-6">The 5 Pillars</h2>
-                        <p className="text-[var(--text-secondary)] max-w-2xl mx-auto text-lg">
+                        <h2 className="text-3xl md:text-5xl font-black text-white mb-6">The 5 Pillars</h2>
+                        <p className="text-white/55 max-w-2xl mx-auto text-lg">
                             Every game is deconstructed into five core components that inform our final verdict.
                         </p>
                     </div>
@@ -165,19 +165,19 @@ export default function RatingSystemPage() {
                                 icon: Gamepad2,
                                 title: "Gameplay",
                                 desc: "Mechanics, controls, and game feel.",
-                                color: "text-tp-accent"
+                                color: "text-[var(--accent)]"
                             },
                             {
                                 icon: Monitor,
                                 title: "Visuals",
                                 desc: "Art direction, fidelity, and polish.",
-                                color: "text-tp-accent"
+                                color: "text-[var(--accent)]"
                             },
                             {
                                 icon: Volume2,
                                 title: "Audio",
                                 desc: "Sound design, music score, acting.",
-                                color: "text-tp-accent"
+                                color: "text-[var(--accent)]"
                             },
                             {
                                 icon: History,
@@ -196,11 +196,11 @@ export default function RatingSystemPage() {
                                 key={i}
                                 className="text-center group"
                             >
-                                <div className={`w-20 h-20 mx-auto bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] flex items-center justify-center ${item.color} shadow-lg mb-6 group-hover:scale-110 group-hover:border-[var(--accent)] transition-all duration-300`}>
+                                <div className={`w-20 h-20 mx-auto bg-[var(--surface-1)] rounded-[var(--radius-panel)] border border-[var(--line)] flex items-center justify-center ${item.color} shadow-lg mb-6 group-hover:scale-110 group-hover:border-[var(--accent)] transition-all duration-300`}>
                                     <item.icon className="w-10 h-10" />
                                 </div>
-                                <h3 className="font-bold text-xl text-[var(--text-primary)] mb-2">{item.title}</h3>
-                                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{item.desc}</p>
+                                <h3 className="font-bold text-xl text-white mb-2">{item.title}</h3>
+                                <p className="text-sm text-white/55 leading-relaxed">{item.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -213,10 +213,10 @@ export default function RatingSystemPage() {
                     viewport={{ once: true }}
                     className="mt-16 flex justify-center"
                 >
-                    <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-full px-8 py-3 flex items-center gap-3 shadow-lg">
+                    <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-full px-8 py-3 flex items-center gap-3 shadow-lg">
                         <AlertTriangle className="w-5 h-5 text-[var(--accent)]" />
-                        <p className="text-sm font-medium text-[var(--text-secondary)]">
-                            <span className="text-[var(--text-primary)] font-bold">Note:</span> Reviews reflect the subjective experience of the reviewer.
+                        <p className="text-sm font-medium text-white/55">
+                            <span className="text-white font-bold">Note:</span> Reviews reflect the subjective experience of the reviewer.
                         </p>
                     </div>
                 </motion.div>

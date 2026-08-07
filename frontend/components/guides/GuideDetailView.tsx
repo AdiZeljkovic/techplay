@@ -118,7 +118,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                 <aside className="hidden lg:flex flex-col gap-6 sticky top-[140px] shrink-0 h-[max-content]">
                     <Link
                         href="/guides"
-                        className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-[#A1A1AA] hover:text-[var(--accent)] hover:bg-white/5 transition-colors"
+                        className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/45 hover:text-[var(--accent)] hover:bg-white/5 transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
@@ -142,7 +142,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                         <div className="flex-1 min-w-0 flex flex-col">
 
                             {/* Hero Banner */}
-                            <div className="relative w-full rounded-[24px] flex flex-col overflow-hidden bg-[#0B0E14] border border-[#161B22] h-[580px]">
+                            <div className="relative w-full rounded-[24px] flex flex-col overflow-hidden bg-[var(--surface-1)] border border-white/[0.07] h-[580px]">
                                 <div className="relative w-full flex-1 flex flex-col justify-end min-h-0">
                                     <div className="absolute inset-0">
                                         {guide.featured_image_url ? (
@@ -156,12 +156,12 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                                             />
                                         ) : (
-                                            <div className="w-full h-full bg-gradient-to-br from-[#0d2444] to-[#05070A]" />
+                                            <div className="w-full h-full bg-gradient-to-br from-[#0d2444] to-[var(--surface-0)]" />
                                         )}
                                         {/* Left fade — shows image on right */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-[#05070A] via-[#05070A]/95 to-transparent w-[85%]" />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/95 to-transparent w-[85%]" />
                                         {/* Bottom fade */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/60 to-transparent" />
                                     </div>
 
                                     {/* Left content panel */}
@@ -186,7 +186,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
 
                                         {/* Excerpt */}
                                         {guide.excerpt && (
-                                            <p className="text-[15px] md:text-[18px] text-[#A1A1AA] leading-relaxed mb-8 max-w-xl">
+                                            <p className="text-[15px] md:text-[18px] text-white/45 leading-relaxed mb-8 max-w-xl">
                                                 {decodeHtml(guide.excerpt)}
                                             </p>
                                         )}
@@ -206,13 +206,13 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                                         className="object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full bg-[#1A1F26] flex items-center justify-center text-[var(--accent)] font-bold text-lg">
+                                                    <div className="w-full h-full bg-[var(--surface-2)] flex items-center justify-center text-[var(--accent)] font-bold text-lg">
                                                         {(guide.author?.display_name || guide.author?.username || "T").charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
                                             </Link>
                                             <div className="flex flex-col">
-                                                <span className="text-[#E4E4E5] font-medium text-[14px]">
+                                                <span className="text-white/85 font-medium text-[14px]">
                                                     By{" "}
                                                     <Link
                                                         href={`/author/${guide.author?.author_slug || guide.author?.username || 'me'}`}
@@ -221,9 +221,9 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                                         {decodeHtml(guide.author?.display_name || guide.author?.username || "TechPlay Editor")}
                                                     </Link>
                                                 </span>
-                                                <div className="flex items-center gap-2 text-[#71717A] text-[11px] font-bold uppercase tracking-widest mt-1">
+                                                <div className="flex items-center gap-2 text-white/35 text-[11px] font-bold uppercase tracking-widest mt-1">
                                                     <span>{publishedDate}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-[#3F3F46]" />
+                                                    <span className="w-1 h-1 rounded-full bg-white/12" />
                                                     <span>{readingTime.toUpperCase()}</span>
                                                 </div>
                                             </div>
@@ -234,14 +234,14 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                 {/* Info bar beneath hero */}
                                 <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-8 md:px-12 py-4 gap-4">
                                     <div className="flex items-center flex-wrap gap-3">
-                                        <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest mr-2">HELPFUL:</span>
+                                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">HELPFUL:</span>
                                         <span className="bg-transparent border border-white/10 px-4 py-1.5 rounded-full text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-2">
                                             <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
                                             {guide.helpful_count} FOUND HELPFUL
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest">SHARE:</span>
+                                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest">SHARE:</span>
                                         <SocialShare
                                             url={`/guides/${guide.slug}`}
                                             title={decodeHtml(guide.title)}
@@ -258,7 +258,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
 
                                     {/* Intro quote */}
                                     {guide.excerpt && (
-                                        <div className="bg-[#0B0E14] border border-[#161B22] border-l-[4px] border-l-[var(--accent)] p-6 md:p-8 rounded-r-[16px] rounded-l-[4px] mb-10 shadow-lg">
+                                        <div className="bg-[var(--surface-1)] border border-white/[0.07] border-l-[4px] border-l-[var(--accent)] p-6 md:p-8 rounded-r-[16px] rounded-l-[4px] mb-10 shadow-lg">
                                             <p className="text-[22px] md:text-[26px] font-display italic font-medium text-white leading-snug">
                                                 &ldquo;{decodeHtml(guide.excerpt)}&rdquo;
                                             </p>
@@ -318,24 +318,24 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
         </article>
 
         <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
-            <div className="bg-[#0B0E14] border border-[#161B22] rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-8 max-w-sm w-full shadow-2xl text-center">
                 <div className="w-14 h-14 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mx-auto mb-4">
                     <ThumbsUp className="w-6 h-6 text-[var(--accent)]" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Login to vote</h3>
-                <p className="text-[#A1A1AA] text-sm mb-6">
+                <p className="text-white/45 text-sm mb-6">
                     Create a free account to rate guides and help the community find the best content.
                 </p>
                 <div className="flex gap-3">
                     <button
                         onClick={() => setShowLoginPrompt(false)}
-                        className="flex-1 py-2.5 px-4 rounded-lg border border-[#161B22] text-[#A1A1AA] text-sm font-medium hover:bg-white/5 transition-colors"
+                        className="flex-1 py-2.5 px-4 rounded-[var(--radius-card)] border border-white/[0.07] text-white/45 text-sm font-medium hover:bg-white/5 transition-colors"
                     >
                         Maybe later
                     </button>
                     <Link
                         href="/login"
-                        className="flex-1 py-2.5 px-4 rounded-lg bg-[var(--accent)] text-white text-sm font-semibold hover:bg-[var(--accent-hover)] transition-colors text-center"
+                        className="flex-1 py-2.5 px-4 rounded-[var(--radius-card)] bg-[var(--accent)] text-white text-sm font-semibold hover:bg-[var(--accent-hover)] transition-colors text-center"
                         onClick={() => setShowLoginPrompt(false)}
                     >
                         Login

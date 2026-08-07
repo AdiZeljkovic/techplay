@@ -23,37 +23,37 @@ export default function CookiePolicyPage() {
                     {/* Sidebar / Info Card */}
                     <div className="md:w-1/3 flex-shrink-0">
                         <div className="sticky top-24 space-y-6">
-                            <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+                            <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 shadow-lg">
                                 <div className="flex items-center gap-3 mb-4 text-[var(--accent)]">
                                     <Calendar className="w-5 h-5" />
                                     <span className="font-bold text-sm uppercase tracking-wide">Last Updated</span>
                                 </div>
-                                <p className="text-2xl font-bold text-[var(--text-primary)]">March 24, 2026</p>
+                                <p className="text-2xl font-bold text-white">March 24, 2026</p>
                             </div>
 
-                            <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-2xl p-6">
-                                <h3 className="font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+                            <div className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6">
+                                <h3 className="font-bold text-white mb-4 flex items-center gap-2">
                                     <Settings className="w-5 h-5 text-orange-400" /> Cookie Categories
                                 </h3>
-                                <ul className="space-y-3 text-sm text-[var(--text-secondary)]">
+                                <ul className="space-y-3 text-sm text-white/55">
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] mt-1.5 flex-shrink-0" />
                                         Strictly Necessary
                                     </li>
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent/60 mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]/60 mt-1.5 flex-shrink-0" />
                                         Analytics (consent required)
                                     </li>
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent/40 mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]/40 mt-1.5 flex-shrink-0" />
                                         Advertising (consent required)
                                     </li>
                                     <li className="flex gap-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-tp-accent/20 mt-1.5 flex-shrink-0" />
+                                        <div className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]/20 mt-1.5 flex-shrink-0" />
                                         Marketing (consent required)
                                     </li>
                                 </ul>
-                                <p className="text-xs text-[var(--text-secondary)] mt-4 leading-relaxed">
+                                <p className="text-xs text-white/55 mt-4 leading-relaxed">
                                     You can change your preferences at any time via the Cookie Settings link in the site footer.
                                 </p>
                             </div>
@@ -62,11 +62,11 @@ export default function CookiePolicyPage() {
 
                     {/* Main Content */}
                     <div className="md:w-2/3">
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 md:p-12 relative overflow-hidden">
+                        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 md:p-12 relative overflow-hidden">
                             {/* Decor */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl -z-0 pointer-events-none" />
 
-                            <div className="prose prose-invert prose-lg max-w-none relative z-10 prose-headings:text-[var(--text-primary)] prose-p:text-[var(--text-secondary)] prose-li:text-[var(--text-secondary)] prose-strong:text-[var(--text-primary)] prose-a:text-[var(--accent)] hover:prose-a:text-[var(--accent-light)]">
+                            <div className="prose prose-invert prose-lg max-w-none relative z-10 prose-headings:text-white prose-p:text-white/55 prose-li:text-white/55 prose-strong:text-white prose-a:text-[var(--accent)] hover:prose-a:text-[var(--accent-soft)]">
 
                                 <h2>1. What Are Cookies</h2>
                                 <p>

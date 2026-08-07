@@ -16,18 +16,18 @@ export default function RoadmapTimeline() {
                 viewport={{ once: true }}
                 className="text-center mb-16"
             >
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-full mb-4">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--surface-2)] border border-[var(--line)] rounded-full mb-4">
                     <Calendar className="w-4 h-4 text-[var(--accent)]" />
-                    <span className="text-sm font-semibold text-[var(--text-secondary)]">2026 Journey</span>
+                    <span className="text-sm font-semibold text-white/55">2026 Journey</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-[var(--text-primary)]">
+                <h2 className="text-3xl md:text-4xl font-bold text-white">
                     Our Quarterly Roadmap
                 </h2>
             </motion.div>
 
             <div className="relative">
                 {/* Vertical connecting line */}
-                <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-[var(--border)] transform md:-translate-x-1/2" />
+                <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-[var(--line)] transform md:-translate-x-1/2" />
 
                 {/* Progress line */}
                 <motion.div
@@ -80,7 +80,7 @@ export default function RoadmapTimeline() {
                                             border-4 transition-all duration-300
                                             ${isCurrent ? 'bg-[var(--accent)] border-[var(--accent)] shadow-lg shadow-[var(--accent)]/50' : ''}
                                             ${isCompleted ? 'bg-green-500 border-green-500' : ''}
-                                            ${isPending ? 'bg-[var(--bg-card)] border-[var(--border)]' : ''}
+                                            ${isPending ? 'bg-[var(--surface-1)] border-[var(--line)]' : ''}
                                         `}
                                     >
                                         {isCompleted && <CheckCircle2 className="w-7 h-7 text-white" />}
@@ -92,7 +92,7 @@ export default function RoadmapTimeline() {
                                                 <Clock className="w-7 h-7 text-white" />
                                             </motion.div>
                                         )}
-                                        {isPending && <Circle className="w-7 h-7 text-[var(--text-muted)]" />}
+                                        {isPending && <Circle className="w-7 h-7 text-white/35" />}
                                     </div>
                                 </div>
 
@@ -103,23 +103,23 @@ export default function RoadmapTimeline() {
                                 >
                                     <div className="relative group">
                                         {/* Glow on hover */}
-                                        <div className={`absolute inset-0 bg-gradient-to-br ${isCurrent ? 'from-[var(--accent)]/20' : 'from-[var(--accent)]/10'} to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                                        <div className={`absolute inset-0 bg-gradient-to-br ${isCurrent ? 'from-[var(--accent)]/20' : 'from-[var(--accent)]/10'} to-transparent rounded-[var(--radius-panel)] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-                                        <div className="relative bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 hover:border-[var(--accent)]/30 transition-all duration-300">
+                                        <div className="relative bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 hover:border-[var(--accent)]/30 transition-all duration-300">
                                             {/* Status badge */}
-                                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3 ${isCurrent ? 'bg-[var(--accent)]/20 border border-[var(--accent)]' : isCompleted ? 'bg-green-500/20 border border-green-500' : 'bg-[var(--bg-elevated)] border border-[var(--border)]'}`}>
-                                                <span className={`text-xs font-bold ${isCurrent ? 'text-[var(--accent)]' : isCompleted ? 'text-green-500' : 'text-[var(--text-muted)]'}`}>
+                                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mb-3 ${isCurrent ? 'bg-[var(--accent)]/20 border border-[var(--accent)]' : isCompleted ? 'bg-green-500/20 border border-green-500' : 'bg-[var(--surface-2)] border border-[var(--line)]'}`}>
+                                                <span className={`text-xs font-bold ${isCurrent ? 'text-[var(--accent)]' : isCompleted ? 'text-green-500' : 'text-white/35'}`}>
                                                     {isCurrent ? 'IN PROGRESS' : isCompleted ? 'COMPLETED' : 'PLANNED'}
                                                 </span>
                                             </div>
 
-                                            <h3 className={`text-2xl font-bold mb-2 ${isCurrent ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
+                                            <h3 className={`text-2xl font-bold mb-2 ${isCurrent ? 'text-[var(--accent)]' : 'text-white'}`}>
                                                 {quarter.label}
                                             </h3>
-                                            <p className="text-sm text-[var(--text-muted)] mb-3">
+                                            <p className="text-sm text-white/35 mb-3">
                                                 {quarter.months}
                                             </p>
-                                            <p className="text-lg font-semibold text-[var(--text-secondary)]">
+                                            <p className="text-lg font-semibold text-white/55">
                                                 {quarter.description}
                                             </p>
 
@@ -127,10 +127,10 @@ export default function RoadmapTimeline() {
                                             {isCurrent && (
                                                 <div className="mt-4">
                                                     <div className="flex items-center justify-between mb-2">
-                                                        <span className="text-xs text-[var(--text-muted)]">Progress</span>
+                                                        <span className="text-xs text-white/35">Progress</span>
                                                         <span className="text-xs font-bold text-[var(--accent)]">25%</span>
                                                     </div>
-                                                    <div className="h-2 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                                                    <div className="h-2 bg-[var(--surface-2)] rounded-full overflow-hidden">
                                                         <motion.div
                                                             initial={{ width: 0 }}
                                                             whileInView={{ width: "25%" }}

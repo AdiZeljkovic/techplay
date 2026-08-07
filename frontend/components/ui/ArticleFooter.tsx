@@ -52,37 +52,37 @@ export default function ArticleFooter({
 
     return (
         <div className="mt-12">
-            <div className="bg-[#0B0E14] border border-[#161B22] rounded-[20px] overflow-hidden">
+            <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[20px] overflow-hidden">
                 {/* Header */}
                 <div className="px-6 pt-7 pb-6 text-center">
                     <div className="flex items-center gap-4">
-                        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-tp-accent/40" />
-                        <span className="text-tp-accent font-bold tracking-[0.22em] text-[11px] uppercase shrink-0">Stay Connected</span>
-                        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-tp-accent/40" />
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[var(--accent)]/40" />
+                        <span className="text-[var(--accent)] font-bold tracking-[0.22em] text-[11px] uppercase shrink-0">Stay Connected</span>
+                        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[var(--accent)]/40" />
                     </div>
                 </div>
 
                 {/* Tags + Share row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-3 border-t border-[#161B22]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-3 border-t border-white/[0.07]">
                     {filteredTags.length > 0 && (
                         <div className="flex flex-wrap gap-2 items-center">
-                            <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest shrink-0">Tags:</span>
+                            <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest shrink-0">Tags:</span>
                             {filteredTags.map((tag, i) => (
-                                <span key={i} className="px-3 py-1 bg-[#05070A] border border-[#161B22] hover:border-tp-accent/40 hover:text-tp-accent text-[#A1A1AA] text-[12px] rounded-lg transition-all cursor-default">
+                                <span key={i} className="px-3 py-1 bg-[var(--surface-0)] border border-white/[0.07] hover:border-[var(--accent)]/40 hover:text-[var(--accent)] text-white/45 text-[12px] rounded-[var(--radius-card)] transition-all cursor-default">
                                     {tag}
                                 </span>
                             ))}
                         </div>
                     )}
                     <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[#71717A] text-[11px] font-bold uppercase tracking-widest">Share:</span>
+                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest">Share:</span>
                         <SocialShare url={shareUrl} title={shareTitle} description={shareDescription} vertical={false} />
                     </div>
                 </div>
 
                 {/* Author + Follow row */}
                 {author && (
-                    <div className="flex items-start sm:items-center justify-between gap-4 px-5 py-5 border-t border-[#161B22]">
+                    <div className="flex items-start sm:items-center justify-between gap-4 px-5 py-5 border-t border-white/[0.07]">
                         <div className="flex items-center gap-4 min-w-0 flex-1">
                             <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="shrink-0">
                                 {author.avatar_url ? (
@@ -91,24 +91,24 @@ export default function ArticleFooter({
                                         alt={author.display_name || author.username || ''}
                                         width={48}
                                         height={48}
-                                        className="w-12 h-12 rounded-full object-cover border-2 border-tp-accent/30 hover:border-tp-accent transition-colors"
+                                        className="w-12 h-12 rounded-full object-cover border-2 border-[var(--accent)]/30 hover:border-[var(--accent)] transition-colors"
                                         unoptimized={!!author.avatar_url && (author.avatar_url.includes('discord') || author.avatar_url.includes('gravatar'))}
                                     />
                                 ) : (
-                                    <div className="w-12 h-12 rounded-full bg-tp-accent/10 border-2 border-tp-accent/20 flex items-center justify-center text-tp-accent font-bold text-[18px]">
+                                    <div className="w-12 h-12 rounded-full bg-[var(--accent)]/10 border-2 border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] font-bold text-[18px]">
                                         {(author.display_name || author.username || 'T').charAt(0).toUpperCase()}
                                     </div>
                                 )}
                             </Link>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#71717A] mb-0.5">The Author</span>
-                                <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="text-white font-bold text-[15px] hover:text-tp-accent transition-colors leading-tight">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 mb-0.5">The Author</span>
+                                <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="text-white font-bold text-[15px] hover:text-[var(--accent)] transition-colors leading-tight">
                                     {author.display_name || author.username}
                                 </Link>
                                 {author.bio && (
-                                    <p className="text-[#6B7280] text-[13px] leading-relaxed mt-1 line-clamp-2">{author.bio}</p>
+                                    <p className="text-white/35 text-[13px] leading-relaxed mt-1 line-clamp-2">{author.bio}</p>
                                 )}
-                                <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="mt-2 text-[11px] font-bold uppercase tracking-widest text-tp-accent hover:text-tp-accent-hover transition-colors flex items-center gap-1 group w-max">
+                                <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="mt-2 text-[11px] font-bold uppercase tracking-widest text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors flex items-center gap-1 group w-max">
                                     View Author Page <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>
                                 </Link>
                             </div>
@@ -116,11 +116,11 @@ export default function ArticleFooter({
 
                         {socialLinks.length > 0 && (
                             <div className="hidden sm:flex flex-col gap-2 items-end shrink-0">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#71717A]">Follow Us</span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Follow Us</span>
                                 <div className="flex items-center gap-1.5">
                                     {socialLinks.map((s, i) => (
                                         <Link key={i} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
-                                            className="w-8 h-8 rounded-lg bg-white/5 border border-white/[0.08] flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-tp-accent/10 hover:border-tp-accent/30 transition-all duration-200">
+                                            className="w-8 h-8 rounded-[var(--radius-card)] bg-white/5 border border-white/[0.08] flex items-center justify-center text-white/35 hover:text-white hover:bg-[var(--accent)]/10 hover:border-[var(--accent)]/30 transition-all duration-200">
                                             <s.Icon className="w-[14px] h-[14px]" />
                                         </Link>
                                     ))}
@@ -131,7 +131,7 @@ export default function ArticleFooter({
                 )}
 
                 {/* Comments */}
-                <div className="border-t border-[#161B22] px-5 py-8">
+                <div className="border-t border-white/[0.07] px-5 py-8">
                     <CommentsSection
                         commentableId={commentableId}
                         commentableType={commentableType}

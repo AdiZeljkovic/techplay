@@ -20,20 +20,20 @@ export default function ListingPagination({ page, lastPage, onPrev, onNext, prev
             <button
                 onClick={onPrev}
                 disabled={prevDisabled}
-                className="flex items-center gap-1.5 h-[42px] px-5 rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-700 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-zinc-200 dark:disabled:hover:border-[#161B22] disabled:hover:text-zinc-700 dark:disabled:hover:text-[#A1A1AA]"
+                className="flex items-center gap-1.5 h-[42px] px-5 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/[0.07] text-white/45 hover:border-[var(--accent)]/40 hover:text-[var(--accent)] text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-white/[0.07] disabled:hover:text-white/45"
             >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
             </button>
 
-            <div className="h-[42px] px-5 flex items-center bg-zinc-50 dark:bg-[#05070A] border border-zinc-200 dark:border-[#161B22] rounded-lg text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-[#71717A]">
-                Page&nbsp;<span className="text-tp-accent">{page}</span>{lastPage ? <>&nbsp;of&nbsp;{lastPage}</> : null}
+            <div className="h-[42px] px-5 flex items-center bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] text-[11px] font-bold uppercase tracking-wider text-white/35">
+                Page&nbsp;<span className="text-[var(--accent)]">{page}</span>{lastPage ? <>&nbsp;of&nbsp;{lastPage}</> : null}
             </div>
 
             <button
                 onClick={onNext}
                 disabled={nextDisabled}
-                className="flex items-center gap-1.5 h-[42px] px-5 rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-700 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-zinc-200 dark:disabled:hover:border-[#161B22] disabled:hover:text-zinc-700 dark:disabled:hover:text-[#A1A1AA]"
+                className="flex items-center gap-1.5 h-[42px] px-5 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/[0.07] text-white/45 hover:border-[var(--accent)]/40 hover:text-[var(--accent)] text-[11px] font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-white/[0.07] disabled:hover:text-white/45"
             >
                 Next
                 <ChevronRight className="w-4 h-4" />

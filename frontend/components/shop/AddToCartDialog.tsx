@@ -72,21 +72,21 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                 role="dialog"
                 aria-modal="true"
                 aria-label="Added to cart"
-                className={`relative w-full max-w-md bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] rounded-[24px] shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
+                className={`relative w-full max-w-md bg-white dark:bg-[var(--surface-1)] border border-white/70 dark:border-white/[0.07] rounded-[24px] shadow-2xl dark:shadow-[0_20px_48px_rgba(0,0,0,0.6)] overflow-hidden transform transition-all duration-300 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-4'}`}
             >
-                <div className="h-[3px] bg-tp-accent w-full" />
+                <div className="h-[3px] bg-[var(--accent)] w-full" />
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-[#161B22]">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.07]">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-[var(--radius-card)] bg-green-500/10 border border-green-500/20 flex items-center justify-center">
                             <ShoppingCart className="w-4 h-4 text-green-500" />
                         </div>
-                        <span className="font-display text-[15px] font-bold text-zinc-900 dark:text-white uppercase tracking-[0.05em]">Added to Cart</span>
+                        <span className="font-display text-[15px] font-bold text-white uppercase tracking-[0.05em]">Added to Cart</span>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-500 dark:text-[#A1A1AA] hover:text-tp-accent hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                        className="w-9 h-9 rounded-[var(--radius-card)] flex items-center justify-center text-white/45 hover:text-[var(--accent)] hover:bg-white/5 transition-colors"
                         aria-label="Close"
                     >
                         <X className="w-5 h-5" />
@@ -97,7 +97,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                 <div className="p-6">
                     {product && (
                         <div className="flex gap-4 mb-6">
-                            <div className="relative w-20 h-20 bg-zinc-100 dark:bg-[#10141B] rounded-xl overflow-hidden border border-zinc-200 dark:border-[#161B22] flex-shrink-0">
+                            <div className="relative w-20 h-20 bg-[var(--surface-2)] rounded-[var(--radius-card)] overflow-hidden border border-white/[0.07] flex-shrink-0">
                                 {imageUrl ? (
                                     <Image
                                         src={imageUrl}
@@ -108,38 +108,38 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
-                                        <ShoppingBag className="w-8 h-8 text-zinc-300 dark:text-white/10" />
+                                        <ShoppingBag className="w-8 h-8 text-white/10" />
                                     </div>
                                 )}
                             </div>
                             <div className="flex-1">
-                                <h3 className="text-[14px] font-bold text-zinc-900 dark:text-white line-clamp-2 leading-snug mb-1.5">
+                                <h3 className="text-[14px] font-bold text-white line-clamp-2 leading-snug mb-1.5">
                                     {product.name}
                                 </h3>
-                                <div className="font-display text-[18px] font-bold text-tp-accent leading-none">
+                                <div className="font-display text-[18px] font-bold text-[var(--accent)] leading-none">
                                     {product.price.toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
-                                    <span className="text-[11px] font-bold text-zinc-500 dark:text-[#71717A] ml-1">KM</span>
+                                    <span className="text-[11px] font-bold text-white/35 ml-1">KM</span>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {/* Quantity Selector */}
-                    <div className="flex items-center justify-between mb-5 p-3.5 bg-zinc-50 dark:bg-[#070A0F] rounded-xl border border-zinc-200 dark:border-[#161B22]">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 dark:text-[#71717A]">Quantity</span>
+                    <div className="flex items-center justify-between mb-5 p-3.5 bg-[#070A0F] rounded-[var(--radius-card)] border border-white/[0.07]">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-white/35">Quantity</span>
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setLineQuantity(quantity - 1)}
                                 aria-label="Decrease quantity"
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/[0.07] text-white/45 hover:border-[var(--accent)]/40 hover:text-[var(--accent)] transition-colors"
                             >
                                 <Minus className="w-3.5 h-3.5" aria-hidden="true" />
                             </button>
-                            <span className="w-8 text-center font-display font-bold text-[15px] text-zinc-900 dark:text-white">{quantity}</span>
+                            <span className="w-8 text-center font-display font-bold text-[15px] text-white">{quantity}</span>
                             <button
                                 onClick={() => setLineQuantity(quantity + 1)}
                                 aria-label="Increase quantity"
-                                className="w-8 h-8 flex items-center justify-center rounded-lg bg-white dark:bg-[#0B0E14] border border-zinc-200 dark:border-[#161B22] text-zinc-600 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent transition-colors"
+                                className="w-8 h-8 flex items-center justify-center rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/[0.07] text-white/45 hover:border-[var(--accent)]/40 hover:text-[var(--accent)] transition-colors"
                             >
                                 <Plus className="w-3.5 h-3.5" aria-hidden="true" />
                             </button>
@@ -149,7 +149,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                     <div className="flex flex-col gap-3">
                         <Link
                             href="/shop/checkout"
-                            className="w-full h-[48px] bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors flex items-center justify-center gap-2 uppercase tracking-[0.08em] text-[12px] shadow-lg shadow-tp-accent/20"
+                            className="w-full h-[48px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors flex items-center justify-center gap-2 uppercase tracking-[0.08em] text-[12px] shadow-lg shadow-[var(--accent)]/20"
                             onClick={onClose}
                         >
                             Checkout Now <ArrowRight className="w-4 h-4" />
@@ -157,7 +157,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
 
                         <button
                             onClick={onClose}
-                            className="w-full h-[48px] border border-zinc-200 dark:border-[#161B22] text-zinc-700 dark:text-[#A1A1AA] hover:border-tp-accent/40 hover:text-tp-accent font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[12px]"
+                            className="w-full h-[48px] border border-white/[0.07] text-white/45 hover:border-[var(--accent)]/40 hover:text-[var(--accent)] font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[12px]"
                         >
                             Continue Shopping
                         </button>

@@ -37,23 +37,23 @@ export default function SteamAchievements({ username }: { username: string }) {
   )
 
   if (!data || data.total === 0) return (
-    <div className="flex flex-col items-center justify-center py-16 text-zinc-500 gap-3">
+    <div className="flex flex-col items-center justify-center py-16 text-white/35 gap-3">
       <Gamepad2 size={32} className="opacity-40" />
       <p className="text-sm">No Steam achievements imported yet.</p>
-      <p className="text-xs text-zinc-600">Connect your Steam account to import achievements.</p>
+      <p className="text-xs text-white/30">Connect your Steam account to import achievements.</p>
     </div>
   )
 
   return (
     <div className="space-y-5">
       {/* Summary */}
-      <div className="flex items-center gap-6 bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-4">
+      <div className="flex items-center gap-6 bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-4">
         <div className="text-center">
           <p className="text-2xl font-bold text-[var(--accent)]">{data.achieved}</p>
-          <p className="text-xs text-zinc-500">Unlocked</p>
+          <p className="text-xs text-white/35">Unlocked</p>
         </div>
         <div className="flex-1">
-          <div className="flex justify-between text-xs text-zinc-400 mb-1">
+          <div className="flex justify-between text-xs text-white/45 mb-1">
             <span>{data.completion_pct}% complete</span>
             <span>{data.achieved} / {data.total}</span>
           </div>
@@ -61,7 +61,7 @@ export default function SteamAchievements({ username }: { username: string }) {
             <div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width: `${data.completion_pct}%` }} />
           </div>
         </div>
-        <div className="flex items-center gap-1.5 text-zinc-400">
+        <div className="flex items-center gap-1.5 text-white/45">
           <Trophy size={16} className="text-yellow-400" />
           <span className="text-sm">Steam</span>
         </div>
@@ -70,7 +70,7 @@ export default function SteamAchievements({ username }: { username: string }) {
       {/* Achievement grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {data.items.map(ach => (
-          <div key={ach.id} className="flex items-center gap-3 bg-[var(--bg-card)] border border-[var(--border)] rounded-lg p-3">
+          <div key={ach.id} className="flex items-center gap-3 bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-3">
             {ach.icon_url ? (
               <Image src={ach.icon_url} alt={ach.display_name ?? ''} width={40} height={40}
                 className="w-10 h-10 rounded flex-shrink-0" />
@@ -82,14 +82,14 @@ export default function SteamAchievements({ username }: { username: string }) {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-white text-sm truncate">{ach.display_name ?? 'Unknown'}</p>
               {ach.description && (
-                <p className="text-xs text-zinc-500 truncate">{ach.description}</p>
+                <p className="text-xs text-white/35 truncate">{ach.description}</p>
               )}
               {ach.game && (
-                <p className="text-xs text-zinc-600 truncate">{ach.game.name}</p>
+                <p className="text-xs text-white/30 truncate">{ach.game.name}</p>
               )}
             </div>
             {ach.achieved_at && (
-              <span className="text-xs text-zinc-500 flex-shrink-0">
+              <span className="text-xs text-white/35 flex-shrink-0">
                 {format(new Date(ach.achieved_at), 'MMM d')}
               </span>
             )}

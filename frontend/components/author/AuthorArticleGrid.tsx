@@ -66,15 +66,15 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
                         <button
                             key={id}
                             onClick={() => handleTabChange(id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all border ${
+                            className={`flex items-center gap-2 px-4 py-2 rounded-[var(--radius-card)] text-[11px] font-bold uppercase tracking-wider transition-all border ${
                                 isActive
                                     ? "bg-[var(--accent)] text-white border-[var(--accent)]"
-                                    : "text-[#A1A1AA] border-[#161B22] hover:border-[var(--accent)]/40 hover:text-white bg-[#0B0E14]"
+                                    : "text-white/45 border-white/[0.07] hover:border-[var(--accent)]/40 hover:text-white bg-[var(--surface-1)]"
                             }`}
                         >
                             <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-[var(--accent)]"}`} />
                             {label}
-                            <span className={`text-[10px] ${isActive ? "text-white/70" : "text-[#71717A]"}`}>
+                            <span className={`text-[10px] ${isActive ? "text-white/70" : "text-white/35"}`}>
                                 ({count})
                             </span>
                         </button>
@@ -86,7 +86,7 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
             {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="h-80 bg-[#0B0E14] rounded-xl animate-pulse border border-[#161B22]" />
+                        <div key={i} className="h-80 bg-[var(--surface-1)] rounded-[var(--radius-card)] animate-pulse border border-white/[0.07]" />
                     ))}
                 </div>
             ) : items.length === 0 ? (

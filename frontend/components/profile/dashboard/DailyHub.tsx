@@ -69,7 +69,7 @@ function NowPlayingPicker() {
         <div>
             <button
                 onClick={() => setOpen((v) => !v)}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-left"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-left"
             >
                 <span className="flex items-center gap-2 text-[12px] font-bold text-white/70">
                     <Radio className="w-3.5 h-3.5 text-emerald-400" />
@@ -86,16 +86,16 @@ function NowPlayingPicker() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="What are you playing?"
-                        className="w-full bg-white/[0.03] border border-[var(--border)] rounded-lg px-3 py-2 text-[12.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                        className="w-full bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] px-3 py-2 text-[12.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
                     />
                     {(data?.results ?? []).map((g) => (
                         <button key={g.id} onClick={() => setPlaying(g.name)} disabled={busy}
-                            className="w-full text-left px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.05] transition-colors truncate">
+                            className="w-full text-left px-3 py-1.5 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/70 hover:text-white hover:bg-white/[0.05] transition-colors truncate">
                             {busy ? <Loader2 className="w-3 h-3 animate-spin inline mr-1" /> : null}{g.name}
                         </button>
                     ))}
                     <button onClick={clearPlaying} disabled={busy}
-                        className="w-full text-left px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider text-white/30 hover:text-red-400 transition-colors">
+                        className="w-full text-left px-3 py-1.5 rounded-[var(--radius-card)] text-[11px] font-bold uppercase tracking-wider text-white/30 hover:text-red-400 transition-colors">
                         Clear presence
                     </button>
                 </div>
@@ -110,14 +110,14 @@ function NowPlayingPicker() {
  */
 export default function DailyHub({ bounty, username, onOpenTab }: Props) {
     return (
-        <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border)] overflow-hidden">
+        <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] overflow-hidden">
             {/* Wallet row */}
             <button
                 onClick={() => onOpenTab("rewards")}
-                className="group w-full flex items-center justify-between px-5 py-4 border-b border-[var(--border)] hover:bg-white/[0.02] transition-colors"
+                className="group w-full flex items-center justify-between px-5 py-4 border-b border-[var(--line)] hover:bg-white/[0.02] transition-colors"
             >
                 <span className="flex items-center gap-2.5">
-                    <span className="w-8 h-8 rounded-lg bg-amber-400/10 border border-amber-400/25 flex items-center justify-center">
+                    <span className="w-8 h-8 rounded-[var(--radius-card)] bg-amber-400/10 border border-amber-400/25 flex items-center justify-center">
                         <Coins className="w-4 h-4 text-amber-400" />
                     </span>
                     <span className="text-left">
@@ -144,11 +144,11 @@ export default function DailyHub({ bounty, username, onOpenTab }: Props) {
                 {/* Discovery shortcuts — the profile's hidden gems */}
                 <div className="grid grid-cols-2 gap-2 pt-1">
                     <Link href={username ? `/wrapped/${username}` : "/wrapped"}
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
                         <Gem className="w-3.5 h-3.5 text-[var(--accent)]" /> Wrapped
                     </Link>
                     <Link href="/backlog-advisor"
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[var(--border)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
                         <Rocket className="w-3.5 h-3.5 text-[var(--accent)]" /> Backlog AI
                     </Link>
                 </div>

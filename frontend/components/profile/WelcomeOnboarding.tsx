@@ -121,7 +121,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm"
             onClick={(e) => { if (e.target === e.currentTarget && !forced) dismiss(); }}>
-            <div className="relative w-full max-w-2xl rounded-3xl bg-[#0B0E14] border border-[var(--border)] shadow-2xl overflow-hidden">
+            <div className="relative w-full max-w-2xl rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] shadow-2xl overflow-hidden">
                 <span className="absolute top-0 left-8 right-8 h-[2px] bg-gradient-to-r from-[var(--accent)]/80 via-[var(--accent)]/20 to-transparent" />
 
                 <button onClick={dismiss} aria-label="Close"
@@ -141,9 +141,9 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Golden path: Steam */}
                             <button onClick={connectSteam} disabled={connecting}
-                                className="group relative text-left rounded-2xl border border-[var(--accent)]/40 bg-[var(--accent)]/[0.06] hover:bg-[var(--accent)]/[0.12] p-6 transition-all overflow-hidden">
+                                className="group relative text-left rounded-[var(--radius-panel)] border border-[var(--accent)]/40 bg-[var(--accent)]/[0.06] hover:bg-[var(--accent)]/[0.12] p-6 transition-all overflow-hidden">
                                 <span className="absolute -top-10 -right-10 w-32 h-32 bg-[var(--accent)]/10 blur-[40px] rounded-full" />
-                                <span className="inline-flex px-2 py-1 rounded-md bg-[var(--accent)] text-white text-[9px] font-black uppercase tracking-widest mb-4">
+                                <span className="inline-flex px-2 py-1 rounded-[var(--radius-inner)] bg-[var(--accent)] text-white text-[9px] font-black uppercase tracking-widest mb-4">
                                     Recommended
                                 </span>
                                 <h3 className="flex items-center gap-2 text-[16px] font-black text-white mb-1.5">
@@ -160,8 +160,8 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
 
                             {/* Xbox path */}
                             <button onClick={() => setMode("xbox")}
-                                className="group text-left rounded-2xl border border-emerald-600/30 bg-emerald-600/[0.04] hover:bg-emerald-600/[0.09] p-6 transition-all">
-                                <span className="inline-flex px-2 py-1 rounded-md bg-[#107C10] text-white text-[9px] font-black uppercase tracking-widest mb-4">
+                                className="group text-left rounded-[var(--radius-panel)] border border-emerald-600/30 bg-emerald-600/[0.04] hover:bg-emerald-600/[0.09] p-6 transition-all">
+                                <span className="inline-flex px-2 py-1 rounded-[var(--radius-inner)] bg-[#107C10] text-white text-[9px] font-black uppercase tracking-widest mb-4">
                                     Xbox
                                 </span>
                                 <h3 className="flex items-center gap-2 text-[16px] font-black text-white mb-1.5">
@@ -178,7 +178,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
 
                             {/* Manual path */}
                             <button onClick={() => { track("wizard_pick_started"); setMode("pick"); }}
-                                className="group text-left rounded-2xl border border-[var(--border)] bg-white/[0.02] hover:bg-white/[0.05] p-6 transition-all md:col-span-2">
+                                className="group text-left rounded-[var(--radius-panel)] border border-[var(--line)] bg-white/[0.02] hover:bg-white/[0.05] p-6 transition-all md:col-span-2">
                                 <h3 className="flex items-center gap-2 text-[15px] font-black text-white mb-1">
                                     <Gamepad2 className="w-4 h-4 text-[var(--accent)]" />
                                     No Steam or Xbox? Pick your games by hand
@@ -207,10 +207,10 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 onChange={(e) => setXboxGamertag(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === "Enter") connectXbox(); }}
                                 placeholder="Your gamertag"
-                                className="flex-1 bg-white/[0.03] border border-[var(--border)] rounded-xl h-12 px-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                                className="flex-1 bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] h-12 px-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-emerald-500/50 transition-colors"
                             />
                             <button onClick={connectXbox} disabled={connecting}
-                                className="flex items-center gap-2 h-12 px-6 rounded-xl bg-[#107C10] hover:bg-[#0e6b0e] text-white text-[12px] font-bold uppercase tracking-wider transition-colors disabled:opacity-60">
+                                className="flex items-center gap-2 h-12 px-6 rounded-[var(--radius-card)] bg-[#107C10] hover:bg-[#0e6b0e] text-white text-[12px] font-bold uppercase tracking-wider transition-colors disabled:opacity-60">
                                 {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
                                 Connect
                             </button>
@@ -239,7 +239,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search 200,000+ games..."
-                                className="w-full bg-white/[0.03] border border-[var(--border)] rounded-xl h-12 pl-11 pr-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50 transition-colors"
+                                className="w-full bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] h-12 pl-11 pr-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50 transition-colors"
                             />
                         </div>
 
@@ -253,12 +253,12 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 const isAdded = added.includes(g.slug);
                                 return (
                                     <button key={g.id} onClick={() => addGame(g)} disabled={isAdded || busySlug === g.slug}
-                                        className={`w-full flex items-center gap-3 p-2 rounded-xl border transition-all text-left ${
+                                        className={`w-full flex items-center gap-3 p-2 rounded-[var(--radius-card)] border transition-all text-left ${
                                             isAdded
                                                 ? "border-emerald-500/30 bg-emerald-500/[0.06]"
                                                 : "border-transparent hover:border-[var(--accent)]/30 hover:bg-white/[0.03]"
                                         }`}>
-                                        <div className="relative w-12 h-16 rounded-lg overflow-hidden bg-white/[0.04] shrink-0">
+                                        <div className="relative w-12 h-16 rounded-[var(--radius-card)] overflow-hidden bg-white/[0.04] shrink-0">
                                             {g.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={g.cover_url} alt="" className="w-full h-full object-cover" />
@@ -289,7 +289,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 ← Back
                             </button>
                             <button onClick={finishPicking} disabled={added.length === 0}
-                                className="flex items-center gap-2 h-[42px] px-6 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[12px] font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                                className="flex items-center gap-2 h-[42px] px-6 rounded-[var(--radius-card)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-[12px] font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                                 {added.length >= PICK_TARGET ? "Done" : `Done (${added.length})`}
                                 <ArrowRight className="w-3.5 h-3.5" />
                             </button>

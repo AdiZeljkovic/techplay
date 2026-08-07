@@ -13,12 +13,12 @@ export default function CartClient() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center py-20 px-8">
-                    <div className="w-20 h-20 bg-[var(--bg-card)] border border-[var(--border)] rounded-full flex items-center justify-center mx-auto mb-6">
-                        <ShoppingBag className="w-10 h-10 text-[var(--text-muted)]" />
+                    <div className="w-20 h-20 bg-[var(--surface-1)] border border-[var(--line)] rounded-full flex items-center justify-center mx-auto mb-6">
+                        <ShoppingBag className="w-10 h-10 text-white/35" />
                     </div>
-                    <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Your cart is empty</h2>
-                    <p className="text-[var(--text-secondary)] mb-8">Looks like you haven't added anything yet.</p>
-                    <Link href="/shop" className="inline-flex items-center gap-2 h-[48px] px-8 bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[13px]">
+                    <h2 className="text-2xl font-bold text-white mb-2">Your cart is empty</h2>
+                    <p className="text-white/55 mb-8">Looks like you haven't added anything yet.</p>
+                    <Link href="/shop" className="inline-flex items-center gap-2 h-[48px] px-8 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[13px]">
                         Start Shopping
                         <ArrowRight className="w-4 h-4" />
                     </Link>
@@ -30,18 +30,18 @@ export default function CartClient() {
     return (
         <div className="min-h-screen">
             {/* Header */}
-            <div className="bg-[var(--bg-secondary)] border-b border-[var(--border)]">
+            <div className="bg-[var(--surface-1)] border-b border-[var(--line)]">
                 <div className="container-page py-6">
                     <Link
                         href="/shop"
-                        className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--accent)] transition-colors mb-4"
+                        className="inline-flex items-center gap-2 text-sm text-white/55 hover:text-[var(--accent)] transition-colors mb-4"
                     >
                         <ArrowLeft className="w-4 h-4" />
                         Continue Shopping
                     </Link>
 
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Shopping Cart</h1>
+                        <h1 className="text-2xl font-bold text-white">Shopping Cart</h1>
                         <button
                             onClick={clearCart}
                             className="text-sm text-[var(--accent)] hover:underline"
@@ -57,9 +57,9 @@ export default function CartClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Cart Items */}
                     <div className="lg:col-span-8">
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden">
+                        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] overflow-hidden">
                             <table className="w-full">
-                                <thead className="bg-[var(--bg-elevated)] text-[var(--text-muted)] text-xs uppercase">
+                                <thead className="bg-[var(--surface-2)] text-white/35 text-xs uppercase">
                                     <tr>
                                         <th className="p-4 text-left">Product</th>
                                         <th className="p-4 text-center hidden sm:table-cell">Price</th>
@@ -68,12 +68,12 @@ export default function CartClient() {
                                         <th className="p-4 w-12"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[var(--border)]">
+                                <tbody className="divide-y divide-[var(--line)]">
                                     {items.map((item) => (
                                         <tr key={item.id}>
                                             <td className="p-4">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-16 h-16 rounded-lg bg-[var(--bg-elevated)] overflow-hidden relative flex-shrink-0">
+                                                    <div className="w-16 h-16 rounded-[var(--radius-card)] bg-[var(--surface-2)] overflow-hidden relative flex-shrink-0">
                                                         {item.image_url ? (
                                                             <Image
                                                                 src={getStorageUrl(item.image_url)}
@@ -83,28 +83,28 @@ export default function CartClient() {
                                                             />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center">
-                                                                <ShoppingBag className="w-6 h-6 text-[var(--text-muted)]" />
+                                                                <ShoppingBag className="w-6 h-6 text-white/35" />
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <span className="font-medium text-[var(--text-primary)]">{item.name}</span>
+                                                    <span className="font-medium text-white">{item.name}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-center text-[var(--text-secondary)] hidden sm:table-cell">
+                                            <td className="p-4 text-center text-white/55 hidden sm:table-cell">
                                                 {item.price.toFixed(2)} KM
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button
                                                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                                        className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)] flex items-center justify-center hover:border-[var(--accent)] transition-colors"
+                                                        className="w-8 h-8 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line)] flex items-center justify-center hover:border-[var(--accent)] transition-colors"
                                                     >
                                                         <Minus className="w-4 h-4" />
                                                     </button>
-                                                    <span className="w-8 text-center font-medium text-[var(--text-primary)]">{item.quantity}</span>
+                                                    <span className="w-8 text-center font-medium text-white">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                        className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border)] flex items-center justify-center hover:border-[var(--accent)] transition-colors"
+                                                        className="w-8 h-8 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line)] flex items-center justify-center hover:border-[var(--accent)] transition-colors"
                                                     >
                                                         <Plus className="w-4 h-4" />
                                                     </button>
@@ -116,7 +116,7 @@ export default function CartClient() {
                                             <td className="p-4">
                                                 <button
                                                     onClick={() => removeFromCart(item.id)}
-                                                    className="text-[var(--text-muted)] hover:text-red-500 transition-colors"
+                                                    className="text-white/35 hover:text-red-500 transition-colors"
                                                 >
                                                     <Trash2 className="w-5 h-5" />
                                                 </button>
@@ -130,26 +130,26 @@ export default function CartClient() {
 
                     {/* Order Summary */}
                     <div className="lg:col-span-4">
-                        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 sticky top-24">
-                            <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Order Summary</h2>
+                        <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-6 sticky top-24">
+                            <h2 className="text-lg font-semibold text-white mb-4">Order Summary</h2>
 
                             <div className="space-y-3 mb-6">
-                                <div className="flex justify-between text-[var(--text-secondary)]">
+                                <div className="flex justify-between text-white/55">
                                     <span>Subtotal</span>
                                     <span>{totalPrice.toFixed(2)} KM</span>
                                 </div>
-                                <div className="flex justify-between text-[var(--text-secondary)]">
+                                <div className="flex justify-between text-white/55">
                                     <span>Shipping</span>
-                                    <span className="text-[var(--text-muted)]">Calculated at checkout</span>
+                                    <span className="text-white/35">Calculated at checkout</span>
                                 </div>
-                                <hr className="border-[var(--border)]" />
-                                <div className="flex justify-between text-lg font-bold text-[var(--text-primary)]">
+                                <hr className="border-[var(--line)]" />
+                                <div className="flex justify-between text-lg font-bold text-white">
                                     <span>Total</span>
                                     <span className="text-[var(--accent)]">{totalPrice.toFixed(2)} KM</span>
                                 </div>
                             </div>
 
-                            <Link href="/checkout" className="flex items-center justify-center gap-2 h-[50px] w-full bg-tp-accent hover:bg-tp-accent-hover text-white font-bold rounded-lg transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-tp-accent/20">
+                            <Link href="/checkout" className="flex items-center justify-center gap-2 h-[50px] w-full bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold rounded-[var(--radius-card)] transition-colors uppercase tracking-[0.08em] text-[13px] shadow-lg shadow-[var(--accent)]/20">
                                 Proceed to Checkout
                                 <ArrowRight className="w-4 h-4" />
                             </Link>

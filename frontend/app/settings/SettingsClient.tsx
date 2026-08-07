@@ -244,11 +244,11 @@ export default function SettingsClient() {
     const renderTabButton = (id: 'bio' | 'ids' | 'specs' | 'platforms' | 'security' | 'privacy', label: string, icon: any) => (
         <button
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors w-full md:w-auto
-                ${activeTab === id
-                    ? 'border-[var(--accent)] text-[var(--accent)] bg-[var(--bg-elevated)]/50'
-                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border)]'
-                }`}
+            className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[8px] border font-display text-[9.5px] font-black uppercase tracking-[0.1em] whitespace-nowrap shrink-0 transition-colors ${
+                activeTab === id
+                    ? 'bg-[var(--accent)] border-transparent text-white'
+                    : 'bg-white/[0.03] border-white/[0.07] text-white/45 hover:text-white hover:border-white/[0.16]'
+            }`}
         >
             {icon}
             {label}
@@ -259,7 +259,10 @@ export default function SettingsClient() {
         <div className="min-h-screen pt-24 pb-12">
             <div className="container-page">
                 <div className="flex items-center justify-between mb-8">
-                    <h1 className="text-3xl font-bold text-[var(--text-primary)]">Profile Settings</h1>
+                    <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-tight leading-none">
+                        <span className="text-white">Profile </span>
+                        <span className="text-[var(--accent)]">Settings</span>
+                    </h1>
                     {activeTab !== 'security' && activeTab !== 'platforms' && (
                         <Button onClick={handleSave} disabled={saving}>
                             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -273,32 +276,31 @@ export default function SettingsClient() {
                     <ProfileCompletionWidget />
                 </div>
 
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl overflow-hidden shadow-sm">
-                    {/* Tabs */}
-                    <div className="flex border-b border-[var(--border)] overflow-x-auto">
+                <div className="flex flex-wrap gap-1.5 mb-4 overflow-x-auto scrollbar-hide">
                         {renderTabButton('bio', 'Basic Info', <User className="w-4 h-4" />)}
                         {renderTabButton('ids', 'Gamertags', <Gamepad2 className="w-4 h-4" />)}
                         {renderTabButton('specs', 'PC Specs', <Cpu className="w-4 h-4" />)}
                         {renderTabButton('platforms', 'Connected Platforms', <Link2 className="w-4 h-4" />)}
                         {renderTabButton('security', 'Security', <Lock className="w-4 h-4" />)}
-                        {renderTabButton('privacy', 'Privacy & Data', <ShieldCheck className="w-4 h-4" />)}
-                    </div>
+                    {renderTabButton('privacy', 'Privacy & Data', <ShieldCheck className="w-4 h-4" />)}
+                </div>
 
-                    <div className="p-6 md:p-8">
+                <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] overflow-hidden">
+                    <div className="p-5 md:p-7">
                         {activeTab === 'bio' && (
                             <div className="space-y-6 max-w-xl">
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                         Username (Unique ID)
                                     </label>
-                                    <Input value={user.username} disabled className="opacity-50 cursor-not-allowed bg-[var(--bg-elevated)]" />
+                                    <Input value={user.username} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
                                 </div>
                                 <div>
                                     <div className="flex justify-between mb-2">
-                                        <label className="block text-sm font-medium text-[var(--text-secondary)]">
+                                        <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40">
                                             Display Name
                                         </label>
-                                        <span className="text-xs text-[var(--text-muted)]">Publicly visible name</span>
+                                        <span className="text-xs text-white/35">Publicly visible name</span>
                                     </div>
                                     <Input
                                         value={displayName}
@@ -306,16 +308,16 @@ export default function SettingsClient() {
                                         placeholder={user.username}
                                         maxLength={50}
                                     />
-                                    <p className="text-xs text-[var(--text-muted)] mt-1">If left empty, your username (<b>{user.username}</b>) will be displayed.</p>
+                                    <p className="text-xs text-white/35 mt-1">If left empty, your username (<b>{user.username}</b>) will be displayed.</p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                         Email Address
                                     </label>
-                                    <Input value={user.email} disabled className="opacity-50 cursor-not-allowed bg-[var(--bg-elevated)]" />
+                                    <Input value={user.email} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                         Bio / About Me
                                     </label>
                                     <Textarea
@@ -324,22 +326,22 @@ export default function SettingsClient() {
                                         placeholder="Tell us about yourself..."
                                         className="h-32"
                                     />
-                                    <p className="text-xs text-[var(--text-muted)] mt-1 text-right">
+                                    <p className="text-xs text-white/35 mt-1 text-right">
                                         {bio.length}/500 characters
                                     </p>
                                 </div>
 
                                 {/* Cover Image Upload */}
-                                <div className="pt-4 border-t border-[var(--border)]">
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-4">
+                                <div className="pt-4 border-t border-[var(--line)]">
+                                    <label className="block text-sm font-medium text-white/55 mb-4">
                                         Profile Cover Image
                                     </label>
                                     <div className="space-y-3">
-                                        <div className="relative aspect-[4/1] rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--bg-elevated)]">
+                                        <div className="relative aspect-[4/1] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-2)]">
                                             {coverPreview ? (
                                                 <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)] bg-gradient-to-br from-[var(--bg-secondary)] via-[#001a4d] to-[var(--bg-elevated)]">
+                                                <div className="w-full h-full flex items-center justify-center text-white/35 bg-gradient-to-br from-[var(--surface-1)] via-[var(--accent-deep)] to-[var(--surface-2)]">
                                                     <span className="text-sm">No cover image</span>
                                                 </div>
                                             )}
@@ -349,11 +351,11 @@ export default function SettingsClient() {
                                                 type="file"
                                                 accept="image/*"
                                                 onChange={handleCoverChange}
-                                                className="block w-full text-sm text-[var(--text-muted)]
+                                                className="block w-full text-sm text-white/35
                                                   file:mr-4 file:py-2 file:px-4
                                                   file:rounded-full file:border-0
                                                   file:text-sm file:font-semibold
-                                                  file:bg-[var(--accent)] file:text-black
+                                                  file:bg-[var(--accent)] file:text-white
                                                   hover:file:bg-[var(--accent)]/90
                                                   cursor-pointer"
                                             />
@@ -367,23 +369,23 @@ export default function SettingsClient() {
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-xs text-[var(--text-muted)]">
+                                        <p className="text-xs text-white/35">
                                             Recommended: 1920x480px. JPG, PNG or WEBP. Max 5MB.
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Avatar Upload */}
-                                <div className="pt-4 border-t border-[var(--border)]">
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-4">
+                                <div className="pt-4 border-t border-[var(--line)]">
+                                    <label className="block text-sm font-medium text-white/55 mb-4">
                                         Profile Picture via Upload
                                     </label>
                                     <div className="flex items-center gap-6">
-                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[var(--border)] bg-[var(--bg-elevated)]">
+                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[var(--line)] bg-[var(--surface-2)]">
                                             {avatarPreview ? (
                                                 <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[var(--text-muted)]">
+                                                <div className="w-full h-full flex items-center justify-center text-white/35">
                                                     <User className="w-8 h-8" />
                                                 </div>
                                             )}
@@ -393,15 +395,15 @@ export default function SettingsClient() {
                                                 type="file"
                                                 accept="image/*"
                                                 onChange={handleFileChange}
-                                                className="block w-full text-sm text-[var(--text-muted)]
+                                                className="block w-full text-sm text-white/35
                                                   file:mr-4 file:py-2 file:px-4
                                                   file:rounded-full file:border-0
                                                   file:text-sm file:font-semibold
-                                                  file:bg-[var(--accent)] file:text-black
+                                                  file:bg-[var(--accent)] file:text-white
                                                   hover:file:bg-[var(--accent)]/90
                                                   cursor-pointer"
                                             />
-                                            <p className="text-xs text-[var(--text-muted)] mt-2">
+                                            <p className="text-xs text-white/35 mt-2">
                                                 JPG, PNG or WEBP. Max 2MB.
                                             </p>
                                         </div>
@@ -418,19 +420,19 @@ export default function SettingsClient() {
                                     if (platform === 'Discord') {
                                         return (
                                             <div key={key}>
-                                                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                                <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                                     Discord Integration
                                                 </label>
                                                 {gamertags['discord'] ? (
-                                                    <div className="flex items-center gap-3 p-3 bg-[#5865F2]/10 border border-[#5865F2]/30 rounded-lg">
+                                                    <div className="flex items-center gap-3 p-3 bg-[#5865F2]/10 border border-[#5865F2]/30 rounded-[var(--radius-card)]">
                                                         <div className="w-8 h-8 rounded-full bg-[#5865F2] flex items-center justify-center text-white">
                                                             <svg className="w-5 h-5" viewBox="0 0 127.14 96.36" fill="currentColor">
                                                                 <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.09,105.09,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c.12-23.61-4.38-47.56-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
                                                             </svg>
                                                         </div>
                                                         <div className="flex-1">
-                                                            <div className="text-sm font-semibold text-[var(--text-primary)]">Connected</div>
-                                                            <div className="text-xs text-[var(--text-secondary)]">{gamertags['discord']}</div>
+                                                            <div className="text-sm font-semibold text-white">Connected</div>
+                                                            <div className="text-xs text-white/55">{gamertags['discord']}</div>
                                                         </div>
                                                         <Button
                                                             size="sm"
@@ -454,7 +456,7 @@ export default function SettingsClient() {
                                                         Connect Discord Account
                                                     </Button>
                                                 )}
-                                                <p className="text-xs text-[var(--text-muted)] mt-2">
+                                                <p className="text-xs text-white/35 mt-2">
                                                     Link your account to get special roles in our Discord server!
                                                 </p>
                                             </div>
@@ -463,7 +465,7 @@ export default function SettingsClient() {
 
                                     return (
                                         <div key={key}>
-                                            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                            <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                                 {platform} ID
                                             </label>
                                             <Input
@@ -479,8 +481,8 @@ export default function SettingsClient() {
 
                         {activeTab === 'specs' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2 pb-4 border-b border-[var(--border)] mb-4">
-                                    <h3 className="flex items-center gap-2 font-bold text-[var(--text-primary)]">
+                                <div className="md:col-span-2 pb-4 border-b border-[var(--line)] mb-4">
+                                    <h3 className="flex items-center gap-2 font-bold text-white">
                                         <Cpu className="w-5 h-5 text-[var(--accent)]" /> Core Components
                                     </h3>
                                 </div>
@@ -489,7 +491,7 @@ export default function SettingsClient() {
                                     const key = item.toLowerCase();
                                     return (
                                         <div key={key}>
-                                            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                            <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                                 {item}
                                             </label>
                                             <Input
@@ -501,8 +503,8 @@ export default function SettingsClient() {
                                     );
                                 })}
 
-                                <div className="md:col-span-2 pb-4 border-b border-[var(--border)] mb-4 mt-4">
-                                    <h3 className="flex items-center gap-2 font-bold text-[var(--text-primary)]">
+                                <div className="md:col-span-2 pb-4 border-b border-[var(--line)] mb-4 mt-4">
+                                    <h3 className="flex items-center gap-2 font-bold text-white">
                                         <Monitor className="w-5 h-5 text-[var(--accent)]" /> Peripherals
                                     </h3>
                                 </div>
@@ -511,7 +513,7 @@ export default function SettingsClient() {
                                     const key = item.toLowerCase();
                                     return (
                                         <div key={key}>
-                                            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                            <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                                 {item}
                                             </label>
                                             <Input
@@ -534,7 +536,7 @@ export default function SettingsClient() {
                         {activeTab === 'security' && (
                             <div className="max-w-md mx-auto space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                         Current Password
                                     </label>
                                     <Input
@@ -545,7 +547,7 @@ export default function SettingsClient() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                         New Password
                                     </label>
                                     <Input
@@ -554,12 +556,12 @@ export default function SettingsClient() {
                                         onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
                                         placeholder="Enter new password"
                                     />
-                                    <p className="text-xs text-[var(--text-muted)] mt-1">
+                                    <p className="text-xs text-white/35 mt-1">
                                         Min 8 chars, letters & numbers.
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
+                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
                                         Confirm New Password
                                     </label>
                                     <Input
@@ -580,14 +582,14 @@ export default function SettingsClient() {
                         {activeTab === 'privacy' && (
                             <div className="max-w-lg mx-auto space-y-8">
                                 {/* Who can see the profile */}
-                                <div className="p-5 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl">
+                                <div className="p-5 bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)]">
                                     <div className="flex items-start gap-3 mb-4">
-                                        <div className="p-2 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
+                                        <div className="p-2 rounded-[var(--radius-card)] bg-[var(--accent)]/10 text-[var(--accent)]">
                                             <Eye className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-[var(--text-primary)]">Profile Visibility</h3>
-                                            <p className="text-sm text-[var(--text-muted)] mt-1">
+                                            <h3 className="font-bold text-white">Profile Visibility</h3>
+                                            <p className="text-sm text-white/35 mt-1">
                                                 Controls who can open your collection, stats, activity and achievements.
                                                 Your forum posts, comments and published reviews stay public either way —
                                                 they were posted to public pages.
@@ -603,27 +605,27 @@ export default function SettingsClient() {
                                                     key={opt.id}
                                                     onClick={() => handleVisibilityChange(opt.id)}
                                                     disabled={savingVisibility}
-                                                    className={`w-full text-left p-4 rounded-lg border transition-colors disabled:opacity-60 ${
+                                                    className={`w-full text-left p-4 rounded-[var(--radius-card)] border transition-colors disabled:opacity-60 ${
                                                         active
                                                             ? 'border-[var(--accent)] bg-[var(--accent)]/[0.07]'
-                                                            : 'border-[var(--border)] hover:border-[var(--text-muted)]'
+                                                            : 'border-[var(--line)] hover:border-[var(--text-muted)]'
                                                     }`}
                                                 >
                                                     <div className="flex items-center gap-2">
-                                                        <opt.icon className={`w-4 h-4 ${active ? 'text-[var(--accent)]' : 'text-[var(--text-muted)]'}`} />
-                                                        <span className={`font-bold text-sm ${active ? 'text-[var(--accent)]' : 'text-[var(--text-primary)]'}`}>
+                                                        <opt.icon className={`w-4 h-4 ${active ? 'text-[var(--accent)]' : 'text-white/35'}`} />
+                                                        <span className={`font-bold text-sm ${active ? 'text-[var(--accent)]' : 'text-white'}`}>
                                                             {opt.label}
                                                         </span>
                                                         {active && <Check className="w-4 h-4 ml-auto text-[var(--accent)]" />}
                                                     </div>
-                                                    <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">{opt.description}</p>
+                                                    <p className="text-xs text-white/35 mt-1.5 leading-relaxed">{opt.description}</p>
                                                 </button>
                                             );
                                         })}
                                     </div>
 
                                     {visibility === 'friends' && (
-                                        <p className="mt-3 text-xs text-[var(--text-muted)] leading-relaxed">
+                                        <p className="mt-3 text-xs text-white/35 leading-relaxed">
                                             While private you also drop off the leaderboards and out of member search.
                                             Anyone with your link still sees your name, level and rank — with an
                                             <strong> Add Friend</strong> button.
@@ -632,14 +634,14 @@ export default function SettingsClient() {
                                 </div>
 
                                 {/* Export Data */}
-                                <div className="p-5 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl">
+                                <div className="p-5 bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)]">
                                     <div className="flex items-start gap-3 mb-4">
-                                        <div className="p-2 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
+                                        <div className="p-2 rounded-[var(--radius-card)] bg-[var(--accent)]/10 text-[var(--accent)]">
                                             <Download className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-[var(--text-primary)]">Download My Data</h3>
-                                            <p className="text-sm text-[var(--text-muted)] mt-1">
+                                            <h3 className="font-bold text-white">Download My Data</h3>
+                                            <p className="text-sm text-white/35 mt-1">
                                                 Export all your account data including profile, forum posts, orders, and achievements as a JSON file.
                                             </p>
                                         </div>
@@ -651,21 +653,21 @@ export default function SettingsClient() {
                                 </div>
 
                                 {/* Delete Account */}
-                                <div className="p-5 bg-red-500/5 border border-red-500/20 rounded-xl">
+                                <div className="p-5 bg-red-500/5 border border-red-500/20 rounded-[var(--radius-card)]">
                                     <div className="flex items-start gap-3 mb-4">
-                                        <div className="p-2 rounded-lg bg-red-500/10 text-red-400">
+                                        <div className="p-2 rounded-[var(--radius-card)] bg-red-500/10 text-red-400">
                                             <Trash2 className="w-5 h-5" />
                                         </div>
                                         <div>
                                             <h3 className="font-bold text-red-400">Delete My Account</h3>
-                                            <p className="text-sm text-[var(--text-muted)] mt-1">
+                                            <p className="text-sm text-white/35 mt-1">
                                                 Permanently delete your account and anonymize all your data. This action cannot be undone.
                                             </p>
                                         </div>
                                     </div>
                                     <div className="space-y-3">
                                         <div>
-                                            <label className="block text-sm text-[var(--text-secondary)] mb-1">
+                                            <label className="block text-sm text-white/55 mb-1">
                                                 Type your username <strong>{user.username}</strong> to confirm:
                                             </label>
                                             <input
@@ -673,7 +675,7 @@ export default function SettingsClient() {
                                                 value={deleteConfirmText}
                                                 onChange={(e) => setDeleteConfirmText(e.target.value)}
                                                 placeholder={user.username}
-                                                className="w-full border border-red-500/30 rounded-lg px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-1 focus:ring-red-500"
+                                                className="w-full border border-red-500/30 rounded-[var(--radius-card)] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                                             />
                                         </div>
                                         <Button
@@ -704,15 +706,15 @@ export default function SettingsClient() {
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-6 max-w-sm w-full shadow-2xl text-center"
+                            className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 max-w-sm w-full shadow-[0_28px_60px_rgba(0,0,0,0.7)] text-center"
                         >
                             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <CheckCircle className="w-8 h-8 text-green-500" />
                             </div>
-                            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-2">
+                            <h3 className="text-xl font-bold text-white mb-2">
                                 Password Changed
                             </h3>
-                            <p className="text-[var(--text-secondary)] mb-6">
+                            <p className="text-white/55 mb-6">
                                 Password changed successfully. Please log out and log in again for security reasons.
                             </p>
                             <Button
@@ -720,7 +722,7 @@ export default function SettingsClient() {
                                     setShowSuccessModal(false);
                                     logout();
                                 }}
-                                className="w-full bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-black font-bold"
+                                className="w-full bg-[var(--accent)] hover:brightness-110 text-white font-bold"
                             >
                                 OK, Log out
                             </Button>

@@ -86,7 +86,7 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
         >
             {/* Simple glow on hover */}
             <div
-                className="absolute -inset-0.5 rounded-2xl opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-500"
+                className="absolute -inset-0.5 rounded-[var(--radius-panel)] opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-500"
                 style={{
                     backgroundColor: feature.color + '20'
                 }}
@@ -95,7 +95,7 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
             {/* Glassmorphism card */}
             <motion.div
                 style={{ transformStyle: "preserve-3d" }}
-                className="relative h-full backdrop-blur-sm bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 flex flex-col overflow-hidden group-hover:border-[var(--accent)]/30 transition-all duration-500"
+                className="relative h-full backdrop-blur-sm bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 flex flex-col overflow-hidden group-hover:border-[var(--accent)]/30 transition-all duration-500"
             >
 
                 {/* Sparkle effect for in_progress */}
@@ -139,7 +139,7 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
                     <motion.div
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ type: "spring", stiffness: 300 }}
-                        className="relative w-16 h-16 rounded-xl flex items-center justify-center"
+                        className="relative w-16 h-16 rounded-[var(--radius-card)] flex items-center justify-center"
                         style={{
                             backgroundColor: feature.color + '20'
                         }}
@@ -149,17 +149,17 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3 pr-20 leading-tight group-hover:text-[var(--accent)] transition-colors duration-300">
+                <h3 className="text-xl font-bold text-white mb-3 pr-20 leading-tight group-hover:text-[var(--accent)] transition-colors duration-300">
                     {decodeHtml(feature.title)}
                 </h3>
 
                 {/* Description */}
-                <p className="text-sm text-[var(--text-secondary)] mb-5 leading-relaxed">
+                <p className="text-sm text-white/55 mb-5 leading-relaxed">
                     {decodeHtml(feature.description)}
                 </p>
 
                 {/* Divider */}
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-[var(--border)] to-transparent mb-5" />
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent mb-5" />
 
                 {/* Details list */}
                 <div className="mt-auto">
@@ -172,13 +172,13 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 + i * 0.05 }}
                                 whileHover={{ x: 5 }}
-                                className="flex items-start gap-3 text-xs text-[var(--text-muted)] group/item cursor-default"
+                                className="flex items-start gap-3 text-xs text-white/35 group/item cursor-default"
                             >
                                 <CheckCircle2
                                     className="w-4 h-4 mt-0.5 flex-shrink-0 transition-all duration-200 group-hover/item:scale-125"
                                     style={{ color: feature.color }}
                                 />
-                                <span className="leading-relaxed group-hover/item:text-[var(--text-primary)] transition-colors duration-200">
+                                <span className="leading-relaxed group-hover/item:text-white transition-colors duration-200">
                                     {detail}
                                 </span>
                             </motion.li>

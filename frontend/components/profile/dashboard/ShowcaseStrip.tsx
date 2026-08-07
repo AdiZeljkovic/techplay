@@ -26,7 +26,7 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
     if (!hasPlaying && coveredBuckets.length === 0) return null;
 
     return (
-        <div className="relative overflow-hidden rounded-2xl bg-[var(--bg-card)] border border-[var(--border)]">
+        <div className="relative overflow-hidden rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)]">
             <span className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-[var(--accent)]/70 via-[var(--accent)]/15 to-transparent" />
 
             <div className="p-5 md:p-6">
@@ -52,7 +52,7 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
                                 key={g.slug}
                                 href={`/games/${g.slug}`}
                                 prefetch={false}
-                                className={`group relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] hover:border-[var(--accent)]/60 transition-all bg-[var(--bg-elevated)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
+                                className={`group relative aspect-[16/10] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] hover:border-[var(--accent)]/60 transition-all bg-[var(--surface-2)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
                             >
                                 {g.cover_url ? (
                                     // eslint-disable-next-line @next/next/no-img-element
@@ -83,7 +83,7 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
                             <Link
                                 key={t.status}
                                 href="?tab=collection"
-                                className={`group relative aspect-[16/10] rounded-xl overflow-hidden border border-[var(--border)] hover:border-[var(--accent)]/60 transition-all bg-[var(--bg-elevated)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
+                                className={`group relative aspect-[16/10] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] hover:border-[var(--accent)]/60 transition-all bg-[var(--surface-2)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={t.cover!} alt={t.label} loading="lazy"

@@ -83,7 +83,7 @@ function SupportCheckoutContent() {
                     </div>
 
                     {/* Stepper */}
-                    <div className="flex items-center gap-4 bg-[var(--bg-secondary)] px-6 py-3 rounded-full border border-white/5">
+                    <div className="flex items-center gap-4 bg-[var(--surface-1)] px-6 py-3 rounded-full border border-white/5">
                         <Step active={step >= 1} completed={step > 1} number={1} label="Plan" />
                         <div className="w-8 h-px bg-white/10" />
                         <Step active={step >= 2} completed={false} number={2} label="Payment" />
@@ -97,13 +97,13 @@ function SupportCheckoutContent() {
                         {step === 1 ? (
                             <div className="space-y-6">
                                 {/* Tier Card */}
-                                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 relative overflow-hidden group hover:border-[var(--accent)]/30 transition-colors">
+                                <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 relative overflow-hidden group hover:border-[var(--accent)]/30 transition-colors">
                                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                                         <Shield className="w-40 h-40 text-white transform rotate-12" />
                                     </div>
 
                                     <div className="relative z-10 flex flex-col sm:flex-row gap-6 items-start">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-[var(--accent)] to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-900/20">
+                                        <div className="w-20 h-20 bg-gradient-to-br from-[var(--accent)] to-orange-600 rounded-[var(--radius-panel)] flex items-center justify-center shadow-lg shadow-orange-900/20">
                                             <Star className="w-10 h-10 text-white fill-white/20" />
                                         </div>
                                         <div>
@@ -141,7 +141,7 @@ function SupportCheckoutContent() {
                                 <div className="flex justify-end pt-4">
                                     <button
                                         onClick={() => setStep(2)}
-                                        className="bg-[var(--accent)] hover:bg-[#ff5722] text-white font-bold text-lg px-8 py-4 rounded-xl shadow-lg shadow-orange-900/20 hover:shadow-orange-900/40 transition-all hover:scale-[1.02] flex items-center gap-2"
+                                        className="bg-[var(--accent)] hover:bg-[#ff5722] text-white font-bold text-lg px-8 py-4 rounded-[var(--radius-card)] shadow-lg shadow-orange-900/20 hover:shadow-orange-900/40 transition-all hover:scale-[1.02] flex items-center gap-2"
                                     >
                                         Continue to Payment <ChevronRight className="w-5 h-5" />
                                     </button>
@@ -150,9 +150,9 @@ function SupportCheckoutContent() {
                         ) : (
                             <div className="space-y-6">
                                 {/* Payment Container */}
-                                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-8 min-h-[500px] flex flex-col">
+                                <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 min-h-[500px] flex flex-col">
                                     <div className="flex items-center gap-4 mb-8 pb-8 border-b border-white/5 shrink-0">
-                                        <div className="w-12 h-12 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center text-[var(--accent)]">
+                                        <div className="w-12 h-12 rounded-full bg-[var(--surface-1)] flex items-center justify-center text-[var(--accent)]">
                                             <CreditCard className="w-6 h-6" />
                                         </div>
                                         <div>
@@ -162,7 +162,7 @@ function SupportCheckoutContent() {
                                     </div>
 
                                     {error && (
-                                        <div className="mb-6 bg-red-500/10 border border-red-500/20 p-4 rounded-xl text-red-200 text-sm flex items-start gap-3 shrink-0">
+                                        <div className="mb-6 bg-red-500/10 border border-red-500/20 p-4 rounded-[var(--radius-card)] text-red-200 text-sm flex items-start gap-3 shrink-0">
                                             <AlertCircle className="w-5 h-5 shrink-0" />
                                             {error}
                                         </div>
@@ -190,7 +190,7 @@ function SupportCheckoutContent() {
                     {/* Right Column: Summary Sticky */}
                     <div className="lg:col-span-4">
                         <div className="sticky top-10">
-                            <div className="bg-[var(--bg-secondary)]/50 backdrop-blur-md border border-white/10 rounded-[2rem] p-6 shadow-2xl">
+                            <div className="bg-[var(--surface-1)]/50 backdrop-blur-md border border-white/10 rounded-[2rem] p-6 shadow-2xl">
                                 <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
                                     <Coins className="w-5 h-5 text-[var(--accent)]" />
                                     Order Summary
@@ -271,9 +271,9 @@ function PayPalButtonsWrapper({ billingCycle, tier, onSuccess, onError }: any) {
     return (
         <>
             {isPending && (
-                <div className="w-full h-[150px] flex flex-col items-center justify-center bg-white/5 rounded-lg animate-pulse">
+                <div className="w-full h-[150px] flex flex-col items-center justify-center bg-white/5 rounded-[var(--radius-card)] animate-pulse">
                     <Loader2 className="w-8 h-8 text-[var(--accent)] animate-spin mb-2" />
-                    <span className="text-xs text-gray-400">Loading secure payment...</span>
+                    <span className="text-xs text-white/45">Loading secure payment...</span>
                 </div>
             )}
 
@@ -332,7 +332,7 @@ function Step({ active, completed, number, label }: any) {
     return (
         <div className={`flex items-center gap-2 ${active || completed ? 'text-white' : 'text-white/30'}`}>
             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${completed ? 'bg-[var(--accent)] text-white' :
-                active ? 'bg-white text-[var(--bg-primary)]' :
+                active ? 'bg-white text-[var(--surface-0)]' :
                     'bg-white/10'
                 }`}>
                 {completed ? <CheckCircle2 className="w-3.5 h-3.5" /> : number}
@@ -346,13 +346,13 @@ function OptionCard({ selected, onClick, title, price, period, description }: an
     return (
         <div
             onClick={onClick}
-            className={`cursor-pointer p-6 rounded-2xl border-2 transition-all duration-200 relative ${selected
+            className={`cursor-pointer p-6 rounded-[var(--radius-panel)] border-2 transition-all duration-200 relative ${selected
                 ? 'bg-[var(--accent)]/5 border-[var(--accent)] shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.2)]'
-                : 'bg-[var(--bg-secondary)] border-transparent hover:border-white/10'
+                : 'bg-[var(--surface-1)] border-transparent hover:border-white/10'
                 }`}
         >
             <div className="flex justify-between items-start mb-4">
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected ? 'border-[var(--accent)]' : 'border-gray-600'}`}>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selected ? 'border-[var(--accent)]' : 'border-white/30'}`}>
                     {selected && <div className="w-2.5 h-2.5 rounded-full bg-[var(--accent)]" />}
                 </div>
             </div>
@@ -371,7 +371,7 @@ function OptionCard({ selected, onClick, title, price, period, description }: an
 function SuccessView({ user, router }: any) {
     return (
         <div className="min-h-screen flex items-center justify-center p-4">
-            <div className="max-w-md w-full bg-[var(--bg-card)] border border-[var(--border)] p-10 rounded-3xl text-center shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-500">
+            <div className="max-w-md w-full bg-[var(--surface-1)] border border-[var(--line)] p-10 rounded-[var(--radius-panel)] text-center shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-500">
                 <div className="absolute top-0 w-full left-0 h-1 bg-[var(--accent)]" />
 
                 <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -385,7 +385,7 @@ function SuccessView({ user, router }: any) {
 
                 <button
                     onClick={() => router.push(`/profile/${user?.username}`)}
-                    className="w-full bg-[var(--accent)] hover:bg-[#ff5722] text-white font-bold py-3.5 rounded-xl transition-colors"
+                    className="w-full bg-[var(--accent)] hover:bg-[#ff5722] text-white font-bold py-3.5 rounded-[var(--radius-card)] transition-colors"
                 >
                     View Your Profile
                 </button>

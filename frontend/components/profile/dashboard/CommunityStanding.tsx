@@ -65,7 +65,7 @@ export default function CommunityStanding({ reputation, recognitions = [] }: {
             </div>
 
             {/* Monthly contribution */}
-            <div className="flex items-center justify-between py-3 border-y border-[var(--border)]">
+            <div className="flex items-center justify-between py-3 border-y border-[var(--line)]">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">This month</span>
                 <span className="flex items-baseline gap-1.5">
                     <span className="text-[15px] font-black text-white tabular-nums">{reputation.monthly_contribution.toLocaleString("en-US")}</span>
@@ -86,7 +86,7 @@ export default function CommunityStanding({ reputation, recognitions = [] }: {
                         const Icon = meta.icon;
                         return (
                             <span key={r.type}
-                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-bold"
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-card)] border text-[11px] font-bold"
                                 style={{ color: meta.color, borderColor: `${meta.color}35`, backgroundColor: `${meta.color}12` }}>
                                 <Icon className="w-3.5 h-3.5" /> {r.label} <span className="tabular-nums">{r.count}</span>
                             </span>
@@ -95,7 +95,7 @@ export default function CommunityStanding({ reputation, recognitions = [] }: {
                 </div>
             )}
 
-            <Link href="/leaderboard" className="block text-center py-2 rounded-lg border border-[var(--border)] text-[10.5px] font-bold uppercase tracking-widest text-white/45 hover:text-[var(--accent)] hover:border-[var(--accent)]/40 transition-all">
+            <Link href="/leaderboard" className="block text-center py-2 rounded-[var(--radius-card)] border border-[var(--line)] text-[10.5px] font-bold uppercase tracking-widest text-white/45 hover:text-[var(--accent)] hover:border-[var(--accent)]/40 transition-all">
                 View Leaderboard
             </Link>
         </div>
