@@ -69,6 +69,8 @@ return [
                 PDO::MYSQL_ATTR_INIT_COMMAND => "SET sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION'",
             ]) : [],
             // PERFORMANCE: Connection pool size (for persistent connections)
+            // NOTE: Laravel's PDO driver ignores this block entirely. Real
+            // pooling needs PgBouncer in front. Kept only as a marker.
             'pool' => [
                 'min' => env('DB_POOL_MIN', 2),
                 'max' => env('DB_POOL_MAX', 10),
@@ -108,9 +110,18 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
-            'options' => [
-                PDO::ATTR_PERSISTENT => true,
-            ],
+            'options' => array_filter([
+                // Off by default. Under Octane each worker already holds its
+                // connection for the process lifetime; persistent on top keeps
+                // them across worker restarts too, multiplying straight into
+                // Postgres max_connections — and a handle that dies mid-query
+                // is returned to the pool broken, turning a five-second blip
+                // into a sustained error storm.
+                PDO::ATTR_PERSISTENT => env('DB_PERSISTENT_CONNECTION', false),
+                // Fail fast when Postgres is unreachable instead of blocking
+                // every worker until the OS TCP timeout.
+                PDO::ATTR_TIMEOUT => 5,
+            ]),
         ],
 
         'sqlsrv' => [
