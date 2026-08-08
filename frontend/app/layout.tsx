@@ -214,7 +214,7 @@ export default async function RootLayout({
             crossOrigin="anonymous"
         />
 
-        <SiteSettingsProvider>
+        <SiteSettingsProvider initialSettings={settings}>
             <MobileMenuProvider>
               <CartProvider>
                 <AuthProvider>

@@ -4,7 +4,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 import { User } from "@/types";
 import { trackD1Return } from "@/lib/track";
-import { disconnectEcho } from "@/lib/echo";
 
 interface AuthContextType {
     user: User | null;
@@ -81,7 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("user");
         setToken(null);
         setUser(null);
-        disconnectEcho();
+
+        // Loaded on demand: a static import put laravel-echo and pusher-js —
+        // 88 KB — in the bundle of every page, including ones that never open
+        // a socket.
+        void import("@/lib/echo").then((m) => m.disconnectEcho()).catch(() => {});
     };
 
     // Two ways a session can end somewhere other than here: the API answered

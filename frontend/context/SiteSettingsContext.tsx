@@ -27,11 +27,22 @@ const SiteSettingsContext = createContext<SiteSettingsContextType>({
     loading: true,
 });
 
-export function SiteSettingsProvider({ children }: { children: ReactNode }) {
-    const [settings, setSettings] = useState<SiteSettings>({});
-    const [loading, setLoading] = useState(true);
+export function SiteSettingsProvider({
+    children,
+    initialSettings,
+}: {
+    children: ReactNode;
+    /** Handed down from the server layout, which has already fetched these. */
+    initialSettings?: SiteSettings;
+}) {
+    const [settings, setSettings] = useState<SiteSettings>(initialSettings ?? {});
+    const [loading, setLoading] = useState(!initialSettings);
 
     useEffect(() => {
+        // The server passed them down — one fewer request per page view, and
+        // no pop-in on the header's social links.
+        if (initialSettings) return;
+
         async function fetchSettings() {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`);
@@ -46,7 +57,7 @@ export function SiteSettingsProvider({ children }: { children: ReactNode }) {
             }
         }
         fetchSettings();
-    }, []);
+    }, [initialSettings]);
 
     return (
         <SiteSettingsContext.Provider value={{ settings, loading }}>
