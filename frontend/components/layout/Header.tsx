@@ -11,7 +11,7 @@ import { useCart } from "@/context/CartContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
-import { Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Calendar, Gamepad2, Newspaper, Trophy, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers } from "lucide-react";
+import { Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Gamepad2, Newspaper, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
 import { levelForXp, xpForLevel } from "@/lib/level";
@@ -31,8 +31,7 @@ const SOCIAL_ICON_MAP: Record<string, { icon: any; name: string }> = {
     facebook_url: { icon: Facebook, name: 'Facebook' },
     instagram_url: { icon: Instagram, name: 'Instagram' },
     youtube_url: { icon: Youtube, name: 'YouTube' },
-    discord_url: { icon: DiscordIcon, name: 'Discord' },
-};
+    discord_url: { icon: DiscordIcon, name: 'Discord' } };
 
 // Utility Links (Top Bar)
 const UTILITY_LINKS = [
@@ -196,8 +195,7 @@ const navReviewsFetcher = () =>
 function NavReviewShelf({ active }: { active: boolean }) {
     const { data } = useSWR(active ? "nav-reviews" : null, navReviewsFetcher, {
         dedupingInterval: 300_000,
-        revalidateOnFocus: false,
-    });
+        revalidateOnFocus: false });
 
     if (data && data.length === 0) return null;
 
@@ -265,8 +263,7 @@ function NavReviewShelf({ active }: { active: boolean }) {
 function NavFeatured({ active }: { active: boolean }) {
     const { data } = useSWR(active ? "nav-latest" : null, navNewsFetcher, {
         dedupingInterval: 300_000,
-        revalidateOnFocus: false,
-    });
+        revalidateOnFocus: false });
 
     const [lead, ...rest] = data ?? [];
 
@@ -413,8 +410,7 @@ function DateChip({ released }: { released: string | null }) {
 function NavReleaseRadar({ active }: { active: boolean }) {
     const { data } = useSWR(active ? "nav-calendar" : null, navCalendarFetcher, {
         dedupingInterval: 300_000,
-        revalidateOnFocus: false,
-    });
+        revalidateOnFocus: false });
 
     return (
         <div className="flex flex-col border-l border-[var(--line)] bg-[var(--surface-1)] p-5">
@@ -566,8 +562,7 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
     Games:     Gamepad2,
     Community: MessageSquare,
     Tools:     Rocket,
-    Shop:      ShoppingCart,
-};
+    Shop:      ShoppingCart };
 
 /**
  * The four places a phone actually goes, given the art we already own. They
@@ -611,8 +606,7 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
             { title: "Guides", href: "/guides", items: [
                 { name: "All Guides", href: "/guides" },
             ]},
-        ],
-    },
+        ] },
     // Everything the site publishes, in one stream. Lives at /latest because
     // /feed is the RSS feed and a page there would take that URL over.
     { name: "Feed", href: "/latest", activePaths: ["/latest"] },
@@ -632,8 +626,7 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
             { name: "Clans",       href: "/clans",       art: "/images/menu/menu-clans.webp",       description: "Join or create a clan" },
             { name: "Social Hub",  href: "/social",     art: "/images/menu/menu-social.webp",      description: "Chat, friends and squads" },
             { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp",   description: "Win games & gear" },
-        ],
-    },
+        ] },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
         activePaths: ["/wow-analyzer", "/backlog-advisor", "/wrapped", "/gta6"],
@@ -642,8 +635,7 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
             { name: "Backlog Advisor", href: "/backlog-advisor", art: "/images/menu/menu-backlog-advisor.webp", description: "What should you play next?" },
             { name: "Gaming Wrapped",  href: "/wrapped",         art: "/images/menu/menu-wrapped.webp",         description: "Your year in gaming, shareable" },
             { name: "GTA 6 Hub",       href: "/gta6",            art: "/images/menu/menu-gta6.webp",            description: "Map, characters, vehicles, weapons" },
-        ],
-    },
+        ] },
     { name: "Shop", href: "/shop" },
 ];
 
@@ -707,8 +699,7 @@ function NavItem({ item, badge, onHoverChange }: {
                         position: 'absolute', bottom: 0, left: '8px', right: '8px',
                         height: '3px', borderRadius: '2px 2px 0 0',
                         background: 'linear-gradient(90deg, #DC143C, rgba(220, 20, 60,0.6))',
-                        boxShadow: '0 0 8px rgba(220, 20, 60,0.6)',
-                    }} />
+                        boxShadow: '0 0 8px rgba(220, 20, 60,0.6)' }} />
                 )}
             </Link>
 
@@ -1019,8 +1010,7 @@ export default function Header() {
                                 return Array.isArray(apiChildren) && apiChildren.length > 0
                                     ? { ...col, items: apiChildren }
                                     : col;
-                            }),
-                        };
+                            }) };
                     }
                     return item;
                 }));

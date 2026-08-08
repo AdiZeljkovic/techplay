@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, X, AlertCircle, BookOpen, Home, Target } from "lucide-react";
-import { MidnightTheme, glassCard, QualityColors } from "@/lib/wow-midnight-theme";
+import { MidnightTheme, glassCard } from "@/lib/wow-midnight-theme";
 
 interface ChecklistItem {
     name: string;
@@ -48,8 +48,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                     glow: MidnightTheme.urgency.glow,
                     primary: MidnightTheme.urgency.critical,
                     secondary: MidnightTheme.urgency.dark,
-                    text: MidnightTheme.urgency.high,
-                };
+                    text: MidnightTheme.urgency.high };
             case 'lore_mastery':
                 return {
                     gradient: MidnightTheme.gradients.voidHorizontal,
@@ -57,8 +56,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                     glow: MidnightTheme.void.glow,
                     primary: MidnightTheme.void.primary,
                     secondary: MidnightTheme.void.deep,
-                    text: MidnightTheme.void.ethereal,
-                };
+                    text: MidnightTheme.void.ethereal };
             case 'housing_prep':
                 return {
                     gradient: MidnightTheme.gradients.lightHorizontal,
@@ -66,8 +64,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                     glow: MidnightTheme.light.glow,
                     primary: MidnightTheme.light.primary,
                     secondary: MidnightTheme.light.warm,
-                    text: MidnightTheme.light.bright,
-                };
+                    text: MidnightTheme.light.bright };
             default:
                 return {
                     gradient: MidnightTheme.gradients.voidToLight,
@@ -75,8 +72,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                     glow: MidnightTheme.void.glow,
                     primary: MidnightTheme.void.primary,
                     secondary: MidnightTheme.light.primary,
-                    text: MidnightTheme.text.light,
-                };
+                    text: MidnightTheme.text.light };
         }
     };
 
@@ -103,8 +99,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                 style={{
                     background: MidnightTheme.backgrounds.void,
                     border: `3px solid ${MidnightTheme.void.primary}`,
-                    boxShadow: MidnightTheme.shadows.voidGlow,
-                }}
+                    boxShadow: MidnightTheme.shadows.voidGlow }}
             >
                 {/* Animated Void Background */}
                 <motion.div
@@ -114,8 +109,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                             `radial-gradient(circle at 20% 50%, ${MidnightTheme.void.primary}, transparent)`,
                             `radial-gradient(circle at 80% 50%, ${MidnightTheme.light.primary}, transparent)`,
                             `radial-gradient(circle at 20% 50%, ${MidnightTheme.void.primary}, transparent)`,
-                        ],
-                    }}
+                        ] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 />
 
@@ -123,8 +117,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                 <div
                     className="absolute inset-0 pointer-events-none"
                     style={{
-                        background: MidnightTheme.gradients.glassOverlay,
-                    }}
+                        background: MidnightTheme.gradients.glassOverlay }}
                 />
 
                 <div className="relative z-10 text-center">
@@ -138,8 +131,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
-                            filter: `drop-shadow(0 0 12px ${MidnightTheme.void.glow})`,
-                        }}
+                            filter: `drop-shadow(0 0 12px ${MidnightTheme.void.glow})` }}
                     >
                         Midnight Preparation Checklist
                     </motion.h2>
@@ -174,8 +166,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                             style={{
                                 ...glassCard,
                                 border: `2px solid ${colors.border}`,
-                                boxShadow: `0 0 30px ${colors.glow}, ${MidnightTheme.shadows.depth}`,
-                            }}
+                                boxShadow: `0 0 30px ${colors.glow}, ${MidnightTheme.shadows.depth}` }}
                         >
                             {/* Animated Category Glow Background */}
                             <motion.div
@@ -185,8 +176,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                         `radial-gradient(circle at 0% 50%, ${colors.primary}, transparent)`,
                                         `radial-gradient(circle at 100% 50%, ${colors.secondary}, transparent)`,
                                         `radial-gradient(circle at 0% 50%, ${colors.primary}, transparent)`,
-                                    ],
-                                }}
+                                    ] }}
                                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                             />
                             {/* Category Header */}
@@ -201,8 +191,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                         className="w-14 h-14 rounded-xl flex items-center justify-center relative"
                                         style={{
                                             background: colors.gradient,
-                                            boxShadow: `0 0 20px ${colors.glow}, ${MidnightTheme.shadows.depth}`,
-                                        }}
+                                            boxShadow: `0 0 20px ${colors.glow}, ${MidnightTheme.shadows.depth}` }}
                                         whileHover={{ scale: 1.1, rotate: 5 }}
                                         transition={{ type: "spring", stiffness: 400 }}
                                     >
@@ -213,8 +202,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                             className="text-2xl font-bold uppercase tracking-wide mb-1"
                                             style={{
                                                 color: MidnightTheme.text.bright,
-                                                textShadow: `0 0 10px ${colors.glow}`,
-                                            }}
+                                                textShadow: `0 0 10px ${colors.glow}` }}
                                         >
                                             {category.data.label}
                                         </h3>
@@ -233,8 +221,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                         className="text-4xl font-bold"
                                         style={{
                                             color: completion === 100 ? MidnightTheme.light.primary : colors.text,
-                                            textShadow: `0 0 15px ${completion === 100 ? MidnightTheme.light.glow : colors.glow}`,
-                                        }}
+                                            textShadow: `0 0 15px ${completion === 100 ? MidnightTheme.light.glow : colors.glow}` }}
                                         animate={completion === 100 ? { scale: [1, 1.1, 1] } : {}}
                                         transition={{ duration: 2, repeat: Infinity }}
                                     >
@@ -253,15 +240,13 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                     style={{
                                         background: MidnightTheme.backgrounds.voidDark,
                                         border: `1px solid ${colors.border}`,
-                                        boxShadow: `inset 0 2px 8px rgba(0, 0, 0, 0.6)`,
-                                    }}
+                                        boxShadow: `inset 0 2px 8px rgba(0, 0, 0, 0.6)` }}
                                 >
                                     <motion.div
                                         className="h-full relative"
                                         style={{
                                             background: colors.gradient,
-                                            boxShadow: `0 0 20px ${colors.glow}`,
-                                        }}
+                                            boxShadow: `0 0 20px ${colors.glow}` }}
                                         initial={{ width: 0 }}
                                         animate={{ width: `${completion}%` }}
                                         transition={{ delay: 0.5 + catIndex * 0.15, duration: 1.5, ease: "easeOut" }}
@@ -270,8 +255,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                         <motion.div
                                             className="absolute inset-0"
                                             style={{
-                                                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
-                                            }}
+                                                background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)' }}
                                             animate={{ x: ['-100%', '200%'] }}
                                             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                                         />
@@ -306,15 +290,13 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                                     border: `1px solid ${item.completed ? MidnightTheme.light.primary : colors.border}`,
                                                     boxShadow: item.completed
                                                         ? `0 0 20px ${MidnightTheme.light.glow}, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
-                                                        : `0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)`,
-                                                }}
+                                                        : `0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)` }}
                                             >
                                                 {/* Hover Glow Effect */}
                                                 <motion.div
                                                     className="absolute inset-0 opacity-0 group-hover:opacity-30 pointer-events-none transition-opacity"
                                                     style={{
-                                                        background: `radial-gradient(circle at center, ${colors.primary}, transparent)`,
-                                                    }}
+                                                        background: `radial-gradient(circle at center, ${colors.primary}, transparent)` }}
                                                 />
 
                                                 {/* Checkbox */}
@@ -327,8 +309,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                                         border: `2px solid ${item.completed ? MidnightTheme.light.primary : MidnightTheme.void.primary}`,
                                                         boxShadow: item.completed
                                                             ? `0 0 15px ${MidnightTheme.light.glow}`
-                                                            : `inset 0 2px 4px rgba(0, 0, 0, 0.4)`,
-                                                    }}
+                                                            : `inset 0 2px 4px rgba(0, 0, 0, 0.4)` }}
                                                     animate={item.completed ? { scale: [1, 1.1, 1] } : {}}
                                                     transition={{ duration: 2, repeat: Infinity }}
                                                     whileHover={{ rotate: 360 }}
@@ -349,8 +330,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                                                 color: item.completed ? MidnightTheme.text.muted : MidnightTheme.text.bright,
                                                                 textShadow: item.completed
                                                                     ? 'none'
-                                                                    : `0 0 8px ${colors.glow}`,
-                                                            }}
+                                                                    : `0 0 8px ${colors.glow}` }}
                                                         >
                                                             {item.name}
                                                         </h4>
@@ -363,8 +343,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                                                     background: colors.gradient,
                                                                     color: MidnightTheme.text.bright,
                                                                     whiteSpace: 'nowrap',
-                                                                    boxShadow: `0 0 10px ${colors.glow}`,
-                                                                }}
+                                                                    boxShadow: `0 0 10px ${colors.glow}` }}
                                                             >
                                                                 {item.progress}
                                                             </motion.span>
@@ -389,8 +368,7 @@ export default function PreparationChecklist({ checklist }: PreparationChecklist
                                                                 className="flex items-center gap-1 font-bold"
                                                                 style={{
                                                                     color: MidnightTheme.urgency.high,
-                                                                    textShadow: `0 0 8px ${MidnightTheme.urgency.glow}`,
-                                                                }}
+                                                                    textShadow: `0 0 8px ${MidnightTheme.urgency.glow}` }}
                                                             >
                                                                 <span>⏰</span> Deadline: {item.deadline}
                                                             </span>

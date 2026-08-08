@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PageHero from "@/components/ui/PageHero";
 import { ShoppingCart, CreditCard, Truck, CheckCircle2, AlertCircle, Package } from "lucide-react";

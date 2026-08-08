@@ -16,8 +16,7 @@ export default function DeviceMockupsReal() {
             <motion.div
                 animate={{
                     y: [0, -10, 0],
-                    rotateY: [-3, -1, -3],
-                }}
+                    rotateY: [-3, -1, -3] }}
                 transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                 className="relative z-20"
             >
@@ -120,8 +119,7 @@ export default function DeviceMockupsReal() {
             <motion.div
                 animate={{
                     y: [0, 12, 0],
-                    rotateY: [-12, -10, -12],
-                }}
+                    rotateY: [-12, -10, -12] }}
                 transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
                 className="absolute right-[5%] top-[8%] z-30"
                 style={{
@@ -171,8 +169,7 @@ export default function DeviceMockupsReal() {
             <motion.div
                 animate={{
                     y: [0, -14, 0],
-                    rotateY: [10, 12, 10],
-                }}
+                    rotateY: [10, 12, 10] }}
                 transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                 className="absolute left-[5%] bottom-[8%] z-30"
                 style={{
@@ -237,18 +234,15 @@ export default function DeviceMockupsReal() {
                     className="absolute w-1 h-1 rounded-full bg-white/10"
                     style={{
                         left: `${15 + Math.random() * 70}%`,
-                        top: `${10 + Math.random() * 80}%`,
-                    }}
+                        top: `${10 + Math.random() * 80}%` }}
                     animate={{
                         y: [0, -30, 0],
-                        opacity: [0.1, 0.3, 0.1],
-                    }}
+                        opacity: [0.1, 0.3, 0.1] }}
                     transition={{
                         duration: 5 + Math.random() * 3,
                         repeat: Infinity,
                         delay: Math.random() * 2,
-                        ease: "easeInOut",
-                    }}
+                        ease: "easeInOut" }}
                 />
             ))}
         </div>

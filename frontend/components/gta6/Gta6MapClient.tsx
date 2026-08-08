@@ -93,10 +93,13 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
 
     const displayCategories = initialCategories.filter(c => CATEGORY_CONFIG[c]);
 
-    // Mount the map only after the first full dataset (keeps island bounds stable across filter changes)
-    const hasLoadedRef = useRef(false);
-    if (locations.length > 0) hasLoadedRef.current = true;
-    const hasLoaded = hasLoadedRef.current;
+    // Mount the map only after the first full dataset, so island bounds stay
+    // stable across filter changes. This used to write a ref during render,
+    // which makes the render impure and misbehaves under concurrent rendering.
+    const [hasLoaded, setHasLoaded] = useState(false);
+    useEffect(() => {
+        if (locations.length > 0) setHasLoaded(true);
+    }, [locations.length]);
 
     const handleSelect = (key: string) => {
         setSelectedKey(k => (k === key ? null : key));

@@ -3,8 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export interface TextareaProps
-    extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
+export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 /** The one textarea — surface-2 well, S4 focus grammar. */
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(

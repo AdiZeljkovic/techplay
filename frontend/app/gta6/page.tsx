@@ -9,8 +9,7 @@ import Gta6Trailers from "@/components/gta6/Gta6Trailers";
 import Gta6PreOrder from "@/components/gta6/Gta6PreOrder";
 import Gta6NewsletterCTA from "@/components/gta6/Gta6NewsletterCTA";
 import {
-    Map, Users, Car, Crosshair, BookOpen, ArrowRight, ChevronRight,
-} from "lucide-react";
+    Map, Car, Crosshair, BookOpen, ArrowRight, ChevronRight } from "lucide-react";
 
 export const revalidate = 3600;
 
@@ -23,8 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
         title: "GTA 6 — Interactive Map, Characters, Vehicles & Complete Guide",
         description:
             "The most complete GTA 6 resource online — interactive map with 1,000+ locations, full character database, confirmed vehicle list, weapons and everything about Grand Theft Auto VI. Updated weekly.",
-        keywords: ["GTA 6", "Grand Theft Auto VI", "GTA 6 release date", "GTA 6 map", "GTA 6 characters", "GTA 6 vehicles", "GTA VI", "GTA 6 guide 2026"],
-    });
+        keywords: ["GTA 6", "Grand Theft Auto VI", "GTA 6 release date", "GTA 6 map", "GTA 6 characters", "GTA 6 vehicles", "GTA VI", "GTA 6 guide 2026"] });
     return {
         ...base,
         openGraph: {
@@ -33,10 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
             url: `${SITE_URL}/gta6`,
             siteName: "TechPlay",
             type: "website",
-            images: [{ url: `${SITE_URL}/gta6/og-hub.png`, width: 1200, height: 630 }],
-        },
-        alternates: { canonical: `${SITE_URL}/gta6` },
-    };
+            images: [{ url: `${SITE_URL}/gta6/og-hub.png`, width: 1200, height: 630 }] },
+        alternates: { canonical: `${SITE_URL}/gta6` } };
 }
 
 interface NewsItem {
@@ -52,8 +48,7 @@ async function fetchJson(path: string, revalidate = 3600): Promise<unknown> {
     try {
         const res = await fetch(`${getServerApiUrl()}${path}`, {
             next: { revalidate },
-            headers: { Accept: "application/json" },
-        });
+            headers: { Accept: "application/json" } });
         if (!res.ok) return null;
         return await res.json();
     } catch {
@@ -104,8 +99,7 @@ export default async function Gta6HubPage() {
         "datePublished": "2026-11-19",
         "dateModified": new Date().toISOString(),
         "image": `${SITE_URL}/gta6/og-hub.png`,
-        "keywords": "GTA 6, Grand Theft Auto VI, GTA 6 characters, GTA 6 map, GTA 6 vehicles, GTA 6 weapons",
-    };
+        "keywords": "GTA 6, Grand Theft Auto VI, GTA 6 characters, GTA 6 map, GTA 6 vehicles, GTA 6 weapons" };
 
     const breadcrumbLd = {
         "@context": "https://schema.org",
@@ -113,8 +107,7 @@ export default async function Gta6HubPage() {
         "itemListElement": [
             { "@type": "ListItem", "position": 1, "name": "Home", "item": SITE_URL },
             { "@type": "ListItem", "position": 2, "name": "GTA 6 Hub", "item": `${SITE_URL}/gta6` },
-        ],
-    };
+        ] };
 
     return (
         <>

@@ -20,8 +20,7 @@ async function getInitialCategoryData(categorySlug: string) {
         const params = new URLSearchParams({ page: '1', category: categorySlug });
         const res = await fetch(`${getServerApiUrl()}/news?${params.toString()}`, {
             next: { revalidate: 300, tags: ['news'] },
-            headers: { 'Accept': 'application/json' },
-        });
+            headers: { 'Accept': 'application/json' } });
         if (!res.ok) return null;
         return await res.json();
     } catch {
@@ -32,8 +31,7 @@ async function getInitialCategoryData(categorySlug: string) {
 async function getArticle(slug: string): Promise<Article | null> {
     const json = await fetchContent<{ data?: Article } & Article>(`${getServerApiUrl()}/news/${slug}`, {
         cache: 'force-cache', // Cache until manually revalidated
-        next: { tags: ['news', `news-${slug}`] },
-    });
+        next: { tags: ['news', `news-${slug}`] } });
 
     // null means the API said this article is gone; anything else the API
     // could not answer has already thrown, so the reader is not told a live
@@ -62,8 +60,7 @@ export async function generateMetadata(
             description: `Latest news and updates from the ${category.label} world.`,
             openGraph: {
                 title: `${category.label} News - TechPlay`,
-                description: `Latest news and updates from the ${category.label} world.`,
-            }
+                description: `Latest news and updates from the ${category.label} world.` }
         };
     }
 
@@ -72,8 +69,7 @@ export async function generateMetadata(
 
     if (!article) {
         return {
-            title: 'Article Not Found',
-        };
+            title: 'Article Not Found' };
     }
 
     const title = article.meta_title || article.seo_title || article.title;
@@ -115,24 +111,20 @@ export async function generateMetadata(
             modifiedTime: article.updated_at,
             authors: [article.author?.display_name || article.author?.username || 'TechPlay'],
             images: images,
-            locale: 'en_US',
-        },
+            locale: 'en_US' },
         twitter: {
             card: 'summary_large_image',
             title: title,
             description: description,
-            images: images,
-        },
+            images: images },
         alternates: {
-            canonical: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}`,
-        },
+            canonical: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}` },
         keywords: Array.isArray(article.tags) && article.tags.length > 0
             ? article.tags.join(', ')
             : (article.focus_keyword || undefined),
         robots: {
             index: !article.is_noindex,
-            follow: !article.is_noindex,
-        }
+            follow: !article.is_noindex }
     };
 }
 
@@ -197,8 +189,7 @@ export default async function NewsSlugPage({ params }: Props) {
         "@type": "NewsArticle",
         "mainEntityOfPage": {
             "@type": "WebPage",
-            "@id": articleUrl,
-        },
+            "@id": articleUrl },
         "headline": article.meta_title || article.seo_title || article.title,
         "description": article.meta_description || article.seo_description || article.excerpt || "",
         "image": featuredImage ? [featuredImage] : [],
@@ -207,22 +198,17 @@ export default async function NewsSlugPage({ params }: Props) {
         "author": [{
             "@type": "Person",
             "name": article.author?.display_name || article.author?.username || "TechPlay Editor",
-            "url": `${siteUrl}/author/${article.author?.author_slug || article.author?.username}`,
-        }],
+            "url": `${siteUrl}/author/${article.author?.author_slug || article.author?.username}` }],
         "publisher": {
             "@type": "Organization",
             "name": "TechPlay",
             "logo": {
                 "@type": "ImageObject",
-                "url": `${siteUrl}/logo.png`,
-            },
-        },
+                "url": `${siteUrl}/logo.png` } },
         "url": articleUrl,
         "speakable": {
             "@type": "SpeakableSpecification",
-            "cssSelector": ["h1", ".article-excerpt"],
-        },
-    };
+            "cssSelector": ["h1", ".article-excerpt"] } };
 
     return (
         <>

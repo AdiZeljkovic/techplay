@@ -43,7 +43,6 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
         return `${minutes} min read`;
     }, [review.content]);
 
-    if (!review) return null;
 
     const displayScore = Number(review.review_score ?? review.rating ?? 0);
     const ratingColor = displayScore >= 8 ? "text-green-500 border-green-500" : displayScore >= 6 ? "text-yellow-500 border-yellow-500" : "text-red-500 border-red-500";
@@ -83,7 +82,10 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
         "review": reviewObj
     };
 
-    const { content: processedContent } = useMemo(() => processContent(review.content || ''), [review.content]);
+    const { content: processedContent } = useMemo(() => processContent(review?.content || ''), [review?.content]);
+
+    // Every hook has run by here.
+    if (!review) return null;
 
     const imageUrl = (review.cover_image || review.featured_image_url)
         ? ((review.cover_image || review.featured_image_url)!.startsWith('http')

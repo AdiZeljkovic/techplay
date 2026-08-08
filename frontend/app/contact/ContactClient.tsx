@@ -2,7 +2,7 @@
 
 import PageHero from "@/components/ui/PageHero";
 import { motion } from "framer-motion";
-import { Mail, MapPin, Send, MessageSquare, Briefcase, HelpCircle, ArrowRight, CheckCircle2, Loader2, Phone, AlertCircle } from "lucide-react";
+import { MapPin, Send, MessageSquare, Briefcase, HelpCircle, ArrowRight, CheckCircle2, Loader2, Phone, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -40,8 +40,7 @@ export default function ContactPage() {
             name: formData.get('name') as string,
             email: formData.get('email') as string,
             subject: formData.get('subject') as string,
-            message: formData.get('message') as string,
-        };
+            message: formData.get('message') as string };
 
         try {
             const result = await submitContactForm(data);

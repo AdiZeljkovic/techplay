@@ -45,15 +45,13 @@ export function SendMessageModal({ isOpen, onClose, recipientUsername, replyToMe
             // sent that way was invisible to both people, forever.
             const convo = await axios.post('/conversations', {
                 type: 'direct',
-                username: recipientUsername,
-            });
+                username: recipientUsername });
             const conversationId = convo.data?.data?.id ?? convo.data?.id;
 
             await axios.post(`/conversations/${conversationId}/messages`, {
                 body: subject.trim() ? `${subject.trim()}
 
-${body}` : body,
-            });
+${body}` : body });
 
             setSent(true);
             timerRef.current = setTimeout(() => {

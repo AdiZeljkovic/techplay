@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, memo, useCallback } from "react";
+import { useEffect, useState, memo } from "react";
 import axios from "@/lib/axios";
 import Image from "next/image";
 
@@ -31,8 +31,7 @@ const AD_SIZES: Record<string, { width: number; height: number; mobileHeight?: n
     'article_mid': { width: 728, height: 90, mobileHeight: 50 },
     'article_bottom': { width: 728, height: 90, mobileHeight: 50 },
     'in_content': { width: 336, height: 280 },
-    'default': { width: 728, height: 90, mobileHeight: 50 },
-};
+    'default': { width: 728, height: 90, mobileHeight: 50 } };
 
 // PERFORMANCE: Memoized to prevent re-renders when parent updates
 export default memo(function AdUnit({ position, className = "" }: AdUnitProps) {

@@ -2,7 +2,6 @@
 
 import { Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { SupportTier } from "@/types/support";
 import { useAuth } from "@/hooks/useAuth";
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "@/lib/axios";
-import { Heart, Bell, BellRing, Check, Loader2, ExternalLink, X, Store } from "lucide-react";
+import { Heart, Bell, BellRing, Check, Loader2, ExternalLink, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import TrailerPlayer from "@/components/games/TrailerPlayer";
@@ -14,8 +14,7 @@ const STORE_TINTS: Record<string, string> = {
     steam: "#1b7fd4",
     playstation: "#2f6fe4",
     xbox: "#22a05a",
-    nintendo: "#e4404a",
-};
+    nintendo: "#e4404a" };
 
 export default function ReleaseClient({ release }: { release: Release }) {
     const { user } = useAuth();

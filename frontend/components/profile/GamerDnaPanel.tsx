@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Dna, Share2, Check, Clock3, Fingerprint, Gamepad2, Trophy, Monitor, Sparkles, BookOpen, Swords, Moon, Compass, Feather, Cpu, MemoryStick, MonitorPlay, MessageSquare, MessagesSquare, Bookmark, Gem, HelpCircle, type LucideIcon } from "lucide-react";
+import { Dna, Share2, Check, Clock3, Gamepad2, Trophy, Monitor, Sparkles, BookOpen, Swords, Moon, Compass, Feather, Cpu, MemoryStick, MonitorPlay, MessageSquare, MessagesSquare, Bookmark, Gem, HelpCircle, type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -20,17 +20,14 @@ const STATUS_COLORS: Record<string, string> = {
     completed: "#22c55e",
     backlog: "#60a5fa",
     wishlist: "#f472b6",
-    favorites: "#f97316",
-};
+    favorites: "#f97316" };
 
 const PLATFORM_ICONS: Record<string, string> = {
     pc: "🖥️", playstation: "🎮", xbox: "🎯", nintendo: "🕹️", switch: "🕹️",
-    steam: "🖥️", mobile: "📱", retro: "👾",
-};
+    steam: "🖥️", mobile: "📱", retro: "👾" };
 
 const ARCHETYPE_ICONS: Record<string, LucideIcon> = {
-    book: BookOpen, chess: Swords, trophy: Trophy, moon: Moon, compass: Compass, quill: Feather,
-};
+    book: BookOpen, chess: Swords, trophy: Trophy, moon: Moon, compass: Compass, quill: Feather };
 
 const ARCHETYPE_TINTS = ["#a78bfa", "#f97316", "#eab308", "#60a5fa"];
 
@@ -41,8 +38,7 @@ const SPEC_META: Record<string, { label: string; icon: LucideIcon }> = {
     display: { label: "Display", icon: Monitor },
     monitor: { label: "Display", icon: Monitor },
     storage: { label: "Storage", icon: MemoryStick },
-    motherboard: { label: "Motherboard", icon: Cpu },
-};
+    motherboard: { label: "Motherboard", icon: Cpu } };
 
 const CONTRIBUTION_ICONS = [MessageSquare, MessagesSquare, Bookmark, Gem];
 
@@ -53,8 +49,7 @@ const CONTRIBUTION_ICONS = [MessageSquare, MessagesSquare, Bookmark, Gem];
  * chart library — the whole thing is five numbers and a radius.
  */
 function Donut({
-    slices, size = 168, thickness = 20, children,
-}: {
+    slices, size = 168, thickness = 20, children }: {
     slices: { value: number; color: string; label: string }[];
     size?: number;
     thickness?: number;
@@ -277,15 +272,13 @@ function AxisRow({ axis }: { axis: DnaAxis }) {
                         width: `${width}%`,
                         background: axis.measured
                             ? "linear-gradient(90deg, var(--xp-deep), var(--xp-bright))"
-                            : "linear-gradient(90deg, color-mix(in srgb, var(--accent) 60%, transparent), var(--accent))",
-                    }}
+                            : "linear-gradient(90deg, color-mix(in srgb, var(--accent) 60%, transparent), var(--accent))" }}
                 />
                 <span
                     className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-[13px] h-[13px] rounded-full border-2 border-[var(--surface-2)] transition-[left] duration-700 ease-[var(--ease-hud)]"
                     style={{
                         left: `${axis.value}%`,
-                        background: axis.measured ? "var(--xp-bright)" : "var(--accent)",
-                    }}
+                        background: axis.measured ? "var(--xp-bright)" : "var(--accent)" }}
                 />
             </div>
 
@@ -317,8 +310,7 @@ function ArchetypeCard({ a, tint }: { a: DnaArchetype; tint: string }) {
             className="group relative flex flex-col items-center text-center p-4 rounded-[12px] border transition-colors duration-300"
             style={{
                 borderColor: `color-mix(in srgb, ${tint} ${a.level > 0 ? 34 : 12}%, transparent)`,
-                background: `color-mix(in srgb, ${tint} ${a.level > 0 ? 8 : 3}%, transparent)`,
-            }}
+                background: `color-mix(in srgb, ${tint} ${a.level > 0 ? 8 : 3}%, transparent)` }}
             title={a.hint}
         >
             <Icon className="w-7 h-7 mb-2.5" style={{ color: a.level > 0 ? tint : "rgba(255,255,255,0.2)" }} />
@@ -524,8 +516,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                                             key={p.name}
                                             style={{
                                                 width: `${p.percent}%`,
-                                                background: i === 0 ? "var(--accent)" : WHEEL[(i + 2) % WHEEL.length],
-                                            }}
+                                                background: i === 0 ? "var(--accent)" : WHEEL[(i + 2) % WHEEL.length] }}
                                         />
                                     ))}
                                 </div>
@@ -568,8 +559,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                                                     style={{
                                                         width: e.count > 0 ? 8 + (e.percent / 100) * 8 : 6,
                                                         height: e.count > 0 ? 8 + (e.percent / 100) * 8 : 6,
-                                                        background: e.count > 0 ? e.color : "rgba(255,255,255,0.12)",
-                                                    }}
+                                                        background: e.count > 0 ? e.color : "rgba(255,255,255,0.12)" }}
                                                 />
                                             </span>
                                         ))}

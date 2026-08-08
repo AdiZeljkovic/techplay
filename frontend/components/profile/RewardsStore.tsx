@@ -4,15 +4,14 @@ import { useMemo, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, History, Check, Lock, HelpCircle, ChevronRight, ChevronDown, Target, Clock3, TrendingUp, TrendingDown, ShoppingBag, type LucideIcon } from "lucide-react";
+import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, ChevronRight, ChevronDown, Target, Clock3, TrendingUp, TrendingDown, ShoppingBag, type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { timeAgo, timeLeft } from "@/lib/timeAgo";
 import type {
-    BountyWallet, RewardRedemption, StoreCatalog, StoreItem, StoreRarity,
-} from "@/lib/types/profile";
+    BountyWallet, RewardRedemption, StoreCatalog, StoreItem, StoreRarity } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -25,12 +24,10 @@ const RARITY: Record<StoreRarity, { label: string; color: string }> = {
     uncommon: { label: "Uncommon", color: "#34d399" },
     rare: { label: "Rare", color: "#60a5fa" },
     epic: { label: "Epic", color: "#a855f7" },
-    legendary: { label: "Legendary", color: "#f0b429" },
-};
+    legendary: { label: "Legendary", color: "#f0b429" } };
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
-    frame: Frame, theme: Palette, badge: Award, perk: Sparkles, discount: Ticket, physical: Package,
-};
+    frame: Frame, theme: Palette, badge: Award, perk: Sparkles, discount: Ticket, physical: Package };
 
 type SortId = "featured" | "cheap" | "expensive" | "rarity";
 
@@ -133,8 +130,7 @@ function ItemArt({ item }: { item: StoreItem }) {
 /* ── one store card ───────────────────────────────────────────────────── */
 
 function StoreCard({
-    item, busy, onBuy, onEquip,
-}: {
+    item, busy, onBuy, onEquip }: {
     item: StoreItem;
     busy: boolean;
     onBuy: () => void;
@@ -149,8 +145,7 @@ function StoreCard({
             style={{
                 borderColor: `color-mix(in srgb, ${rarity.color} ${item.owned ? 40 : 22}%, transparent)`,
                 background: "var(--surface-1)",
-                boxShadow: legendary ? `0 0 0 1px color-mix(in srgb, ${rarity.color} 18%, transparent)` : undefined,
-            }}
+                boxShadow: legendary ? `0 0 0 1px color-mix(in srgb, ${rarity.color} 18%, transparent)` : undefined }}
         >
             <span className="relative flex h-[124px] bg-[var(--surface-0)] overflow-hidden">
                 <ItemArt item={item} />
@@ -357,8 +352,7 @@ function TierLadder({ wallet, onClose }: { wallet: BountyWallet; onClose: () => 
                             className="flex items-center gap-2.5 p-2.5 rounded-[9px] border"
                             style={{
                                 borderColor: current ? rung.color : "rgba(255,255,255,0.07)",
-                                background: reached ? `color-mix(in srgb, ${rung.color} 9%, transparent)` : "rgba(255,255,255,0.015)",
-                            }}
+                                background: reached ? `color-mix(in srgb, ${rung.color} 9%, transparent)` : "rgba(255,255,255,0.015)" }}
                         >
                             <span className="w-2 h-8 rounded-full shrink-0" style={{ background: reached ? rung.color : "rgba(255,255,255,0.1)" }} />
                             <span className="min-w-0">
@@ -745,8 +739,7 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                                     className="relative w-[42px] h-[42px] rounded-[9px] border flex items-center justify-center overflow-hidden"
                                     style={{
                                         borderColor: c.equipped ? "#34d399" : `color-mix(in srgb, ${RARITY[c.rarity]?.color ?? "#9ca3af"} 40%, transparent)`,
-                                        background: "var(--surface-1)",
-                                    }}
+                                        background: "var(--surface-1)" }}
                                 >
                                     <span className="w-[26px] h-[26px] rounded-full" style={{ background: c.value ?? RARITY[c.rarity]?.color }} />
                                 </span>

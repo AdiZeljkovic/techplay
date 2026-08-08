@@ -35,6 +35,7 @@ interface DashboardHomeProps {
  * quests, feeds) keep their own endpoints.
  */
 export default function DashboardHome({ user }: DashboardHomeProps) {
+    const router = useRouter();
     const { data } = useSWR(user ? "/me/dashboard" : null, fetcher, {
         dedupingInterval: 30_000,
         revalidateOnFocus: false,
@@ -43,7 +44,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
     if (!data) return <DashboardSkeleton />;
 
     const hasGames = data.stats.games_count > 0;
-    const router = useRouter();
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">

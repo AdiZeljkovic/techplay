@@ -72,27 +72,23 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
             return {
                 background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                 boxShadow: '0 0 15px rgba(255, 215, 0, 0.6), inset 1px 1px 3px rgba(255,255,255,0.5)',
-                border: '3px solid #B8860B',
-            };
+                border: '3px solid #B8860B' };
         }
         if (rank === 2) {
             return {
                 background: 'linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%)',
                 boxShadow: '0 0 10px rgba(192, 192, 192, 0.5), inset 1px 1px 3px rgba(255,255,255,0.4)',
-                border: '3px solid #808080',
-            };
+                border: '3px solid #808080' };
         }
         if (rank === 3) {
             return {
                 background: 'linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)',
                 boxShadow: '0 0 10px rgba(205, 127, 50, 0.5), inset 1px 1px 3px rgba(255,255,255,0.3)',
-                border: '3px solid #654321',
-            };
+                border: '3px solid #654321' };
         }
         return {
             background: 'linear-gradient(135deg, #5D4037 0%, #3E2723 100%)',
-            border: '2px solid #8B7355',
-        };
+            border: '2px solid #8B7355' };
     };
 
     return (
@@ -146,8 +142,7 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
                             top: corner < 2 ? '12px' : 'auto',
                             bottom: corner >= 2 ? '12px' : 'auto',
                             left: corner % 2 === 0 ? '12px' : 'auto',
-                            right: corner % 2 === 1 ? '12px' : 'auto',
-                        }}
+                            right: corner % 2 === 1 ? '12px' : 'auto' }}
                     />
                 ))}
 
@@ -234,8 +229,7 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
                                     color: factionFilter === faction ? MidnightTheme.text.bright : MidnightTheme.text.muted,
                                     boxShadow: factionFilter === faction
                                         ? `0 0 25px ${faction === 'Alliance' ? 'rgba(0,112,221,0.6)' : 'rgba(220,20,60,0.6)'}`
-                                        : `0 0 10px ${MidnightTheme.void.primary}20`,
-                                }}
+                                        : `0 0 10px ${MidnightTheme.void.primary}20` }}
                             >
                                 {faction === 'Alliance' ? <Shield className="w-4 h-4" /> : <Sword className="w-4 h-4" />}
                                 {faction}
@@ -361,8 +355,7 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
                                                 className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden"
                                                 style={{
                                                     border: `3px solid ${classColor}`,
-                                                    boxShadow: `0 0 15px ${classColor}60`,
-                                                }}
+                                                    boxShadow: `0 0 15px ${classColor}60` }}
                                             >
                                                 <img
                                                     src={entry.portrait_url}
@@ -405,8 +398,7 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
                                                 style={{
                                                     color: entry.readiness_score >= 90 ? '#FF8000' :
                                                            entry.readiness_score >= 75 ? '#A335EE' :
-                                                           entry.readiness_score >= 50 ? '#0070DD' : '#1EFF00',
-                                                }}
+                                                           entry.readiness_score >= 50 ? '#0070DD' : '#1EFF00' }}
                                             >
                                                 {entry.readiness_score}%
                                             </motion.div>
@@ -427,8 +419,7 @@ export default function WowLeaderboard({ initialLimit = 10 }: WowLeaderboardProp
                                                     ? `radial-gradient(circle, rgba(0, 112, 221, 0.8), rgba(0, 82, 204, 0.6))`
                                                     : `radial-gradient(circle, rgba(220, 20, 60, 0.8), rgba(139, 0, 0, 0.6))`,
                                                 border: `2px solid ${entry.faction === 'Alliance' ? '#0070DD' : '#DC143C'}`,
-                                                boxShadow: `0 0 20px ${entry.faction === 'Alliance' ? 'rgba(0,112,221,0.6)' : 'rgba(220,20,60,0.6)'}`,
-                                            }}
+                                                boxShadow: `0 0 20px ${entry.faction === 'Alliance' ? 'rgba(0,112,221,0.6)' : 'rgba(220,20,60,0.6)'}` }}
                                         >
                                             {factionTheme.logo}
                                         </motion.div>

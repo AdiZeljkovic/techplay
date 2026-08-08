@@ -58,8 +58,7 @@ export default function ProfileOverviewDashboard({
     reputation, recognitions = [], lists = [], customization, nextRank,
     connectedAccounts = [],
     clan = null,
-    onOpenTab = () => {},
-}: Props) {
+    onOpenTab = () => {} }: Props) {
     const recentUnlocked = (achievements || [])
         .filter((a) => a.is_unlocked)
         .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())

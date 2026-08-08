@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import { Download, Mail, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 

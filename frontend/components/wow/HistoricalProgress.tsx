@@ -156,13 +156,11 @@ export default function HistoricalProgress({ history, characterName }: Historica
                                 data={[...history].reverse().map((snapshot) => ({
                                     date: new Date(snapshot.analyzed_at).toLocaleDateString('en-US', {
                                         month: 'short',
-                                        day: 'numeric',
-                                    }),
+                                        day: 'numeric' }),
                                     iLvL: snapshot.item_level || 0,
                                     'M+ Score': snapshot.mythic_plus_score || 0,
                                     'Arena Rating': snapshot.arena_rating || 0,
-                                    'Readiness %': snapshot.readiness_score || 0,
-                                }))}
+                                    'Readiness %': snapshot.readiness_score || 0 }))}
                                 margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
                             >
                                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
@@ -177,8 +175,7 @@ export default function HistoricalProgress({ history, characterName }: Historica
                                         backgroundColor: 'var(--bg-card)',
                                         border: '1px solid var(--border)',
                                         borderRadius: '12px',
-                                        fontSize: '12px',
-                                    }}
+                                        fontSize: '12px' }}
                                     labelStyle={{ color: 'var(--text-primary)', fontWeight: 'bold' }}
                                     itemStyle={{ color: 'var(--text-secondary)' }}
                                 />

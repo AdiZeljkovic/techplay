@@ -1,12 +1,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles, AlertCircle, X, TrendingUp, Target, Zap, Shield, Trophy, Swords } from 'lucide-react';
+import { Sparkles, AlertCircle, X, TrendingUp, Shield, Trophy, Swords } from 'lucide-react';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
 
 import { MidnightFaction } from '@/types';
 
@@ -344,8 +343,7 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                                     strokeDasharray={`${2 * Math.PI * 120}`}
                                     initial={{ strokeDashoffset: 2 * Math.PI * 120 }}
                                     animate={{
-                                        strokeDashoffset: 2 * Math.PI * 120 * (1 - data.readiness_score / 100),
-                                    }}
+                                        strokeDashoffset: 2 * Math.PI * 120 * (1 - data.readiness_score / 100) }}
                                     transition={{ duration: 2, ease: 'easeOut' }}
                                     filter="drop-shadow(0 0 10px var(--accent))"
                                 />
@@ -380,8 +378,7 @@ export default function OverviewTab({ data }: OverviewTabProps) {
                                     strokeDasharray={`${2 * Math.PI * 160}`}
                                     initial={{ strokeDashoffset: 2 * Math.PI * 160 }}
                                     animate={{
-                                        strokeDashoffset: 2 * Math.PI * 160 * (1 - data.readiness_score / 100),
-                                    }}
+                                        strokeDashoffset: 2 * Math.PI * 160 * (1 - data.readiness_score / 100) }}
                                     transition={{ duration: 2, ease: 'easeOut' }}
                                     filter="drop-shadow(0 0 12px var(--accent))"
                                 />

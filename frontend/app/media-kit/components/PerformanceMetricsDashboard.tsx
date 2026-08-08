@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from "recharts";
+import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { TrendingUp, Users, Activity, Globe } from "lucide-react";
 
 const deviceData = [

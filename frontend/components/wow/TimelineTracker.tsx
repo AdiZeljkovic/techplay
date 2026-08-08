@@ -24,8 +24,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
         days: timeline.days_until_launch,
         hours: 0,
         minutes: 0,
-        seconds: 0,
-    });
+        seconds: 0 });
 
     useEffect(() => {
         const launchTime = new Date(timeline.launch_date).getTime();
@@ -43,8 +42,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                 days: Math.floor(distance / (1000 * 60 * 60 * 24)),
                 hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
                 minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-                seconds: Math.floor((distance % (1000 * 60)) / 1000),
-            });
+                seconds: Math.floor((distance % (1000 * 60)) / 1000) });
         };
 
         updateCountdown();
@@ -64,8 +62,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                 style={{
                     background: MidnightTheme.backgrounds.void,
                     border: `3px solid ${urgencyTheme.border}`,
-                    boxShadow: urgencyTheme.shadow,
-                }}
+                    boxShadow: urgencyTheme.shadow }}
             >
                 {/* Animated Void Pulse Background */}
                 <motion.div
@@ -75,8 +72,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                             `radial-gradient(circle at 30% 50%, ${MidnightTheme.void.primary}, transparent)`,
                             `radial-gradient(circle at 70% 50%, ${urgencyTheme.text}, transparent)`,
                             `radial-gradient(circle at 30% 50%, ${MidnightTheme.void.primary}, transparent)`,
-                        ],
-                    }}
+                        ] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 />
 
@@ -84,8 +80,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                 <div
                     className="absolute inset-0 pointer-events-none"
                     style={{
-                        background: MidnightTheme.gradients.glassOverlay,
-                    }}
+                        background: MidnightTheme.gradients.glassOverlay }}
                 />
 
                 <div className="relative z-10 text-center">
@@ -116,8 +111,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                             WebkitTextFillColor: 'transparent',
                             textShadow: `0 0 20px ${urgencyTheme.glow}`,
                             fontFamily: 'serif',
-                            letterSpacing: '0.15em',
-                        }}
+                            letterSpacing: '0.15em' }}
                     >
                         {isUrgent ? '⚠️ CRITICAL COUNTDOWN ⚠️' : '🌌 MIDNIGHT APPROACHES 🌌'}
                     </motion.h2>
@@ -140,8 +134,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                                 style={{
                                     ...glassCard,
                                     border: `2px solid ${urgencyTheme.border}`,
-                                    boxShadow: `0 0 20px ${urgencyTheme.glow}, ${MidnightTheme.shadows.depth}`,
-                                }}
+                                    boxShadow: `0 0 20px ${urgencyTheme.glow}, ${MidnightTheme.shadows.depth}` }}
                                 animate={
                                     item.label === 'SECS'
                                         ? { scale: [1, 1.05, 1] }
@@ -154,8 +147,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                                 <div
                                     className="absolute inset-0 rounded-xl opacity-30"
                                     style={{
-                                        background: `radial-gradient(circle at center, ${urgencyTheme.text}, transparent)`,
-                                    }}
+                                        background: `radial-gradient(circle at center, ${urgencyTheme.text}, transparent)` }}
                                 />
 
                                 <div className="relative z-10">
@@ -166,8 +158,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                                             WebkitBackgroundClip: 'text',
                                             WebkitTextFillColor: 'transparent',
                                             fontFamily: 'monospace',
-                                            filter: `drop-shadow(0 0 10px ${urgencyTheme.glow})`,
-                                        }}
+                                            filter: `drop-shadow(0 0 10px ${urgencyTheme.glow})` }}
                                     >
                                         {String(item.value).padStart(2, '0')}
                                     </div>
@@ -201,8 +192,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                         style={{
                             ...glassCard,
                             border: `2px solid ${MidnightTheme.urgency.critical}`,
-                            background: `${MidnightTheme.backgrounds.glassLight}`,
-                        }}
+                            background: `${MidnightTheme.backgrounds.glassLight}` }}
                     >
                         <div className="flex items-center justify-center gap-3 mb-4">
                             <Zap className="w-6 h-6" style={{ color: MidnightTheme.urgency.high }} />
@@ -224,8 +214,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                                         : `linear-gradient(135deg, rgba(139, 0, 0, 0.3), rgba(220, 20, 60, 0.2))`,
                                     border: timeline.limited_content_available.royal_voidwing
                                         ? `2px solid ${MidnightTheme.void.primary}`
-                                        : `2px solid ${MidnightTheme.urgency.dark}`,
-                                }}
+                                        : `2px solid ${MidnightTheme.urgency.dark}` }}
                                 whileHover={{ scale: 1.03 }}
                             >
                                 <div className="flex items-center gap-3 mb-2">
@@ -254,8 +243,7 @@ export default function TimelineTracker({ timeline }: TimelineTrackerProps) {
                                         : `linear-gradient(135deg, rgba(139, 0, 0, 0.3), rgba(220, 20, 60, 0.2))`,
                                     border: timeline.limited_content_available.faceless_one_title
                                         ? `2px solid ${MidnightTheme.void.primary}`
-                                        : `2px solid ${MidnightTheme.urgency.dark}`,
-                                }}
+                                        : `2px solid ${MidnightTheme.urgency.dark}` }}
                                 whileHover={{ scale: 1.03 }}
                             >
                                 <div className="flex items-center gap-3 mb-2">

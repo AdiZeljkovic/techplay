@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
     User as UserIcon, MapPin, CalendarDays, Pencil, ExternalLink, Check, BadgeCheck, MoreHorizontal,
-    Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare,
-} from "lucide-react";
+    Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare } from "lucide-react";
 import type { HeroModel } from "@/lib/hero";
 import type { FriendStatus } from "@/lib/types/profile";
 import { rankTier } from "@/lib/ranks";
@@ -25,8 +24,7 @@ function AvatarRing({
     src,
     alt,
     frame,
-    online,
-}: {
+    online }: {
     src: string | null;
     alt: string;
     frame: string | null;
@@ -39,8 +37,7 @@ function AvatarRing({
                 className="absolute inset-0 rounded-full"
                 style={{
                     background: frame || "var(--accent)",
-                    boxShadow: "0 0 24px -4px color-mix(in srgb, var(--accent) 55%, transparent)",
-                }}
+                    boxShadow: "0 0 24px -4px color-mix(in srgb, var(--accent) 55%, transparent)" }}
             />
             {/* the gap that keeps the ring reading as a ring, not a border */}
             <span aria-hidden className="absolute inset-[2.5px] rounded-full bg-[var(--surface-0)]" />
@@ -263,8 +260,7 @@ export default function ProfileHero({
     onAddFriend,
     onMessage,
     viewerSignedIn = false,
-    viewerUsername,
-}: Props) {
+    viewerUsername }: Props) {
     const [copied, setCopied] = useState(false);
 
     const backdrop = hero.cover_image ?? hero.backdrop_fallback;
@@ -302,8 +298,7 @@ export default function ProfileHero({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-games.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
-            href: `${base}?tab=collection`,
-        },
+            href: `${base}?tab=collection` },
         {
             label: "Completed",
             value: hero.stats.completed,
@@ -311,8 +306,7 @@ export default function ProfileHero({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-completed.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
-            href: `${base}?tab=collection`,
-        },
+            href: `${base}?tab=collection` },
         {
             label: "Reviews",
             value: hero.stats.reviews,
@@ -322,8 +316,7 @@ export default function ProfileHero({
             ),
             // Reviews surface in the overview's activity feed — there is no
             // longer a tab of their own to point at.
-            href: base,
-        },
+            href: base },
         {
             label: "Achievements",
             value: (
@@ -338,8 +331,7 @@ export default function ProfileHero({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-achievements.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
-            href: `${base}?tab=achievements`,
-        },
+            href: `${base}?tab=achievements` },
         {
             label: "Streak",
             value: (
@@ -352,8 +344,7 @@ export default function ProfileHero({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-streak.webp" alt="" aria-hidden
                     className={`w-[60px] h-[60px] shrink-0 object-contain select-none ${hero.streak_days > 0 ? "" : "opacity-40 grayscale"}`} style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
-            ),
-        },
+            ) },
         {
             label: `Level ${hero.level + 1} loot`,
             value: (
@@ -373,8 +364,7 @@ export default function ProfileHero({
                     style={{ filter: "drop-shadow(0 3px 8px rgba(0,0,0,0.6))" }}
                 />
             ),
-            href: `${base}?tab=stats`,
-        },
+            href: `${base}?tab=stats` },
     ];
 
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
@@ -34,8 +34,7 @@ function Toggle({
     title,
     body,
     on,
-    onChange,
-}: {
+    onChange }: {
     icon: React.ReactNode;
     title: string;
     body: string;
@@ -74,8 +73,7 @@ function Toggle({
 export default function ListEditor({
     listId,
     username,
-    onClose,
-}: {
+    onClose }: {
     listId: number;
     username: string;
     onClose: () => void;
@@ -92,8 +90,7 @@ export default function ListEditor({
         tags: [] as string[],
         is_public: true,
         allow_comments: true,
-        has_spoilers: false,
-    });
+        has_spoilers: false });
     const [tagDraft, setTagDraft] = useState("");
     const [saving, setSaving] = useState<"draft" | "publish" | null>(null);
     const [items, setItems] = useState<GameListItemEntry[]>([]);
@@ -112,8 +109,7 @@ export default function ListEditor({
             tags: list.tags ?? [],
             is_public: list.is_public ?? true,
             allow_comments: list.allow_comments ?? true,
-            has_spoilers: list.has_spoilers ?? false,
-        });
+            has_spoilers: list.has_spoilers ?? false });
     }, [list]);
 
     useEffect(() => {
@@ -130,8 +126,7 @@ export default function ListEditor({
             await axios.put(key, {
                 ...form,
                 category: form.category || null,
-                is_draft: mode === "draft",
-            });
+                is_draft: mode === "draft" });
             toast.success(mode === "draft" ? "Saved as draft" : "List published");
             mutate();
             if (mode === "publish") onClose();
@@ -477,8 +472,7 @@ function PreviewCard({
     form,
     list,
     items,
-    username,
-}: {
+    username }: {
     form: { name: string; description: string; list_type: ListType; has_spoilers: boolean };
     list: GameListDetail;
     items: GameListItemEntry[];
@@ -611,8 +605,7 @@ function GameSearch({ onAdd, disabled, limitLabel }: { onAdd: (slug: string) => 
 
 export function CommunityInspiration() {
     const { data } = useSWR<{ data: GameListPreview[] }>("/game-lists/discover?limit=5", fetcher, {
-        revalidateOnFocus: false,
-    });
+        revalidateOnFocus: false });
     const lists = data?.data ?? [];
 
     if (!lists.length) return null;

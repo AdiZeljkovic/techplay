@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getServerApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
-import { ChevronLeft, CalendarDays, Building2, Code2, Star } from "lucide-react";
+import { ChevronLeft, CalendarDays, Building2, Code2 } from "lucide-react";
 import ReleaseClient from "./ReleaseClient";
 
 export const revalidate = 3600;
@@ -49,8 +49,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 async function getRelease(slug: string): Promise<Release | null> {
     const json = await fetchContent<{ data?: Release }>(`${getServerApiUrl()}/calendar/${slug}`, {
-        next: { revalidate: 3600, tags: [`release-${slug}`] },
-    });
+        next: { revalidate: 3600, tags: [`release-${slug}`] } });
 
     return json?.data ?? null;
 }
@@ -79,15 +78,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             url: `https://techplay.gg/calendar/${slug}`,
             siteName: "TechPlay",
             images: release.cover_url ? [release.cover_url] : [],
-            type: "website",
-        },
+            type: "website" },
         twitter: {
             card: "summary_large_image",
             title: release.name,
             description,
-            images: release.cover_url ? [release.cover_url] : [],
-        },
-    };
+            images: release.cover_url ? [release.cover_url] : [] } };
 }
 
 /**
@@ -104,8 +100,7 @@ function whenItLands(release: Release) {
     if (release.precision === "month") {
         return {
             line: date.toLocaleDateString("en-GB", { month: "long", year: "numeric" }),
-            note: "Exact day not announced",
-        };
+            note: "Exact day not announced" };
     }
     if (release.precision === "quarter") {
         return { line: `Q${Math.floor(date.getMonth() / 3) + 1} ${date.getFullYear()}`, note: "Quarter only" };
@@ -124,8 +119,7 @@ function whenItLands(release: Release) {
 
     return {
         line: date.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "long", year: "numeric" }),
-        note,
-    };
+        note };
 }
 
 export default async function ReleasePage({ params }: Props) {

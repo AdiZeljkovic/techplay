@@ -1,7 +1,7 @@
 'use client';
 
 import { WowCollections } from '@/types';
-import { Heart, Gift, Sparkles, CircleDot, TrendingUp, Trophy, AlertCircle } from 'lucide-react';
+import { Heart, Gift, Sparkles, CircleDot, Trophy, AlertCircle } from 'lucide-react';
 
 interface CollectionStatsProps {
     collections: WowCollections | null;
@@ -125,8 +125,7 @@ export default function CollectionStats({ collections }: CollectionStatsProps) {
                                     <div
                                         className="bg-gradient-to-r from-purple-500 to-fuchsia-500 h-3 rounded-full transition-all duration-300 shadow-lg shadow-purple-500/30"
                                         style={{
-                                            width: `${Math.min((collections.toys.collected / 500) * 100, 100)}%`,
-                                        }}
+                                            width: `${Math.min((collections.toys.collected / 500) * 100, 100)}%` }}
                                     />
                                 </div>
                                 <p className="text-xs text-[var(--text-secondary)] font-semibold mt-2">
