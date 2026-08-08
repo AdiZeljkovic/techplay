@@ -23,6 +23,7 @@ class FlushViewCounters implements ShouldQueue
         $this->flushPattern('views:thread:*', 'threads', 'view_count');
         $this->flushPattern('views:article:*', 'articles', 'views');
         $this->flushPattern('views:game:*', 'games', 'views');
+        $this->flushPattern('views:guide:*', 'guides', 'views');
         $this->flushPattern('views:ad:*', 'ad_campaigns', 'view_count');
         $this->flushPattern('clicks:ad:*', 'ad_campaigns', 'click_count');
     }
@@ -40,23 +41,29 @@ class FlushViewCounters implements ShouldQueue
             }
 
             foreach ($keys as $key) {
-                $count = (int) Redis::get($key);
-
-                if ($count <= 0) {
-                    continue;
-                }
-
-                // Strip Redis prefix to get the raw ID
-                $id = str_replace([$prefix, ltrim($pattern, '*'), ':'], '', $key);
-                // More reliable: extract the last segment after the last colon
                 $id = (int) substr($key, strrpos($key, ':') + 1);
 
                 if ($id <= 0) {
                     continue;
                 }
 
-                DB::table($table)->where('id', $id)->increment($column, $count);
-                Redis::del($key);
+                // Read and clear in one step. Reading, writing and then
+                // deleting lost every view recorded in between — exactly when
+                // a page is busiest — and re-applied the whole counter if the
+                // worker died before the delete.
+                $count = (int) Redis::getdel($key);
+
+                if ($count <= 0) {
+                    continue;
+                }
+
+                try {
+                    DB::table($table)->where('id', $id)->increment($column, $count);
+                } catch (\Throwable $e) {
+                    // Put it back rather than lose it.
+                    Redis::incrby($key, $count);
+                    throw $e;
+                }
             }
         } while ($cursor !== '0');
     }

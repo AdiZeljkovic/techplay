@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\Chronicle\ChronicleBuilder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Rebuilds chronicles: all of them, one user, or just the users whose
@@ -26,20 +27,41 @@ class RebuildChronicles extends Command
     {
         $users = match (true) {
             (bool) $this->option('user') => User::where('id', $this->option('user'))
-                ->orWhere('username', $this->option('user'))->get(),
+                ->orWhere('username', $this->option('user')),
             (bool) $this->option('stale') => $this->stale(),
-            default => User::query()->get(),
+            default => User::query(),
         };
 
-        $bar = $this->output->createProgressBar($users->count());
-        foreach ($users as $user) {
-            $builder->build($user);
+        $total = $users->count();
+        $bar = $this->output->createProgressBar($total);
+        $built = 0;
+        $failed = [];
+
+        foreach ($users->cursor() as $user) {
+            try {
+                $builder->build($user);
+                $built++;
+            } catch (\Throwable $e) {
+                // One unbuildable user used to abort the whole run, so everyone
+                // after them was never rebuilt — and the same user poisoned it
+                // again the next night, forever, silently.
+                $failed[] = $user->id;
+                Log::warning('Chronicle build failed', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            }
             $bar->advance();
         }
+
         $bar->finish();
         $this->newLine();
 
-        $this->info('Chronicle izgrađen za '.number_format($users->count()).' korisnika.');
+        $this->info('Chronicle izgrađen za '.number_format($built).' korisnika.');
+
+        if ($failed !== []) {
+            // A non-zero exit so the scheduler's failure hook can see it.
+            $this->error(count($failed).' korisnika nije uspjelo: '.implode(', ', array_slice($failed, 0, 20)));
+
+            return self::FAILURE;
+        }
 
         return self::SUCCESS;
     }
@@ -49,20 +71,31 @@ class RebuildChronicles extends Command
     {
         $built = DB::table('user_chronicles')->pluck('built_at', 'user_id');
 
-        return User::query()->get()->filter(function (User $user) use ($built) {
-            $lastBuild = $built[$user->id] ?? null;
-            if (! $lastBuild) {
-                return true;
-            }
+        // Ask each source once for everyone who moved, instead of five queries
+        // per user. At twenty thousand users the old shape was a hundred
+        // thousand round trips before a single chronicle was built.
+        $moved = collect();
+        foreach (['user_games', 'game_ratings', 'play_sessions', 'article_reads', 'player_signals'] as $table) {
+            $column = $table === 'player_signals' ? 'day' : 'updated_at';
+            $moved = $moved->merge(
+                DB::table($table)
+                    ->select('user_id', DB::raw("MAX({$column}) as moved_at"))
+                    ->groupBy('user_id')
+                    ->pluck('moved_at', 'user_id')
+            );
+        }
 
-            foreach (['user_games', 'game_ratings', 'play_sessions', 'article_reads', 'player_signals'] as $table) {
-                $column = $table === 'player_signals' ? 'day' : 'updated_at';
-                if (DB::table($table)->where('user_id', $user->id)->where($column, '>', $lastBuild)->exists()) {
-                    return true;
-                }
+        $staleIds = [];
+        foreach ($moved as $userId => $movedAt) {
+            $lastBuild = $built[$userId] ?? null;
+            if (! $lastBuild || $movedAt > $lastBuild) {
+                $staleIds[] = $userId;
             }
+        }
 
-            return false;
-        });
+        // Anyone who has never been built at all.
+        $neverBuilt = User::whereNotIn('id', $built->keys())->pluck('id')->all();
+
+        return User::whereIn('id', array_unique(array_merge($staleIds, $neverBuilt)));
     }
 }

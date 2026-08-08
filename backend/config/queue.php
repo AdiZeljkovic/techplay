@@ -68,7 +68,12 @@ return [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
+            // Must stay above the longest job timeout in app/Jobs (currently
+            // EnrichSteamBatch at 300s, whose worst case with retries is far
+            // longer). At 90 the queue re-delivered jobs that were still
+            // running — and EnrichSteamBatch dispatches its own successor, so
+            // the drip chain forked every time Steam was slow.
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 1200),
             'block_for' => null,
             'after_commit' => false,
         ],

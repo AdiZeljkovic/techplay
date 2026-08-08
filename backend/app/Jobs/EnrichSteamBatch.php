@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Game;
 use App\Services\Releases\TalksToStores;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -29,13 +30,24 @@ use Illuminate\Support\Facades\Log;
  * exception to "empty only" is critic_scores.metacritic, which is merged
  * in whenever Steam carries it — that data updates at the source.
  */
-class EnrichSteamBatch implements ShouldQueue
+class EnrichSteamBatch implements ShouldBeUnique, ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, TalksToStores;
 
     public const PER_RUN = 25;
 
     public int $timeout = 300;
+
+    /**
+     * One batch at a time. The job tail-dispatches its successor, so without
+     * this a slow Steam turned the chain into a fork bomb.
+     */
+    public int $uniqueFor = 1800;
+
+    public function uniqueId(): string
+    {
+        return 'enrich-steam-batch';
+    }
 
     public int $tries = 3;
 

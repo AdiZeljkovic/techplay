@@ -10,6 +10,7 @@ use App\Services\ContentGameLinker;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 
 class GuideController extends Controller
 {
@@ -44,8 +45,18 @@ class GuideController extends Controller
 
     public function show($slug)
     {
-        // Increment views directly on DB to bypass cache and ensure accuracy
-        Guide::where('slug', $slug)->increment('views');
+        // Buffered through Redis and settled by FlushViewCounters every five
+        // minutes. This used to be a direct UPDATE on every request — including
+        // cache hits — which serialises the whole route on one row lock the
+        // moment a story goes viral.
+        try {
+            $viewId = Guide::where('slug', $slug)->value('id');
+            if ($viewId) {
+                Redis::incr('views:guide:'.$viewId);
+            }
+        } catch (\Throwable) {
+            // A counter must never take the page down.
+        }
 
         // Cache the Guide data itself
         $guide = Cache::remember("guide.show.v3.{$slug}", CacheService::TTL_LONG, function () use ($slug) {
