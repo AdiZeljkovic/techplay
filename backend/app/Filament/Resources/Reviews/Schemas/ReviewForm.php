@@ -184,7 +184,7 @@ class ReviewForm
                                     ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
                                     ->saveUploadedFileUsing(function ($file) {
                                         $path = $file->store('reviews', 'public');
-                                        $optimizer = new ImageOptimizer;
+                                        $optimizer = app(ImageOptimizer::class);
 
                                         return $optimizer->optimize($path, 'public');
                                     })

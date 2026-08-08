@@ -377,7 +377,7 @@ class ArticleForm
                                                 $path = $file->store('articles', 'public');
 
                                                 // Optimize the image (resize, convert to WebP, compress)
-                                                $optimizer = new ImageOptimizer;
+                                                $optimizer = app(ImageOptimizer::class);
                                                 $optimizedPath = $optimizer->optimize($path, 'public');
 
                                                 return $optimizedPath;

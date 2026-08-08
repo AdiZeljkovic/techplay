@@ -68,37 +68,58 @@ class ArticleObserver
         $this->clearAuthorCache($article);
 
         if ($article->category) {
-            $categoryPath = $this->getCategoryPath($article->category->type);
-
-            if ($categoryPath) {
-                // Always revalidate the article page when a published article is saved
-                $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
-
-                if ($article->is_featured_in_hero) {
-                    $this->revalidationService->revalidateHomepage();
-                }
-
-                // Only ping search engines and regenerate news sitemap on first publish
-                $isNewlyPublished = $article->wasRecentlyCreated || $article->wasChanged('status');
-                if ($isNewlyPublished) {
-                    $this->regenerateNewsSitemap();
-                    $this->pingSearchEngines($article->slug, $categoryPath);
-
-                    // Notify wishlisted users when a review is published.
-                    if ($article->game_id && $article->review_score && in_array($article->category->type, ['review', 'reviews'])) {
-                        $this->notifyWishlisters($article);
-                    }
-
-                    // Notify all users tracking this game when any article about it is published.
-                    if ($article->game_id && in_array($article->category->type, ['news', 'guide', 'guides'])) {
-                        $this->notifyGameTrackers($article, $categoryPath);
-                    }
-
-                    // Award bounty + quest progress to the author on first publish.
-                    $this->rewardAuthor($article);
-                }
-            }
+            // Cache purging, sitemaps, search-engine pings and the notification
+            // walk all leave the request now. Publishing used to hold the
+            // editor's save for as long as those took, and showed a timeout on
+            // a write that had already succeeded.
+            \App\Jobs\PublishArticleFanout::dispatch(
+                $article->id,
+                $article->wasRecentlyCreated || $article->wasChanged('status'),
+            );
         }
+    }
+
+    /**
+     * The publish fan-out itself, called from the queued job. Kept here because
+     * every step it needs is a method on this observer.
+     */
+    public function runPublishFanout(Article $article, bool $isNewlyPublished): void
+    {
+        if (! $article->relationLoaded('category')) {
+            $article->load('category');
+        }
+
+        $categoryPath = $this->getCategoryPath($article->category->type ?? null);
+
+        if (! $categoryPath) {
+            return;
+        }
+
+        $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
+
+        if ($article->is_featured_in_hero) {
+            $this->revalidationService->revalidateHomepage();
+        }
+
+        if (! $isNewlyPublished) {
+            return;
+        }
+
+        $this->regenerateNewsSitemap();
+        $this->pingSearchEngines($article->slug, $categoryPath);
+
+        // Notify wishlisted users when a review is published.
+        if ($article->game_id && $article->review_score && in_array($article->category->type, ['review', 'reviews'])) {
+            $this->notifyWishlisters($article);
+        }
+
+        // Notify all users tracking this game when any article about it is published.
+        if ($article->game_id && in_array($article->category->type, ['news', 'guide', 'guides'])) {
+            $this->notifyGameTrackers($article, $categoryPath);
+        }
+
+        // Award bounty + quest progress to the author on first publish.
+        $this->rewardAuthor($article);
     }
 
     /**
