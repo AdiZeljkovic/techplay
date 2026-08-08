@@ -41,6 +41,13 @@ Schedule::job(new SendGiveawayReminders)->everySixHours();
 Schedule::job(new SendReleaseReminders)->dailyAt('09:00');
 
 // One daily sip from the OpenCritic API budget — most-viewed modern games first.
+// Keep-alive for the Steam drip. The job chains itself, so a worker restart
+// mid-batch ends it silently; EnrichSteamBatch is ShouldBeUnique, so this is a
+// no-op while the chain is running and a revival when it has stopped.
+Schedule::command('games:enrich-steam')->hourly()
+    ->withoutOverlapping(30)
+    ->onFailure($reportFailure('games:enrich-steam'));
+
 Schedule::command('games:enrich-opencritic')->dailyAt('05:30')->withoutOverlapping(60)->onFailure($reportFailure('games:enrich-opencritic'));
 
 // The daily ration of YouTube searches, spent on trailers Steam could not give us.
