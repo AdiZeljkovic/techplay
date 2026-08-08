@@ -86,7 +86,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     alternates: {
       types: {
-        'application/rss+xml': [{ url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg'}/feed`, title: 'TechPlay RSS Feed' }],
+        'application/rss+xml': [{ url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg'}/rss`, title: 'TechPlay RSS Feed' }],
       },
     },
     manifest: '/manifest.json',
