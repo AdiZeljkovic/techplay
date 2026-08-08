@@ -25,6 +25,13 @@ Artisan::command('inspire', function () {
 Schedule::job(new FlushViewCounters)->everyFiveMinutes()->withoutOverlapping(10);
 
 // MONETIZATION: Sync ad metrics from Redis to database every hour
+// Proof of life for the cron line itself. Without this nothing inside the app
+// can tell whether `* * * * * php artisan schedule:run` was ever installed —
+// and if it was not, every scheduled task simply never happens, silently.
+Schedule::call(function () {
+    \Illuminate\Support\Facades\Cache::put('scheduler:heartbeat', now()->toIso8601String(), 3600);
+})->everyMinute()->name('scheduler-heartbeat')->withoutOverlapping();
+
 Schedule::command('ads:sync-metrics')->hourly();
 
 // GIVEAWAYS: Send reminder emails for giveaways ending in 24 hours (runs every 6 hours)

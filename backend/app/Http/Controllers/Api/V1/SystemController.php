@@ -69,9 +69,20 @@ class SystemController extends Controller
         // The scheduler is a cron line that lives outside the repo. If it was
         // never installed, nothing else here would notice.
         $checks['scheduler'] = $this->check(function () {
-            $last = DB::table('cache')->where('key', 'like', '%schedule%')->max('expiration');
+            $beat = \Illuminate\Support\Facades\Cache::get('scheduler:heartbeat');
 
-            return ['ok' => true, 'note' => $last ? 'seen' : 'no recent schedule marker'];
+            if (! $beat) {
+                return [
+                    'ok' => false,
+                    'error' => 'No heartbeat. Is `* * * * * php artisan schedule:run` in the crontab?',
+                ];
+            }
+
+            // Two minutes of slack for a busy minute; beyond that the cron
+            // stopped and every scheduled task stopped with it.
+            $age = now()->diffInSeconds(\Carbon\Carbon::parse($beat), true);
+
+            return ['ok' => $age < 180, 'last_run' => $beat, 'age_seconds' => (int) $age];
         });
 
         $healthy = collect($checks)->every(fn ($c) => $c['ok'] === true);
