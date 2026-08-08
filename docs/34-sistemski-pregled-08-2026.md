@@ -522,3 +522,59 @@ crontab -l | grep schedule:run                      # D2 — objavljuju li se za
 redis-cli config get maxmemory maxmemory-policy     # A4
 curl -I https://api-beta.techplay.gg/api/v1/news | grep cf-cache-status   # E5
 ```
+
+---
+
+## Stanje na 08.08.2026 — šta je urađeno
+
+Sve što slijedi je popravljeno, testirano (356/356 backend testova prolazi,
+typecheck i lint zeleni) i na `main`. Dokument ostaje kakav je bio da se vidi
+šta je bio nalaz; ova tabela govori šta je od toga zatvoreno.
+
+### Zatvoreno
+
+| Nalaz | Šta je urađeno |
+|---|---|
+| A1 rate limit | `throttleApi('api')` u `bootstrap/app.php` — cijeli API je pod limitom |
+| A3 timeouti | `Http::globalOptions` s 10 s / 3 s kao pod za sve izlazne pozive |
+| B2 Steam token | Sanctum token zamijenjen desetominutnim jednokratnim handleom u kešu |
+| B3 Turnstile | Pada zatvoreno kad ključ nije podešen; `staff-bypass` je sad konfigurisana tajna, po defaultu odsutna |
+| B5 kredencijali | Lozinke izvađene iz `local_export_db.ps1` i `provision.sh` |
+| C1 brojač pregleda | Članci, recenzije, tech i vodiči idu kroz Redis; flush je atomičan (`GETDEL`) i vraća broj ako upis padne |
+| C2 leaderboard | `viewer()` keširan po korisniku, sezona keširana, `COALESCE` maknut, dva parcijalna indeksa dodana |
+| C3 stampede | `Cache::flexible` na pet najskupljih ključeva |
+| C5 konekcije | Perzistentne konekcije isključene po defaultu, `connect_timeout` postavljen |
+| D1 health | `/api/v1/system/health` provjerava Postgres, Redis, dubinu reda i `failed_jobs`, vraća 503; deploy gate pokazuje na njega |
+| D3 tihi enrichment | OpenCritic vraća `FAILURE` umjesto lažnog uspjeha; `onFailure` hookovi na šest zakazanih zadataka |
+| D4 duplo izvršavanje | `retry_after` 1200 s, `EnrichSteamBatch` je `ShouldBeUnique` |
+| D5 chronicle | Preživi pokvarenog korisnika, jedan upit po izvoru umjesto pet po korisniku, streamuje |
+| E2 GA proxy | Ne blokira više; samo GA collect putanje |
+| E4 bundle | Echo i pusher (88 KB) van root bundlea; `/settings` se ne dohvaća dvaput |
+| G1 CI | Zelen na sve tri grane; dvije stvarne greške reda hookova popravljene |
+| G2 XP exploit | Quest se broji iza publish zaštite, poslije validacije |
+| G3 SEO polja | `meta_*` putuju i stranica ih preferira — meta description urednika se konačno prikazuje |
+| G5 onboarding | Root `README.md` napisan |
+| F duplikati | Obrisani: stari sistem poruka (kontroler + 5 ruta), `BlizzardDataTransformer`, `ImageService`, `useApi.ts`, `SeoForm`, `sonner` |
+| Admin panel | `/debug-gemini-test` obrisan; publish fan-out prebačen na queue (urednik više ne čeka 15–30 s); `ImageOptimizer` kroz kontejner |
+| A2 backup | `deployment/backup.sh` napisan — Postgres, Redis i uploadi, provjeren `pg_restore --list`, sa slanjem van servera. **Treba mu cron linija.** |
+
+### Ostaje — i zašto
+
+Serversko (čeka SSH pristup):
+
+- **A2** cron za `backup.sh`, i prva proba vraćanja
+- **A4** Redis `maxmemory` + `noeviction`
+- **A5** release direktoriji, symlink swap, build u CI-ju umjesto na produkciji
+- **D2** provjeriti postoji li `schedule:run` u crontabu
+- **E1** Cloudflare Polish + WebP — deset minuta, najveći efekat po minuti rada
+- **E5** potvrditi `cf-cache-status` na API-ju
+
+Kod, ali svjesno odgođeno:
+
+- **B1 git historija** — čišćenje dumpa traži `filter-repo` i force push, što razbija svaki klon. Treba se dogovoriti kad, i uz to ide prisilna promjena lozinki.
+- **B4 autorizacija** — Policies umjesto inline provjera i jedna shema rola je refaktor kroz 81 kontroler; nije stvar jednog popodneva.
+- **C4 sortiranje liste igara** — traži materijalizovanu `is_edition` kolonu i backfill nad 140k redova.
+- **E5 `withCredentials`** — dira CSRF putanju na živom sajtu bez staginga; ne bih to mijenjao naslijepo.
+- **G4 testovi za plaćanja i auth** — pravi posao, i vrijedi ga uraditi prije nego se PayPal ponovo dira.
+- **Dva revalidacijska servisa** — oba sad rade; spajanje je maintainability, ne ispravnost, i ima realan rizik da opet pokvari objavljivanje. Zaslužuje svoj prolaz.
+- **Statični sitemap** — SEO, odgođeno po dogovoru.

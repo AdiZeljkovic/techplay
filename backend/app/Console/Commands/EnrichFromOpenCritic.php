@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Services\Releases\TalksToStores;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * A daily sip from the OpenCritic API — the official one, via RapidAPI,
@@ -53,13 +54,16 @@ class EnrichFromOpenCritic extends Command
         $filled = 0;
         $missed = 0;
 
+        $aborted = null;
+
         foreach ($games as $game) {
             try {
                 $this->process($game, $key) ? $filled++ : $missed++;
             } catch (\Throwable $e) {
                 // A failed request spends budget without an answer; stop for
                 // today rather than burn the rest on a bad connection.
-                $this->warn($game->slug.': '.$e->getMessage());
+                $aborted = $game->slug.': '.$e->getMessage();
+                $this->warn($aborted);
                 break;
             }
 
@@ -67,6 +71,15 @@ class EnrichFromOpenCritic extends Command
         }
 
         $this->info(sprintf('Popunjeno: %d | OpenCritic ne zna: %d', $filled, $missed));
+
+        // Returning SUCCESS after an abort meant an expired API key looked
+        // like a good night, every night, while nothing was ever enriched.
+        if ($aborted !== null) {
+            Log::warning('OpenCritic enrichment aborted', ['reason' => $aborted, 'filled' => $filled]);
+            $this->error('Prekinuto prije kraja — ništa se ne popunjava dok se ovo ne riješi.');
+
+            return self::FAILURE;
+        }
 
         return self::SUCCESS;
     }

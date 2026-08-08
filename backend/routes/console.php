@@ -1,5 +1,14 @@
 <?php
 
+// A scheduled task that fails silently is the most expensive kind of bug here:
+// enrichment stops, chronicles freeze, sitemaps go stale, and the site keeps
+// rendering perfectly. Anything registered below that matters gets this hook.
+$reportFailure = function (string $task) {
+    return function () use ($task) {
+        \Illuminate\Support\Facades\Log::error("Scheduled task failed: {$task}");
+    };
+};
+
 use App\Jobs\FlushViewCounters;
 use App\Jobs\PollSteamPresence;
 use App\Jobs\SendGiveawayReminders;
@@ -25,22 +34,22 @@ Schedule::job(new SendGiveawayReminders)->everySixHours();
 Schedule::job(new SendReleaseReminders)->dailyAt('09:00');
 
 // One daily sip from the OpenCritic API budget — most-viewed modern games first.
-Schedule::command('games:enrich-opencritic')->dailyAt('05:30')->withoutOverlapping(60);
+Schedule::command('games:enrich-opencritic')->dailyAt('05:30')->withoutOverlapping(60)->onFailure($reportFailure('games:enrich-opencritic'));
 
 // The daily ration of YouTube searches, spent on trailers Steam could not give us.
-Schedule::command('games:enrich-trailers')->dailyAt('06:00')->withoutOverlapping(60);
+Schedule::command('games:enrich-trailers')->dailyAt('06:00')->withoutOverlapping(60)->onFailure($reportFailure('games:enrich-trailers'));
 
 // The chronicle refreshes overnight for anyone whose signals moved.
-Schedule::command('chronicle:rebuild --stale')->dailyAt('04:45')->withoutOverlapping(120);
+Schedule::command('chronicle:rebuild --stale')->dailyAt('04:45')->withoutOverlapping(120)->onFailure($reportFailure('chronicle:rebuild --stale'));
 
 // Steam achievements for connected accounts — the chronicle reads what you actually earn.
-Schedule::command('games:sync-steam-achievements')->dailyAt('05:00')->withoutOverlapping(180);
+Schedule::command('games:sync-steam-achievements')->dailyAt('05:00')->withoutOverlapping(180)->onFailure($reportFailure('games:sync-steam-achievements'));
 
 // PERFORMANCE: Clean old view tracking records daily (keep last 7 days)
 Schedule::command('views:clean')->daily()->withoutOverlapping(60);
 
 // EDITORIAL: Auto-publish scheduled articles every minute
-Schedule::command('articles:publish-scheduled')->everyMinute()->withoutOverlapping(5);
+Schedule::command('articles:publish-scheduled')->everyMinute()->withoutOverlapping(5)->onFailure($reportFailure('articles:publish-scheduled'));
 
 // PRESENCE: Poll Steam for currently-playing status every 2 minutes
 Schedule::job(new PollSteamPresence)->everyTwoMinutes();
@@ -49,7 +58,7 @@ Schedule::job(new PollSteamPresence)->everyTwoMinutes();
 Schedule::command('wishlist:check-releases')->dailyAt('09:00');
 
 // SEO: Regenerate XML sitemaps every 6 hours
-Schedule::command('sitemap:generate')->withoutOverlapping(30)->everySixHours();
+Schedule::command('sitemap:generate')->withoutOverlapping(30)->everySixHours()->onFailure($reportFailure('sitemap:generate'));
 
 // New titles enter through the store aggregator below — RAWG, Moby and IGDB
 // are all retired, and the catalogue is TechPlay's own from here on.
