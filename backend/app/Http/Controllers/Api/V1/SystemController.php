@@ -98,7 +98,11 @@ class SystemController extends Controller
     private function check(callable $probe): array
     {
         try {
-            return ['ok' => true] + $probe();
+            // array_merge, not `+`: the union operator keeps the LEFT value for
+            // duplicate keys, so a probe reporting ok => false had its verdict
+            // silently discarded and every check passed. A health check that
+            // cannot fail is the thing this endpoint exists to replace.
+            return array_merge(['ok' => true], $probe());
         } catch (\Throwable $e) {
             return ['ok' => false, 'error' => class_basename($e).': '.$e->getMessage()];
         }
