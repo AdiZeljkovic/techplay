@@ -9,7 +9,6 @@ import ReviewWall from "@/components/home/ReviewWall";
 import HiddenGems from "@/components/home/HiddenGems";
 import OnThisDay from "@/components/home/OnThisDay";
 import ProfileCtaBand from "@/components/home/ProfileCtaBand";
-import { useHome } from "@/hooks/useApi";
 
 interface HomeClientProps {
     initialData?: {
@@ -28,7 +27,13 @@ interface HomeClientProps {
  * Logged-in users never see this page (HomeGate swaps them to DashboardHome).
  */
 export default function HomeClient({ initialData }: HomeClientProps) {
-    const { hero: heroArticles, news, reviews, tech } = useHome(initialData);
+    // The server already fetched all of this and passes it down. The hook
+    // this replaced imported raw axios and mutated its global defaults on
+    // import, bypassing every interceptor in lib/axios.
+    const heroArticles = initialData?.hero ?? [];
+    const news = initialData?.news ?? [];
+    const reviews = initialData?.reviews ?? [];
+    const tech = initialData?.tech ?? [];
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)] font-sans text-[var(--ink-mid)]">

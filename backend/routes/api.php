@@ -48,7 +48,6 @@ use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\JournalController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MediaKitController;
-use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\NavigationController;
 use App\Http\Controllers\Api\V1\NewsController;
 use App\Http\Controllers\Api\V1\NewsletterController;
@@ -86,6 +85,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // System Status (Public)
     Route::get('/system/status', [SystemController::class, 'status']);
+    Route::get('/system/health', [SystemController::class, 'health']);
 
     // Auth (Rate Limited - 60 per minute)
     Route::middleware('throttle:60,1')->group(function () {
@@ -178,11 +178,11 @@ Route::prefix('v1')->group(function () {
         Route::delete('/conversations/{conversation}/leave', [ChatController::class, 'leave']);
         Route::post('/messages/{message}/react', [ChatController::class, 'react']);
 
-        Route::get('/messages', [MessageController::class, 'index']);
-        Route::post('/messages', [MessageController::class, 'store']);
-        Route::patch('/messages/{id}/read', [MessageController::class, 'markRead']);
-        Route::delete('/messages/conversation/{userId}', [MessageController::class, 'deleteConversation']);
-        Route::delete('/messages/{id}', [MessageController::class, 'destroy']);
+        // The legacy mail system is gone: conversations replaced it, no screen
+        // reads it, and its index() matched on sender_id — which also matched
+        // conversation rows, leaking Social Hub and clan-room messages back
+        // through a shape nobody maintains.
+        //   Route::get('/messages', ...)  — removed 08.08.2026
 
         // Email Verification
         Route::post('/email/resend', [VerificationController::class, 'resend']);

@@ -56,7 +56,7 @@ fi
 # 5. HEALTH CHECK
 echo "🩺 Health check..."
 sleep 5
-BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/v1/system/status || echo "000")
+BACKEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/v1/system/health || echo "000")
 FRONTEND_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000/ || echo "000")
 echo "Backend /system/status: $BACKEND_STATUS | Frontend /: $FRONTEND_STATUS"
 if [ "$BACKEND_STATUS" != "200" ]; then

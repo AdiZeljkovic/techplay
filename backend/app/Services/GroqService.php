@@ -33,7 +33,7 @@ class GroqService
     /**
      * Analyze WoW character for Midnight expansion readiness using Groq
      *
-     * @param  array  $characterData  Minified character data from BlizzardDataTransformer
+     * @param  array  $characterData  Minified character data from BlizzardDataTransformerV2
      * @return array|null {score: int, advice: string[], missing: string[], daily_priority: string[]}
      */
     public function analyzeCharacterReadiness(array $characterData): ?array

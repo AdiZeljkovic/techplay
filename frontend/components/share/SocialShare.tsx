@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Twitter, Facebook, Linkedin, Share2, Link as LinkIcon, Check, MessageCircle } from "lucide-react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 interface SocialShareProps {
     url: string;
