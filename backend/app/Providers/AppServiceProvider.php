@@ -42,6 +42,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -54,7 +55,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // A floor under every outbound HTTP call. Guzzle's default timeout is
+        // zero — meaning wait forever — and several integrations in the request
+        // path (Turnstile on login, Steam OpenID, the PayPal webhook verifier)
+        // set none of their own. One slow third party could pin every Octane
+        // worker until the whole site stopped answering. Callers that need
+        // longer still override this per request.
+        Http::globalOptions([
+            'timeout' => 10,
+            'connect_timeout' => 3,
+        ]);
     }
 
     /**
@@ -90,8 +100,11 @@ class AppServiceProvider extends ServiceProvider
         // Register custom Socialite providers
         $this->bootSocialite();
 
-        // Force HTTPS in production/staging and fix URL generation
-        if ($this->app->environment('production') || $this->app->environment('staging') || request()->getHost() !== 'localhost') {
+        // Force HTTPS in production/staging and fix URL generation.
+        // The host check that used to live here read request() during boot,
+        // which under Octane runs once per worker before any request exists —
+        // so it took a different branch depending on the runtime.
+        if ($this->app->environment('production', 'staging')) {
             URL::forceScheme('https');
 
             // Fix APP_URL if it's set to HTTP in .env

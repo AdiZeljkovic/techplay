@@ -31,7 +31,13 @@ if ($null -eq $PG_DUMP) {
 
 Write-Host "Using pg_dump at: $PG_DUMP"
 
-$env:PGPASSWORD = "Hanan123!"
+# The password is read from the environment, never committed. Set it for the
+# session first:  $env:PGPASSWORD = "..."   (or use a ~/.pgpass file)
+if (-not $env:PGPASSWORD) {
+    $secure = Read-Host -AsSecureString "PostgreSQL password"
+    $env:PGPASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure))
+}
 
 & $PG_DUMP -h $DB_HOST -p $DB_PORT -U $DB_USER -F p -b -v -f $OUTPUT_FILE $DB_NAME
 

@@ -64,6 +64,8 @@ return [
     ],
 
     'turnstile' => [
+        // Absent by default: with no value there is no captcha bypass.
+        'bypass_token' => env('TURNSTILE_BYPASS_TOKEN'),
         'enabled' => env('TURNSTILE_ENABLED', true),
         'site_key' => env('TURNSTILE_SITE_KEY'),
         'secret_key' => env('TURNSTILE_SECRET_KEY'),

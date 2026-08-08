@@ -86,8 +86,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         // Validate reCAPTCHA/Turnstile token (can be disabled via TURNSTILE_ENABLED=false)
-        // Allow 'staff-bypass' token for maintenance mode staff access
-        $bypassToken = $request->input('recaptcha_token') === 'staff-bypass';
+        // Staff bypass for maintenance windows. It used to be the literal
+        // string 'staff-bypass' compiled into the app, which anyone could send.
+        // Now it is a secret that has to be set deliberately, and is absent by
+        // default — so there is no bypass unless someone configures one.
+        $configuredBypass = config('services.turnstile.bypass_token');
+        $bypassToken = filled($configuredBypass)
+            && hash_equals((string) $configuredBypass, (string) $request->input('recaptcha_token', ''));
 
         if (config('services.turnstile.enabled', true) && ! $bypassToken) {
             if (! $request->filled('recaptcha_token')) {

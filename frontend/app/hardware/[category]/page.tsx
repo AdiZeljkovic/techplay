@@ -68,8 +68,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return { title: "Hardware Lab - TechPlay", description: "In-depth hardware reviews and benchmarks." };
     }
 
-    const title = article.seo_title || article.title;
-    const description = article.seo_description || article.excerpt || "Read more on TechPlay.";
+    const title = article.meta_title || article.seo_title || article.title;
+    const description = article.meta_description || article.seo_description || article.excerpt || "Read more on TechPlay.";
 
     let imageUrl = article.featured_image_url;
     if (imageUrl && !imageUrl.startsWith('http')) {
@@ -136,8 +136,8 @@ export default async function HardwareSlugPage({ params }: Props) {
         "@context": "https://schema.org",
         "@type": "NewsArticle",
         "mainEntityOfPage": { "@type": "WebPage", "@id": articleUrl },
-        "headline": article.seo_title || article.title,
-        "description": article.seo_description || article.excerpt || "",
+        "headline": article.meta_title || article.seo_title || article.title,
+        "description": article.meta_description || article.seo_description || article.excerpt || "",
         "image": featuredImage ? [featuredImage] : [],
         "datePublished": article.published_at || article.created_at,
         "dateModified": article.updated_at,

@@ -38,8 +38,18 @@ class ConnectedAccountController extends Controller
      */
     public function steamConnectUrl(Request $request): JsonResponse
     {
-        $returnUrl = url('/api/v1/connected-accounts/steam/callback')
-            .'?user_token='.$request->user()->createToken('steam-connect')->plainTextToken;
+        // A short-lived, single-purpose handle — not a bearer token. This
+        // URL travels to steamcommunity.com, lands in the user's history and
+        // comes back as a query string in our access logs; a full-privilege
+        // Sanctum token with a seven-day life had no business in it.
+        $state = \Illuminate\Support\Str::random(48);
+        \Illuminate\Support\Facades\Cache::put(
+            'steam:link:'.$state,
+            $request->user()->id,
+            now()->addMinutes(10)
+        );
+
+        $returnUrl = url('/api/v1/connected-accounts/steam/callback').'?state='.$state;
 
         $params = http_build_query([
             'openid.ns' => 'http://specs.openid.net/auth/2.0',
@@ -73,14 +83,17 @@ class ConnectedAccountController extends Controller
             return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_error=1');
         }
 
-        // Identify the user via the short-lived token
-        $token = $request->get('user_token');
-        $tokenModel = PersonalAccessToken::findToken($token);
-        if (! $tokenModel) {
+        // Identify the user from the single-use handle. `pull` reads and
+        // removes in one step, so a replayed callback finds nothing.
+        $state = (string) $request->get('state', '');
+        $userId = $state !== ''
+            ? \Illuminate\Support\Facades\Cache::pull('steam:link:'.$state)
+            : null;
+
+        $user = $userId ? \App\Models\User::find($userId) : null;
+        if (! $user) {
             return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_error=1');
         }
-        $user = $tokenModel->tokenable;
-        $tokenModel->delete(); // single-use
 
         // Get display name from Steam
         $profile = $steam->getPlayerSummary($steamId);

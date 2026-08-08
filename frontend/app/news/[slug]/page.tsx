@@ -76,8 +76,8 @@ export async function generateMetadata(
         };
     }
 
-    const title = article.seo_title || article.title;
-    const description = article.seo_description || article.excerpt || "Read more on TechPlay.";
+    const title = article.meta_title || article.seo_title || article.title;
+    const description = article.meta_description || article.seo_description || article.excerpt || "Read more on TechPlay.";
 
     // Robust Image URL generation
     let imageUrl = article.featured_image_url;
@@ -199,8 +199,8 @@ export default async function NewsSlugPage({ params }: Props) {
             "@type": "WebPage",
             "@id": articleUrl,
         },
-        "headline": article.seo_title || article.title,
-        "description": article.seo_description || article.excerpt || "",
+        "headline": article.meta_title || article.seo_title || article.title,
+        "description": article.meta_description || article.seo_description || article.excerpt || "",
         "image": featuredImage ? [featuredImage] : [],
         "datePublished": article.published_at || article.created_at,
         "dateModified": article.updated_at,

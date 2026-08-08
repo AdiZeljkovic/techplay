@@ -69,6 +69,9 @@ export interface Article {
     is_featured_in_hero: boolean;
     seo_title?: string;
     seo_description?: string;
+    /** What the admin form writes; preferred over the older seo_* pair. */
+    meta_title?: string;
+    meta_description?: string;
     focus_keyword?: string;
     tags?: string[];
     canonical_url?: string;
@@ -134,6 +137,9 @@ export interface Review {
     updated_at: string;
     seo_title?: string;
     seo_description?: string;
+    /** What the admin form writes; preferred over the older seo_* pair. */
+    meta_title?: string;
+    meta_description?: string;
     focus_keyword?: string;
     canonical_url?: string;
     is_noindex?: boolean;

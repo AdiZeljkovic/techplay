@@ -33,9 +33,12 @@ class ReCaptchaService
         }
 
         if (empty($this->secretKey)) {
-            Log::warning('Turnstile secret key not configured');
+            // Fail closed. Returning success here meant one typo in .env
+            // silently disabled bot protection on login, register and contact,
+            // and the only trace was a log line nobody reads.
+            Log::error('Turnstile secret key not configured — refusing the request');
 
-            return ['success' => true, 'score' => 1.0, 'error' => null];
+            return ['success' => false, 'score' => 0.0, 'error' => 'captcha-unconfigured'];
         }
 
         try {

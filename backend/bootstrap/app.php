@@ -32,6 +32,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // SECURITY: Stateful API domains for Sanctum CSRF protection
         $middleware->statefulApi();
 
+        // SECURITY: every API route gets the 'api' limiter. Without this call
+        // Laravel builds the group with a null limiter, so only routes that
+        // said `throttle:` explicitly were metered — which left password
+        // changes, account deletion, orders, messages and the whole clan
+        // surface completely unlimited.
+        $middleware->throttleApi('api');
+
         // SECURITY: Add security headers to all responses
         $middleware->append(SecurityHeaders::class);
 

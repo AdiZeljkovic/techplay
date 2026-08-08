@@ -120,10 +120,6 @@ class GameRatingController extends Controller
      */
     public function upsert(Request $request, string $slug)
     {
-        // A shelf or score change is taste news — the chronicle relearns on next read.
-        app(TasteProfileService::class)->forget($request->user());
-        app(QuestService::class)->progress($request->user(), 'game_rated');
-
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'review' => 'nullable|string|min:10|max:1000',
@@ -152,12 +148,21 @@ class GameRatingController extends Controller
             && ! empty($validated['review'])
             && ($rating->wasRecentlyCreated || $wasDraft);
 
+        // A shelf or score change is taste news — the chronicle relearns on next read.
+        app(TasteProfileService::class)->forget($request->user());
+
         if ($justPublished) {
             try {
                 app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_REVIEW, 'game_review');
                 app(BountyService::class)->award($request->user(), 15, "Game review written: {$slug}", 'milestone');
                 app(AchievementService::class)->check($request->user(), ['ratings_count']);
                 app(ClanResourceService::class)->award($request->user(), 'review_published');
+                // Quest progress belongs here, with the rest of the payout. It
+                // used to run as the first statement of this method — before
+                // validation, on every call — so saving a draft, publishing it
+                // and then editing it counted as three reviews and completed a
+                // 120 XP quest on a single game.
+                app(QuestService::class)->progress($request->user(), 'game_rated');
             } catch (\Throwable) {
             }
         }

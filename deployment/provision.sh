@@ -9,7 +9,13 @@ DOMAIN_BACKEND="api-beta.techplay.gg"
 DB_NAME="techplay"
 DB_USER="techplay"
 # PASSWORD WILL BE ASKED OR GENERATED
-RUBBER_STAMP_DB_PASS="StrongPass!" # Change this in production or prompt
+# No default. Provisioning refuses to run without a password supplied by the
+# operator, because a committed default becomes the production password.
+if [ -z "${TECHPLAY_DB_PASS:-}" ]; then
+    echo "Set TECHPLAY_DB_PASS before running this script." >&2
+    exit 1
+fi
+RUBBER_STAMP_DB_PASS="$TECHPLAY_DB_PASS" # Change this in production or prompt
 
 echo "🚀 Starting Production Provisioning for TechPlay.gg..."
 echo "-----------------------------------------------------"

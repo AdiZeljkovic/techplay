@@ -65,9 +65,16 @@ class ArticleResource extends JsonResource
             // Embed comments if eager loaded to avoid extra HTTP request
             'comments' => CommentResource::collection($this->whenLoaded('comments')),
 
-            // SEO (expose only if needed for Head generation on frontend)
-            'seo_title' => $this->seo_title,
+            // SEO. The admin form writes meta_title/meta_description; the
+            // seo_* columns are older and still hold data on some rows, so
+            // both travel and the page prefers whichever is filled.
+            'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
+            'seo_title' => $this->seo_title,
+            'seo_description' => $this->seo_description,
+            'canonical_url' => $this->canonical_url,
+            'is_noindex' => (bool) $this->is_noindex,
+            'updated_at' => $this->updated_at,
             'views' => $this->views ?? 0,
         ];
     }
