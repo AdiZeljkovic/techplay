@@ -46,7 +46,7 @@ class GameHubController extends Controller
     {
         return $this->success([
             'stats' => $this->stats(),
-            'facets' => Cache::remember('games.hub.facets.v1', self::FACET_TTL, fn () => [
+            'facets' => Cache::flexible('games.hub.facets.v1', [self::FACET_TTL, self::FACET_TTL * 2], fn () => [
                 'genres' => $this->genres(),
                 'platforms' => $this->platformFamilies(),
                 'eras' => $this->eras(),
@@ -63,7 +63,7 @@ class GameHubController extends Controller
      */
     private function stats(): array
     {
-        return Cache::remember('games.hub.stats.v1', 3600, function () {
+        return Cache::flexible('games.hub.stats.v1', [3600, 7200], function () {
             $facets = Cache::get('games.hub.facets.v1');
 
             return [
@@ -173,7 +173,7 @@ class GameHubController extends Controller
      */
     private function trendingSearches(): array
     {
-        return Cache::remember('games.hub.trending.v1', 900, function () {
+        return Cache::flexible('games.hub.trending.v1', [900, 3600], function () {
             try {
                 $totals = [];
 

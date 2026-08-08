@@ -146,6 +146,12 @@ class LeaderboardTest extends TestCase
     {
         User::factory()->create(['xp' => 100]);
 
+        // Season 1 arrives with the migrations, so "no season running" has to
+        // be arranged rather than assumed. Seeding live data from a migration
+        // is why this assertion started failing — see docs/34.
+        Season::query()->delete();
+        Cache::flush();
+
         $this->assertNull($this->board()['season']);
 
         Season::create([

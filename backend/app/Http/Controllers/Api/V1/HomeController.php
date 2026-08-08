@@ -17,7 +17,7 @@ class HomeController extends Controller
     {
         // Cache home page data for 5 minutes - balance between freshness and performance
         // On-demand revalidation clears this cache when articles are published
-        $data = Cache::remember('home:data', 300, function () {
+        $data = Cache::flexible('home:data', [300, 1800], function () {
             // 1. Hero Articles (exclude scheduled/future posts)
             $hero = Article::where('is_featured_in_hero', true)
                 ->where('status', 'published')

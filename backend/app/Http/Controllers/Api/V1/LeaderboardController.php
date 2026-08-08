@@ -26,7 +26,7 @@ class LeaderboardController extends Controller
      * Friends-only profiles opt out of every public ranking. The flag is
      * worthless if the board still publishes your name, avatar and XP.
      */
-    private const PUBLIC_ONLY = "COALESCE(users.profile_visibility, 'public') = 'public'";
+    private const PUBLIC_ONLY = "users.profile_visibility = 'public'";
 
     /**
      * Every board, and what it counts. Only the score boards carry a snapshot
@@ -66,6 +66,8 @@ class LeaderboardController extends Controller
             $period = 'all';
         }
 
+        $viewerId = $request->user()?->id;
+
         $entries = Cache::remember(
             "leaderboard.v2.{$type}.{$period}.".$this->periodKey($period),
             self::TTL,
@@ -78,8 +80,14 @@ class LeaderboardController extends Controller
             'period' => $period,
             'label' => self::BOARDS[$type]['label'],
             'periodic' => self::BOARDS[$type]['periodic'],
-            'viewer' => $this->viewer($type, $period, $levels),
-            'season' => $this->season(),
+            'viewer' => $viewerId
+                ? Cache::remember(
+                    "leaderboard.v2.viewer.{$viewerId}.{$type}.{$period}",
+                    60,
+                    fn () => $this->viewer($type, $period, $levels)
+                )
+                : $this->viewer($type, $period, $levels),
+            'season' => Cache::remember('leaderboard.v2.season', 300, fn () => $this->season()),
             'rising' => Cache::remember('leaderboard.v2.rising', self::TTL, fn () => $this->rising()),
         ]);
     }

@@ -97,7 +97,7 @@ class ForumController extends Controller
 
     public function stats()
     {
-        $stats = Cache::remember('forum.stats', 30, function () {
+        $stats = Cache::flexible('forum.stats', [30, 300], function () {
             return [
                 'total_threads' => Thread::count(),
                 'total_posts' => Thread::count() + Post::count(),
@@ -115,7 +115,7 @@ class ForumController extends Controller
     public function categories()
     {
         // PERFORMANCE: Cache for 60 seconds
-        $categories = Cache::remember('forum.categories', 60, function () {
+        $categories = Cache::flexible('forum.categories', [60, 600], function () {
             // Get all forum categories with thread and post counts
             $allForumCategories = Category::where('type', 'forum')
                 ->withCount(['threads', 'posts'])
