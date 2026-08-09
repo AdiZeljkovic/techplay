@@ -79,6 +79,19 @@ niko ga ne koristi), SVG, mass assignment, over-fetching u resursima (šta API
 validacije na 296 mjesta.
 **Procjena:** 1–2 sesije.
 
+> **URAĐENO 10.08.2026 → `docs/38-p3-ulazna-sigurnost.md`.** Tri rupe: Filamentov
+> `->image()` je primao SVG (skripta na istom porijeklu gdje stoji admin sesija),
+> `PageSeo.seo_text` se čuvao i renderovao sirov na hostu gdje token stoji u
+> localStorage, i javni profil je slao tuđi `bounty_balance` koji frontend ionako
+> prikazuje samo vlasniku. Ostalo provjereno pa odbačeno: SQLi (svi `whereRaw`
+> vezuju parametre, Filamentov `{$direction}` je normalizovan), Laravel 12 `image`
+> pravilo ne pušta SVG, HTMLPurifier `staff_content` profil je dobro postavljen,
+> `processContent` ima ograničene capture grupe. 380/380 prolazi.
+>
+> **Namjerno ostavljeno:** enumeracija pri registraciji (proizvodna odluka, traži
+> novi e-mail tok) i `FormRequest` refaktor — validacija postoji svugdje, samo je
+> inline, pa to vrijedi raditi uz izmjene endpointa a ne kao jedan veliki prolaz.
+
 ### P4. Poslovna logika, end-to-end — *područje 4*
 Najveći paket, pa ide po cjelinama, jedna po sesiji:
 registracija i verifikacija · profil, XP, rankovi, questovi, sezone · kolekcija

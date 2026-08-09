@@ -211,6 +211,13 @@ class AuthController extends Controller
             ? $this->buildProfilePayload($username)
             : Cache::remember('profile.show.v1.'.strtolower($username), 60, fn () => $this->buildProfilePayload($username));
 
+        // The wallet is the owner's business. The frontend only ever renders it
+        // behind isOwnProfile, so shipping it to every visitor bought nothing
+        // and handed a scraper a ranked list of whose account is worth taking.
+        if (! $isOwner) {
+            unset($payload['stats']['bounty_balance'], $payload['bounty_balance']);
+        }
+
         $payload['friend_status'] = $friendStatus;
 
         // Viewer-specific overlay — "given_by_me" recognition flags must never

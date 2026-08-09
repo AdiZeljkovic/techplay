@@ -39,6 +39,7 @@ use App\Observers\ThreadObserver;
 use App\Services\LoggingService;
 use App\Services\Socialite\BattleNetProvider;
 use Illuminate\Cache\RateLimiting\Limit;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -99,6 +100,22 @@ class AppServiceProvider extends ServiceProvider
 
         // Register custom Socialite providers
         $this->bootSocialite();
+
+        // Every admin upload is raster-only, enforced server-side.
+        //
+        // Filament's ->image() expands to `image/*`, which includes
+        // image/svg+xml — and an SVG is a script container. Uploaded to the
+        // public disk it is served from api-beta.techplay.gg, the same origin
+        // that holds the Filament session cookie, so a journalist could plant
+        // one and send the link to an admin. Laravel's own `image` rule
+        // dropped SVG in v11; Filament's helper did not follow.
+        //
+        // A rule rather than acceptedFileTypes: rules accumulate, so a later
+        // ->image() cannot widen it back, and an upload added tomorrow is
+        // covered without anyone remembering.
+        FileUpload::configureUsing(function (FileUpload $upload): void {
+            $upload->rule('mimes:jpeg,jpg,png,gif,webp,avif');
+        });
 
         // Force HTTPS in production/staging and fix URL generation.
         // The host check that used to live here read request() during boot,
