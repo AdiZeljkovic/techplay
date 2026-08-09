@@ -74,6 +74,13 @@ class RecognitionController extends Controller
             return $this->error('You cannot recognise yourself', 422);
         }
 
+        // index() checks this; store() did not, so you could write a row
+        // against — and fire a notification at — someone whose profile you are
+        // not allowed to see.
+        if ($this->profileHidden($target)) {
+            return $this->error('This profile is private.', 403);
+        }
+
         // Daily cap
         $todayCount = UserRecognition::where('giver_id', $giver->id)
             ->whereDate('created_at', today())

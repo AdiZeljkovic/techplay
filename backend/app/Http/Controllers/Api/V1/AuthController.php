@@ -25,6 +25,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -73,12 +74,18 @@ class AuthController extends Controller
             \Log::warning('Failed to send verification email: '.$e->getMessage());
         }
 
-        // Create token to allow access to verification page
-        $token = $user->createToken('auth_token')->plainTextToken;
-
+        // No token before the email is verified. login() already refuses one
+        // to an unverified account, so issuing one here was the door around
+        // that: register with a throwaway address, ignore the email, and drive
+        // the whole economy — streak claims, redemptions, pledges — forever,
+        // refreshing the token before it expired. The frontend never used it;
+        // it reads requires_verification and sends the user to sign in.
         return $this->created([
-            'user' => $user,
-            'access_token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email,
+            ],
             'requires_verification' => true,
         ], 'User registered successfully. Please verify your email.');
     }
@@ -571,8 +578,17 @@ class AuthController extends Controller
             'password' => $request->new_password, // Model's 'hashed' cast handles hashing
         ]);
 
+        // Every other session dies with the old password. Without this, a
+        // token stolen beforehand kept working for its full seven days, so
+        // changing the password gave the victim no way to evict an attacker.
+        $currentTokenId = optional($request->user()->currentAccessToken())->id;
+
+        $user->tokens()
+            ->when($currentTokenId, fn ($q) => $q->where('id', '!=', $currentTokenId))
+            ->delete();
+
         return response()->json([
-            'message' => 'Password changed successfully',
+            'message' => 'Password changed successfully. Other devices have been signed out.',
         ]);
     }
 
@@ -616,6 +632,16 @@ class AuthController extends Controller
         $user = $request->user();
         $id = $user->id;
 
+        // Irreversible, and previously reachable with nothing but a bearer
+        // token — one leaked or XSS-exfiltrated token was the whole barrier.
+        $request->validate(['current_password' => 'required']);
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The provided password does not match your current password.'],
+            ]);
+        }
+
         // Anonymize personal data
         $user->email = "deleted_{$id}@deleted.techplay.gg";
         $user->name = 'Deleted User';
@@ -625,7 +651,32 @@ class AuthController extends Controller
         $user->avatar_url = null;
         $user->cover_image = null;
         $user->discord_id = null;
+
+        // These all still named the person after "deletion": platform handles
+        // on the public profile, hardware, location, the editorial byline.
+        foreach ([
+            'steam_id', 'psn_id', 'xbox_gamertag', 'discord_username',
+            'battlenet_id', 'battletag', 'discord_avatar',
+            'pc_specs', 'location', 'tagline', 'author_slug', 'author_social_links',
+        ] as $column) {
+            if (array_key_exists($column, $user->getAttributes())) {
+                $user->{$column} = null;
+            }
+        }
+
         $user->save();
+
+        // The linked accounts carried the raw Steam64 / XUID and persona name,
+        // and the public profile listed them.
+        ConnectedAccount::where('user_id', $id)->delete();
+
+        // Only the URL columns were cleared; the uploaded files stayed
+        // world-readable on the public disk.
+        foreach ([$user->getOriginal('avatar_url'), $user->getOriginal('cover_image')] as $path) {
+            if ($path && ! str_starts_with((string) $path, 'http')) {
+                Storage::disk('public')->delete($path);
+            }
+        }
 
         // Revoke all tokens
         $user->tokens()->delete();

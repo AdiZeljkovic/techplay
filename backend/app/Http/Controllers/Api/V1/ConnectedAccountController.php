@@ -126,6 +126,14 @@ class ConnectedAccountController extends Controller
      * POST /connected-accounts/xbox/connect — link an Xbox account by gamertag.
      * Public Xbox Live data (title history, achievements) is read via OpenXBL,
      * so no OAuth round-trip is needed.
+     *
+     * UNVERIFIED BY DESIGN — and that is a hole, not a shortcut. Typing any
+     * gamertag links it: the profile then shows someone else's handle and
+     * gamerscore, their library is imported into the claimant's collection
+     * (feeding collection achievements and leaderboards), and the genuine
+     * owner is locked out. Closing it needs an XSTS/OAuth round-trip, or a
+     * one-time nonce the user places in their Xbox bio and we read back.
+     * Steam does this correctly via OpenID; Xbox never got the equivalent.
      */
     public function xboxConnect(Request $request, OpenXblService $xbl): JsonResponse
     {
@@ -135,6 +143,19 @@ class ConnectedAccountController extends Controller
 
         if (! $profile) {
             return $this->error("Couldn't find that gamertag on Xbox Live. Check the spelling — and note the profile must not be private.", 404);
+        }
+
+        // First claimant wins on (provider, provider_user_id), so without this
+        // the real owner's attempt died on an integrity constraint — a 500
+        // instead of an answer. It does not prove ownership; see the note on
+        // this method. It only stops the collision being a crash.
+        $takenByAnother = ConnectedAccount::where('provider', 'xbox')
+            ->where('provider_user_id', $profile['xuid'])
+            ->where('user_id', '!=', $request->user()->id)
+            ->exists();
+
+        if ($takenByAnother) {
+            return $this->error('That gamertag is already linked to another TechPlay account.', 409);
         }
 
         $account = ConnectedAccount::updateOrCreate(

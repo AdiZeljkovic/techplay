@@ -44,6 +44,8 @@ export default function SettingsClient() {
     const [isExporting, setIsExporting] = useState(false);
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
+    // Deleting an account is irreversible, so the API now re-authenticates it.
+    const [deletePassword, setDeletePassword] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     // Form States
@@ -238,10 +240,13 @@ export default function SettingsClient() {
         if (!confirm('This will permanently delete your account. This action CANNOT be undone.')) return;
         setIsDeletingAccount(true);
         try {
-            await axios.delete('/user/account');
+            await axios.delete('/user/account', { data: { current_password: deletePassword } });
             logout();
-        } catch {
-            toast.error('Failed to delete account. Please contact support.');
+        } catch (err: any) {
+            const message = err?.response?.status === 422
+                ? 'That password is not correct.'
+                : 'Failed to delete account. Please contact support.';
+            toast.error(message);
         } finally {
             setIsDeletingAccount(false);
         }
@@ -692,9 +697,21 @@ export default function SettingsClient() {
                                                 className="w-full border border-red-500/30 rounded-[var(--radius-card)] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                                             />
                                         </div>
+                                        <div>
+                                            <label className="block text-sm text-white/55 mb-1">
+                                                Confirm your password:
+                                            </label>
+                                            <input
+                                                type="password"
+                                                value={deletePassword}
+                                                onChange={(e) => setDeletePassword(e.target.value)}
+                                                autoComplete="current-password"
+                                                className="w-full border border-red-500/30 rounded-[var(--radius-card)] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500"
+                                            />
+                                        </div>
                                         <Button
                                             onClick={handleDeleteAccount}
-                                            disabled={isDeletingAccount || deleteConfirmText !== user.username}
+                                            disabled={isDeletingAccount || deleteConfirmText !== user.username || !deletePassword}
                                             className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50"
                                         >
                                             {isDeletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}

@@ -55,9 +55,17 @@ class VerificationController extends Controller
      */
     public function verify(Request $request, $id, $hash)
     {
-        $user = User::findOrFail($id);
+        // Laravel mails a signed, expiring URL — but nothing here ever checked
+        // the signature, so the sha1 of an email address was the entire secret.
+        // Anyone could register an address they do not own and then verify it,
+        // permanently locking out the real owner.
+        if (! $request->hasValidSignature()) {
+            return response()->json(['message' => 'This verification link is invalid or has expired.'], 403);
+        }
 
-        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        $user = User::find($id);
+
+        if (! $user || ! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             return response()->json(['message' => 'Invalid verification link'], 403);
         }
 

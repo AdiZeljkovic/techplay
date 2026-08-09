@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\PayPalService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -26,18 +27,64 @@ class PayPalController extends Controller
         ]);
 
         $user = $request->user();
+        $subscriptionId = $request->subscriptionID;
 
-        // In a real app, verify subscription status with PayPal API here
-        // $details = $this->paypal->getSubscriptionDetails($request->subscriptionID);
-        // if ($details['status'] !== 'ACTIVE') ...
+        // The verification below was commented out, which meant any logged-in
+        // user could grant themselves a month of premium by posting an invented
+        // subscription id — and, by posting a real one, hijack a paying
+        // customer's subscription so cancellation webhooks resolved to them.
+        // An unreachable or unconfigured PayPal must refuse the activation, not
+        // surface a 500 — failing closed is the whole point of the check.
+        try {
+            $details = $this->paypal->getSubscription($subscriptionId);
+        } catch (\Throwable $e) {
+            Log::warning('Subscription verification failed: '.$e->getMessage(), [
+                'user_id' => $user->id,
+                'subscription_id' => $subscriptionId,
+            ]);
+            $details = null;
+        }
+
+        if (! $details || ($details['status'] ?? null) !== 'ACTIVE') {
+            Log::warning('Subscription activation refused', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscriptionId,
+                'status' => $details['status'] ?? 'unresolvable',
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'That subscription could not be verified with PayPal.',
+            ], 422);
+        }
+
+        // One subscription belongs to one account. Without this, a second user
+        // replaying the same id takes ownership of someone else's payment.
+        $claimed = User::where('paypal_subscription_id', $subscriptionId)
+            ->where('id', '!=', $user->id)
+            ->exists();
+
+        if ($claimed) {
+            Log::warning('Subscription already bound to another account', [
+                'user_id' => $user->id,
+                'subscription_id' => $subscriptionId,
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'That subscription is already linked to an account.',
+            ], 409);
+        }
+
+        // Take the period end from PayPal rather than assuming a month.
+        $nextBilling = $details['billing_info']['next_billing_time'] ?? null;
 
         $user->update([
-            'paypal_subscription_id' => $request->subscriptionID,
-            'subscription_ends_at' => Carbon::now()->addMonth(), // Temporary assumption, should get from Plan/Details
+            'paypal_subscription_id' => $subscriptionId,
+            'subscription_ends_at' => $nextBilling
+                ? Carbon::parse($nextBilling)
+                : Carbon::now()->addMonth(),
         ]);
-
-        // Optional: Create an Order record for history
-        // Order::create([...]);
 
         return response()->json(['status' => 'success', 'message' => 'Subscription activated.']);
     }
@@ -145,7 +192,12 @@ class PayPalController extends Controller
             $response = $this->paypal->captureOrder($orderId);
 
             if (isset($response['status']) && $response['status'] === 'COMPLETED') {
-                $order = Order::with('items')->where('paypal_order_id', $orderId)->first();
+                // Scoped to the caller: the order id alone used to be enough to
+                // drive someone else's capture and stock decrement.
+                $order = Order::with('items')
+                    ->where('paypal_order_id', $orderId)
+                    ->where('user_id', $request->user()->id)
+                    ->first();
 
                 if ($order && $order->status !== 'COMPLETED') {
                     \Illuminate\Support\Facades\DB::transaction(function () use ($order, $response) {

@@ -162,15 +162,31 @@ class ClanBaseService
             throw new \RuntimeException('This project is not taking funds.');
         }
 
-        // Never take more than the project still needs.
-        $intel = max(0, min($intel, $project->cost_intel - $project->funded_intel));
-        $materials = max(0, min($materials, $project->cost_materials - $project->funded_materials));
+        DB::transaction(function () use ($project, $user, &$intel, &$materials) {
+            // The clamp has to see the same row the write will update. Read
+            // outside the transaction, two concurrent payments both clamped
+            // against the same stale `funded_*`, both debited the treasury and
+            // both wrote the same total — so the clan paid twice for one
+            // instalment, and a later cancel refunded only half.
+            $locked = ClanProject::whereKey($project->id)->lockForUpdate()->first();
 
-        if ($intel === 0 && $materials === 0) {
-            throw new \RuntimeException('Nothing left to fund on this project.');
-        }
+            if (! $locked || $locked->status !== 'funding') {
+                throw new \RuntimeException('This project is not taking funds.');
+            }
 
-        DB::transaction(function () use ($project, $user, $intel, $materials) {
+            // lockForUpdate cannot carry an eager load, and lazy loading throws
+            // outside production.
+            $locked->setRelation('clan', $project->clan);
+
+            // Never take more than the project still needs.
+            $intel = max(0, min($intel, $locked->cost_intel - $locked->funded_intel));
+            $materials = max(0, min($materials, $locked->cost_materials - $locked->funded_materials));
+
+            if ($intel === 0 && $materials === 0) {
+                throw new \RuntimeException('Nothing left to fund on this project.');
+            }
+
+            $project = $locked;
             $label = config("clan.buildings.{$project->building_key}.name");
 
             if ($intel > 0) {
@@ -234,16 +250,32 @@ class ClanBaseService
         }
 
         DB::transaction(function () use ($project, $user) {
-            // Funds go back to the treasury in full — cancelling is a
-            // decision, not a punishment.
-            if ($project->funded_intel > 0) {
-                $this->resources->grant($project->clan, 'intel', $project->funded_intel, "project_refund:{$project->building_key}", $user);
-            }
-            if ($project->funded_materials > 0) {
-                $this->resources->grant($project->clan, 'materials', $project->funded_materials, "project_refund:{$project->building_key}", $user);
+            // Claim the cancellation first. The status was read from a model
+            // loaded outside this transaction, so simultaneous DELETEs each
+            // passed the check above and each paid out a full refund — the
+            // clan ended with N copies of the funded amount. Whoever flips the
+            // row wins; everyone else finds zero affected rows and stops.
+            $claimed = ClanProject::whereKey($project->id)
+                ->whereIn('status', ['funding', 'building'])
+                ->update(['status' => 'cancelled']);
+
+            if ($claimed === 0) {
+                return;
             }
 
-            $project->update(['status' => 'cancelled']);
+            $fresh = ClanProject::whereKey($project->id)->first();
+
+            // Funds go back to the treasury in full — cancelling is a
+            // decision, not a punishment. refund(), not grant(): the money was
+            // never earned a second time, so it must not mint XP.
+            if ($fresh->funded_intel > 0) {
+                $this->resources->refund($project->clan, 'intel', $fresh->funded_intel, "project_refund:{$project->building_key}", $user);
+            }
+            if ($fresh->funded_materials > 0) {
+                $this->resources->refund($project->clan, 'materials', $fresh->funded_materials, "project_refund:{$project->building_key}", $user);
+            }
+
+            $project->status = 'cancelled';
         });
     }
 

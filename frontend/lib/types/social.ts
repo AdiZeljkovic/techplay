@@ -18,7 +18,8 @@ export interface ChatReaction {
 export interface ChatMessage {
     id: number;
     body: string;
-    attachment_path: string | null;
+    /** Signed, short-lived URL — DM images are no longer on the public disk. */
+    attachment_url: string | null;
     attachment_type: string | null;
     created_at: string;
     is_mine: boolean;

@@ -250,7 +250,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function activeSupport()
     {
-        return $this->hasOne(UserSupport::class)->where('status', 'active')->latest();
+        // `status` alone is not "active": nothing ever flips a lapsed pledge,
+        // so a single month of support unlocked every tier-gated cosmetic
+        // permanently. PremiumService has always checked the date; the
+        // cosmetic gate did not.
+        return $this->hasOne(UserSupport::class)
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
+            })
+            ->latest();
     }
 
     public function posts()

@@ -35,9 +35,13 @@ class CommentController extends Controller
             ->whereNull('parent_id')
             ->with([
                 'user.rank',
-                'replies' => fn ($q) => $q->with('user.rank')->limit(100), // Prevent memory overload
-                'replies.replies' => fn ($q) => $q->with('user.rank')->limit(50),
-                'replies.replies.replies' => fn ($q) => $q->with('user.rank')->limit(25),
+                // The status filter above covers top-level comments only, and
+                // Comment has no global scope — so a reply left `pending` by
+                // probation or the two-link spam rule was rendered to every
+                // visitor anyway. Moderation has to apply at every depth.
+                'replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank')->limit(100), // Prevent memory overload
+                'replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank')->limit(50),
+                'replies.replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank')->limit(25),
             ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -210,7 +214,10 @@ class CommentController extends Controller
 
         try {
             $type = $request->type;
-            $comment = Comment::findOrFail($id);
+
+            // Approved only: voting on any id used to answer 200-vs-404, which
+            // enumerated the comments moderation had hidden.
+            $comment = Comment::where('status', 'approved')->findOrFail($id);
 
             // Explicitly get user from Sanctum guard
             $user = Auth::guard('sanctum')->user();
@@ -218,6 +225,10 @@ class CommentController extends Controller
                 return response()->json(['message' => 'Unauthenticated'], 401);
             }
             $userId = $user->id;
+
+            if ((int) $comment->user_id === (int) $user->id) {
+                return response()->json(['message' => 'You cannot vote on your own comment.'], 422);
+            }
 
             // Check for existing vote
             $existingVote = DB::table('comment_likes')

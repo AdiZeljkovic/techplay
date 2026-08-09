@@ -75,6 +75,26 @@ class ClanResourceService
     }
 
     /**
+     * Return resources that were never consumed — a cancelled project.
+     *
+     * Deliberately not `grant()`. Spending does not debit XP, so crediting the
+     * refund through the normal path made a fund → cancel round-trip
+     * treasury-neutral but XP-positive: an owner could loop it and print clan
+     * level, tier, roster slots and leaderboard rank at will.
+     */
+    public function refund(Clan $clan, string $resource, int $amount, string $reason, ?User $user = null): void
+    {
+        try {
+            $this->credit($clan->id, $user, $resource, $amount, $reason, capped: false, awardsXp: false);
+        } catch (\Throwable $e) {
+            Log::warning("ClanResourceService::refund failed: {$e->getMessage()}", [
+                'clan_id' => $clan->id,
+                'reason' => $reason,
+            ]);
+        }
+    }
+
+    /**
      * Debit the treasury — project funding and speed-ups. Throws when the
      * balance is short; never touches XP, and the ledger row carries the
      * user who authorised it.
@@ -109,7 +129,7 @@ class ClanResourceService
 
     /* ── internals ────────────────────────────────────────────────────── */
 
-    private function credit(int $clanId, ?User $user, string $resource, int $amount, string $reason, bool $capped = true): void
+    private function credit(int $clanId, ?User $user, string $resource, int $amount, string $reason, bool $capped = true, bool $awardsXp = true): void
     {
         if ($amount <= 0) {
             return;
@@ -138,7 +158,7 @@ class ClanResourceService
             }
         }
 
-        DB::transaction(function () use ($clanId, $user, $resource, $amount, $reason) {
+        DB::transaction(function () use ($clanId, $user, $resource, $amount, $reason, $awardsXp) {
             $clan = Clan::whereKey($clanId)->lockForUpdate()->first();
 
             if (! $clan) {
@@ -159,17 +179,22 @@ class ClanResourceService
 
             $balance = (int) $clan->{$resource} + $amount;
             $xpBefore = (int) $clan->xp;
-            $xpGain = $amount * (int) config("clan.xp_weights.{$resource}", 1);
+            $xpGain = $awardsXp
+                ? $amount * (int) config("clan.xp_weights.{$resource}", 1)
+                : 0;
 
             // Training Grounds: achievements train the clan a little harder.
-            if ($reason === 'achievement_unlocked' && ($buildings['training_grounds'] ?? 0) > 0) {
+            if ($awardsXp && $reason === 'achievement_unlocked' && ($buildings['training_grounds'] ?? 0) > 0) {
                 $bonus = ($buildings['training_grounds'] ?? 0) * (int) config('clan.training_xp_percent_per_level', 2);
                 $xpGain = (int) round($xpGain * (1 + $bonus / 100));
             }
 
+            // A refund restores the balance only. Lifetime totals are an
+            // earnings record — money coming back out of a cancelled project
+            // was never earned twice.
             $clan->forceFill([
                 $resource => $balance,
-                "{$resource}_lifetime" => (int) $clan->{"{$resource}_lifetime"} + $amount,
+                "{$resource}_lifetime" => (int) $clan->{"{$resource}_lifetime"} + ($awardsXp ? $amount : 0),
                 'xp' => $xpBefore + $xpGain,
             ]);
 

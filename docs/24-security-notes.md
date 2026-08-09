@@ -88,7 +88,18 @@
 
 ### Interni webhooks
 - `POST /webhooks/discord/notify` — `WebhookController::notify`
-- UNKNOWN kako je autentifikovan
+- Bio je **potpuno neautentifikovan** (09.08.2026): svako je mogao objaviti
+  brendiranu lažnu objavu u zvanični Discord kanal. Sada `auth:sanctum` + staff
+  provjera, validiran ulaz, `throttle:10,1`. Nijedan dio aplikacije ga ne zove —
+  posao radi `PollingService` u botu — pa stoji samo kao ručni okidač za redakciju.
+
+### Discord bot rute
+- Cijela `/discord/*` grupa ide kroz `discord.bot` middleware (`VerifyDiscordBot`).
+- Ranije je svaki kontroler nosio vlastitu kopiju provjere, pa su `/discord/presence`
+  i `/discord/user/{id}` ostali bez ijedne. Provjera je sada na grupi da nova ruta
+  bude zaštićena po defaultu, a ne tek kad se neko sjeti.
+- Prihvata `X-Discord-Bot-Token` i `X-Bot-Secret` (bot je slao drugo ime nego što
+  je backend čitao — otud rupa).
 
 ---
 

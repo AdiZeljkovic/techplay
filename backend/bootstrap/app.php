@@ -3,6 +3,8 @@
 use App\Http\Middleware\CheckUserBan;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackUserActivity;
+use App\Http\Middleware\VerifyDiscordBot;
+use App\Support\TrustedProxies;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,7 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
+        // Trusting every proxy means trusting every client: with `at: '*'`,
+        // `$request->ip()` is whatever the caller puts in X-Forwarded-For. That
+        // silently defeated all three IP-based controls at once — the API rate
+        // limiter, the giveaway per-network entry cap, and the article-view
+        // fingerprint — because each one keys off an attacker-chosen value.
+        //
+        // Laravel walks the forwarded chain from the right and stops at the
+        // first address that is not a trusted proxy, so a spoofed prefix is
+        // discarded: Cloudflare and nginx append the true peer after it.
+        //
+        // Set TRUSTED_PROXIES=* to restore the old behaviour if the proxy
+        // topology here turns out to differ.
+        $middleware->trustProxies(at: TrustedProxies::at());
 
         // SECURITY: Exclude routes from CSRF verification
         // - PayPal webhook: verified by PayPal signature
@@ -44,9 +58,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Track authenticated users as online (used for forum online counter)
         $middleware->appendToGroup('api', TrackUserActivity::class);
+        $middleware->appendToGroup('api', CheckUserBan::class);
 
         $middleware->alias([
             'ban.check' => CheckUserBan::class,
+            'discord.bot' => VerifyDiscordBot::class,
         ]);
 
         $middleware->redirectGuestsTo(function ($request) {

@@ -58,6 +58,58 @@ class ForumController extends Controller
     }
 
     /**
+     * May the caller see this category at all?
+     *
+     * The category listing has always filtered private clan forums, but the
+     * routes that reach a thread directly — show, search, the global rails —
+     * did not, so a private clan's discussions were readable by anyone who
+     * knew or guessed a slug, and writable by any logged-in account.
+     */
+    private function canSeeCategory($category): bool
+    {
+        if (! $category || ! $category->is_private) {
+            return true;
+        }
+
+        return in_array($category->clan_id, $this->currentUserClanIds());
+    }
+
+    /**
+     * Constrain a Thread query to categories the caller may read.
+     *
+     * Only for uncached queries — a cached result must never carry per-user
+     * visibility, or the first caller's permissions are served to everyone.
+     */
+    private function restrictToVisibleCategories($query)
+    {
+        $clanIds = $this->currentUserClanIds();
+
+        return $query->whereHas('category', function ($q) use ($clanIds) {
+            $q->where(function ($inner) use ($clanIds) {
+                $inner->where('is_private', false)->orWhereNull('is_private');
+
+                if ($clanIds !== []) {
+                    $inner->orWhereIn('clan_id', $clanIds);
+                }
+            });
+        });
+    }
+
+    /**
+     * Constrain a Thread query to public categories, regardless of who asks.
+     *
+     * The cache-safe counterpart to restrictToVisibleCategories: the global
+     * discovery rails are shared between all callers, so they carry only what
+     * everyone may see.
+     */
+    private function publicCategoriesOnly($query)
+    {
+        return $query->whereHas('category', function ($q) {
+            $q->where('is_private', false)->orWhereNull('is_private');
+        });
+    }
+
+    /**
      * Categories list is globally cached, so private-category visibility must
      * be filtered per-request AFTER the cache read, never baked into the cache.
      */
@@ -215,6 +267,14 @@ class ForumController extends Controller
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
 
+        // The category listing hides private clan forums, but this route was
+        // reachable by slug with no check — the whole discussion, every post
+        // and every author, to anyone who had the slug. 404 rather than 403 so
+        // it does not confirm that the thread exists.
+        if (! $this->canSeeCategory($thread->category)) {
+            abort(404, 'Thread not found');
+        }
+
         // PERFORMANCE: Use Redis atomic increment instead of sync DB write
         // Views are flushed to DB every 5 minutes by FlushViewCounters job
         Redis::incr("views:thread:{$thread->id}");
@@ -263,6 +323,12 @@ class ForumController extends Controller
         }
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
+
+        // Same gate as reading: without it any authenticated account could post
+        // into a private clan forum simply by naming the thread's slug.
+        if (! $this->canSeeCategory($thread->category)) {
+            abort(404, 'Thread not found');
+        }
 
         // Restrict replies in "News & Announcements"
         $category = $thread->category;
@@ -354,9 +420,22 @@ class ForumController extends Controller
         ]);
 
         try {
-            // check restriction for "News & Announcements"
             $category = Category::find($request->category_id);
-            if ($category && ($category->slug === 'news-announcements' || $category->name === 'News & Announcements')) {
+
+            // `exists:categories,id` only proved the row exists. It accepted
+            // private clan categories the author is not in, and news/review
+            // categories that have no forum UI at all — both reachable by
+            // guessing an integer.
+            if (! $category || in_array($category->type, ['news', 'reviews', 'tech'], true)) {
+                return response()->json(['message' => 'That category does not accept threads.'], 422);
+            }
+
+            if (! $this->canSeeCategory($category)) {
+                return response()->json(['message' => 'That category does not accept threads.'], 422);
+            }
+
+            // check restriction for "News & Announcements"
+            if ($category->slug === 'news-announcements' || $category->name === 'News & Announcements') {
                 $user = Auth::user();
                 $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
 
@@ -447,7 +526,11 @@ class ForumController extends Controller
     public function gameThreads(string $gameSlug)
     {
         $threads = Cache::remember("forum.game_threads.{$gameSlug}", 60, function () use ($gameSlug) {
-            return Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
+            // Public categories only: this result is shared by every caller,
+            // so private clan threads must not enter the cache at all.
+            return $this->publicCategoriesOnly(
+                Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
+            )
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('is_pinned')
@@ -463,7 +546,8 @@ class ForumController extends Controller
     {
         // Cache for 60 seconds
         $threads = Cache::remember('forum.active_threads', 60, function () {
-            return Thread::with(['author', 'category'])
+            return $this->publicCategoriesOnly(Thread::query())
+                ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('updated_at')
                 ->take(5)
@@ -499,7 +583,8 @@ class ForumController extends Controller
     {
         // Cache for 60 seconds
         $threads = Cache::remember('forum.unanswered_threads', 60, function () {
-            return Thread::with(['author', 'category'])
+            return $this->publicCategoriesOnly(Thread::query())
+                ->with(['author', 'category'])
                 ->withCount('posts')
                 ->whereDoesntHave('posts')
                 ->orderByDesc('created_at')
@@ -753,7 +838,13 @@ class ForumController extends Controller
             $post->is_solution = true;
             $post->save();
 
-            if ($post->author_id !== $thread->author_id) {
+            // Paid once per post, ever. Un-marking refunds nothing, so without
+            // this the toggle was a bounty printer: mark, unmark, repeat.
+            $alreadyPaid = $post->solution_rewarded_at !== null;
+
+            if ($post->author_id !== $thread->author_id && ! $alreadyPaid) {
+                $post->forceFill(['solution_rewarded_at' => now()])->save();
+
                 $solutionAuthor = User::find($post->author_id);
                 if ($solutionAuthor) {
                     $solutionAuthor->increment('forum_reputation', 10);
@@ -785,15 +876,27 @@ class ForumController extends Controller
     {
         $request->validate(['content' => 'required|string|min:5|max:10000']);
 
-        $post = Post::findOrFail($postId);
+        // Bound to the thread in the URL, the way markSolution already is.
+        // Unbound, the caller chose {slug} freely — so the cache forget below
+        // cleared some other thread's key, leaving the real page serving stale
+        // content and letting any user evict arbitrary forum.thread.* entries.
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $post = Post::where('thread_id', $thread->id)->findOrFail($postId);
+
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Moderator'];
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
 
         $isOwner = $post->author_id === $user->id;
         $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
 
         if (! $isOwner && ! $isStaff) {
             return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        // A locked thread stops accepting edits too, or locking it only half
+        // ends the argument.
+        if ($thread->is_locked && ! $isStaff) {
+            return response()->json(['message' => 'Thread is locked.'], 403);
         }
 
         $post->content = $sanitizer->sanitizeRichContent($request->content);
@@ -812,9 +915,12 @@ class ForumController extends Controller
 
     public function deletePost(Request $request, string $slug, int $postId)
     {
-        $post = Post::findOrFail($postId);
+        // Same binding as updatePost — the post must belong to this thread.
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $post = Post::where('thread_id', $thread->id)->findOrFail($postId);
+
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Moderator'];
+        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
 
         $isOwner = $post->author_id === $user->id;
         $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
@@ -845,9 +951,14 @@ class ForumController extends Controller
         $request->validate(['q' => 'required|string|min:3|max:100']);
         $query = $request->get('q');
 
-        $threads = Thread::whereRaw(
-            "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
-            [$query]
+        // Search was the cheapest way into a private clan forum: it returned
+        // titles and body text with no visibility filter, which then handed the
+        // attacker the slugs to read the full threads.
+        $threads = $this->restrictToVisibleCategories(
+            Thread::whereRaw(
+                "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
+                [$query]
+            )
         )
             ->with(['author:id,username,avatar_url', 'category:id,name,slug'])
             ->withCount('posts')
@@ -863,6 +974,7 @@ class ForumController extends Controller
             [$query]
         )
             ->whereNull('deleted_at')
+            ->whereHas('thread', fn ($t) => $this->restrictToVisibleCategories($t))
             ->with(['author:id,username,avatar_url', 'thread:id,title,slug'])
             ->orderByRaw(
                 "ts_rank(to_tsvector('english', coalesce(content, '')), plainto_tsquery('english', ?)) DESC",

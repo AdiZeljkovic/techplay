@@ -33,6 +33,19 @@ identifikator resursa a ne izvode ga iz `$request->user()`.
 rupe, i predlog jedne sheme rola umjesto dvije.
 **Procjena:** 1–2 sesije.
 
+> **URAĐENO 09.08.2026 → `docs/36-p1-autorizacija.md`.** Klasičnog IDOR-a nema
+> — svaka izmjenjujuća ruta veže zapis za pozivaoca. Rupe su bile druge vrste:
+> isti podatak dostupan kroz druga vrata bez provjere (privatni klanski forumi,
+> liste skrivenih profila, prisutnost), provjere koje se nikad ne izvršavaju
+> (blokiranje, potpis verifikacionog linka, zakomentarisana PayPal verifikacija),
+> i ekonomija bez idempotencije (prekidač rješenja, finansiraj-pa-otkaži).
+> Sve popravljeno, 13 regresionih testova dodato, 370/370 prolazi.
+>
+> Ostaje otvoreno i **prelazi u P2/P4**: Xbox povezivanje bez dokaza vlasništva
+> (traži OAuth), PayPal webhook bez zaštite od ponavljanja, i **jedna shema rola
+> umjesto dvije** — forum i dalje ima četiri odvojena spiska osoblja plus
+> `users.role` kao paralelni sistem uz Spatie.
+
 ### P2. Filament — *područje 8*
 Pristup panelu (`canAccessPanel` gleda `role === 'admin'`), policies po resursu,
 **bulk akcije** (najopasnije — brišu u gomili i često nemaju provjeru), custom

@@ -253,7 +253,7 @@ class GiveawayController extends Controller
      */
     public function myEntry(Request $request, string $slug): JsonResponse
     {
-        $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
+        $giveaway = Giveaway::where('slug', $slug)->where('is_public', true)->firstOrFail();
         $user = $request->user();
 
         $entry = GiveawayEntry::where('giveaway_id', $giveaway->id)
@@ -278,7 +278,7 @@ class GiveawayController extends Controller
      */
     public function completeTask(Request $request, string $slug, int $taskId): JsonResponse
     {
-        $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
+        $giveaway = Giveaway::where('slug', $slug)->where('is_public', true)->firstOrFail();
         $user = $request->user();
 
         if (! $giveaway->isActive()) {
@@ -363,7 +363,7 @@ class GiveawayController extends Controller
      */
     public function leaderboard(string $slug): JsonResponse
     {
-        $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
+        $giveaway = Giveaway::where('slug', $slug)->where('is_public', true)->firstOrFail();
 
         $cacheKey = "giveaway:{$giveaway->id}:leaderboard";
         $cacheTtl = config('giveaway.cache.leaderboard_ttl', 60);
@@ -392,7 +392,7 @@ class GiveawayController extends Controller
      */
     public function claimDailyBonus(Request $request, string $slug): JsonResponse
     {
-        $giveaway = Giveaway::where('slug', $slug)->firstOrFail();
+        $giveaway = Giveaway::where('slug', $slug)->where('is_public', true)->firstOrFail();
         $user = $request->user();
 
         if (! $giveaway->isActive()) {

@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * The Social Hub: conversations of every kind, plus the rails that surround
@@ -159,6 +160,18 @@ class ChatController extends Controller
             return $this->error('This conversation is not yours.', 403);
         }
 
+        // Blocking someone did not delete the existing thread, so refusing new
+        // conversations alone left every prior DM fully usable.
+        if ($conversation->type === 'direct') {
+            $otherId = ConversationParticipant::where('conversation_id', $conversation->id)
+                ->where('user_id', '!=', $user->id)
+                ->value('user_id');
+
+            if ($otherId && Friendship::blockExistsBetween($user->id, (int) $otherId)) {
+                return $this->error('You cannot message this user.', 403);
+            }
+        }
+
         $request->validate([
             'body' => 'nullable|string|max:2000',
             'image' => 'nullable|image|max:4096',
@@ -167,8 +180,12 @@ class ChatController extends Controller
         $attachment = null;
 
         if ($request->hasFile('image')) {
+            // Private disk. On the public one these sat at a plain
+            // /storage/chat/<hash>.jpg URL with no authorization at all — the
+            // unguessable filename was the only control, so the image outlived
+            // leaving the group, blocking, and deleting the conversation.
             $attachment = [
-                'path' => $request->file('image')->store('chat', 'public'),
+                'path' => $request->file('image')->store('chat', 'local'),
                 'type' => 'image',
             ];
         }
@@ -207,6 +224,12 @@ class ChatController extends Controller
             return $this->error('Only group members can add people.', 403);
         }
 
+        // The `role` column was written but never read, so any member could
+        // add their own alt account to a group and hand it the full history.
+        if (! in_array($me->role, ['owner', 'admin'], true)) {
+            return $this->error('Only the group owner can add people.', 403);
+        }
+
         $data = $request->validate(['member_ids' => 'required|array|max:24', 'member_ids.*' => 'integer']);
         $friendIds = $chat->friendIds($user);
 
@@ -227,9 +250,39 @@ class ChatController extends Controller
         return $this->success(['added' => $added], $added === 1 ? '1 member added.' : "{$added} members added.");
     }
 
+    /**
+     * GET /chat/attachments/{message} — signed; serves a DM image.
+     *
+     * The signature is the authorization: it is minted per render, expires,
+     * and only ever handed to participants. An <img> tag cannot carry a bearer
+     * token, so a signed URL is what replaces the world-readable path.
+     */
+    public function attachment(Message $message)
+    {
+        if (! $message->attachment_path) {
+            abort(404);
+        }
+
+        // Older attachments were written to the public disk before this moved.
+        foreach (['local', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($message->attachment_path)) {
+                return Storage::disk($disk)->response($message->attachment_path);
+            }
+        }
+
+        abort(404);
+    }
+
     /** DELETE /conversations/{conversation}/leave */
     public function leave(Request $request, Conversation $conversation): JsonResponse
     {
+        // Checked before the type branches: the three distinct refusals below
+        // let an authenticated caller walk conversation ids and learn which
+        // exist, which are clan rooms, and which pairs have a DM open.
+        if (! $conversation->hasParticipant($request->user()->id)) {
+            return $this->error('This conversation is not yours.', 403);
+        }
+
         if ($conversation->type === 'clan') {
             return $this->error('Leave the clan to leave its room.', 422);
         }

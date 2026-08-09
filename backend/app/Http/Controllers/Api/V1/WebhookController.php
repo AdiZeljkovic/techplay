@@ -18,8 +18,31 @@ class WebhookController extends Controller
      */
     public function notify(Request $request)
     {
-        $type = $request->input('type');
-        $data = $request->input('data');
+        // This relays attacker-controllable text into the official community
+        // channel as a branded embed. It was public, so anyone could post a
+        // convincing fake announcement; nothing in the app calls it, the bot's
+        // PollingService does the real work, so it is kept only as a manual
+        // staff trigger.
+        $user = $request->user();
+        $isStaff = $user && ($user->hasAnyRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Editor'])
+            || in_array($user->role, ['admin', 'super_admin', 'editor'], true));
+
+        if (! $isStaff) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'type' => 'required|in:news,forum_thread',
+            'data' => 'required|array',
+            'data.title' => 'required|string|max:200',
+            'data.slug' => 'required|string|max:200|regex:/^[A-Za-z0-9\-_]+$/',
+            'data.excerpt' => 'nullable|string|max:500',
+            'data.author_name' => 'nullable|string|max:100',
+            'data.featured_image' => 'nullable|url|starts_with:https://',
+        ]);
+
+        $type = $validated['type'];
+        $data = $validated['data'];
 
         $webhookUrl = config('services.discord.webhook_url');
 
@@ -50,10 +73,10 @@ class WebhookController extends Controller
                 [
                     'title' => $article['title'],
                     'description' => $article['excerpt'],
-                    'url' => config('app.frontend_url').'/news/'.$article['slug'],
+                    'url' => config('app.frontend_url').'/news/'.rawurlencode($article['slug']),
                     'color' => 5814783, // #5865F2
                     'image' => [
-                        'url' => $article['featured_image'] ?? null,
+                        'url' => $article['featured_image'] ?? null, // validated https URL
                     ],
                     'footer' => [
                         'text' => 'TechPlay.gg News',
@@ -71,7 +94,7 @@ class WebhookController extends Controller
                 [
                     'title' => $thread['title'],
                     'description' => 'Started by '.($thread['author_name'] ?? 'Unknown'),
-                    'url' => config('app.frontend_url').'/forum/threads/'.$thread['slug'],
+                    'url' => config('app.frontend_url').'/forum/threads/'.rawurlencode($thread['slug']),
                     'color' => 15158332, // #E74C3C
                     'footer' => [
                         'text' => 'TechPlay.gg Forum',

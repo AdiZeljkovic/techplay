@@ -12,6 +12,7 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 /**
  * One chat system for direct messages, group chats and clan rooms. The shape
@@ -30,6 +31,10 @@ class ChatService
      */
     public function directBetween(User $a, User $b): Conversation
     {
+        if (Friendship::blockExistsBetween($a->id, $b->id)) {
+            throw new \RuntimeException('You cannot message this user.');
+        }
+
         $existing = Conversation::where('type', 'direct')
             ->whereHas('participants', fn ($q) => $q->where('user_id', $a->id))
             ->whereHas('participants', fn ($q) => $q->where('user_id', $b->id))
@@ -305,7 +310,12 @@ class ChatService
         return [
             'id' => $message->id,
             'body' => $message->body,
-            'attachment_path' => $message->attachment_path,
+            // A short-lived signed URL rather than a storage path: the image
+            // now lives on a private disk, and the signature is what lets an
+            // <img> tag fetch it without a bearer token.
+            'attachment_url' => $message->attachment_path
+                ? URL::temporarySignedRoute('chat.attachment', now()->addHours(6), ['message' => $message->id])
+                : null,
             'attachment_type' => $message->attachment_type,
             'created_at' => $message->created_at->toIso8601String(),
             'is_mine' => $message->sender_id === $viewerId,

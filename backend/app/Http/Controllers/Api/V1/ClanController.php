@@ -340,6 +340,19 @@ class ClanController extends Controller
             ])
             ->firstOrFail();
 
+        // The directory lists public clans only, but this route never checked,
+        // so a private clan's full roster, treasury and activity feed were one
+        // guessed slug away for an anonymous caller.
+        if (! $clan->is_public) {
+            $viewerId = optional(Auth::guard('sanctum')->user())->id;
+            $isMember = $viewerId && ClanMember::where('clan_id', $clan->id)
+                ->where('user_id', $viewerId)->exists();
+
+            if (! $isMember) {
+                abort(404, 'Clan not found');
+            }
+        }
+
         $levels = app(ClanLevelService::class);
 
         // Activity score: everything earned in the last 7 days, off the ledger.
@@ -485,11 +498,9 @@ class ClanController extends Controller
             return $this->error('You are already a member of this clan.', 422);
         }
 
-        if ($clan->isFull()) {
-            return $this->error('This clan is full.', 422);
+        if ($error = $this->admit($clan, $user)) {
+            return $this->error($error, 422);
         }
-
-        $this->admit($clan, $user);
 
         return $this->success(null, 'You have joined the clan!');
     }
@@ -502,6 +513,13 @@ class ClanController extends Controller
 
         if ($clan->owner_id === $user->id) {
             return $this->error('Transfer ownership before leaving.', 422);
+        }
+
+        // Only the owner was refused. The delete below is a no-op for a
+        // non-member, but the activity row was written unconditionally — so
+        // anyone could spam "X left the clan" into any clan's public feed.
+        if (! ClanMember::where('clan_id', $clan->id)->where('user_id', $user->id)->exists()) {
+            return $this->error('You are not a member of this clan.', 403);
         }
 
         ClanMember::where('clan_id', $clan->id)->where('user_id', $user->id)->delete();
@@ -563,11 +581,9 @@ class ClanController extends Controller
         if ($data['accept']) {
             $clan = $invite->clan;
 
-            if ($clan->isFull()) {
-                return $this->error('The clan is full.', 422);
+            if ($error = $this->admit($clan, $user)) {
+                return $this->error($error, 422);
             }
-
-            $this->admit($clan, $user);
 
             $invite->update(['status' => 'accepted']);
 
@@ -837,40 +853,70 @@ class ClanController extends Controller
             return $this->success(null, 'Application declined.');
         }
 
-        if ($clan->isFull()) {
-            return $this->error('The clan is full.', 422);
-        }
-
         $applicant = User::findOrFail($application->user_id);
 
-        // The applicant may have joined somewhere else while waiting.
-        if (ClanMember::where('user_id', $applicant->id)->exists()) {
+        // The applicant may have joined somewhere else while waiting; admit()
+        // is the one place that decides, so the stale application is closed
+        // with whatever reason it gives.
+        if ($error = $this->admit($clan, $applicant)) {
             $application->update(['status' => 'declined', 'handled_by' => $request->user()->id]);
 
-            return $this->error('The applicant has already joined another clan.', 422);
+            return $this->error($error, 422);
         }
 
-        $this->admit($clan, $applicant);
         $application->update(['status' => 'accepted', 'handled_by' => $request->user()->id]);
 
         return $this->success(null, 'Application accepted.');
     }
 
-    /** One doorway for every way into a clan: member row, cache, feed. */
-    private function admit(Clan $clan, User $user): void
+    /**
+     * One doorway for every way into a clan: member row, cache, feed.
+     *
+     * Both rules now live here rather than at the call sites. `apply` and
+     * `respondApplication` checked "already in a clan"; `join` and
+     * `respondInvite` did not, and the unique index is (clan_id, user_id), not
+     * user_id — so one account could join every recruiting clan at once and
+     * read all of their private forums.
+     *
+     * The capacity check runs inside a transaction holding the clan row, since
+     * counting and then inserting let concurrent joins overshoot the limit.
+     *
+     * @return string|null an error message, or null on success
+     */
+    private function admit(Clan $clan, User $user): ?string
     {
-        ClanMember::firstOrCreate(
-            ['clan_id' => $clan->id, 'user_id' => $user->id],
-            ['role' => 'member', 'joined_at' => now()]
-        );
+        return DB::transaction(function () use ($clan, $user) {
+            $locked = Clan::whereKey($clan->id)->lockForUpdate()->first();
 
-        ClanResourceService::forgetClanId($user->id);
+            if (! $locked) {
+                return 'This clan no longer exists.';
+            }
 
-        ClanActivity::create([
-            'clan_id' => $clan->id,
-            'user_id' => $user->id,
-            'type' => 'member_joined',
-            'title' => "{$user->username} joined the clan",
-        ]);
+            if (ClanMember::where('user_id', $user->id)->exists()) {
+                return 'You are already in a clan.';
+            }
+
+            if (ClanMember::where('clan_id', $locked->id)->count() >= $locked->effectiveMemberLimit()) {
+                return 'This clan is full.';
+            }
+
+            ClanMember::create([
+                'clan_id' => $locked->id,
+                'user_id' => $user->id,
+                'role' => 'member',
+                'joined_at' => now(),
+            ]);
+
+            ClanResourceService::forgetClanId($user->id);
+
+            ClanActivity::create([
+                'clan_id' => $locked->id,
+                'user_id' => $user->id,
+                'type' => 'member_joined',
+                'title' => "{$user->username} joined the clan",
+            ]);
+
+            return null;
+        });
     }
 }

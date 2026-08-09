@@ -22,7 +22,8 @@ export interface GamingMoment {
     url: string | null;
     provider: string | null;
     thumbnail_url: string | null;
-    path: string | null;
+    /** Signed, short-lived URL — screenshots are no longer on the public disk. */
+    image_url: string | null;
     caption: string | null;
     has_spoilers: boolean;
 }

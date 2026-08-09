@@ -10,7 +10,6 @@ import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import Avatar from "@/components/ui/Avatar";
 import { getEcho } from "@/lib/echo";
-import { getStorageUrl } from "@/lib/imageUrl";
 import { timeAgo } from "@/lib/timeAgo";
 import type {
     ChatMessage, ConversationRow, SocialHubPayload, ThreadMember,
@@ -164,10 +163,10 @@ function MessageBubble({
                         mine ? "bg-[var(--accent)] text-white" : "bg-white/[0.06] text-white/85"
                     }`}
                 >
-                    {message.attachment_path && (
+                    {message.attachment_url && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                            src={getStorageUrl(message.attachment_path)}
+                            src={message.attachment_url}
                             alt=""
                             className="mb-2 max-h-[240px] rounded-[8px] object-cover"
                         />

@@ -117,7 +117,7 @@ export function setupPresenceTracking(client: Client) {
                 discord_id: userId,
                 game_name: gameName,
             }, {
-                headers: { 'X-Bot-Secret': config.botSecret },
+                headers: { 'X-Discord-Bot-Token': config.botSecret },
                 timeout: 5000,
             });
         } catch {

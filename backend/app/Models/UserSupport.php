@@ -9,13 +9,16 @@ class UserSupport extends Model
     protected $fillable = [
         'user_id',
         'support_tier_id',
+        'payment_id',
         'amount',
         'status',
+        'is_recurring',
         'expires_at',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'is_recurring' => 'boolean',
         'expires_at' => 'datetime',
     ];
 

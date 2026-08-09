@@ -16,6 +16,7 @@ use App\Traits\ProfilePrivacy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class JournalController extends Controller
 {
@@ -48,14 +49,20 @@ class JournalController extends Controller
 
         $isOwner = $this->viewer()?->id === $user->id;
 
+        // Clamped and applied in SQL. This used to load a user's entire
+        // session history with every moment eager-loaded, then slice in PHP —
+        // on a public route with an unbounded `limit`.
+        $limit = min(100, max(1, (int) $request->integer('limit', 40) ?: 40));
+
         $sessions = PlaySession::where('user_id', $user->id)
             ->when(! $isOwner, fn ($q) => $q->where('is_private', false))
             ->with(['game:id,slug,name,cover_url', 'moments'])
             ->orderByDesc('played_on')
             ->orderByDesc('id')
+            ->limit($limit)
             ->get();
 
-        $visible = $sessions->take((int) $request->integer('limit', 40) ?: 40);
+        $visible = $sessions;
 
         return $this->success([
             'sessions' => $visible->map(fn (PlaySession $s) => $this->presentSession($s, $isOwner))->all(),
@@ -109,6 +116,10 @@ class JournalController extends Controller
 
         $data = $request->validate($this->rules(false));
         $session->update($this->attributes($data, $sanitizer));
+
+        // The moments carry a copy of the session's privacy, snapshotted when
+        // they were added — flipping the session afterwards left them stale.
+        $session->moments()->update(['is_private' => $session->is_private]);
 
         $journal->syncPlaytime($request->user(), $session->game_id);
 
@@ -174,7 +185,10 @@ class JournalController extends Controller
         ];
 
         if ($data['type'] === 'screenshot') {
-            $attributes['path'] = $request->file('image')->store('journal', 'public');
+            // Private disk: a screenshot attached to a private session used to
+            // sit at an unauthenticated /storage/journal/<hash>.jpg URL, and
+            // marking the session private afterwards did not take it back.
+            $attributes['path'] = $request->file('image')->store('journal', 'local');
         } else {
             $provider = $this->clipProvider($data['url']);
 
@@ -202,6 +216,8 @@ class JournalController extends Controller
         }
 
         if ($moment->path) {
+            // Both disks: older screenshots were written to the public one.
+            Storage::disk('local')->delete($moment->path);
             Storage::disk('public')->delete($moment->path);
         }
 
@@ -275,6 +291,27 @@ class JournalController extends Controller
         ];
     }
 
+    /**
+     * GET /journal/moments/{moment}/image — signed; serves a screenshot.
+     *
+     * The signature carries the authorization: it is minted only while
+     * rendering a session the viewer is allowed to see, and it expires.
+     */
+    public function momentImage(GamingMoment $moment)
+    {
+        if (! $moment->path) {
+            abort(404);
+        }
+
+        foreach (['local', 'public'] as $disk) {
+            if (Storage::disk($disk)->exists($moment->path)) {
+                return Storage::disk($disk)->response($moment->path);
+            }
+        }
+
+        abort(404);
+    }
+
     private function presentMoment(GamingMoment $moment): array
     {
         return [
@@ -283,7 +320,11 @@ class JournalController extends Controller
             'url' => $moment->url,
             'provider' => $moment->provider,
             'thumbnail_url' => $moment->thumbnail_url,
-            'path' => $moment->path,
+            // Signed and expiring, like DM attachments — the raw path was a
+            // permanent public link regardless of the session's privacy.
+            'image_url' => $moment->path
+                ? URL::temporarySignedRoute('journal.moment.image', now()->addHours(6), ['moment' => $moment->id])
+                : null,
             'caption' => $moment->caption,
             'has_spoilers' => $moment->has_spoilers,
         ];

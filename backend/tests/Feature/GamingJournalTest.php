@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Game;
+use App\Models\GamingMoment;
 use App\Models\PlaySession;
 use App\Models\User;
 use App\Models\UserGame;
@@ -198,8 +199,29 @@ class GamingJournalTest extends TestCase
             'image' => UploadedFile::fake()->create('shot.jpg', 120, 'image/jpeg'),
         ])->assertOk()->json('data');
 
-        $this->assertNotNull($shot['path']);
-        Storage::disk('public')->assertExists($shot['path']);
+        // The raw storage path is no longer exposed — screenshots live on the
+        // private disk and are served through a signed, expiring URL.
+        $this->assertNotNull($shot['image_url']);
+        $this->assertStringContainsString('signature=', $shot['image_url']);
+
+        $moment = GamingMoment::latest('id')->first();
+        Storage::disk('local')->assertExists($moment->path);
+        Storage::disk('public')->assertMissing($moment->path);
+    }
+
+    public function test_a_journal_screenshot_is_not_reachable_without_a_valid_signature(): void
+    {
+        $user = User::factory()->create(['username' => 'adi']);
+        $id = $this->log($user, $this->game());
+
+        $this->actingAs($user)->post("/api/v1/journal/sessions/{$id}/moments", [
+            'type' => 'screenshot',
+            'image' => UploadedFile::fake()->create('shot.jpg', 120, 'image/jpeg'),
+        ])->assertOk();
+
+        $moment = GamingMoment::latest('id')->first();
+
+        $this->get("/api/v1/journal/moments/{$moment->id}/image")->assertStatus(403);
     }
 
     public function test_clips_from_hosts_we_cannot_render_are_refused(): void

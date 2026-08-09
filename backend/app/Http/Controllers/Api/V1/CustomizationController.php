@@ -8,6 +8,7 @@ use App\Models\UserCustomization;
 use App\Services\BountyService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomizationController extends Controller
 {
@@ -81,28 +82,41 @@ class CustomizationController extends Controller
 
         $tier = optional(optional($user->activeSupport()->with('tier')->first())->tier)->name;
 
-        if ($item->required_tier) {
-            if ($item->required_tier !== $tier) {
-                return $this->error("Requires the {$item->required_tier} loyalty tier.", 403);
-            }
-            $via = 'tier';
-        } elseif ($item->cost > 0) {
-            try {
-                $bounty->spend($user, $item->cost, "Unlocked: {$item->name}");
-            } catch (\RuntimeException $e) {
-                return $this->error($e->getMessage(), 422);
-            }
-            $via = 'bounty';
-        } else {
-            $via = 'free';
+        if ($item->required_tier && $item->required_tier !== $tier) {
+            return $this->error("Requires the {$item->required_tier} loyalty tier.", 403);
         }
 
-        UserCustomization::create([
-            'user_id' => $user->id,
-            'customization_id' => $item->id,
-            'is_equipped' => false,
-            'acquired_via' => $via,
-        ]);
+        try {
+            // The ownership check, the debit and the insert used to be three
+            // separate transactions. Two simultaneous requests both passed the
+            // check, both were charged, and the second insert died on the
+            // unique index — the buyer paid twice and owned one, with no
+            // compensating credit anywhere.
+            DB::transaction(function () use ($user, $item, $bounty) {
+                $claimed = UserCustomization::firstOrCreate(
+                    ['user_id' => $user->id, 'customization_id' => $item->id],
+                    ['is_equipped' => false, 'acquired_via' => 'pending']
+                );
+
+                if (! $claimed->wasRecentlyCreated) {
+                    throw new \RuntimeException('You already own this item.');
+                }
+
+                if ($item->required_tier) {
+                    $via = 'tier';
+                } elseif ($item->cost > 0) {
+                    // Throws when short — the rollback takes the row with it.
+                    $bounty->spend($user, $item->cost, "Unlocked: {$item->name}");
+                    $via = 'bounty';
+                } else {
+                    $via = 'free';
+                }
+
+                $claimed->update(['acquired_via' => $via]);
+            });
+        } catch (\RuntimeException $e) {
+            return $this->error($e->getMessage(), 422);
+        }
 
         return $this->success(['balance' => (int) ($user->fresh()->bounty_balance ?? 0)], 'Unlocked!');
     }

@@ -13,7 +13,6 @@ import {
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
-import { getStorageUrl } from "@/lib/imageUrl";
 import { timeAgo } from "@/lib/timeAgo";
 import type { JournalPayload, PlaySession } from "@/lib/types/profile";
 
@@ -331,8 +330,8 @@ function SessionComposer({
 
 function MomentTile({ moment }: { moment: JournalPayload["sessions"][number]["moments"][number] }) {
     const [revealed, setRevealed] = useState(false);
-    const src = moment.type === "screenshot" && moment.path
-        ? getStorageUrl(moment.path)
+    const src = moment.type === "screenshot" && moment.image_url
+        ? moment.image_url
         : moment.thumbnail_url;
     const hidden = moment.has_spoilers && !revealed;
 

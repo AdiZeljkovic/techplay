@@ -42,6 +42,29 @@ class SupportController extends Controller
         $recurring = ! empty($validated['subscriptionID']);
         $paymentId = $validated['subscriptionID'] ?? $validated['orderID'];
 
+        // A completed PayPal reference buys exactly one support period. Without
+        // this, keeping the orderID from a single cheapest-tier purchase and
+        // re-posting it every month renewed the tier for free — and a second
+        // account posting the same reference was granted it too.
+        $spentElsewhere = UserSupport::where('payment_id', $paymentId)
+            ->where('user_id', '!=', $user->id)
+            ->exists();
+
+        if ($spentElsewhere) {
+            Log::warning('Pledge refused: payment already claimed', [
+                'user_id' => $user->id, 'payment_id' => $paymentId,
+            ]);
+
+            return response()->json(['message' => 'That payment has already been claimed.'], 409);
+        }
+
+        // A one-off pass is spent once. Re-posting it would otherwise walk
+        // expires_at forward another month each time. Recurring subscriptions
+        // are exempt — renewing against the same subscription id is the point.
+        if (! $recurring && UserSupport::where('payment_id', $paymentId)->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'That payment has already been claimed.'], 409);
+        }
+
         if ($recurring) {
             $subscription = $paypal->getSubscription($paymentId);
             $status = $subscription['status'] ?? null;

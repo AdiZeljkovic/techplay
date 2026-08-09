@@ -8,13 +8,14 @@ use App\Models\Presence;
 use App\Models\User;
 use App\Services\PresenceService;
 use App\Traits\ApiResponse;
+use App\Traits\ProfilePrivacy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PresenceController extends Controller
 {
-    use ApiResponse;
+    use ApiResponse, ProfilePrivacy;
 
     public function __construct(protected PresenceService $presenceService) {}
 
@@ -24,6 +25,14 @@ class PresenceController extends Controller
     public function show(string $username): JsonResponse
     {
         $user = User::where('username', $username)->firstOrFail();
+
+        // Ten other per-user endpoints run this check; presence was the one
+        // left out. With `started_at` in the payload, polling it reconstructs a
+        // private profile's daily play schedule with no account at all.
+        // Null, not 403 — a refusal would confirm the account is private.
+        if ($this->profileHidden($user)) {
+            return $this->success(null);
+        }
 
         $presence = Presence::where('user_id', $user->id)
             ->where('is_active', true)

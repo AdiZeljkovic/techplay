@@ -65,14 +65,25 @@ class GameListController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $list = GameList::with(['items.game:id,slug,name,released,rating,cover_url,platforms', 'user:id,username,display_name,avatar_url'])
+        // profile_visibility must be in the select, or the privacy check below
+        // reads a missing attribute and silently decides the profile is public.
+        $list = GameList::with(['items.game:id,slug,name,released,rating,cover_url,platforms', 'user:id,username,display_name,avatar_url,profile_visibility'])
             ->withCount(['likes', 'comments'])
             ->findOrFail($id);
 
         $viewerId = optional($request->user('sanctum'))->id;
 
+        // One message for both cases: distinguishing "draft" from "private"
+        // from "no such id" let an anonymous scanner map which lists exist.
         if (! $list->isPublished() && $viewerId !== $list->user_id) {
-            return $this->forbidden($list->is_draft ? 'This list is still a draft.' : 'This list is private.');
+            return $this->forbidden('This list is not available.');
+        }
+
+        // The by-slug twin has always honoured profile privacy; this one did
+        // not, so the same list was 403 at /users/{name}/lists/{slug} and 200
+        // at /game-lists/{id} — with the owner's identity attached.
+        if ($viewerId !== $list->user_id && $list->user && $this->profileHidden($list->user)) {
+            return $this->forbidden('This list is not available.');
         }
 
         $this->markLiked($list, $viewerId);
@@ -263,6 +274,9 @@ class GameListController extends Controller
         $lists = GameList::query()
             ->where('is_public', true)
             ->where('is_draft', false)
+            // A user who hid their profile still had every public list of
+            // theirs surfaced here, with username and avatar attached.
+            ->whereHas('user', fn ($q) => $q->where('profile_visibility', 'public'))
             ->has('items')
             ->withCount(['items', 'likes', 'comments'])
             ->with(['user:id,username,display_name,avatar_url', 'items' => fn ($q) => $q->limit(4)->with('game:id,cover_url')])
@@ -307,10 +321,17 @@ class GameListController extends Controller
      */
     public function comments(Request $request, int $id)
     {
-        $list = GameList::findOrFail($id);
+        $list = GameList::with('user:id,username,profile_visibility')->findOrFail($id);
+        $viewerId = optional($request->user('sanctum'))->id;
 
-        if (! $list->isPublished() && optional($request->user('sanctum'))->id !== $list->user_id) {
-            return $this->forbidden('This list is not public.');
+        if (! $list->isPublished() && $viewerId !== $list->user_id) {
+            return $this->forbidden('This list is not available.');
+        }
+
+        // Same profile-privacy gap as show(): this returned the commenters'
+        // identities on a hidden profile's list.
+        if ($viewerId !== $list->user_id && $list->user && $this->profileHidden($list->user)) {
+            return $this->forbidden('This list is not available.');
         }
 
         $comments = GameListComment::where('game_list_id', $list->id)

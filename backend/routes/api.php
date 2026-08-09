@@ -102,13 +102,16 @@ Route::prefix('v1')->group(function () {
         Route::get('/auth/battlenet/redirect', [BattleNetAuthController::class, 'redirect']);
         Route::get('/auth/battlenet/callback', [BattleNetAuthController::class, 'callback']);
 
-        // Internal Webhooks (Secured by app logic/middleware typically, or local only)
-        Route::post('/webhooks/discord/notify', [WebhookController::class, 'notify']);
+        // (The Discord relay used to sit here, unauthenticated — moved down to
+        // the staff block, since it posts as TechPlay in the community channel.)
     });
 
     // Discord Bot Integration (Bot-token authenticated, higher rate limit)
     // 300/min allows for active Discord servers while preventing abuse
-    Route::middleware('throttle:300,1')->prefix('discord')->group(function () {
+    // The bot-token check lives on the group, not in each controller. It was
+    // copy-pasted per endpoint before, and the copies that were never written
+    // left /discord/presence and /discord/user open to anyone.
+    Route::middleware(['throttle:300,1', 'discord.bot'])->prefix('discord')->group(function () {
         // User & XP
         Route::get('/user/{discordId}', [DiscordIntegrationController::class, 'getUser']);
         Route::post('/xp', [DiscordXpController::class, 'addXp']);
@@ -333,7 +336,8 @@ Route::prefix('v1')->group(function () {
         });
 
         // Support Plans
-        Route::post('/support/create-plan', [SupportController::class, 'createPlan']);
+        // (create-plan removed: it pointed at a SupportController method that
+        // was never written, so every call 500'd. No frontend caller existed.)
         Route::post('/support/pledge', [SupportController::class, 'pledge']);
         Route::get('/support/mine', [SupportController::class, 'mySupport']);
     });
@@ -342,6 +346,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('throttle:3000,1')->group(function () {
         // Email Verification (Public - from email link)
         Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+            ->middleware('signed')
             ->name('verification.verify');
 
         // Steam OpenID callback — public; user identity verified via short-lived token in URL
@@ -549,6 +554,21 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'throttle:30,1'])->post('/comments', [CommentController::class, 'store']);
     Route::middleware(['auth:sanctum', 'throttle:30,1'])->post('/comments/{id}/vote', [CommentController::class, 'vote']);
     Route::middleware(['auth:sanctum', 'throttle:5,1'])->post('/reports', [ReportController::class, 'store']);
+
+    // Journal screenshots — same signed-URL treatment as DM attachments.
+    Route::get('/journal/moments/{moment}/image', [JournalController::class, 'momentImage'])
+        ->middleware('signed')
+        ->name('journal.moment.image');
+
+    // DM attachments — signed rather than auth'd, because an <img> tag cannot
+    // send a bearer token. The signature expires; the file is off the public disk.
+    Route::get('/chat/attachments/{message}', [ChatController::class, 'attachment'])
+        ->middleware('signed')
+        ->name('chat.attachment');
+
+    // Manual Discord announcement relay (staff check inside the controller)
+    Route::middleware(['auth:sanctum', 'throttle:10,1'])
+        ->post('/webhooks/discord/notify', [WebhookController::class, 'notify']);
 
     // SEO Tools (Admin only)
     Route::middleware(['auth:sanctum'])->prefix('seo')->group(function () {

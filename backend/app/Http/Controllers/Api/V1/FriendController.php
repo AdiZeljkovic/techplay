@@ -116,6 +116,14 @@ class FriendController extends Controller
     public function block($userId)
     {
         $currentUserId = Auth::id();
+        $userId = (int) $userId;
+
+        // The id arrived raw — no existence check, no self-check — so junk
+        // rows and self-blocks were writable, and on some schemas it threw a
+        // bare foreign-key error.
+        if ($userId === (int) $currentUserId || ! User::whereKey($userId)->exists()) {
+            return response()->json(['message' => 'That user cannot be blocked.'], 422);
+        }
 
         // Check for existing friendship in any direction
         $friendship = Friendship::where(function ($q) use ($currentUserId, $userId) {

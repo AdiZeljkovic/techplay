@@ -131,7 +131,18 @@ class GameRatingController extends Controller
         }
 
         $validated['is_draft'] = (bool) ($validated['is_draft'] ?? false);
-        $validated['game_id'] = Game::where('slug', $slug)->value('id');
+
+        // The slug came from the URL and was never checked against the
+        // catalogue: a rating for a game that does not exist yet stored
+        // game_id = null and waited. Once the title was imported, it arrived
+        // with a community score someone had seeded months earlier.
+        $gameId = Game::where('slug', $slug)->value('id');
+
+        if (! $gameId) {
+            return $this->notFound('Game not found.');
+        }
+
+        $validated['game_id'] = $gameId;
 
         $wasDraft = GameRating::where('user_id', $request->user()->id)
             ->where('game_slug', $slug)
