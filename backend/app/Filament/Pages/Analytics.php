@@ -7,6 +7,17 @@ use Filament\Pages\Page;
 
 class Analytics extends Page
 {
+    /** Business metrics — traffic, revenue, conversion. */
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+
+        return $user && (
+            $user->hasAnyRole(['Super Admin', 'Admin'])
+            || in_array($user->role ?? '', ['admin', 'super_admin'], true)
+        );
+    }
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
 
     protected string $view = 'filament.pages.analytics';

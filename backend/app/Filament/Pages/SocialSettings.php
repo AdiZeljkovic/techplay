@@ -13,6 +13,17 @@ use Filament\Schemas\Schema;
 
 class SocialSettings extends Page implements HasForms
 {
+    /** Writes site-wide social links that render on every page. */
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+
+        return $user && (
+            $user->hasAnyRole(['Super Admin', 'Admin'])
+            || in_array($user->role ?? '', ['admin', 'super_admin'], true)
+        );
+    }
+
     use InteractsWithForms;
 
     public ?array $data = [];

@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CommentResource\Pages;
 use App\Models\Comment;
-use App\Policies\CommentPolicy;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -19,8 +18,6 @@ use Filament\Tables\Table;
 class CommentResource extends Resource
 {
     protected static ?string $model = Comment::class;
-
-    protected static ?string $modelPolicy = CommentPolicy::class;
 
     public static function getNavigationIcon(): ?string
     {

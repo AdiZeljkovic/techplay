@@ -24,6 +24,17 @@ use Illuminate\Support\Facades\Cache;
 
 class UltimateSeo extends Page implements HasForms
 {
+    /** Editorial SEO configuration; save() writes site-wide settings. */
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+
+        return $user && (
+            $user->hasAnyRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Editor'])
+            || in_array($user->role ?? '', ['admin', 'super_admin', 'editor'], true)
+        );
+    }
+
     use InteractsWithForms;
 
     public ?array $data = [];

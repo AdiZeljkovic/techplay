@@ -55,6 +55,19 @@ stranice, destruktivne akcije, i postoji li MFA za administratore.
 odgovor na pitanje treba li panelu drugi sloj zaštite (IP, MFA).
 **Procjena:** 1 sesija.
 
+> **URAĐENO 09.08.2026 → `docs/37-p2-filament.md`.** 30 od 35 resursa nije imalo
+> nikakvu autorizaciju, a `view admin panel` nose i Moderator i Journalist — pa
+> je moderator mogao čitati adrese kupaca, mijenjati cijene, paliti maintenance
+> mode i obrisati katalog od 187k igara u gomili. Obrnuto, `CommentPolicy` je
+> gledala samo `role === 'admin'`, pa moderator nije mogao moderirati komentare.
+> Uvedena jedna shema od četiri sloja naslonjena na postojeća ovlaštenja;
+> nerazvrstan model nema pristup. Brisanje u gomili je svugdje samo adminovo.
+> 8 testova zaključava matricu, 378/378 prolazi.
+>
+> **Odgovor na pitanje o drugom sloju:** prijava već ima ograničenje pokušaja
+> (Filament `rateLimit(5)`). MFA postoji u Filamentu v5 ali nije uključen —
+> preporučen, nije izveden, jer traži migraciju i upis svih administratora.
+
 ### P3. Ulazna i API sigurnost — *područja 9, 10, 11*
 XSS (gdje ide `dangerouslySetInnerHTML` i šta ga sanitizuje), SQLi (sirovi
 upiti — danas provjereno da su parametrizovani, treba potvrditi za nove),

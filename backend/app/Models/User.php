@@ -23,7 +23,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             return $this->can('view admin panel') || $this->role === 'admin';
         }
 
-        return true;
+        // Deny by default. There is only one panel today, so the old `return
+        // true` cost nothing — but it meant a second panel would ship open to
+        // every authenticated user, and nobody would notice until it mattered.
+        return false;
     }
 
     /**
