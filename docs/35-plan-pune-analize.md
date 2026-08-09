@@ -105,6 +105,22 @@ postoji stanje iz kojeg se ne može izaći.
 **Ostaje:** dijagram stanja po cjelini i popis mrtvih uglova.
 **Procjena:** 6–8 sesija.
 
+> **Cjelina 1/9 — registracija i verifikacija — URAĐENO 10.08.2026 →
+> `docs/39-p4-registracija-verifikacija.md`.** Dva mrtva ugla, oba su zatvarala
+> korisnike van naloga: (1) **nije postojao nijedan način da se povrati
+> zaboravljena lozinka** — login je linkovao stranicu koja nikad nije napravljena,
+> backend nije imao endpoint; sada postoji pun tok koji uz to gasi sve stare
+> sesije; (2) nalozi napravljeni preko Discorda imali su nasumičnu lozinku koju
+> niko nije vidio i nisu je mogli promijeniti ni resetovati.
+>
+> Usput: **Discord prijava je potpuno slomljena** — driver nije registrovan, svaki
+> poziv 500, a dva dugmeta u UI-ju vode tamo. Nije dirano jer je Discord odložen.
+> Kad se bude aktivirao, spajanje naloga po e-mailu u `SocialAuthController` mora
+> se prvo popraviti — trenutno bi bilo preuzimanje tuđeg naloga.
+>
+> Sljedeće cjeline: profil/XP/rankovi · kolekcija i liste · forum i komentari ·
+> klanovi · shop · giveaways · chronicle · Discord bot.
+
 ### P5. Mrtav kod i pokvarene reference — *područja 2, 3*
 *Dijelom urađeno:* 26 fajlova obrisano, 16 nespojenih funkcionalnosti nađeno.
 **Produbiti:** neiskorištene rute, modeli bez upotrebe, **kolone i tabele koje

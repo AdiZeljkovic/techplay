@@ -86,6 +86,7 @@ export default function LoginClient() {
     const [requiresVerification, setRequiresVerification] = useState<string | null>(null);
     const [isResending, setIsResending] = useState(false);
     const [resendSuccess, setResendSuccess] = useState(false);
+    const [passwordWasReset, setPasswordWasReset] = useState(false);
     const searchParams = useSearchParams();
 
     useEffect(() => {
@@ -94,6 +95,11 @@ export default function LoginClient() {
             if (email) {
                 setRequiresVerification(email);
             }
+        }
+
+        // Arriving straight from a completed password reset.
+        if (searchParams.get('reset') === '1') {
+            setPasswordWasReset(true);
         }
 
         // Handle Discord OAuth errors
@@ -249,6 +255,12 @@ export default function LoginClient() {
                             Insert credentials to continue.
                         </p>
                     </div>
+
+                    {passwordWasReset && (
+                        <div className="mb-5 p-3 bg-green-500/10 border border-green-500/20 rounded-[var(--radius-card)] text-sm text-[var(--success)]">
+                            Your password has been reset. Sign in with the new one.
+                        </div>
+                    )}
 
                     {errors.length > 0 && (
                         <div className="mb-5 p-3 bg-red-500/10 border border-red-500/20 rounded-[var(--radius-card)]">

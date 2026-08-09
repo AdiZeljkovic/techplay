@@ -54,6 +54,7 @@ use App\Http\Controllers\Api\V1\NewsletterController;
 use App\Http\Controllers\Api\V1\NewsroomController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PayPalController;
+use App\Http\Controllers\Api\V1\PasswordResetController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
 use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\QuestController;
@@ -93,6 +94,14 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/login', [AuthController::class, 'login']);
 
         // Social Auth (Discord)
+        // Forgotten passwords. The login page has linked to /forgot-password
+        // since launch with nothing behind it, so a forgotten password meant a
+        // lost account. Throttled hard: this endpoint sends mail.
+        Route::post('/auth/forgot-password', [PasswordResetController::class, 'sendLink'])
+            ->middleware('throttle:5,10');
+        Route::post('/auth/reset-password', [PasswordResetController::class, 'reset'])
+            ->middleware('throttle:5,10');
+
         Route::post('/email/resend-public', [VerificationController::class, 'resendPublic'])
             ->middleware('throttle:5,10');
         Route::get('/auth/discord/redirect', [SocialAuthController::class, 'redirect']);

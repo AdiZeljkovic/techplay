@@ -40,6 +40,7 @@ use App\Services\LoggingService;
 use App\Services\Socialite\BattleNetProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Filament\Forms\Components\FileUpload;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -100,6 +101,15 @@ class AppServiceProvider extends ServiceProvider
 
         // Register custom Socialite providers
         $this->bootSocialite();
+
+        // The reset link has to land on the frontend. Laravel's default builds
+        // it with url(), which here is the API host — the user would follow the
+        // mail into a domain that has no such page.
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            return rtrim(config('app.frontend_url'), '/')
+                .'/reset-password?token='.$token
+                .'&email='.urlencode($user->getEmailForPasswordReset());
+        });
 
         // Every admin upload is raster-only, enforced server-side.
         //
