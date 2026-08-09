@@ -324,3 +324,50 @@ Pun payload dodatno nosi `friend_status` (`self|none|pending|incoming|accepted`)
 | GET | `/user/notifications/counts` | NotificationController::counts | ✓ | Broj nepročitanih |
 | PATCH | `/notifications/{id}/read` | NotificationController::markRead | ✓ | Označi pročitanom |
 | POST | `/notifications/read-all` | NotificationController::markAllRead | ✓ | Označi sve pročitanim |
+
+---
+
+## Izmjene ruta iz sigurnosnog pregleda 08–10.08.2026
+
+Detaljno u `docs/36-p1-autorizacija.md`, `37-p2-filament.md` i
+`38-p3-ulazna-sigurnost.md`. Ovdje samo ono što mijenja **ugovor** — ime rute,
+ko smije, ili oblik odgovora.
+
+### Nove rute
+
+| Metoda | Ruta | Controller::Metoda | Auth | Opis |
+|--------|------|--------------------|------|------|
+| GET | `/chat/attachments/{message}` | ChatController::attachment | potpis | Slika iz poruke. Potpisan i istekiv URL jer `<img>` ne može nositi bearer token; fajl je na privatnom disku. |
+| GET | `/journal/moments/{moment}/image` | JournalController::momentImage | potpis | Isto za snimke ekrana iz dnevnika. |
+
+### Uklonjene rute
+
+| Ruta | Zašto |
+|---|---|
+| `POST /support/create-plan` | Pokazivala je na metodu koja nikad nije napisana — svaki poziv 500. Nijedan frontend pozivalac. |
+
+### Promijenjen pristup
+
+| Ruta | Prije | Sada |
+|---|---|---|
+| `POST /webhooks/discord/notify` | javna | `auth:sanctum` + staff, `throttle:10,1`, validiran ulaz |
+| **cijela `/discord/*` grupa** | provjera po kontroleru, dvije rute bez ijedne | `discord.bot` middleware na grupi (`X-Discord-Bot-Token`, prihvata i `X-Bot-Secret`) |
+| `GET /email/verify/{id}/{hash}` | bez provjere potpisa | `signed` middleware |
+| `GET /forum/threads/{slug}`, `/forum/search`, `/forum/active`, `/forum/unanswered`, `/games/{slug}/threads` | privatne klanske teme vidljive | filtrirane po članstvu (keširane rute nose samo javne kategorije) |
+| `GET /clans/{slug}` | privatni klan javan | 404 za nečlana |
+| `GET /game-lists/{id}`, `/game-lists/{id}/comments`, `/game-lists/discover` | zaobilazile privatnost profila | poštuju je |
+| `GET /presence/{username}` | bez provjere privatnosti | vraća `null` za skriven profil |
+| Giveaway rute (`tasks/complete`, `leaderboard`, `daily-bonus`, `my-entry`) | bez `is_public` | filtrirane |
+| `DELETE /user/account` | samo token | traži `current_password` |
+| Sve upisne rute | ban vrijedio na 6 forumskih | `CheckUserBan` na cijeloj API grupi (samo ne-GET) |
+
+### Promijenjen oblik odgovora
+
+Ovo su **prelomne** izmjene — frontend je usklađen u istom commitu.
+
+| Ruta | Prije | Sada |
+|---|---|---|
+| `GET /conversations/{id}/messages` | `attachment_path` (putanja na javnom disku) | `attachment_url` (potpisan, ističe za 6h) |
+| `GET /users/{username}/journal` | `moments[].path` | `moments[].image_url` (potpisan) |
+| `POST /auth/register` | vraćao `access_token` | ne vraća token prije verifikacije; `requires_verification` ostaje |
+| `GET /users/{username}` | `stats.bounty_balance` svima | samo vlasniku |

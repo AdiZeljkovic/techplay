@@ -411,3 +411,52 @@ tuđi ispad nije naš ispad — test to i tvrdi (`Http::preventStrayRequests`).
 **Admin:** `MediaResource`
 **Database:** `media`
 **Napomene:** Upload → validacija → storage → opcijski resize/optimize.
+
+---
+
+## Ispravke statusa iz sigurnosnog pregleda 08–10.08.2026
+
+Tri stvari za koje je mapa govorila jedno, a stvarnost drugo.
+
+### Discord bot — **NE RADI U PRODUKCIJI**
+
+Prethodni status je opisivao servise kao da rade. Provjereno 09.08.2026 na
+serveru: bota **nema** ni u pm2, ni u supervisoru, ni u systemd, ni u dockeru,
+ni kao goli node proces. Kod postoji i gradi se (`tsc` prolazi), `.env` je
+kompletan i tajna se poklapa s backendom — jednostavno ga ništa ne pokreće.
+
+Sve što ova mapa piše pod "**Discord bot:**" treba čitati kao *napisano i
+spremno*, ne *aktivno*. Bot je i dalje jedina komponenta bez deploy putanje —
+nije ni u jednoj skripti u `deployment/`.
+
+Posljedica koju vrijedi znati: `API_URL` u botu pokazuje na `techplay.gg`, i to
+je **ispravno** — nginx tamo proxy-ra `/api`, dok `api-beta.techplay.gg` vraća
+403 na serverske pozive (Cloudflare). Ne "popravljati" to na api-beta.
+
+### Podrška / pledge — bio slomljen, sada radi
+
+`POST /support/pledge` je vraćao 500 na **svaki** poziv jer je kontroler čitao i
+pisao kolone `payment_id` i `is_recurring` kojih u tabeli nije bilo. Status je
+bio naveden kao gotov; funkcija nikad nije primila uplatu. Migracija
+`2026_08_09_000200` to popravlja i uz to sprječava da se jedna uplata iskoristi
+više puta.
+
+Uz to: `activeSupport()` nije gledao `expires_at`, pa je jedan mjesec podrške
+trajno otključavao tier kozmetiku.
+
+### Klanovi — nedostaju osnovne radnje
+
+Ne postoje kao rute, kontroleri, ni bilo šta drugo: **prijenos vlasništva,
+raspuštanje klana, izbacivanje člana, promocija u oficira.**
+
+Posljedice koje API stvarno provodi:
+
+- Vlasnik ne može napustiti klan — `leave` mu kaže "prenesi vlasništvo", a ta
+  ruta ne postoji. Jedini izlaz mu je brisanje naloga, što kaskadno ruši klan.
+- **Oficirski nivo je nedostižan** — `admit()` uvijek upisuje `member`, i nigdje
+  u kodu se ne piše `role => 'officer'`. Sve rute označene kao "officer+" su
+  time de facto samo vlasnikove.
+- Toksičan član se ne može ukloniti.
+
+Ovo je nedostajuća funkcionalnost, ne rupa — ali izgleda kao da postoji, pa je
+bolje da piše.

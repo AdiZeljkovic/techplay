@@ -58,7 +58,7 @@
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
 | `threads` | Forum threadovi | id, title, slug, category_id, author_id, is_pinned, is_locked, views, posts_count |
-| `posts` | Forum postovi i replies | id, thread_id, author_id, content, parent_id (za nesting), upvotes, is_deleted, edited_at |
+| `posts` | Forum postovi i replies | id, thread_id, author_id, content, parent_id (za nesting), upvotes, is_deleted, edited_at, **solution_rewarded_at** |
 | `guide_votes` | Guide voting | id, guide_id, user_id, vote (up/down) |
 
 ### Komentari
@@ -110,7 +110,7 @@
 | `orders` | Narudžbe | id, user_id, total, status, paypal_order_id, paypal_capture_id |
 | `order_items` | Stavke narudžbi | order_id, product_id, quantity, price |
 | `support_tiers` | Support/subscription nivo | id, name, price, paypal_plan_id, xp_multiplier |
-| `user_supports` | Korisnikova aktivna podrška | user_id, support_tier_id, active_until |
+| `user_supports` | Korisnikova aktivna podrška | user_id, support_tier_id, **payment_id** (unique), amount, status, **is_recurring**, expires_at |
 | `giveaways` | Giveaway events | id, title, slug, description, ends_at, winner_count, privee_id |
 | `giveaway_entries` | Prijave na giveaway | giveaway_id, user_id, tickets, daily_bonus_claimed_at, streak |
 | `giveaway_prize_tiers` | Nagrade | giveaway_id, rank, description |
@@ -206,6 +206,20 @@ agregator, pa 200.000 istorijskih redova nikad ne uđe u kalendar niti u spajanj
 `locked_fields` je kako ručna ispravka preživi — sync i merge to polje ne diraju.
 
 Detaljno: `docs/34-release-calendar-aggregator.md`
+
+---
+
+## Izmjene iz sigurnosnog pregleda 08–10.08.2026
+
+Dvije migracije, obje zato što je kolona bila **korištena u kodu a nije
+postojala u shemi** ili je nedostajala provjera koja se oslanja na nju.
+
+| Migracija | Kolona | Zašto |
+|---|---|---|
+| `2026_08_09_000100` | `posts.solution_rewarded_at` | Označavanje rješenja isplaćivalo je ugled i bounty **pri svakom paljenju** prekidača, a odznačavanje nije vraćalo ništa. Timestamp znači "plaćeno jednom ikad". Migracija radi backfill na postojeća rješenja da ne postanu ponovo naplativa. |
+| `2026_08_09_000200` | `user_supports.payment_id` (unique), `is_recurring` | `SupportController` je obje kolone čitao i pisao, a tabela ih nikad nije imala — svaki `POST /support/pledge` je vraćao 500. **Globalni** unique indeks je ono što sprječava da se jedna PayPal uplata iskoristi više puta, i to s više naloga. |
+
+Detaljno: `docs/36-p1-autorizacija.md`
 
 ---
 
