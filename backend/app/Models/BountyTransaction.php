@@ -12,6 +12,7 @@ class BountyTransaction extends Model
         'amount',
         'type',
         'reason',
+        'reference', // idempotency key — see BountyService::award
         'balance_after',
     ];
 

@@ -76,7 +76,7 @@
 | `quests` | Quest definicije | id, title, type (daily/weekly/seasonal), xp_reward, goal_type, goal_value, season_id |
 | `quest_progress` | Napredak korisnika | user_id, quest_id, progress, completed_at, claimed_at |
 | `seasons` | Sezone | id, name, start_date, end_date, is_active |
-| `bounty_transactions` | Bounty transakcije | id, user_id, amount, type, description |
+| `bounty_transactions` | Bounty knjiga — i **izvor idempotencije** za isplate | id, user_id, amount, type, reason, **reference** (`unique(user_id, reference)`), balance_after |
 | `reward_items` | Reward store stavke | id, name, description, cost, type, image |
 | `reward_redemptions` | Redemptions | user_id, reward_item_id, redeemed_at |
 | `steam_achievements` | Steam achievement import | user_id, game_id, steam_app_id, achievement_id, unlocked_at |
@@ -219,7 +219,9 @@ postojala u shemi** ili je nedostajala provjera koja se oslanja na nju.
 | `2026_08_09_000100` | `posts.solution_rewarded_at` | Označavanje rješenja isplaćivalo je ugled i bounty **pri svakom paljenju** prekidača, a odznačavanje nije vraćalo ništa. Timestamp znači "plaćeno jednom ikad". Migracija radi backfill na postojeća rješenja da ne postanu ponovo naplativa. |
 | `2026_08_09_000200` | `user_supports.payment_id` (unique), `is_recurring` | `SupportController` je obje kolone čitao i pisao, a tabela ih nikad nije imala — svaki `POST /support/pledge` je vraćao 500. **Globalni** unique indeks je ono što sprječava da se jedna PayPal uplata iskoristi više puta, i to s više naloga. |
 
-Detaljno: `docs/36-p1-autorizacija.md`
+| `2026_08_10_000100` | `bounty_transactions.reference` (unique s `user_id`) | Isplate vezane za *dolazak* u stanje plaćale su pri svakom povratku u to stanje, a brisanje reda je brisalo svaku zastavicu koju bi tu držali. Knjiga je jedini zapis koji to preživi, pa idempotencija živi u njoj. |
+
+Detaljno: `docs/36-p1-autorizacija.md`, `docs/41-p4-kolekcija-i-liste.md`
 
 ---
 

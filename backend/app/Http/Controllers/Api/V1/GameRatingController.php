@@ -162,10 +162,26 @@ class GameRatingController extends Controller
         // A shelf or score change is taste news — the chronicle relearns on next read.
         app(TasteProfileService::class)->forget($request->user());
 
+        // Once per game, for the whole payout — not just the bounty. Quest
+        // progress in particular: three draft→publish laps on one review used
+        // to move a "rate three games" quest all the way to done.
+        if ($justPublished && app(BountyService::class)->alreadyAwarded($request->user(), "game_review:{$gameId}")) {
+            $justPublished = false;
+        }
+
         if ($justPublished) {
             try {
                 app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_REVIEW, 'game_review');
-                app(BountyService::class)->award($request->user(), 15, "Game review written: {$slug}", 'milestone');
+                // Once per game. "First time published" was read from the row,
+                // so pushing a review back to draft and republishing paid
+                // again — as did deleting it and writing a new one.
+                app(BountyService::class)->award(
+                    $request->user(),
+                    15,
+                    "Game review written: {$slug}",
+                    'milestone',
+                    reference: "game_review:{$gameId}",
+                );
                 app(AchievementService::class)->check($request->user(), ['ratings_count']);
                 app(ClanResourceService::class)->award($request->user(), 'review_published');
                 // Quest progress belongs here, with the rest of the payout. It

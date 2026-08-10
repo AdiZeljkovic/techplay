@@ -153,10 +153,31 @@ class GameCollectionController extends Controller
         } catch (\Throwable) {
         }
 
-        // Bounty + XP bonus for completing a game + quest progress
-        if ($data['status'] === 'completed' && $previousStatus !== 'completed') {
+        // Bounty + XP bonus for completing a game + quest progress.
+        //
+        // Gated on the ledger rather than on the status transition. The status
+        // can be moved back and forth, and the entry can be deleted and
+        // re-added, so "became completed" is not the same as "was completed for
+        // the first time" — and the quest step and XP were riding along with
+        // the bounty on every lap.
+        $completionKey = "game_completed:{$game->id}";
+        $firstCompletion = $data['status'] === 'completed'
+            && $previousStatus !== 'completed'
+            && ! app(BountyService::class)->alreadyAwarded($request->user(), $completionKey);
+
+        if ($firstCompletion) {
             try {
-                app(BountyService::class)->award($request->user(), 50, "Game completed: {$game->name}", 'milestone');
+                // Paid once per game, ever. The status can move backwards, so
+                // this used to pay again on every return to `completed` — and
+                // deleting the entry and re-adding it defeated any marker kept
+                // on the row, which is why the key lives in the ledger.
+                app(BountyService::class)->award(
+                    $request->user(),
+                    50,
+                    "Game completed: {$game->name}",
+                    'milestone',
+                    reference: $completionKey,
+                );
                 app(QuestService::class)->progress($request->user(), 'game_completed', 1);
                 app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_COMPLETED, 'game_completed');
                 app(ClanResourceService::class)->award($request->user(), 'game_completed');

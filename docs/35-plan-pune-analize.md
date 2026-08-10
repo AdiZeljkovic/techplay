@@ -133,8 +133,19 @@ postoji stanje iz kojeg se ne može izaći.
 > komanda stigne, a `xp`/`bounty_balance`/`forum_reputation` bili su
 > mass-assignable. 6 testova, 401/401 prolazi.
 >
-> Sljedeće cjeline: kolekcija i liste · forum i komentari · klanovi · shop ·
-> giveaways · chronicle · Discord bot.
+> **Cjelina 3/9 — kolekcija i liste — URAĐENO 10.08.2026 →
+> `docs/41-p4-kolekcija-i-liste.md`.** Jedan nalaz, najskuplji dosad: nagrade su
+> bile vezane za *dolazak* u stanje, a u svako stanje se može ući više puta.
+> `completed → playing → completed` i `objavljeno → nacrt → objavljeno` isplaćivali
+> su iznova, a brisanje unosa i ponovno dodavanje zaobilazilo je i to. Bounty nema
+> dnevni cap — oko 1.500/min, neograničeno. Riješeno idempotentnim ključem u
+> **knjizi** (`bounty_transactions.reference`), ne zastavicom na redu, jer red
+> korisnik može obrisati. Test je usput otkrio da je uz novac prolazio i **quest**:
+> tri kruga nacrt→objavi na jednoj igri završavala su quest za tri igre. 5 testova,
+> 406/406 prolazi.
+>
+> Sljedeće cjeline: forum i komentari · klanovi · shop · giveaways · chronicle ·
+> Discord bot.
 
 ### P5. Mrtav kod i pokvarene reference — *područja 2, 3*
 *Dijelom urađeno:* 26 fajlova obrisano, 16 nespojenih funkcionalnosti nađeno.
