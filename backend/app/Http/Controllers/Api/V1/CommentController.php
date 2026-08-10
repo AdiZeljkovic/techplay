@@ -138,12 +138,14 @@ class CommentController extends Controller
         // Simple regex to count http/https occurrences
         $urlCount = preg_match_all('#https?://#i', $cleanContent);
         if ($urlCount > 1) {
-            $status = 'pending';
-            // If it was already pending from probation, the message remains appropriate,
-            // but if it was approved, we downgrade to pending.
+            // The message has to be decided before the status changes. It was
+            // set after, so the branch could never be true and a user posting
+            // two links was told "Comment posted successfully" while the
+            // comment sat in the moderation queue.
             if ($status === 'approved') {
                 $message = 'Comment submitted for approval (Link limit).';
             }
+
             $status = 'pending';
         }
         // --- SPAM PROTECTION END ---
@@ -179,8 +181,14 @@ class CommentController extends Controller
         ]);
 
         // 3. Award XP via Service (Handles Cooldowns & Caps)
-        if ($shouldAwardXp) {
+        //
+        // Only for a comment that is actually live. A held comment — probation,
+        // or two links and up — used to pay the same as a published one, so
+        // spam nobody would ever see earned exactly as much as a real reply.
+        // CommentObserver pays it if and when a moderator approves.
+        if ($shouldAwardXp && $comment->status === 'approved') {
             $xpService->awardXp(Auth::user(), XpService::XP_COMMENT, 'comment');
+            $comment->forceFill(['xp_awarded_at' => now()])->saveQuietly();
         }
 
         // 4. Check comment-count achievements (fire-and-forget)

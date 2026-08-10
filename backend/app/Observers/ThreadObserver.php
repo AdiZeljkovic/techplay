@@ -25,6 +25,21 @@ class ThreadObserver
 
     public function deleted(Thread $thread): void
     {
+        // Creating a thread grants 3 reputation; deleting one gave nothing
+        // back, unlike posts, which decrement. So a spam thread stayed
+        // profitable on the leaderboard after a moderator removed it.
+        try {
+            if (! $thread->relationLoaded('author')) {
+                $thread->load('author');
+            }
+
+            $thread->author?->decrement('forum_reputation', 3);
+        } catch (\Throwable $e) {
+            Log::warning('Thread deletion reputation adjustment failed: '.$e->getMessage(), [
+                'thread_id' => $thread->id,
+            ]);
+        }
+
         $this->invalidateForumCache($thread);
     }
 

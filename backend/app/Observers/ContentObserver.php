@@ -47,7 +47,12 @@ class ContentObserver
 
         // Assuming frontend URL pattern
         $frontendUrl = env('FRONTEND_URL', 'https://techplay.gg');
-        $path = $article->category->type === 'reviews' ? 'reviews' : 'news';
+
+        // category is nullable, and this threw on any article saved without
+        // one — a crash on publish, from a search-engine ping nobody needs to
+        // succeed. News is the right default: it is where an uncategorised
+        // article is rendered.
+        $path = $article->category?->type === 'reviews' ? 'reviews' : 'news';
         $url = "{$frontendUrl}/{$path}/{$article->slug}";
 
         SubmitIndexNow::dispatch($url);

@@ -50,7 +50,7 @@ class PostObserver
      */
     public function deleted(Post $post): void
     {
-        $post->author->decrement('forum_reputation', 5);
+        $post->author?->decrement('forum_reputation', 5);
     }
 
     /**
@@ -58,7 +58,9 @@ class PostObserver
      */
     public function restored(Post $post): void
     {
-        //
+        // Deleting took 5 away; restoring gave nothing back, so a post removed
+        // by mistake and put back left its author permanently short.
+        $post->author?->increment('forum_reputation', 5);
     }
 
     /**

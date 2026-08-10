@@ -65,7 +65,7 @@
 
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
-| `comments` | Komentari (polymorphic) | id, commentable_type, commentable_id, user_id, content, parent_id, is_deleted |
+| `comments` | Komentari (polymorphic) | id, commentable_type, commentable_id, user_id, content, parent_id, status (`pending`/`approved`), **xp_awarded_at**, is_deleted |
 | `comment_likes` | Like/dislike komentara | id, comment_id, user_id, type (like/dislike) |
 
 ### Gamification

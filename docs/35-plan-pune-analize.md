@@ -144,8 +144,19 @@ postoji stanje iz kojeg se ne može izaći.
 > tri kruga nacrt→objavi na jednoj igri završavala su quest za tri igre. 5 testova,
 > 406/406 prolazi.
 >
-> Sljedeće cjeline: forum i komentari · klanovi · shop · giveaways · chronicle ·
-> Discord bot.
+> **Cjelina 4/9 — forum i komentari — URAĐENO 10.08.2026 →
+> `docs/42-p4-forum-i-komentari.md`.** Sigurnost je bila u P1; ovdje je ostalo
+> knjigovodstvo. XP se plaćao za komentar koji niko ne vidi — probacija i spam
+> filter drže komentar u redu za odobrenje, a punih 10 XP je išlo odmah; sada
+> plaća `CommentObserver` na odobrenje, jednom ikad (`comments.xp_awarded_at`).
+> Ugled se vraćao za obrisane objave ali ne za obrisane teme, pa je spam tema
+> ostajala isplativa nakon moderacije; vraćanje obrisane objave nije vraćalo
+> poene. Poruka "čeka odobrenje" bila je nedostižna zbog redoslijeda, pa je
+> korisnik dobijao "uspješno objavljeno" za komentar u redu za moderaciju. Usput
+> nađeno: članak bez kategorije rušio je snimanje (`ContentObserver` čita
+> `category->type` na nullable relaciji). 4 testa, 410/410 prolazi.
+>
+> Sljedeće cjeline: klanovi · shop · giveaways · chronicle · Discord bot.
 
 ### P5. Mrtav kod i pokvarene reference — *područja 2, 3*
 *Dijelom urađeno:* 26 fajlova obrisano, 16 nespojenih funkcionalnosti nađeno.
