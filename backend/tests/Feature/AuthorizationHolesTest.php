@@ -176,19 +176,6 @@ class AuthorizationHolesTest extends TestCase
         $this->getJson('/api/v1/discord/user/999888777')->assertStatus(401);
     }
 
-    /* ── money ────────────────────────────────────────────────────────── */
-
-    public function test_a_subscription_cannot_be_activated_without_paypal_confirming_it(): void
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)->postJson('/api/v1/subscriptions/activate', [
-            'subscriptionID' => 'I-MADE-THIS-UP',
-        ])->assertStatus(422);
-
-        $this->assertNull($user->fresh()->subscription_ends_at);
-    }
-
     /* ── email verification ───────────────────────────────────────────── */
 
     public function test_an_unsigned_verification_link_does_not_verify_an_email(): void

@@ -99,23 +99,4 @@ class NewsController extends Controller
         return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
 
-    /**
-     * Get trending news articles
-     */
-    public function trending()
-    {
-        $resource = Cache::remember('news.trending', 3600, function () {
-            $articles = Article::query()
-                ->where('status', 'published')
-                ->where('published_at', '<=', now())
-                ->orderBy('views', 'desc')
-                ->limit(5)
-                ->with(['category', 'author:id,username,avatar_url'])
-                ->get();
-
-            return ArticleResource::collection($articles);
-        });
-
-        return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-    }
 }

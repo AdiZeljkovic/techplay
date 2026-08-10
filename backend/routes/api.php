@@ -174,6 +174,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/friends/search', [FriendController::class, 'search']);
         Route::post('/friends/request', [FriendController::class, 'sendRequest']);
         Route::post('/friends/block/{id}', [FriendController::class, 'block']);
+        Route::delete('/friends/block/{id}', [FriendController::class, 'unblock']);
         Route::post('/friends/accept/{id}', [FriendController::class, 'acceptRequest']);
         Route::post('/friends/decline/{id}', [FriendController::class, 'declineRequest']);
 
@@ -206,7 +207,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/shop/orders/cod', [ShopController::class, 'storeOrder']);
 
         // Subscriptions
-        Route::post('/subscriptions/activate', [PayPalController::class, 'activateSubscription']);
 
         // Forum (Authenticated)
         Route::middleware(['throttle:10,1', 'ban.check'])->post('/forum/threads', [ForumController::class, 'createThread']);
@@ -263,7 +263,6 @@ Route::prefix('v1')->group(function () {
 
         // AI Backlog Advisor
         Route::get('/backlog/recommendations', [BacklogAdvisorController::class, 'recommendations']);
-        Route::post('/backlog/suggest', [BacklogAdvisorController::class, 'suggest']);
 
         // Daily streak
         Route::get('/user/streak', [StreakController::class, 'show']);
@@ -400,7 +399,6 @@ Route::prefix('v1')->group(function () {
         // told apart by their category's type.
         Route::get('/newsroom/{section}', [NewsroomController::class, 'index']);
         Route::get('/news', [NewsController::class, 'index']);
-        Route::get('/news/trending', [NewsController::class, 'trending']);
         Route::get('/news/{slug}', [NewsController::class, 'show']);
 
         // Reviews

@@ -372,6 +372,37 @@ export default function SocialClient() {
         }
     };
 
+    // Blocking has worked server-side for a while — it stops new conversations
+    // and mutes existing ones — but nothing in the interface could trigger it,
+    // so the "Blocked" tab below could only ever be empty.
+    const blockUser = async (id: number, username: string) => {
+        if (!confirm(`Block ${username}? They will not be able to message you.`)) return;
+
+        setBusy(id);
+        try {
+            await axios.post(`/friends/block/${id}`);
+            toast.success(`${username} blocked.`);
+            mutateHub();
+        } catch {
+            toast.error("Couldn't block that user.");
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    const unblockUser = async (id: number, username: string) => {
+        setBusy(id);
+        try {
+            await axios.delete(`/friends/block/${id}`);
+            toast.success(`${username} unblocked.`);
+            mutateHub();
+        } catch {
+            toast.error("Couldn't unblock that user.");
+        } finally {
+            setBusy(null);
+        }
+    };
+
     const addFriend = async (username: string) => {
         try {
             await axios.post("/friends/request", { username });
@@ -528,6 +559,13 @@ export default function SocialClient() {
                                         <div key={b.id} className="flex items-center gap-3">
                                             <Avatar src={b.avatar_url} alt={b.username} size="sm" />
                                             <span className="flex-1 min-w-0 text-[12.5px] font-semibold text-white/60 truncate">{b.username}</span>
+                                            <button
+                                                onClick={() => unblockUser(b.id, b.username)}
+                                                disabled={busy === b.id}
+                                                className="shrink-0 h-7 px-3 rounded-[6px] bg-white/[0.05] hover:bg-white/[0.12] font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/60 hover:text-white transition-colors disabled:opacity-50"
+                                            >
+                                                {busy === b.id ? <Loader2 className="w-3 h-3 animate-spin" /> : "Unblock"}
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -567,6 +605,14 @@ export default function SocialClient() {
                                                 className="shrink-0 w-7 h-7 rounded-[6px] bg-white/[0.05] flex items-center justify-center text-white/40 opacity-0 group-hover:opacity-100 hover:text-[var(--accent)] transition-all"
                                             >
                                                 <MessageCircle className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                                onClick={() => blockUser(f.id, f.username)}
+                                                disabled={busy === f.id}
+                                                title="Block"
+                                                className="shrink-0 w-7 h-7 rounded-[6px] bg-white/[0.05] flex items-center justify-center text-white/40 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all disabled:opacity-50"
+                                            >
+                                                {busy === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
                                             </button>
                                         </div>
                                     ))}

@@ -145,6 +145,33 @@ class FriendController extends Controller
         return response()->json(['message' => 'User blocked']);
     }
 
+    /**
+     * Lift a block.
+     *
+     * There was no way to do this at all: block() existed, the social hub
+     * listed who you had blocked, and nothing could undo it. Wiring a block
+     * button without this would have been building a door with no handle on
+     * the inside.
+     */
+    public function unblock($userId)
+    {
+        $currentUserId = Auth::id();
+        $userId = (int) $userId;
+
+        $removed = Friendship::where('status', 'blocked')
+            ->where('sender_id', $currentUserId)
+            ->where('receiver_id', $userId)
+            ->delete();
+
+        if ($removed === 0) {
+            return response()->json(['message' => 'You have not blocked that user.'], 404);
+        }
+
+        // Deleting the row rather than restoring a friendship: a block ends the
+        // relationship, and whoever wants it back can send a fresh request.
+        return response()->json(['message' => 'User unblocked']);
+    }
+
     // Decline request
     public function declineRequest($senderId)
     {

@@ -1,6 +1,7 @@
 # P5 — Mrtav kod i nespojene funkcionalnosti (10.08.2026)
 
-**Ovo je dokument za odluku, ne izvještaj o urađenom.** Ništa nije obrisano.
+**Odluke donesene 10.08.2026** — dodane na kraj dokumenta. Katalog ispod je
+zatečeno stanje prije njih.
 
 Metod: izvučene su sve 259 API putanje, pa je za svaku traženo zove li je
 frontend ili bot. Zatim ručna provjera svakog kandidata — jer gruba pretraga
@@ -164,4 +165,54 @@ Ako mene pitaš, po korpama:
 - **Korpa C** — obrisati sve osim WoW grupe i UI primitiva; WoW ide zajedno s
   odlukom o B5.
 
-Ništa od ovoga nije urađeno. Reci šta brišem.
+---
+
+# Šta je stvarno urađeno (10.08.2026)
+
+Pravilo po kojem sam odlučivao: **brisati ono što duplira nešto što već
+postoji; čuvati ono što predstavlja neizgrađen proizvod.**
+
+## Obrisano
+
+| Šta | Zašto |
+|---|---|
+| `POST /backlog/suggest` + metoda (128 linija) | Duplira `/backlog/recommendations`, koji stranica stvarno zove |
+| `POST /subscriptions/activate` + metoda | Nadomješten s `/support/pledge`, koji checkout zove. Uklonjen i test iz P1 koji ga je pokrivao |
+| `GET /news/trending` + metoda | Bez pozivaoca; frontend ima svoje trending liste |
+| 9 frontend komponenti | `PopularGamesWidget`, `WowAnalyzerWidget`, `TableOfContents`, `InTextAd`, `GameTrailersPlayer`, `MediaImage`, `ProgressBar`, `SkeletonBlock`, `StatNumber` |
+
+Direktorij `components/sidebar/` je time ostao prazan i nestao.
+
+## Spojeno
+
+**Blokiranje korisnika.** Ovo je jedina stavka koju sam odbio obrisati.
+
+- Nova ruta `DELETE /friends/block/{id}` — **deblokiranje nije postojalo**, pa
+  bi dodavanje dugmeta bez nje bilo pravljenje vrata bez kvake s unutrašnje
+  strane.
+- Dugme za blokiranje na listi prijatelja (uz poruku, otkriva se na hover), s
+  potvrdom prije akcije.
+- Dugme "Unblock" na kartici *Blocked*, koja je do sada mogla biti samo prazna.
+
+3 testa: blokiranje stvarno zaustavlja poruke i može se poništiti, deblokiranje
+nekog koga nisi blokirao vraća 404, i ne možeš blokirati sebe ni nepostojećeg
+korisnika.
+
+## Zadržano, s razlogom
+
+| Šta | Zašto ostaje |
+|---|---|
+| **WoW grupa** — 7 komponenti + `wow/analysis/{id}` + `/share` | Analizator je živa, SEO-optimizovana stranica. Ovo je napisan drugi sloj alata; brisanje bi uništilo dizajnerski rad koji bi se morao raditi iznova |
+| `components/seo/SeoContent.tsx` | Jedini renderer za `PageSeo.seo_text`. Brisanjem bi polje koje osoblje uređuje u panelu postalo tiho beskorisno. SEO paket je ionako odložen |
+| `GET /friends/search` | Nema pretrage korisnika u UI-ju — to je nedostajuća funkcionalnost, ne višak |
+| `GET /me/reading` | Bookmarki i napredak čitanja se bilježe mjesecima. Treba im stranica, ne brisanje |
+| `DELETE /journal/moments/{moment}`, `GET /support/mine` | Male nedostajuće veze; bezopasne dok stoje |
+| SEO alati (4 rute) | Idu uz SEO paket |
+
+## Ostaje kao preporuka
+
+- **Lista za čitanje** je najjasniji sljedeći korak: podaci postoje, treba im
+  samo izlaz. Prirodno mjesto je kartica na profilu, pored već postojećih
+  bookmarkovanih forumskih tema.
+- **WoW drugi sloj** traži proizvodnu odluku: spojiti ili ukloniti. Dok visi,
+  sedam komponenti stari uz dizajn sistem oko sebe.
