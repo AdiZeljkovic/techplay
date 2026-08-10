@@ -108,9 +108,19 @@ prijateljstvo upisano u suprotnom smjeru.
 
 ---
 
-## Upiti za Fazu 2 — stvarna siročad na produkciji
+## Provjere na produkciji — `php artisan diagnose:orphans`
 
-Ovo P6 ne može provjeriti iz koda. Pokrenuti na produkciji:
+Ovo P6 ne može provjeriti iz koda. Umjesto sedam upita za ručno lijepljenje,
+postoji komanda koja ih pokrene sve i ispiše tabelu. Samo čita, ništa ne mijenja.
+
+```
+php artisan diagnose:orphans
+```
+
+Pokrenuti je **prije `migrate`** — prva provjera kaže koliko odgovora migracija
+sprema da obriše.
+
+Upiti koje izvršava, ako ih treba pokrenuti ručno:
 
 ```sql
 -- 1. Odgovori bez roditelja (migracija ih briše; ovo je provjera prije nje)
