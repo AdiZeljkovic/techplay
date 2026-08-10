@@ -59,6 +59,45 @@ class BlockingTest extends TestCase
         ])->assertSuccessful();
     }
 
+    public function test_blocking_back_does_not_erase_their_block_of_you(): void
+    {
+        $first = User::factory()->create();
+        $second = User::factory()->create();
+
+        // They block you.
+        $this->actingAs($first)->postJson("/api/v1/friends/block/{$second->id}")->assertSuccessful();
+
+        // You block them. This used to find their row — in either direction —
+        // and rewrite it with you as the sender, so their protection vanished.
+        $this->actingAs($second)->postJson("/api/v1/friends/block/{$first->id}")->assertSuccessful();
+
+        $this->assertDatabaseHas('friendships', [
+            'sender_id' => $first->id, 'receiver_id' => $second->id, 'status' => 'blocked',
+        ]);
+        $this->assertDatabaseHas('friendships', [
+            'sender_id' => $second->id, 'receiver_id' => $first->id, 'status' => 'blocked',
+        ]);
+    }
+
+    public function test_blocking_ends_the_friendship(): void
+    {
+        $me = User::factory()->create();
+        $other = User::factory()->create();
+
+        // Recorded the other way round on purpose: friendIds() reads accepted
+        // rows in both directions, so a block that only wrote its own row would
+        // leave the two still listed as friends.
+        Friendship::create([
+            'sender_id' => $other->id,
+            'receiver_id' => $me->id,
+            'status' => 'accepted',
+        ]);
+
+        $this->actingAs($me)->postJson("/api/v1/friends/block/{$other->id}")->assertSuccessful();
+
+        $this->assertSame(0, Friendship::where('status', 'accepted')->count());
+    }
+
     public function test_unblocking_someone_you_never_blocked_is_refused(): void
     {
         $me = User::factory()->create();

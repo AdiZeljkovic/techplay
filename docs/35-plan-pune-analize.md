@@ -211,6 +211,21 @@ Faza 2.
 **Ostaje:** popravke + popis upita za Fazu 2 koji traže stvarne siročad.
 **Procjena:** 1 sesija.
 
+> **URAĐENO 10.08.2026 → `docs/47-p6-integritet-podataka.md`.** Kraće nego što je
+> procijenjeno, jer su zaključavanja i idempotentni ključevi iz P1/P4 već pokrili
+> većinu utrka. Od 154 strana ključa, 144 imaju pravilo brisanja, a preostalih 10
+> su lažni pozitivi linijskog greppanja. Stvarna dva nalaza: `comments.parent_id`
+> bez ključa (brisanje komentara ostavljalo nevidljive odgovore koji se i dalje
+> broje) — popravljeno kaskadom; i `users.rank_id`, gdje je pokušaj popravke
+> otkrio da je kolona `NOT NULL` s `default(1)`, pa strani ključ ne može
+> `nullOnDelete` i svaki korisnik tvrdi rang 1 prije nego ga zaradi. **Namjerno
+> nije popravljeno** — pravo pitanje je proizvodno, ne shema.
+>
+> Usput: `block()` je prepisivao **tuđu** blokadu (zapisano u P1 kao sitnica, sada
+> stvarno jer blokiranje ima dugme), i `db:sizes` je lažno tvrdio da tabele
+> pogleda nemaju retenciju — `views:clean` radi dnevno i čuva sedam dana.
+> Popis od 7 upita za Fazu 2 je u dokumentu. 427/427 prolazi.
+
 ### P7. Laravel i Next.js u dubinu — *područja 14, 15*
 *Dijelom urađeno.* **Produbiti:** granice servisa (šta je u kontroleru a treba
 biti u servisu), događaji i poslovi, middleware; na frontu Server/Client

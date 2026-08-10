@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\FriendRequestNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FriendController extends Controller
 {
@@ -125,22 +126,29 @@ class FriendController extends Controller
             return response()->json(['message' => 'That user cannot be blocked.'], 422);
         }
 
-        // Check for existing friendship in any direction
-        $friendship = Friendship::where(function ($q) use ($currentUserId, $userId) {
-            $q->where('sender_id', $currentUserId)->where('receiver_id', $userId);
-        })->orWhere(function ($q) use ($currentUserId, $userId) {
-            $q->where('sender_id', $userId)->where('receiver_id', $currentUserId);
-        })->first();
+        // A block is its own directional record.
+        //
+        // This used to find whatever row existed between the two people — in
+        // either direction — and rewrite it with the blocker as sender. So if
+        // they had already blocked you, blocking them back **overwrote their
+        // block with yours**, and they silently lost their protection. The row
+        // is now only ever written on the (me → them) pair.
+        DB::transaction(function () use ($currentUserId, $userId) {
+            // Blocking ends the relationship: friendIds() reads accepted rows
+            // in both directions, so leaving one behind would keep you listed
+            // as friends. Their block of you, if any, is left untouched.
+            Friendship::whereIn('status', ['accepted', 'pending'])
+                ->where(function ($q) use ($currentUserId, $userId) {
+                    $q->where(fn ($i) => $i->where('sender_id', $currentUserId)->where('receiver_id', $userId))
+                        ->orWhere(fn ($i) => $i->where('sender_id', $userId)->where('receiver_id', $currentUserId));
+                })
+                ->delete();
 
-        if ($friendship) {
-            $friendship->update(['status' => 'blocked', 'sender_id' => $currentUserId, 'receiver_id' => $userId]); // Ensure blocker is sender
-        } else {
-            Friendship::create([
-                'sender_id' => $currentUserId,
-                'receiver_id' => $userId,
-                'status' => 'blocked',
-            ]);
-        }
+            Friendship::updateOrCreate(
+                ['sender_id' => $currentUserId, 'receiver_id' => $userId],
+                ['status' => 'blocked'],
+            );
+        });
 
         return response()->json(['message' => 'User blocked']);
     }

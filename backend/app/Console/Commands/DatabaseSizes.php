@@ -25,9 +25,15 @@ class DatabaseSizes extends Command
 
     protected $description = 'Disk usage per table — heap, indexes, TOAST and row counts';
 
-    /** Tables that grow with traffic and have nothing pruning them. */
+    /**
+     * Tables that grow with traffic and have nothing pruning them.
+     *
+     * The three view tables used to be listed here and should not have been:
+     * `views:clean` runs daily and keeps seven days. Claiming otherwise sent
+     * anyone reading this output looking for a retention policy that was
+     * already there.
+     */
     private const UNBOUNDED = [
-        'article_views', 'guide_views', 'review_views',
         'notifications', 'player_signals', 'article_reads',
         'sessions', 'jobs', 'failed_jobs', 'cache', 'cache_locks',
         'content_versions', 'broken_links', 'ad_impressions',
