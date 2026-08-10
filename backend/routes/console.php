@@ -56,6 +56,14 @@ Schedule::command('games:enrich-trailers')->dailyAt('06:00')->withoutOverlapping
 // The chronicle refreshes overnight for anyone whose signals moved.
 Schedule::command('chronicle:rebuild --stale')->dailyAt('04:45')->withoutOverlapping(120)->onFailure($reportFailure('chronicle:rebuild --stale'));
 
+// Registrations nobody ever confirmed. They cannot sign in, but they do hold
+// an email address and a username out of circulation — including addresses
+// belonging to people who never signed up in the first place.
+Schedule::command('users:prune-unverified')
+    ->dailyAt('03:20')
+    ->withoutOverlapping(30)
+    ->onFailure($reportFailure('users:prune-unverified'));
+
 // Steam achievements for connected accounts — the chronicle reads what you actually earn.
 Schedule::command('games:sync-steam-achievements')->dailyAt('05:00')->withoutOverlapping(180)->onFailure($reportFailure('games:sync-steam-achievements'));
 

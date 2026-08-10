@@ -113,10 +113,15 @@ postoji stanje iz kojeg se ne može izaći.
 > sesije; (2) nalozi napravljeni preko Discorda imali su nasumičnu lozinku koju
 > niko nije vidio i nisu je mogli promijeniti ni resetovati.
 >
-> Usput: **Discord prijava je potpuno slomljena** — driver nije registrovan, svaki
-> poziv 500, a dva dugmeta u UI-ju vode tamo. Nije dirano jer je Discord odložen.
-> Kad se bude aktivirao, spajanje naloga po e-mailu u `SocialAuthController` mora
-> se prvo popraviti — trenutno bi bilo preuzimanje tuđeg naloga.
+> Uz to, na traženje: **Discord prijava popravljena** — driver nije bio
+> registrovan (svaki poziv 500), `redirect()` je vraćao JSON umjesto redirecta,
+> a podrazumijevani redirect URI vodio je na putanju koju Next.js ne poslužuje.
+> U istoj izmjeni zatvoreno i preuzimanje naloga: spajanje po e-mailu sada traži
+> da su **obje strane** potvrdile istu adresu.
+>
+> I **neverifikovane registracije se čiste** — `users:prune-unverified` dnevno,
+> ali samo naloge bez ijedne aktivnosti, jer "neverifikovan" može biti i stari
+> nalog iz vremena prije nego je verifikacija postala obavezna.
 >
 > Sljedeće cjeline: profil/XP/rankovi · kolekcija i liste · forum i komentari ·
 > klanovi · shop · giveaways · chronicle · Discord bot.

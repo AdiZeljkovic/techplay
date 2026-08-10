@@ -4,6 +4,8 @@ Prva cjelina iz P4. Metod je bio onaj koji plan traži: proći kroz sva stanja
 kroz koja nalog prolazi i tražiti ona **iz kojih se ne može izaći**.
 
 Našla su se dva takva, i oba su zatvarala korisnike van njihovih naloga.
+Uz njih, cijela Discord prijava je bila mrtva, a neverifikovane registracije su
+zauvijek držale tuđe adrese.
 
 ---
 
@@ -35,7 +37,9 @@ Našla su se dva takva, i oba su zatvarala korisnike van njihovih naloga.
         └───────────────────────┘            └───────────────────────┘
 
   Battle.net ──► radi (custom provider)
-  Discord    ──► ✗ driver nije registrovan, svaki poziv 500
+  Discord    ──► radi (driver napisan 10.08.2026)
+                 spaja se s postojećim nalogom samo kad su
+                 OBJE strane potvrdile istu adresu
 ```
 
 ---
@@ -65,51 +69,71 @@ Jedan detalj koji nije očigledan: reset **ujedno verifikuje adresu**. Bez toga 
 login odbio nalog odmah nakon uspješnog reseta, što korisnik čita kao "reset nije
 uspio".
 
-### 2. Discord prijava je potpuno slomljena — **zapisano, nije dirano**
+### 2. Discord prijava je bila potpuno slomljena — **popravljeno 10.08.2026**
 
-`Socialite::driver('discord')` baca `InvalidArgumentException — Driver [discord]
-not supported`. Provjereno pokretanjem, ne čitanjem: u `laravel/socialite` nema
+`Socialite::driver('discord')` je bacao `InvalidArgumentException — Driver
+[discord] not supported`. Provjereno pokretanjem, ne čitanjem: u `laravel/socialite` nema
 Discord drivera, u `composer.lock` nema nijednog `socialiteproviders` paketa, a
 `AppServiceProvider::bootSocialite()` registruje **samo** `battlenet`.
 
-Dakle svaki poziv na `/auth/discord/redirect` i `/auth/discord/callback` završi
-kao 500. Dva dugmeta u UI-ju vode tamo: na login stranici i u postavkama
-("poveži Discord").
+Dakle je svaki poziv na `/auth/discord/redirect` i `/auth/discord/callback`
+završavao kao 500. Dva dugmeta u UI-ju vode tamo: na login stranici i u
+postavkama ("poveži Discord").
 
-**Nisam dirao** jer si rekao da Discord aktiviramo kasnije. Ali vrijedi znati da
-dugme trenutno vodi u grešku — ako želiš, sakrijem ga jednom linijom dok se ne
-aktivira.
+Popravljeno u četiri koraka, jer je lanac bio prekinut na četiri mjesta:
+
+| Šta | Bilo | Sada |
+|---|---|---|
+| Driver | ne postoji → 500 | `App\Services\Socialite\DiscordProvider`, pisan ovdje kao i Battle.net, bez nove zavisnosti |
+| `redirect()` | vraćao **JSON**, a frontend radi `window.location.href` → korisnik vidi sirovi JSON | pravi HTTP redirect |
+| `DISCORD_REDIRECT_URI` | podrazumijevano `/auth/callback/discord` — putanja koju Next.js ne poslužuje | `/api/v1/auth/discord/callback` |
+| Korisničko ime | `nickname . rand(1000,9999)` jednom pa nada se | `uniqueUsername()` provjerava i pokušava ponovo; sudar je prije bio 500 usred registracije |
+
+**Prije nego ovo proradi na produkciji treba dvoje:**
+
+1. `DISCORD_CLIENT_SECRET` u `.env` — lokalno ga nema, provjeri ima li ga server.
+2. U Discord developer portalu, redirect URI mora biti **tačno**
+   `https://techplay.gg/api/v1/auth/discord/callback`. Discord odbija sve što se
+   ne poklapa znak u znak.
 
 ### 3. Nalozi napravljeni preko Discorda ne mogu doći do lozinke
 
 `SocialAuthController` je takvim nalozima upisivao `bcrypt(str()->random(16))` —
 lozinku koju niko nikad nije vidio. `changePassword` traži trenutnu, pa je nisu
-mogli promijeniti; reset nije postojao. Jedini ulaz im je bio Discord, koji je
-sad ionako mrtav.
+mogli promijeniti; reset nije postojao. Jedini ulaz im je bio Discord — koji je
+cijelo to vrijeme bio slomljen.
 
 Reset lozinke iz tačke 1 rješava i ovo — takav nalog sada može zatražiti link na
 svoju adresu i prvi put dobiti lozinku koju zna.
 
 ---
 
-## Nađeno, nije iskoristivo danas, **ne smije se uključiti kako jeste**
+## Preuzimanje naloga koje je moralo biti zatvoreno u istoj izmjeni
 
-`SocialAuthController` scenario 2 (linija ~143) spaja Discord nalog s
-postojećim TechPlay nalogom **isključivo po podudaranju e-maila** i odmah izdaje
-Sanctum token — bez ikakvog dokaza da je ta osoba vlasnik postojećeg naloga i
-**bez provjere da je Discord tu adresu verifikovao**.
+Registrovati driver znači učiniti callback dostupnim — pa je ovo moralo ići
+zajedno, ne poslije.
+
+`SocialAuthController` je spajao Discord identitet s postojećim TechPlay nalogom
+**isključivo po podudaranju e-maila** i odmah izdavao Sanctum token. Bez ikakvog
+dokaza da je ta osoba vlasnik postojećeg naloga, i bez provjere da je Discord tu
+adresu uopšte verifikovao.
 
 Discord vraća `verified: false` za adrese koje vlasnik nije potvrdio. Napadač
-koji zna žrtvinu adresu mogao bi napraviti Discord nalog s njom i prijavom na
-TechPlay dobiti pun token nad tuđim nalogom.
+koji zna žrtvinu adresu stavi je na svoj Discord nalog, prijavi se na TechPlay i
+dobije pun token nad tuđim nalogom.
 
-Danas to ne prolazi samo zato što driver ne postoji. **Kad se Discord bude
-aktivirao, ovo mora prvo:**
+Sada vrijedi pravilo: **obje strane moraju biti potvrdile isti sandučić.**
 
-1. odbiti ako provider ne kaže da je adresa verifikovana,
-2. odbiti ako lokalni nalog nije verifikovan,
-3. ili, sigurnije, uopšte ne spajati automatski — tražiti da se korisnik prvo
-   prijavi pa poveže nalog iz postavki.
+| Slučaj | Ishod |
+|---|---|
+| Discord adresa nije verifikovana | odbijeno, poruka da prvo verifikuje kod Discorda |
+| Discord ne dijeli adresu uopšte | odbijeno s objašnjenjem, umjesto 500 na `NOT NULL` |
+| Lokalni nalog nije verifikovan | odbijeno — "prijavi se lozinkom pa poveži iz postavki" |
+| Obje verifikovane i iste | spaja i prijavljuje |
+| `discord_id` se već poklapa | prijavljuje (veza je već ranije dokazana) |
+
+Verifikacija lokalne adrese preko Discorda traži isto: ranije je bilo dovoljno
+da Discord ima *bilo koju* adresu.
 
 ---
 
@@ -127,10 +151,12 @@ aktivirao, ovo mora prvo:**
 
 ## Ostaje otvoreno u ovoj cjelini
 
-- **Neverifikovani nalozi se nikad ne čiste.** Zauzimaju e-mail i korisničko ime
-  zauvijek — a `unique:users,email` znači da pravi vlasnik adrese ne može da se
-  registruje. Traži scheduled komandu (npr. brisanje neverifikovanih starijih od
-  30 dana) i odluku koliko dugo čekati.
+- ~~Neverifikovani nalozi se nikad ne čiste.~~ **Riješeno** — vidi ispod.
+- **Povezivanje Discorda iz postavki radi samo ako se adrese poklapaju.**
+  Callback je stateless i ne zna ko je kliknuo, pa se oslanja na `discord_id`
+  ili adresu. Ako se korisnikova TechPlay adresa razlikuje od Discord adrese,
+  klik na "poveži" napravi **novi nalog** umjesto da poveže postojeći. Pravo
+  rješenje je potpisan `state` koji nosi identitet korisnika kroz OAuth krug.
 - **Promjena e-maila ne traži ponovnu verifikaciju.** `updateProfile` prima novi
   e-mail i ne resetuje `email_verified_at`.
 - **Enumeracija pri registraciji** — ostavljena namjerno, obrazloženo u
@@ -138,13 +164,55 @@ aktivirao, ovo mora prvo:**
 
 ---
 
+## Neverifikovane registracije se sada čiste
+
+Nalog koji nikad nije potvrđen ne može se prijaviti — ali `unique:users,email` i
+`unique:users,username` i dalje važe za njega. Zalutala registracija, pogrešno
+otkucana adresa ili neko ko registruje adresu koja nije njegova time **trajno
+vade tu adresu i to ime iz opticaja**, a pravom vlasniku se kaže da je već
+zauzeto.
+
+Nova komanda `php artisan users:prune-unverified`, u rasporedu svakog dana u
+03:20.
+
+Namjerno plašljiva. Odbija dirati nalog koji je **išta** radio, jer
+"neverifikovan" je stanje u kojem neki stari nalozi mogu biti iz razloga koji
+prethode uvođenju obavezne verifikacije — a posao za čišćenje koji obriše
+istoriju stvarne osobe gori je od problema koji rješava.
+
+Briše samo ako je sve tačno:
+
+- `email_verified_at IS NULL`
+- starije od 30 dana (`--days` mijenja, minimum 7)
+- `xp <= 0` i `bounty_balance <= 0`
+- nema nijedne objave, teme, komentara, narudžbe ni igre u kolekciji
+- nema povezan `discord_id`
+
+`--dry-run` ispisuje prvih 25 s maskiranim adresama (`k**********@yahoo.com`) —
+dovoljno da se prepozna obrazac, ne dovoljno da terminal postane mailing lista.
+
+Na lokalnoj bazi suho pokretanje nalazi tri takva naloga iz februara.
+
+**Što ovo ne radi:** ne šalje podsjetnik prije brisanja. Registracija stara 30
+dana koja nikad nije otvorila mail vjerovatno je i napuštena, ali podsjetnik na
+7. dan bi vratio dio stvarnih ljudi. To je sljedeći korak ako se pokaže da se
+briše previše.
+
+---
+
 ## Testovi
 
-`tests/Feature/PasswordResetTest.php` — 5 testova: link stiže, nepoznata adresa
-dobija isti odgovor kao poznata, reset mijenja lozinku **i gasi svaku drugu
-sesiju**, reset verifikuje adresu, izmišljen token se odbija.
+- `PasswordResetTest` (5) — link stiže, nepoznata adresa dobija isti odgovor kao
+  poznata, reset mijenja lozinku **i gasi svaku drugu sesiju**, reset verifikuje
+  adresu, izmišljen token se odbija.
+- `DiscordSignInTest` (5) — driver je registrovan; neverifikovana Discord adresa
+  ne može preuzeti tuđi nalog; verifikovana Discord adresa ne može preuzeti
+  neverifikovan lokalni nalog; kad su obje verifikovane, spaja i prijavljuje;
+  Discord bez adrese se odbija umjesto da pukne.
+- `PruneUnverifiedUsersTest` (5) — briše staru napuštenu registraciju, ne dira
+  svježu, ne dira verifikovanu, i **ne dira neverifikovanu koja ima aktivnost**.
 
-**385/385 prolazi.**
+**395/395 prolazi.**
 
 ## Deploy
 

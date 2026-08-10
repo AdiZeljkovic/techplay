@@ -9,6 +9,7 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialAuthController extends Controller
@@ -36,15 +37,56 @@ class SocialAuthController extends Controller
      */
     public function redirect(Request $request)
     {
-        // Stateless for API usage (Sanctum)
-        // Request guilds.join scope to auto-add users to our server
-        return response()->json([
-            'url' => Socialite::driver('discord')
-                ->stateless()
-                ->scopes(['identify', 'email', 'guilds.join'])
-                ->redirect()
-                ->getTargetUrl(),
-        ]);
+        // An actual redirect, not JSON. The frontend navigates the browser
+        // here with window.location.href, so returning a JSON body meant the
+        // user landed on a page of raw JSON instead of Discord.
+        //
+        // guilds.join is requested so the callback can add them to the server.
+        return Socialite::driver('discord')
+            ->stateless()
+            ->scopes(['identify', 'email', 'guilds.join'])
+            ->redirect();
+    }
+
+    /**
+     * Did the provider say the owner actually confirmed this address?
+     *
+     * Discord returns `verified: false` for addresses nobody proved they
+     * control, and this app links accounts by address — so without the flag,
+     * "has an email" and "owns an email" look identical.
+     */
+    private function providerEmailIsVerified($socialUser): bool
+    {
+        $raw = $socialUser->user ?? [];
+
+        return ($raw['verified'] ?? false) === true;
+    }
+
+    /**
+     * A free username derived from the Discord handle.
+     *
+     * The old version appended rand(1000,9999) once and hoped: a collision
+     * threw a unique-constraint 500 in the middle of signup, with the account
+     * half-created.
+     */
+    private function uniqueUsername(?string $preferred): string
+    {
+        $base = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', (string) $preferred));
+        $base = substr($base, 0, 20) ?: 'player';
+
+        if (! User::where('username', $base)->exists()) {
+            return $base;
+        }
+
+        for ($attempt = 0; $attempt < 50; $attempt++) {
+            $candidate = $base.random_int(1000, 999999);
+
+            if (! User::where('username', $candidate)->exists()) {
+                return $candidate;
+            }
+        }
+
+        return $base.Str::lower(Str::random(8));
     }
 
     /**
@@ -123,9 +165,9 @@ class SocialAuthController extends Controller
             // Login logic:
             $token = $existingUser->createToken('auth_token')->plainTextToken;
 
-            // Check if email matches and verify it if needed?
-            // Trusting Discord email? Generally yes.
-            if (! $existingUser->email_verified_at && $discordUser->getEmail()) {
+            // Only a confirmed address verifies ours. Discord hands out
+            // addresses the owner never proved they control.
+            if (! $existingUser->email_verified_at && $this->providerEmailIsVerified($discordUser)) {
                 $existingUser->update(['email_verified_at' => now()]);
             }
 
@@ -136,13 +178,39 @@ class SocialAuthController extends Controller
             return redirect(config('app.frontend_url').'/auth/callback?token='.$token);
         }
 
-        // SCENARIO 2: Registering or Linking?
-        // If we want to support registration via Discord:
+        // Everything below creates or claims an account from an address, so
+        // an unproven address is where it stops.
+        if (! $discordUser->getEmail()) {
+            return redirect(config('app.frontend_url').'/login?error='.urlencode(
+                'Discord did not share an email address. Add one to your Discord account, or sign in with your password.'
+            ));
+        }
 
-        // Check if email exists
+        if (! $this->providerEmailIsVerified($discordUser)) {
+            return redirect(config('app.frontend_url').'/login?error='.urlencode(
+                'Verify your email with Discord first, then try again.'
+            ));
+        }
+
+        // SCENARIO 2: an account already exists on that address.
         $userWithEmail = User::where('email', $discordUser->getEmail())->first();
 
         if ($userWithEmail) {
+            // Matching an address is not proof of owning the account. This used
+            // to link and hand back a full token on the match alone, so anyone
+            // who put a victim's address on a Discord account could walk into
+            // the victim's TechPlay account. Both sides must have proved the
+            // same mailbox before the two identities are joined.
+            if (! $userWithEmail->hasVerifiedEmail()) {
+                Log::warning('Discord link refused: local account unverified', [
+                    'user_id' => $userWithEmail->id,
+                ]);
+
+                return redirect(config('app.frontend_url').'/login?error='.urlencode(
+                    'An account already uses that address. Sign in with your password and link Discord from Settings.'
+                ));
+            }
+
             // Link Discord to existing email account
             $userWithEmail->update([
                 'discord_id' => $discordUser->getId(),
@@ -164,7 +232,7 @@ class SocialAuthController extends Controller
         // Create new user
         $newUser = User::create([
             'name' => $discordUser->getName(),
-            'username' => strtolower(str_replace(' ', '', $discordUser->getNickname() ?? $discordUser->getName())).rand(1000, 9999), // Temporary username
+            'username' => $this->uniqueUsername($discordUser->getNickname() ?? $discordUser->getName()),
             'email' => $discordUser->getEmail(),
             'password' => bcrypt(str()->random(16)), // Random password
             'email_verified_at' => now(), // Verified via Discord

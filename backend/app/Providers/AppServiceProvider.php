@@ -38,6 +38,7 @@ use App\Observers\SiteSettingObserver;
 use App\Observers\ThreadObserver;
 use App\Services\LoggingService;
 use App\Services\Socialite\BattleNetProvider;
+use App\Services\Socialite\DiscordProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -204,6 +205,12 @@ class AppServiceProvider extends ServiceProvider
             $config = config('services.battlenet');
 
             return $socialite->buildProvider(BattleNetProvider::class, $config);
+        });
+
+        // Without this, Socialite::driver('discord') throws — which is what
+        // both "Sign in with Discord" buttons have been doing.
+        $socialite->extend('discord', function ($app) use ($socialite) {
+            return $socialite->buildProvider(DiscordProvider::class, config('services.discord'));
         });
     }
 }

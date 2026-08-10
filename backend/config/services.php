@@ -83,7 +83,11 @@ return [
     'discord' => [
         'client_id' => env('DISCORD_CLIENT_ID'),
         'client_secret' => env('DISCORD_CLIENT_SECRET'),
-        'redirect' => env('DISCORD_REDIRECT_URI', 'https://techplay.gg/auth/callback/discord'),
+        // Must be the API callback route, and must match the redirect URI
+        // registered in the Discord developer portal exactly. The old default
+        // pointed at /auth/callback/discord — a path Next.js does not serve, so
+        // Discord would have sent the user to a 404.
+        'redirect' => env('DISCORD_REDIRECT_URI', 'https://techplay.gg/api/v1/auth/discord/callback'),
         'webhook_url' => env('DISCORD_WEBHOOK_URL'),
         'bot_secret' => env('DISCORD_BOT_SECRET'), // Required for bot API authentication
         'bot_token' => env('DISCORD_BOT_TOKEN'),   // Bot token for adding users to guild
