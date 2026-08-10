@@ -58,7 +58,7 @@ class DiagnoseOrphans extends Command
 
         // Two checks answer with a breakdown rather than a single number.
         $this->breakdown('Statusi narudžbi (moraju biti mala slova)', 'orders', 'status');
-        $this->breakdown('Aktivne sezone', 'seasons', 'is_active');
+        $this->activeSeasons();
 
         $this->newLine();
 
@@ -116,6 +116,63 @@ class DiagnoseOrphans extends Command
                 fn (int $n) => $n <= 1,
             ],
         ];
+    }
+
+    /**
+     * More than one season flagged active is not a number you can act on — you
+     * need to see which ones, and which of them Season::active() actually
+     * picks (lowest id whose dates still contain today).
+     */
+    private function activeSeasons(): void
+    {
+        if (! Schema::hasTable('seasons')) {
+            return;
+        }
+
+        $seasons = DB::table('seasons')
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->get(['id', 'name', 'slug', 'start_date', 'end_date', 'xp_multiplier', 'bounty_multiplier']);
+
+        if ($seasons->count() <= 1) {
+            return;
+        }
+
+        $this->newLine();
+        $this->warn('Više od jedne sezone je označeno kao aktivna:');
+
+        $now = now();
+        $chosen = null;
+
+        foreach ($seasons as $s) {
+            $running = (! $s->start_date || $s->start_date <= $now)
+                && (! $s->end_date || $s->end_date >= $now);
+
+            if ($running && $chosen === null) {
+                $chosen = $s->id;
+            }
+        }
+
+        $this->table(
+            ['id', 'naziv', 'počinje', 'završava', 'XP ×', 'bounty ×', 'stanje'],
+            $seasons->map(function ($s) use ($now, $chosen) {
+                $running = (! $s->start_date || $s->start_date <= $now)
+                    && (! $s->end_date || $s->end_date >= $now);
+
+                return [
+                    $s->id,
+                    $s->name,
+                    $s->start_date ? substr((string) $s->start_date, 0, 10) : '—',
+                    $s->end_date ? substr((string) $s->end_date, 0, 10) : '—',
+                    $s->xp_multiplier,
+                    $s->bounty_multiplier,
+                    $s->id === $chosen ? 'OVA se primjenjuje' : ($running ? 'traje, ignorisana' : 'istekla'),
+                ];
+            })->all()
+        );
+
+        $this->line('  Questovi vezani za ignorisanu sezonu ne napreduju.');
+        $this->line('  Ugasi `is_active` na onoj koja ne treba biti aktivna.');
     }
 
     private function breakdown(string $title, string $table, string $column): void

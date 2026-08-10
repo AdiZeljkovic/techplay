@@ -153,6 +153,39 @@ select status, count(*) from orders group by status;
 
 ---
 
+## Nađeno pokretanjem na produkciji (10.08.2026)
+
+`diagnose:orphans` je odmah našao ono što je P4 zapisao kao teoretsko: **dvije
+sezone su označene kao aktivne.**
+
+Uzrok su dva nezavisna kreatora, oba postavljaju `is_active = true` i nijedan ne
+provjerava postoji li već aktivna:
+
+| Ko | Sezona | Trajanje | Množioci |
+|---|---|---|---|
+| `database/seeders/SeasonSeeder.php` | Summer of Gaming 2026 | 20.06 → 21.09.2026 | 1.25× |
+| migracija `2026_08_08_000005` | Season 1: Ignition | 08.08 → ~08.11.2026 | 1.0× |
+
+`Season::active()` bira po **najmanjem id-u**, dakle Summer.
+
+Prava šteta nije množilac nego questovi: ta migracija je uz Ignition zasijala i
+komplet questova, a `QuestService::progress` propušta samo one bez sezone ili s
+`season_id = Season::activeId()`. **Ti questovi ne napreduju od 8. augusta.**
+
+### Zašto ovo nije popravljeno automatski
+
+Ne mogu odlučiti koja je sezona prava — izbor mijenja i množioce i to koji se
+questovi broje, a Ignition traje dva mjeseca duže. Uz to, gašenje Ignitiona bi
+promijenilo i budućnost: danas bi ona preuzela kad Summer istekne 21.09.
+
+Odluka je proizvodna. Kad se donese, gašenje je jedna linija, a nakon toga se
+može dodati parcijalni unique indeks (`where is_active = true`) da se ne ponovi.
+
+Komanda sada izlistava obje sezone s datumima, množiocima i oznakom koja se
+stvarno primjenjuje.
+
+---
+
 ## Testovi
 
 Prošireni `BlockingTest` — 5 testova, uključujući dva nova za prepisivanje tuđe
