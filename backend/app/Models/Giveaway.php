@@ -174,8 +174,11 @@ class Giveaway extends Model
             // Calculate total weight (sum of all points)
             $totalWeight = $entries->sum('total_points');
 
-            // Generate random number between 1 and total weight
-            $random = mt_rand(1, $totalWeight);
+            // Generate random number between 1 and total weight.
+            // random_int, not mt_rand: this decides who wins a prize, and
+            // Mersenne Twister is predictable from enough observed output.
+            // The secure generator costs nothing here.
+            $random = random_int(1, $totalWeight);
 
             // Cumulative weight selection (O(n) instead of O(n*points))
             $cumulativeWeight = 0;
@@ -270,8 +273,9 @@ class Giveaway extends Model
                         break;
                     }
 
-                    // Random number between 1 and total weight
-                    $random = mt_rand(1, $totalWeight);
+                    // Random number between 1 and total weight. random_int
+                    // rather than mt_rand — same reason as pickWinner above.
+                    $random = random_int(1, $totalWeight);
 
                     // Cumulative selection
                     $cumulativeWeight = 0;

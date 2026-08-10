@@ -328,6 +328,15 @@ class GiveawayController extends Controller
 
         // Mark as completed (with race condition protection)
         DB::transaction(function () use ($entry, $task) {
+            // Lock the entry first. The unique index is
+            // (entry_id, task_id, completed_date), and a one-off task stores
+            // NULL there — Postgres treats NULLs as distinct, so the index does
+            // not stop a second insert and two rapid clicks both counted as a
+            // first completion. The lock also makes addPoints below safe: it is
+            // a read-modify-write, so concurrent completions could otherwise
+            // lose one of the awards.
+            $entry = GiveawayEntry::whereKey($entry->id)->lockForUpdate()->first();
+
             // Use firstOrCreate to prevent duplicate completions on rapid clicks
             $completion = GiveawayTaskCompletion::firstOrCreate(
                 [
@@ -413,8 +422,14 @@ class GiveawayController extends Controller
             ]
         );
 
-        // Update streak
-        $result = $entry->updateStreak();
+        // Update streak under a lock. The "already visited today" guard is a
+        // read followed by a write, so two clicks landing together both saw
+        // yesterday's date and both advanced the streak and its bonus.
+        $result = DB::transaction(function () use ($entry) {
+            $locked = GiveawayEntry::whereKey($entry->id)->lockForUpdate()->first();
+
+            return $locked->updateStreak();
+        });
 
         return response()->json([
             'data' => $this->formatEntry($entry->fresh()),

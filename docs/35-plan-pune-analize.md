@@ -168,7 +168,20 @@ postoji stanje iz kojeg se ne može izaći.
 > u kolonu koju panel filtrira malim slovima — takva narudžba je otvarala prazan
 > select, a snimanje bi joj tiho promijenilo status. 5 testova, 415/415 prolazi.
 >
-> Sljedeće cjeline: giveaways · chronicle · Discord bot.
+> **Cjelina 7/9 — giveaways — URAĐENO 10.08.2026 → `docs/44-p4-giveaways.md`.**
+> Najteži dio — samo izvlačenje — bio je već dobro urađen: brava, idempotencija,
+> težinski izbor, bez ponovljenih pobjednika među nivoima. Propusti su bili u
+> jednostavnijem: unique indeks `(entry_id, task_id, completed_date)` ne hvata
+> jednokratne zadatke jer im je datum NULL, a Postgres NULL-ove smatra
+> različitim — dva brza klika su oba dodavala bodove. `addPoints` je bio
+> pročitaj-izmijeni-upiši pa je gubio bodove na štetu korisnika. Oboje riješeno
+> bravom na unosu. Pobjednika je birao `mt_rand` → `random_int`. I: **igra kojoj
+> prođe rok ostaje bez pobjednika a niko ne sazna** — izvlačenje je ručna akcija
+> bez ijednog podsjetnika; sada značka u navigaciji panela, jer automatsko
+> izvlačenje nije rješenje (to je odluka redakcije, treba samo da se vidi).
+> 4 testa, 419/419 prolazi.
+>
+> Sljedeće cjeline: chronicle i preporuke · Discord bot.
 
 ### P5. Mrtav kod i pokvarene reference — *područja 2, 3*
 *Dijelom urađeno:* 26 fajlova obrisano, 16 nespojenih funkcionalnosti nađeno.

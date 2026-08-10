@@ -44,6 +44,29 @@ class GiveawayResource extends Resource
         return 'heroicon-o-gift';
     }
 
+    /**
+     * How many giveaways have finished without anyone drawing a winner.
+     *
+     * Drawing is a manual action in this panel and nothing anywhere reminds
+     * staff to do it — a giveaway whose end date passed simply sat there, prize
+     * unawarded, entrants waiting, and the only way to notice was to go looking.
+     */
+    public static function getNavigationBadge(): ?string
+    {
+        $awaiting = Giveaway::query()
+            ->whereNull('winner_id')
+            ->where('ends_at', '<', now())
+            ->where('status', '!=', 'ended')
+            ->count();
+
+        return $awaiting > 0 ? (string) $awaiting : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function getNavigationLabel(): string
     {
         return 'Giveaways';
