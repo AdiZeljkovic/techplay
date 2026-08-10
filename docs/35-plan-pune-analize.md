@@ -181,7 +181,17 @@ postoji stanje iz kojeg se ne može izaći.
 > izvlačenje nije rješenje (to je odluka redakcije, treba samo da se vidi).
 > 4 testa, 419/419 prolazi.
 >
-> Sljedeće cjeline: chronicle i preporuke · Discord bot.
+> **Cjelina 8/9 — chronicle i preporuke — URAĐENO 10.08.2026 →
+> `docs/45-p4-chronicle-i-preporuke.md`.** Najzdravija cjelina: nema exploita ni
+> mrtvog ugla, nalazi su o cijeni. `forget()` ne čisti keš nego **briše izgrađeni
+> red**, a bio je prva naredba u `upsert()` — prije 404 i prije validacije, pa je
+> svaki odbijeni zahtjev bacao posao koji sljedeće učitavanje mora ponoviti iz
+> jedanaest upita. Uklanjanje igre iz kolekcije uopšte nije poništavalo dosije.
+> I: neizgradiv dosije je rušio stranicu s 500, iako `chronicle:rebuild` istu
+> grešku pažljivo izoluje po korisniku — preporuke su ukras i ne vrijede stranice.
+> 4 testa, 423/423 prolazi.
+>
+> Ostaje: Discord bot (cjelina 9) i klanovi (cjelina 5, preskočeni na dogovor).
 
 ### P5. Mrtav kod i pokvarene reference — *područja 2, 3*
 *Dijelom urađeno:* 26 fajlova obrisano, 16 nespojenih funkcionalnosti nađeno.

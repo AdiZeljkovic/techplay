@@ -86,9 +86,6 @@ class GameCollectionController extends Controller
      */
     public function upsert(Request $request, string $slug)
     {
-        // A shelf or score change is taste news — the chronicle relearns on next read.
-        app(TasteProfileService::class)->forget($request->user());
-
         $game = Game::where('slug', $slug)->first();
 
         // The catalogue is the catalogue. RAWG used to be asked to conjure a
@@ -142,6 +139,15 @@ class GameCollectionController extends Controller
 
         $entry->save();
         $entry->load(['game:id,slug,name,released,rating,cover_url,platforms,genres']);
+
+        // A shelf change is taste news — the chronicle relearns on next read.
+        //
+        // After the write, not before it. As the first statement it ran on
+        // requests that then 404'd on an unknown slug or failed validation, and
+        // forget() does not just clear a cache — it deletes the built row, so
+        // every one of those threw away work that the next page load had to
+        // redo from eleven queries.
+        app(TasteProfileService::class)->forget($request->user());
 
         // Trigger achievement checks after collection change (fire-and-forget)
         try {
@@ -372,9 +378,17 @@ class GameCollectionController extends Controller
         $game = Game::where('slug', $slug)->first();
 
         if ($game) {
-            UserGame::where('user_id', $request->user()->id)
+            $removed = UserGame::where('user_id', $request->user()->id)
                 ->where('game_id', $game->id)
                 ->delete();
+
+            // Taking a game off the shelf says as much about taste as putting
+            // one on it. Only upsert invalidated the chronicle, so removals
+            // kept steering recommendations until something else happened to
+            // rebuild it.
+            if ($removed > 0) {
+                app(TasteProfileService::class)->forget($request->user());
+            }
         }
 
         return $this->success(null, 'Removed from collection');

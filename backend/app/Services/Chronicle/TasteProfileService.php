@@ -5,6 +5,7 @@ namespace App\Services\Chronicle;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * The one reader of the chronicle. Every surface that recommends anything
@@ -124,7 +125,23 @@ class TasteProfileService
             $row = DB::table('user_chronicles')->where('user_id', $user->id)->first();
 
             if (! $row || $row->version < ChronicleBuilder::VERSION) {
-                $this->builder->build($user);
+                try {
+                    $this->builder->build($user);
+                } catch (\Throwable $e) {
+                    // chronicle:rebuild isolates a failing user so one of them
+                    // cannot abort the nightly run. The web path had no such
+                    // guard, so the same unbuildable user got a 500 on their
+                    // dashboard and feed instead of a page without
+                    // personalisation. Recommendations are a garnish; they are
+                    // never worth the page.
+                    Log::warning('Chronicle build failed on read', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    return null;
+                }
+
                 $row = DB::table('user_chronicles')->where('user_id', $user->id)->first();
             }
 
