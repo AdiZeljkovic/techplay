@@ -42,6 +42,10 @@ class OrderResource extends Resource
                         'processing' => 'Processing',
                         'completed' => 'Completed',
                         'cancelled' => 'Cancelled',
+                        // Written by the PayPal refund webhook. It was missing
+                        // here, so a refunded order opened with an empty select
+                        // and saving the form silently reassigned its status.
+                        'refunded' => 'Refunded',
                     ])
                     ->required(),
                 Forms\Components\TextInput::make('total_price')

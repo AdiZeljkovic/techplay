@@ -147,7 +147,11 @@ class PayPalController extends Controller
                 // Save pending order to database
                 $order = Order::create([
                     'user_id' => $user->id,
-                    'status' => 'PENDING',
+                    // Lowercase, like every other writer of this column. PayPal
+                    // orders used to carry PayPal's own vocabulary, so they
+                    // showed a status the admin panel's select does not offer
+                    // and were missed by every status filter.
+                    'status' => 'pending',
                     'total_price' => $total,
                     'payment_method' => 'paypal',
                     'shipping_address' => $request->shipping_address,
@@ -199,19 +203,31 @@ class PayPalController extends Controller
                     ->where('user_id', $request->user()->id)
                     ->first();
 
-                if ($order && $order->status !== 'COMPLETED') {
+                if ($order && $order->status !== 'completed') {
                     \Illuminate\Support\Facades\DB::transaction(function () use ($order, $response) {
                         // Paid goods leave the shelf. The cash-on-delivery path
                         // has always done this; PayPal orders never did, so a
                         // one-off item could be sold repeatedly.
                         foreach ($order->items as $line) {
-                            Product::where('id', $line->product_id)
+                            $taken = Product::where('id', $line->product_id)
                                 ->where('stock', '>=', $line->quantity)
                                 ->decrement('stock', $line->quantity);
+
+                            // Money has already changed hands, so this is not a
+                            // reason to refuse the order — but somebody has paid
+                            // for something that is not on the shelf, and that
+                            // has to reach a human rather than pass silently.
+                            if ($taken === 0) {
+                                Log::warning('Oversold: paid order exceeds stock', [
+                                    'order_id' => $order->id,
+                                    'product_id' => $line->product_id,
+                                    'quantity' => $line->quantity,
+                                ]);
+                            }
                         }
 
                         $order->update([
-                            'status' => 'COMPLETED',
+                            'status' => 'completed',
                             'paypal_transaction_id' => $response['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
                         ]);
                     });

@@ -156,7 +156,19 @@ postoji stanje iz kojeg se ne može izaći.
 > nađeno: članak bez kategorije rušio je snimanje (`ContentObserver` čita
 > `category->type` na nullable relaciji). 4 testa, 410/410 prolazi.
 >
-> Sljedeće cjeline: klanovi · shop · giveaways · chronicle · Discord bot.
+> **Cjelina 5/9 — klanovi — PRESKOČENA na dogovor**, radi se posebno.
+>
+> **Cjelina 6/9 — shop i narudžbe — URAĐENO 10.08.2026 →
+> `docs/43-p4-shop-i-narudzbe.md`.** Mrtvi ugao: **zaliha se nikad nije vraćala** —
+> narudžba je skida odmah (ispravno), ali otkazivanje je mijenjalo samo tekst
+> statusa, pa je proizvod ostajao "rasprodan" zauvijek. Novi `OrderObserver` je
+> vraća na `cancelled`/`refunded`, jednom, obilježeno u `orders.stock_restored_at`.
+> Provjera zalihe bila je odvojena od umanjenja pa je kolona mogla u minus.
+> I `orders.status` je imala **dva rječnika**: PayPal je pisao `PENDING`/`COMPLETED`
+> u kolonu koju panel filtrira malim slovima — takva narudžba je otvarala prazan
+> select, a snimanje bi joj tiho promijenilo status. 5 testova, 415/415 prolazi.
+>
+> Sljedeće cjeline: giveaways · chronicle · Discord bot.
 
 ### P5. Mrtav kod i pokvarene reference — *područja 2, 3*
 *Dijelom urađeno:* 26 fajlova obrisano, 16 nespojenih funkcionalnosti nađeno.

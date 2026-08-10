@@ -39,9 +39,11 @@ class ShopController extends Controller
     public function storeOrder(Request $request)
     {
         $request->validate([
-            'items' => 'required|array|min:1',
+            'items' => 'required|array|min:1|max:50',
             'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            // Bounded: the quantity was open-ended, so a single request could
+            // ask for a number large enough to be a nuisance on its own.
+            'items.*.quantity' => 'required|integer|min:1|max:100',
             'shipping_address' => 'required|string',
             'payment_method' => 'required|string|in:cod',
         ]);
@@ -56,11 +58,6 @@ class ShopController extends Controller
             foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
 
-                // Optional: Check stock
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for {$product->name}");
-                }
-
                 $price = $product->price * $item['quantity'];
                 $totalPrice += $price;
 
@@ -70,8 +67,17 @@ class ShopController extends Controller
                     'price' => $product->price,
                 ];
 
-                // Deduct stock
-                $product->decrement('stock', $item['quantity']);
+                // The decrement is the stock check, not a separate step before
+                // it. Reading the stock and then deducting let two orders for
+                // the last unit both pass and drove the column negative — the
+                // shop's version of the reward-redemption race.
+                $taken = Product::whereKey($product->id)
+                    ->where('stock', '>=', $item['quantity'])
+                    ->decrement('stock', $item['quantity']);
+
+                if ($taken === 0) {
+                    throw new \Exception("Insufficient stock for {$product->name}");
+                }
             }
 
             // Create Order

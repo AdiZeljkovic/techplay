@@ -107,7 +107,7 @@
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
 | `products` | Shop proizvodi | id, name, slug, description, price, stock, paypal_plan_id |
-| `orders` | Narudžbe | id, user_id, total, status, paypal_order_id, paypal_capture_id |
+| `orders` | Narudžbe | id, user_id, total_price, status (`pending`/`processing`/`completed`/`cancelled`/`refunded` — **uvijek mala slova**), payment_status, payment_method, **stock_restored_at**, paypal_order_id, paypal_transaction_id |
 | `order_items` | Stavke narudžbi | order_id, product_id, quantity, price |
 | `support_tiers` | Support/subscription nivo | id, name, price, paypal_plan_id, xp_multiplier |
 | `user_supports` | Korisnikova aktivna podrška | user_id, support_tier_id, **payment_id** (unique), amount, status, **is_recurring**, expires_at |

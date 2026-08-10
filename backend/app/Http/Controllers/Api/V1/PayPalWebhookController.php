@@ -204,7 +204,9 @@ class PayPalWebhookController extends Controller
         }
 
         $order->update([
-            'status' => 'COMPLETED',
+            // Lowercase, matching every other writer of this column and the
+            // values the admin panel offers.
+            'status' => 'completed',
             'paypal_transaction_id' => $paypalTransactionId,
         ]);
 
@@ -222,7 +224,7 @@ class PayPalWebhookController extends Controller
             return;
         }
 
-        $order->update(['status' => 'REFUNDED']);
+        $order->update(['status' => 'refunded']);
         Log::info('Payment refunded via webhook', ['order_id' => $order->id]);
     }
 
