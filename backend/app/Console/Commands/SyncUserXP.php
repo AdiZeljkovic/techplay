@@ -43,7 +43,8 @@ class SyncUserXP extends Command
 
             // Only update if calculated is higher (don't take away XP)
             if ($calculatedXP > $oldXP) {
-                $user->update(['xp' => $calculatedXP]);
+                // forceFill: xp is deliberately not mass-assignable.
+                $user->forceFill(['xp' => $calculatedXP])->save();
                 $gained = $calculatedXP - $oldXP;
                 $this->line("  - {$user->username}: {$oldXP} -> {$calculatedXP} XP (+{$gained})");
             }

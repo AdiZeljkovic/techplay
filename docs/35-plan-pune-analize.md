@@ -123,8 +123,18 @@ postoji stanje iz kojeg se ne može izaći.
 > ali samo naloge bez ijedne aktivnosti, jer "neverifikovan" može biti i stari
 > nalog iz vremena prije nego je verifikacija postala obavezna.
 >
-> Sljedeće cjeline: profil/XP/rankovi · kolekcija i liste · forum i komentari ·
-> klanovi · shop · giveaways · chronicle · Discord bot.
+> **Cjelina 2/9 — profil, XP, rankovi, questovi, sezone — URAĐENO 10.08.2026 →
+> `docs/40-p4-profil-xp-rankovi.md`.** Nema mrtvih uglova; nalazi su ograničenja
+> koja se daju zaobići i brojači koji ne prestaju rasti. Ključ dnevnog capa nikad
+> nije istjecao (`INCRBY` ne postavlja rok — jedan trajan Redis ključ po
+> korisniku po danu), cap se dao probiti paralelnim zahtjevima, quest se mogao
+> završiti dvaput (transakcija bez zaključavanja reda), pad u rangu javljao se
+> kao napredovanje, sezona se nije završavala na svoj datum nego kad noćna
+> komanda stigne, a `xp`/`bounty_balance`/`forum_reputation` bili su
+> mass-assignable. 6 testova, 401/401 prolazi.
+>
+> Sljedeće cjeline: kolekcija i liste · forum i komentari · klanovi · shop ·
+> giveaways · chronicle · Discord bot.
 
 ### P5. Mrtav kod i pokvarene reference — *područja 2, 3*
 *Dijelom urađeno:* 26 fajlova obrisano, 16 nespojenih funkcionalnosti nađeno.

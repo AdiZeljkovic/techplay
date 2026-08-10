@@ -33,7 +33,28 @@ class Season extends Model
 
     public static function active(): ?self
     {
-        return static::where('is_active', true)->first();
+        // The dates matter, not just the flag. `is_active` is flipped off by
+        // the nightly season:conclude run, so a season whose end_date has
+        // passed stays "active" until that runs — and if the scheduler is down,
+        // stays active indefinitely, still applying its XP and bounty
+        // multipliers. Reading the dates makes the season end when it says it
+        // ends, and leaves the command to do the awarding.
+        return static::where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
+            ->orderBy('id')
+            ->first();
+    }
+
+    /**
+     * The season still carrying the `is_active` flag, running or not.
+     *
+     * What season:conclude needs: it exists precisely to close a season whose
+     * end date has passed, so it cannot use active(), which now excludes it.
+     */
+    public static function flaggedActive(): ?self
+    {
+        return static::where('is_active', true)->orderBy('id')->first();
     }
 
     /** Cached id of the active season (null when none). */

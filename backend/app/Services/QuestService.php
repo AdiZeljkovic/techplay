@@ -56,10 +56,23 @@ class QuestService
     private function progressQuest(User $user, Quest $quest, int $increment): void
     {
         DB::transaction(function () use ($user, $quest, $increment) {
-            $entry = QuestProgress::firstOrCreate(
+            QuestProgress::firstOrCreate(
                 ['user_id' => $user->id, 'quest_id' => $quest->id],
                 ['progress' => 0, 'completed_at' => null]
             );
+
+            // Re-read under a row lock. The transaction alone did not stop two
+            // concurrent calls from reading the same progress, both crossing
+            // the threshold, and both paying out — a quest worth XP and bounty
+            // could be completed twice by firing the triggering action twice.
+            $entry = QuestProgress::where('user_id', $user->id)
+                ->where('quest_id', $quest->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $entry) {
+                return;
+            }
 
             // Already completed — skip (daily/weekly quests can reset, permanent ones cannot)
             if ($entry->completed_at !== null) {

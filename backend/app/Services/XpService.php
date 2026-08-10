@@ -41,20 +41,43 @@ class XpService
             Cache::put($lastCommentKey, now(), self::COMMENT_COOLDOWN_SECONDS);
         }
 
-        // 2. Check Daily Cap
+        if ($amount <= 0) {
+            return;
+        }
+
+        // 2. Daily cap, counted atomically.
+        //
+        // Two problems lived here. Read-then-increment let concurrent awards
+        // each see the same total and all pass — twenty parallel "game added"
+        // calls were twenty full awards against one cap. And Cache::increment
+        // issues a bare Redis INCRBY, which creates the key with **no expiry**:
+        // one permanent key per user per day, accumulating forever on a Redis
+        // instance that has no eviction policy.
+        //
+        // add() sets the TTL only when the key is absent, and INCRBY leaves an
+        // existing TTL alone — so the counter still dies at midnight.
         $date = now()->format('Y-m-d');
         $dailyKey = "user:{$user->id}:xp:{$date}";
-        $currentDailyXp = Cache::get($dailyKey, 0);
 
-        if ($currentDailyXp >= self::DAILY_XP_CAP) {
+        Cache::add($dailyKey, 0, now()->endOfDay());
+
+        $afterAward = (int) Cache::increment($dailyKey, $amount);
+        $actualAmount = $amount;
+
+        if ($afterAward > self::DAILY_XP_CAP) {
+            $overshoot = $afterAward - self::DAILY_XP_CAP;
+            $actualAmount = $amount - $overshoot;
+
+            // Hand back what went over so the counter settles on the cap.
+            Cache::decrement($dailyKey, $overshoot);
+        }
+
+        if ($actualAmount <= 0) {
             return; // Daily cap reached
         }
 
-        // 3. Award XP (and cap it if adding amount exceeds limit)
-        $actualAmount = min($amount, self::DAILY_XP_CAP - $currentDailyXp);
-
+        // 3. Award XP
         $user->increment('xp', $actualAmount);
-        Cache::increment($dailyKey, $actualAmount);
 
         // NOTE (economy split, V2): XP no longer mirrors into Bounty.
         // XP = progression; Bounty = currency earned through deliberate
@@ -79,13 +102,30 @@ class XpService
             ->orderBy('min_xp', 'desc')
             ->first();
 
-        if ($newRank && $newRank->id !== $user->rank_id) {
-            $user->rank_id = $newRank->id;
-            $user->save();
-            try {
-                $user->notify(new RankUpNotification($newRank));
-            } catch (\Throwable) {
-            }
+        if (! $newRank || $newRank->id === $user->rank_id) {
+            return;
+        }
+
+        // A rank can move down as well as up — ranks get re-thresholded in the
+        // admin panel, and the row simply reflects whatever the ladder says
+        // today. Announcing that as a promotion is worse than saying nothing.
+        // Queried rather than read off the relation: lazy loading throws
+        // outside production, and this runs on every award.
+        $previousThreshold = $user->rank_id
+            ? Rank::whereKey($user->rank_id)->value('min_xp')
+            : null;
+        $isPromotion = $previousThreshold === null || $newRank->min_xp > $previousThreshold;
+
+        $user->rank_id = $newRank->id;
+        $user->save();
+
+        if (! $isPromotion) {
+            return;
+        }
+
+        try {
+            $user->notify(new RankUpNotification($newRank));
+        } catch (\Throwable) {
         }
     }
 }

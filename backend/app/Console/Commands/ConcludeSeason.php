@@ -28,7 +28,9 @@ class ConcludeSeason extends Command
 
     public function handle(): int
     {
-        $season = Season::active();
+        // Not active(): that now excludes a season whose end date has passed,
+        // which is exactly the season this command is here to close.
+        $season = Season::flaggedActive();
 
         if (! $season) {
             $this->info('No active season.');

@@ -46,11 +46,16 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'location',
         'tagline',
         'playstyle_tags',
-        'forum_reputation', // Added for Observer updates
         'rank_id',          // Added for Observer updates
         // 'role' removed from $fillable for security - set explicitly in controllers
-        'xp',
-        'bounty_balance',
+        //
+        // Nor are 'xp', 'bounty_balance' and 'forum_reputation'. They are the
+        // economy: everything that moves them goes through XpService,
+        // BountyService or an explicit increment(), all of which apply caps,
+        // cooldowns and a ledger. Leaving them mass-assignable meant the whole
+        // system was one careless $user->update($validated) away from being
+        // free — and that line is easy to write by accident. Factories are
+        // unaffected; Laravel creates models unguarded.
         'gamertags',
         'pc_specs',
         'cookie_preferences',
