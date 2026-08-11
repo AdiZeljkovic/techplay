@@ -191,6 +191,12 @@ moderatora.
   posljednja tema s autorom i vremenom, dvije brojke, strelica.
 - Sedam ploča dobilo je vlastite PNG marke (`public/images/forum/*.webp`, obrađene
   iz izvornih 1.1 MB PNG-ova na ~6 KB). Ploča bez marke i dalje pada na lucide glif.
+  Marke stoje **bez pozadinske kutije** — nose vlastitu boju i vlastiti obris, a
+  tonirani zaobljeni kvadrat oko njih je sve ploče vraćao na isti sivi kvadratić.
+  Isto vrijedi i u "Latest posts" traci i u zaglavlju kategorije.
+- Zaglavlje kategorije koristi istu podlogu kao zaglavlje teme (`--surface-1`, bez
+  obojenog preljeva) — otvaranje ploče i otvaranje teme u njoj ne smiju izgledati
+  kao dva različita sajta.
 - Profilna kartica u sidebaru: prsten oko avatara **jeste** XP traka (conic-gradient),
   rank kao chip u vlastitoj boji, tri brojke (Posts / Rep / Streak), i prečica na
   novu temu.

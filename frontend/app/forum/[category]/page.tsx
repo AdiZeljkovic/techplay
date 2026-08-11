@@ -116,13 +116,10 @@ function CategoryThreadsPageInner() {
     return (
         <div className="min-h-screen bg-[var(--surface-0)]">
             {/* Header */}
-            <div className="relative bg-[var(--surface-1)] border-b border-white/[0.07] overflow-hidden">
-                <div
-                    className="absolute inset-0 opacity-10"
-                    style={{ background: `linear-gradient(135deg, ${color} 0%, transparent 60%)` }}
-                />
-
-                <div className="container-page py-8 relative z-10">
+            {/* Same ground as a thread's header — opening a board and opening
+                a thread inside it should not feel like two different sites. */}
+            <div className="bg-[var(--surface-1)] border-b border-white/[0.07]">
+                <div className="container-page py-8">
                     <Link
                         href="/forum"
                         className="inline-flex items-center gap-2 text-sm text-white/35 hover:text-[var(--accent)] transition-colors mb-6"
@@ -133,15 +130,12 @@ function CategoryThreadsPageInner() {
 
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div className="flex items-center gap-5">
-                            <div
-                                className="w-14 h-14 rounded-[var(--radius-panel)] flex-shrink-0 flex items-center justify-center overflow-hidden"
-                                style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
-                            >
+                            <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center" style={{ color }}>
                                 {art ? (
                                     // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={art} alt="" aria-hidden className="max-w-[34px] max-h-[34px] w-auto h-auto" />
+                                    <img src={art} alt="" aria-hidden className="max-w-[52px] max-h-[52px] w-auto h-auto" />
                                 ) : (
-                                    <Icon className="w-7 h-7" />
+                                    <Icon className="w-8 h-8" />
                                 )}
                             </div>
                             <div>

@@ -72,12 +72,10 @@ function BoardRow({ category }: { category: ForumCategory }) {
             href={`/forum/${category.slug}`}
             className="group flex items-center gap-4 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-3.5 hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors"
         >
-            {/* The mark carries the board's own colour, so the tint behind it
-                is the same colour at low strength rather than a grey box. */}
-            <span
-                className="w-[52px] h-[52px] shrink-0 rounded-[var(--radius-card)] flex items-center justify-center overflow-hidden"
-                style={{ background: `color-mix(in srgb, ${color} 12%, transparent)`, color }}
-            >
+            {/* The mark IS the icon — it arrives with its own colour and its
+                own edge, and a tinted rounded box around it only made every
+                board look like the same grey square. */}
+            <span className="w-[52px] h-[52px] shrink-0 flex items-center justify-center" style={{ color }}>
                 {art ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -85,10 +83,10 @@ function BoardRow({ category }: { category: ForumCategory }) {
                         alt=""
                         aria-hidden
                         loading="lazy"
-                        className="max-w-[30px] max-h-[30px] w-auto h-auto select-none group-hover:scale-110 transition-transform duration-300"
+                        className="max-w-[42px] max-h-[42px] w-auto h-auto select-none group-hover:scale-110 transition-transform duration-300"
                     />
                 ) : (
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-7 h-7" />
                 )}
             </span>
 

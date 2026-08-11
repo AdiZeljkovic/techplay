@@ -8,7 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
-import { getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
+import { getCategoryArt, getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -216,13 +216,16 @@ export default function ForumSidebar() {
                             const catSlug = thread.category?.slug ?? "";
                             const color = getCategoryColor(catSlug);
                             const Icon = getCategoryIcon(catSlug);
+                            const art = getCategoryArt(catSlug);
                             return (
                                 <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="group flex items-start gap-3 py-2.5">
-                                    <span
-                                        className="w-8 h-8 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center mt-0.5"
-                                        style={{ background: `color-mix(in srgb, ${color} 14%, transparent)`, color }}
-                                    >
-                                        <Icon className="w-3.5 h-3.5" />
+                                    <span className="w-8 h-8 shrink-0 flex items-center justify-center mt-0.5" style={{ color }}>
+                                        {art ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img src={art} alt="" aria-hidden loading="lazy" className="max-w-[26px] max-h-[26px] w-auto h-auto select-none" />
+                                        ) : (
+                                            <Icon className="w-3.5 h-3.5" />
+                                        )}
                                     </span>
                                     <div className="flex-1 min-w-0">
                                         <p className="font-display text-[12px] font-black text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
