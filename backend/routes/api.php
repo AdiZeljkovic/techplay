@@ -212,6 +212,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/forum/threads/{slug}/pin', [ForumController::class, 'pinThread']);
         Route::middleware(['throttle:5,1', 'ban.check'])->post('/forum/threads/{slug}/self-pin', [ForumController::class, 'selfPinThread']);
         Route::post('/forum/threads/{slug}/lock', [ForumController::class, 'lockThread']);
+        Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}', [ForumController::class, 'updateThread']);
         Route::delete('/forum/threads/{slug}', [ForumController::class, 'deleteThread']);
         Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
         Route::middleware(['throttle:20,1', 'ban.check'])->delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);

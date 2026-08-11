@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\V1\ForumCategoryResource;
+use App\Http\Resources\V1\ForumThreadCardResource;
 use App\Http\Resources\V1\PostResource;
 use App\Http\Resources\V1\ThreadResource;
 use App\Models\Category;
@@ -69,7 +71,10 @@ class ForumController extends Controller
         $stats = Cache::flexible('forum.stats', [30, 300], function () {
             return [
                 'total_threads' => Thread::count(),
-                'total_posts' => Thread::count() + Post::count(),
+                // Threads used to be counted here as well, which made the
+                // headline number disagree with every board card underneath
+                // it — those count replies, through Category::posts().
+                'total_posts' => Post::count(),
                 'members' => User::count(),
             ];
         });
@@ -125,7 +130,7 @@ class ForumController extends Controller
             return $parents->values();
         });
 
-        return response()->json($categories)
+        return response()->json(ForumCategoryResource::collection($categories)->resolve())
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
@@ -137,11 +142,9 @@ class ForumController extends Controller
 
         // Reduced cache time to 30 seconds for faster updates
         $data = Cache::remember($cacheKey, 30, function () use ($slug, $tagSlug) {
-            Log::info('Fetching category with slug: '.$slug);
             $category = Category::where('slug', $slug)->where('type', 'forum')->first();
 
             if (! $category) {
-                Log::error('Category not found for slug: '.$slug);
                 abort(404, 'Category not found');
             }
 
@@ -441,7 +444,8 @@ class ForumController extends Controller
                 ->get();
         });
 
-        return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return response()->json(ForumThreadCardResource::collection($threads)->resolve())
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function myWatchedThreads()
@@ -452,7 +456,7 @@ class ForumController extends Controller
             ->orderByDesc('thread_watchers.created_at')
             ->get();
 
-        return response()->json($threads);
+        return response()->json(ForumThreadCardResource::collection($threads)->resolve());
     }
 
     public function myBookmarkedThreads()
@@ -463,7 +467,7 @@ class ForumController extends Controller
             ->orderByDesc('thread_bookmarks.created_at')
             ->get();
 
-        return response()->json($threads);
+        return response()->json(ForumThreadCardResource::collection($threads)->resolve());
     }
 
     public function unansweredThreads()
@@ -479,7 +483,8 @@ class ForumController extends Controller
                 ->get();
         });
 
-        return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return response()->json(ForumThreadCardResource::collection($threads)->resolve())
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function upvote($slug)
@@ -661,6 +666,59 @@ class ForumController extends Controller
         return response()->json([
             'is_locked' => $thread->is_locked,
             'message' => $thread->is_locked ? 'Thread locked.' : 'Thread unlocked.',
+        ]);
+    }
+
+    /**
+     * PUT /forum/threads/{slug} — edit the thread itself.
+     *
+     * Every reply on the boards could be edited; the opening post could not,
+     * because nothing ever routed to it. An author who mistyped their own
+     * title had to delete the thread and start again — and only a moderator
+     * can delete, so in practice they had to ask.
+     *
+     * The slug does not move with the title. It is in every link anyone has
+     * already shared, and renaming a thread is not a reason to break them.
+     */
+    public function updateThread(Request $request, string $slug, SanitizationService $sanitizer)
+    {
+        $request->validate([
+            'title' => 'required|string|min:5|max:255',
+            'content' => 'required|string|min:10|max:20000',
+        ]);
+
+        $thread = Thread::where('slug', $slug)->firstOrFail();
+        $user = Auth::user();
+
+        $isOwner = $thread->author_id === $user->id;
+        $isStaff = $user->isForumModerator();
+
+        if (! $isOwner && ! $isStaff) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        if ($thread->is_locked && ! $isStaff) {
+            return response()->json(['message' => 'Thread is locked.'], 403);
+        }
+
+        $content = $sanitizer->sanitizeRichContent($request->content);
+
+        if ($sanitizer->detectSpam($content)) {
+            return response()->json(['message' => 'Post flagged as spam.'], 422);
+        }
+
+        $thread->title = $sanitizer->sanitizeTitle($request->title);
+        $thread->content = $content;
+        $thread->save();
+
+        Cache::forget("forum.thread.{$slug}");
+        $this->clearCategoryPageCache($thread->category->slug);
+
+        $this->notifyMentions($content, $thread, $sanitizer);
+
+        return response()->json([
+            'message' => 'Thread updated.',
+            'thread' => new ThreadResource($thread->load(['author.rank', 'category', 'tags'])->loadCount(['posts', 'upvotes'])),
         ]);
     }
 

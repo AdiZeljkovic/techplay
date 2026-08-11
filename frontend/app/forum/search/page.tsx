@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "@/lib/axios";
 import { Search, MessageSquare, ArrowLeft, AlertTriangle } from "lucide-react";
+import PageHero from "@/components/ui/PageHero";
 
 const fetcher = (url: string) => axios.get(url);
 
@@ -56,19 +57,11 @@ function ForumSearchResults() {
 
     return (
         <div className="min-h-screen bg-[var(--surface-0)]">
-            <div className="bg-[var(--surface-1)] border-b border-white/[0.07]">
-                <div className="container-page py-8">
-                    <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-[var(--accent)] rounded-[var(--radius-panel)] flex items-center justify-center">
-                            <Search className="w-7 h-7 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold text-white">Forum Search</h1>
-                            <p className="text-white/45">Search threads and posts</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <PageHero
+                title="Forum Search"
+                description={q ? `Threads and posts matching “${q}”.` : "Search every thread and every reply on the boards."}
+                icon={Search}
+            />
 
             <div className="container-page py-8">
                 <Link href="/forum" className="inline-flex items-center gap-2 text-sm text-white/35 hover:text-[var(--accent)] mb-6 transition-colors">

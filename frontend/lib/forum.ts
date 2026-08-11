@@ -58,6 +58,31 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
     "tech-gear-talk": ShoppingBag,
 };
 
+/**
+ * Painted art for the boards that have it.
+ *
+ * A lucide glyph in a tinted square told you a board existed; it did not tell
+ * you which one. These are the marks for the seven boards we actually run —
+ * anything else still falls back to the glyph, so a board added in the admin
+ * panel tomorrow does not render a broken image.
+ */
+const categoryArt: Record<string, string> = {
+    "news-announcements": "/images/forum/news-announcements.webp",
+    "feedback-support": "/images/forum/feedback-support.webp",
+    "the-lounge": "/images/forum/the-lounge.webp",
+    "general-gaming": "/images/forum/general-gaming.webp",
+    "user-reviews": "/images/forum/user-reviews.webp",
+    "game-reviews": "/images/forum/user-reviews.webp",
+    "pc-builds": "/images/forum/pc-builds.webp",
+    "pc-builds-upgrades": "/images/forum/pc-builds.webp",
+    consoles: "/images/forum/consoles.webp",
+    "consoles-peripherals": "/images/forum/consoles.webp",
+};
+
+export function getCategoryArt(slug: string): string | null {
+    return categoryArt[slug] ?? null;
+}
+
 export function getCategoryIcon(slug: string): React.ComponentType<{ className?: string }> {
     return categoryIcons[slug] ?? MessageCircle;
 }

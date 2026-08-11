@@ -9,7 +9,7 @@ import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { MessageSquare, Share2, Flag, Lock, Unlock, Shield, ArrowLeft, Eye, Clock, ChevronUp, Reply, Pin, Award, Send, Trash2, Bell, BellOff, Bookmark } from "lucide-react";
+import { MessageSquare, Share2, Flag, Lock, Unlock, Shield, ArrowLeft, Eye, Clock, ChevronUp, Reply, Pin, Award, Send, Trash2, Bell, BellOff, Bookmark, Pencil} from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -126,6 +126,13 @@ export default function ThreadPage() {
     const [isTogglingWatch, setIsTogglingWatch] = useState(false);
     const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
     const [isSelfPinning, setIsSelfPinning] = useState(false);
+
+    // Editing the thread itself. Every reply could be edited; the opening
+    // post could not, because the API had no route for it.
+    const [editingThread, setEditingThread] = useState(false);
+    const [threadTitleDraft, setThreadTitleDraft] = useState("");
+    const [threadBodyDraft, setThreadBodyDraft] = useState("");
+    const [savingThread, setSavingThread] = useState(false);
 
     // Replies are paginated fifteen at a time. The page used to ask for the
     // first page only and offer no way to the rest, so every thread stopped
@@ -345,6 +352,34 @@ export default function ThreadPage() {
         }
     };
 
+    const startThreadEdit = () => {
+        setThreadTitleDraft(thread?.title ?? "");
+        setThreadBodyDraft(thread?.content ?? "");
+        setEditingThread(true);
+    };
+
+    const saveThreadEdit = async () => {
+        if (!thread) return;
+
+        setSavingThread(true);
+
+        try {
+            await axios.put(`/forum/threads/${thread.slug}`, {
+                title: threadTitleDraft,
+                content: threadBodyDraft,
+            });
+
+            toast.success("Thread updated.");
+            setEditingThread(false);
+            mutate();
+        } catch (e: unknown) {
+            const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Could not save that.");
+        } finally {
+            setSavingThread(false);
+        }
+    };
+
     const handleEditPost = (post: Post) => {
         setEditingPostId(post.id);
         setEditContent(post.content ?? "");
@@ -561,6 +596,15 @@ export default function ThreadPage() {
                                         </button>
                                     </>
                                 )}
+                                {(canModerate || user?.id === thread.author?.id) && !editingThread && (
+                                    <button
+                                        onClick={startThreadEdit}
+                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-white/10 bg-white/5 text-white/45 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] hover:border-[var(--accent)]/30 transition-all"
+                                    >
+                                        <Pencil className="w-3 h-3" />
+                                        Edit
+                                    </button>
+                                )}
                                 {!canModerate && user?.id === thread.author?.id && !thread.is_pinned && (
                                     <button
                                         onClick={handleSelfPin}
@@ -572,9 +616,19 @@ export default function ThreadPage() {
                                     </button>
                                 )}
                             </div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-3">
-                                {thread.title}
-                            </h1>
+                            {editingThread ? (
+                                <input
+                                    value={threadTitleDraft}
+                                    onChange={(e) => setThreadTitleDraft(e.target.value)}
+                                    maxLength={255}
+                                    aria-label="Thread title"
+                                    className="w-full mb-3 h-12 px-4 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] font-display text-[20px] font-black text-white outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all"
+                                />
+                            ) : (
+                                <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-3">
+                                    {thread.title}
+                                </h1>
+                            )}
                             {thread.tags && thread.tags.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-1.5 mb-3">
                                     {thread.tags.map((tag) => (
@@ -682,9 +736,31 @@ export default function ThreadPage() {
 
                                 {/* Post Content */}
                                 <div className="flex-1 p-6">
-                                    <div className="prose prose-invert max-w-none text-white/70 leading-relaxed">
-                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thread.content || '<p>No content</p>') }} />
-                                    </div>
+                                    {editingThread ? (
+                                        <div>
+                                            <RichTextEditor content={threadBodyDraft} onChange={setThreadBodyDraft} minHeight="180px" />
+                                            <div className="flex items-center gap-2 mt-3">
+                                                <button
+                                                    onClick={saveThreadEdit}
+                                                    disabled={savingThread}
+                                                    className="btn-command inline-flex items-center justify-center h-9 px-5 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter] disabled:opacity-50"
+                                                >
+                                                    {savingThread ? "Saving" : "Save changes"}
+                                                </button>
+                                                <button
+                                                    onClick={() => setEditingThread(false)}
+                                                    disabled={savingThread}
+                                                    className="btn-command btn-command-quiet inline-flex items-center justify-center h-9 px-5 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="prose prose-invert max-w-none text-white/70 leading-relaxed">
+                                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thread.content || '<p>No content</p>') }} />
+                                        </div>
+                                    )}
 
                                     {/* Post Actions */}
                                     <div className="flex items-center justify-between mt-8 pt-4 border-t border-white/[0.07]">

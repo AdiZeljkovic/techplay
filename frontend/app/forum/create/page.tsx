@@ -165,12 +165,14 @@ function CreateThreadForm() {
                     </Link>
 
                     <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-[var(--accent)] rounded-[var(--radius-panel)] flex items-center justify-center">
-                            <Sparkles className="w-7 h-7 text-white" />
-                        </div>
+                        <span className="w-12 h-12 shrink-0 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center">
+                            <Sparkles className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />
+                        </span>
                         <div>
-                            <h1 className="text-3xl font-bold text-white">Create New Thread</h1>
-                            <p className="text-white/45">Start a new discussion in the community</p>
+                            <h1 className="font-display text-[26px] md:text-[32px] font-black text-white uppercase tracking-tight leading-none">
+                                New <span className="text-[var(--accent)]">thread</span>
+                            </h1>
+                            <p className="mt-2 text-[13px] text-white/45">Start a discussion the boards will want to answer.</p>
                         </div>
                     </div>
                 </div>

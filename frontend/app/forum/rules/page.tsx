@@ -1,146 +1,156 @@
 "use client";
 
-import { Shield, CheckCircle, XCircle, Flag, MessageSquare } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Flag, MessageSquare, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import PageHero from "@/components/ui/PageHero";
+
+/**
+ * The rules, as rules rather than as a wall.
+ *
+ * Every clause is numbered because a moderator has to be able to point at one
+ * — "3.1" is the whole reason the numbering exists here, unlike the decorative
+ * 01 / 02 / 03 that turns up on marketing pages.
+ */
+const SECTIONS = [
+    {
+        icon: CheckCircle,
+        tone: "#34d399",
+        title: "Core principles",
+        rules: [
+            {
+                ref: "1.1",
+                head: "Be respectful",
+                body: "Treat every member with respect. Disruptive, insulting or abusive behaviour is not tolerated. We are a mixed room of gamers and tech people — disagreement is fine, hostility is not.",
+            },
+            {
+                ref: "1.2",
+                head: "No hate speech or harassment",
+                body: "Hate speech, discrimination, threats or harassment on the basis of race, ethnicity, religion, gender, sexual orientation, disability or anything else is prohibited outright.",
+            },
+        ],
+    },
+    {
+        icon: MessageSquare,
+        tone: "#60a5fa",
+        title: "Posting and content",
+        rules: [
+            {
+                ref: "2.1",
+                head: "Keep it relevant",
+                body: "Post on the right board. Read the board description before opening a topic — off-topic threads get moved or removed.",
+            },
+            {
+                ref: "2.2",
+                head: "No spam or self-promotion",
+                body: "Do not spam threads. Promoting your own channel, stream or site belongs in the designated showcase space or your signature. Unsolicited advertising is banned.",
+            },
+            {
+                ref: "2.3",
+                head: "Safe content",
+                body: "TechPlay is safe for work. No pornography, no gore, no gratuitous violence. Sensitive subjects are welcome if handled with maturity and tagged where required.",
+            },
+        ],
+    },
+    {
+        icon: XCircle,
+        tone: "#f43f5e",
+        title: "Strictly prohibited",
+        rules: [
+            {
+                ref: "3.1",
+                head: "Piracy and illegal activity",
+                body: "No links to pirated software, cracks or keygens, and no promotion of illegal activity. We respect intellectual property.",
+            },
+            {
+                ref: "3.2",
+                head: "Doxxing and privacy",
+                body: "Never share another member's personal information without their explicit consent. Protect your own as carefully as theirs.",
+            },
+        ],
+    },
+];
 
 export default function ForumRulesPage() {
     return (
-        <div className="min-h-screen py-12 px-4 md:px-8">
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-12">
-                    <div className="inline-flex p-3 rounded-[var(--radius-panel)] bg-[var(--accent)]/10 text-[var(--accent)] mb-4 shadow-[0_0_20px_rgba(var(--accent-rgb),0.2)]">
-                        <Shield className="w-8 h-8" />
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
-                        Community <span className="text-[var(--accent)]">Guidelines</span>
-                    </h1>
-                    <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto">
-                        To keep the TechPlay community helpful, friendly, and safe for everyone, please read and follow these rules.
-                    </p>
-                </div>
+        <div className="min-h-screen bg-[var(--surface-0)]">
+            <PageHero
+                title="Community Guidelines"
+                description="What keeps the boards worth reading. Every rule here is one a moderator can point at, so they are numbered."
+                icon={Shield}
+            />
 
-                <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-3xl p-6 md:p-10 shadow-2xl space-y-10">
-                    {/* Section 1: Core Principles */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 pb-4 border-b border-[var(--border)]">
-                            <CheckCircle className="w-6 h-6 text-green-500" />
-                            1. Core Principles
-                        </h2>
-                        <ul className="space-y-4">
-                            <li className="flex gap-4">
-                                <span className="font-bold text-[var(--accent)] tracking-widest text-lg">1.1</span>
-                                <div>
-                                    <h4 className="font-bold text-white mb-1">Be Respectful</h4>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                                        Treat all members with respect. Disruptive, insulting, or abusive behavior will not be tolerated.
-                                        We are a diverse community of gamers and tech enthusiasts; disagreements are fine, but hostility is not.
-                                    </p>
-                                </div>
-                            </li>
-                            <li className="flex gap-4">
-                                <span className="font-bold text-[var(--accent)] tracking-widest text-lg">1.2</span>
-                                <div>
-                                    <h4 className="font-bold text-white mb-1">No Hate Speech or Harassment</h4>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                                        Any form of hate speech, discrimination, threats, or harassment based on race, ethnicity, religion,
-                                        gender, sexual orientation, disability, or any other characteristic is strictly prohibited.
-                                    </p>
-                                </div>
-                            </li>
-                        </ul>
-                    </section>
+            <div className="container-page pb-14 max-w-[860px]">
+                <Link
+                    href="/forum"
+                    className="inline-flex items-center gap-2 mb-6 font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/35 hover:text-[var(--accent)] transition-colors"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to the forum
+                </Link>
 
-                    {/* Section 2: Content Rules */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 pb-4 border-b border-[var(--border)]">
-                            <MessageSquare className="w-6 h-6 text-blue-500" />
-                            2. Posting & Content
-                        </h2>
-                        <ul className="space-y-4">
-                            <li className="flex gap-4">
-                                <span className="font-bold text-[var(--accent)] tracking-widest text-lg">2.1</span>
-                                <div>
-                                    <h4 className="font-bold text-white mb-1">Keep it Relevant</h4>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                                        Post in the appropriate sub-forums. Read the thread descriptions before creating a new topic.
-                                        Off-topic posts may be moved or deleted.
-                                    </p>
-                                </div>
-                            </li>
-                            <li className="flex gap-4">
-                                <span className="font-bold text-[var(--accent)] tracking-widest text-lg">2.2</span>
-                                <div>
-                                    <h4 className="font-bold text-white mb-1">No Spam or Self-Promotion</h4>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                                        Do not spam threads. Self-promotion (channels, streams, websites) is only permitted in the designated
-                                        "Community Showcase" section or signature areas. Unsolicited advertising is banned.
-                                    </p>
-                                </div>
-                            </li>
-                            <li className="flex gap-4">
-                                <span className="font-bold text-[var(--accent)] tracking-widest text-lg">2.3</span>
-                                <div>
-                                    <h4 className="font-bold text-white mb-1">Safe Content Policy (NSFW)</h4>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                                        TechPlay is a safe-for-work environment. Do not post pornography, gore, or excessively violent content.
-                                        Sensitive topics should be handled with maturity and tagged appropriately if permitted.
-                                    </p>
-                                </div>
-                            </li>
-                        </ul>
-                    </section>
+                <div className="space-y-4">
+                    {SECTIONS.map((section) => {
+                        const Icon = section.icon;
 
-                    {/* Section 3: Forbidden Activities */}
-                    <section>
-                        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 pb-4 border-b border-[var(--border)]">
-                            <XCircle className="w-6 h-6 text-red-500" />
-                            3. Strictly Prohibited
-                        </h2>
-                        <ul className="space-y-4">
-                            <li className="flex gap-4">
-                                <span className="font-bold text-red-500 tracking-widest text-lg">3.1</span>
-                                <div>
-                                    <h4 className="font-bold text-white mb-1">Piracy & Illegal Activities</h4>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                                        Sharing links to pirated software, cracks, keygens, or promoting illegal activities is strictly forbidden.
-                                        We respect intellectual property rights.
-                                    </p>
-                                </div>
-                            </li>
-                            <li className="flex gap-4">
-                                <span className="font-bold text-red-500 tracking-widest text-lg">3.2</span>
-                                <div>
-                                    <h4 className="font-bold text-white mb-1">Doxxing & Privacy</h4>
-                                    <p className="text-[var(--text-secondary)] leading-relaxed">
-                                        Do not share personal information of other users without their explicit consent.
-                                        Protect your own privacy and that of others.
-                                    </p>
-                                </div>
-                            </li>
-                        </ul>
-                    </section>
+                        return (
+                            <section
+                                key={section.title}
+                                className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-5 md:p-6"
+                            >
+                                <h2 className="flex items-center gap-3 pb-4 mb-4 border-b border-white/[0.06] font-display text-[15px] font-black uppercase tracking-[0.1em] text-white">
+                                    <span
+                                        className="w-8 h-8 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center"
+                                        style={{ background: `color-mix(in srgb, ${section.tone} 14%, transparent)`, color: section.tone }}
+                                    >
+                                        <Icon className="w-4 h-4" />
+                                    </span>
+                                    {section.title}
+                                </h2>
 
-                    {/* Moderation */}
-                    <div className="bg-[var(--accent)]/5 border border-[var(--accent)]/20 p-6 rounded-[var(--radius-panel)] flex gap-4 items-start">
-                        <Flag className="w-6 h-6 text-[var(--accent)] shrink-0 mt-1" />
-                        <div>
-                            <h3 className="font-bold text-white text-lg mb-2">Moderation Policy</h3>
-                            <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4">
-                                Our moderators work to keep the community safe. If you see a violation, please use the "Report" button
-                                instead of engaging. Moderators have the final say in rule interpretation and enforcement.
-                                Sanctions may range from warnings to permanent bans depending on the severity of the infraction.
+                                <ul className="space-y-4">
+                                    {section.rules.map((rule) => (
+                                        <li key={rule.ref} className="flex gap-4">
+                                            <span className="shrink-0 w-[34px] font-display text-[13px] font-black tabular-nums text-[var(--accent)]">
+                                                {rule.ref}
+                                            </span>
+                                            <div className="min-w-0">
+                                                <h3 className="font-display text-[13.5px] font-black text-white">{rule.head}</h3>
+                                                <p className="mt-1 text-[13px] text-white/45 leading-relaxed">{rule.body}</p>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+                        );
+                    })}
+
+                    <section className="rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] bg-[var(--accent-soft)] p-5 md:p-6 flex gap-4">
+                        <Flag className="w-5 h-5 shrink-0 mt-0.5 text-[var(--accent)]" />
+                        <div className="min-w-0">
+                            <h2 className="font-display text-[14px] font-black uppercase tracking-[0.1em] text-white">
+                                How moderation works
+                            </h2>
+                            <p className="mt-2 text-[13px] text-white/50 leading-relaxed">
+                                If you see a rule broken, use Report rather than replying to it — a reply gives the thread
+                                the argument it was looking for. Moderators read every report, and their reading of a rule
+                                is the one that stands. Sanctions run from a warning to a permanent ban, depending on what
+                                was done and how often.
                             </p>
-                            <Link href="/contact">
-                                <Button size="sm" variant="outline">Contact Staff</Button>
+                            <Link
+                                href="/contact"
+                                className="btn-command btn-command-quiet mt-4 inline-flex items-center justify-center h-9 px-5 bg-white/[0.05] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/60 hover:text-white hover:bg-white/[0.1] transition-colors"
+                            >
+                                Contact staff
                             </Link>
                         </div>
-                    </div>
+                    </section>
                 </div>
 
-                <div className="text-center mt-8">
-                    <Link href="/forum">
-                        <Button className="px-8" size="lg">I Agree - Back to Forum</Button>
+                <div className="mt-8 text-center">
+                    <Link
+                        href="/forum"
+                        className="btn-command inline-flex items-center justify-center h-11 px-8 bg-[var(--accent)] font-display text-[11px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter]"
+                    >
+                        Back to the boards
                     </Link>
                 </div>
             </div>

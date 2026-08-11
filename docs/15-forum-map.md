@@ -117,12 +117,83 @@ Forum
 
 ## Nedostaci
 
-1. **Nema User ban** sistema specifičnog za forum (samo globalni account ban)
-2. **Nema privatnih kategorija** (members-only ili premium)
-3. **Nema email notifikacija** za forum reply — samo in-app (`ForumReplyNotification`, `database` kanal)
-4. **Nema @mention sistema** u postovima (nema mention-parsing u `SanitizationService`)
-5. **Discord bot ne najavljuje** nove forum threadove automatski — `/forum` komanda samo ručno prikazuje trending threadove (`PollingService` ne pokriva forum)
-6. **`useRealTimeThreadReplies` hook nije povezan** na thread stranicu — infrastruktura postoji, nije iskorištena
-7. **Nema `generateMetadata`/OG tagova** na kategorijskoj i thread stranici (obje su client component, nema server-side SEO meta)
+> Revidirano 2026-08-11 — dvije stavke sa stare liste su bile netačne.
 
-Napomena: report sistem **postoji** i radi (`POST /reports` sa `reportable_type: thread|post`, `throttle:5,1`), samo je generički (dijeli endpoint s komentarima), ne forum-specifičan.
+1. **Nema forum-specifičnog bana** (postoji samo globalni account ban + `ban.check` middleware)
+2. **Nema privatnih kategorija** (members-only ili premium)
+3. **Nema email notifikacija** za reply — samo in-app (`ForumReplyNotification`, `database` kanal)
+4. **Nema `generateMetadata`/OG tagova** na kategorijskoj i thread stranici — obje su
+   client komponente, pa nema server-side SEO meta. Forum je nevidljiv pretraživačima.
+5. **Discord bot ne najavljuje** nove threadove automatski — `/forum` komanda prikazuje
+   trending threadove ručno, `PollingService` forum ne pokriva
+6. **Nema premještanja teme** u drugu kategoriju (moderator mora obrisati i tražiti ponovni post)
+7. **Nema quote-reply** ni reakcija na pojedinačni post (postoji upvote, ali samo na temu)
+
+**Ispravke stare liste:** @mention **radi** (`SanitizationService::extractMentions` →
+`ForumController::notifyMentions` → `MentionNotification`), i
+`useRealTimeThreadReplies` **jeste povezan** (`thread/[slug]/page.tsx`, linija 149).
+Report sistem postoji i radi (`POST /reports`, `reportable_type: thread|post`).
+
+---
+
+## Changelog 2026-08-11 — audit, sigurnost i redizajn
+
+### Sigurnost
+
+**`/forum/active` i `/forum/unanswered` su vraćali cijeli User model svakog autora**
+— uključujući **`email`**, `discord_id`, `battlenet_id`, `battletag`,
+`bounty_balance`, `daily_streak`, `last_seen_at`, `profile_visibility`, `pc_specs`
+i `location`. Oba endpointa su javna, bez autentifikacije. Uzrok: `User::$hidden`
+namjerno ne skriva `email` (treba korisniku na settings stranici), pa svaka
+serijalizacija Usera bez resursa to prosljeđuje dalje. Isto je vrijedilo i za
+`/forum/watched` i `/forum/bookmarks` (auth, ali autori su drugi ljudi).
+
+Popravljeno novim `ForumThreadCardResource` — autor je sveden na `id`, `username`,
+`display_name`, `avatar_url`.
+
+### Payload
+
+| Endpoint | prije | poslije |
+|---|---|---|
+| `/forum/categories` | 8.751 B | ~2.400 B |
+| `/forum/active` | 16.097 B | ~2.900 B |
+| `/forum/unanswered` | 23.751 B | ~3.800 B |
+
+- Liste su slale **cijeli HTML prve poruke** teme (27% odgovora) za karticu koja
+  crta samo naslov, kategoriju i vrijeme.
+- `/forum/categories` je slao šest SEO kolona, `rules`, `focus_keyword` i oba
+  timestampa po kategoriji. Novi `ForumCategoryResource`.
+
+### Bugovi
+
+- **`stats.total_posts` je brojao teme kao poruke** (`Thread::count() + Post::count()`),
+  pa se broj u heroju nije slagao ni s jednom karticom ispod njega — one broje
+  odgovore. Sada `Post::count()`.
+- **Kategorija "Clans" je ostala visjeti** nakon uklanjanja clan sistema 11.08.2026:
+  prazna grupa bez ijednog djeteta na dnu foruma. Migracija je briše, ali samo ako
+  je zaista prazna.
+- `showCategory` je logovao `Log::info` na svaki cache miss.
+
+### Nova funkcionalnost
+
+**`PUT /forum/threads/{slug}` — uređivanje teme.** Svaki odgovor se mogao urediti,
+prva poruka nije — nije postojala ruta. Autor koji je pogriješio u naslovu morao je
+tražiti moderatora da obriše temu. Slug se **ne mijenja** s naslovom, jer je u svakom
+već podijeljenom linku. Autor ili moderator; zaključana tema prima izmjene samo od
+moderatora.
+
+### Dizajn
+
+- Hero foruma preuređen po uzoru na Game Database: veliki dvobojni naslov, search
+  polje oblika header search bara, i statistika kao pilule.
+- Tabovi (All categories / New posts / Unanswered) u jeziku leaderboard menija.
+- **Kartice kategorija su sada jedan red po ploči** umjesto mreže: marka, ime, opis,
+  posljednja tema s autorom i vremenom, dvije brojke, strelica.
+- Sedam ploča dobilo je vlastite PNG marke (`public/images/forum/*.webp`, obrađene
+  iz izvornih 1.1 MB PNG-ova na ~6 KB). Ploča bez marke i dalje pada na lucide glif.
+- Profilna kartica u sidebaru: prsten oko avatara **jeste** XP traka (conic-gradient),
+  rank kao chip u vlastitoj boji, tri brojke (Posts / Rep / Streak), i prečica na
+  novu temu.
+- `/forum/rules` prepisana — bila je jedina stranica na starim tokenima
+  (`--bg-card`, `--text-secondary`, `rounded-3xl`, `shadow-2xl`).
+- `/forum/search` i `/forum/create` dobili naslove u jeziku ostatka sajta.
