@@ -208,3 +208,28 @@ Kompletan audit + implementacija u 5 commitova (273a085, 64c8d75, ea30aa6, a2329
 - **TechPlay Score**: editorial `review_score` (60%) + community prosjek (40%) u `GET /games/{slug}/ratings` responsu + prikaz na game stranici
 - Search analytics: dnevni Redis zset `analytics:game_search:{Y-m-d}` (30 dana)
 - **Novi Filament resurs `GameRatingResource`** (grupa Game Database) — moderacija community ocjena/reviewa
+
+## Changelog 2026-08-11 — /games hub: audit i redizajn ulaza
+
+**Payload (izmjereno na produkciji, brotli):** `/games/hub` 1.318 B, `/games?page=1`
+1.432 B, `/games/hidden-gems` 509 B, `/games/on-this-day` 486 B, HTML 64 KB.
+Nema viška — za razliku od listinga članaka ovdje se ništa ne trimuje.
+
+**Ukinuta search analitika:**
+- `GameController::logSearchQuery()` obrisan — pisao je u `analytics:game_search:{Y-m-d}`
+  zset na svaku prvu stranicu pretrage.
+- `GameHubController::trendingSearches()` obrisan — jedini čitalac; na svaki cache
+  miss huba radio je 30 `ZREVRANGE` poziva (jedan po danu retencije).
+- `trending_searches` više nije u `/games/hub` responsu, widget je skinut s desne
+  trake. Isti razlog kao kod članaka: internu analitiku pokriva Google Analytics.
+
+**Frontend (`components/games/GameDatabaseHub.tsx`):**
+- Hero search polje dobilo oblik header search bara (`--surface-2`, `--line-strong`,
+  `--radius-card`, accent ring na fokusu) umjesto vlastitog pill oblika.
+- Četiri "ways in" pločice: art 64 px -> 36 px, strelica uklonjena, dodano aktivno
+  stanje (accent rub + traka po dnu) i `active:scale` na klik.
+- Lijeva traka filtera: `FilterGroup` je sada preklopiv, jedan otvoren u isto vrijeme,
+  zatvoren pokazuje trenutnu vrijednost. "Explore by Platform" otvara Platform grupu.
+
+**Napomena o `games.views`:** ostaje — prikazuje se na `/games/{slug}` stranici.
+Sort `-views` postoji u API-ju ali ga frontend ne nudi.

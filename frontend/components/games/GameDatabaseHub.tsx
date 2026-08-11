@@ -8,7 +8,7 @@ import axios from "@/lib/axios";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 import {
     Search, Star, Shuffle, SlidersHorizontal, Flame, Heart, Clock,
-    ArrowRight, Gamepad2, Loader2, X, TrendingUp, CalendarDays,
+    ChevronDown, Gamepad2, Loader2, X, CalendarDays,
 } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -36,7 +36,6 @@ interface Hub {
         eras: { key: string; label: string; from: number; to: number; count: number }[];
         status: { key: string; label: string; count: number }[];
     };
-    trending_searches: { term: string; count: number }[];
     most_wishlisted: { slug: string; name: string; cover_url: string | null; wishlists: number }[];
 }
 
@@ -61,33 +60,80 @@ const SHELVES = [
     { key: "platforms", art: "/images/games/shelf-platforms.webp", title: "Explore by Platform", line: "Browse across every console and generation." },
 ];
 
-function Shelf({ shelf, onPick }: { shelf: typeof SHELVES[number]; onPick: () => void }) {
+function Shelf({ shelf, active, onPick }: { shelf: typeof SHELVES[number]; active: boolean; onPick: () => void }) {
     return (
         <button
             onClick={onPick}
-            className="group relative overflow-hidden rounded-[14px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors p-4 h-full flex flex-col items-center text-center"
+            aria-pressed={active}
+            className={`group relative overflow-hidden rounded-[14px] border p-4 pb-[18px] h-full flex flex-col items-center text-center transition-all duration-200 active:scale-[0.98] ${
+                active
+                    ? "border-[color-mix(in_srgb,var(--accent)_55%,transparent)] bg-[color-mix(in_srgb,var(--accent)_9%,transparent)]"
+                    : "border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)]"
+            }`}
         >
             {/* The neon art IS the icon — no box, no tint; the PNGs carry their own glow. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={shelf.art} alt="" aria-hidden className="h-16 w-auto select-none pointer-events-none" />
-            <p className="mt-2.5 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
+            <img
+                src={shelf.art}
+                alt=""
+                aria-hidden
+                className={`h-9 w-auto select-none pointer-events-none transition-transform duration-200 ${
+                    active ? "scale-110" : "group-hover:scale-105"
+                }`}
+            />
+            <p className="mt-2 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
             <p className="mt-1 text-[11.5px] leading-snug text-white/40">{shelf.line}</p>
-            <ArrowRight className="mt-2.5 w-4 h-4 text-white/25 group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all" />
+
+            {/* Which way in you took is not obvious from a grid that only ever
+                reorders itself, so the tile says it: a rule that draws across
+                the foot of the card the moment it becomes the active one. */}
+            <span
+                className={`absolute inset-x-0 bottom-0 h-[3px] bg-[var(--accent)] origin-left transition-transform duration-300 ${
+                    active ? "scale-x-100" : "scale-x-0"
+                }`}
+            />
         </button>
     );
 }
 
 /* ── one filter group in the rail ─────────────────────────────────────── */
 
+/**
+ * One folded group in the rail.
+ *
+ * Open, the four groups run to some 60 rows — every genre, every platform,
+ * every era stacked down the page whether or not you are looking for one. Shut,
+ * the rail is four lines that each say what they are currently set to, and you
+ * open the one you came for.
+ */
 function FilterGroup({
-    title, icon, children,
-}: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+    title, icon, value, open, onToggle, children,
+}: {
+    title: string; icon: React.ReactNode; value?: string;
+    open: boolean; onToggle: () => void; children: React.ReactNode;
+}) {
     return (
-        <div className="border-b border-white/[0.06] last:border-0 py-4 first:pt-0">
-            <p className="flex items-center gap-2 mb-3 font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/45">
-                {icon} {title}
-            </p>
-            {children}
+        <div className="border-b border-white/[0.06] last:border-0">
+            <button
+                onClick={onToggle}
+                aria-expanded={open}
+                className="flex items-center gap-2 w-full py-3 text-left group"
+            >
+                <span className="shrink-0 text-[var(--accent)]">{icon}</span>
+                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/45 group-hover:text-white/70 transition-colors">
+                    {title}
+                </span>
+                <span className="ml-auto flex items-center gap-1.5 min-w-0">
+                    {value && (
+                        <span className="text-[11px] font-medium text-white/55 truncate max-w-[96px]">{value}</span>
+                    )}
+                    <ChevronDown
+                        className={`w-3.5 h-3.5 shrink-0 text-white/30 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                    />
+                </span>
+            </button>
+
+            {open && <div className="pb-3 max-h-[276px] overflow-y-auto">{children}</div>}
         </div>
     );
 }
@@ -146,6 +192,9 @@ export default function GameDatabaseHub({
     const [page, setPage] = useState(1);
     const [rows, setRows] = useState<Game[]>([]);
     const [railOpen, setRailOpen] = useState(false);
+    // One group open at a time — the rail is a list of settings, not a wall.
+    const [openGroup, setOpenGroup] = useState<string | null>(null);
+    const toggleGroup = (name: string) => setOpenGroup((g) => (g === name ? null : name));
 
     const { data: hub } = useSWR<{ data: Hub }>("/games/hub", fetcher, { revalidateOnFocus: false });
     const facets = hub?.data.facets;
@@ -263,19 +312,19 @@ export default function GameDatabaseHub({
                                 : "Discover, explore and track games across every generation.")}
                     </p>
 
-                    <div className="mt-6 max-w-[640px] mx-auto relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <div className="mt-6 max-w-[640px] mx-auto relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--ink-faint)] group-focus-within:text-[var(--accent)] transition-colors" />
                         <input
                             value={typed}
                             onChange={(e) => change(() => setTyped(e.target.value))}
                             placeholder="Search for games, genres, platforms, themes…"
-                            className="w-full h-12 pl-11 pr-10 rounded-full bg-white/[0.04] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] text-[13.5px] text-white placeholder:text-white/25 outline-none focus:border-[var(--accent)] transition-colors"
+                            className="w-full h-12 pl-11 pr-10 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] text-[13.5px] text-white placeholder:text-[var(--ink-faint)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all"
                         />
                         {typed && (
                             <button
                                 onClick={() => change(() => setTyped(""))}
                                 aria-label="Clear search"
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--ink-faint)] hover:text-white transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -328,9 +377,14 @@ export default function GameDatabaseHub({
                     <Shelf
                         key={shelf.key}
                         shelf={shelf}
+                        active={
+                            shelf.key === "upcoming" ? status === "upcoming"
+                                : shelf.key === "platforms" ? Boolean(platform)
+                                    : status !== "upcoming" && sort === shelf.key
+                        }
                         onPick={() => change(() => {
                             if (shelf.key === "upcoming") { setStatus("upcoming"); setSort("released"); }
-                            else if (shelf.key === "platforms") { setRailOpen(true); }
+                            else if (shelf.key === "platforms") { setRailOpen(true); setOpenGroup("Platform"); }
                             else { setStatus("all"); setSort(shelf.key); }
                         })}
                     />
@@ -351,7 +405,7 @@ export default function GameDatabaseHub({
                         )}
                     </div>
 
-                    <FilterGroup title="Genre" icon={<Flame className="w-3 h-3" />}>
+                    <FilterGroup title="Genre" open={openGroup === "Genre"} onToggle={() => toggleGroup("Genre")} icon={<Flame className="w-3 h-3" />} value={genre || "All"}>
                         <div className="space-y-0.5">
                             <Choice label="All" count={stats?.games} active={!genre} onClick={() => change(() => setGenre(""))} />
                             {facets?.genres.map((g) => (
@@ -366,7 +420,7 @@ export default function GameDatabaseHub({
                         </div>
                     </FilterGroup>
 
-                    <FilterGroup title="Platform" icon={<Gamepad2 className="w-3 h-3" />}>
+                    <FilterGroup title="Platform" open={openGroup === "Platform"} onToggle={() => toggleGroup("Platform")} icon={<Gamepad2 className="w-3 h-3" />} value={platform || "All"}>
                         <div className="space-y-0.5">
                             <Choice label="All" count={stats?.games} active={!platform} onClick={() => change(() => setPlatform(""))} />
                             {facets?.platforms.map((p) => (
@@ -381,7 +435,13 @@ export default function GameDatabaseHub({
                         </div>
                     </FilterGroup>
 
-                    <FilterGroup title="Era" icon={<Clock className="w-3 h-3" />}>
+                    <FilterGroup
+                        title="Era"
+                        open={openGroup === "Era"}
+                        onToggle={() => toggleGroup("Era")}
+                        icon={<Clock className="w-3 h-3" />}
+                        value={facets?.eras.find((e) => e.key === era)?.label ?? "All time"}
+                    >
                         <div className="space-y-0.5">
                             <Choice label="All time" count={stats?.games} active={!era} onClick={() => change(() => setEra(""))} />
                             {facets?.eras.map((e) => (
@@ -396,7 +456,13 @@ export default function GameDatabaseHub({
                         </div>
                     </FilterGroup>
 
-                    <FilterGroup title="Release status" icon={<CalendarDays className="w-3 h-3" />}>
+                    <FilterGroup
+                        title="Release status"
+                        open={openGroup === "Release status"}
+                        onToggle={() => toggleGroup("Release status")}
+                        icon={<CalendarDays className="w-3 h-3" />}
+                        value={facets?.status.find((s) => s.key === status)?.label ?? "All"}
+                    >
                         <div className="space-y-0.5">
                             {facets?.status.map((s) => (
                                 <Choice
@@ -486,26 +552,6 @@ export default function GameDatabaseHub({
 
                 {/* ── right rail ── */}
                 <aside className="hidden xl:block space-y-4 sticky top-4">
-                    <RailPanel title="Trending searches" icon={<TrendingUp className="w-3.5 h-3.5 text-[var(--accent)]" />}>
-                        {hub?.data.trending_searches.length ? (
-                            <ol className="space-y-1.5">
-                                {hub.data.trending_searches.map((row, i) => (
-                                    <li key={row.term}>
-                                        <button
-                                            onClick={() => change(() => setTyped(row.term))}
-                                            className="flex items-center gap-2.5 w-full text-left group"
-                                        >
-                                            <span className="font-display text-[10px] font-black tabular-nums text-white/20 w-3">{i + 1}</span>
-                                            <span className="flex-1 text-[12px] text-white/65 group-hover:text-white truncate">{row.term}</span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ol>
-                        ) : (
-                            <p className="text-[11.5px] text-white/30">Nobody has searched yet today.</p>
-                        )}
-                    </RailPanel>
-
                     <RailPanel title="Most wishlisted" icon={<Heart className="w-3.5 h-3.5 text-[var(--accent)]" />}>
                         {hub?.data.most_wishlisted.length ? (
                             <div className="space-y-2.5">

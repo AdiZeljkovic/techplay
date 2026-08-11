@@ -11,7 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Str;
 
 class GameController extends Controller
 {
@@ -64,10 +63,6 @@ class GameController extends Controller
         $status = $request->input('status', 'all');
         $page = max(1, (int) $request->input('page', 1));
         $pageSize = min(40, max(10, (int) $request->input('page_size', 20)));
-
-        if ($search !== '' && $page === 1) {
-            $this->logSearchQuery($search);
-        }
 
         $cacheKey = 'games.index.v2.'.md5(json_encode([
             $search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize,
@@ -144,21 +139,6 @@ class GameController extends Controller
 
         return response()->json($payload)
             ->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
-    }
-
-    /**
-     * Log game search queries into a daily Redis sorted set — tells the
-     * editorial team what the audience is looking for. 30-day retention.
-     */
-    private function logSearchQuery(string $query): void
-    {
-        try {
-            $key = 'analytics:game_search:'.now()->format('Y-m-d');
-            Redis::zincrby($key, 1, Str::lower(trim($query)));
-            Redis::expire($key, 60 * 60 * 24 * 30);
-        } catch (\Throwable) {
-            // Analytics must never break search
-        }
     }
 
     /**

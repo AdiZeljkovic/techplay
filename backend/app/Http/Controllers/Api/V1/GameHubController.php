@@ -10,7 +10,6 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 
 /**
  * Everything the game database's front page needs that is not the game list
@@ -52,7 +51,6 @@ class GameHubController extends Controller
                 'eras' => $this->eras(),
                 'status' => $this->releaseStatus(),
             ]),
-            'trending_searches' => $this->trendingSearches(),
             'most_wishlisted' => $this->mostWishlisted(),
         ]);
     }
@@ -160,41 +158,6 @@ class GameHubController extends Controller
             ['key' => 'upcoming', 'label' => 'Upcoming', 'count' => Game::where('released', '>', $today)->count()],
             ['key' => 'undated', 'label' => 'No date', 'count' => Game::whereNull('released')->count()],
         ];
-    }
-
-    /**
-     * What people have actually typed into the search box.
-     *
-     * GameController has been recording this into a daily sorted set for some
-     * time and nothing has ever read it. Thirty days of retention, so this is a
-     * month's worth rather than today's.
-     *
-     * @return array<int,array{term:string,count:int}>
-     */
-    private function trendingSearches(): array
-    {
-        return Cache::flexible('games.hub.trending.v1', [900, 3600], function () {
-            try {
-                $totals = [];
-
-                foreach (range(0, 29) as $back) {
-                    $key = 'analytics:game_search:'.now()->subDays($back)->format('Y-m-d');
-
-                    foreach (Redis::zrevrange($key, 0, 40, ['withscores' => true]) as $term => $score) {
-                        $totals[$term] = ($totals[$term] ?? 0) + (int) $score;
-                    }
-                }
-
-                arsort($totals);
-
-                return collect($totals)->take(8)
-                    ->map(fn (int $count, string $term) => ['term' => $term, 'count' => $count])
-                    ->values()->all();
-            } catch (\Throwable) {
-                // Analytics must never take the page down with it.
-                return [];
-            }
-        });
     }
 
     /**
