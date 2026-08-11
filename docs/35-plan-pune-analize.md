@@ -285,6 +285,20 @@ Cloudflare pravila, šta zaista radi na mašini) dolazi u Fazi 3.
 **Ostaje:** dijagram i tabela integracija s procjenom rizika.
 **Procjena:** 1 sesija.
 
+> **URAĐENO 11.08.2026 → `docs/51-p9-arhitektonska-mapa.md`.** Dijagram ulaznih
+> tačaka i tabela od 12 integracija s odgovorom na pitanje "šta se desi kad ovo
+> otkaže". Najvažniji nalaz: **Cloudflare Turnstile je jedinstvena tačka otkaza
+> za prijavu** — `ReCaptchaService` namjerno pada zatvoreno, pa ako Cloudflare ne
+> odgovori, niko se ne može prijaviti ni registrovati. To je ispravan izbor za
+> sigurnost i skup za dostupnost; izlaz je `TURNSTILE_ENABLED=false` bez deploya.
+>
+> Zabilježene i zaštite koje već postoje (globalni HTTP timeout, rate limiter sa
+> SSR izuzetkom, heartbeat, `/system/health`) i četiri slabe tačke: sve na jednoj
+> mašini, queue worker kao jedina tačka za sve pozadinsko, SSR ovisan o API-ju, i
+> Discord bot koji nije nigdje pokrenut.
+>
+> **Time je Faza 1 zatvorena** — svih devet paketa.
+
 ---
 
 ## Faza 2 — dijagnostika koju ti pokreneš
