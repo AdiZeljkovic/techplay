@@ -235,6 +235,12 @@ export default function LeaderboardClient() {
 
     const entries = useMemo(() => data?.entries ?? [], [data]);
 
+    // A board with no baseline is served as all-time whatever the buttons
+    // say, so the highlight follows what came back rather than what was
+    // asked for — otherwise switching to Collection while on This Week left
+    // every button unlit over all-time data.
+    const shownPeriod = data?.period ?? period;
+
     const visible = useMemo(() => {
         const q = query.trim().toLowerCase();
         if (!q) return entries;
@@ -308,7 +314,7 @@ export default function LeaderboardClient() {
                                         disabled={disabled}
                                         title={disabled ? "This board has no weekly baseline to measure against" : undefined}
                                         className={`h-8 px-5 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
-                                            period === p.id && !disabled
+                                            shownPeriod === p.id && !disabled
                                                 ? "bg-[var(--accent)] text-white"
                                                 : disabled
                                                     ? "text-white/15 cursor-not-allowed"
@@ -437,6 +443,17 @@ export default function LeaderboardClient() {
                             <div className="p-4 space-y-2">
                                 {[...Array(6)].map((_, i) => <div key={i} className="h-[52px] rounded-[10px] bg-white/[0.04] animate-pulse" />)}
                             </div>
+                        ) : error ? (
+                            /* Without this an unanswered request read as an empty
+                               board — "Nobody on this board yet" is a very
+                               different claim from "we could not ask". */
+                            <div className="p-6">
+                                <EmptyState
+                                    icon={<Trophy className="w-[18px] h-[18px]" />}
+                                    title="The board is not answering"
+                                    body="We could not load the standings just now. Try again in a moment."
+                                />
+                            </div>
                         ) : rows.length === 0 ? (
                             <div className="p-6">
                                 <EmptyState
@@ -450,7 +467,11 @@ export default function LeaderboardClient() {
                                 <table className="w-full min-w-[760px] text-left">
                                     <thead>
                                         <tr className="border-b border-white/[0.07]">
-                                            {["#", "Player", "Rank / Title", data?.label ?? "Score", "Trend", "Games", "Reputation"].map((h, i) => (
+                                            {/* "Trend" is always XP movement since Monday, whatever
+                                                the board ranks by — so it says so, rather than
+                                                reading as reputation movement on the reputation
+                                                board and collection movement on the collection one. */}
+                                            {["#", "Player", "Rank / Title", data?.label ?? "Score", "XP this week", "Games", "Reputation"].map((h, i) => (
                                                 <th
                                                     key={h}
                                                     className={`px-4 py-3 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35 ${i >= 3 ? "text-right" : ""}`}

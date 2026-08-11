@@ -181,6 +181,42 @@ tuđi ispad nije naš ispad — test to i tvrdi (`Http::preventStrayRequests`).
 **API:** `POST /discord/xp`, `POST /user/streak/claim`, `GET /leaderboard`
 **Discord bot:** XpService u botu (15 XP/msg, 60s cooldown) → POST `/discord/xp`
 **Napomene:** 100 XP/day cap za web interakcije. Rank promotion automatska po XP thresholds.
+Čitanje članaka **ne** donosi XP — konstanta je postojala ali je niko nije zvao (uklonjeno 11.08.2026).
+
+### Leaderboard — audit 12.08.2026
+
+**Payload:** `GET /leaderboard` = 3,2 KB za 10 redova + podium + season + rising +
+viewer. Nema šta da se skida.
+
+**Bug (potvrđen na produkciji): `season.your_xp` je bio u dijeljenom kešu.**
+Cijeli `season` blok se keširao pod `leaderboard.v2.season` na 5 minuta, a sadrži
+`your_xp` — XP prijavljenog korisnika u sezoni. Ko prvi promaši keš, njegov broj se
+servira **svima** narednih 5 minuta, uključujući odjavljene posjetioce. Anonimni
+`curl` je vraćao `"your_xp": 1791`. Sada je keširan samo dio koji je isti za sve
+(`leaderboard.v2.season.public`), a `your_xp` se računa po zahtjevu.
+
+**Bug: viewer keš se nikad nije koristio.** `$viewerId = $request->user()?->id` — ruta
+je javna, a default guard je `web`, pa je za bearer token uvijek `null`. Grana s
+`Cache::remember` nije se izvršavala nijednom; svaki zahtjev je radio ~4 upita za
+viewera. Sada se korisnik razrješava kroz `sanctum` guard, isto kao u `viewer()`.
+
+**Bug: kolona "Trend" je na svim pločama pokazivala kretanje XP-a**, i na Reputation i
+na Collection ploči. Kolona se sada zove "XP this week" — to i jeste ono što mjeri.
+
+**Bug: `period` dugmad su ostajala neosvijetljena.** Ploče bez baseline snapshota
+(collection, completions, reviews, achievements) backend prisilno servira kao
+all-time, ali je frontend zadržavao `week` u stanju — pa nijedno dugme nije bilo
+aktivno nad all-time podacima. Highlight sada prati `data.period` iz odgovora.
+
+**Bug: nije bilo error stanja.** `error` iz SWR-a je bio dodijeljen a nigdje korišten,
+pa je pad API-ja izgledao kao "Nobody on this board yet" — sasvim druga tvrdnja od
+"nismo mogli pitati".
+
+**Provjereno kao ispravno:** svih 6 ploča i 3 perioda vraćaju očekivano;
+`profile_visibility != public` ispada iz svakog rangiranja i iz `rising`;
+`positionOf` broji, ne čita s ekrana, pa ostaje tačan i van top 50; nedostatak
+sedmičnog snapshota kod korisnika registrovanog usred sedmice ispravno računa cijeli
+XP kao dobitak te sedmice (snapshot job pokriva sve korisnike ponedjeljkom).
 
 ---
 

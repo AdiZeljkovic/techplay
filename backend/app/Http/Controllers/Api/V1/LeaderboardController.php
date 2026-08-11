@@ -66,7 +66,9 @@ class LeaderboardController extends Controller
             $period = 'all';
         }
 
-        $viewerId = $request->user()?->id;
+        // Public route: the default guard is `web`, so $request->user() is
+        // null for a bearer token and the cached branch below never ran.
+        $viewerId = Auth::guard('sanctum')->user()?->id ?? Auth::id();
 
         $entries = Cache::remember(
             "leaderboard.v2.{$type}.{$period}.".$this->periodKey($period),
@@ -87,7 +89,7 @@ class LeaderboardController extends Controller
                     fn () => $this->viewer($type, $period, $levels)
                 )
                 : $this->viewer($type, $period, $levels),
-            'season' => Cache::remember('leaderboard.v2.season', 300, fn () => $this->season()),
+            'season' => $this->season(),
             'rising' => Cache::remember('leaderboard.v2.rising', self::TTL, fn () => $this->rising()),
         ]);
     }
@@ -404,38 +406,60 @@ class LeaderboardController extends Controller
     /**
      * The running season, with the end date the page counts down to. Null when
      * no season is active — the panel disappears rather than inventing one.
+     *
+     * The whole block used to sit behind one shared five-minute cache key, and
+     * `your_xp` is not shared: whoever missed the cache first had their season
+     * XP served to every other visitor, signed in or not, until it expired.
+     * The season itself is the same for everyone and stays cached; the number
+     * that belongs to one person is worked out per request.
      */
     private function season(): ?array
     {
-        $season = Season::active();
+        $season = Cache::remember('leaderboard.v2.season.public', 300, function () {
+            $season = Season::active();
+
+            if (! $season) {
+                return null;
+            }
+
+            return [
+                'name' => $season->name,
+                'description' => $season->description,
+                'badge_image' => $season->badge_image,
+                'starts_at' => $season->start_date?->toIso8601String(),
+                'ends_at' => $season->end_date?->endOfDay()->toIso8601String(),
+                'xp_multiplier' => (float) $season->xp_multiplier,
+                'bounty_multiplier' => (float) $season->bounty_multiplier,
+                // The month the season opened, so the per-viewer figure below
+                // can find its baseline without loading the model again.
+                'baseline_period' => $season->start_date?->format('Y-m'),
+            ];
+        });
 
         if (! $season) {
             return null;
         }
 
+        $baselinePeriod = $season['baseline_period'];
+        unset($season['baseline_period']);
+
+        return $season + ['your_xp' => $this->seasonXp($baselinePeriod)];
+    }
+
+    /** XP the viewer has earned since the season opened, or null. */
+    private function seasonXp(?string $baselinePeriod): ?int
+    {
         $user = Auth::guard('sanctum')->user() ?? Auth::user();
-        $seasonXp = null;
 
-        if ($user && $season->start_date) {
-            // XP earned since the season opened, measured off the monthly
-            // baseline written at its start.
-            $baseline = DB::table('reputation_snapshots')
-                ->where('user_id', $user->id)
-                ->where('period', $season->start_date->format('Y-m'))
-                ->value('xp');
-
-            $seasonXp = $baseline === null ? null : max(0, (int) ($user->xp ?? 0) - (int) $baseline);
+        if (! $user || ! $baselinePeriod) {
+            return null;
         }
 
-        return [
-            'name' => $season->name,
-            'description' => $season->description,
-            'badge_image' => $season->badge_image,
-            'starts_at' => $season->start_date?->toIso8601String(),
-            'ends_at' => $season->end_date?->endOfDay()->toIso8601String(),
-            'xp_multiplier' => (float) $season->xp_multiplier,
-            'bounty_multiplier' => (float) $season->bounty_multiplier,
-            'your_xp' => $seasonXp,
-        ];
+        $baseline = DB::table('reputation_snapshots')
+            ->where('user_id', $user->id)
+            ->where('period', $baselinePeriod)
+            ->value('xp');
+
+        return $baseline === null ? null : max(0, (int) ($user->xp ?? 0) - (int) $baseline);
     }
 }
