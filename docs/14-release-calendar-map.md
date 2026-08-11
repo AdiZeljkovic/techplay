@@ -95,5 +95,6 @@ iznova.
 - Filter traka prešla na jezik leaderboard menija; platforme s brend-markama.
 - "Biggest in {mjesec}": art je sada čist (datum je stajao preko naslovnice u
   accent crvenoj i na pola njih se nije mogao pročitati), naslov i datum su
-  ispod slike, platforme su ikonice, i tile nosi svoj rang 1–5 jer sekcija
-  *jeste* rang lista.
+  ispod slike, platforme su ikonice. Naslov ima fiksnu kutiju od dva reda, pa
+  datum, marke i dugmad stoje u istoj liniji na svih pet kartica bez obzira na
+  dužinu imena.
