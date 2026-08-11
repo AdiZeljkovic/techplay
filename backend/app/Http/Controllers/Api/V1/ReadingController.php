@@ -8,6 +8,7 @@ use App\Models\ArticleBookmark;
 use App\Models\ArticleRead;
 use App\Models\GameRating;
 use App\Traits\ApiResponse;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
@@ -81,16 +82,32 @@ class ReadingController extends Controller
 
         $article = Article::where('slug', $slug)->firstOrFail(['id']);
 
-        $read = ArticleRead::firstOrNew([
+        $keys = [
             'user_id' => $request->user()->id,
             'article_id' => $article->id,
-        ]);
+        ];
 
-        $read->progress = max($read->progress ?? 0, $data['progress']);
-        $read->last_read_at = now();
-        $read->save();
+        // firstOrNew + save() is a read then a write, and the reader posts
+        // progress as it scrolls — two of those arriving together both found no
+        // row, both inserted, and the second lost to the unique index. The
+        // visitor got a 500 for scrolling. Retry once against the row the other
+        // request just created; progress only moves forward, so whichever lands
+        // second still wins with the larger number.
+        for ($attempt = 0; $attempt < 2; $attempt++) {
+            $read = ArticleRead::firstOrNew($keys);
+            $read->progress = max($read->progress ?? 0, $data['progress']);
+            $read->last_read_at = now();
 
-        return $this->success(['progress' => $read->progress]);
+            try {
+                $read->save();
+
+                return $this->success(['progress' => $read->progress]);
+            } catch (UniqueConstraintViolationException) {
+                // Someone else created it in between. Loop and merge into theirs.
+            }
+        }
+
+        return $this->success(['progress' => $data['progress']]);
     }
 
     /**
