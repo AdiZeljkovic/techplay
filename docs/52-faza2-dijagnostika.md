@@ -218,6 +218,41 @@ može odlučivati.
 
 ---
 
+## Zamka: `APP_DEBUG` i keš ruta se moraju mijenjati zajedno
+
+Gašenje `APP_DEBUG` na produkciji je **oborilo admin panel**. Vrijedi zapamtiti
+mehanizam, jer čeka svaku sljedeću izmjenu `.env`.
+
+Livewire ime svoje skripte izvodi iz `app.debug` u trenutku registracije rute:
+
+```php
+config('app.debug')
+    ? Route::get(EndpointResolver::scriptPath(minified: false), $handle)  // livewire.js
+    : Route::get(EndpointResolver::scriptPath(minified: true), $handle);  // livewire.min.js
+```
+
+Iscrtana stranica izvodi isto ime na isti način, pa se to dvoje uvijek slaže —
+osim ako su rute keširane pod jednom postavkom a stranica se iscrtava pod
+drugom.
+
+Same se ne mogu ispraviti: `Router::setCompiledRoutes()` **zamijeni cijelu
+kolekciju** keširanom, i to u `booted` povratnom pozivu, dakle nakon što se svi
+provideri podignu. Sve što Livewire registruje pri bootu se odbaci. Vrijedi samo
+fajl keša.
+
+Ishod: stranice traže `livewire.min.js`, keš zna samo za `livewire.js`, 404 se
+vrati kao HTML, browser ga odbije izvršiti kao skriptu, i cijeli `/admin` je
+mrtav.
+
+**Pravilo:** svaka izmjena `.env` je `config:cache` **i** `route:cache`, pa
+`supervisorctl restart techplay-octane:*`. `deployment/deploy.sh` to već radi
+ispravnim redoslijedom; opasne su ručne izmjene.
+
+`diagnose:config` sada poredi keširanu rutu s trenutnim `APP_DEBUG` i javi kad
+se raziđu.
+
+---
+
 ## Nalazi s produkcije (11. 08. 2026, 03:28)
 
 ### Redis nema gornju granicu — najozbiljnije
