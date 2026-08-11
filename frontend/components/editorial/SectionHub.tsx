@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Flame, ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2, Star } from "lucide-react";
+import { ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { SECTIONS, SectionKey } from "./sections";
@@ -219,21 +219,35 @@ export default function SectionHub({
             {/* ── the ticker: what has landed lately ── */}
             {hub?.trending.length ? (
                 <div className="border-b border-white/[0.07] bg-white/[0.02]">
-                    <div className="container-page h-11 flex items-center gap-4 overflow-x-auto scrollbar-none">
-                        <span className="shrink-0 inline-flex items-center gap-1.5 h-[24px] px-2.5 rounded-[6px] bg-[var(--accent)] font-display text-[9px] font-black uppercase tracking-[0.12em] text-white">
-                            <Flame className="w-3 h-3" /> Just in
+                    <div className="container-page h-11 flex items-center gap-4">
+                        <span className="shrink-0 inline-flex items-center h-[24px] px-2.5 rounded-[6px] bg-[var(--accent)] font-display text-[9px] font-black uppercase tracking-[0.14em] text-white">
+                            New:
                         </span>
-                        {hub.trending.map((t, i) => (
-                            <span key={t.slug} className="shrink-0 flex items-center gap-4">
-                                {i > 0 && <span aria-hidden className="w-1 h-1 rounded-full bg-[var(--accent)]/60" />}
-                                <Link
-                                    href={`${config.path}/${t.slug}`}
-                                    className="text-[12px] text-white/55 hover:text-white whitespace-nowrap transition-colors"
-                                >
-                                    {t.title}
-                                </Link>
-                            </span>
-                        ))}
+
+                        {/* The list is rendered twice so the track can loop on
+                            itself without a seam — see .tp-marquee in globals.css.
+                            The copy is aria-hidden, or a screen reader reads every
+                            headline twice. */}
+                        <div className="tp-marquee flex-1 min-w-0">
+                            <div className="tp-marquee-track">
+                                {[0, 1].map((copy) => (
+                                    <div key={copy} aria-hidden={copy === 1} className="flex items-center gap-4 pr-4">
+                                        {hub.trending.map((t) => (
+                                            <span key={t.slug} className="flex items-center gap-4">
+                                                <span aria-hidden className="w-1 h-1 rounded-full bg-[var(--accent)]/60" />
+                                                <Link
+                                                    href={`${config.path}/${t.slug}`}
+                                                    tabIndex={copy === 1 ? -1 : undefined}
+                                                    className="text-[12px] text-white/55 hover:text-white whitespace-nowrap transition-colors"
+                                                >
+                                                    {t.title}
+                                                </Link>
+                                            </span>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             ) : null}
@@ -318,7 +332,9 @@ export default function SectionHub({
                     </div>
 
                     {/* ── tab row, with real counts ── */}
-                    <div className="mt-7 flex flex-wrap gap-2">
+                    {/* Same switcher the leaderboard uses: one enclosure, the
+                        active choice filled rather than a row of loose chips. */}
+                    <div className="mt-7 flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         <Tab
                             label="Everything"
                             count={hub?.stats.articles}
@@ -499,18 +515,15 @@ export default function SectionHub({
 function Tab({
     label, count, active = false, onClick, href,
 }: { label: string; count?: number; active?: boolean; onClick?: () => void; href?: string }) {
-    // flex-1: the row spans the column, so its right edge meets the spotlight's
-    // above it. Left to their content the chips stopped short of the image and
-    // the two elements read as different widths.
-    const className = `flex-1 inline-flex items-center justify-center gap-2 h-9 px-4 rounded-[9px] whitespace-nowrap font-display text-[10.5px] font-black uppercase tracking-[0.08em] transition-colors ${
-        active ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/50 hover:text-white"
+    const className = `flex-1 min-w-[112px] inline-flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] whitespace-nowrap font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+        active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
     }`;
 
     const body = (
         <>
             {label}
             {count !== undefined && (
-                <span className={`tabular-nums ${active ? "text-white/70" : "text-white/25"}`}>{count}</span>
+                <span className={`tabular-nums ${active ? "text-white/70" : "text-white/30"}`}>{count}</span>
             )}
         </>
     );

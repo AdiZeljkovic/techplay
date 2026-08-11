@@ -650,6 +650,28 @@ body.tp-navigating .tp-page {
   .tp-fade-up { animation: none; opacity: 1; transform: none; }
 }
 
+/* Ticker: the strip of what just landed, sliding left forever.
+   The track holds the list twice, so translating it exactly half its width
+   lands on an identical frame and the loop has no seam. Hovering stops it —
+   a headline you are trying to read should not walk away from you. */
+@keyframes tp-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.tp-marquee { overflow: hidden; }
+.tp-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: tp-marquee 60s linear infinite;
+}
+.tp-marquee:hover .tp-marquee-track,
+.tp-marquee:focus-within .tp-marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-marquee-track { animation: none; }
+  .tp-marquee { overflow-x: auto; }
+}
+
 /* ========================================
    HERO — profile identity motion
    ======================================== */
