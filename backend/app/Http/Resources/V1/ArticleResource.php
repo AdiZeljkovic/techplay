@@ -9,12 +9,35 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ArticleResource extends JsonResource
 {
     /**
+     * Is this the request for one article, rather than a list of them?
+     *
+     * `content` has always been gated on this. Everything else was not, and a
+     * listing paid for it: /home came to 90 KB for 40 articles, and about 50 KB
+     * of that was fields no listing reads — the full author record on every
+     * card, the SEO block, both raw timestamps beside the human one.
+     *
+     * That is not only the API's bill. The homepage passes its payload into a
+     * client component, so the unread fields are serialized into the HTML and
+     * every visitor downloads them.
+     *
+     * Both detail endpoints (NewsController::show, TechController::show) come
+     * through the `show` action, which is what this recognises.
+     */
+    private function isDetailRequest(Request $request): bool
+    {
+        return $request->routeIs('*.show')
+            || $request->route()?->getActionMethod() === 'show';
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
+        $detail = $this->isDetailRequest($request);
+
         // Handle Filament FileUpload array format and construct full URL
         $imagePath = $this->featured_image_url;
         if (is_array($imagePath)) {
@@ -31,17 +54,24 @@ class ArticleResource extends JsonResource
             'excerpt' => $this->excerpt,
             'featured_image_url' => $featuredImageUrl,
             'featured_video_url' => $this->featured_video_url ?: null,
-            'published_at' => $this->published_at,
             'published_at_human' => $this->published_at ? $this->published_at->diffForHumans() : null,
 
-            // Only include full content on detail view (when explicitely requested or standard show)
-            // But usually Resource is reused. Let's include it for now, optimization later if list is too heavy.
-            // Actually, for lists we might want to hide it.
-            // We can use $request->routeIs('*.show') logic if needed, but for now simple.
-            // Only include full content on detail view
-            'content' => $this->when($request->routeIs('*.show') || $request->route()->getActionMethod() === 'show', $this->content),
+            'content' => $this->when($detail, $this->content),
 
-            'author' => new UserResource($this->whenLoaded('author')),
+            // A card shows a name and a face. The full record — bio, cover
+            // image, XP, level, roles, reputation, post colour, join date —
+            // is 17 fields, and on /home it was 35 KB of the 90.
+            'author' => $detail
+                ? new UserResource($this->whenLoaded('author'))
+                : $this->whenLoaded('author', fn () => [
+                    'id' => $this->author->id,
+                    'name' => $this->author->name,
+                    'display_name' => $this->author->display_name,
+                    'username' => $this->author->username,
+                    'author_slug' => $this->author->author_slug,
+                    'avatar_url' => $this->author->avatar_url,
+                ]),
+
             'category' => $this->whenLoaded('category', function () {
                 return [
                     'id' => $this->category->id,
@@ -56,7 +86,13 @@ class ArticleResource extends JsonResource
             'is_featured_in_hero' => $this->is_featured_in_hero,
 
             'review_score' => $this->review_score,
-            'review_data' => $this->review_data,
+
+            // The verdict block — pros, cons, ratings, conclusion, CTA — is for
+            // the review itself. A review card reads one key out of it, so a
+            // listing gets that key and nothing else.
+            'review_data' => $detail
+                ? $this->review_data
+                : ($this->review_data ? ['game_title' => $this->review_data['game_title'] ?? null] : null),
 
             // The game this piece is about — one shape everywhere, so every
             // content page can render the same game card.
@@ -68,13 +104,24 @@ class ArticleResource extends JsonResource
             // SEO. The admin form writes meta_title/meta_description; the
             // seo_* columns are older and still hold data on some rows, so
             // both travel and the page prefers whichever is filled.
-            'meta_title' => $this->meta_title,
-            'meta_description' => $this->meta_description,
-            'seo_title' => $this->seo_title,
-            'seo_description' => $this->seo_description,
-            'canonical_url' => $this->canonical_url,
-            'is_noindex' => (bool) $this->is_noindex,
-            'updated_at' => $this->updated_at,
+            //
+            // Detail only: a <head> is written for one article, never for a
+            // card in a grid.
+            'meta_title' => $this->when($detail, $this->meta_title),
+            'meta_description' => $this->when($detail, $this->meta_description),
+            'seo_title' => $this->when($detail, $this->seo_title),
+            'seo_description' => $this->when($detail, $this->seo_description),
+            'canonical_url' => $this->when($detail, $this->canonical_url),
+            'is_noindex' => $this->when($detail, (bool) $this->is_noindex),
+
+            // published_at stays in listings: SectionHub — the shell behind
+            // /news, /reviews, /guides and /hardware — formats its own date
+            // from it rather than using published_at_human.
+            'published_at' => $this->published_at,
+
+            // updated_at is only ever read for a detail page's dateModified.
+            'updated_at' => $this->when($detail, $this->updated_at),
+
             'views' => $this->views ?? 0,
         ];
     }
