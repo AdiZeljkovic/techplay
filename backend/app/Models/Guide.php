@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class Guide extends Model
 {
@@ -44,64 +43,6 @@ class Guide extends Model
     public function votes(): HasMany
     {
         return $this->hasMany(GuideVote::class);
-    }
-
-    /**
-     * Increment views with IP-based throttling.
-     *
-     * PERFORMANCE: Multi-layer throttling (cache + session + DB)
-     * SECURITY: Prevents view count manipulation
-     */
-    public function incrementViews(string $ip, string $fingerprint): bool
-    {
-        // Layer 1: Cache-based throttling (fastest, 30 minutes)
-        $cacheKey = "guide_view_{$this->id}_{$fingerprint}";
-
-        if (Cache::has($cacheKey)) {
-            return false;
-        }
-
-        // Layer 2: Session-based throttling
-        $sessionKey = "viewed_guide_{$this->id}";
-        $sessionData = session($sessionKey);
-
-        if ($sessionData && now()->diffInMinutes($sessionData) < 30) {
-            return false;
-        }
-
-        // Layer 3: Database throttling (ultimate fallback)
-        $recentView = DB::table('guide_views')
-            ->where('guide_id', $this->id)
-            ->where('fingerprint', $fingerprint)
-            ->where('created_at', '>', now()->subMinutes(30))
-            ->exists();
-
-        if ($recentView) {
-            return false;
-        }
-
-        // Increment view count
-        DB::table('guides')
-            ->where('id', $this->id)
-            ->update(['views' => DB::raw('COALESCE(views, 0) + 1')]);
-
-        // Record view in tracking table (async, non-blocking)
-        try {
-            DB::table('guide_views')->insert([
-                'guide_id' => $this->id,
-                'ip_address' => $ip,
-                'fingerprint' => $fingerprint,
-                'created_at' => now(),
-            ]);
-        } catch (\Exception $e) {
-            // Silently fail - view count already incremented
-        }
-
-        // Set throttle markers
-        Cache::put($cacheKey, true, 30);
-        session([$sessionKey => now()]);
-
-        return true;
     }
 
     /**

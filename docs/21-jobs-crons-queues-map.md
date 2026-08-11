@@ -14,7 +14,7 @@
 | Job | Trigger | Svrha |
 |-----|---------|-------|
 | `FetchOgData` | Editorial message s URL-om | Fetchuje OG metadata za link preview |
-| `FlushViewCounters` | Scheduled | Flush Redis view counters u `article_views` DB tabelu |
+| `FlushViewCounters` | Scheduled (5 min) | Prelije Redis brojače `views:*` u kolone `views`/`view_count` na articles, threads, games, guides i ad_campaigns |
 | `MobyEnrichmentJob` | Artisan/observer | Enrich game detalja iz MobyGames API |
 | `PingIndexNow` | Observer (publish) | Ping Bing/Yandex za instant indexing |
 | `PollSteamPresence` | Scheduled | Polling Steam API za user presence |
@@ -37,7 +37,6 @@
 | `SnapshotReputation` | Snapshot XP/rank za sve korisnike | Dnevno |
 | `SyncAchievements` | Provjera i dodjela achievementa | Dnevno/satno |
 | `CheckWishlistReleases` | Provjera novih release datuma za wishlist | Dnevno |
-| `CleanOldViewTracking` | Brisanje starih article_views zapisa | Tjedni |
 | `ScanBrokenLinks` | Skan broken linkova | Tjedni |
 | `SyncAdMetrics` | Sinkronizacija ad metrika | Dnevno |
 | `SyncUserXP` | Sinkronizacija XP (UNKNOWN što radi) | UNKNOWN |

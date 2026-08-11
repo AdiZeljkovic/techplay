@@ -308,8 +308,12 @@ varijable znače da onaj ko sljedeći put izmijeni jednu ne zna hoće li ta važ
 `idx_article_views_throttle` (224 kB), `idx_threads_fulltext` (40 kB).
 
 `idx_threads_fulltext` je zanimljiv: postoji fulltext indeks za forum, a
-pretraga ga ne dira — vjerovatno ide kroz `ILIKE`. `idx_article_views_throttle`
-je vjerovatno stvarno suvišan otkad se pregledi broje u Redisu.
+pretraga ga ne dira — vjerovatno ide kroz `ILIKE`.
+
+**Riješeno 11.08.2026:** tri `article_views` indeksa nisu bila suvišna nego
+mrtva — cijela tabela je bila prazna, jer je rutu koja je puni frontend nikad
+nije zvao. Tabele `article_views`, `guide_views` i `review_views` su obrisane
+zajedno s pet indeksa na njima.
 
 **Sve ovo čeka ponovno pokretanje s ispravljenom komandom**, jer se sada uz
 brojke ispisuje i otkad se broji.

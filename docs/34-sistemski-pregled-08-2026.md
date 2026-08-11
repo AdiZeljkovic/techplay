@@ -503,7 +503,7 @@ Da se zna šta je već riješeno kako treba:
 25. ISR + edge keš za `/games/[slug]` **(E3)**
 26. Root README i čišćenje dokumentacije **(G5)**
 27. Generisani tipovi iz API resursa umjesto ručno pisanih
-28. Retencija za tabele koje rastu bez granice (`article_views`, `notifications`,
+28. Retencija za tabele koje rastu bez granice (`notifications`,
     `player_signals`, `sessions`, `failed_jobs`)
 
 ---

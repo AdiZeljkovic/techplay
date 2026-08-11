@@ -9,7 +9,7 @@
 **Frontend:** `app/news/`, `components/news/`
 **Backend:** `NewsController`, `Article` model, `ArticleObserver`
 **Admin:** `NewsResource` (Filament)
-**Database:** `articles`, `categories`, `seo_metas`, `article_views`
+**Database:** `articles`, `categories`, `seo_metas`
 **API:** `GET /news`, `GET /news/trending`, `GET /news/{slug}`
 **Discord bot:** PollingService polira nove članke i šalje na Discord channel
 **Napomene:** Article model koristi se i za tech/hardware sadržaj. Real-time update kroz Reverb (`ArticlePublished` event).

@@ -69,9 +69,6 @@ Schedule::command('users:prune-unverified')
 // Steam achievements for connected accounts — the chronicle reads what you actually earn.
 Schedule::command('games:sync-steam-achievements')->dailyAt('05:00')->withoutOverlapping(180)->onFailure($reportFailure('games:sync-steam-achievements'));
 
-// PERFORMANCE: Clean old view tracking records daily (keep last 7 days)
-Schedule::command('views:clean')->daily()->withoutOverlapping(60);
-
 // EDITORIAL: Auto-publish scheduled articles every minute
 Schedule::command('articles:publish-scheduled')->everyMinute()->withoutOverlapping(5)->onFailure($reportFailure('articles:publish-scheduled'));
 

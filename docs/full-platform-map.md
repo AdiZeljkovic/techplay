@@ -56,7 +56,7 @@ flowchart TB
         DB2["Games: games TEXT-ARRAY · game_ratings · user_games · game_lists · game_external_ids"]
         DB4["Gamification: achievements · quests · seasons · presences · bounty_transactions · reputation_snapshots"]
         DB5["Commerce: products · orders · giveaways · giveaway_entries · support_tiers"]
-        DB6["System: site_settings · notifications · media · ad_campaigns · redirects · article_views"]
+        DB6["System: site_settings · notifications · media · ad_campaigns · redirects"]
         REDIS[("Redis — Cache + Queue + Session")]
     end
 

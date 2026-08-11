@@ -6,7 +6,7 @@
 |------------------|----------------|-------------------|-------------|
 | `/` (homepage) | `GET /home` | HomeController::index | articles, reviews, games, itd. |
 | `/news` | `GET /news?page=&category=` | NewsController::index | articles, categories |
-| `/news/[slug]` | `GET /news/{slug}`, `POST /articles/{slug}/view` | NewsController::show, TrackingController::recordView | articles, article_views |
+| `/news/[slug]` | `GET /news/{slug}` | NewsController::show | articles |
 | `/reviews` | `GET /reviews?page=` | ReviewController::index | reviews |
 | `/reviews/[slug]` | `GET /reviews/{slug}` | ReviewController::show | reviews |
 | `/guides` | `GET /guides` | GuideController::index | guides |

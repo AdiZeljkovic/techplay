@@ -12,8 +12,6 @@ class XpService
 {
     public const XP_COMMENT = 10;
 
-    public const XP_ARTICLE_READ = 5;
-
     public const XP_GAME_ADDED = 5;
 
     public const XP_GAME_COMPLETED = 15;

@@ -91,21 +91,6 @@ class DiagnoseOrphans extends Command
                 $zero,
             ],
             [
-                'Pogledi na obrisan članak',
-                'select count(*) c from article_views where article_id not in (select id from articles)',
-                $zero,
-            ],
-            [
-                'Pogledi na obrisan vodič',
-                'select count(*) c from guide_views where guide_id not in (select id from guides)',
-                $zero,
-            ],
-            [
-                'Pogledi na obrisanu recenziju',
-                'select count(*) c from review_views where review_id not in (select id from reviews)',
-                $zero,
-            ],
-            [
                 'Ocjene bez povezane igre',
                 'select count(*) c from game_ratings where game_id is null',
                 $zero,

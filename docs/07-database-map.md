@@ -130,7 +130,6 @@
 | `broken_links` | Broken linkovi | id, url, found_on, status_code, last_checked_at |
 | `newsletter_subscribers` | Newsletter | id, email, verified, verified_at |
 | `reports` | User report | id, reporter_id, reportable_type, reportable_id, reason |
-| `article_views` | View tracking | id, article_slug, user_id, ip, viewed_at |
 | `notifications` | Laravel notifikacije | id, type, notifiable_type, notifiable_id, data, read_at |
 
 ---
@@ -220,6 +219,6 @@ Detaljno: `docs/36-p1-autorizacija.md`, `docs/41-p4-kolekcija-i-liste.md`
 
 1. `Article` model se koristi za news I tech/hardware — razlikovanje samo po kategoriji. Može biti konfuzno.
 2. `content_versions` tabela — UNKNOWN kako se koristi (verzionisanje?)
-3. `article_views` + Redis view counters — dvije paralele source of truth za view count
+3. View count ima jedan izvor istine: Redis brojač `views:article:{id}`, koji `FlushViewCounters` svakih pet minuta prelije u `articles.views`. Tabele `article_views`/`guide_views`/`review_views` (dnevnik po posjeti, s IP-om i otiskom) obrisane su 11.08.2026. — nikad nisu imale nijedan red.
 4. PostgreSQL TEXT[] kolone u `games` tablici zahtijevaju poseban `pgArray()` helper kod raw upita — greška-prone
 5. `editorial_messages` za interni editorial chat — ova feature nije vidljiva na frontend-u (interna alat)

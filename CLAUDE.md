@@ -72,7 +72,7 @@ npm start               # node dist/index.js (production)
 
 **AI integrations:** `GeminiService` (Gemini 2.5 Flash) and `OpenAIService` (GPT-4 Turbo) both provide WoW character readiness analysis. `BlizzardService` fetches character data from the Blizzard API; `BlizzardDataTransformer` / `BlizzardDataTransformerV2` minify it before passing to AI. `GroqService` is available for fast inference.
 
-**XP / gamification:** `XpService` awards XP for comments and article reads with a 100 XP/day cap and 60s cooldown. XP gates rank promotions via `Rank` model. Discord bot mirrors this system through the `/api/v1/discord/xp` endpoint.
+**XP / gamification:** `XpService` awards XP for comments, games added, games completed and game reviews, with a 100 XP/day cap and 60s cooldown. (Article reads award nothing — the constant existed but nothing ever called it, and it was removed on 11 Aug 2026 along with the per-visit view logs.) XP gates rank promotions via `Rank` model. Discord bot mirrors this system through the `/api/v1/discord/xp` endpoint.
 
 **Admin panel:** Filament v5 at `/admin`. Resources cover all content types. Uses the NeoBrutalism theme (`caresome/filament-neobrutalism-theme`).
 

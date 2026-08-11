@@ -9,7 +9,6 @@
 4. Article data renderovan server-side
 5. GlobalSeo komponenta injektuje meta title, OG tags
 6. JSON-LD schema (Article) renderovan u headeru
-7. Client-side: POST /api/v1/articles/{slug}/view (view tracking, anonymous)
 8. Real-time: useRealTimeComments → Reverb WebSocket → live komentari
 ```
 
@@ -122,8 +121,6 @@
 **Web akcije:**
 ```
 - Ostavlja komentar → XpService::awardForComment()
-- Čita članak → POST /articles/{slug}/view → XpService::awardForView()
-  (60s cooldown, 100 XP/day cap)
 - Dnevni streak claim → POST /user/streak/claim → StreakService → XP
 - Quest kompletizacija → POST /quests/{id}/claim → XP award
 - Giveaway zadatak → bonus tickets + XP
