@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import axios from "@/lib/axios";
-import { Clock, User, ChevronLeft, ChevronRight, Star, Sparkles, Info } from "lucide-react";
+import { Clock, User, Star, Sparkles, Info, Rss, Loader2, Newspaper, Gamepad2, Cpu, BookOpen, Layers, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getStorageUrl } from "@/lib/imageUrl";
+import PageHero from "@/components/ui/PageHero";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -48,11 +49,11 @@ interface FeedBody {
 }
 
 const SECTIONS = [
-    { id: "all", label: "Everything" },
-    { id: "news", label: "News" },
-    { id: "reviews", label: "Reviews" },
-    { id: "tech", label: "Tech" },
-    { id: "guides", label: "Guides" },
+    { id: "all", label: "Everything", icon: Layers },
+    { id: "news", label: "News", icon: Newspaper },
+    { id: "reviews", label: "Reviews", icon: Gamepad2 },
+    { id: "tech", label: "Tech", icon: Cpu },
+    { id: "guides", label: "Guides", icon: BookOpen },
 ] as const;
 
 const SECTION_LABEL: Record<FeedItem["section"], string> = {
@@ -82,92 +83,117 @@ export default function FeedClient() {
 
     const [tab, setTab] = useState<"latest" | "you">("latest");
     const [section, setSection] = useState<string>("all");
-    const [page, setPage] = useState(1);
 
     const mine = tab === "you" && Boolean(user);
 
-    const url = useMemo(() => {
-        const q = new URLSearchParams({ page: String(page), limit: "24" });
-        if (mine) return `/feed/personalized?${q.toString()}`;
+    /**
+     * Pages accumulate instead of replacing each other.
+     *
+     * The feed used to page: 24 pieces, then "Page 1 of 26" and a jump back to
+     * the top. A stream of everything the site publishes is not a document with
+     * pages, it is something you scroll. getKey returns null once the last page
+     * has arrived, and that is what stops SWR asking for more.
+     */
+    const getKey = useCallback(
+        (index: number, previous: FeedBody | null) => {
+            if (previous && previous.data.meta.current_page >= previous.data.meta.last_page) {
+                return null;
+            }
 
-        if (section !== "all") q.set("type", section);
-        return `/feed/latest?${q.toString()}`;
-    }, [mine, section, page]);
+            const q = new URLSearchParams({ page: String(index + 1), limit: "24" });
 
-    const { data, isLoading } = useSWR<FeedBody>(url, fetcher, { keepPreviousData: true });
+            if (mine) return `/feed/personalized?${q.toString()}`;
 
-    const items = data?.data.items ?? [];
-    const meta = data?.data.meta;
-    const personalised = data?.data.personalised;
-    const interests = data?.data.interests ?? [];
+            if (section !== "all") q.set("type", section);
 
-    const switchTab = (next: "latest" | "you") => {
-        setTab(next);
-        setPage(1);
-    };
+            return `/feed/latest?${q.toString()}`;
+        },
+        [mine, section],
+    );
+
+    const { data, size, setSize, isLoading, isValidating } = useSWRInfinite<FeedBody>(getKey, fetcher, {
+        revalidateFirstPage: false,
+        keepPreviousData: true,
+    });
+
+    const pages = data ?? [];
+    const items = pages.flatMap((p) => p.data.items);
+    const meta = pages[pages.length - 1]?.data.meta;
+    const personalised = pages[0]?.data.personalised;
+    const interests = pages[0]?.data.interests ?? [];
+
+    const done = Boolean(meta && meta.current_page >= meta.last_page);
+    const loadingMore = isValidating && pages.length > 0 && pages.length < size;
+
+    // The sentinel sits under the grid; when it comes into view the next page
+    // is requested. rootMargin starts that a screen early, so the reader never
+    // arrives at the bottom and waits.
+    const sentinel = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const node = sentinel.current;
+
+        if (!node || done || loadingMore) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) setSize((s) => s + 1); },
+            { rootMargin: "600px 0px" },
+        );
+
+        observer.observe(node);
+
+        return () => observer.disconnect();
+    }, [done, loadingMore, setSize]);
+
+    const reset = (fn: () => void) => { fn(); setSize(1); };
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
+            <PageHero
+                title="The Feed"
+                description="Everything we publish, in one place — news, reviews, tech and guides as they land."
+                iconNode={<Rss className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />}
+            />
+
             <div className="container-page py-8">
-                {/* ── masthead ── */}
-                <div className="relative pl-4">
-                    <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded bg-[var(--accent)]" />
-                    <h1 className="font-display font-black tracking-tight text-[46px] md:text-[58px] leading-[0.86] uppercase">
-                        <span className="text-white">The </span>
-                        <span className="text-[var(--accent)]">Feed</span>
-                    </h1>
-                    <p className="mt-3 text-[13.5px] font-medium text-white/70 max-w-[560px]">
-                        Everything we publish, in one place — news, reviews, tech and guides as they land.
-                    </p>
-                </div>
-
-                {/* ── which feed ── */}
-                <div className="mt-7 flex flex-wrap items-center gap-2">
-                    <Tab active={tab === "latest"} onClick={() => switchTab("latest")}>
+                {/* The switcher the leaderboard uses, so two pages that do the
+                    same thing — pick a view, then a filter — look alike. */}
+                <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                    <SwitchTab icon={Clock} active={tab === "latest"} onClick={() => reset(() => setTab("latest"))}>
                         Latest
-                    </Tab>
-                    <Tab active={tab === "you"} onClick={() => switchTab("you")}>
+                    </SwitchTab>
+                    <SwitchTab icon={Sparkles} active={tab === "you"} onClick={() => reset(() => setTab("you"))}>
                         For you
-                    </Tab>
-
-                    {meta && (
-                        <span className="ml-auto font-display text-[10.5px] font-bold tabular-nums uppercase tracking-[0.1em] text-white/30">
-                            {meta.total.toLocaleString()} pieces
-                        </span>
-                    )}
+                    </SwitchTab>
                 </div>
 
-                {/* ── section filter: only meaningful on the chronological feed ── */}
                 {tab === "latest" && (
-                    <div className="mt-3 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         {SECTIONS.map((s) => (
-                            <Chip
+                            <SwitchTab
                                 key={s.id}
+                                icon={s.icon}
                                 active={section === s.id}
-                                onClick={() => { setSection(s.id); setPage(1); }}
+                                onClick={() => reset(() => setSection(s.id))}
                             >
                                 {s.label}
-                            </Chip>
+                            </SwitchTab>
                         ))}
                     </div>
                 )}
 
-                {/* ── what the personal feed is and is not ── */}
                 {tab === "you" && (
                     <div className="mt-4">
                         {!user ? (
                             <Note>
                                 <Link href="/login" className="text-[var(--accent)] font-bold hover:brightness-110">Sign in</Link>
-                                {" "}and this becomes your feed — ordered by what you read, save and collect.
+                                {" "}to get a feed built around what you read.
                             </Note>
                         ) : personalised === false ? (
                             <Note>
-                                We don&apos;t know your taste yet, so this is simply the newest first. Read a few
-                                pieces, save what you like, or{" "}
-                                <Link href="/games" className="text-[var(--accent)] font-bold hover:brightness-110">
-                                    add games to your collection
-                                </Link>
-                                {" "}and it starts shaping itself.
+                                Not enough to go on yet — read a few pieces, save what you like, or{" "}
+                                <Link href="/games" className="text-[var(--accent)] font-bold hover:brightness-110">add games</Link>
+                                {" "}to your collection, and this becomes yours.
                             </Note>
                         ) : interests.length > 0 ? (
                             <Note>
@@ -184,7 +210,6 @@ export default function FeedClient() {
                     </div>
                 )}
 
-                {/* ── the stream ── */}
                 {isLoading && items.length === 0 ? (
                     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {Array.from({ length: 12 }).map((_, i) => (
@@ -196,24 +221,36 @@ export default function FeedClient() {
                         Nothing published here yet.
                     </p>
                 ) : (
-                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {items.map((item) => <Card key={item.id} item={item} />)}
-                    </div>
-                )}
+                    <>
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {items.map((item) => <Card key={`${item.kind}-${item.id}`} item={item} />)}
+                        </div>
 
-                {/* ── paging ── */}
-                {meta && meta.last_page > 1 && (
-                    <div className="mt-8 flex items-center justify-center gap-3">
-                        <PageButton disabled={page <= 1} onClick={() => { setPage((p) => p - 1); window.scrollTo({ top: 0 }); }} label="Previous page">
-                            <ChevronLeft className="w-4 h-4" />
-                        </PageButton>
-                        <span className="font-display text-[11px] font-bold tabular-nums uppercase tracking-[0.1em] text-white/35">
-                            Page {meta.current_page} of {meta.last_page}
-                        </span>
-                        <PageButton disabled={page >= meta.last_page} onClick={() => { setPage((p) => p + 1); window.scrollTo({ top: 0 }); }} label="Next page">
-                            <ChevronRight className="w-4 h-4" />
-                        </PageButton>
-                    </div>
+                        {/* The observer drives this. The button is here because a
+                            keyboard reader never trips a scroll sentinel. */}
+                        <div ref={sentinel} className="mt-8 flex flex-col items-center gap-3">
+                            {loadingMore && (
+                                <span className="inline-flex items-center gap-2 font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white/35">
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading
+                                </span>
+                            )}
+
+                            {!done && !loadingMore && (
+                                <button
+                                    onClick={() => setSize((s) => s + 1)}
+                                    className="inline-flex items-center h-10 px-6 rounded-[10px] bg-white/[0.04] hover:bg-white/[0.08] font-display text-[11px] font-black uppercase tracking-[0.1em] text-white/70 hover:text-white transition-colors"
+                                >
+                                    Load more
+                                </button>
+                            )}
+
+                            {done && meta && (
+                                <span className="font-display text-[10.5px] font-bold tabular-nums uppercase tracking-[0.1em] text-white/25">
+                                    That is all {meta.total.toLocaleString()} pieces
+                                </span>
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
         </main>
@@ -222,34 +259,18 @@ export default function FeedClient() {
 
 /* ── pieces ───────────────────────────────────────────────────────────── */
 
-function Tab({
-    active, onClick, children,
-}: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function SwitchTab({
+    active, onClick, icon: Icon, children,
+}: { active: boolean; onClick: () => void; icon: LucideIcon; children: React.ReactNode }) {
     return (
         <button
             onClick={onClick}
             aria-pressed={active}
-            className={`inline-flex items-center h-10 px-5 rounded-[10px] font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
-                active ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/50 hover:text-white"
+            className={`flex-1 min-w-[112px] inline-flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] whitespace-nowrap font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+                active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
             }`}
         >
-            {children}
-        </button>
-    );
-}
-
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-    return (
-        <button
-            onClick={onClick}
-            aria-pressed={active}
-            className={`h-8 px-3.5 rounded-[8px] font-display text-[10px] font-black uppercase tracking-[0.08em] transition-colors ${
-                active
-                    ? "bg-white/[0.10] text-white"
-                    : "bg-white/[0.03] text-white/40 hover:text-white/80"
-            }`}
-        >
-            {children}
+            <Icon className="w-3.5 h-3.5" /> {children}
         </button>
     );
 }
@@ -260,21 +281,6 @@ function Note({ children }: { children: React.ReactNode }) {
             <Info className="w-4 h-4 text-[var(--accent)] shrink-0 mt-[1px]" />
             <span>{children}</span>
         </p>
-    );
-}
-
-function PageButton({
-    disabled, onClick, label, children,
-}: { disabled: boolean; onClick: () => void; label: string; children: React.ReactNode }) {
-    return (
-        <button
-            onClick={onClick}
-            disabled={disabled}
-            aria-label={label}
-            className="w-8 h-8 rounded-[7px] bg-white/[0.05] text-white/50 hover:text-white disabled:opacity-25 disabled:hover:text-white/50 flex items-center justify-center transition-colors"
-        >
-            {children}
-        </button>
     );
 }
 
