@@ -303,6 +303,17 @@ Cloudflare pravila, šta zaista radi na mašini) dolazi u Fazi 3.
 
 ## Faza 2 — dijagnostika koju ti pokreneš
 
+> **STATUS: GOTOVO** (11. 08. 2026.) — `php artisan diagnose` pokriva svih deset
+> provjera. Detalji, odluke i prvi nalazi: `docs/52-faza2-dijagnostika.md`.
+>
+> `diagnose:media` nije zasebna komanda — spojen je u `diagnose:storage`, jer je
+> to isti prolazak kroz disk. `diagnose:data` iz tabele ispod je `diagnose:orphans`,
+> koji već postoji od P6.
+>
+> Alat je pri prvom pokretanju našao regresiju iz P5: obrisao sam
+> `BlizzardDataTransformer`, a `BlizzardDataTransformerV2` ga nasljeđuje —
+> obje WoW rute su od 8. augusta vraćale 500. Vraćeno, rute rade.
+
 Ja pišem alat, ti pokreneš jednu komandu, pošalješ izlaz. Bez kredencijala, bez
 pristupa, a pokriva deset područja o kojima se iz koda može samo nagađati.
 
