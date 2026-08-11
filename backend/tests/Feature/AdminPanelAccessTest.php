@@ -123,14 +123,23 @@ class AdminPanelAccessTest extends TestCase
         $this->assertTrue($admin->can('delete', $game));
     }
 
-    public function test_the_legacy_role_column_still_admits_an_admin(): void
+    public function test_nobody_who_had_power_through_the_old_column_loses_it(): void
     {
-        // The Spatie roles and the users.role column still run side by side.
-        // Dropping the column check would lock out accounts that only ever had
-        // the old one — including, plausibly, the owner's.
-        $legacy = User::factory()->create(['role' => 'admin']);
+        // This test used to assert the opposite: that `users.role` still
+        // admitted an admin. Authorization now reads Spatie only, so the
+        // promise it was protecting — that nobody gets locked out — moved into
+        // the migration, and this is where that promise is checked.
+        $legacy = User::factory()->create();
+        $legacy->forceFill(['role' => 'admin'])->save();
 
-        $this->assertTrue($legacy->can('viewAny', Order::class));
-        $this->assertTrue($legacy->can('deleteAny', Comment::class));
+        $this->assertFalse($legacy->fresh()->can('viewAny', Order::class), 'the column alone grants nothing');
+
+        // The safety net, run the way a deploy runs it.
+        $migration = require database_path('migrations/2026_08_10_000600_migrate_legacy_role_column_to_spatie.php');
+        $migration->up();
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->assertTrue($legacy->fresh()->can('viewAny', Order::class), 'the migration must carry them across');
     }
 }

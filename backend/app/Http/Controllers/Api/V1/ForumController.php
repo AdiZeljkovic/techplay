@@ -334,9 +334,8 @@ class ForumController extends Controller
         $category = $thread->category;
         if ($category && ($category->slug === 'news-announcements' || $category->name === 'News & Announcements')) {
             $user = Auth::user();
-            $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
 
-            $hasPermission = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator']);
+            $hasPermission = $user->isEditorialStaff() || $user->isForumModerator();
 
             if (! $hasPermission) {
                 return response()->json(['message' => 'Only staff members can reply in News & Announcements.'], 403);
@@ -437,10 +436,9 @@ class ForumController extends Controller
             // check restriction for "News & Announcements"
             if ($category->slug === 'news-announcements' || $category->name === 'News & Announcements') {
                 $user = Auth::user();
-                $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
 
                 // Check Spatie roles or legacy role column
-                $hasPermission = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator']);
+                $hasPermission = $user->isEditorialStaff() || $user->isForumModerator();
 
                 if (! $hasPermission) {
                     return response()->json(['message' => 'Only staff members can create threads in News & Announcements.'], 403);
@@ -697,8 +695,7 @@ class ForumController extends Controller
      */
     private function canModerateThread(User $user, Thread $thread): bool
     {
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
-        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+        $isStaff = $user->isForumModerator();
 
         if ($isStaff) {
             return true;
@@ -802,9 +799,8 @@ class ForumController extends Controller
     public function deleteThread(Request $request, string $slug)
     {
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
 
-        if (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'moderator'])) {
+        if (! $user->isForumModerator()) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
@@ -821,8 +817,7 @@ class ForumController extends Controller
     {
         $thread = Thread::where('slug', $slug)->firstOrFail();
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
-        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+        $isStaff = $user->isForumModerator();
 
         if ($thread->author_id !== $user->id && ! $isStaff) {
             return response()->json(['message' => 'Only the thread author or staff can mark a solution.'], 403);
@@ -884,10 +879,9 @@ class ForumController extends Controller
         $post = Post::where('thread_id', $thread->id)->findOrFail($postId);
 
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
 
         $isOwner = $post->author_id === $user->id;
-        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+        $isStaff = $user->isForumModerator();
 
         if (! $isOwner && ! $isStaff) {
             return response()->json(['message' => 'Unauthorized.'], 403);
@@ -920,10 +914,9 @@ class ForumController extends Controller
         $post = Post::where('thread_id', $thread->id)->findOrFail($postId);
 
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator'];
 
         $isOwner = $post->author_id === $user->id;
-        $isStaff = $user->hasAnyRole($allowedRoles) || in_array($user->role, ['admin', 'super_admin', 'moderator']);
+        $isStaff = $user->isForumModerator();
 
         if (! $isOwner && ! $isStaff) {
             return response()->json(['message' => 'Unauthorized.'], 403);

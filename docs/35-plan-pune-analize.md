@@ -42,9 +42,8 @@ rupe, i predlog jedne sheme rola umjesto dvije.
 > Sve popravljeno, 13 regresionih testova dodato, 370/370 prolazi.
 >
 > Ostaje otvoreno i **prelazi u P2/P4**: Xbox povezivanje bez dokaza vlasništva
-> (traži OAuth), PayPal webhook bez zaštite od ponavljanja, i **jedna shema rola
-> umjesto dvije** — forum i dalje ima četiri odvojena spiska osoblja plus
-> `users.role` kao paralelni sistem uz Spatie.
+> (traži OAuth), PayPal webhook bez zaštite od ponavljanja, i ~~jedna shema rola
+> umjesto dvije~~ — **riješeno 10.08.2026, vidi `docs/49-jedna-shema-rola.md`.**
 
 ### P2. Filament — *područje 8*
 Pristup panelu (`canAccessPanel` gleda `role === 'admin'`), policies po resursu,
@@ -244,6 +243,23 @@ push i prisilnu promjenu lozinki.
 **Ostaje:** popis ranjivosti s ocjenom iskoristivosti, i pisani postupak za
 čišćenje historije.
 **Procjena:** 1 sesija.
+
+> **URAĐENO 10.08.2026 → `docs/48-p8-tajne-i-zavisnosti.md`.** 37 prijavljenih
+> ranjivosti → **0**, kroz sve tri komponente. Svaka ocijenjena prije zakrpe:
+> nijedna od 18 PHP prijava nije bila dohvatljiva (guzzle kolačići i proxy koje
+> ne koristimo, commonmark koji ne parsira ništa korisničko, phpseclib put koji
+> naši provajderi ne diraju), ali su sve zakrpljene jer su bili sitni skokovi.
+> Na frontendu **jeste** bila jedna stvarna: Next RSC deserialization DoS, jer je
+> kontakt forma Server Action — Image Optimizer prijava ne važi jer je
+> optimizacija isključena.
+>
+> **Tajne:** `.env` nikad nije bio commitan — nema izloženih ključeva. Ali repo
+> je **javan**, a dump baze je stajao u istoriji od januara. Provjera domena
+> pokazala je da je stara testna baza (7 `@techplay.gg` redakcijskih naloga,
+> ostalo testno) — nema podataka zajednice. Istorija očišćena
+> `git filter-repo`-om uz force push; repo pao s 231,9 na 129,0 MB. Postupak je
+> zapisan u dokumentu. **Ostaje:** promjena lozinki za tih 7 naloga, jer prepis
+> istorije ne poništava objavu.
 
 ### P9. Arhitektonska mapa — *područje 1, kod-strana*
 Sve što se vidi iz koda: servisi, ulazne tačke, tok podataka, third-party

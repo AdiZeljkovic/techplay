@@ -12,7 +12,7 @@ class NewsPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view admin panel') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('view admin panel') || $user->isAdmin();
     }
 
     /**
@@ -20,7 +20,7 @@ class NewsPolicy
      */
     public function view(User $user, News $news): bool
     {
-        return $user->can('view admin panel') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('view admin panel') || $user->isAdmin();
     }
 
     /**
@@ -28,7 +28,7 @@ class NewsPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('manage content') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('manage content') || $user->isAdmin();
     }
 
     /**
@@ -36,7 +36,7 @@ class NewsPolicy
      */
     public function update(User $user, News $news): bool
     {
-        return $user->can('manage content') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('manage content') || $user->isAdmin();
     }
 
     /**
@@ -44,7 +44,7 @@ class NewsPolicy
      */
     public function delete(User $user, News $news): bool
     {
-        return $user->can('delete articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('delete articles') || $user->isAdmin();
     }
 
     /**
@@ -52,7 +52,7 @@ class NewsPolicy
      */
     public function publish(User $user, News $news): bool
     {
-        return $user->can('publish articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('publish articles') || $user->isAdmin();
     }
 
     /**
@@ -60,7 +60,7 @@ class NewsPolicy
      */
     public function restore(User $user, News $news): bool
     {
-        return $user->can('delete articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('delete articles') || $user->isAdmin();
     }
 
     /**
@@ -68,6 +68,6 @@ class NewsPolicy
      */
     public function forceDelete(User $user, News $news): bool
     {
-        return $user->can('delete articles') || in_array($user->role ?? '', ['admin', 'super_admin']);
+        return $user->can('delete articles') || $user->isAdmin();
     }
 }

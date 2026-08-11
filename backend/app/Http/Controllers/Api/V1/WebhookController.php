@@ -24,8 +24,7 @@ class WebhookController extends Controller
         // PollingService does the real work, so it is kept only as a manual
         // staff trigger.
         $user = $request->user();
-        $isStaff = $user && ($user->hasAnyRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Editor'])
-            || in_array($user->role, ['admin', 'super_admin', 'editor'], true));
+        $isStaff = $user && $user->isEditorialStaff();
 
         if (! $isStaff) {
             return response()->json(['message' => 'Unauthorized'], 403);

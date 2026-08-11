@@ -86,14 +86,9 @@ abstract class PanelPolicy
         return $this->isAdmin($user) || $this->grants($user);
     }
 
-    /**
-     * Spatie roles first, then the legacy `users.role` column — the two schemes
-     * still run side by side, and dropping the column check here would lock out
-     * accounts that only ever had the old one.
-     */
+    /** Delegates to the model, which is where "who is staff" now lives. */
     protected function isAdmin(User $user): bool
     {
-        return $user->hasAnyRole(['Super Admin', 'Admin'])
-            || in_array($user->role ?? '', ['admin', 'super_admin'], true);
+        return $user->isAdmin();
     }
 }

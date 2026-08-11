@@ -33,7 +33,7 @@ class RoleResource extends Resource
         $user = auth()->user();
 
         // Check Spatie roles OR old role column
-        return $user && ($user->hasRole('Super Admin') || $user->hasRole('Editor-in-Chief') || in_array($user->role ?? '', ['admin', 'super_admin']));
+        return $user && ($user->hasRole('Super Admin') || $user->hasRole('Editor-in-Chief') || $user->isAdmin());
     }
 
     public static function form(Schema $schema): Schema

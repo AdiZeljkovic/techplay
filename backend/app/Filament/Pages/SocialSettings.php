@@ -19,8 +19,7 @@ class SocialSettings extends Page implements HasForms
         $user = auth()->user();
 
         return $user && (
-            $user->hasAnyRole(['Super Admin', 'Admin'])
-            || in_array($user->role ?? '', ['admin', 'super_admin'], true)
+            $user->isAdmin()
         );
     }
 

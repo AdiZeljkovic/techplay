@@ -139,7 +139,7 @@ class SchemaService
             '@type' => 'Person',
             'name' => $user->display_name ?? $user->username,
             'image' => $user->avatar_url,
-            'jobTitle' => $user->role === 'admin' ? 'Editor' : 'Contributor',
+            'jobTitle' => $user->isAdmin() ? 'Editor' : 'Contributor',
             'url' => config('app.frontend_url').'/profile/'.$user->username,
             'sameAs' => array_filter([
                 $user->social_twitter ? "https://twitter.com/{$user->social_twitter}" : null,

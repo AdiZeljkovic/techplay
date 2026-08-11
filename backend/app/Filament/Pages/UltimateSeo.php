@@ -30,8 +30,7 @@ class UltimateSeo extends Page implements HasForms
         $user = auth()->user();
 
         return $user && (
-            $user->hasAnyRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Editor'])
-            || in_array($user->role ?? '', ['admin', 'super_admin', 'editor'], true)
+            $user->isEditorialStaff()
         );
     }
 

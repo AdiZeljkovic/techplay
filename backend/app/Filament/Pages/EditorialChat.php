@@ -47,7 +47,7 @@ class EditorialChat extends Page
 
         return $user && (
             $user->hasRole(['Super Admin', 'Editor-in-Chief', 'Editor', 'Journalist', 'Moderator']) ||
-            in_array($user->role ?? '', ['admin', 'super_admin'])
+            $user->isAdmin()
         );
     }
 
@@ -150,7 +150,7 @@ class EditorialChat extends Page
                 return true;
             }
             $allowed = $channel->allowed_roles ?? [];
-            if (in_array($user->role ?? '', ['admin', 'super_admin'])) {
+            if ($user->isAdmin()) {
                 return true;
             }
 
@@ -838,7 +838,7 @@ class EditorialChat extends Page
             }
         }
 
-        if (in_array($user->role ?? '', ['admin', 'super_admin'])) {
+        if ($user->isAdmin()) {
             return ['color' => '#ef4444', 'short' => 'A'];
         }
 

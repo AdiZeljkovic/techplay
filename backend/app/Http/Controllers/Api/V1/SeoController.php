@@ -18,9 +18,8 @@ class SeoController extends Controller
     private function authorizeStaff(): ?JsonResponse
     {
         $user = Auth::user();
-        $allowedRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
 
-        if (! $user || (! $user->hasAnyRole($allowedRoles) && ! in_array($user->role, ['admin', 'super_admin', 'editor', 'moderator', 'journalist']))) {
+        if (! $user || ! $user->isStaff()) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 

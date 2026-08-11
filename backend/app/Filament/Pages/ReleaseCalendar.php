@@ -57,7 +57,7 @@ class ReleaseCalendar extends Page
 
         return $user && (
             $user->hasRole(['Super Admin', 'Editor-in-Chief', 'Editor'])
-            || in_array($user->role ?? '', ['admin', 'super_admin'], true)
+            || $user->isAdmin()
         );
     }
 

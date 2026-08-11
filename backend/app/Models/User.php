@@ -236,6 +236,45 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return ($this->profile_visibility ?? self::VISIBILITY_PUBLIC) === self::VISIBILITY_FRIENDS;
     }
 
+    /* ── who is staff ─────────────────────────────────────────────────────
+     *
+     * One scheme, in one place. Before this, twenty-two files each carried
+     * their own hardcoded list of role names, and every one of them also
+     * consulted the legacy `users.role` string — so the same question got
+     * different answers depending on which endpoint asked it. An
+     * Editor-in-Chief could delete a whole forum thread but not edit a single
+     * post inside it; a Moderator could lock a thread but the comment policy
+     * did not recognise them at all.
+     *
+     * Spatie is now the only source. The `role` column is left in the table as
+     * historical data and is no longer read for authorization — a migration
+     * gave a Spatie role to anyone who had power only through it.
+     */
+
+    /** Full control: the panel, the money, the configuration. */
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole(['Super Admin', 'Admin']);
+    }
+
+    /** Writes and publishes: articles, reviews, guides, the game database. */
+    public function isEditorialStaff(): bool
+    {
+        return $this->hasAnyRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Editor', 'Journalist']);
+    }
+
+    /** Keeps the discussion in order: threads, posts, comments, reports. */
+    public function isForumModerator(): bool
+    {
+        return $this->hasAnyRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Moderator']);
+    }
+
+    /** On the team in any capacity — for bylines and staff badges, not for gates. */
+    public function isStaff(): bool
+    {
+        return $this->isEditorialStaff() || $this->isForumModerator();
+    }
+
     public function isCurrentlyBanned(): bool
     {
         return $this->is_banned || ($this->banned_until && $this->banned_until->isFuture());

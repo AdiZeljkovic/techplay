@@ -53,7 +53,7 @@ class UserResource extends Resource
         $user = auth()->user();
 
         // Check Spatie permissions OR old role column for backwards compatibility
-        return $user && ($user->can('manage users') || in_array($user->role ?? '', ['admin', 'super_admin']));
+        return $user && ($user->can('manage users') || $user->isAdmin());
     }
 
     public static function form(Schema $schema): Schema

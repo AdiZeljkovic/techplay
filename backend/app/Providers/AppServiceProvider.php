@@ -193,7 +193,7 @@ class AppServiceProvider extends ServiceProvider
             // Let's allow if user has 'admin' role.
             $user = $user ?? auth()->user();
 
-            return $user && in_array($user->role, ['admin', 'super_admin']);
+            return $user && $user->isAdmin();
         });
     }
 

@@ -93,7 +93,7 @@ class DashboardController extends Controller
                 ] : null,
                 // hero identity line: verified tick + the platforms you play on
                 'is_staff' => $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
-                    || in_array(strtolower($user->role ?? ''), ['admin', 'editor', 'moderator', 'journalist', 'super_admin']),
+                    || $user->isStaff(),
                 'member_since' => $user->created_at?->format('M Y'),
                 // the handles themselves, not just which platforms exist — the
                 // hero prints them under each platform mark
