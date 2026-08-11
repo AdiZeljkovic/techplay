@@ -1,5 +1,35 @@
 # Cloudflare Edge Cache Configuration for TechPlay
 
+> **Status, 11 August 2026:** none of the rules below had ever been applied.
+> Verified with `curl -I`: the homepage answers `cf-cache-status: DYNAMIC`
+> (not cached at the edge at all), and every uploaded image came back with
+> `cache-control: max-age=14400`.
+>
+> That 14400 is nobody's decision — it is Cloudflare's default Browser Cache
+> TTL of 4 hours, applied because the origin sent no `Cache-Control` at all.
+
+---
+
+## Step 0: Browser Cache TTL — do this first
+
+**Caching → Configuration → Browser Cache TTL → `Respect Existing Headers`**
+
+Everything else here is about the *edge*. This one setting is about what the
+*visitor's browser* is told, and while it says "4 hours" Cloudflare overwrites
+whatever the origin sends.
+
+The origin is now correct: nginx serves `/storage/` from disk with
+`public, max-age=31536000, immutable` (see `nginx-storage-cache.conf`). Those
+filenames are ULIDs and the files never change. Until this dropdown is
+switched, every returning visitor still re-downloads all of it twice a day.
+
+Verify:
+
+```bash
+curl -sI https://api-beta.techplay.gg/storage/articles/<any>.jpg | grep -i cache-control
+# want: public, max-age=31536000, immutable
+```
+
 ## Step 1: Enable APO (Automatic Platform Optimization)
 
 If you have a Business plan, enable APO. Otherwise, use manual cache rules below.
