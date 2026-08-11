@@ -277,15 +277,30 @@ Bez njega baza ne pamti koji upiti troše vrijeme. To je jedini alat koji na
 pitanje „gdje odlazi vrijeme" odgovara imenom upita umjesto pretpostavkom.
 Traži liniju u `postgresql.conf` i restart baze.
 
-### Pulse piše, niko ne čita
+### Pulse nije snimao ništa
 
 `pulse_entries` i `pulse_aggregates` imaju **nula skenova** na svim indeksima
-(ukupno ~3,1 MB indeksa). Pulse je instaliran i uključen po defaultu
-(`PULSE_ENABLED`), snima na svaki zahtjev i servira na `/pulse` — a dashboard
-očito niko nije otvorio.
+(ukupno ~3,1 MB indeksa).
 
-Ovo je odluka, ne kvar: ili se koristi (odgovara baš na pitanja koja nam fale),
-ili se gasi. Ono što se ne isplati je pisati na svaki zahtjev za nikoga.
+**Prvo objašnjenje je bilo pogrešno.** Zapisao sam da Pulse „snima na svaki
+zahtjev a dashboard niko ne otvara", jer je `config/pulse.php` postavljen na
+`env('PULSE_ENABLED', true)`. Provjera 11. 08. je pokazala suprotno:
+
+```
+enabled: false      entries: 0
+```
+
+U `.env` je stajalo `PULSE_ENABLED=false` — **dva puta**, na linijama 76 i 77.
+Tabela je bila prazna, indeksi su bili prazni, i trošak koji sam pripisao Pulseu
+nije postojao. Nula skenova ne znači „niko ne čita"; znači i „nema šta čitati",
+a razlika se ne vidi iz brojača.
+
+Uključeno je, uz `config:cache` + `route:cache` + restart Octanea (`PULSE_ENABLED`
+utiče i na registraciju `/pulse` rute), i snima normalno. Podešavanje za
+produkciju — Redis ingest i dva stalna procesa — u `docs/53-pulse-monitoring.md`.
+
+Duplirani ključ u `.env` je i dalje tamo i vrijedi ga očistiti: dvije iste
+varijable znače da onaj ko sljedeći put izmijeni jednu ne zna hoće li ta važiti.
 
 ### Ostali indeksi bez ijednog skena
 
