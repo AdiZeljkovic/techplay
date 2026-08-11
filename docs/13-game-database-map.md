@@ -233,3 +233,13 @@ Nema viška — za razliku od listinga članaka ovdje se ništa ne trimuje.
 
 **Napomena o `games.views`:** ostaje — prikazuje se na `/games/{slug}` stranici.
 Sort `-views` postoji u API-ju ali ga frontend ne nudi.
+
+**Dopuna istog dana — trake i brojke:**
+- Obje bočne trake bile su `sticky top-4`, a header je fiksan (~88 px) — prvi red
+  panela klizio je ispod headera, a sve preko jednog ekrana visjelo je izvan
+  dohvata. Sada `top-[96px]` + `max-h-[calc(100vh-112px)]` s vlastitim skrolom.
+- Traka brojki na dnu (`Figure` × 4) obrisana. S njom je otišlo i šest od sedam
+  polja u `/games/hub` `stats` — `rated`, `upcoming`, `genres`, `platforms`,
+  `community_ratings`, `tracked`; dvije od tih brojki bile su
+  `count(distinct unnest(...))` preko 141k redova. Ostaje samo `games`, koji
+  hero rečenica i dalje čita. Cache ključ podignut na `games.hub.stats.v2`.

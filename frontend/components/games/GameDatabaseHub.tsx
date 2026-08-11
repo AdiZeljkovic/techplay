@@ -26,10 +26,7 @@ interface Game {
 }
 
 interface Hub {
-    stats: {
-        games: number; rated: number; upcoming: number;
-        genres: number; platforms: number; community_ratings: number; tracked: number;
-    };
+    stats: { games: number };
     facets: {
         genres: { name: string; count: number }[];
         platforms: { key: string; label: string; count: number }[];
@@ -393,7 +390,7 @@ export default function GameDatabaseHub({
 
             <div className="container-page pb-12 grid grid-cols-1 xl:grid-cols-[248px_1fr_296px] gap-5 items-start">
                 {/* ── filters ── */}
-                <aside className={`${railOpen ? "block" : "hidden"} xl:block rounded-[14px] border border-white/[0.07] bg-white/[0.02] p-4 xl:sticky xl:top-4`}>
+                <aside className={`${railOpen ? "block" : "hidden"} xl:block rounded-[14px] border border-white/[0.07] bg-white/[0.02] p-4 xl:sticky xl:top-[96px] xl:max-h-[calc(100vh-112px)] xl:overflow-y-auto`}>
                     <div className="flex items-center justify-between mb-3">
                         <p className="flex items-center gap-2 font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">
                             <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent)]" /> Filters
@@ -551,7 +548,7 @@ export default function GameDatabaseHub({
                 </section>
 
                 {/* ── right rail ── */}
-                <aside className="hidden xl:block space-y-4 sticky top-4">
+                <aside className="hidden xl:block space-y-4 sticky top-[96px] max-h-[calc(100vh-112px)] overflow-y-auto">
                     <RailPanel title="Most wishlisted" icon={<Heart className="w-3.5 h-3.5 text-[var(--accent)]" />}>
                         {hub?.data.most_wishlisted.length ? (
                             <div className="space-y-2.5">
@@ -583,27 +580,7 @@ export default function GameDatabaseHub({
                 </aside>
             </div>
 
-            {/* ── what the catalogue actually is ── */}
-            {stats && (
-                <section className="border-t border-white/[0.07]">
-                    <div className="container-page py-6 grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <Figure value={stats.games.toLocaleString()} label="Games in the database" />
-                        <Figure value={stats.platforms.toLocaleString()} label="Platforms represented" />
-                        <Figure value={stats.genres.toLocaleString()} label="Genres" />
-                        <Figure value={stats.rated.toLocaleString()} label="Games with a score" />
-                    </div>
-                </section>
-            )}
         </main>
-    );
-}
-
-function Figure({ value, label }: { value: string; label: string }) {
-    return (
-        <div className="flex flex-col">
-            <span className="font-display text-[20px] font-black tabular-nums text-[var(--accent)] leading-none">{value}</span>
-            <span className="mt-1 text-[11px] text-white/35">{label}</span>
-        </div>
     );
 }
 

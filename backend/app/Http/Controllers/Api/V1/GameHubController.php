@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Game;
-use App\Models\GameRating;
-use App\Models\UserGame;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -58,29 +56,17 @@ class GameHubController extends Controller
     /**
      * How big the database is. Published rather than estimated, because the
      * whole claim of this page is that it is a real catalogue.
+     *
+     * Six other counters lived here — rated, upcoming, genres, platforms,
+     * community_ratings, tracked — for a strip of figures at the foot of the
+     * page that has since gone. Two of them were `count(distinct unnest(...))`
+     * across 141k rows.
      */
     private function stats(): array
     {
-        return Cache::flexible('games.hub.stats.v1', [3600, 7200], function () {
-            $facets = Cache::get('games.hub.facets.v1');
-
-            return [
-                'games' => Game::count(),
-                'rated' => Game::where('rating', '>', 0)->count(),
-                'upcoming' => Game::whereNotNull('match_key')->count(),
-                'genres' => $facets ? count($facets['genres']) : $this->distinct('genres'),
-                'platforms' => $this->distinct('platforms'),
-                'community_ratings' => GameRating::where('is_draft', false)->count(),
-                'tracked' => UserGame::count(),
-            ];
-        });
-    }
-
-    private function distinct(string $column): int
-    {
-        return (int) (DB::selectOne(
-            "select count(distinct v) as n from (select unnest({$column}) as v from games) t"
-        )->n ?? 0);
+        return Cache::flexible('games.hub.stats.v2', [3600, 7200], fn () => [
+            'games' => Game::count(),
+        ]);
     }
 
     /** @return array<int,array{name:string,count:int}> */
