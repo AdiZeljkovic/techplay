@@ -85,10 +85,14 @@ const nextConfig: NextConfig = {
       '@tiptap/extension-image',
       'hls.js',
     ],
-    // Enable CSS optimization - inlines critical CSS
-    optimizeCss: true,
-    // Parallelize webpack builds
-    webpackBuildWorker: true,
+    // optimizeCss and webpackBuildWorker used to sit here. Both are webpack
+    // options, and Next 16 builds with Turbopack — the build even prints
+    // webpackBuildWorker back as a step it is not running. So critical CSS was
+    // never being inlined, however much the config claimed it.
+    //
+    // Getting it back would mean building with webpack, which is a large price
+    // for one optimisation. The stylesheet is 45 KB brotli, immutable, and
+    // cached at the edge; it costs the first visit only.
   },
 
   // Images: optimisation is OFF by default and opted into per image.

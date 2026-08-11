@@ -1,6 +1,9 @@
 "use client";
 
 // Loaded via dynamic({ ssr: false }) only — Leaflet DOM access is safe here
+// The stylesheet travels with this component rather than with globals.css, so
+// the pages that never draw a map never pay for it.
+import "leaflet/dist/leaflet.css";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";

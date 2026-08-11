@@ -1,5 +1,7 @@
 @import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+/* Leaflet's stylesheet is imported by Gta6LeafletMap, which is the only thing
+   that renders a map. Imported here it was 123 rules on the critical path of
+   every page on the site, for a component almost nobody loads. */
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:where(.dark, .dark *));
 
