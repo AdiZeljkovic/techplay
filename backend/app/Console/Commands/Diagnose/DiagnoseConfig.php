@@ -126,34 +126,39 @@ class DiagnoseConfig extends Command
     }
 
     /**
-     * Keys whose absence breaks a feature silently — the integration simply
-     * never runs. Never prints the value, only whether there is one.
+     * Secrets whose absence breaks a feature silently — the integration simply
+     * never runs, and nothing logs a complaint.
+     *
+     * Keyed by config path, not by environment variable name. Guessing the
+     * variable name produces false alarms: the first version looked for
+     * PAYPAL_CLIENT_SECRET and reported payments dead, when the name this
+     * project actually uses is PAYPAL_SECRET. config() is where the answer is,
+     * whatever the variable behind it happens to be called.
+     *
+     * Never prints a value, only whether there is one.
      */
+    private const SECRETS = [
+        'app.key' => 'šifrovanje sesija i tokena',
+        'services.revalidate.secret_token' => 'ISR revalidacija fronta',
+        'services.discord.client_secret' => 'Discord prijava',
+        'services.discord.bot_secret' => 'bot prema backendu',
+        'services.blizzard.client_secret' => 'WoW analizator',
+        'services.gemini.api_key' => 'Gemini analiza',
+        'services.openai.api_key' => 'OpenAI analiza',
+        'services.groq.api_key' => 'Groq analiza',
+        'services.paypal.secret' => 'naplata (services.php)',
+        'services.turnstile.secret_key' => 'zaštita formi',
+    ];
+
     private function secretsPresent(): void
     {
-        $actual = $this->keysIn(base_path('.env'));
-
-        if ($actual === null) {
-            return;
-        }
-
-        $watch = [
-            'APP_KEY' => 'šifrovanje sesija i tokena',
-            'REVALIDATE_SECRET_TOKEN' => 'ISR revalidacija fronta',
-            'DISCORD_CLIENT_SECRET' => 'Discord prijava',
-            'DISCORD_BOT_SECRET' => 'bot prema backendu',
-            'BLIZZARD_CLIENT_SECRET' => 'WoW analizator',
-            'GEMINI_API_KEY' => 'AI analiza',
-            'PAYPAL_CLIENT_SECRET' => 'naplata',
-            'TURNSTILE_SECRET_KEY' => 'zaštita formi',
-            'REDIS_PASSWORD' => 'Redis autentikacija',
-        ];
-
         $empty = [];
 
-        foreach ($watch as $key => $what) {
-            if (! isset($actual[$key]) || trim($actual[$key], "\"' ") === '') {
-                $empty[] = [$key, $what];
+        foreach (self::SECRETS as $path => $what) {
+            $value = config($path);
+
+            if ($value === null || trim((string) $value) === '') {
+                $empty[] = [$path, $what];
             }
         }
 
@@ -166,9 +171,11 @@ class DiagnoseConfig extends Command
             return;
         }
 
-        foreach ($empty as [$key, $what]) {
-            $this->line(sprintf('   - %-26s %s', $key, $what));
+        foreach ($empty as [$path, $what]) {
+            $this->line(sprintf('   - %-34s %s', $path, $what));
         }
+
+        $this->line('  (Prazno ovdje znači da ta integracija ne radi, bez ijedne greške u logu.)');
     }
 
     /**
