@@ -1,223 +1,118 @@
-"use client";
-
+import { Star, Gamepad2, Monitor, Volume2, History, RotateCcw, AlertTriangle } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
-import { motion } from "framer-motion";
-import { Star, Monitor, Gamepad2, Volume2, History, RotateCcw, AlertTriangle, Trophy, Medal, ThumbsUp, ThumbsDown, Meh, Zap } from "lucide-react";
+import Panel from "@/components/ui/Panel";
 
-const fadeInUp = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-};
+/**
+ * How we score — rebuilt on the current language.
+ *
+ * The old page ran on framer-motion with 6xl headings, a rotating icon tile
+ * per card and per-pillar accent colours (emerald, orange) picked outside the
+ * palette. The score is the only thing on this page that should carry colour,
+ * so it is the only thing that does.
+ */
 
-const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
-};
+const SCORES = [
+    { score: "10", title: "Masterpiece", bar: 100, description: "Defining moments in gaming history. Essential for everyone. While not technically 'perfect', it represents the absolute peak of the medium." },
+    { score: "9", title: "Amazing", bar: 90, description: "An exceptional experience with only minor flaws that don't hinder overall enjoyment. A must-play title." },
+    { score: "8", title: "Great", bar: 80, description: "A very good game worth your time and money. Accomplishes its goals with style but may lack that final spark of genius." },
+    { score: "7", title: "Good", bar: 70, description: "A solid experience. Fans of the genre will essentially enjoy it, despite a lack of polish or innovation." },
+    { score: "5–6", title: "Average", bar: 55, description: "It works, but fails to leave a lasting impression. Functionally competent but creatively stagnant." },
+    { score: "1–4", title: "Poor / Broken", bar: 30, description: "Ranges from 'needs major work' to 'fundamentally broken'. Avoid unless you have a specific morbid curiosity." },
+];
 
-const ScoreCard = ({ score, title, description, color, bgGradient, icon: Icon }: any) => (
-    <motion.div
-        variants={fadeInUp}
-        className={`group relative overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-8 hover:border-[var(--accent)] transition-all duration-300`}
-    >
-        {/* Background glow */}
+const PILLARS = [
+    { icon: Gamepad2, title: "Gameplay", desc: "Mechanics, controls, and game feel." },
+    { icon: Monitor, title: "Visuals", desc: "Art direction, fidelity, and polish." },
+    { icon: Volume2, title: "Audio", desc: "Sound design, music score, acting." },
+    { icon: History, title: "Narrative", desc: "Story, pacing, and characters." },
+    { icon: RotateCcw, title: "Replayability", desc: "Value, longevity, and endgame." },
+];
 
-        <div className="flex items-start justify-between mb-4 relative z-10">
-            <div>
-                <span className={`text-4xl font-black ${color} block mb-1`}>{score}</span>
-                <h3 className="text-xl font-bold text-white">{title}</h3>
-            </div>
-            <div className={`w-14 h-14 rounded-[var(--radius-panel)] ${bgGradient} flex items-center justify-center text-white shadow-lg transform group-hover:rotate-6 transition-transform`}>
-                <Icon className="w-7 h-7" />
-            </div>
-        </div>
-
-        <div className="w-full h-1 bg-[var(--surface-2)] rounded-full mb-4 overflow-hidden">
-            <div className={`h-full ${color.replace('text-', 'bg-')} bg-current opacity-50`} style={{ width: score === '10' ? '100%' : score === '9' ? '90%' : score === '8' ? '80%' : score === '7' ? '70%' : '40%' }} />
-        </div>
-
-        <p className="text-white/55 leading-relaxed font-medium relative z-10">
-            {description}
-        </p>
-    </motion.div>
-);
-
-export default function RatingSystemPage() {
+function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
     return (
-        <div className="min-h-screen">
+        <div className="mb-6">
+            <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                <span aria-hidden className="w-[3px] h-[14px] rounded-full bg-[var(--accent)]" />
+                {children}
+            </h2>
+            {sub && <p className="mt-2.5 text-[13px] text-[var(--ink-low)] leading-relaxed max-w-2xl">{sub}</p>}
+        </div>
+    );
+}
+
+export default function RatingSystemClient() {
+    return (
+        <main className="min-h-screen bg-[var(--surface-0)]">
             <PageHero
                 title="Our Rating System"
                 description="Transparency in how we play, test, and score the games you love."
-                icon={Star}
+                iconNode={<Star className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />}
             />
 
-            <div className="container-page py-16 md:py-24">
-
-                {/* Visual Intro */}
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={fadeInUp}
-                    className="relative mb-24 text-center max-w-4xl mx-auto"
-                >
-
-                    <span className="inline-block py-1 px-3 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-sm font-bold uppercase tracking-wider mb-6">
-                        The TechPlay Standard
-                    </span>
-                    <h2 className="text-4xl md:text-6xl font-black text-white mb-8 leading-tight">
-                        More Than Just a Number
-                    </h2>
-                    <p className="text-xl text-white/55 leading-relaxed max-w-2xl mx-auto">
-                        We don't use complicated algorithms. Our 1-10 scale represents a gut check backed by rigorous analysis.
-                        It's about the <span className="text-white font-bold">experience</span>, not just the technicalities.
+            <div className="container-page py-10 md:py-14 space-y-10 md:space-y-14">
+                <section className="tp-fade-up tp-d1 max-w-3xl">
+                    <SectionTitle>More than just a number</SectionTitle>
+                    <p className="text-[14.5px] text-[var(--ink-mid)] leading-relaxed">
+                        We don&apos;t use complicated algorithms. Our 1–10 scale represents a gut check backed by
+                        rigorous analysis. It&apos;s about the{" "}
+                        <strong className="text-[var(--ink-hi)]">experience</strong>, not just the technicalities.
                     </p>
-                </motion.div>
+                </section>
 
-                {/* The Scale Details */}
-                <div className="mb-32">
-                    <motion.div
-                        variants={staggerContainer}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                    >
-                        <ScoreCard
-                            score="10"
-                            title="Masterpiece"
-                            description="Defining moments in gaming history. Essential for everyone. While not technically 'perfect', it represents the absolute peak of the medium."
-                            color="text-cyan-400"
-                            bgGradient="bg-gradient-to-br from-cyan-400 to-blue-600"
-                            icon={Trophy}
-                        />
-                        <ScoreCard
-                            score="9"
-                            title="Amazing"
-                            description="An exceptional experience with only minor flaws that don't hinder overall enjoyment. A must-play title."
-                            color="text-emerald-400"
-                            bgGradient="bg-gradient-to-br from-emerald-400 to-green-600"
-                            icon={Medal}
-                        />
-                        <ScoreCard
-                            score="8"
-                            title="Great"
-                            description="A very good game worth your time and money. Accompishes its goals with style but may lack that final spark of genius."
-                            color="text-green-400"
-                            bgGradient="bg-gradient-to-br from-green-400 to-emerald-600"
-                            icon={ThumbsUp}
-                        />
-                        <ScoreCard
-                            score="7"
-                            title="Good"
-                            description="A solid experience. Fans of the genre will essentially enjoy it, despite a lack of polish or innovation."
-                            color="text-yellow-400"
-                            bgGradient="bg-gradient-to-br from-yellow-400 to-orange-500"
-                            icon={Zap}
-                        />
-                        <ScoreCard
-                            score="5-6"
-                            title="Average"
-                            description="It works, but fails to leave a lasting impression. Functionally competent but creatively stagnant."
-                            color="text-orange-400"
-                            bgGradient="bg-gradient-to-br from-orange-400 to-red-500"
-                            icon={Meh}
-                        />
-                        <ScoreCard
-                            score="1-4"
-                            title="Poor / Broken"
-                            description="Ranges from 'needs major work' to 'fundamentally broken'. Avoid unless you have a specific morbid curiosity."
-                            color="text-red-500"
-                            bgGradient="bg-gradient-to-br from-red-500 to-pink-600"
-                            icon={ThumbsDown}
-                        />
-                    </motion.div>
-                </div>
-
-                {/* The 5 Pillars Section */}
-                <motion.div
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={fadeInUp}
-                    className="relative bg-[var(--surface-2)] border border-[var(--line)] rounded-[3rem] p-10 md:p-20 overflow-hidden"
-                >
-                    {/* Background decorations */}
-
-                    <div className="relative z-10 text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-black text-white mb-6">The 5 Pillars</h2>
-                        <p className="text-white/55 max-w-2xl mx-auto text-lg">
-                            Every game is deconstructed into five core components that inform our final verdict.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 relative z-10">
-                        {[
-                            {
-                                icon: Gamepad2,
-                                title: "Gameplay",
-                                desc: "Mechanics, controls, and game feel.",
-                                color: "text-[var(--accent)]"
-                            },
-                            {
-                                icon: Monitor,
-                                title: "Visuals",
-                                desc: "Art direction, fidelity, and polish.",
-                                color: "text-[var(--accent)]"
-                            },
-                            {
-                                icon: Volume2,
-                                title: "Audio",
-                                desc: "Sound design, music score, acting.",
-                                color: "text-[var(--accent)]"
-                            },
-                            {
-                                icon: History,
-                                title: "Narrative",
-                                desc: "Story, pacing, and characters.",
-                                color: "text-emerald-400"
-                            },
-                            {
-                                icon: RotateCcw,
-                                title: "Replayability",
-                                desc: "Value, longevity, and endgame.",
-                                color: "text-orange-400"
-                            },
-                        ].map((item, i) => (
+                <section className="tp-fade-up tp-d2">
+                    <SectionTitle>What each score means</SectionTitle>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {SCORES.map((s) => (
                             <div
-                                key={i}
-                                className="text-center group"
+                                key={s.score}
+                                className="rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] p-5 hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                             >
-                                <div className={`w-20 h-20 mx-auto bg-[var(--surface-1)] rounded-[var(--radius-panel)] border border-[var(--line)] flex items-center justify-center ${item.color} shadow-lg mb-6 group-hover:scale-110 group-hover:border-[var(--accent)] transition-all duration-300`}>
-                                    <item.icon className="w-10 h-10" />
+                                <div className="flex items-baseline gap-3">
+                                    <span className="font-display text-[28px] font-black tabular-nums leading-none text-[var(--accent)]">
+                                        {s.score}
+                                    </span>
+                                    <span className="font-display text-[13px] font-bold uppercase tracking-wider text-[var(--ink-hi)]">
+                                        {s.title}
+                                    </span>
                                 </div>
-                                <h3 className="font-bold text-xl text-white mb-2">{item.title}</h3>
-                                <p className="text-sm text-white/55 leading-relaxed">{item.desc}</p>
+
+                                <div aria-hidden className="mt-3.5 h-1 rounded-full bg-[var(--fill-2)] overflow-hidden">
+                                    <span className="block h-full bg-[var(--accent)]" style={{ width: `${s.bar}%` }} />
+                                </div>
+
+                                <p className="mt-3.5 text-[13px] text-[var(--ink-low)] leading-relaxed">{s.description}</p>
                             </div>
                         ))}
                     </div>
-                </motion.div>
+                </section>
 
-                {/* Disclaimer */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    className="mt-16 flex justify-center"
-                >
-                    <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-full px-8 py-3 flex items-center gap-3 shadow-lg">
-                        <AlertTriangle className="w-5 h-5 text-[var(--accent)]" />
-                        <p className="text-sm font-medium text-white/55">
-                            <span className="text-white font-bold">Note:</span> Reviews reflect the subjective experience of the reviewer.
-                        </p>
+                <section className="tp-fade-up tp-d3">
+                    <SectionTitle sub="Every game is deconstructed into five core components that inform our final verdict.">
+                        The five pillars
+                    </SectionTitle>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {PILLARS.map((p) => (
+                            <Panel key={p.title} className="h-full">
+                                <span className="inline-flex w-10 h-10 rounded-[var(--radius-inner)] bg-[var(--fill-2)] text-[var(--accent)] items-center justify-center mb-3.5">
+                                    <p.icon className="w-5 h-5" />
+                                </span>
+                                <h3 className="font-display text-[13px] font-bold uppercase tracking-wider text-[var(--ink-hi)] mb-1.5">
+                                    {p.title}
+                                </h3>
+                                <p className="text-[12.5px] text-[var(--ink-low)] leading-snug">{p.desc}</p>
+                            </Panel>
+                        ))}
                     </div>
-                </motion.div>
+                </section>
 
+                <p className="tp-fade-up tp-d4 flex items-center justify-center gap-2.5 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] px-5 py-3.5 text-center text-[12.5px] text-[var(--ink-low)]">
+                    <AlertTriangle className="w-4 h-4 text-[var(--accent)] shrink-0" />
+                    <span>
+                        <strong className="text-[var(--ink-hi)]">Note:</strong> reviews reflect the subjective
+                        experience of the reviewer.
+                    </span>
+                </p>
             </div>
-        </div>
+        </main>
     );
 }
