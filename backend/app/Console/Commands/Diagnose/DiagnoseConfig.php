@@ -3,6 +3,8 @@
 namespace App\Console\Commands\Diagnose;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Route;
+use Livewire\Mechanisms\HandleRequests\EndpointResolver;
 
 /**
  * What this machine is actually configured to be.
@@ -76,6 +78,7 @@ class DiagnoseConfig extends Command
 
         $this->missingKeys();
         $this->secretsPresent();
+        $this->staleRouteCache();
 
         $this->newLine();
         $this->info('Keširano');
@@ -176,6 +179,49 @@ class DiagnoseConfig extends Command
         }
 
         $this->line('  (Prazno ovdje znači da ta integracija ne radi, bez ijedne greške u logu.)');
+    }
+
+    /**
+     * Whether the cached routes still match what the pages will ask for.
+     *
+     * Livewire derives its script route from app.debug at registration time:
+     * debug on registers `livewire.js`, debug off registers `livewire.min.js`.
+     * The rendered page derives the same name the same way — so the two agree,
+     * unless the routes were cached under one setting and the page is rendered
+     * under the other.
+     *
+     * They cannot self-correct, because a route cache does not merge: Laravel's
+     * setCompiledRoutes replaces the whole collection, after every provider has
+     * booted, so the registration Livewire performs at boot is thrown away.
+     *
+     * This is not hypothetical. Turning off APP_DEBUG on production and running
+     * only config:cache took the admin panel down: every page asked for
+     * livewire.min.js, the cache held livewire.js, and the 404 came back as
+     * HTML which the browser refused to execute as a script.
+     */
+    private function staleRouteCache(): void
+    {
+        if (! file_exists(base_path('bootstrap/cache/routes-v7.php'))) {
+            return;
+        }
+
+        if (! class_exists(EndpointResolver::class)) {
+            return;
+        }
+
+        $expected = EndpointResolver::scriptPath(minified: ! config('app.debug'));
+
+        foreach (Route::getRoutes()->getRoutes() as $route) {
+            if ($route->uri() === $expected) {
+                return;
+            }
+        }
+
+        $this->newLine();
+        $this->error('  KEŠ RUTA JE ZASTARIO U ODNOSU NA APP_DEBUG.');
+        $this->line('  Stranice traže /'.ltrim($expected, '/').', a te rute u kešu nema.');
+        $this->line('  Admin panel i sve Livewire stranice su mrtve — skripta vraća 404.');
+        $this->line('  Popravka: php artisan route:cache && supervisorctl restart techplay-octane:*');
     }
 
     /**
