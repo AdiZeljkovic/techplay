@@ -264,29 +264,6 @@ export default function SectionHub({
                                 </p>
                             </div>
 
-                            {/* What the section can honestly say about itself. The
-                                mockup offered "50+ experts"; there are six people
-                                writing here, so it says six. */}
-                            {hub && (
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white/30">
-                                    <span>{(pinned ? current?.count ?? 0 : hub.stats.articles).toLocaleString()} published</span>
-                                    {/* Writers and this-month are counted across the
-                                        section; quoting them on one category would
-                                        credit it with work done elsewhere. */}
-                                    {!pinned && (
-                                        <>
-                                            <span aria-hidden className="w-1 h-1 rounded-full bg-white/20" />
-                                            <span>{hub.stats.authors} {hub.stats.authors === 1 ? "writer" : "writers"}</span>
-                                            {hub.stats.this_month > 0 && (
-                                                <>
-                                                    <span aria-hidden className="w-1 h-1 rounded-full bg-white/20" />
-                                                    <span>{hub.stats.this_month} this month</span>
-                                                </>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            )}
                         </div>
                     </header>
 
@@ -522,7 +499,10 @@ export default function SectionHub({
 function Tab({
     label, count, active = false, onClick, href,
 }: { label: string; count?: number; active?: boolean; onClick?: () => void; href?: string }) {
-    const className = `inline-flex items-center gap-2 h-9 px-4 rounded-[9px] font-display text-[10.5px] font-black uppercase tracking-[0.08em] transition-colors ${
+    // flex-1: the row spans the column, so its right edge meets the spotlight's
+    // above it. Left to their content the chips stopped short of the image and
+    // the two elements read as different widths.
+    const className = `flex-1 inline-flex items-center justify-center gap-2 h-9 px-4 rounded-[9px] whitespace-nowrap font-display text-[10.5px] font-black uppercase tracking-[0.08em] transition-colors ${
         active ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/50 hover:text-white"
     }`;
 
