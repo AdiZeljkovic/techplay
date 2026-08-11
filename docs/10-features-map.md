@@ -498,12 +498,21 @@ prijatelja povukao bi ih sve na svako otvaranje stranice.
 
 **Status:** COMPLETE
 
-**Opis:** AI preporuka igara iz user biblioteke.
+**Opis:** Preporuke igara bodovane prema korisnikovoj kolekciji.
 
-**Frontend:** `app/backlog-advisor/`
-**Backend:** `BacklogAdvisorController`
-**API:** `POST /backlog/suggest`
-**Napomene:** Koristi AI servis (Gemini ili OpenAI) i korisnikovu kolekciju igara.
+**Frontend:** `app/backlog-advisor/AdvisorClient.tsx`
+**Backend:** `BacklogAdvisorController::recommendations`
+**API:** `GET /backlog/recommendations?mood=&genres[]=&exclude_backlog=&exclude_played=`
+**Napomene:** **Nema AI-ja** — raniji zapis je govorio "AI preporuka (Gemini ili OpenAI)"
+i `POST /backlog/suggest`; ni jedno ni drugo ne postoji. Bodovanje je deterministički
+zbir četiri komponente do 100: tvoja kolekcija, igrači sa sličnom policom, kvalitet
+(ocjene) i era. "Why" na kartici pokazuje raspodjelu bodova.
+
+**Redizajn 12.08.2026:** traka statistike prešla na pilule kao na ostalim hubovima;
+kartica preporuke dobila rub u boji ocjene i traku ispod broja (ocjena se sada i vidi,
+ne samo čita); "How these are scored" i "Backlog health" spojeni u jednu kutiju na vrhu
+lijeve kolone — ključ za bodovanje treba da stoji **pored** ocjena, a ne ispod liste
+gdje niko ne gleda.
 
 ---
 

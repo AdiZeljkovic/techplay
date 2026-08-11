@@ -82,8 +82,14 @@ function RecommendationCard({ pick, onAdded }: { pick: Recommendation; onAdded: 
     };
 
     return (
-        <div className="group rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors duration-300">
-            <div className="flex flex-col lg:flex-row gap-4 p-4">
+        <div
+            className="group relative overflow-hidden rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] hover:-translate-y-0.5 transition-[transform,border-color] duration-300"
+        >
+            {/* How strong a match this is, said in form as well as in digits:
+                the rail down the edge carries the score's own colour. */}
+            <span aria-hidden className="absolute inset-y-0 left-0 w-[3px]" style={{ background: tone }} />
+
+            <div className="flex flex-col lg:flex-row gap-4 p-4 pl-5">
                 {/* cover */}
                 <Link
                     href={`/games/${pick.slug}`}
@@ -142,13 +148,19 @@ function RecommendationCard({ pick, onAdded }: { pick: Recommendation; onAdded: 
                     <button
                         onClick={() => setShowWorking((v) => !v)}
                         title="How this score is made"
-                        className="text-center lg:text-right"
+                        className="text-center lg:text-right lg:w-[104px]"
                     >
                         <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/35">Match score</span>
                         <span className="block font-display text-[28px] font-black tabular-nums leading-none" style={{ color: tone }}>
                             {score}%
                         </span>
-                        <span className="mt-0.5 inline-flex items-center gap-1 font-display text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/25 hover:text-white/50 transition-colors">
+                        <span className="mt-1.5 hidden lg:block h-[4px] w-full rounded-full bg-[var(--track)] overflow-hidden">
+                            <span
+                                className="block h-full rounded-full transition-[width] duration-700"
+                                style={{ width: `${score}%`, background: tone }}
+                            />
+                        </span>
+                        <span className="mt-1 inline-flex items-center gap-1 font-display text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/25 hover:text-white/50 transition-colors">
                             <Info className="w-2.5 h-2.5" /> {showWorking ? "Hide" : "Why"}
                         </span>
                     </button>
@@ -271,51 +283,89 @@ export default function AdvisorClient() {
                         your shelf, and how good the game actually is.
                     </p>
 
-                    {/* stat strip */}
-                    <div className="mt-6 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)]/75 backdrop-blur-sm px-5 py-4">
-                        <div className="flex items-center gap-6 md:gap-12 md:justify-center overflow-x-auto scrollbar-none min-w-max md:min-w-0">
-                            {([
-                                [<Library key="b" className="w-4 h-4" />, "Your backlog", summary?.backlog ?? 0, "games to play", "var(--accent)"],
-                                [<Gamepad2 key="l" className="w-4 h-4" />, "Library", summary?.library ?? 0, "games tracked", "#60a5fa"],
-                                [<CheckCircle2 key="c" className="w-4 h-4" />, "Completion rate", `${summary?.completion_rate ?? 0}%`, `${summary?.completed ?? 0} finished`, "#34d399"],
-                            ] as const).map(([icon, label, value, sub, tint], i) => (
-                                <span key={label} className="flex items-center gap-3 shrink-0">
-                                    {i > 0 && <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08] mr-6" />}
-                                    <span
-                                        className="w-9 h-9 rounded-[9px] flex items-center justify-center shrink-0"
-                                        style={{ background: `color-mix(in srgb, ${tint} 14%, transparent)`, color: tint }}
-                                    >
-                                        {icon}
-                                    </span>
-                                    <span>
-                                        <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/35 whitespace-nowrap">{label}</span>
-                                        <span className="block font-display text-[19px] font-black tabular-nums leading-none text-white mt-0.5">{value}</span>
-                                        <span className="block mt-0.5 text-[10px] text-white/25 whitespace-nowrap">{sub}</span>
-                                    </span>
-                                </span>
-                            ))}
-
-                            <span className="flex items-center gap-3 shrink-0">
-                                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08] mr-6" />
-                                <span className="w-9 h-9 rounded-[9px] flex items-center justify-center shrink-0 bg-[#a855f7]/14 text-[#a855f7]">
-                                    <BarChart3 className="w-4 h-4" />
-                                </span>
-                                <span>
-                                    <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/35">Genre focus</span>
-                                    <span className="block font-display text-[13px] font-black leading-tight text-white mt-1 whitespace-nowrap">
-                                        {(summary?.top_genres?.length ?? 0) > 0 ? summary!.top_genres.join(" · ") : "—"}
-                                    </span>
-                                    <span className="block mt-0.5 text-[10px] text-white/25">what you play most</span>
-                                </span>
+                    {/* The same pill row the forum, social hub and giveaways
+                        use — four facts on one line rather than a slab. */}
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                        {([
+                            [Library, String(summary?.backlog ?? 0), "To play"],
+                            [Gamepad2, String(summary?.library ?? 0), "Tracked"],
+                            [CheckCircle2, `${summary?.completion_rate ?? 0}%`, `${summary?.completed ?? 0} finished`],
+                        ] as const).map(([Icon, value, label]) => (
+                            <span
+                                key={label}
+                                className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
+                            >
+                                <Icon className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">{value}</span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/35">{label}</span>
                             </span>
-                        </div>
+                        ))}
+
+                        {(summary?.top_genres?.length ?? 0) > 0 && (
+                            <span className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm">
+                                <BarChart3 className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <span className="font-display text-[11px] font-black text-white leading-none">
+                                    {summary!.top_genres.join(" · ")}
+                                </span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/35">You play most</span>
+                            </span>
+                        )}
                     </div>
                 </div>
             </div>
 
             <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 {/* ── refine ── */}
-                <aside className="xl:col-span-3 min-w-0">
+                <aside className="xl:col-span-3 min-w-0 space-y-5">
+                    {/* Health and the scoring key were two panels under the
+                        list, which is where nobody looks — and the key is what
+                        you want beside the scores, not after them. */}
+                    <Panel variant="console" title="Backlog health">
+                        <div className="flex items-center gap-4">
+                            <RingMeter value={health} size={72} strokeWidth={6}>
+                                <span className="font-display text-[15px] font-black tabular-nums text-[var(--accent)]">{health}%</span>
+                            </RingMeter>
+                            <div className="min-w-0">
+                                <p className="text-[12.5px] font-bold text-white leading-snug">{summary?.health_note}</p>
+                                <Link
+                                    href="/profile/me?tab=collection"
+                                    className="mt-2.5 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[7px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.09] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/70 transition-colors"
+                                >
+                                    View backlog
+                                </Link>
+                            </div>
+                        </div>
+
+                        <p className="mt-5 pt-4 border-t border-white/[0.07] font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/40">
+                            How these are scored
+                        </p>
+
+                        <div className="mt-3 space-y-3">
+                            {(data?.weights ?? []).map((w) => (
+                                <div key={w.key} className="flex items-start gap-2.5">
+                                    <span
+                                        className="w-7 h-7 shrink-0 rounded-[7px] flex items-center justify-center"
+                                        style={{ background: `color-mix(in srgb, ${COMPONENT_TINTS[w.key] ?? "var(--accent)"} 14%, transparent)` }}
+                                    >
+                                        {w.key === "peers" ? <Users className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />
+                                            : w.key === "quality" ? <Star className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />
+                                                : w.key === "era" ? <CalendarClock className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />
+                                                    : <Library className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />}
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block text-[12px] font-bold text-white leading-tight">{w.label}</span>
+                                        <span className="block mt-0.5 text-[10.5px] text-white/40 leading-snug">{w.note}</span>
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <p className="mt-4 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/25 leading-snug">
+                            A match score is the sum of these four, out of 100. Open &ldquo;Why&rdquo; on a card to see
+                            where its points came from.
+                        </p>
+                    </Panel>
+
                     <Panel title="Refine">
                         <p className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/40 mb-2">Mood</p>
                         <div className="flex flex-wrap gap-1.5 mb-5">
@@ -430,54 +480,6 @@ export default function AdvisorClient() {
                             ))}
                         </div>
                     )}
-
-                    {/* ── how this works + health ── */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pt-1">
-                        <div className="lg:col-span-2">
-                            <Panel title="How these are scored">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {(data?.weights ?? []).map((w) => (
-                                        <div key={w.key} className="flex items-start gap-3">
-                                            <span
-                                                className="w-8 h-8 shrink-0 rounded-[8px] flex items-center justify-center"
-                                                style={{ background: `color-mix(in srgb, ${COMPONENT_TINTS[w.key] ?? "var(--accent)"} 14%, transparent)` }}
-                                            >
-                                                {w.key === "peers" ? <Users className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />
-                                                    : w.key === "quality" ? <Star className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />
-                                                    : w.key === "era" ? <CalendarClock className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />
-                                                    : <Library className="w-3.5 h-3.5" style={{ color: COMPONENT_TINTS[w.key] }} />}
-                                            </span>
-                                            <span>
-                                                <span className="block text-[12.5px] font-bold text-white">{w.label}</span>
-                                                <span className="block mt-0.5 text-[11px] text-white/40 leading-snug">{w.note}</span>
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <p className="mt-4 pt-3 border-t border-white/[0.07] text-[11px] text-white/25 leading-snug">
-                                    Every match score is the sum of these four, out of 100. Open &ldquo;Why&rdquo; on any card to see
-                                    exactly where its points came from.
-                                </p>
-                            </Panel>
-                        </div>
-
-                        <Panel variant="console" title="Backlog health">
-                            <div className="flex items-center gap-4">
-                                <RingMeter value={health} size={72} strokeWidth={6}>
-                                    <span className="font-display text-[15px] font-black tabular-nums text-[var(--accent)]">{health}%</span>
-                                </RingMeter>
-                                <div className="min-w-0">
-                                    <p className="text-[12.5px] font-bold text-white leading-snug">{summary?.health_note}</p>
-                                    <Link
-                                        href="/profile/me?tab=collection"
-                                        className="mt-2.5 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[7px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.09] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/70 transition-colors"
-                                    >
-                                        View backlog
-                                    </Link>
-                                </div>
-                            </div>
-                        </Panel>
-                    </div>
                 </div>
             </div>
         </main>
