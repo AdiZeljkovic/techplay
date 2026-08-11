@@ -10,14 +10,18 @@ interface StickyNavProps {
     onOpenPackageModal: () => void;
 }
 
+// Every entry must match an id that exists on the page. Two did not.
+// "Testimonials" pointed at a section that was never rendered — the component
+// existed but nothing imported it, and it held invented quotes attributed to
+// named people at Nvidia, HyperX and Logitech, so it is deleted rather than
+// wired up. "Success Stories" pointed at an anchor that is not on the page
+// either. A nav link that scrolls nowhere is worse than no link.
 const navSections = [
     { id: "about", label: "About" },
     { id: "stats", label: "Statistics" },
-    { id: "success", label: "Success Stories" },
     { id: "why-choose", label: "Why TechPlay" },
     { id: "calculator", label: "ROI Calculator" },
     { id: "pricing", label: "Pricing" },
-    { id: "testimonials", label: "Testimonials" },
     { id: "contact", label: "Contact" },
 ];
 

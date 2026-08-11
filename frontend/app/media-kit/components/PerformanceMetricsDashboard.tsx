@@ -4,6 +4,13 @@ import { motion } from "framer-motion";
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { TrendingUp, Users, Activity, Globe } from "lucide-react";
 
+/**
+ * TODO(numbers): every figure below is a placeholder, not a measurement.
+ * Nothing in this project produced them — analytics only started recording on
+ * 11 August 2026. They are shown to advertisers, so they are the first thing to
+ * replace once there is a month of real data behind Pulse and GA.
+ */
+
 const deviceData = [
     { name: 'Desktop', value: 62, color: '#3B82F6' },
     { name: 'Mobile', value: 31, color: '#DC143C' },
