@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -148,9 +149,33 @@ class AuthController extends Controller
         ], 'Login successful');
     }
 
+    /**
+     * Revoke the token this request arrived on, if it arrived on one.
+     *
+     * Sanctum hands back a TransientToken when the caller is authenticated by
+     * session rather than by a bearer token — anyone logged into /admin in the
+     * same browser, for instance. TransientToken has no delete(), so calling it
+     * unconditionally turned logout into a 500 for exactly those people.
+     */
+    private function revokeCurrentToken(Request $request): void
+    {
+        $token = $request->user()?->currentAccessToken();
+
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
+        }
+    }
+
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->revokeCurrentToken($request);
+
+        // A session-authenticated caller has no token to revoke; the session
+        // is what has to end.
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return $this->success(null, 'Logged out successfully');
     }
@@ -164,7 +189,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         // Delete current token
-        $request->user()->currentAccessToken()->delete();
+        $this->revokeCurrentToken($request);
 
         // Create new token
         $newToken = $user->createToken('auth_token')->plainTextToken;
