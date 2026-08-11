@@ -92,11 +92,17 @@ function meta(g: DiscoverGame) {
     return { genres: genres.filter(Boolean).slice(0, 2), platforms: shortPlatforms, score };
 }
 
+/**
+ * A platform name reduced to the mark that will be drawn for it.
+ *
+ * Generations collapse on purpose. "PlayStation 4" and "PlayStation 5" used to
+ * become PS and PS5 — two different strings, so the Set kept both, and a game
+ * on two PlayStations drew the identical PlayStation glyph twice. Two copies of
+ * one logo say nothing the first copy did not. Same for Xbox.
+ */
 function shortPlatform(name: string): string {
     const s = name.toLowerCase();
-    if (s.includes("playstation 5")) return "PS5";
     if (s.includes("playstation")) return "PS";
-    if (s.includes("xbox series")) return "SERIES";
     if (s.includes("xbox")) return "XBOX";
     if (s.includes("nintendo") || s.includes("switch")) return "SWITCH";
     if (s.includes("mac")) return "MAC";

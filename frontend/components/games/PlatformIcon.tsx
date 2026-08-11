@@ -1,11 +1,12 @@
-import { Monitor, Laptop, Smartphone, Gamepad2 } from "lucide-react";
+import { Laptop, Smartphone, Gamepad2 } from "lucide-react";
 
 /**
  * What each platform's mark is actually coloured, for surfaces that want the
  * logo to look like the logo rather than like the site.
  *
- * PC, Mac and mobile are deliberately absent: they are categories, not brands,
- * and inventing a colour for them would be the only made-up entry here.
+ * Mac and mobile are deliberately absent: they are categories, not brands,
+ * and inventing a colour for them would be the only made-up entry here. PC
+ * borrows Steam's, because it now borrows Steam's mark — see below.
  */
 export const PLATFORM_BRAND: Record<string, string> = {
     PS5: "#0070D1",
@@ -18,6 +19,9 @@ export const PLATFORM_BRAND: Record<string, string> = {
     SWITCH: "#E60012",
     NINTENDO: "#E60012",
     STEAM: "#C7D5E0",
+    PC: "#C7D5E0",
+    WINDOWS: "#C7D5E0",
+    LINUX: "#C7D5E0",
     EPIC: "#F5F5F5",
     DISCORD: "#5865F2",
 };
@@ -66,15 +70,6 @@ export default function PlatformIcon({ label, className = "w-4 h-4" }: { label: 
         );
     }
 
-    // Steam — the valve nozzle inside its ring
-    if (l === "STEAM") {
-        return (
-            <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
-                <path d="M11.98 0C5.61 0 .39 4.93 0 11.2l6.44 2.66a3.4 3.4 0 0 1 1.92-.59l.17.01 2.86-4.15v-.06a4.54 4.54 0 1 1 4.54 4.54h-.11l-4.08 2.92v.16a3.41 3.41 0 0 1-6.75.66L.05 15.3C1.44 20.24 5.29 24 11.98 24 18.6 24 24 18.62 24 12S18.6 0 11.98 0zm-4.4 18.2 -1.48-.61a2.56 2.56 0 0 0 1.33 1.26 2.57 2.57 0 0 0 3.34-3.34 2.56 2.56 0 0 0-2.34-1.6c-.33 0-.65.06-.94.18l1.53.63a1.89 1.89 0 1 1-1.44 3.48zm11.35-9.14a3.03 3.03 0 1 0-6.06 0 3.03 3.03 0 0 0 6.06 0zm-5.3 0a2.28 2.28 0 1 1 4.55 0 2.28 2.28 0 0 1-4.55 0z" />
-            </svg>
-        );
-    }
-
     // Epic Games — the shield
     if (l === "EPIC") {
         return (
@@ -101,8 +96,17 @@ export default function PlatformIcon({ label, className = "w-4 h-4" }: { label: 
         return <Smartphone className={className} aria-hidden="true" strokeWidth={2.2} />;
     }
 
-    if (l === "PC" || l === "WINDOWS" || l === "LINUX") {
-        return <Monitor className={className} aria-hidden="true" strokeWidth={2.2} />;
+    // PC wears Steam's mark. A monitor outline is technically the honest glyph
+    // — a PC game is not necessarily a Steam game — but nobody reads a monitor
+    // as "this runs on my computer" the way they read the Steam logo, and next
+    // to three console brands a generic shape stops looking like a platform at
+    // all. Deliberate trade: recognition over precision.
+    if (l === "PC" || l === "WINDOWS" || l === "LINUX" || l === "STEAM") {
+        return (
+            <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+                <path d="M11.98 0C5.61 0 .39 4.93 0 11.2l6.44 2.66a3.4 3.4 0 0 1 1.92-.59l.17.01 2.86-4.15v-.06a4.54 4.54 0 1 1 4.54 4.54h-.11l-4.08 2.92v.16a3.41 3.41 0 0 1-6.75.66L.05 15.3C1.44 20.24 5.29 24 11.98 24 18.6 24 24 18.62 24 12S18.6 0 11.98 0zm-4.4 18.2 -1.48-.61a2.56 2.56 0 0 0 1.33 1.26 2.57 2.57 0 0 0 3.34-3.34 2.56 2.56 0 0 0-2.34-1.6c-.33 0-.65.06-.94.18l1.53.63a1.89 1.89 0 1 1-1.44 3.48zm11.35-9.14a3.03 3.03 0 1 0-6.06 0 3.03 3.03 0 0 0 6.06 0zm-5.3 0a2.28 2.28 0 1 1 4.55 0 2.28 2.28 0 0 1-4.55 0z" />
+            </svg>
+        );
     }
 
     return <Gamepad2 className={className} aria-hidden="true" strokeWidth={2.2} />;
