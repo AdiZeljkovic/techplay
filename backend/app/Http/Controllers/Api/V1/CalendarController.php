@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -37,6 +38,16 @@ class CalendarController extends Controller
         'xbox' => 'Xbox',
         'nintendo' => 'Nintendo eShop',
     ];
+
+    /**
+     * How many of a day's releases travel with the month.
+     *
+     * August 2026 ships 1,133 games, and 196 of them land on one day. Sending
+     * all of them made the response half a megabyte and the page an endless
+     * scroll through shovelware. Each day now leads with its two biggest and
+     * says how many more there are; `day()` serves the rest on request.
+     */
+    private const PREVIEW_PER_DAY = 2;
 
     /** The platform families the filter offers, and what our data calls them. */
     private const PLATFORM_FAMILIES = [
@@ -96,12 +107,17 @@ class CalendarController extends Controller
             ],
             // The month's most notable release that actually brought art —
             // a hero slot with no image is a hero slot wasted.
-            'hero' => $releases->filter(fn (array $g) => ! empty($g['cover_url']))->sortByDesc('added')->first()
-                ?? $releases->sortByDesc('added')->first(),
-            'most_anticipated' => $decorated->sortByDesc('added')->take(5)->values()->all(),
+            // A month that ships nothing has no hero, and that is an answer.
+            'hero' => $this->forOutput(array_filter([
+                $releases->filter(fn (array $g) => ! empty($g['cover_url']))->sortByDesc('added')->first()
+                    ?? $releases->sortByDesc('added')->first(),
+            ]))[0] ?? null,
+            'most_anticipated' => $this->forOutput($decorated->sortByDesc('added')->take(5)),
             'days' => $this->groupByDay($filtered, $request->query('sort', 'date')),
-            'upcoming' => $decorated->filter(fn (array $g) => $g['released'] && $g['released'] >= now()->toDateString())
-                ->sortBy('released')->take(5)->values()->all(),
+            'upcoming' => $this->forOutput(
+                $decorated->filter(fn (array $g) => $g['released'] && $g['released'] >= now()->toDateString())
+                    ->sortBy('released')->take(5)
+            ),
             'platform_breakdown' => $this->platformBreakdown($releases),
             'genres' => $this->genresIn($releases),
             'watchlist' => $this->watchlist(),
@@ -172,6 +188,51 @@ class CalendarController extends Controller
     }
 
     /**
+     * GET /calendar/day/{date} — everything landing on one day.
+     *
+     * The month sends each day's two biggest. This is what the rest of that
+     * day looks like, asked for only when somebody wants it, and narrowed by
+     * whatever filters the page is currently wearing.
+     */
+    public function day(Request $request, string $date): JsonResponse
+    {
+        $request->validate([
+            'platform' => 'nullable|in:pc,playstation,xbox,nintendo',
+            'genre' => 'nullable|string|max:40',
+        ]);
+
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return $this->error('That is not a date we can read.', 422);
+        }
+
+        $releases = app(CalendarVisibility::class)
+            ->apply(
+                Game::query()
+                    ->whereNotNull('match_key')
+                    ->whereDate('released', $date)
+            )
+            ->get()
+            ->map(fn (Game $game) => $this->present($game));
+
+        $slugs = $releases->pluck('slug')->filter()->all();
+        $wishlistCounts = $this->wishlistCounts($slugs);
+        $mine = $this->myState($slugs);
+
+        $decorated = $releases->map(fn (array $game) => array_merge($game, [
+            'wishlists' => (int) ($wishlistCounts[$game['slug']] ?? 0),
+            'wishlisted' => in_array($game['slug'], $mine['wishlisted'], true),
+            'reminder' => in_array($game['slug'], $mine['reminders'], true),
+        ]));
+
+        return $this->success([
+            'date' => $date,
+            'games' => $this->forOutput(
+                $this->applyFilters($decorated, $request)->sortByDesc('added')
+            ),
+        ]);
+    }
+
+    /**
      * POST /calendar/{slug}/reminder — tell me when this lands.
      *
      * A reminder implies wanting the game, so it wishlists on the way in;
@@ -216,7 +277,10 @@ class CalendarController extends Controller
      */
     private function monthReleases(Carbon $month): Collection
     {
-        return app(CalendarVisibility::class)
+        // Nothing here depends on who is asking — wishlist counts and the
+        // viewer's own state are decorated on afterwards — so a month is built
+        // once and served to everyone until the aggregator moves.
+        $rows = Cache::flexible('calendar.month.v1.'.$month->format('Y-m'), [300, 900], fn () => app(CalendarVisibility::class)
             ->apply(
                 Game::query()
                     ->whereNotNull('match_key')
@@ -227,7 +291,10 @@ class CalendarController extends Controller
             )
             ->orderBy('released')
             ->get()
-            ->map(fn (Game $game) => $this->present($game));
+            ->map(fn (Game $game) => $this->present($game))
+            ->all());
+
+        return collect($rows);
     }
 
     /** The month's biggest arrivals still ahead of it. */
@@ -243,6 +310,7 @@ class CalendarController extends Controller
             ->limit(5)
             ->get()
             ->map(fn (Game $game) => $this->present($game))
+            ->pipe(fn (Collection $games) => collect($this->forOutput($games)))
             ->all();
     }
 
@@ -287,10 +355,7 @@ class CalendarController extends Controller
             'slug' => $game->slug,
             'name' => $game->name,
             'released' => $game->released?->toDateString(),
-            'tba' => $game->release_precision === 'tba',
-            'precision' => $game->release_precision,
             'cover_url' => $game->cover_url,
-            'rating' => (float) ($game->rating ?? 0),
             // Not a measure of anticipation — no store publishes one. See
             // Notability for what this actually counts.
             'added' => (int) $game->hype_score,
@@ -299,6 +364,21 @@ class CalendarController extends Controller
             'platform_slugs' => $platforms->all(),
             'publisher' => ($game->publishers ?? [])[0] ?? null,
         ];
+    }
+
+    /**
+     * platform_slugs is how the filters and the breakdown match a family; the
+     * page reads `platforms`. It stays out of the response.
+     *
+     * @param  Collection<int,array>|array<int,array>  $games
+     */
+    private function forOutput(Collection|array $games): array
+    {
+        return collect($games)->map(function (array $game) {
+            unset($game['platform_slugs']);
+
+            return $game;
+        })->values()->all();
     }
 
     /* ── our own numbers ──────────────────────────────────────────────── */
@@ -404,26 +484,38 @@ class CalendarController extends Controller
         return false;
     }
 
-    /** Releases grouped under the day they land on, in calendar order. */
+    /**
+     * Releases grouped under the day they land on.
+     *
+     * `sort` used to be inert: the games were ordered by size, then grouped,
+     * then re-sorted inside each day and the days re-sorted by date, so
+     * /calendar and /calendar?sort=anticipated returned identical bytes.
+     * "Biggest first" now orders the days themselves by their strongest
+     * release, which is the only reading of the label that a calendar can
+     * honour.
+     */
     private function groupByDay(Collection $games, string $sort): array
     {
-        if ($sort === 'anticipated') {
-            $games = $games->sortByDesc('added');
-        }
-
-        return $games
+        $days = $games
             ->filter(fn (array $g) => $g['released'])
             ->groupBy('released')
-            ->map(fn (Collection $rows, string $date) => [
-                'date' => $date,
-                'day' => Carbon::parse($date)->format('d'),
-                'weekday' => Carbon::parse($date)->format('D'),
-                'month' => Carbon::parse($date)->format('M'),
-                'games' => $rows->sortByDesc('added')->values()->all(),
-            ])
-            ->sortBy('date')
-            ->values()
-            ->all();
+            ->map(function (Collection $rows, string $date) {
+                $ranked = $rows->sortByDesc('added')->values();
+
+                return [
+                    'date' => $date,
+                    'day' => Carbon::parse($date)->format('d'),
+                    'weekday' => Carbon::parse($date)->format('D'),
+                    'month' => Carbon::parse($date)->format('M'),
+                    'games' => $this->forOutput($ranked->take(self::PREVIEW_PER_DAY)),
+                    'total' => $ranked->count(),
+                ];
+            });
+
+        return ($sort === 'anticipated'
+            ? $days->sortByDesc(fn (array $day) => $day['games'][0]['added'] ?? 0)
+            : $days->sortBy('date')
+        )->values()->all();
     }
 
     private function platformBreakdown(Collection $games): array

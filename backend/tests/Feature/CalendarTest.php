@@ -213,7 +213,10 @@ class CalendarTest extends TestCase
         $wanted = $this->entry(array_merge($bare, ['name' => 'Wanted Here']));
         UserGame::create(['user_id' => User::factory()->create()->id, 'game_id' => $wanted->id, 'status' => 'wishlist']);
 
-        $names = collect($this->getJson('/api/v1/calendar')->assertOk()->json('data.days.0.games'))->pluck('name');
+        // The month leads with each day's two biggest, so the full roll call
+        // for the day is where this belongs.
+        $date = $bare['released'] ?? now()->startOfMonth()->addDays(7)->toDateString();
+        $names = collect($this->getJson("/api/v1/calendar/day/{$date}")->assertOk()->json('data.games'))->pluck('name');
 
         foreach (['Multi Platform', 'Substantial', 'Wanted Here'] as $name) {
             $this->assertContains($name, $names, "{$name} earned its place");

@@ -86,7 +86,11 @@
 |--------|------|--------------------|------|------|
 | GET | `/games` | GameController::index | - | Lista igara (filter, paginate) |
 | GET | `/games/{slug}` | GameController::show | - | Detalj igre |
-| GET | `/games/calendar` | GameController::calendar | - | Release calendar |
+| GET | `/games/calendar` | GameController::calendar | - | Lista nadolazećih (naslovnica, header) |
+| GET | `/calendar` | CalendarController::index | - | Mjesec: 2 najveće po danu + `total` |
+| GET | `/calendar/day/{date}` | CalendarController::day | - | Svi izlasci jednog dana |
+| GET | `/calendar/{slug}` | CalendarController::show | - | Stranica jednog izlaska |
+| POST | `/calendar/{slug}/reminder` | CalendarController::toggleReminder | auth | Podsjetnik na izlazak |
 | GET | `/games/{slug}/screenshots` | GameController::screenshots | - | Screenshoti (lokalni) |
 | GET | `/games/{slug}/movies` | GameController::movies | - | Filmovi/traileri |
 | GET | `/games/{slug}/series` | GameController::series | - | Igre iz iste serije |

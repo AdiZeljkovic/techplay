@@ -507,6 +507,8 @@ Route::prefix('v1')->group(function () {
     // visitor's budget, which is where the intermittent 404s came from.
     Route::middleware('throttle:api')->group(function () {
         Route::get('/calendar', [CalendarController::class, 'index']);
+        // Before the slug route, so a date is never mistaken for a game.
+        Route::get('/calendar/day/{date}', [CalendarController::class, 'day']);
         Route::get('/calendar/{slug}', [CalendarController::class, 'show']);
         Route::get('/games/hub', [GameHubController::class, 'index']);
         Route::get('/games/calendar', [GameController::class, 'calendar']);

@@ -1,23 +1,54 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { CalendarDays, Flame, Heart, Bell, BellRing, ChevronLeft, ChevronRight, Gamepad2, Loader2, Check, ListFilter } from "lucide-react";
+import { CalendarDays, Flame, Heart, Bell, BellRing, ChevronLeft, ChevronRight, Gamepad2, Loader2, Check, ListFilter, Plus } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
+import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
 
 const PLATFORM_FILTERS = [
-    { id: "", label: "All" },
-    { id: "pc", label: "PC" },
-    { id: "playstation", label: "PlayStation" },
-    { id: "xbox", label: "Xbox" },
-    { id: "nintendo", label: "Nintendo" },
+    { id: "", label: "All", mark: null },
+    { id: "pc", label: "PC", mark: "PC" },
+    { id: "playstation", label: "PlayStation", mark: "PLAYSTATION" },
+    { id: "xbox", label: "Xbox", mark: "XBOX" },
+    { id: "nintendo", label: "Nintendo", mark: "NINTENDO" },
 ];
+
+/**
+ * Stores name their hardware at length — "Nintendo Switch 2", "Xbox Series
+ * X|S" — and a release on four of them turned into four text chips that said
+ * nothing a mark would not. Fold the labels down to the maker and draw the
+ * brand instead.
+ */
+const MARK_LABELS: Record<string, string> = {
+    PC: "PC",
+    PLAYSTATION: "PlayStation",
+    XBOX: "Xbox",
+    NINTENDO: "Nintendo",
+};
+
+const MARK_ORDER = ["PC", "PLAYSTATION", "XBOX", "NINTENDO"];
+
+function platformMarks(platforms: string[]): string[] {
+    const found = new Set<string>();
+
+    for (const platform of platforms) {
+        const p = platform.toUpperCase();
+
+        if (p.includes("PLAYSTATION") || /^PS\d?\b/.test(p)) found.add("PLAYSTATION");
+        else if (p.includes("XBOX")) found.add("XBOX");
+        else if (p.includes("SWITCH") || p.includes("NINTENDO")) found.add("NINTENDO");
+        else if (p.includes("PC") || p.includes("WINDOWS") || p.includes("LINUX") || p.includes("MAC") || p.includes("STEAM")) found.add("PC");
+    }
+
+    return MARK_ORDER.filter((mark) => found.has(mark));
+}
 
 /** Platform families get a colour so a chip row reads without labels. */
 const PLATFORM_TINTS: Record<string, string> = {
@@ -34,13 +65,10 @@ interface Release {
     slug: string;
     name: string;
     released: string | null;
-    tba: boolean;
     cover_url: string | null;
-    rating: number;
     added: number;
     genres: string[];
     platforms: string[];
-    platform_slugs: string[];
     publisher: string | null;
     wishlists: number;
     wishlisted: boolean;
@@ -52,7 +80,7 @@ interface CalendarPayload {
     stats: { releases: number; wishlisted: number; showing: number };
     hero: Release | null;
     most_anticipated: Release[];
-    days: { date: string; day: string; weekday: string; month: string; games: Release[] }[];
+    days: { date: string; day: string; weekday: string; month: string; games: Release[]; total: number }[];
     upcoming: Release[];
     platform_breakdown: { key: string; label: string; count: number; percent: number }[];
     genres: { name: string; count: number }[];
@@ -62,12 +90,16 @@ interface CalendarPayload {
 
 /* ── shared bits ──────────────────────────────────────────────────────── */
 
-function PlatformChips({ platforms }: { platforms: string[] }) {
+function PlatformMarks({ platforms, className = "w-3.5 h-3.5" }: { platforms: string[]; className?: string }) {
+    const marks = platformMarks(platforms);
+
+    if (marks.length === 0) return null;
+
     return (
-        <span className="flex flex-wrap items-center gap-1">
-            {platforms.map((p) => (
-                <span key={p} className="inline-flex items-center h-[18px] px-1.5 rounded-[4px] bg-white/[0.06] border border-white/[0.07] font-display text-[8px] font-bold uppercase tracking-[0.06em] text-white/50">
-                    {p}
+        <span className="flex items-center gap-1.5 shrink-0">
+            {marks.map((mark) => (
+                <span key={mark} title={MARK_LABELS[mark]} style={{ color: platformBrandColor(mark) ?? undefined }}>
+                    <PlatformIcon label={mark} className={className} />
                 </span>
             ))}
         </span>
@@ -168,6 +200,17 @@ export default function CalendarClient() {
     const [genre, setGenre] = useState("");
     const [sort, setSort] = useState<"date" | "anticipated">("date");
 
+    /**
+     * A day that has been opened, keyed by date.
+     *
+     * The month sends each day's two biggest and says how many more there
+     * are — 196, on the busiest day in August. The rest of a day is fetched
+     * only when somebody asks for it, and forgotten when the filters move,
+     * because a different filter is a different day.
+     */
+    const [opened, setOpened] = useState<Record<string, Release[]>>({});
+    const [openingDay, setOpeningDay] = useState<string | null>(null);
+
     const query = useMemo(() => {
         const q = new URLSearchParams();
         if (month) q.set("month", month);
@@ -182,6 +225,25 @@ export default function CalendarClient() {
         fetcher,
         { keepPreviousData: true, revalidateOnFocus: false }
     );
+
+    useEffect(() => { setOpened({}); }, [query]);
+
+    const openDay = async (date: string) => {
+        setOpeningDay(date);
+
+        try {
+            const narrow = new URLSearchParams();
+            if (platform) narrow.set("platform", platform);
+            if (genre) narrow.set("genre", genre);
+
+            const res = await axios.get(`/calendar/day/${date}${narrow.toString() ? `?${narrow}` : ""}`);
+            setOpened((open) => ({ ...open, [date]: res.data?.data?.games ?? [] }));
+        } catch {
+            toast.error("Could not load the rest of that day.");
+        } finally {
+            setOpeningDay(null);
+        }
+    };
 
     if (error) {
         return (
@@ -219,10 +281,10 @@ export default function CalendarClient() {
             <div className="relative overflow-hidden border-b border-white/[0.07]">
                 {data?.hero?.cover_url && (
                     <>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         {/* The month's biggest release, actually visible — the
                             left scrim alone protects the copy, so the art can
                             breathe on the right instead of drowning in dimmer. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={data.hero.cover_url} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-[center_30%] opacity-[0.55]" />
                         <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/65 to-transparent" />
                         <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
@@ -325,8 +387,8 @@ export default function CalendarClient() {
                                             <span className="block text-[12px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                                 {game.name}
                                             </span>
-                                            <span className="flex items-center gap-1 mt-0.5">
-                                                <PlatformChips platforms={game.platforms.slice(0, 3)} />
+                                            <span className="flex items-center gap-2 mt-1">
+                                                <PlatformMarks platforms={game.platforms} className="w-3 h-3" />
                                                 {game.genres[0] && (
                                                     <span className="font-display text-[8px] font-bold uppercase tracking-[0.06em] text-white/25 truncate">
                                                         {game.genres[0]}
@@ -343,52 +405,77 @@ export default function CalendarClient() {
             </div>
 
             {/* ── filter bar ── */}
-            <div className="sticky top-0 z-20 border-b border-white/[0.07] bg-[var(--surface-0)]/92 backdrop-blur-md">
-                <div className="container-page py-3 flex flex-wrap items-center gap-2">
-                    {PLATFORM_FILTERS.map((p) => (
-                        <button
-                            key={p.id}
-                            onClick={() => setPlatform(p.id)}
-                            className={`h-8 px-3.5 rounded-[7px] font-display text-[10px] font-black uppercase tracking-[0.08em] transition-colors ${
-                                platform === p.id ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/45 hover:text-white hover:bg-white/[0.08]"
-                            }`}
-                        >
-                            {p.label}
-                        </button>
-                    ))}
+            {/* top-0 put this behind the fixed header, which is 72px tall —
+                the bar was sliding under it on every scroll. */}
+            <div className="sticky top-[72px] z-20 border-b border-white/[0.07] bg-[var(--surface-0)]/92 backdrop-blur-md">
+                <div className="container-page py-3 flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                        {PLATFORM_FILTERS.map((p) => {
+                            const active = platform === p.id;
 
-                    <span aria-hidden className="w-px h-6 bg-white/[0.09] mx-1" />
+                            return (
+                                <button
+                                    key={p.id}
+                                    onClick={() => setPlatform(p.id)}
+                                    aria-pressed={active}
+                                    className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[8px] font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+                                        active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
+                                    }`}
+                                >
+                                    {p.mark
+                                        ? <PlatformIcon label={p.mark} className="w-3.5 h-3.5" />
+                                        : <Gamepad2 className="w-3.5 h-3.5" />}
+                                    {p.label}
+                                </button>
+                            );
+                        })}
+                    </div>
 
-                    {(data?.genres ?? []).slice(0, 4).map((g) => (
-                        <button
-                            key={g.name}
-                            onClick={() => setGenre(genre === g.name ? "" : g.name)}
-                            className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-[7px] font-display text-[10px] font-black uppercase tracking-[0.08em] transition-colors ${
-                                genre === g.name ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/45 hover:text-white hover:bg-white/[0.08]"
-                            }`}
-                        >
-                            {g.name} <span className={genre === g.name ? "text-white/70" : "text-white/25"}>{g.count}</span>
-                        </button>
-                    ))}
+                    {(data?.genres.length ?? 0) > 0 && (
+                        <div className="flex flex-wrap gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)]">
+                            {data!.genres.slice(0, 4).map((g) => {
+                                const active = genre === g.name;
+
+                                return (
+                                    <button
+                                        key={g.name}
+                                        onClick={() => setGenre(active ? "" : g.name)}
+                                        aria-pressed={active}
+                                        className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
+                                            active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white"
+                                        }`}
+                                    >
+                                        {g.name}
+                                        <span className={`tabular-nums ${active ? "text-white/70" : "text-white/25"}`}>{g.count}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
 
                     <span className="flex-1" />
 
-                    <button
-                        onClick={() => setSort(sort === "date" ? "anticipated" : "date")}
-                        className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[7px] font-display text-[10px] font-black uppercase tracking-[0.08em] transition-colors ${
-                            sort === "anticipated" ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/45 hover:text-white"
-                        }`}
-                    >
-                        <ListFilter className="w-3.5 h-3.5" /> Biggest first
-                    </button>
-                    {!m?.is_current && (
+                    <div className="flex gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)]">
                         <button
-                            onClick={() => setMonth(null)}
-                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[7px] bg-white/[0.04] hover:bg-white/[0.08] font-display text-[10px] font-black uppercase tracking-[0.08em] text-white/45 hover:text-white transition-colors"
+                            onClick={() => setSort(sort === "date" ? "anticipated" : "date")}
+                            aria-pressed={sort === "anticipated"}
+                            title="Order the days by their biggest release instead of by date"
+                            className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
+                                sort === "anticipated" ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white"
+                            }`}
                         >
-                            <CalendarDays className="w-3.5 h-3.5" /> This month
+                            <ListFilter className="w-3.5 h-3.5" /> Biggest first
                         </button>
-                    )}
+
+                        {!m?.is_current && (
+                            <button
+                                onClick={() => setMonth(null)}
+                                className="inline-flex items-center gap-1.5 h-8 px-4 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/45 hover:text-white transition-colors"
+                            >
+                                <CalendarDays className="w-3.5 h-3.5" /> This month
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -397,28 +484,44 @@ export default function CalendarClient() {
                     {/* ── most anticipated ── */}
                     {(data?.most_anticipated.length ?? 0) > 0 && (
                         <Panel title={`Biggest in ${label}`}>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                                {data!.most_anticipated.map((game) => (
-                                    <div key={game.slug} className="group">
-                                        <Link href={`/calendar/${game.slug}`} className="relative block h-[190px] rounded-[10px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                                {data!.most_anticipated.map((game, i) => (
+                                    <div key={game.slug} className="group flex flex-col">
+                                        {/* The date used to sit on the art in accent red, over
+                                            whatever the publisher happened to put there — on
+                                            half these covers it was unreadable. Nothing but the
+                                            art is on the art now; the facts sit under it. */}
+                                        <Link
+                                            href={`/calendar/${game.slug}`}
+                                            className="relative block aspect-[3/4] rounded-[12px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
+                                        >
                                             {game.cover_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={game.cover_url} alt={game.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
                                             ) : (
                                                 <span className="w-full h-full flex items-center justify-center bg-white/[0.03] text-white/15"><Gamepad2 className="w-7 h-7" /></span>
                                             )}
-                                            <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" />
-                                            <span className="absolute inset-x-0 bottom-0 p-2.5">
-                                                <span className="block font-display text-[11px] font-black text-white leading-tight line-clamp-2 mb-1.5">
-                                                    {game.name}
-                                                </span>
-                                                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.1em] text-[var(--accent)] mb-1.5">
-                                                    {game.released ? new Date(game.released).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "TBA"}
-                                                </span>
-                                                <PlatformChips platforms={game.platforms.slice(0, 3)} />
+
+                                            {/* This panel is a ranking, so the tile says where it ranks. */}
+                                            <span className="absolute top-2 left-2 w-6 h-6 rounded-[7px] bg-black/65 backdrop-blur-sm flex items-center justify-center font-display text-[11px] font-black tabular-nums text-white">
+                                                {i + 1}
                                             </span>
                                         </Link>
-                                        <div className="mt-2 flex items-center justify-between gap-2">
+
+                                        <p className="mt-2.5 font-display text-[12px] font-black text-white leading-tight line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                                            {game.name}
+                                        </p>
+
+                                        <div className="mt-1.5 flex items-center justify-between gap-2">
+                                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/45">
+                                                {game.released
+                                                    ? new Date(game.released).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
+                                                    : "TBA"}
+                                            </span>
+                                            <PlatformMarks platforms={game.platforms} className="w-3.5 h-3.5" />
+                                        </div>
+
+                                        <div className="mt-2.5 pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2">
                                             <HypeRow game={game} />
                                             <ReleaseActions game={game} compactMode onChanged={() => mutate()} />
                                         </div>
@@ -455,50 +558,74 @@ export default function CalendarClient() {
                             </div>
                         ) : (
                             <div className="divide-y divide-white/[0.05]">
-                                {data!.days.map((day) => (
-                                    <div key={day.date} className="flex gap-4 p-4">
-                                        <span className="shrink-0 w-[52px] text-center pt-1">
-                                            <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-white/30">{day.month}</span>
-                                            <span className="block font-display text-[26px] font-black tabular-nums leading-none text-white">{day.day}</span>
-                                            <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">{day.weekday}</span>
-                                        </span>
+                                {data!.days.map((day) => {
+                                    const shown = opened[day.date] ?? day.games;
+                                    const hidden = day.total - shown.length;
 
-                                        <div className="min-w-0 flex-1 space-y-2.5">
-                                            {day.games.map((game) => (
-                                                <div key={game.slug} className="group flex items-center gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors p-2.5">
-                                                    <Link href={`/calendar/${game.slug}`} className="w-[64px] h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05]">
-                                                        {game.cover_url ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
-                                                            <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-4 h-4" /></span>
-                                                        )}
-                                                    </Link>
+                                    return (
+                                        <div key={day.date} className="flex gap-4 p-4">
+                                            <span className="shrink-0 w-[52px] text-center pt-1">
+                                                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-white/30">{day.month}</span>
+                                                <span className="block font-display text-[26px] font-black tabular-nums leading-none text-white">{day.day}</span>
+                                                <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">{day.weekday}</span>
+                                                {day.total > 1 && (
+                                                    <span className="block mt-1.5 font-display text-[8.5px] font-bold tabular-nums text-white/20">
+                                                        {day.total} games
+                                                    </span>
+                                                )}
+                                            </span>
 
-                                                    <span className="min-w-0 flex-1">
-                                                        <Link href={`/calendar/${game.slug}`} className="block text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
-                                                            {game.name}
+                                            <div className="min-w-0 flex-1 space-y-2.5">
+                                                {shown.map((game) => (
+                                                    <div key={game.slug} className="group flex items-center gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors p-2.5">
+                                                        <Link href={`/calendar/${game.slug}`} className="w-[64px] h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05]">
+                                                            {game.cover_url ? (
+                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-4 h-4" /></span>
+                                                            )}
                                                         </Link>
-                                                        <span className="flex items-center gap-2 mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/30 truncate">
-                                                            {game.genres[0] && <span>{game.genres[0]}</span>}
-                                                            {game.publisher && <span className="text-white/20">· {game.publisher}</span>}
+
+                                                        <span className="min-w-0 flex-1">
+                                                            <Link href={`/calendar/${game.slug}`} className="block text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
+                                                                {game.name}
+                                                            </Link>
+                                                            <span className="flex items-center gap-2 mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/30 truncate">
+                                                                {game.genres[0] && <span>{game.genres[0]}</span>}
+                                                                {game.publisher && <span className="text-white/20">· {game.publisher}</span>}
+                                                            </span>
                                                         </span>
-                                                    </span>
 
-                                                    <span className="hidden md:block shrink-0">
-                                                        <PlatformChips platforms={game.platforms} />
-                                                    </span>
+                                                        <span className="hidden md:block shrink-0">
+                                                            <PlatformMarks platforms={game.platforms} />
+                                                        </span>
 
-                                                    <span className="hidden sm:block shrink-0">
-                                                        <HypeRow game={game} />
-                                                    </span>
+                                                        <span className="hidden sm:block shrink-0">
+                                                            <HypeRow game={game} />
+                                                        </span>
 
-                                                    <ReleaseActions game={game} onChanged={() => mutate()} />
-                                                </div>
-                                            ))}
+                                                        <ReleaseActions game={game} onChanged={() => mutate()} />
+                                                    </div>
+                                                ))}
+
+                                                {/* A day can ship 196 games. Two of them lead — the two
+                                                    biggest — and the rest arrive when asked for. */}
+                                                {hidden > 0 && (
+                                                    <button
+                                                        onClick={() => openDay(day.date)}
+                                                        disabled={openingDay === day.date}
+                                                        className="w-full h-9 rounded-[9px] border border-dashed border-white/[0.11] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-white/[0.03] inline-flex items-center justify-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/40 hover:text-white transition-colors disabled:opacity-50"
+                                                    >
+                                                        {openingDay === day.date
+                                                            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading</>
+                                                            : <><Plus className="w-3.5 h-3.5" /> {hidden} more on {day.day} {day.month}</>}
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </Panel>
