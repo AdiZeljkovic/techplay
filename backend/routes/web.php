@@ -3,7 +3,6 @@
 use App\Http\Controllers\RssController;
 use App\Http\Controllers\SitemapController;
 use App\Models\SiteSetting;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,4 +43,3 @@ Route::get('/{key}.txt', function ($key) {
     }
     abort(404);
 })->where('key', '[a-zA-Z0-9]+');
-

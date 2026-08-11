@@ -52,10 +52,6 @@
 **Gdje:** `NewsletterSubscriberResource` u Filament, mail config
 **Status:** PARTIAL
 
-### 10. Clan napredne funkcije
-**Problem:** Clan invite, role management, clan vs clan statistike — osnova implementirana ali napredne funkcije UNKNOWN.
-**Status:** PARTIAL
-
 ### 11. Comment edit
 **Problem:** Nema endpoint za editovanje vlastitog komentara.
 **Gdje:** `CommentController`

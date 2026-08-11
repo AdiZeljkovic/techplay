@@ -46,8 +46,6 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `/settings` | GET | SettingsController |
 | `/giveaways` | GET | GiveawayController |
 | `/giveaways/{slug}` | GET | GiveawayController |
-| `/clans` | GET | ClanController |
-| `/clans/{slug}` | GET | ClanController |
 | `/compare/{username}/{other}` | GET | ProfileCompareController |
 | `/seasons/active` | GET | SeasonController |
 | `/search/articles` | GET | SearchController |
@@ -84,8 +82,6 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `/backlog/suggest` | POST | BacklogAdvisorController |
 | `/presence` | POST/DELETE | PresenceController |
 | `/feed/personalized` | GET | FeedController |
-| `/clans` | POST | ClanController |
-| `/clans/{slug}/join` | POST | ClanController |
 
 ### Discord bot rute (throttle:300,1)
 | Endpoint | Metoda | Controller |
@@ -146,9 +142,6 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `Post` | `posts` | Forum postovi/replies |
 | `Comment` | `comments` | Komentari (polymorphic — articles, reviews, games) |
 | `Message` | `messages` | Direct messages između korisnika |
-| `Clan` | `clans` | Gaming klanovi |
-| `ClanMember` | `clan_members` | Membership (role: owner/admin/member) |
-| `ClanInvite` | `clan_invites` | Pozivnice u klan |
 
 ### Gamification modeli
 | Model | Tabela | Opis |

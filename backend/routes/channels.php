@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ConversationParticipant;
 use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
@@ -32,7 +33,7 @@ Broadcast::channel('user.{id}', function ($user, $id) {
 // Only the people in a conversation may listen to it. Without this the
 // message body of every DM was readable by anyone with the public key.
 Broadcast::channel('conversation.{conversationId}', function ($user, $conversationId) {
-    return \App\Models\ConversationParticipant::where('conversation_id', $conversationId)
+    return ConversationParticipant::where('conversation_id', $conversationId)
         ->where('user_id', $user->id)
         ->exists();
 });

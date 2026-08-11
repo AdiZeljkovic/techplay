@@ -6,7 +6,6 @@ use App\Models\Achievement;
 use App\Models\AdCampaign;
 use App\Models\Article;
 use App\Models\Category;
-use App\Models\ClanMissionTemplate;
 use App\Models\Comment;
 use App\Models\Customization;
 use App\Models\EditorialChannel;
@@ -84,7 +83,6 @@ class AuthServiceProvider extends ServiceProvider
         // Money, personal data, configuration, economy
         Achievement::class => AdminOnlyPolicy::class,
         AdCampaign::class => AdminOnlyPolicy::class,
-        ClanMissionTemplate::class => AdminOnlyPolicy::class,
         Customization::class => AdminOnlyPolicy::class,
         Giveaway::class => AdminOnlyPolicy::class,
         MediaKitSetting::class => AdminOnlyPolicy::class,

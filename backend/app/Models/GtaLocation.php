@@ -22,12 +22,12 @@ class GtaLocation extends Model
     protected function casts(): array
     {
         return [
-            'categories'     => 'array',
+            'categories' => 'array',
             'is_unconfirmed' => 'boolean',
-            'game_x'         => 'float',
-            'game_y'         => 'float',
-            'lat'            => 'float',
-            'lng'            => 'float',
+            'game_x' => 'float',
+            'game_y' => 'float',
+            'lat' => 'float',
+            'lng' => 'float',
         ];
     }
 

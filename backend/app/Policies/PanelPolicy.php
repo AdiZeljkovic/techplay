@@ -2,6 +2,8 @@
 
 namespace App\Policies;
 
+use App\Models\Game;
+use App\Models\GameRating;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,8 +28,8 @@ abstract class PanelPolicy
      * away from all of it.
      */
     protected const DELETE_IS_ADMIN_ONLY = [
-        \App\Models\Game::class,
-        \App\Models\GameRating::class,
+        Game::class,
+        GameRating::class,
     ];
 
     /** Does this tier admit the user at all? Admins bypass it entirely. */

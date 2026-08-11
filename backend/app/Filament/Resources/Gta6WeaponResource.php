@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Components\MediaPickerFields;
 use App\Filament\Resources\Gta6WeaponResource\Pages;
 use App\Models\Gta6Weapon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
-use App\Filament\Components\MediaPickerFields;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -45,15 +45,15 @@ class Gta6WeaponResource extends Resource
     }
 
     private const TYPES = [
-        'Pistol'    => 'Pistol',
-        'SMG'       => 'SMG',
-        'Rifle'     => 'Rifle',
-        'Shotgun'   => 'Shotgun',
-        'Sniper'    => 'Sniper',
-        'Heavy'     => 'Heavy',
+        'Pistol' => 'Pistol',
+        'SMG' => 'SMG',
+        'Rifle' => 'Rifle',
+        'Shotgun' => 'Shotgun',
+        'Sniper' => 'Sniper',
+        'Heavy' => 'Heavy',
         'Explosive' => 'Explosive',
-        'Melee'     => 'Melee',
-        'Thrown'    => 'Thrown',
+        'Melee' => 'Melee',
+        'Thrown' => 'Thrown',
     ];
 
     public static function form(Schema $schema): Schema
@@ -124,7 +124,7 @@ class Gta6WeaponResource extends Resource
                                 Forms\Components\Select::make('status')
                                     ->options([
                                         'confirmed' => 'Confirmed',
-                                        'rumored'   => 'Rumored',
+                                        'rumored' => 'Rumored',
                                     ])
                                     ->default('confirmed')
                                     ->native(false),
@@ -177,9 +177,9 @@ class Gta6WeaponResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListGta6Weapons::route('/'),
+            'index' => Pages\ListGta6Weapons::route('/'),
             'create' => Pages\CreateGta6Weapon::route('/create'),
-            'edit'   => Pages\EditGta6Weapon::route('/{record}/edit'),
+            'edit' => Pages\EditGta6Weapon::route('/{record}/edit'),
         ];
     }
 }

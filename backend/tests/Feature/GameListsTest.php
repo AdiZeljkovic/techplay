@@ -120,7 +120,7 @@ class GameListsTest extends TestCase
         $list = $this->list($author, ['is_draft' => true]);
 
         $this->getJson("/api/v1/game-lists/{$list->id}")->assertStatus(403);
-        $this->getJson("/api/v1/users/writer/lists")->assertStatus(200)->assertJsonCount(0, 'data');
+        $this->getJson('/api/v1/users/writer/lists')->assertStatus(200)->assertJsonCount(0, 'data');
 
         Sanctum::actingAs($author);
         $this->getJson("/api/v1/game-lists/{$list->id}")->assertStatus(200);

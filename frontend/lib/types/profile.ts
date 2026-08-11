@@ -546,7 +546,6 @@ export interface UserProfile {
     showcase?: PlayingNowGame[];
     connected_accounts?: string[];
     xbox_profile?: { gamertag: string | null; gamerscore: number } | null;
-    clan?: { name: string; slug: string; tag: string | null; logo: string | null; role: string } | null;
     platforms_genres?: PlatformsGenres;
     gamer_dna?: GamerDna;
     reputation?: ReputationData;

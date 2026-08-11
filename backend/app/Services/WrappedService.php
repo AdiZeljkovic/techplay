@@ -495,12 +495,6 @@ class WrappedService
             ->whereBetween('updated_at', [$start, $end])
             ->count();
 
-        $clan = (int) DB::table('clan_ledger')
-            ->where('user_id', $user->id)
-            ->where('amount', '>', 0)
-            ->whereBetween('created_at', [$start, $end])
-            ->sum('amount');
-
         $comments = (int) DB::table('comments')
             ->where('user_id', $user->id)
             ->where('status', 'approved')
@@ -514,7 +508,6 @@ class WrappedService
 
         return [
             ['key' => 'friends', 'label' => 'Friends made', 'value' => $friends],
-            ['key' => 'clan', 'label' => 'Clan contribution', 'value' => $clan],
             ['key' => 'comments', 'label' => 'Comments posted', 'value' => $comments],
             ['key' => 'posts', 'label' => 'Forum posts', 'value' => $posts],
         ];
@@ -522,7 +515,7 @@ class WrappedService
 
     /**
      * Two words for the year, earned from what actually filled it — the same
-     * philosophy as the clan's archetype, not a fixed list per genre.
+     * philosophy as an archetype, not a fixed list per genre.
      */
     private function archetype(User $user, int $year): array
     {

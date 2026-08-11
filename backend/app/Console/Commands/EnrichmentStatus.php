@@ -31,17 +31,17 @@ class EnrichmentStatus extends Command
         $pg = DB::getDriverName() === 'pgsql';
 
         $total = DB::table('games')->count();
-        $this->info("Games in catalogue: ".number_format($total));
+        $this->info('Games in catalogue: '.number_format($total));
         $this->newLine();
 
         // ── coverage: how much of the catalogue each source has reached ──
         $has = fn (string $sql) => (int) DB::table('games')->whereRaw($sql)->count();
 
-        $covers = $has($pg ? "cover_url is not null and cover_url <> ''" : "cover_url is not null");
-        $videos = $has($pg ? "videos is not null and jsonb_array_length(videos::jsonb) > 0" : "videos is not null");
+        $covers = $has($pg ? "cover_url is not null and cover_url <> ''" : 'cover_url is not null');
+        $videos = $has($pg ? 'videos is not null and jsonb_array_length(videos::jsonb) > 0' : 'videos is not null');
         $metacritic = $has($pg ? "critic_scores::jsonb -> 'metacritic' is not null" : "json_extract(critic_scores, '$.metacritic') is not null");
         $opencritic = $has($pg ? "critic_scores::jsonb -> 'opencritic' is not null" : "json_extract(critic_scores, '$.opencritic') is not null");
-        $descriptions = $has("description is not null");
+        $descriptions = $has('description is not null');
 
         $pct = fn (int $n) => $total > 0 ? round($n / $total * 100, 1).'%' : '—';
 
@@ -70,7 +70,7 @@ class EnrichmentStatus extends Command
             ->where('provider', 'steam')
             ->selectRaw(($pg
                 ? "metadata::jsonb ->> 'status'"
-                : "json_extract(metadata, '$.status')")." as status, count(*) as n")
+                : "json_extract(metadata, '$.status')").' as status, count(*) as n')
             ->groupBy('status')
             ->pluck('n', 'status');
 

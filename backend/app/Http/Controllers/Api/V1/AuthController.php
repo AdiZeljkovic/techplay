@@ -7,7 +7,6 @@ use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Resources\V1\PublicUserResource;
 use App\Http\Resources\V1\UserResource;
 use App\Models\Achievement;
-use App\Models\ClanMember;
 use App\Models\ConnectedAccount;
 use App\Models\GameRating;
 use App\Models\Order;
@@ -438,20 +437,6 @@ class AuthController extends Controller
                 return $xbox ? [
                     'gamertag' => $xbox->display_name,
                     'gamerscore' => (int) data_get($xbox->metadata, 'gamerscore', 0),
-                ] : null;
-            })(),
-            // V3 — clan membership (public identity)
-            'clan' => (function () use ($user) {
-                $member = ClanMember::where('user_id', $user->id)
-                    ->with('clan:id,name,slug,logo,tag')
-                    ->first();
-
-                return $member && $member->clan ? [
-                    'name' => $member->clan->name,
-                    'slug' => $member->clan->slug,
-                    'tag' => $member->clan->tag,
-                    'logo' => $member->clan->logo,
-                    'role' => $member->role,
                 ] : null;
             })(),
         ];

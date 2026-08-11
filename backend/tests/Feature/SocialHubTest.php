@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Events\ChatMessageSent;
-use App\Models\Clan;
-use App\Models\ClanMember;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Friendship;
@@ -165,31 +163,6 @@ class SocialHubTest extends TestCase
 
         // Only the offered set is accepted.
         $this->actingAs($me)->postJson("/api/v1/messages/{$message->id}/react", ['emoji' => '💀'])->assertStatus(422);
-    }
-
-    public function test_the_clan_room_follows_the_roster(): void
-    {
-        $owner = User::factory()->create();
-        $clan = Clan::create(['owner_id' => $owner->id, 'name' => 'Alpha', 'slug' => 'alpha', 'is_public' => true, 'member_limit' => 50]);
-        ClanMember::create(['clan_id' => $clan->id, 'user_id' => $owner->id, 'role' => 'owner', 'joined_at' => now()]);
-
-        $member = User::factory()->create();
-        ClanMember::create(['clan_id' => $clan->id, 'user_id' => $member->id, 'role' => 'member', 'joined_at' => now()]);
-
-        $id = $this->actingAs($owner)->getJson('/api/v1/conversations/clan')->assertOk()->json('data.id');
-        $room = Conversation::find($id);
-
-        $this->assertSame('clan', $room->type);
-        $this->assertTrue($room->hasParticipant($member->id));
-
-        // Leaving the clan leaves the room.
-        ClanMember::where('clan_id', $clan->id)->where('user_id', $member->id)->delete();
-        $this->actingAs($owner)->getJson('/api/v1/conversations/clan')->assertOk();
-
-        $this->assertFalse($room->fresh()->hasParticipant($member->id));
-
-        // Someone with no clan gets no room, not an error.
-        $this->actingAs(User::factory()->create())->getJson('/api/v1/conversations/clan')->assertOk()->assertJsonPath('data', null);
     }
 
     public function test_a_group_member_can_add_friends_and_leave(): void

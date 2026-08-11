@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\SyncSteamLibrary;
 use App\Jobs\SyncXboxLibrary;
 use App\Models\ConnectedAccount;
+use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\FunnelAnalytics;
 use App\Services\OpenXblService;
@@ -14,8 +15,9 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Laravel\Sanctum\PersonalAccessToken;
+use Illuminate\Support\Str;
 
 class ConnectedAccountController extends Controller
 {
@@ -42,8 +44,8 @@ class ConnectedAccountController extends Controller
         // URL travels to steamcommunity.com, lands in the user's history and
         // comes back as a query string in our access logs; a full-privilege
         // Sanctum token with a seven-day life had no business in it.
-        $state = \Illuminate\Support\Str::random(48);
-        \Illuminate\Support\Facades\Cache::put(
+        $state = Str::random(48);
+        Cache::put(
             'steam:link:'.$state,
             $request->user()->id,
             now()->addMinutes(10)
@@ -87,10 +89,10 @@ class ConnectedAccountController extends Controller
         // removes in one step, so a replayed callback finds nothing.
         $state = (string) $request->get('state', '');
         $userId = $state !== ''
-            ? \Illuminate\Support\Facades\Cache::pull('steam:link:'.$state)
+            ? Cache::pull('steam:link:'.$state)
             : null;
 
-        $user = $userId ? \App\Models\User::find($userId) : null;
+        $user = $userId ? User::find($userId) : null;
         if (! $user) {
             return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_error=1');
         }

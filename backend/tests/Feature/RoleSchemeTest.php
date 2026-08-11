@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Comment;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -99,8 +100,8 @@ class RoleSchemeTest extends TestCase
         // role that exists to moderate could not.
         $moderator = $this->withRole('Moderator');
 
-        $this->assertTrue($moderator->can('viewAny', \App\Models\Comment::class));
-        $this->assertTrue($moderator->can('update', new \App\Models\Comment));
+        $this->assertTrue($moderator->can('viewAny', Comment::class));
+        $this->assertTrue($moderator->can('update', new Comment));
     }
 
     public function test_an_editor_in_chief_can_both_delete_a_thread_and_edit_a_post(): void

@@ -26,8 +26,6 @@
 | `/friends` | `GET /friends`, `GET /friends/pending` | FriendController::index | friendships |
 | `/messages` | `GET /messages` | MessageController::index | messages |
 | `/leaderboard` | `GET /leaderboard` | LeaderboardController::index | users, ranks |
-| `/clans` | `GET /clans` | ClanController::index | clans |
-| `/clans/[slug]` | `GET /clans/{slug}` | ClanController::show | clans, clan_members |
 | `/compare/[u1]/[u2]` | `GET /compare/{username}/{other}` | ProfileCompareController::compare | users |
 | `/giveaways` | `GET /giveaways` | GiveawayController::index | giveaways |
 | `/giveaways/[slug]` | `GET /giveaways/{slug}`, `GET /giveaways/{slug}/my-entry` | GiveawayController::show, myEntry | giveaways, giveaway_entries |

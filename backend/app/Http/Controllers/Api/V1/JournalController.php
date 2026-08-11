@@ -7,7 +7,6 @@ use App\Models\Game;
 use App\Models\GamingMoment;
 use App\Models\PlaySession;
 use App\Models\User;
-use App\Services\ClanResourceService;
 use App\Services\JournalService;
 use App\Services\QuestService;
 use App\Services\SanitizationService;
@@ -96,11 +95,6 @@ class JournalController extends Controller
         ]);
 
         $journal->syncPlaytime($user, $game->id);
-
-        // A quick note is not playtime; a real sitting feeds the clan.
-        if ((int) $session->minutes >= (int) config('clan.session_min_minutes', 30)) {
-            app(ClanResourceService::class)->award($user, 'session_logged');
-        }
 
         return $this->success($this->presentSession($session->load('game', 'moments'), true), 'Session logged.');
     }

@@ -26,11 +26,6 @@ class Season extends Model
         return $this->hasMany(Quest::class);
     }
 
-    public function clanTrophies(): HasMany
-    {
-        return $this->hasMany(ClanTrophy::class);
-    }
-
     public static function active(): ?self
     {
         // The dates matter, not just the flag. `is_active` is flipped off by

@@ -97,7 +97,6 @@ frontend/
 │   ├── calendar/           Release calendar
 │   ├── cart/               Košarica
 │   ├── checkout/           Checkout
-│   ├── clans/              Clan stranice
 │   ├── compare/            Profile compare
 │   ├── contact/            Kontakt forma
 │   ├── forum/              Forum (kategorije, threadovi)

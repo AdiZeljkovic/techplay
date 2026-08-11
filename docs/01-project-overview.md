@@ -101,7 +101,6 @@ TechPlay.gg je custom gaming platforma namijenjena gaming zajednici na globalnom
 - Presence tracking (što korisnik trenutno igra)
 - Friends sistem
 - Direct Messages
-- Clans
 - Quests i Season sistem
 - Bounty sistem
 - Steam achievements import

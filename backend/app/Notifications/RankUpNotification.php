@@ -20,13 +20,13 @@ class RankUpNotification extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'type'    => 'rank_up',
-            'title'   => "You reached {$this->rank->name}!",
-            'message' => "Congrats! Keep engaging to climb even higher.",
-            'rank'    => $this->rank->name,
-            'icon'    => $this->rank->icon ?? null,
-            'color'   => $this->rank->color ?? null,
-            'link'    => "/profile/{$notifiable->username}",
+            'type' => 'rank_up',
+            'title' => "You reached {$this->rank->name}!",
+            'message' => 'Congrats! Keep engaging to climb even higher.',
+            'rank' => $this->rank->name,
+            'icon' => $this->rank->icon ?? null,
+            'color' => $this->rank->color ?? null,
+            'link' => "/profile/{$notifiable->username}",
         ];
     }
 }

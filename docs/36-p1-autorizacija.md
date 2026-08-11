@@ -1,5 +1,11 @@
 # P1 — Autorizacija i IDOR (09.08.2026)
 
+> **Napomena, 11. 08. 2026:** klanovi su u međuvremenu uklonjeni iz projekta
+> (`docs/33-clan-system-plan.md`). Nalazi i rute pod `/clans/*` ispod su tačan
+> zapis onoga što je 09. 08. bilo popravljeno, ali te rute više ne postoje.
+> Privatne forum kategorije su preživjele — sada su skrivene od svih, ne samo od
+> ne-članova. Ostatak dokumenta stoji.
+
 Prvi paket iz `docs/35-plan-pune-analize.md`. Pregledano je svih 275 ruta pod
 `/api/v1`, po kontroleru, sa jednim pitanjem: **odbija li to API, ili samo UI ne
 nudi dugme?** Šest paralelnih pregleda, pa lična provjera svakog nalaza koji

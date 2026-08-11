@@ -25,12 +25,12 @@ class GameNewsNotification extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'type'         => 'game_news',
-            'title'        => "New article about {$this->game->name}",
-            'message'      => $this->article->title,
-            'game_slug'    => $this->game->slug,
+            'type' => 'game_news',
+            'title' => "New article about {$this->game->name}",
+            'message' => $this->article->title,
+            'game_slug' => $this->game->slug,
             'article_slug' => $this->article->slug,
-            'link'         => "/{$this->categoryPath}/{$this->article->slug}",
+            'link' => "/{$this->categoryPath}/{$this->article->slug}",
         ];
     }
 }

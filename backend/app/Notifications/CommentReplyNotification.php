@@ -28,12 +28,12 @@ class CommentReplyNotification extends Notification
         $name = $this->replier->display_name ?? $this->replier->username;
 
         return [
-            'type'             => 'comment_reply',
-            'title'            => "{$name} replied to your comment",
-            'message'          => Str::limit($this->reply->content, 100),
-            'sender_username'  => $this->replier->username,
-            'sender_avatar_url'=> $this->replier->avatar_url ?? null,
-            'link'             => $this->contentLink,
+            'type' => 'comment_reply',
+            'title' => "{$name} replied to your comment",
+            'message' => Str::limit($this->reply->content, 100),
+            'sender_username' => $this->replier->username,
+            'sender_avatar_url' => $this->replier->avatar_url ?? null,
+            'link' => $this->contentLink,
         ];
     }
 }

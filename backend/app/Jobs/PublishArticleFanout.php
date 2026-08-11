@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Article;
+use App\Observers\ArticleObserver;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -45,7 +46,7 @@ class PublishArticleFanout implements ShouldQueue
         }
 
         // The observer holds the actual steps; this job decides when they run.
-        app(\App\Observers\ArticleObserver::class)
+        app(ArticleObserver::class)
             ->runPublishFanout($article, $this->isNewlyPublished);
     }
 

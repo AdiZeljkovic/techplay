@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Game;
+use App\Models\Quest;
+use App\Models\QuestProgress;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -98,7 +100,7 @@ class CollectionRewardsTest extends TestCase
         $user = User::factory()->create(['bounty_balance' => 0]);
         $game = $this->game();
 
-        $quest = \App\Models\Quest::create([
+        $quest = Quest::create([
             'name' => 'Rate three games',
             'slug' => 'rate-three-games',
             'description' => 'Publish reviews for three different games.',
@@ -121,7 +123,7 @@ class CollectionRewardsTest extends TestCase
                 ])->assertSuccessful();
         }
 
-        $progress = \App\Models\QuestProgress::where('user_id', $user->id)
+        $progress = QuestProgress::where('user_id', $user->id)
             ->where('quest_id', $quest->id)
             ->first();
 

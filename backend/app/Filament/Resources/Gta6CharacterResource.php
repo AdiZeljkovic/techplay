@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Components\MediaPickerFields;
 use App\Filament\Resources\Gta6CharacterResource\Pages;
 use App\Models\Gta6Character;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
-use App\Filament\Components\MediaPickerFields;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -110,15 +110,15 @@ class Gta6CharacterResource extends Resource
                                 Forms\Components\Select::make('role')
                                     ->options([
                                         'protagonist' => 'Protagonist',
-                                        'antagonist'  => 'Antagonist',
-                                        'supporting'  => 'Supporting',
+                                        'antagonist' => 'Antagonist',
+                                        'supporting' => 'Supporting',
                                     ])
                                     ->native(false),
 
                                 Forms\Components\Select::make('status')
                                     ->options([
                                         'confirmed' => 'Confirmed',
-                                        'rumored'   => 'Rumored',
+                                        'rumored' => 'Rumored',
                                     ])
                                     ->default('confirmed')
                                     ->native(false),
@@ -151,8 +151,8 @@ class Gta6CharacterResource extends Resource
                     ->badge()
                     ->color(fn ($state) => match ($state) {
                         'protagonist' => 'success',
-                        'antagonist'  => 'danger',
-                        default       => 'gray',
+                        'antagonist' => 'danger',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('status')
@@ -167,8 +167,8 @@ class Gta6CharacterResource extends Resource
             ->filters([
                 SelectFilter::make('role')->options([
                     'protagonist' => 'Protagonist',
-                    'antagonist'  => 'Antagonist',
-                    'supporting'  => 'Supporting',
+                    'antagonist' => 'Antagonist',
+                    'supporting' => 'Supporting',
                 ]),
                 TernaryFilter::make('is_published')->label('Published'),
             ])
@@ -185,9 +185,9 @@ class Gta6CharacterResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListGta6Characters::route('/'),
+            'index' => Pages\ListGta6Characters::route('/'),
             'create' => Pages\CreateGta6Character::route('/create'),
-            'edit'   => Pages\EditGta6Character::route('/{record}/edit'),
+            'edit' => Pages\EditGta6Character::route('/{record}/edit'),
         ];
     }
 }

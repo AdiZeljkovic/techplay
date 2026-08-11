@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Components\MediaPickerFields;
 use App\Filament\Resources\Gta6VehicleResource\Pages;
 use App\Models\Gta6Vehicle;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
-use App\Filament\Components\MediaPickerFields;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -45,20 +45,20 @@ class Gta6VehicleResource extends Resource
     }
 
     private const CLASSES = [
-        'Super'        => 'Super',
-        'Sports'       => 'Sports',
-        'Sedan'        => 'Sedan',
-        'Coupe'        => 'Coupe',
-        'SUV'          => 'SUV',
-        'Muscle'       => 'Muscle',
-        'Off-Road'     => 'Off-Road',
-        'Motorcycle'   => 'Motorcycle',
-        'Boat'         => 'Boat',
-        'Aircraft'     => 'Aircraft',
-        'Helicopter'   => 'Helicopter',
-        'Commercial'   => 'Commercial',
-        'Emergency'    => 'Emergency',
-        'Utility'      => 'Utility',
+        'Super' => 'Super',
+        'Sports' => 'Sports',
+        'Sedan' => 'Sedan',
+        'Coupe' => 'Coupe',
+        'SUV' => 'SUV',
+        'Muscle' => 'Muscle',
+        'Off-Road' => 'Off-Road',
+        'Motorcycle' => 'Motorcycle',
+        'Boat' => 'Boat',
+        'Aircraft' => 'Aircraft',
+        'Helicopter' => 'Helicopter',
+        'Commercial' => 'Commercial',
+        'Emergency' => 'Emergency',
+        'Utility' => 'Utility',
     ];
 
     public static function form(Schema $schema): Schema
@@ -134,7 +134,7 @@ class Gta6VehicleResource extends Resource
                                 Forms\Components\Select::make('status')
                                     ->options([
                                         'confirmed' => 'Confirmed',
-                                        'rumored'   => 'Rumored',
+                                        'rumored' => 'Rumored',
                                     ])
                                     ->default('confirmed')
                                     ->native(false),
@@ -189,9 +189,9 @@ class Gta6VehicleResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListGta6Vehicles::route('/'),
+            'index' => Pages\ListGta6Vehicles::route('/'),
             'create' => Pages\CreateGta6Vehicle::route('/create'),
-            'edit'   => Pages\EditGta6Vehicle::route('/{record}/edit'),
+            'edit' => Pages\EditGta6Vehicle::route('/{record}/edit'),
         ];
     }
 }

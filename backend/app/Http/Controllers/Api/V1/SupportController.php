@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\SupportTier;
 use App\Models\UserSupport;
+use App\Services\PayPalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +22,7 @@ class SupportController extends Controller
     /**
      * Handle successful pledge/subscription.
      */
-    public function pledge(Request $request, \App\Services\PayPalService $paypal)
+    public function pledge(Request $request, PayPalService $paypal)
     {
         $validated = $request->validate([
             'tier_id' => 'required|exists:support_tiers,id',

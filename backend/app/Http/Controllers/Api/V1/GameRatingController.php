@@ -9,7 +9,6 @@ use App\Models\GameRating;
 use App\Services\AchievementService;
 use App\Services\BountyService;
 use App\Services\Chronicle\TasteProfileService;
-use App\Services\ClanResourceService;
 use App\Services\QuestService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
@@ -183,7 +182,6 @@ class GameRatingController extends Controller
                     reference: "game_review:{$gameId}",
                 );
                 app(AchievementService::class)->check($request->user(), ['ratings_count']);
-                app(ClanResourceService::class)->award($request->user(), 'review_published');
                 // Quest progress belongs here, with the rest of the payout. It
                 // used to run as the first statement of this method — before
                 // validation, on every call — so saving a draft, publishing it

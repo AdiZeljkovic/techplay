@@ -73,12 +73,6 @@
 5. Discord role sync na rank-up
 6. Discord webhook za nový forum thread
 7. Discord bot dashboard u admin panelu
-8. `/clan` komanda u botu
-
-### Clan sistém
-9. Clan vs Clan challenges
-10. Clan leaderboard
-11. Clan chatroom (UNKNOWN da li je planirano)
 
 ### Newsletter
 12. Bulk newsletter slanje UI u Filamentu

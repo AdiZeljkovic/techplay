@@ -81,14 +81,6 @@
 | `reward_redemptions` | Redemptions | user_id, reward_item_id, redeemed_at |
 | `steam_achievements` | Steam achievement import | user_id, game_id, steam_app_id, achievement_id, unlocked_at |
 
-### Clans
-
-| Tabela | Opis | Ključne kolone |
-|--------|------|---------------|
-| `clans` | Gaming klanovi | id, name, slug, tag, description, owner_id, member_count |
-| `clan_members` | Clan membership | clan_id, user_id, role (owner/admin/member), joined_at |
-| `clan_invites` | Pozivnice | clan_id, inviter_id, invitee_id, status, expires_at |
-
 ### Discord
 
 | Tabela | Opis | Ključne kolone |
@@ -155,7 +147,6 @@ User ─────── belongsTo → Rank
 User ─────── hasMany ──→ Message
 User ─────── hasMany ──→ Friendship
 User ─────── hasOne ───→ Presence
-User ─────── hasMany ──→ ClanMember
 
 Article ──── belongsTo → Category
 Article ──── belongsTo → User (author)

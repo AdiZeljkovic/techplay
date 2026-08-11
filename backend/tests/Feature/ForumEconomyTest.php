@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Article;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Post;
@@ -78,7 +79,7 @@ class ForumEconomyTest extends TestCase
     {
         // Brand new account: probation holds the first three comments.
         $user = User::factory()->create(['xp' => 0]);
-        $article = \App\Models\Article::factory()->create();
+        $article = Article::factory()->create();
 
         $this->actingAs($user)->postJson('/api/v1/comments', [
             'commentable_type' => 'article',
@@ -100,7 +101,7 @@ class ForumEconomyTest extends TestCase
     public function test_flipping_a_comment_between_states_pays_only_once(): void
     {
         $user = User::factory()->create(['xp' => 0]);
-        $article = \App\Models\Article::factory()->create();
+        $article = Article::factory()->create();
 
         $this->actingAs($user)->postJson('/api/v1/comments', [
             'commentable_type' => 'article',

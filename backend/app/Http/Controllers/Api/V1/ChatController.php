@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Clan;
-use App\Models\ClanMember;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Friendship;
@@ -75,13 +73,12 @@ class ChatController extends Controller
                 'online' => $roster->where('online', true)->count(),
                 'conversations' => count($inbox),
                 'unread' => collect($inbox)->sum('unread'),
-                'groups' => collect($inbox)->whereIn('type', ['group', 'clan'])->count(),
+                'groups' => collect($inbox)->where('type', 'group')->count(),
             ],
             'friends' => $roster->sortByDesc(fn ($f) => ($f['game'] ? 2 : 0) + ($f['online'] ? 1 : 0))->values()->all(),
             'requests' => $this->pendingRequests($user),
             'blocked' => $this->blockedUsers($user),
             'suggestions' => $this->peopleYouMayKnow($user, $friendIds),
-            'clan_activity' => $this->clanActivity($user),
         ]);
     }
 
@@ -278,13 +275,9 @@ class ChatController extends Controller
     {
         // Checked before the type branches: the three distinct refusals below
         // let an authenticated caller walk conversation ids and learn which
-        // exist, which are clan rooms, and which pairs have a DM open.
+        // exist and which pairs have a DM open.
         if (! $conversation->hasParticipant($request->user()->id)) {
             return $this->error('This conversation is not yours.', 403);
-        }
-
-        if ($conversation->type === 'clan') {
-            return $this->error('Leave the clan to leave its room.', 422);
         }
 
         if ($conversation->type === 'direct') {
@@ -318,26 +311,6 @@ class ChatController extends Controller
         return $this->success(
             $chat->presentMessage($message->fresh()->load('sender:id,username,avatar_url', 'reactions'), $request->user()->id)
         );
-    }
-
-    /** GET /conversations/clan — the viewer's clan room, opened on demand. */
-    public function clanRoom(Request $request, ChatService $chat): JsonResponse
-    {
-        $membership = ClanMember::where('user_id', $request->user()->id)->first();
-
-        if (! $membership) {
-            return $this->success(null);
-        }
-
-        $clan = Clan::find($membership->clan_id);
-
-        if (! $clan) {
-            return $this->success(null);
-        }
-
-        $conversation = $chat->clanRoom($clan);
-
-        return $this->success(['id' => $conversation->id, 'name' => $clan->name]);
     }
 
     /* ── the rails ────────────────────────────────────────────────────── */
@@ -449,53 +422,5 @@ class ChatController extends Controller
             ])
             ->values()
             ->all();
-    }
-
-    /**
-     * The latest talk in the viewer's clan room — and, while the room is
-     * young, the clan's forum category, which is where clans have been
-     * talking until now.
-     */
-    private function clanActivity(User $user): array
-    {
-        $membership = ClanMember::where('user_id', $user->id)->first();
-
-        if (! $membership) {
-            return [];
-        }
-
-        $room = Conversation::where('clan_id', $membership->clan_id)->first();
-
-        $chat = $room
-            ? Message::where('conversation_id', $room->id)
-                ->with('sender:id,username,avatar_url')
-                ->latest('id')->limit(3)->get()
-                ->map(fn (Message $m) => [
-                    'source' => 'chat',
-                    'username' => $m->sender?->username,
-                    'avatar_url' => $m->sender?->avatar_url,
-                    'body' => $m->body ?: 'Sent an image',
-                    'created_at' => $m->created_at->toIso8601String(),
-                ])->all()
-            : [];
-
-        if (count($chat) >= 3) {
-            return $chat;
-        }
-
-        $forum = Post::whereHas('thread.category', fn ($q) => $q->where('clan_id', $membership->clan_id))
-            ->with('author:id,username,avatar_url')
-            ->latest('id')
-            ->limit(3 - count($chat))
-            ->get()
-            ->map(fn (Post $p) => [
-                'source' => 'forum',
-                'username' => $p->author?->username,
-                'avatar_url' => $p->author?->avatar_url,
-                'body' => str($p->content)->stripTags()->limit(80)->value(),
-                'created_at' => $p->created_at->toIso8601String(),
-            ])->all();
-
-        return array_merge($chat, $forum);
     }
 }

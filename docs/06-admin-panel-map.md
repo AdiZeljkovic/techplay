@@ -149,4 +149,3 @@ Filament je integrisan direktno u Laravel backend aplikaciju — nije zasebna de
 - **Analitika/statistike** — postoje Filament Widgets, ali opseg UNKNOWN
 - **Email preview** — UNKNOWN
 - **Moderacija DM poruka** — vjerovatno nije u adminu
-- **Clan moderacija** — UNKNOWN

@@ -5,7 +5,7 @@
 // rendering perfectly. Anything registered below that matters gets this hook.
 $reportFailure = function (string $task) {
     return function () use ($task) {
-        \Illuminate\Support\Facades\Log::error("Scheduled task failed: {$task}");
+        Log::error("Scheduled task failed: {$task}");
     };
 };
 
@@ -15,6 +15,8 @@ use App\Jobs\SendGiveawayReminders;
 use App\Jobs\SendReleaseReminders;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -29,7 +31,7 @@ Schedule::job(new FlushViewCounters)->everyFiveMinutes()->withoutOverlapping(10)
 // can tell whether `* * * * * php artisan schedule:run` was ever installed —
 // and if it was not, every scheduled task simply never happens, silently.
 Schedule::call(function () {
-    \Illuminate\Support\Facades\Cache::put('scheduler:heartbeat', now()->toIso8601String(), 3600);
+    Cache::put('scheduler:heartbeat', now()->toIso8601String(), 3600);
 })->everyMinute()->name('scheduler-heartbeat')->withoutOverlapping();
 
 Schedule::command('ads:sync-metrics')->hourly();
@@ -96,12 +98,6 @@ Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30');
 
 // LEADERBOARD: Weekly baseline snapshot every Monday (powers period=week boards)
 Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10');
-
-// CLANS: weekly mission board for every clan with a Mission Control
-Schedule::command('clans:spawn-missions')->weeklyOn(1, '00:20');
-
-// CLANS: settle any ended, unsettled season (idempotent)
-Schedule::command('clans:settle-season')->dailyAt('00:40')->withoutOverlapping(30);
 
 // SEASONS: Conclude finished seasons (awards champion badges) — daily check
 Schedule::command('season:conclude')->dailyAt('00:20')->withoutOverlapping(30);

@@ -9,7 +9,6 @@ use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Services\BountyService;
 use App\Services\Chronicle\TasteProfileService;
-use App\Services\ClanResourceService;
 use App\Services\GameMatchingService;
 use App\Services\QuestService;
 use App\Services\XpService;
@@ -186,7 +185,6 @@ class GameCollectionController extends Controller
                 );
                 app(QuestService::class)->progress($request->user(), 'game_completed', 1);
                 app(XpService::class)->awardXp($request->user(), XpService::XP_GAME_COMPLETED, 'game_completed');
-                app(ClanResourceService::class)->award($request->user(), 'game_completed');
             } catch (\Throwable) {
             }
         }

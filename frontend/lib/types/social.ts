@@ -1,7 +1,7 @@
-/** Social Hub shapes — one chat system for direct, group and clan rooms.
+/** Social Hub shapes — one chat system for direct and group conversations.
  *  Backend: ChatController / ChatService. */
 
-export type ConversationType = "direct" | "group" | "clan";
+export type ConversationType = "direct" | "group";
 
 export interface ChatUser {
     id: number;
@@ -68,19 +68,10 @@ export interface SuggestionRow {
     mutual_friends: number;
 }
 
-export interface ClanActivityRow {
-    source: "chat" | "forum";
-    username: string | null;
-    avatar_url: string | null;
-    body: string;
-    created_at: string;
-}
-
 export interface SocialHubPayload {
     stats: { friends: number; online: number; conversations: number; unread: number; groups: number };
     friends: SocialFriend[];
     requests: FriendRequestRow[];
     blocked: { id: number; username: string; avatar_url: string | null }[];
     suggestions: SuggestionRow[];
-    clan_activity: ClanActivityRow[];
 }

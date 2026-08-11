@@ -29,13 +29,13 @@ class ArticleCommentNotification extends Notification
         $name = $this->commenter->display_name ?? $this->commenter->username;
 
         return [
-            'type'             => 'article_comment',
-            'title'            => "{$name} commented on your article",
-            'message'          => Str::limit($this->comment->content, 100),
-            'content_title'    => $this->contentTitle,
-            'sender_username'  => $this->commenter->username,
-            'sender_avatar_url'=> $this->commenter->avatar_url ?? null,
-            'link'             => $this->contentLink,
+            'type' => 'article_comment',
+            'title' => "{$name} commented on your article",
+            'message' => Str::limit($this->comment->content, 100),
+            'content_title' => $this->contentTitle,
+            'sender_username' => $this->commenter->username,
+            'sender_avatar_url' => $this->commenter->avatar_url ?? null,
+            'link' => $this->contentLink,
         ];
     }
 }

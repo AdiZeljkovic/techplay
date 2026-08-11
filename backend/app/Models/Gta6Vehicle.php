@@ -25,9 +25,9 @@ class Gta6Vehicle extends Model
     protected function casts(): array
     {
         return [
-            'gallery'      => 'array',
+            'gallery' => 'array',
             'is_published' => 'boolean',
-            'sort_order'   => 'integer',
+            'sort_order' => 'integer',
         ];
     }
 

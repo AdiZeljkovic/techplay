@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Services\Socialite\DiscordProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\User as SocialiteUser;
@@ -44,8 +45,8 @@ class DiscordSignInTest extends TestCase
     {
         // The whole flow used to die here: "Driver [discord] not supported".
         $this->assertInstanceOf(
-            \App\Services\Socialite\DiscordProvider::class,
-            \Laravel\Socialite\Facades\Socialite::driver('discord')
+            DiscordProvider::class,
+            Socialite::driver('discord')
         );
     }
 

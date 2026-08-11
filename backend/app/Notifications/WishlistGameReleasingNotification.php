@@ -22,7 +22,7 @@ class WishlistGameReleasingNotification extends Notification
         return [
             'type' => 'wishlist_releasing',
             'title' => "{$this->game->name} is out today!",
-            'message' => "The game you wishlisted is now available. Go check it out!",
+            'message' => 'The game you wishlisted is now available. Go check it out!',
             'game_slug' => $this->game->slug,
             'link' => "/calendar/{$this->game->slug}",
         ];

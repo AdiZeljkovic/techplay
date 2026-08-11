@@ -7,8 +7,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\PayPalService;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PayPalController extends Controller
@@ -19,7 +19,6 @@ class PayPalController extends Controller
     {
         $this->paypal = $paypal;
     }
-
 
     /**
      * Create a PayPal order for Shop items.
@@ -136,7 +135,7 @@ class PayPalController extends Controller
                     ->first();
 
                 if ($order && $order->status !== 'completed') {
-                    \Illuminate\Support\Facades\DB::transaction(function () use ($order, $response) {
+                    DB::transaction(function () use ($order, $response) {
                         // Paid goods leave the shelf. The cash-on-delivery path
                         // has always done this; PayPal orders never did, so a
                         // one-off item could be sold repeatedly.

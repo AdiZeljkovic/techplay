@@ -571,7 +571,6 @@ const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 const MOBILE_QUICK_TILES = [
     { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp" },
     { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp" },
-    { name: "Clans",       href: "/clans",       art: "/images/menu/menu-clans.webp" },
     { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp" },
 ];
 
@@ -619,11 +618,10 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     ]},
     {
         name: "Community", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
-        activePaths: ["/forum", "/leaderboard", "/clans", "/social", "/giveaways"],
+        activePaths: ["/forum", "/leaderboard", "/social", "/giveaways"],
         children: [
-            { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp",       description: "Discussions, help & clan halls" },
+            { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp",       description: "Discussions and help" },
             { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp", description: "Top gamers by XP & reputation" },
-            { name: "Clans",       href: "/clans",       art: "/images/menu/menu-clans.webp",       description: "Join or create a clan" },
             { name: "Social Hub",  href: "/social",     art: "/images/menu/menu-social.webp",      description: "Chat, friends and squads" },
             { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp",   description: "Win games & gear" },
         ] },

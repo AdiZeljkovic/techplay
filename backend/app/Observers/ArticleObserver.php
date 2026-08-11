@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Http\Controllers\SitemapController;
+use App\Jobs\PublishArticleFanout;
 use App\Models\Article;
 use App\Models\UserGame;
 use App\Notifications\GameNewsNotification;
@@ -72,7 +73,7 @@ class ArticleObserver
             // walk all leave the request now. Publishing used to hold the
             // editor's save for as long as those took, and showed a timeout on
             // a write that had already succeeded.
-            \App\Jobs\PublishArticleFanout::dispatch(
+            PublishArticleFanout::dispatch(
                 $article->id,
                 $article->wasRecentlyCreated || $article->wasChanged('status'),
             );

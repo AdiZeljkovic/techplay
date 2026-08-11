@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Services\ClanResourceService;
 use App\Services\StreakService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -38,7 +37,6 @@ class StreakController extends Controller
         }
 
         try {
-            app(ClanResourceService::class)->award($request->user(), 'daily_login');
         } catch (\Throwable) {
         }
 

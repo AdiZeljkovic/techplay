@@ -3,14 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Conversation extends Model
 {
-    public const TYPES = ['direct', 'group', 'clan'];
+    public const TYPES = ['direct', 'group'];
 
-    protected $fillable = ['type', 'name', 'image', 'clan_id', 'created_by', 'last_message_at'];
+    protected $fillable = ['type', 'name', 'image', 'created_by', 'last_message_at'];
 
     protected $casts = ['last_message_at' => 'datetime'];
 
@@ -22,11 +21,6 @@ class Conversation extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
-    }
-
-    public function clan(): BelongsTo
-    {
-        return $this->belongsTo(Clan::class);
     }
 
     public function hasParticipant(int $userId): bool

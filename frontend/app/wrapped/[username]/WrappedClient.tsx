@@ -38,7 +38,6 @@ const MOMENT_ICONS: Record<string, typeof Trophy> = {
 
 const COMMUNITY_ICONS: Record<string, typeof Users> = {
     friends: Users,
-    clan: Shield,
     comments: MessageSquare,
     posts: PenLine,
 };

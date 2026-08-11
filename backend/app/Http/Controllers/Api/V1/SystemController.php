@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 
@@ -69,7 +71,7 @@ class SystemController extends Controller
         // The scheduler is a cron line that lives outside the repo. If it was
         // never installed, nothing else here would notice.
         $checks['scheduler'] = $this->check(function () {
-            $beat = \Illuminate\Support\Facades\Cache::get('scheduler:heartbeat');
+            $beat = Cache::get('scheduler:heartbeat');
 
             if (! $beat) {
                 return [
@@ -80,7 +82,7 @@ class SystemController extends Controller
 
             // Two minutes of slack for a busy minute; beyond that the cron
             // stopped and every scheduled task stopped with it.
-            $age = now()->diffInSeconds(\Carbon\Carbon::parse($beat), true);
+            $age = now()->diffInSeconds(Carbon::parse($beat), true);
 
             return ['ok' => $age < 180, 'last_run' => $beat, 'age_seconds' => (int) $age];
         });

@@ -57,7 +57,6 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 | `/friends` | `app/friends/` | Prijatelji |
 | `/messages` | `app/messages/` | Direct messages |
 | `/leaderboard` | `app/leaderboard/` | XP leaderboard |
-| `/clans` | `app/clans/` | Clans listing + `[slug]` detalj |
 | `/compare` | `app/compare/` | Profile compare `[username]/[other]` |
 | `/giveaways` | `app/giveaways/` | Giveaways listing + `[slug]` |
 | `/giveaway` | `app/giveaway/` | Privée giveaway (poseban flow) |

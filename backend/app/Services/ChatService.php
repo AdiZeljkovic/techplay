@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Events\ChatMessageSent;
-use App\Models\Clan;
-use App\Models\ClanMember;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\Friendship;
@@ -15,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 
 /**
- * One chat system for direct messages, group chats and clan rooms. The shape
+ * One chat system for direct messages and group chats. The shape
  * of a conversation is the only thing that differs; sending, reading, unread
  * counts and presentation are identical, which is why they live here once.
  */
@@ -104,36 +102,6 @@ class ChatService
 
             return $conversation;
         });
-    }
-
-    /**
-     * A clan's room, created on first visit and kept in step with the roster
-     * — joining the clan joins the room, leaving it leaves.
-     */
-    public function clanRoom(Clan $clan): Conversation
-    {
-        $conversation = Conversation::firstOrCreate(
-            ['clan_id' => $clan->id],
-            ['type' => 'clan', 'name' => $clan->name, 'image' => $clan->logo],
-        );
-
-        $memberIds = ClanMember::where('clan_id', $clan->id)->pluck('user_id');
-        $present = $conversation->participants()->pluck('user_id');
-
-        foreach ($memberIds->diff($present) as $userId) {
-            ConversationParticipant::create([
-                'conversation_id' => $conversation->id,
-                'user_id' => $userId,
-                'joined_at' => now(),
-            ]);
-        }
-
-        // Someone who left the clan loses the room with it.
-        ConversationParticipant::where('conversation_id', $conversation->id)
-            ->whereNotIn('user_id', $memberIds)
-            ->delete();
-
-        return $conversation;
     }
 
     /* ── sending ──────────────────────────────────────────────────────── */

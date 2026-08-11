@@ -116,13 +116,13 @@ class DatabaseSizes extends Command
             .($grandTotal > 0 ? round($unboundedBytes / $grandTotal * 100, 1) : 0).'% of the database).');
 
         // ── dead rows, which is disk you have already paid for ──
-        $bloat = DB::select("
+        $bloat = DB::select('
             select relname, n_dead_tup, n_live_tup, last_autovacuum
             from pg_stat_user_tables
             where n_dead_tup > 10000
             order by n_dead_tup desc
             limit 10
-        ");
+        ');
 
         if ($bloat !== []) {
             $this->newLine();

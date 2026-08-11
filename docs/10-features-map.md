@@ -310,19 +310,6 @@ tuđi ispad nije naš ispad — test to i tvrdi (`Http::preventStrayRequests`).
 
 ---
 
-## Clans
-
-**Status:** COMPLETE (osnova)
-
-**Opis:** Gaming klanovi — kreiranje, pridruživanje, pregled.
-
-**Frontend:** `app/clans/`
-**Backend:** `ClanController`, `Clan`, `ClanMember`, `ClanInvite` modeli
-**Database:** `clans`, `clan_members`, `clan_invites`
-**API:** `GET /clans`, `GET /clans/{slug}`, `POST /clans`
-
----
-
 ## Shop
 
 **Status:** COMPLETE (osnova)

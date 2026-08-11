@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\GiveawayResource;
 use App\Models\Giveaway;
 use App\Models\GiveawayEntry;
 use App\Models\GiveawayTask;
@@ -110,10 +111,10 @@ class GiveawayIntegrityTest extends TestCase
         // Drawing is manual and nothing reminded anyone, so a finished giveaway
         // could sit with its prize unawarded indefinitely.
         $giveaway = $this->giveaway();
-        $this->assertNull(\App\Filament\Resources\GiveawayResource::getNavigationBadge());
+        $this->assertNull(GiveawayResource::getNavigationBadge());
 
         $giveaway->update(['ends_at' => now()->subDay()]);
 
-        $this->assertSame('1', \App\Filament\Resources\GiveawayResource::getNavigationBadge());
+        $this->assertSame('1', GiveawayResource::getNavigationBadge());
     }
 }

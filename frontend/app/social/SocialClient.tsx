@@ -26,11 +26,10 @@ const SECTIONS: { id: Section; label: string; icon: typeof Users }[] = [
     { id: "blocked", label: "Blocked", icon: Ban },
 ];
 
-const TABS: { id: "all" | "direct" | "group" | "clan"; label: string }[] = [
+const TABS: { id: "all" | "direct" | "group"; label: string }[] = [
     { id: "all", label: "All" },
     { id: "direct", label: "Direct" },
     { id: "group", label: "Groups" },
-    { id: "clan", label: "Clan" },
 ];
 
 const clock = (iso: string) =>
@@ -224,7 +223,7 @@ function MessageBubble({
 export default function SocialClient() {
     const { user, isLoading: authLoading } = useAuth();
     const [section, setSection] = useState<Section>("messages");
-    const [tab, setTab] = useState<"all" | "direct" | "group" | "clan">("all");
+    const [tab, setTab] = useState<"all" | "direct" | "group">("all");
     const [activeId, setActiveId] = useState<number | null>(null);
     const [search, setSearch] = useState("");
     const [draft, setDraft] = useState("");
@@ -308,20 +307,6 @@ export default function SocialClient() {
             setActiveId(id);
         } catch {
             toast.error("Couldn't open that conversation.");
-        }
-    }, [mutateList]);
-
-    const openClanRoom = useCallback(async () => {
-        try {
-            const res = await axios.get("/conversations/clan");
-            const id = res.data?.data?.id;
-            if (!id) return toast.error("You are not in a clan yet.");
-            await mutateList();
-            setSection("messages");
-            setTab("clan");
-            setActiveId(id);
-        } catch {
-            toast.error("Couldn't open the clan room.");
         }
     }, [mutateList]);
 
@@ -466,7 +451,7 @@ export default function SocialClient() {
                             [<Users key="f" className="w-4 h-4" />, "Friends", stats?.friends ?? 0, stats ? `${stats.online} online` : null],
                             [<MessageCircle key="c" className="w-4 h-4" />, "Chats", stats?.conversations ?? 0, "conversations"],
                             [<Mail key="u" className="w-4 h-4" />, "Unread", stats?.unread ?? 0, "new messages"],
-                            [<UsersRound key="g" className="w-4 h-4" />, "Groups", stats?.groups ?? 0, "group & clan"],
+                            [<UsersRound key="g" className="w-4 h-4" />, "Groups", stats?.groups ?? 0, "group"],
                         ] as const).map(([icon, label, value, sub]) => (
                             <span key={label} className="flex items-center gap-3">
                                 <span className="w-9 h-9 rounded-[9px] bg-white/[0.05] flex items-center justify-center text-[var(--accent)]">{icon}</span>
@@ -684,7 +669,7 @@ export default function SocialClient() {
                                                     <Avatar src={c.image} alt={c.name} size="md" />
                                                 ) : (
                                                     <span className="w-10 h-10 rounded-full bg-white/[0.06] border border-white/[0.09] flex items-center justify-center">
-                                                        {c.type === "clan" ? <Shield className="w-4 h-4 text-[var(--accent)]" /> : <UsersRound className="w-4 h-4 text-white/45" />}
+                                                        <UsersRound className="w-4 h-4 text-white/45" />
                                                     </span>
                                                 )}
                                             </span>
@@ -736,7 +721,7 @@ export default function SocialClient() {
                                                 <Avatar src={active.image} alt={active.name} size="md" />
                                             ) : (
                                                 <span className="w-10 h-10 rounded-full bg-white/[0.06] border border-white/[0.09] flex items-center justify-center shrink-0">
-                                                    {active.type === "clan" ? <Shield className="w-4 h-4 text-[var(--accent)]" /> : <UsersRound className="w-4 h-4 text-white/45" />}
+                                                    <UsersRound className="w-4 h-4 text-white/45" />
                                                 </span>
                                             )}
 
@@ -859,32 +844,6 @@ export default function SocialClient() {
                         )}
                     </Panel>
 
-                    <Panel
-                        title="Clan Chat Activity"
-                        action={{ label: "Open", onClick: openClanRoom }}
-                    >
-                        {(hub?.clan_activity.length ?? 0) === 0 ? (
-                            <p className="py-1 text-[11.5px] text-white/30 leading-snug">
-                                No clan chatter yet. Open the room and say something.
-                            </p>
-                        ) : (
-                            <div className="space-y-3">
-                                {hub!.clan_activity.map((a, i) => (
-                                    <div key={i} className="flex items-start gap-2.5">
-                                        <Avatar src={a.avatar_url} alt={a.username ?? "?"} size="sm" />
-                                        <span className="min-w-0 flex-1">
-                                            <span className="flex items-center gap-2">
-                                                <span className="text-[11.5px] font-bold text-white truncate">{a.username}</span>
-                                                <span className="ml-auto shrink-0 font-display text-[9px] font-bold text-white/25">{timeAgo(a.created_at)}</span>
-                                            </span>
-                                            <span className="block text-[11.5px] text-white/45 leading-snug line-clamp-2">{a.body}</span>
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </Panel>
-
                     <Panel title="People You May Know">
                         {(hub?.suggestions.length ?? 0) === 0 ? (
                             <p className="py-1 text-[11.5px] text-white/30 leading-snug">
@@ -919,7 +878,6 @@ export default function SocialClient() {
                         <div className="grid grid-cols-2 gap-2">
                             {([
                                 [UsersRound, "New group", () => setGrouping(true)],
-                                [Shield, "Clan room", openClanRoom],
                             ] as const).map(([Icon, label, action]) => (
                                 <button
                                     key={label}
@@ -930,13 +888,6 @@ export default function SocialClient() {
                                     <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/70">{label}</span>
                                 </button>
                             ))}
-                            <Link
-                                href="/clans"
-                                className="flex flex-col items-center gap-2 p-3.5 rounded-[10px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
-                            >
-                                <Users className="w-5 h-5 text-[var(--accent)]" />
-                                <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/70">Find clans</span>
-                            </Link>
                             <Link
                                 href="/leaderboard"
                                 className="flex flex-col items-center gap-2 p-3.5 rounded-[10px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"

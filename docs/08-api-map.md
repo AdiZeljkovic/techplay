@@ -218,20 +218,6 @@ Pun payload dodatno nosi `friend_status` (`self|none|pending|incoming|accepted`)
 
 ---
 
-## Seasons, Clans, Leaderboard
-
-| Metoda | Ruta | Controller::Metoda | Auth | Opis |
-|--------|------|--------------------|------|------|
-| GET | `/seasons` | SeasonController::index | - | Lista sezona |
-| GET | `/seasons/active` | SeasonController::active | - | Aktivna sezona |
-| GET | `/clans` | ClanController::index | - | Lista klanova |
-| GET | `/clans/{slug}` | ClanController::show | - | Detalj klana |
-| POST | `/clans` | ClanController::store | ✓ | Kreiraj klan |
-| POST | `/clans/{slug}/join` | ClanController::join | ✓ | Pridruži se klanu |
-| GET | `/leaderboard` | LeaderboardController::index | - | XP leaderboard (cached 5min) |
-
----
-
 ## Presence
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
@@ -354,7 +340,6 @@ ko smije, ili oblik odgovora.
 | **cijela `/discord/*` grupa** | provjera po kontroleru, dvije rute bez ijedne | `discord.bot` middleware na grupi (`X-Discord-Bot-Token`, prihvata i `X-Bot-Secret`) |
 | `GET /email/verify/{id}/{hash}` | bez provjere potpisa | `signed` middleware |
 | `GET /forum/threads/{slug}`, `/forum/search`, `/forum/active`, `/forum/unanswered`, `/games/{slug}/threads` | privatne klanske teme vidljive | filtrirane po članstvu (keširane rute nose samo javne kategorije) |
-| `GET /clans/{slug}` | privatni klan javan | 404 za nečlana |
 | `GET /game-lists/{id}`, `/game-lists/{id}/comments`, `/game-lists/discover` | zaobilazile privatnost profila | poštuju je |
 | `GET /presence/{username}` | bez provjere privatnosti | vraća `null` za skriven profil |
 | Giveaway rute (`tasks/complete`, `leaderboard`, `daily-bonus`, `my-entry`) | bez `is_public` | filtrirane |

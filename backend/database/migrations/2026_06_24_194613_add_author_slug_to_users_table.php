@@ -17,12 +17,14 @@ return new class extends Migration
         // Auto-populate for existing users with display_name
         DB::table('users')->whereNotNull('display_name')->orderBy('id')->each(function ($user) {
             $base = Str::slug($user->display_name);
-            if (empty($base)) return;
+            if (empty($base)) {
+                return;
+            }
 
             $slug = $base;
             $i = 1;
             while (DB::table('users')->where('author_slug', $slug)->where('id', '!=', $user->id)->exists()) {
-                $slug = $base . '-' . $i++;
+                $slug = $base.'-'.$i++;
             }
 
             DB::table('users')->where('id', $user->id)->update(['author_slug' => $slug]);

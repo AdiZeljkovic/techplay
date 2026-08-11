@@ -98,5 +98,4 @@ class NewsController extends Controller
 
         return $resource->response()->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
     }
-
 }

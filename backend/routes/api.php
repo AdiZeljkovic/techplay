@@ -12,8 +12,6 @@ use App\Http\Controllers\Api\V1\BountyController;
 use App\Http\Controllers\Api\V1\CalendarController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\ChatController;
-use App\Http\Controllers\Api\V1\ClanBaseController;
-use App\Http\Controllers\Api\V1\ClanController;
 use App\Http\Controllers\Api\V1\CollectionGoalController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\ConnectedAccountController;
@@ -53,8 +51,8 @@ use App\Http\Controllers\Api\V1\NewsController;
 use App\Http\Controllers\Api\V1\NewsletterController;
 use App\Http\Controllers\Api\V1\NewsroomController;
 use App\Http\Controllers\Api\V1\NotificationController;
-use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PasswordResetController;
+use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
 use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\QuestController;
@@ -179,11 +177,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/friends/decline/{id}', [FriendController::class, 'declineRequest']);
 
         // Messages
-        // Social Hub — one chat system for direct, group and clan rooms
+        // Social Hub — one chat system for direct and group conversations
         Route::get('/social', [ChatController::class, 'hub']);
         Route::get('/conversations', [ChatController::class, 'index']);
         Route::post('/conversations', [ChatController::class, 'store']);
-        Route::get('/conversations/clan', [ChatController::class, 'clanRoom']);
         Route::get('/conversations/{conversation}/messages', [ChatController::class, 'messages']);
         Route::post('/conversations/{conversation}/messages', [ChatController::class, 'send']);
         Route::post('/conversations/{conversation}/read', [ChatController::class, 'markRead']);
@@ -193,7 +190,7 @@ Route::prefix('v1')->group(function () {
 
         // The legacy mail system is gone: conversations replaced it, no screen
         // reads it, and its index() matched on sender_id — which also matched
-        // conversation rows, leaking Social Hub and clan-room messages back
+        // conversation rows, leaking Social Hub messages back
         // through a shape nobody maintains.
         //   Route::get('/messages', ...)  — removed 08.08.2026
 
@@ -270,30 +267,6 @@ Route::prefix('v1')->group(function () {
 
         // Quests
         Route::get('/user/quests', [QuestController::class, 'index']);
-
-        // Clans
-        Route::get('/user/clan', [ClanController::class, 'myClan']);
-        Route::get('/user/clan-invites', [ClanController::class, 'myInvites']);
-        Route::post('/clans', [ClanController::class, 'store']);
-        Route::post('/clans/{slug}/join', [ClanController::class, 'join']);
-        Route::delete('/clans/{slug}/leave', [ClanController::class, 'leave']);
-        Route::post('/clans/{slug}/invite', [ClanController::class, 'invite']);
-        Route::post('/clans/invites/{id}/respond', [ClanController::class, 'respondInvite']);
-        Route::put('/clans/{slug}', [ClanController::class, 'update']);
-        Route::post('/clans/{slug}/media', [ClanController::class, 'uploadMedia']);
-        Route::delete('/clans/{slug}/media/{type}', [ClanController::class, 'deleteMedia']);
-        Route::post('/clans/{slug}/apply', [ClanController::class, 'apply']);
-        Route::get('/clans/{slug}/applications', [ClanController::class, 'applications']);
-        Route::post('/clans/applications/{id}/respond', [ClanController::class, 'respondApplication']);
-        Route::get('/clans/{slug}/base', [ClanBaseController::class, 'show']);
-        Route::post('/clans/{slug}/base/projects', [ClanBaseController::class, 'startProject']);
-        Route::post('/clans/{slug}/base/projects/{project}/fund', [ClanBaseController::class, 'fund']);
-        Route::post('/clans/{slug}/base/projects/{project}/speed-up', [ClanBaseController::class, 'speedUp']);
-        Route::delete('/clans/{slug}/base/projects/{project}', [ClanBaseController::class, 'cancel']);
-        Route::post('/clans/{slug}/base/boosts', [ClanBaseController::class, 'activateBoost']);
-        Route::post('/clans/{slug}/base/theme', [ClanBaseController::class, 'equipTheme']);
-        Route::post('/clans/{slug}/base/polls', [ClanBaseController::class, 'createPoll']);
-        Route::post('/clans/polls/{poll}/vote', [ClanBaseController::class, 'vote']);
 
         // Recognitions (Auth)
         Route::post('/users/{username}/recognitions', [RecognitionController::class, 'store']);
@@ -468,10 +441,6 @@ Route::prefix('v1')->group(function () {
         // Seasons — public
         Route::get('/seasons', [SeasonController::class, 'index']);
         Route::get('/seasons/active', [SeasonController::class, 'active']);
-
-        // Clans public
-        Route::get('/clans', [ClanController::class, 'index']);
-        Route::get('/clans/{slug}', [ClanController::class, 'show']);
 
         // Profile comparison
 

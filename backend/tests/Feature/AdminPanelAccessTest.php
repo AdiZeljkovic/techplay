@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Achievement;
 use App\Models\Comment;
 use App\Models\Game;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Rank;
+use App\Models\RewardItem;
 use App\Models\SiteSetting;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -73,9 +76,9 @@ class AdminPanelAccessTest extends TestCase
         $journalist = $this->withRole('Journalist');
 
         $this->assertTrue($journalist->can('viewAny', Game::class));
-        $this->assertFalse($journalist->can('viewAny', \App\Models\RewardItem::class));
-        $this->assertFalse($journalist->can('viewAny', \App\Models\Rank::class));
-        $this->assertFalse($journalist->can('viewAny', \App\Models\Achievement::class));
+        $this->assertFalse($journalist->can('viewAny', RewardItem::class));
+        $this->assertFalse($journalist->can('viewAny', Rank::class));
+        $this->assertFalse($journalist->can('viewAny', Achievement::class));
     }
 
     public function test_editor_in_chief_keeps_the_user_management_the_role_was_given(): void

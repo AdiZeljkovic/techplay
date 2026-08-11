@@ -3,8 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
-use App\Models\Clan;
-use App\Models\ClanMember;
 use App\Models\GameList;
 use App\Models\Post;
 use App\Models\Presence;
@@ -26,41 +24,25 @@ class AuthorizationHolesTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function privateClanCategory(User $owner): Category
+    private function privateCategory(): Category
     {
-        $clan = Clan::create([
-            'name' => 'Night Watch',
-            'slug' => 'night-watch',
-            'tag' => 'NW',
-            'owner_id' => $owner->id,
-            'is_public' => false,
-        ]);
-
-        ClanMember::create([
-            'clan_id' => $clan->id,
-            'user_id' => $owner->id,
-            'role' => 'owner',
-            'joined_at' => now(),
-        ]);
-
         return Category::create([
             'name' => 'Night Watch HQ',
             'slug' => 'night-watch-hq',
             'type' => 'forum',
-            'clan_id' => $clan->id,
             'is_private' => true,
         ]);
     }
 
-    /* ── private clan forums ──────────────────────────────────────────── */
+    /* ── private forum categories ─────────────────────────────────────── */
 
-    public function test_a_private_clan_thread_is_not_readable_by_slug(): void
+    public function test_a_private_category_thread_is_not_readable_by_slug(): void
     {
         // showThread bumps a Redis view counter, and the suite has no Redis.
         Redis::shouldReceive('incr')->zeroOrMoreTimes()->andReturn(1);
 
         $member = User::factory()->create();
-        $category = $this->privateClanCategory($member);
+        $category = $this->privateCategory();
 
         $thread = Thread::create([
             'title' => 'Raid plan for Friday',
@@ -80,33 +62,34 @@ class AuthorizationHolesTest extends TestCase
             ->assertStatus(404);
     }
 
-    public function test_a_clan_member_still_reads_their_own_private_forum(): void
+    public function test_a_private_category_is_hidden_even_from_its_author(): void
     {
-        // Separate test on purpose: the sanctum guard caches the resolved user
-        // for the lifetime of a test, so a second actingAs() in the same method
-        // does not take effect and the assertion would be meaningless.
+        // The rule changed with clans: a private category used to be readable
+        // by the clan that owned it, and there is no owner left. Closed is the
+        // safe reading — these were private discussions when they were written,
+        // so they stay unreachable rather than becoming public.
         Redis::shouldReceive('incr')->zeroOrMoreTimes()->andReturn(1);
 
-        $member = User::factory()->create();
-        $category = $this->privateClanCategory($member);
+        $author = User::factory()->create();
+        $category = $this->privateCategory();
 
         $thread = Thread::create([
             'title' => 'Raid plan for Friday',
             'slug' => 'raid-plan-for-friday',
             'content' => 'We hit the vault at 21:00.',
-            'author_id' => $member->id,
+            'author_id' => $author->id,
             'category_id' => $category->id,
         ]);
 
-        $this->actingAs($member)
+        $this->actingAs($author)
             ->getJson("/api/v1/forum/threads/{$thread->slug}")
-            ->assertOk();
+            ->assertStatus(404);
     }
 
-    public function test_an_outsider_cannot_post_into_a_private_clan_category(): void
+    public function test_nobody_can_post_into_a_private_category(): void
     {
         $member = User::factory()->create();
-        $category = $this->privateClanCategory($member);
+        $category = $this->privateCategory();
         $outsider = User::factory()->create();
 
         $this->actingAs($outsider)->postJson('/api/v1/forum/threads', [
@@ -121,32 +104,6 @@ class AuthorizationHolesTest extends TestCase
     // Forum search is covered by restrictToVisibleCategories, but it cannot be
     // exercised here: the query uses Postgres to_tsvector and the suite runs on
     // in-memory SQLite.
-
-    /* ── clans ────────────────────────────────────────────────────────── */
-
-    public function test_a_private_clan_is_not_readable_by_slug(): void
-    {
-        $owner = User::factory()->create();
-        $this->privateClanCategory($owner);
-
-        $this->getJson('/api/v1/clans/night-watch')->assertStatus(404);
-        $this->actingAs($owner)->getJson('/api/v1/clans/night-watch')->assertOk();
-    }
-
-    public function test_a_non_member_cannot_write_into_a_clans_activity_feed(): void
-    {
-        $owner = User::factory()->create();
-        $this->privateClanCategory($owner);
-        $stranger = User::factory()->create();
-
-        $this->actingAs($stranger)
-            ->deleteJson('/api/v1/clans/night-watch/leave')
-            ->assertStatus(403);
-
-        $this->assertDatabaseMissing('clan_activities', ['user_id' => $stranger->id]);
-    }
-
-    /* ── the Discord bot surface ──────────────────────────────────────── */
 
     public function test_discord_presence_requires_the_bot_secret(): void
     {

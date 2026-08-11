@@ -13,7 +13,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (DB::getDriverName() !== 'pgsql') { return; }
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
 
         DB::statement(<<<'SQL'
             UPDATE game_ratings

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\PostResource;
 use App\Http\Resources\V1\ThreadResource;
 use App\Models\Category;
-use App\Models\ClanMember;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\Thread;
@@ -16,7 +15,6 @@ use App\Notifications\MentionNotification;
 use App\Notifications\ThreadWatchNotification;
 use App\Services\AchievementService;
 use App\Services\BountyService;
-use App\Services\ClanResourceService;
 use App\Services\SanitizationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,62 +43,22 @@ class ForumController extends Controller
     }
 
     /**
-     * IDs of clans the current authenticated user belongs to — used to gate
-     * visibility of private, clan-linked forum categories.
-     */
-    private function currentUserClanIds(): array
-    {
-        if (! Auth::guard('sanctum')->check()) {
-            return [];
-        }
-
-        return ClanMember::where('user_id', Auth::guard('sanctum')->id())->pluck('clan_id')->all();
-    }
-
-    /**
      * May the caller see this category at all?
      *
-     * The category listing has always filtered private clan forums, but the
-     * routes that reach a thread directly — show, search, the global rails —
-     * did not, so a private clan's discussions were readable by anyone who
-     * knew or guessed a slug, and writable by any logged-in account.
+     * A private category is now hidden from everyone. It used to be gated on
+     * clan membership, and with clans gone there is nobody left who owns one —
+     * so the safe reading is closed, not open. Opening them would publish
+     * discussions that were private when they were written.
      */
     private function canSeeCategory($category): bool
     {
-        if (! $category || ! $category->is_private) {
-            return true;
-        }
-
-        return in_array($category->clan_id, $this->currentUserClanIds());
+        return ! $category || ! $category->is_private;
     }
 
     /**
-     * Constrain a Thread query to categories the caller may read.
+     * Constrain a Thread query to categories anyone may read.
      *
-     * Only for uncached queries — a cached result must never carry per-user
-     * visibility, or the first caller's permissions are served to everyone.
-     */
-    private function restrictToVisibleCategories($query)
-    {
-        $clanIds = $this->currentUserClanIds();
-
-        return $query->whereHas('category', function ($q) use ($clanIds) {
-            $q->where(function ($inner) use ($clanIds) {
-                $inner->where('is_private', false)->orWhereNull('is_private');
-
-                if ($clanIds !== []) {
-                    $inner->orWhereIn('clan_id', $clanIds);
-                }
-            });
-        });
-    }
-
-    /**
-     * Constrain a Thread query to public categories, regardless of who asks.
-     *
-     * The cache-safe counterpart to restrictToVisibleCategories: the global
-     * discovery rails are shared between all callers, so they carry only what
-     * everyone may see.
+     * Safe to cache: the result no longer depends on who is asking.
      */
     private function publicCategoriesOnly($query)
     {
@@ -110,13 +68,11 @@ class ForumController extends Controller
     }
 
     /**
-     * Categories list is globally cached, so private-category visibility must
-     * be filtered per-request AFTER the cache read, never baked into the cache.
+     * Categories list is globally cached; private ones are dropped from it.
      */
     private function filterPrivateCategories($categories)
     {
-        $userClanIds = $this->currentUserClanIds();
-        $canSee = fn ($cat) => ! $cat->is_private || in_array($cat->clan_id, $userClanIds);
+        $canSee = fn ($cat) => ! $cat->is_private;
 
         return $categories->filter($canSee)->values()->each(function ($cat) use ($canSee) {
             if (isset($cat->children)) {
@@ -245,8 +201,8 @@ class ForumController extends Controller
         });
 
         // Checked per-request (not baked into the shared cache above) so private
-        // clan categories never leak to non-members via a cached response.
-        if ($data['category']->is_private && ! in_array($data['category']->clan_id, $this->currentUserClanIds())) {
+        // private categories never leak via a cached response.
+        if ($data['category']->is_private) {
             abort(404, 'Category not found');
         }
 
@@ -267,7 +223,7 @@ class ForumController extends Controller
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
 
-        // The category listing hides private clan forums, but this route was
+        // The category listing hides private forums, but this route was
         // reachable by slug with no check — the whole discussion, every post
         // and every author, to anyone who had the slug. 404 rather than 403 so
         // it does not confirm that the thread exists.
@@ -325,7 +281,7 @@ class ForumController extends Controller
         $thread = Thread::where('slug', $slug)->firstOrFail();
 
         // Same gate as reading: without it any authenticated account could post
-        // into a private clan forum simply by naming the thread's slug.
+        // into a private forum simply by naming the thread's slug.
         if (! $this->canSeeCategory($thread->category)) {
             abort(404, 'Thread not found');
         }
@@ -422,7 +378,7 @@ class ForumController extends Controller
             $category = Category::find($request->category_id);
 
             // `exists:categories,id` only proved the row exists. It accepted
-            // private clan categories the author is not in, and news/review
+            // private categories, and news/review
             // categories that have no forum UI at all — both reachable by
             // guessing an integer.
             if (! $category || in_array($category->type, ['news', 'reviews', 'tech'], true)) {
@@ -525,7 +481,7 @@ class ForumController extends Controller
     {
         $threads = Cache::remember("forum.game_threads.{$gameSlug}", 60, function () use ($gameSlug) {
             // Public categories only: this result is shared by every caller,
-            // so private clan threads must not enter the cache at all.
+            // so private threads must not enter the cache at all.
             return $this->publicCategoriesOnly(
                 Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
             )
@@ -628,17 +584,6 @@ class ForumController extends Controller
             if ($thread->author_id !== $userId) {
                 User::where('id', $thread->author_id)->increment('forum_reputation', $delta);
 
-                // Popularity pays the clan exactly once - on the crossing -
-                // so toggling an upvote off and on cannot farm it.
-                if ($delta === 1) {
-                    $upvotes = DB::table('thread_upvotes')->where('thread_id', $thread->id)->count();
-                    if ($upvotes === (int) config('clan.thread_popular_upvotes', 5)) {
-                        $popularAuthor = User::find($thread->author_id);
-                        if ($popularAuthor) {
-                            app(ClanResourceService::class)->award($popularAuthor, 'thread_popular');
-                        }
-                    }
-                }
             }
 
             return $action;
@@ -690,25 +635,15 @@ class ForumController extends Controller
     }
 
     /**
-     * Staff can moderate any thread; a clan's owner/officer can additionally
-     * moderate threads within their own clan's private forum category.
+     * Only staff moderate threads.
+     *
+     * A clan's officers could also moderate their own private category. With
+     * clans gone that branch has no members to check, so moderation is back to
+     * the one rule it started with.
      */
     private function canModerateThread(User $user, Thread $thread): bool
     {
-        $isStaff = $user->isForumModerator();
-
-        if ($isStaff) {
-            return true;
-        }
-
-        $clanId = $thread->category?->clan_id;
-        if (! $clanId) {
-            return false;
-        }
-
-        $membership = ClanMember::where('clan_id', $clanId)->where('user_id', $user->id)->first();
-
-        return $membership && $membership->isOfficerOrAbove();
+        return $user->isForumModerator();
     }
 
     public function pinThread(Request $request, string $slug)
@@ -852,7 +787,6 @@ class ForumController extends Controller
 
                     try {
                         app(AchievementService::class)->check($solutionAuthor, ['solutions_count']);
-                        app(ClanResourceService::class)->award($solutionAuthor, 'forum_solution');
                     } catch (\Throwable) {
                     }
                 }
@@ -944,10 +878,10 @@ class ForumController extends Controller
         $request->validate(['q' => 'required|string|min:3|max:100']);
         $query = $request->get('q');
 
-        // Search was the cheapest way into a private clan forum: it returned
+        // Search was the cheapest way into a private forum: it returned
         // titles and body text with no visibility filter, which then handed the
         // attacker the slugs to read the full threads.
-        $threads = $this->restrictToVisibleCategories(
+        $threads = $this->publicCategoriesOnly(
             Thread::whereRaw(
                 "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
                 [$query]
@@ -967,7 +901,7 @@ class ForumController extends Controller
             [$query]
         )
             ->whereNull('deleted_at')
-            ->whereHas('thread', fn ($t) => $this->restrictToVisibleCategories($t))
+            ->whereHas('thread', fn ($t) => $this->publicCategoriesOnly($t))
             ->with(['author:id,username,avatar_url', 'thread:id,title,slug'])
             ->orderByRaw(
                 "ts_rank(to_tsvector('english', coalesce(content, '')), plainto_tsquery('english', ?)) DESC",

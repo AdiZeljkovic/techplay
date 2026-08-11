@@ -7,7 +7,6 @@ use App\Models\ArticleBookmark;
 use App\Models\ArticleRead;
 use App\Models\Category;
 use App\Models\Game;
-use App\Models\GameRating;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
