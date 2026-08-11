@@ -89,6 +89,16 @@ class GuideController extends Controller
             $userVote = $vote ? $vote->is_helpful : null;
         }
 
+        // GuideDetailView passes guide.related_articles to RelatedArticles and
+        // nothing ever set it, so "Slični članci" was null on every guide.
+        $guide->setAttribute('related_articles', Guide::query()
+            ->where('id', '!=', $guide->id)
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->limit(4)
+            ->get(['id', 'title', 'slug', 'featured_image_url'])
+            ->all());
+
         return response()->json([
             'guide' => $guide,
             'game' => ContentGameLinker::gamePayload($guide->game),

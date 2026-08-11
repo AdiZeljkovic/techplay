@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Models\Article;
 use App\Services\ContentGameLinker;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -68,6 +69,29 @@ class ReviewResource extends JsonResource
             ] : [
                 'game_title' => $reviewData['game_title'] ?? null,
             ],
+
+            // Four more reviews from the same category. ReviewDetailView has
+            // always passed `related_articles` to RelatedArticles, and nothing
+            // ever returned it — see ArticleResource for the same fix.
+            'related_articles' => $this->when($detail, fn () => Article::query()
+                ->where('category_id', $this->category_id)
+                ->where('id', '!=', $this->id)
+                ->where('status', 'published')
+                ->where('published_at', '<=', now())
+                ->latest('published_at')
+                ->limit(4)
+                ->get(['id', 'title', 'slug', 'featured_image_url'])
+                ->map(fn ($a) => [
+                    'id' => $a->id,
+                    'title' => $a->title,
+                    'slug' => $a->slug,
+                    'featured_image_url' => is_array($a->featured_image_url)
+                        ? ($a->featured_image_url[0] ?? null)
+                        : ($a->featured_image_url && ! str_starts_with($a->featured_image_url, 'http')
+                            ? asset('storage/'.$a->featured_image_url)
+                            : $a->featured_image_url),
+                ])
+                ->all()),
 
             'tags' => $this->tags ?? [],
             'is_featured_in_hero' => $this->is_featured_in_hero ?? false,

@@ -2,12 +2,57 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Models\Article;
 use App\Services\ContentGameLinker;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ArticleResource extends JsonResource
 {
+    /**
+     * Siblings from the same category, newest first, this one excluded.
+     *
+     * Deliberately five columns and no relations: the card shows a title, an
+     * image and the category it already knows. Run once per detail request,
+     * inside a response the controller caches.
+     */
+    private function relatedArticles(): array
+    {
+        if (! $this->category_id) {
+            return [];
+        }
+
+        return Article::query()
+            ->where('category_id', $this->category_id)
+            ->where('id', '!=', $this->id)
+            ->where('status', 'published')
+            ->where('published_at', '<=', now())
+            ->latest('published_at')
+            ->limit(4)
+            ->get(['id', 'title', 'slug', 'featured_image_url'])
+            ->map(fn ($a) => [
+                'id' => $a->id,
+                'title' => $a->title,
+                'slug' => $a->slug,
+                'featured_image_url' => $this->resolveImage($a->featured_image_url),
+            ])
+            ->all();
+    }
+
+    /** Filament writes this column as an array sometimes, and as a bare path others. */
+    private function resolveImage(mixed $path): ?string
+    {
+        if (is_array($path)) {
+            $path = $path[0] ?? null;
+        }
+
+        if (! $path) {
+            return null;
+        }
+
+        return str_starts_with($path, 'http') ? $path : asset('storage/'.$path);
+    }
+
     /**
      * Is this the request for one article, rather than a list of them?
      *
@@ -97,6 +142,13 @@ class ArticleResource extends JsonResource
             // The game this piece is about — one shape everywhere, so every
             // content page can render the same game card.
             'game' => $this->whenLoaded('game', fn () => ContentGameLinker::gamePayload($this->game)),
+
+            // Four more from the same category. The detail pages have been
+            // passing `related_articles` to RelatedArticles since it was built,
+            // and no endpoint ever returned the field — so the block rendered
+            // null on every article, review and guide on the site. It is the
+            // internal linking a content site runs on, and it was invisible.
+            'related_articles' => $this->when($detail, fn () => $this->relatedArticles()),
 
             // Embed comments if eager loaded to avoid extra HTTP request
             'comments' => CommentResource::collection($this->whenLoaded('comments')),
