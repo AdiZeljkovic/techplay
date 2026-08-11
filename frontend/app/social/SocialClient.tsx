@@ -510,7 +510,7 @@ export default function SocialClient() {
                 <span aria-hidden className="absolute inset-0 bg-[radial-gradient(60%_120%_at_50%_45%,rgba(5,7,10,0.72),transparent_70%)]" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page py-10 text-center">
+                <div className="relative z-10 container-page py-7 text-center">
                     <h1 className="font-display font-black tracking-tight text-3xl md:text-5xl leading-none">
                         <span className="text-white">SOCIAL </span>
                         <span className="text-[var(--accent)]">HUB</span>
@@ -542,7 +542,17 @@ export default function SocialClient() {
             <div className="container-page py-5 grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                 {/* ── the hub itself ── */}
                 <div className="xl:col-span-9 min-w-0">
-                    <Panel padding="none" className="flex flex-col" bodyClassName="flex flex-col">
+                    {/* The chat used to be a 640px block inside a scrolling
+                        page, so the composer sat below the fold and writing a
+                        message meant scrolling to find the box. It is the
+                        height of the screen now, and the parts that grow —
+                        the conversation list, the messages — scroll inside it
+                        while the header and the composer stay put. */}
+                    <Panel
+                        padding="none"
+                        className="flex flex-col xl:h-[calc(100vh-104px)] xl:min-h-[560px]"
+                        bodyClassName="flex flex-col flex-1 min-h-0"
+                    >
                         {/* The four views used to be a separate panel in its own
                             column, which meant the widest thing on the page —
                             the conversation — got the narrowest share of it.
@@ -586,9 +596,9 @@ export default function SocialClient() {
                         </div>
 
                         {section === "messages" ? (
-                            <div className="grid grid-cols-1 md:grid-cols-[290px_1fr] min-h-[640px]">
+                            <div className="grid grid-cols-1 md:grid-cols-[290px_1fr] flex-1 min-h-0">
                                 {/* list */}
-                                <div className={`border-r border-white/[0.07] flex flex-col ${activeId ? "hidden md:flex" : "flex"}`}>
+                                <div className={`border-r border-white/[0.07] flex flex-col min-h-0 ${activeId ? "hidden md:flex" : "flex"}`}>
                                     <div className="p-3 border-b border-white/[0.07] space-y-2.5">
                                         <div className="flex items-center gap-1">
                                             {TABS.map((t) => (
@@ -670,7 +680,7 @@ export default function SocialClient() {
                                 </div>
 
                                 {/* thread */}
-                                <div className={`flex flex-col min-w-0 ${activeId ? "flex" : "hidden md:flex"}`}>
+                                <div className={`flex flex-col min-w-0 min-h-0 ${activeId ? "flex" : "hidden md:flex"}`}>
                                     {!active ? (
                                         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                                             <MessageCircle className="w-8 h-8 mb-3 text-white/15" />
@@ -750,7 +760,7 @@ export default function SocialClient() {
                                                 )}
                                             </div>
 
-                                            <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[520px]">
+                                            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
                                                 {/* Fifty messages used to be the whole of any
                                                     conversation — there was no way to ask for
                                                     what came before. */}
@@ -832,7 +842,7 @@ export default function SocialClient() {
                                 </div>
                             </div>
                         ) : section === "requests" ? (
-                            <div className="p-4 min-h-[400px]">
+                            <div className="p-4 flex-1 min-h-0 overflow-y-auto">
                                 {(hub?.requests.length ?? 0) === 0 ? (
                                     <p className="py-12 text-center text-[12.5px] text-white/30">No requests waiting.</p>
                                 ) : (
@@ -862,7 +872,7 @@ export default function SocialClient() {
                                 )}
                             </div>
                         ) : section === "blocked" ? (
-                            <div className="p-4 min-h-[400px]">
+                            <div className="p-4 flex-1 min-h-0 overflow-y-auto">
                                 {(hub?.blocked.length ?? 0) === 0 ? (
                                     <p className="py-12 text-center text-[12.5px] text-white/30">Nobody blocked.</p>
                                 ) : (
@@ -884,7 +894,7 @@ export default function SocialClient() {
                                 )}
                             </div>
                         ) : (
-                            <div className="p-4 min-h-[400px]">
+                            <div className="p-4 flex-1 min-h-0 overflow-y-auto">
                                 {(hub?.friends.length ?? 0) === 0 ? (
                                     <p className="py-12 text-center text-[12.5px] text-white/30">
                                         No friends yet. Add people from their profile and they show up here.
@@ -933,7 +943,7 @@ export default function SocialClient() {
                 </div>
 
                 {/* ── right rail ── */}
-                <aside className="xl:col-span-3 min-w-0 space-y-4">
+                <aside className="xl:col-span-3 min-w-0 space-y-4 xl:sticky xl:top-[88px]">
                     <Panel
                         title="Online Now"
                         meta={<span className="font-display text-[11px] font-black tabular-nums text-emerald-400">{stats?.online ?? 0}</span>}

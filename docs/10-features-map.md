@@ -416,6 +416,11 @@ citira poruku koje više nema.
 pošiljaocu, preimenovanje grupe, izbacivanje člana i prenos vlasništva (ako vlasnik
 napusti grupu, niko više ne može dodavati ljude), te brisanje razgovora za sebe.
 
+**Layout:** chat panel je visok koliko i ekran (`xl:h-[calc(100vh-104px)]`), a dijelovi
+koji rastu — lista razgovora i poruke — skroluju unutar njega dok zaglavlje i polje za
+pisanje stoje. Prije je bio blok od 640 px unutar stranice koja skroluje, pa je polje za
+pisanje bilo ispod ruba ekrana.
+
 **Napomena o payloadu:** `GET /social` vraća **cijeli roster prijatelja** bez
 ograničenja. Za današnje brojeve je zanemarivo, ali korisnik s više stotina
 prijatelja povukao bi ih sve na svako otvaranje stranice.
