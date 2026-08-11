@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class GiveawayController extends Controller
 {
@@ -30,7 +31,11 @@ class GiveawayController extends Controller
         if ($status === 'active') {
             $query->active();
         } elseif ($status === 'ended') {
-            $query->where('status', 'ended')->orWhere('ends_at', '<', now());
+            // Grouped. Ungrouped, the OR escaped the is_public check above it —
+            // SQL reads it as (is_public AND status='ended') OR (ends_at < NOW()),
+            // so every draw an editor had not published yet appeared in the
+            // public list the moment its end date passed.
+            $query->where(fn ($q) => $q->where('status', 'ended')->orWhere('ends_at', '<', now()));
         }
 
         // The page offers these with counts beside them, so the list has to
@@ -55,7 +60,11 @@ class GiveawayController extends Controller
                 'id' => $giveaway->id,
                 'title' => $giveaway->title,
                 'slug' => $giveaway->slug,
-                'description' => $giveaway->description ? strip_tags($giveaway->description) : null,
+                // A card shows two lines. The whole body was half of this
+                // response, and none of it was read here.
+                'description' => $giveaway->description
+                    ? Str::limit(strip_tags($giveaway->description), 180)
+                    : null,
                 'featured_image' => $giveaway->featured_image
                     ? asset('storage/'.$giveaway->featured_image)
                     : null,

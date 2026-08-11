@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Gift, Gem, Trophy, Users, Timer, ArrowRight, Lock, Check, Globe, Sparkles } from "lucide-react";
+import {
+    Gift, Gem, Trophy, Users, Timer, ArrowRight, Lock, Check, Globe, Sparkles, Zap, LayoutGrid, History,
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -175,12 +177,24 @@ export default function GiveawayHub() {
                         Win gaming prizes, collector rewards and exclusive keys.
                     </p>
 
-                    {/* Four figures, all of them counted. */}
-                    <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-[880px] mx-auto">
-                        <Figure icon={<Gift className="w-4 h-4" />} value={hub ? String(hub.stats.active) : "—"} label="Active giveaways" />
-                        <Figure icon={<Gem className="w-4 h-4" />} value={hub ? (money(hub.stats.prize_value) ?? "—") : "—"} label="Total prizes" />
-                        <Figure icon={<Trophy className="w-4 h-4" />} value={hub ? String(hub.stats.winners) : "—"} label="Winners announced" />
-                        <Figure icon={<Users className="w-4 h-4" />} value={hub ? hub.stats.participants.toLocaleString() : "—"} label="People taking part" />
+                    {/* Four figures, all of them counted — in the same pill
+                        row the forum and the social hub use. */}
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                        {([
+                            [Gift, hub ? String(hub.stats.active) : "—", "Active"],
+                            [Gem, hub ? (money(hub.stats.prize_value) ?? "—") : "—", "In prizes"],
+                            [Trophy, hub ? String(hub.stats.winners) : "—", "Winners"],
+                            [Users, hub ? hub.stats.participants.toLocaleString() : "—", "Taking part"],
+                        ] as const).map(([Icon, value, label]) => (
+                            <span
+                                key={label}
+                                className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
+                            >
+                                <Icon className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">{value}</span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/35">{label}</span>
+                            </span>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -188,20 +202,25 @@ export default function GiveawayHub() {
             <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5 items-start">
                 <div className="min-w-0">
                     {/* ── filter row ── */}
-                    <div className="flex flex-wrap items-center gap-2 mb-5">
-                        {(["active", "all", "ended"] as const).map((s) => (
-                            <button
-                                key={s}
-                                onClick={() => setStatus(s)}
-                                className={`h-8 px-4 rounded-[8px] font-display text-[10.5px] font-black uppercase tracking-[0.1em] transition-colors ${
-                                    status === s
-                                        ? "bg-[var(--accent)] text-white"
-                                        : "bg-white/[0.04] text-white/50 hover:text-white"
-                                }`}
-                            >
-                                {s === "all" ? "All" : s === "active" ? "Active" : "Ended"}
-                            </button>
-                        ))}
+                    <div className="flex flex-wrap items-center gap-3 mb-5">
+                        <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                            {([
+                                ["active", "Active", Zap],
+                                ["all", "All", LayoutGrid],
+                                ["ended", "Ended", History],
+                            ] as const).map(([id, label, Icon]) => (
+                                <button
+                                    key={id}
+                                    onClick={() => setStatus(id)}
+                                    aria-pressed={status === id}
+                                    className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[8px] font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+                                        status === id ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
+                                    }`}
+                                >
+                                    <Icon className="w-3.5 h-3.5" /> {label}
+                                </button>
+                            ))}
+                        </div>
 
                         {/* Only groups an editor has actually filled in — a
                             filter with nothing behind it is a dead control. */}
@@ -250,6 +269,16 @@ export default function GiveawayHub() {
                                     ? "When the next one opens it lands here first."
                                     : "Try a different filter."}
                             </p>
+                            {/* Landing on Active with nothing running left the page
+                                blank and offered nothing to do about it. */}
+                            {status === "active" && (
+                                <button
+                                    onClick={() => setStatus("all")}
+                                    className="mt-4 inline-flex items-center h-9 px-5 rounded-[9px] bg-white/[0.05] hover:bg-white/[0.1] font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/60 hover:text-white transition-colors"
+                                >
+                                    See past giveaways
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -333,18 +362,6 @@ export default function GiveawayHub() {
 }
 
 /* ── pieces ───────────────────────────────────────────────────────────── */
-
-function Figure({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-    return (
-        <div className="flex items-center gap-3 h-[62px] px-4 rounded-[11px] border border-white/[0.08] bg-white/[0.03]">
-            <span className="text-[var(--accent)]">{icon}</span>
-            <span className="min-w-0">
-                <span className="block font-display text-[18px] font-black tabular-nums text-white leading-none truncate">{value}</span>
-                <span className="block mt-0.5 text-[10.5px] text-white/35 truncate">{label}</span>
-            </span>
-        </div>
-    );
-}
 
 function Tally({ value, label }: { value: number; label: string }) {
     return (

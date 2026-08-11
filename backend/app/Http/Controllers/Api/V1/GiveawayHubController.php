@@ -42,11 +42,18 @@ class GiveawayHubController extends Controller
      */
     private function stats(): array
     {
-        return Cache::remember('giveaways.hub.stats.v1', 300, fn () => [
+        return Cache::remember('giveaways.hub.stats.v2', 300, fn () => [
             'active' => Giveaway::where('is_public', true)->active()->count(),
             'prize_value' => (float) Giveaway::where('is_public', true)->sum('prize_value'),
             'winners' => Giveaway::where('is_public', true)->whereNotNull('winner_id')->count(),
-            'participants' => (int) DB::table('giveaway_entries')->distinct('user_id')->count('user_id'),
+            // Scoped to the draws this page actually lists. Unscoped it counted
+            // entries into giveaways nobody can see — twenty-one people taking
+            // part in two draws whose own entry counts both read zero.
+            'participants' => (int) DB::table('giveaway_entries')
+                ->join('giveaways', 'giveaways.id', '=', 'giveaway_entries.giveaway_id')
+                ->where('giveaways.is_public', true)
+                ->distinct('giveaway_entries.user_id')
+                ->count('giveaway_entries.user_id'),
         ]);
     }
 

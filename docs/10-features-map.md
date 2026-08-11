@@ -329,6 +329,42 @@ XP kao dobitak te sedmice (snapshot job pokriva sve korisnike ponedjeljkom).
 **Backend:** `GiveawayController`, `PriveeGiveawayController`
 **Database:** `giveaways`, `giveaway_entries`, `giveaway_tasks`, `privee_giveaway_entries`
 **Napomene:** Dvije zasebne logike (TechPlay i Privée). Discord bot šalje giveaway notifikacije.
+Pobjednik se izvlači **ručno** iz Filamenta (`GiveawayResource` akcija) — nema scheduled joba.
+
+### Audit 12.08.2026
+
+**Bug (sigurnosni): `?status=ended` je propuštao neobjavljene giveaway-e.**
+
+```php
+$query->where('is_public', true)          // ranije u lancu
+      ->where('status', 'ended')->orWhere('ends_at', '<', now());
+```
+
+`orWhere` nije bio grupisan, pa SQL to čita kao
+`(is_public AND status='ended') OR (ends_at < NOW())` — svaki giveaway koji editor
+još nije objavio pojavio bi se u javnoj listi čim mu prođe datum završetka. Isto je
+kvarilo i facet filtere, koji su se lijepili samo na drugu granu OR-a. Sada je
+grupisano u closure.
+
+**Bug: "People taking part" je brojao učesnike igara koje stranica ne prikazuje.**
+`DB::table('giveaway_entries')->distinct('user_id')->count()` bez ijednog uslova —
+hub je pokazivao **21 učesnika** dok obje javne igre imaju `total_entries: 0`.
+Sada je join na `giveaways.is_public`.
+
+**Payload: opis je bio 51% odgovora.** Listing je slao **cijeli** tekst giveaway-a
+(`strip_tags`, bez skraćivanja) za karticu koja prikazuje dvije linije. Sada
+`Str::limit(…, 180)` — 3.108 B → ~1.900 B na dvije stavke, i ne raste s dužinom teksta.
+
+**UX: prazna stranica bez izlaza.** Filter se otvara na "Active", a trenutno nijedan
+giveaway nije aktivan — posjetilac dobije praznu stranicu i nijedno dugme. Dodano
+"See past giveaways".
+
+**Dizajn:** četiri brojke u heroju prešle na traku pilula (kao forum i social hub),
+a Active/All/Ended na leaderboard prekidač.
+
+**Provjereno kao ispravno:** `/giveaways/hub` radi (moj prvi 404 je bio greška u mom
+URL-u, bez kose crte); facet filteri se nude samo za vrijednosti koje editor stvarno
+koristi; `enter`/`completeTask`/`daily-bonus` su iza `throttle:10,1`.
 
 ---
 
