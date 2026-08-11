@@ -20,7 +20,7 @@ const TABS: { id: Tab; label: string }[] = [
 /** Kept for older callers that may still hold pre-canonical shapes in cache. */
 type RawNamed = string | { name?: string; platform_name?: string; platform?: { name?: string } } | null | undefined;
 
-interface DiscoverGame {
+export interface DiscoverGame {
     id: number | string;
     slug: string;
     name: string;
@@ -105,12 +105,19 @@ function shortPlatform(name: string): string {
     return name;
 }
 
-export default function DiscoverGames() {
+/**
+ * The tabs need state, so this stays a client component — but the tab it opens
+ * on does not need a round trip. `initialTrending` is fetched on the server and
+ * handed to SWR as the cached value for that key, so the rail is in the HTML
+ * and only a tab the visitor actually clicks costs a request.
+ */
+export default function DiscoverGames({ initialTrending = [] }: { initialTrending?: DiscoverGame[] }) {
     const [tab, setTab] = useState<Tab>("trending");
     const { data: games } = useSWR(["discover-games", tab], () => fetchTab(tab), {
         dedupingInterval: 300_000,
         revalidateOnFocus: false,
         keepPreviousData: true,
+        fallbackData: tab === "trending" && initialTrending.length > 0 ? initialTrending : undefined,
     });
 
     return (

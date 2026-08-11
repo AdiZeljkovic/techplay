@@ -1,13 +1,9 @@
-"use client";
-
 import Link from "next/link";
-import useSWR from "swr";
 import { Gamepad2, Users } from "lucide-react";
-import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 import ScoreBadge from "@/components/ui/ScoreBadge";
 
-interface GemGame {
+export interface GemGame {
     slug: string;
     name: string;
     cover_url: string | null;
@@ -17,19 +13,16 @@ interface GemGame {
     votes: number;
 }
 
-const fetcher = () => axios.get("/games/hidden-gems").then((r) => (r.data?.results ?? []) as GemGame[]);
-
 /**
  * Highly rated games hardly anyone has voted on — the kind of pick only a
  * 200K-title database can surface. Rotates once a day (server-side).
+ *
+ * A server component. It used to fetch through SWR, which meant the section
+ * did not exist until the page had shipped its JavaScript, hydrated, and made
+ * a round trip — for a list that changes once a day. The page fetches it now.
  */
-export default function HiddenGems() {
-    const { data: games } = useSWR("hidden-gems", fetcher, {
-        dedupingInterval: 600_000,
-        revalidateOnFocus: false,
-    });
-
-    if (games && games.length === 0) return null;
+export default function HiddenGems({ games }: { games: GemGame[] }) {
+    if (games.length === 0) return null;
 
     return (
         <Panel
@@ -43,12 +36,7 @@ export default function HiddenGems() {
             </p>
 
             <div className="grid grid-cols-2 gap-3">
-                {!games &&
-                    [0, 1, 2, 3].map((i) => (
-                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[168px] animate-pulse" />
-                    ))}
-
-                {games?.slice(0, 4).map((g) => (
+                {games.slice(0, 4).map((g) => (
                     <Link
                         key={g.slug}
                         href={`/games/${g.slug}`}
