@@ -122,6 +122,11 @@ function SideCard({ article }: { article: Article }) {
                 <p className="mt-1.5 font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                     {article.title}
                 </p>
+                {article.excerpt && (
+                    <p className="mt-1.5 text-[12px] text-[var(--ink-low)] leading-snug line-clamp-2">
+                        {article.excerpt}
+                    </p>
+                )}
                 <div className="mt-2"><Meta article={article} /></div>
             </div>
         </Link>
@@ -152,6 +157,11 @@ function GridCard({ article }: { article: Article }) {
                 <p className="mt-1.5 font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                     {article.title}
                 </p>
+                {article.excerpt && (
+                    <p className="mt-2 text-[12.5px] text-[var(--ink-low)] leading-snug line-clamp-2">
+                        {article.excerpt}
+                    </p>
+                )}
                 <div className="mt-auto pt-3"><Meta article={article} /></div>
             </div>
         </Link>
