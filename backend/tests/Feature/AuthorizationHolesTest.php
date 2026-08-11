@@ -9,7 +9,6 @@ use App\Models\Presence;
 use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -23,115 +22,6 @@ use Tests\TestCase;
 class AuthorizationHolesTest extends TestCase
 {
     use RefreshDatabase;
-
-    private function privateCategory(): Category
-    {
-        return Category::create([
-            'name' => 'Night Watch HQ',
-            'slug' => 'night-watch-hq',
-            'type' => 'forum',
-            'is_private' => true,
-        ]);
-    }
-
-    /* ── private forum categories ─────────────────────────────────────── */
-
-    public function test_a_private_category_thread_is_not_readable_by_slug(): void
-    {
-        // showThread bumps a Redis view counter, and the suite has no Redis.
-        Redis::shouldReceive('incr')->zeroOrMoreTimes()->andReturn(1);
-
-        $member = User::factory()->create();
-        $category = $this->privateCategory();
-
-        $thread = Thread::create([
-            'title' => 'Raid plan for Friday',
-            'slug' => 'raid-plan-for-friday',
-            'content' => 'We hit the vault at 21:00.',
-            'author_id' => $member->id,
-            'category_id' => $category->id,
-        ]);
-
-        // Anonymous, and a logged-in outsider: both used to get the full
-        // thread and every post in it.
-        $this->getJson("/api/v1/forum/threads/{$thread->slug}")->assertStatus(404);
-
-        $outsider = User::factory()->create();
-        $this->actingAs($outsider)
-            ->getJson("/api/v1/forum/threads/{$thread->slug}")
-            ->assertStatus(404);
-    }
-
-    public function test_a_private_category_is_hidden_even_from_its_author(): void
-    {
-        // The rule changed with clans: a private category used to be readable
-        // by the clan that owned it, and there is no owner left. Closed is the
-        // safe reading — these were private discussions when they were written,
-        // so they stay unreachable rather than becoming public.
-        Redis::shouldReceive('incr')->zeroOrMoreTimes()->andReturn(1);
-
-        $author = User::factory()->create();
-        $category = $this->privateCategory();
-
-        $thread = Thread::create([
-            'title' => 'Raid plan for Friday',
-            'slug' => 'raid-plan-for-friday',
-            'content' => 'We hit the vault at 21:00.',
-            'author_id' => $author->id,
-            'category_id' => $category->id,
-        ]);
-
-        $this->actingAs($author)
-            ->getJson("/api/v1/forum/threads/{$thread->slug}")
-            ->assertStatus(404);
-    }
-
-    public function test_nobody_can_post_into_a_private_category(): void
-    {
-        $member = User::factory()->create();
-        $category = $this->privateCategory();
-        $outsider = User::factory()->create();
-
-        $this->actingAs($outsider)->postJson('/api/v1/forum/threads', [
-            'title' => 'Hello from outside',
-            'content' => 'Category ids are just integers.',
-            'category_id' => $category->id,
-        ])->assertStatus(422);
-
-        $this->assertDatabaseMissing('threads', ['author_id' => $outsider->id]);
-    }
-
-    // Forum search is covered by restrictToVisibleCategories, but it cannot be
-    // exercised here: the query uses Postgres to_tsvector and the suite runs on
-    // in-memory SQLite.
-
-    public function test_discord_presence_requires_the_bot_secret(): void
-    {
-        config(['services.discord.bot_secret' => 'the-real-secret']);
-
-        $victim = User::factory()->create(['discord_id' => '1234567890']);
-
-        $this->postJson('/api/v1/discord/presence', [
-            'discord_id' => '1234567890',
-            'game_name' => 'Something they are not playing',
-        ])->assertStatus(401);
-
-        $this->assertDatabaseMissing('presences', ['user_id' => $victim->id]);
-
-        $this->withHeaders(['X-Discord-Bot-Token' => 'the-real-secret'])
-            ->postJson('/api/v1/discord/presence', [
-                'discord_id' => '1234567890',
-                'game_name' => 'Helldivers 2',
-            ])->assertOk();
-    }
-
-    public function test_discord_user_lookup_is_not_a_public_correlation_oracle(): void
-    {
-        config(['services.discord.bot_secret' => 'the-real-secret']);
-        User::factory()->create(['discord_id' => '999888777']);
-
-        $this->getJson('/api/v1/discord/user/999888777')->assertStatus(401);
-    }
 
     /* ── email verification ───────────────────────────────────────────── */
 

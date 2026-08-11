@@ -20,11 +20,9 @@ class Category extends Model
         'focus_keyword',
         'canonical_url',
         'is_noindex',
-        'is_private',
     ];
 
     protected $casts = [
-        'is_private' => 'boolean',
     ];
 
     public function parent()

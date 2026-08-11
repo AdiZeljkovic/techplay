@@ -25,14 +25,22 @@ kartica na profilu, klan tab i soba u Social Hubu, stavke u navigaciji.
 
 ---
 
-## Dvije odluke koje su ostavile trag
+## Šta se desilo s privatnim forumima
 
-**`categories.is_private` je zadržana.** Privatne forum kategorije su bile
-vezane za klan i vidljive samo članovima. Bez klanova nemaju vlasnika, pa je
-pitanje glasilo: otvoriti ih ili sakriti. `ForumController` ih sada **skriva od
-svih**, uključujući autora — to su bile privatne diskusije kad su pisane, i
-otvaranje bi ih objavilo. Ako ih ima na produkciji, brišu se ručno kroz admin
-panel.
+Prvo su bili zadržani i skriveni od svih — držanje pozicije, ne odluka. Zatim su
+**obrisani zajedno s kolonom `categories.is_private`** (migracija
+`2026_08_11_070000`).
+
+Postojali su iz jednog razloga: klan ih je posjedovao i samo su ih njegovi
+članovi čitali. Bez klana kategorija nema vlasnika, pa nema ni pravila po kojem
+bi neko smio ući. Teme kaskadiraju s kategorijom, a objave, upvoteovi, pratioci
+i bookmarkovi s temom — brisanje reda odnosi cijelu diskusiju. Migracija ispiše
+koliko ih briše prije nego to uradi.
+
+S njima je otišla i cijela mašinerija u `ForumController`-u: `canSeeCategory()`,
+`publicCategoriesOnly()` i `filterPrivateCategories()`, plus provjere na
+sedam mjesta. Pretraga, globalni rail-ovi i `gameThreads` više ne filtriraju
+ništa jer nema šta da se filtrira.
 
 **Moderacija foruma je jednostavnija.** Klanovi su imali oficire koji su mogli
 moderirati vlastitu privatnu kategoriju. Ta grana više nema kome da se obrati,

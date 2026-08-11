@@ -43,45 +43,6 @@ class ForumController extends Controller
     }
 
     /**
-     * May the caller see this category at all?
-     *
-     * A private category is now hidden from everyone. It used to be gated on
-     * clan membership, and with clans gone there is nobody left who owns one —
-     * so the safe reading is closed, not open. Opening them would publish
-     * discussions that were private when they were written.
-     */
-    private function canSeeCategory($category): bool
-    {
-        return ! $category || ! $category->is_private;
-    }
-
-    /**
-     * Constrain a Thread query to categories anyone may read.
-     *
-     * Safe to cache: the result no longer depends on who is asking.
-     */
-    private function publicCategoriesOnly($query)
-    {
-        return $query->whereHas('category', function ($q) {
-            $q->where('is_private', false)->orWhereNull('is_private');
-        });
-    }
-
-    /**
-     * Categories list is globally cached; private ones are dropped from it.
-     */
-    private function filterPrivateCategories($categories)
-    {
-        $canSee = fn ($cat) => ! $cat->is_private;
-
-        return $categories->filter($canSee)->values()->each(function ($cat) use ($canSee) {
-            if (isset($cat->children)) {
-                $cat->children = $cat->children->filter($canSee)->values();
-            }
-        });
-    }
-
-    /**
      * Notify any @username mentions found in freshly-posted content.
      * Never notifies the author of the content about their own mention.
      */
@@ -164,7 +125,7 @@ class ForumController extends Controller
             return $parents->values();
         });
 
-        return response()->json($this->filterPrivateCategories($categories))
+        return response()->json($categories)
             ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
@@ -200,12 +161,6 @@ class ForumController extends Controller
             ];
         });
 
-        // Checked per-request (not baked into the shared cache above) so private
-        // private categories never leak via a cached response.
-        if ($data['category']->is_private) {
-            abort(404, 'Category not found');
-        }
-
         return response()->json($data)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
@@ -222,14 +177,6 @@ class ForumController extends Controller
             ])
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
-
-        // The category listing hides private forums, but this route was
-        // reachable by slug with no check — the whole discussion, every post
-        // and every author, to anyone who had the slug. 404 rather than 403 so
-        // it does not confirm that the thread exists.
-        if (! $this->canSeeCategory($thread->category)) {
-            abort(404, 'Thread not found');
-        }
 
         // PERFORMANCE: Use Redis atomic increment instead of sync DB write
         // Views are flushed to DB every 5 minutes by FlushViewCounters job
@@ -279,12 +226,6 @@ class ForumController extends Controller
         }
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
-
-        // Same gate as reading: without it any authenticated account could post
-        // into a private forum simply by naming the thread's slug.
-        if (! $this->canSeeCategory($thread->category)) {
-            abort(404, 'Thread not found');
-        }
 
         // Restrict replies in "News & Announcements"
         $category = $thread->category;
@@ -385,10 +326,6 @@ class ForumController extends Controller
                 return response()->json(['message' => 'That category does not accept threads.'], 422);
             }
 
-            if (! $this->canSeeCategory($category)) {
-                return response()->json(['message' => 'That category does not accept threads.'], 422);
-            }
-
             // check restriction for "News & Announcements"
             if ($category->slug === 'news-announcements' || $category->name === 'News & Announcements') {
                 $user = Auth::user();
@@ -480,11 +417,7 @@ class ForumController extends Controller
     public function gameThreads(string $gameSlug)
     {
         $threads = Cache::remember("forum.game_threads.{$gameSlug}", 60, function () use ($gameSlug) {
-            // Public categories only: this result is shared by every caller,
-            // so private threads must not enter the cache at all.
-            return $this->publicCategoriesOnly(
-                Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
-            )
+            return Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('is_pinned')
@@ -500,7 +433,7 @@ class ForumController extends Controller
     {
         // Cache for 60 seconds
         $threads = Cache::remember('forum.active_threads', 60, function () {
-            return $this->publicCategoriesOnly(Thread::query())
+            return Thread::query()
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('updated_at')
@@ -537,7 +470,7 @@ class ForumController extends Controller
     {
         // Cache for 60 seconds
         $threads = Cache::remember('forum.unanswered_threads', 60, function () {
-            return $this->publicCategoriesOnly(Thread::query())
+            return Thread::query()
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->whereDoesntHave('posts')
@@ -878,14 +811,9 @@ class ForumController extends Controller
         $request->validate(['q' => 'required|string|min:3|max:100']);
         $query = $request->get('q');
 
-        // Search was the cheapest way into a private forum: it returned
-        // titles and body text with no visibility filter, which then handed the
-        // attacker the slugs to read the full threads.
-        $threads = $this->publicCategoriesOnly(
-            Thread::whereRaw(
-                "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
-                [$query]
-            )
+        $threads = Thread::whereRaw(
+            "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
+            [$query]
         )
             ->with(['author:id,username,avatar_url', 'category:id,name,slug'])
             ->withCount('posts')
@@ -901,7 +829,6 @@ class ForumController extends Controller
             [$query]
         )
             ->whereNull('deleted_at')
-            ->whereHas('thread', fn ($t) => $this->publicCategoriesOnly($t))
             ->with(['author:id,username,avatar_url', 'thread:id,title,slug'])
             ->orderByRaw(
                 "ts_rank(to_tsvector('english', coalesce(content, '')), plainto_tsquery('english', ?)) DESC",
