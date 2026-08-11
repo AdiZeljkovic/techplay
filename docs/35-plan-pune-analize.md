@@ -234,6 +234,22 @@ podjela, waterfalls, veličina bundlea po ruti, hidracija.
 framer-motion (164 KB na svakoj ruti).
 **Procjena:** 1–2 sesije.
 
+> **FRONTEND DIO URAĐEN 11.08.2026 → `docs/50-p7-dubina-frontend.md`.** Obje
+> pretpostavke s kojima je paket ušao **padaju na mjerenju**:
+>
+> 1. Od 228 klijentskih komponenti, 43 nemaju nijedan klijentski signal — ali
+>    samo **2** su stvarna dobit; ostalih 39 su već zapečaćene unutar klijentske
+>    granice, gdje direktiva ništa ne mijenja. Problem su **granice, ne
+>    direktive**: `HomeGate` sam povlači 320 KB kroz 63 fajla.
+> 2. framer-motion **nije** 164 KB na svakoj ruti — mjereno analizatorom, 116,5 KB
+>    razbijen u 10 chunkova, koje Next već dijeli po rutama. `LazyMotion`
+>    optimizacija je napravljena, izmjerena (**ušteda 0,7 KB**) i **vraćena**, jer
+>    ne zaslužuje složenost koju donosi.
+>
+> **Ostaje kao stvarni posao:** spustiti granicu na `HomeGate` i na tri detail
+> viewa (~155 KB svaki, gotovo isti sadržaj), plus backend strana P7 (granice
+> servisa, događaji, poslovi) koja nije rađena.
+
 ### P8. Tajne i zavisnosti — *područja 12, 13*
 *Dijelom urađeno:* lozinke izvađene iz skripti, dump u historiji identifikovan.
 **Produbiti:** `composer audit` i `npm audit`, napušteni paketi, zavisnosti koje
