@@ -154,6 +154,55 @@ tuđi ispad nije naš ispad — test to i tvrdi (`Http::preventStrayRequests`).
 
 ---
 
+### Audit profila 12.08.2026
+
+**Payload `GET /users/{username}`: 24.221 B → ~7.100 B (-71%).**
+
+| Blok | Prije | Zašto je otišao |
+|---|---|---|
+| `achievements` | 13.596 B (56%) | Slao se **cijeli katalog od 66**, s opisima, većina zaključana. Overview crta **5 zadnjih otključanih**, a Achievements tab ima svoj endpoint `/users/{u}/achievements`. Sada samo tih 5. |
+| `recent_articles` | 3.061 B (13%) | Niko ne renderuje. |
+| `recent_threads` | 1.530 B (6%) | Niko ne renderuje. |
+| `recent_comments` | ~500 B | Niko ne renderuje. |
+
+Uz tri bloka otišla su i tri upita po izgradnji profila. Nedavna aktivnost na profilu
+dolazi iz `/users/{u}/activity`, koji overview zove sam — drugi izvor je samo garantovao
+da se ta dva mogu razići.
+
+**Bug: dva različita upita dijelila su isti ključ keša.**
+`AuthController` je keširao `Achievement::where('is_hidden', false)->get()`, a
+`AchievementController` `Achievement::all()` — **oba pod `achievements.catalog.v2`**, na
+sat vremena. Ko prvi napuni keš, taj odlučuje šta drugi vidi: ili Achievements tab
+izgubi svako skriveno dostignuće (uključujući ona koja je korisnik već otključao i koja
+je tab izričito trebao pokazati), ili profil dobije nefiltrirani set uprkos komentaru
+koji tvrdi suprotno. Sada je jedan upit, a svaki pozivalac filtrira za sebe.
+
+**Nije bug, ali treba znati:**
+
+- **`posts_count` znači dvije stvari.** `UserResource` ga računa kao
+  `posts + threads` (forum sidebar i kartica autora pokazuju 7), a profil `stats.posts_count`
+  kao samo odgovore (0). Na profilu je to ispravno jer stoji uz `threads_count`, na forumu
+  je konvencija da se prva poruka broji — ali ista riječ nosi dva broja.
+- **`xbox_profile` se gradi i nikad ne crta.** Komentar kaže "for the hero chip"; taj chip
+  nikad nije napravljen. Ostavljeno kao nespojena funkcija, ne mrtav kod.
+- **Vlastiti profil povlači dva payloada.** Na svom Overviewu stranica rendera
+  `DashboardHome` (koji čita `/me/dashboard`), ali `useSWR` za `/users/{ja}` svejedno
+  odradi punu izgradnju (35+ upita) — jedino što se iz nje koristi je `stats.games_count`
+  za welcome wizard. Vrijedi preseliti tu provjeru na `/me/dashboard`.
+- **`getUserProfile` u Discord botu** (`ApiService.ts`) nije pozvan nigdje.
+- Komentar u `config/milestones.php` upućuje na `ProfileService::milestoneMetrics()`,
+  metodu koja ne postoji — metrike prosljeđuje `AuthController`.
+
+**Provjereno kao ispravno:** svih 7 tabova je spojeno na komponentu, i svih 9 profilnih
+endpointa vraća 200 (`collection`, `achievements`, `journal`, `lists`, `gamer-dna`,
+`activity`, `steam-achievements`, `recognitions`, `collection-goals`); **nema mrtvih
+komponenti** — sve 35 u `components/profile/` je uvezano (prva provjera je lažno
+prijavila 18 siročadi jer se uvoze relativnim putanjama); privatan profil vraća zaključani
+payload prije bilo kakvog grananja, `bounty_balance` se skida svima osim vlasniku, a
+`recognitions` se prepisuje po posmatraču da `given_by_me` ne dođe iz dijeljenog keša.
+
+---
+
 ## Profile Privacy
 
 **Status:** COMPLETE (08/2026)

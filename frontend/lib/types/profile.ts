@@ -321,17 +321,6 @@ export interface BountyTransaction {
     created_at: string;
 }
 
-export interface RecentArticle {
-    id: number;
-    title: string;
-    slug: string;
-    type: string;
-    featured_image?: string;
-    excerpt?: string;
-    published_at: string;
-    views: number;
-}
-
 export interface PlayingNowGame {
     slug: string;
     name: string;
@@ -539,7 +528,6 @@ export interface UserProfile {
     is_private?: boolean;
     can_view?: boolean;
     friend_status?: FriendStatus;
-    recent_articles?: RecentArticle[];
     is_staff?: boolean;
     collection_snapshot?: CollectionSnapshotTile[];
     playing_now?: PlayingNowGame[];

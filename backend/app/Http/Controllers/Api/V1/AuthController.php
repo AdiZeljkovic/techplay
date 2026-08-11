@@ -302,67 +302,52 @@ class AuthController extends Controller
         $isStaff = $user->hasRole(['admin', 'Admin', 'Super Admin', 'editor', 'Editor', 'Editor-in-Chief', 'moderator', 'Moderator', 'Journalist'])
             || $user->isStaff();
 
-        // Fetch recent threads (only public data)
-        $recentThreads = $user->threads()
-            ->with('category:id,slug,name')
-            ->latest()
-            ->take(5)
-            ->get(['id', 'title', 'slug', 'category_id', 'created_at', 'view_count']);
-
-        // Fetch recent comments (only public data - no polymorphic to avoid data leak)
-        $recentComments = $user->comments()
-            ->where('status', 'approved')
-            ->latest()
-            ->take(5)
-            ->get(['id', 'content', 'created_at', 'commentable_type', 'commentable_id']);
-
-        // Fetch recent articles (always fetch - frontend decides if to display based on role)
-        $recentArticles = $user->articles()
-            ->where('status', 'published')
-            ->latest('published_at')
-            ->with('category:id,type,name')
-            ->take(6)
-            ->get(['id', 'title', 'slug', 'featured_image_url', 'excerpt', 'published_at', 'views', 'category_id'])
-            ->map(function ($article) {
-                return [
-                    'id' => $article->id,
-                    'title' => $article->title,
-                    'slug' => $article->slug,
-                    'type' => $article->category?->type ?? 'news',
-                    'featured_image' => $article->featured_image_url,
-                    'excerpt' => $article->excerpt,
-                    'published_at' => $article->published_at,
-                    'views' => $article->views,
-                ];
-            });
+        // recent_threads, recent_comments and recent_articles were built here
+        // — three queries and a fifth of the response — and nothing has ever
+        // rendered any of them. The profile's recent activity comes from
+        // /users/{username}/activity, which the overview calls for itself; a
+        // second source here only guaranteed the two could disagree.
 
         // PERFORMANCE: Use already-loaded achievements instead of N+1 queries
         // Build a map of user's unlocked achievements with their pivot data
         $userAchievementsMap = $user->achievements->keyBy('id')->map(fn ($a) => $a->pivot->unlocked_at);
         $userUnlockedIds = $userAchievementsMap->keys()->toArray();
 
-        // Get all achievements (catalog cached 1h — it was loaded on every view)
-        // and merge with user's unlocked status
-        // v2: hidden entries (features that haven't shipped) stay out of the
-        // catalog so the profile never advertises an unreachable trophy.
+        // One catalogue, cached an hour, shared with AchievementController.
+        //
+        // Both cached under this same key and they cached different queries —
+        // this one filtered `is_hidden`, the tab's did not — so whichever ran
+        // first that hour decided what the other saw. The tab lost every hidden
+        // achievement, including ones the reader had already unlocked and is
+        // meant to see, or the profile got the unfiltered set. One query now,
+        // and each caller filters for itself: here, to what is unlocked, which
+        // is the same rule the tab applies.
         $achievementCatalog = Cache::remember(
             'achievements.catalog.v2',
             3600,
-            fn () => Achievement::where('is_hidden', false)->get()
+            fn () => Achievement::all()
         );
-        $allAchievements = $achievementCatalog->map(function ($achievement) use ($userAchievementsMap) {
-            $isUnlocked = $userAchievementsMap->has($achievement->id);
-
-            return [
+        // The five most recent unlocks, which is exactly what the overview's
+        // Achievement Spotlight draws.
+        //
+        // The whole catalogue used to travel — all sixty-six, descriptions and
+        // all, most of them locked — and it was 56% of this response. The
+        // Achievements tab does not read it either: it calls
+        // /users/{username}/achievements for the full set. The headline number
+        // stays in stats.achievements_count.
+        $allAchievements = $achievementCatalog
+            ->filter(fn ($achievement) => $userAchievementsMap->has($achievement->id))
+            ->sortByDesc(fn ($achievement) => (string) $userAchievementsMap->get($achievement->id))
+            ->take(5)
+            ->map(fn ($achievement) => [
                 'id' => $achievement->id,
                 'name' => $achievement->name,
-                'description' => $achievement->description,
                 'icon_path' => $achievement->versionedIconPath(),
                 'points' => $achievement->points,
-                'is_unlocked' => $isUnlocked,
-                'unlocked_at' => $isUnlocked ? $userAchievementsMap->get($achievement->id) : null,
-            ];
-        });
+                'is_unlocked' => true,
+                'unlocked_at' => $userAchievementsMap->get($achievement->id),
+            ])
+            ->values();
 
         $unlockedCount = count($userUnlockedIds);
 
@@ -417,9 +402,6 @@ class AuthController extends Controller
             'is_online' => Presence::where('user_id', $user->id)->where('is_active', true)->exists(),
             'is_private' => $user->hasPrivateProfile(),
             'can_view' => true,
-            'recent_threads' => $recentThreads,
-            'recent_comments' => $recentComments,
-            'recent_articles' => $recentArticles, // For staff profiles
             'is_staff' => $isStaff,
             'stats' => $stats,
             // Phase 1 — game collection dashboard blocks
