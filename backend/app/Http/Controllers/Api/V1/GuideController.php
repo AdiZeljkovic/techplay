@@ -22,7 +22,17 @@ class GuideController extends Controller
         $cacheKey = "guides.index.v3.page_{$page}.diff_{$difficulty}.search_".md5($search);
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($request, $search) {
-            $query = Guide::with('author:id,username,display_name,avatar_url');
+            // Named columns, not the whole row. The listing was paginating
+            // full Guide models, so every card carried the guide's entire body
+            // plus its SEO block — 67 KB for thirteen cards that show a title,
+            // an image, an excerpt and a difficulty.
+            $query = Guide::query()
+                ->select([
+                    'id', 'author_id', 'game_id', 'title', 'slug', 'excerpt',
+                    'featured_image_url', 'difficulty', 'status', 'views',
+                    'published_at', 'created_at',
+                ])
+                ->with('author:id,username,display_name,avatar_url');
 
             if ($request->has('difficulty') && $request->difficulty !== 'all') {
                 $query->where('difficulty', $request->difficulty);

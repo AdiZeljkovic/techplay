@@ -37,7 +37,13 @@ class ReviewResource extends JsonResource
                 'type' => 'review',
             ],
 
-            'content' => $this->content,
+            // Detail only. A listing of 13 reviews was sending 139 KB of
+            // article bodies — 81% of that response — for cards that show a
+            // title, an image and the excerpt.
+            'content' => $this->when(
+                $request->routeIs('*.show') || $request->route()?->getActionMethod() === 'show',
+                $this->content,
+            ),
             'featured_image_url' => $imageUrl,
             'featured_image_alt' => $this->featured_image_alt,
 
