@@ -184,6 +184,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/conversations/{conversation}/messages', [ChatController::class, 'messages']);
         Route::post('/conversations/{conversation}/messages', [ChatController::class, 'send']);
         Route::post('/conversations/{conversation}/read', [ChatController::class, 'markRead']);
+        Route::delete('/conversations/{conversation}/messages/{message}', [ChatController::class, 'destroyMessage']);
         Route::post('/conversations/{conversation}/participants', [ChatController::class, 'addParticipants']);
         Route::delete('/conversations/{conversation}/leave', [ChatController::class, 'leave']);
         Route::post('/messages/{message}/react', [ChatController::class, 'react']);

@@ -132,20 +132,62 @@ class ChatController extends Controller
             return $this->error('This conversation is not yours.', 403);
         }
 
-        $chat->markRead($conversation, $request->user());
+        $request->validate(['before_id' => 'nullable|integer|min:1']);
+
+        $beforeId = $request->integer('before_id') ?: null;
+
+        // Reading older messages is not reading new ones.
+        if (! $beforeId) {
+            $chat->markRead($conversation, $request->user());
+        }
+
+        $thread = $chat->thread($conversation, $request->user(), 50, $beforeId);
+
+        // Hoisted: this was called inside the map below, so a group of
+        // twenty-four made twenty-four Redis round trips for one answer.
+        $online = $this->onlineIds();
 
         return $this->success([
-            'messages' => $chat->thread($conversation, $request->user()),
+            'messages' => $thread['messages'],
+            'has_more' => $thread['has_more'],
             'members' => $conversation->participants()->with('user:id,username,avatar_url')->get()
                 ->map(fn (ConversationParticipant $p) => [
                     'id' => $p->user?->id,
                     'username' => $p->user?->username,
                     'avatar_url' => $p->user?->avatar_url,
                     'role' => $p->role,
-                    'online' => in_array($p->user_id, $this->onlineIds(), true),
+                    'online' => in_array($p->user_id, $online, true),
                 ])->filter(fn ($m) => $m['id'])->values(),
             'emoji' => self::EMOJI,
         ]);
+    }
+
+    /**
+     * DELETE /conversations/{conversation}/messages/{message} — unsend.
+     *
+     * Your own message, always. Somebody else's only if you own the group,
+     * because a group owner is the only person here with anything to moderate
+     * with — and never in a direct thread, where there is no moderator.
+     */
+    public function destroyMessage(Request $request, Conversation $conversation, Message $message): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $conversation->hasParticipant($user->id) || $message->conversation_id !== $conversation->id) {
+            return $this->error('This conversation is not yours.', 403);
+        }
+
+        $mine = $message->sender_id === $user->id;
+        $ownsGroup = $conversation->type === 'group'
+            && $conversation->participants()->where('user_id', $user->id)->value('role') === 'owner';
+
+        if (! $mine && ! $ownsGroup) {
+            return $this->error('You can only delete your own messages.', 403);
+        }
+
+        app(ChatService::class)->deleteMessage($message);
+
+        return $this->success(null, 'Message deleted.');
     }
 
     /** POST /conversations/{conversation}/messages */
@@ -281,7 +323,9 @@ class ChatController extends Controller
         }
 
         if ($conversation->type === 'direct') {
-            return $this->error('Direct threads cannot be left — delete the conversation instead.', 422);
+            // There is no delete-a-direct-thread endpoint, and the old copy
+            // here pointed at one, so it read as a bug rather than a rule.
+            return $this->error('A direct thread stays open — block the other person to stop it.', 422);
         }
 
         ConversationParticipant::where('conversation_id', $conversation->id)

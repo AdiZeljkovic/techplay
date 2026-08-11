@@ -209,19 +209,23 @@ class ChatService
             ->get()
             ->keyBy('conversation_id');
 
-        // Unread per conversation in one query: anything after last_read_at
-        // that somebody else wrote.
-        $unread = Message::whereIn('conversation_id', $conversationIds)
-            ->where('sender_id', '!=', $user->id)
-            ->get(['conversation_id', 'created_at'])
-            ->groupBy('conversation_id')
-            ->map(function (Collection $rows, $conversationId) use ($participations) {
-                $readAt = $participations->firstWhere('conversation_id', $conversationId)?->last_read_at;
-
-                return $readAt
-                    ? $rows->filter(fn ($m) => $m->created_at->gt($readAt))->count()
-                    : $rows->count();
-            });
+        // Unread per conversation, counted by the database.
+        //
+        // This used to select every message the viewer had not written across
+        // every conversation they belong to, hydrate the lot, and count them in
+        // PHP — so opening the hub loaded a person's entire message history to
+        // put a number on a badge.
+        $unread = DB::table('messages as m')
+            ->join('conversation_participants as p', function ($join) use ($user) {
+                $join->on('p.conversation_id', '=', 'm.conversation_id')
+                    ->where('p.user_id', '=', $user->id);
+            })
+            ->whereIn('m.conversation_id', $conversationIds)
+            ->where('m.sender_id', '!=', $user->id)
+            ->where(fn ($q) => $q->whereNull('p.last_read_at')->orWhereColumn('m.created_at', '>', 'p.last_read_at'))
+            ->groupBy('m.conversation_id')
+            ->selectRaw('m.conversation_id, COUNT(*) as tally')
+            ->pluck('tally', 'm.conversation_id');
 
         return $participations
             ->map(function (ConversationParticipant $participation) use ($people, $lastMessages, $unread, $user) {
@@ -254,17 +258,54 @@ class ChatService
             ->all();
     }
 
-    public function thread(Conversation $conversation, User $user, int $limit = 50): array
+    /**
+     * The last `limit` messages, or the ones before `beforeId`.
+     *
+     * There was no second argument and no way to ask for anything older, so a
+     * conversation was fifty messages long however much had been said in it —
+     * everything before that was in the database and out of reach.
+     *
+     * @return array{messages:array,has_more:bool}
+     */
+    public function thread(Conversation $conversation, User $user, int $limit = 50, ?int $beforeId = null): array
     {
-        $messages = $conversation->messages()
+        $rows = $conversation->messages()
             ->with(['sender:id,username,avatar_url', 'reactions'])
+            ->when($beforeId, fn ($q) => $q->where('id', '<', $beforeId))
             ->latest('id')
-            ->limit($limit)
-            ->get()
-            ->reverse()
-            ->values();
+            ->limit($limit + 1)
+            ->get();
 
-        return $messages->map(fn (Message $m) => $this->presentMessage($m, $user->id))->all();
+        // One more was asked for than will be sent: if it arrived, there is
+        // older still to come.
+        $hasMore = $rows->count() > $limit;
+
+        return [
+            'messages' => $rows->take($limit)->reverse()->values()
+                ->map(fn (Message $m) => $this->presentMessage($m, $user->id))->all(),
+            'has_more' => $hasMore,
+        ];
+    }
+
+    /**
+     * Unsend: the row goes, and the conversation's own clock is wound back to
+     * whatever is now last so the inbox preview does not quote a message that
+     * no longer exists.
+     */
+    public function deleteMessage(Message $message): void
+    {
+        $conversation = $message->conversation;
+
+        $message->delete();
+
+        if (! $conversation) {
+            return;
+        }
+
+        $last = $conversation->messages()->latest('id')->first();
+
+        $conversation->last_message_at = $last?->created_at;
+        $conversation->save();
     }
 
     public function presentMessage(Message $message, int $viewerId): array

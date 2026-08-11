@@ -332,6 +332,60 @@ XP kao dobitak te sedmice (snapshot job pokriva sve korisnike ponedjeljkom).
 
 ---
 
+## Social Hub
+
+**Status:** COMPLETE
+
+**Opis:** Jedan chat sistem za direktne i grupne razgovore, plus prijatelji,
+zahtjevi, blokirani i prijedlozi. Zamijenio je stari `messages` sistem 08/2026.
+
+**Frontend:** `app/social/SocialClient.tsx` (`/friends` i `/messages` su preusmjerenja)
+**Backend:** `ChatController`, `ChatService`, `FriendController`
+**Database:** `conversations`, `conversation_participants`, `messages`, `message_reactions`, `friendships`
+**API:** `GET /social`, `GET|POST /conversations`, `GET|POST|DELETE /conversations/{id}/messages…`,
+`POST /conversations/{id}/read`, `POST /conversations/{id}/participants`,
+`DELETE /conversations/{id}/leave`, `POST /messages/{id}/react`
+**Real-time:** Laravel Reverb — `conversation.{id}` za otvorenu nit, `user.{id}.chat` za listu i bedževe
+
+**Šta postoji:** direktne poruke, grupe do 24 člana, slike (privatni disk + potpisani
+URL), reakcije (zatvoren set od 6 emojija), unread po razgovoru, blokiranje koje
+zaustavlja i postojeću nit, uloge u grupi (samo owner dodaje ljude), prijedlozi
+prijatelja (prijatelji prijatelja, rangirani po broju zajedničkih).
+
+### Audit 12.08.2026
+
+**Bug: unread se brojao u PHP-u.** `ChatService::inbox()` je učitavao **svaku poruku
+koju korisnik nije napisao, iz svih njegovih razgovora**, hidrirao ih u modele i
+brojao u PHP-u — samo da bi stavio broj na bedž. Sada je to jedan `COUNT(*)` s
+`GROUP BY` i joinom na `conversation_participants.last_read_at`.
+
+**Bug: `onlineIds()` se zvao unutar petlje.** U `messages()` se Redis pitao jednom po
+članu razgovora — grupa od 24 člana značila je 24 Redis poziva za isti odgovor.
+
+**Bug: poruka o napuštanju direktne niti upućivala je na nepostojeću funkciju.**
+"delete the conversation instead" — takav endpoint ne postoji. Tekst sada kaže šta
+zaista vrijedi (blokiraj sagovornika).
+
+**Nedostajalo: nije se moglo doći do starijih poruka.** `thread()` je imao tvrdi
+limit od 50 bez ikakvog načina da se traži ranije — razgovor je bio dug 50 poruka
+koliko god da je rečeno. Dodano `before_id` + `has_more` i dugme "Load older messages".
+
+**Nedostajalo: unsend.** Nije postojao način da se poruka obriše. Dodano
+`DELETE /conversations/{id}/messages/{message}` — svoja poruka uvijek, tuđa samo ako
+si vlasnik grupe (u direktnoj niti nema moderatora). Brisanje pomjera
+`conversations.last_message_at` na novu posljednju poruku da pregled u listi ne
+citira poruku koje više nema.
+
+**I dalje nedostaje (nije rađeno):** indikator kucanja, potvrde o čitanju vidljive
+pošiljaocu, preimenovanje grupe, izbacivanje člana i prenos vlasništva (ako vlasnik
+napusti grupu, niko više ne može dodavati ljude), te brisanje razgovora za sebe.
+
+**Napomena o payloadu:** `GET /social` vraća **cijeli roster prijatelja** bez
+ograničenja. Za današnje brojeve je zanemarivo, ali korisnik s više stotina
+prijatelja povukao bi ih sve na svako otvaranje stranice.
+
+---
+
 ## Presence (što korisnik igra)
 
 **Status:** COMPLETE
