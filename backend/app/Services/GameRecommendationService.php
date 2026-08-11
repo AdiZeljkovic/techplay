@@ -360,6 +360,10 @@ class GameRecommendationService
             'health' => $health,
             'health_note' => match (true) {
                 $taste['library'] === 0 => 'Add a few games and this starts working.',
+                // Nothing waiting is not the same as drowning. Without this,
+                // a shelf with an empty backlog and nothing finished scored 30
+                // and was told "the pile is winning" — about a pile of zero.
+                $backlog === 0 => 'Nothing waiting. Add something you mean to play next.',
                 $health >= 70 => "Looking good — you're making progress.",
                 $health >= 40 => 'Holding steady. Finish one before adding three.',
                 default => 'The pile is winning. Pick something short and clear it.',

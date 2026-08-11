@@ -508,6 +508,33 @@ i `POST /backlog/suggest`; ni jedno ni drugo ne postoji. Bodovanje je determinis
 zbir četiri komponente do 100: tvoja kolekcija, igrači sa sličnom policom, kvalitet
 (ocjene) i era. "Why" na kartici pokazuje raspodjelu bodova.
 
+### Audit 12.08.2026
+
+**Bug: "Backlog health" je psovao praznu policu.** Formula je
+`completion_rate * 0.7 + (1 - pressure) * 30`. Korisnik s **praznim backlogom** ima
+`pressure = 0`, što je najzdravije moguće stanje, ali bez ijedne završene igre dobija
+tačno 30% i poruku "The pile is winning. Pick something short and clear it." — o gomili
+od nula igara. Dodana grana za `backlog === 0`.
+
+**Bug: ključ za bodovanje je spominjao kolonu koju smo obrisali.** "Player ratings and
+Metacritic, where we have them" — `games.metacritic` je izbačen u čišćenju scheme
+08/2026 (bio je nula na svakom redu), a bodovanje kvaliteta oduvijek čita samo
+`games.rating`. Tekst je ispravljen.
+
+**Mrtav kod:** `BacklogAdvisorController::MOODS` se nigdje nije koristio i navodio je
+`relaxed`, raspoloženje koje ni validacija ni servis ne poznaju (stvarni set je
+`any, action, story, chill, competitive`). Obrisano.
+
+**Payload:** 12 preporuka + do 14 žanrova + summary + weights, procijenjeno ~7 KB.
+Endpoint traži autentifikaciju pa ga nisam mogao izmjeriti izvana — nema očiglednog
+viška: svaka preporuka nosi 9 polja, tri žanra i četiri stavke raspodjele bodova, i
+sve to stranica crta.
+
+**Provjereno kao ispravno:** raspodjela bodova se zbraja u 100 i `max` po komponenti
+odgovara `WEIGHTS`, pa trake u "Why" nisu ukrasne; `taste` profil keširan 15 min,
+lista žanrova 24 h; upiti su ograničeni (`CANDIDATE_POOL` 400, peer signal 600) i biraju
+samo kolone koje trebaju.
+
 **Redizajn 12.08.2026:** traka statistike prešla na pilule kao na ostalim hubovima;
 kartica preporuke dobila rub u boji ocjene i traku ispod broja (ocjena se sada i vidi,
 ne samo čita); "How these are scored" i "Backlog health" spojeni u jednu kutiju na vrhu

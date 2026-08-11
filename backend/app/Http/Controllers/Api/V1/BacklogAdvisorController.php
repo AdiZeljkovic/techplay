@@ -12,8 +12,6 @@ class BacklogAdvisorController extends Controller
 {
     use ApiResponse;
 
-    private const MOODS = ['action', 'relaxed', 'story', 'competitive', 'any'];
-
     /**
      * GET /backlog/recommendations — scored suggestions from the whole
      * catalogue. No model, no quota: every point comes from a component the
@@ -45,7 +43,10 @@ class BacklogAdvisorController extends Controller
             'weights' => [
                 ['key' => 'genre', 'label' => 'Your collection', 'note' => 'The genres you own, finish and favourite.'],
                 ['key' => 'peers', 'label' => 'Players like you', 'note' => 'What shelves that overlap yours also hold.'],
-                ['key' => 'quality', 'label' => 'Quality', 'note' => 'Player ratings and Metacritic, where we have them.'],
+                // Metacritic used to be named here. That column was dropped in
+                // the 08/2026 schema clean-up — it held zero on every row — and
+                // scoring has only ever read the catalogue's own rating.
+                ['key' => 'quality', 'label' => 'Quality', 'note' => 'What players scored it in our own catalogue.'],
                 ['key' => 'era', 'label' => 'Your era', 'note' => 'How close it sits to the years you play in.'],
             ],
         ]);
