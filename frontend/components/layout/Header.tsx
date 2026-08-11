@@ -748,7 +748,7 @@ function NavItem({ item, badge, onHoverChange }: {
                                             {child.art ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={child.art} alt="" aria-hidden
-                                                    className="w-9 h-9 shrink-0 object-contain select-none transition-transform duration-300 group-hover/row:scale-[1.08]" />
+                                                    className="w-7 h-7 shrink-0 object-contain select-none transition-transform duration-300 group-hover/row:scale-[1.08]" />
                                             ) : Icon && (
                                                 <span className="w-10 h-10 shrink-0 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-low)] group-hover/row:bg-[var(--accent)] group-hover/row:border-transparent group-hover/row:text-white transition-colors duration-300">
                                                     <Icon className="w-[18px] h-[18px]" />
@@ -1443,7 +1443,7 @@ export default function Header() {
                                                                                         <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
                                                                                             className="flex items-center gap-3 py-2 rounded-[var(--radius-card)] active:bg-white/[0.03] transition-colors">
                                                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                                            <img src={child.art} alt="" aria-hidden className="w-8 h-8 shrink-0 object-contain select-none" />
+                                                                                            <img src={child.art} alt="" aria-hidden className="w-7 h-7 shrink-0 object-contain select-none" />
                                                                                             <span className="min-w-0">
                                                                                                 <span className="block font-display text-[12.5px] font-black text-white leading-tight">{child.name}</span>
                                                                                                 {child.description && (
