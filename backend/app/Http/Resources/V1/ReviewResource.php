@@ -25,6 +25,10 @@ class ReviewResource extends JsonResource
         // Extract review_data fields
         $reviewData = $this->review_data ?? [];
 
+        // One request for one review, rather than a list of them.
+        $detail = $request->routeIs('*.show')
+            || $request->route()?->getActionMethod() === 'show';
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -40,16 +44,16 @@ class ReviewResource extends JsonResource
             // Detail only. A listing of 13 reviews was sending 139 KB of
             // article bodies — 81% of that response — for cards that show a
             // title, an image and the excerpt.
-            'content' => $this->when(
-                $request->routeIs('*.show') || $request->route()?->getActionMethod() === 'show',
-                $this->content,
-            ),
+            'content' => $this->when($detail, $this->content),
             'featured_image_url' => $imageUrl,
             'featured_image_alt' => $this->featured_image_alt,
 
             // Review specific data
             'review_score' => $this->review_score ?? 0,
-            'review_data' => [
+            // The verdict — pros, cons, per-category ratings, conclusion, CTA
+            // — belongs to the review's own page. A card in the listing reads
+            // one key out of the eleven, so that is what a listing gets.
+            'review_data' => $detail ? [
                 'game_title' => $reviewData['game_title'] ?? null,
                 'developer' => $reviewData['developer'] ?? null,
                 'publisher' => $reviewData['publisher'] ?? null,
@@ -61,6 +65,8 @@ class ReviewResource extends JsonResource
                 'cons' => $reviewData['cons'] ?? [],
                 'conclusion' => $reviewData['conclusion'] ?? null,
                 'cta' => $reviewData['cta'] ?? 'none',
+            ] : [
+                'game_title' => $reviewData['game_title'] ?? null,
             ],
 
             'tags' => $this->tags ?? [],
