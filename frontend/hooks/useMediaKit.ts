@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 
-interface MediaKitData {
+export interface MediaKitData {
     about: Record<string, any>;
     statistics: {
         content: {

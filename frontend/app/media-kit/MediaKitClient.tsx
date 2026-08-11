@@ -1,6 +1,6 @@
 "use client";
 
-import { useMediaKit } from "@/hooks/useMediaKit";
+import type { MediaKitData } from "@/hooks/useMediaKit";
 import { useState } from "react";
 import {
     FileText, TrendingUp, Users, Globe, Sparkles,
@@ -8,6 +8,7 @@ import {
     Mail
 } from "lucide-react";
 import { motion } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
 // Components
@@ -18,33 +19,9 @@ import WhyChooseTechPlay from "./components/WhyChooseTechPlay";
 import ROICalculator from "./components/ROICalculator";
 import RequestPackageModal from "./components/RequestPackageModal";
 
-// ═══════════════════════════════════════════════════════════════════
-// LOADING & ERROR STATES
-// ═══════════════════════════════════════════════════════════════════
-
-function MediaKitSkeleton() {
-    return (
-        <div className="min-h-screen">
-            <div className="h-screen bg-[var(--bg-secondary)] animate-pulse" />
-            <div className="container mx-auto px-4 py-20 space-y-20">
-                {[...Array(8)].map((_, i) => (
-                    <div key={i} className="h-64 bg-white/[0.03] rounded-3xl animate-pulse" />
-                ))}
-            </div>
-        </div>
-    );
-}
-
-function ErrorState({ message }: { message: string }) {
-    return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-3xl p-12 max-w-2xl text-center">
-                <h2 className="text-2xl font-bold text-white mb-4">Failed to Load Media Kit</h2>
-                <p className="text-white/50">{message}</p>
-            </div>
-        </div>
-    );
-}
+// The skeleton and the error state that used to live here are gone with the
+// client-side fetch. The page receives its data from the server now, so there
+// is no loading pass to fill and no request that can fail in the browser.
 
 // ═══════════════════════════════════════════════════════════════════
 // REUSABLE COMPONENTS
@@ -67,133 +44,94 @@ function Section({ children, className = "", id }: { children: React.ReactNode; 
 
 function SectionHeader({ overline, title, description }: { overline: string; title: string; description?: string }) {
     return (
-        <div className="mb-12 text-center">
-            <span className="text-[var(--accent)] text-sm font-semibold uppercase tracking-widest mb-3 block">
+        <div className="mb-6">
+            <span className="block mb-2 font-display text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
                 {overline}
             </span>
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">{title}</h2>
+            <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                <span aria-hidden className="w-[3px] h-[14px] rounded-full bg-[var(--accent)]" />
+                {title}
+            </h2>
             {description && (
-                <p className="text-lg text-white/50 max-w-3xl mx-auto leading-relaxed">{description}</p>
+                <p className="mt-2.5 max-w-3xl text-[13px] text-[var(--ink-low)] leading-relaxed">{description}</p>
             )}
         </div>
     );
 }
 
-function StatCard({ label, value, icon: Icon, gradient, delay }: {
-    label: string; value: number; icon: any; gradient: string; delay: number;
+function StatCard({ label, value, icon: Icon }: {
+    label: string; value: number; icon: LucideIcon; gradient?: string; delay?: number;
 }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay, duration: 0.5, ease: "easeOut" }}
-            whileHover={{ y: -6, scale: 1.02 }}
-            className="relative bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] p-7 rounded-2xl
-                       hover:bg-white/[0.06] hover:border-white/[0.12] hover:shadow-2xl
-                       transition-all duration-500 cursor-default group overflow-hidden"
-        >
-            <div className={`absolute top-0 left-0 right-0 h-[2px] ${gradient} opacity-60
-                            group-hover:opacity-100 transition-opacity duration-500`} />
-
-            <div className="flex items-start justify-between mb-5">
-                <div className={`w-12 h-12 rounded-xl ${gradient} p-[1px]`}>
-                    <div className="w-full h-full rounded-xl flex items-center justify-center
-                                   group-hover:bg-[var(--bg-primary)]/80 transition-colors duration-500">
-                        <Icon className="w-5 h-5 text-white/80" />
-                    </div>
-                </div>
-                <div className="w-2 h-2 rounded-full bg-[var(--accent)] opacity-60 animate-pulse" />
-            </div>
-            <h3 className="text-4xl font-black text-white mb-1.5 tracking-tight">
+        <div className="rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] p-5 hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300">
+            <span className="inline-flex w-10 h-10 rounded-[var(--radius-inner)] bg-[var(--fill-2)] text-[var(--accent)] items-center justify-center mb-4">
+                <Icon className="w-[18px] h-[18px]" />
+            </span>
+            <p className="font-display text-[26px] font-black tabular-nums leading-none text-[var(--ink-hi)]">
                 <AnimatedCounter value={value} />
-            </h3>
-            <p className="text-sm text-white/40 font-medium">{label}</p>
-        </motion.div>
+            </p>
+            <p className="mt-1.5 text-[12px] font-bold uppercase tracking-wider text-[var(--ink-faint)]">{label}</p>
+        </div>
     );
 }
 
-function PricingTierCard({ title, subtitle, description, features, isPopular, delay }: {
+function PricingTierCard({ title, subtitle, description, features, isPopular }: {
     title: string; subtitle: string; description: string;
     features: { name: string; detail: string; price: string }[];
-    isPopular?: boolean; delay: number;
+    isPopular?: boolean; delay?: number;
 }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay, duration: 0.6 }}
-            whileHover={{ y: -8 }}
-            className={`relative rounded-3xl overflow-hidden transition-all duration-500
-                       ${isPopular
-                    ? 'bg-gradient-to-b from-[var(--accent)]/[0.08] to-white/[0.02] border-2 border-[var(--accent)]/30 shadow-xl shadow-[var(--accent)]/10'
-                    : 'bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12]'
-                }`}
+        <div
+            className={`relative flex h-full flex-col rounded-[var(--radius-card)] p-6 border ${
+                isPopular
+                    ? "bg-[var(--surface-2)] border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                    : "bg-[var(--surface-1)] border-[var(--line)]"
+            }`}
         >
             {isPopular && (
-                <div className="absolute top-0 left-0 right-0 flex justify-center">
-                    <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-[var(--accent)] text-white
-                                   text-xs font-bold rounded-b-xl shadow-lg shadow-[var(--accent)]/30">
-                        <Sparkles className="w-3 h-3" />
-                        Most Popular
-                    </span>
-                </div>
+                <span className="absolute -top-2.5 left-6 inline-flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                    <Sparkles className="w-3 h-3" />
+                    Most popular
+                </span>
             )}
 
-            <div className="p-8">
-                <div className={`${isPopular ? 'pt-6' : ''}`}>
-                    <h3 className="text-2xl font-black text-white mb-1">{title}</h3>
-                    <p className="text-sm text-[var(--accent)] font-semibold mb-3">{subtitle}</p>
-                    <p className="text-sm text-white/40 mb-8 leading-relaxed">{description}</p>
-                </div>
+            <h3 className="font-display text-[15px] font-black uppercase tracking-wider text-[var(--ink-hi)]">{title}</h3>
+            <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-[var(--accent)]">{subtitle}</p>
+            <p className="mt-2.5 mb-5 text-[12.5px] text-[var(--ink-low)] leading-relaxed">{description}</p>
 
-                <div className="space-y-0">
-                    {features.map((feature, i) => (
-                        <div
-                            key={i}
-                            className="flex items-center justify-between py-4 border-b border-white/[0.04]
-                                     last:border-0 group/item hover:bg-white/[0.02] -mx-3 px-3 rounded-lg
-                                     transition-colors duration-300"
-                        >
-                            <div>
-                                <p className="text-sm font-semibold text-white/80">{feature.name}</p>
-                                <p className="text-xs text-white/30 mt-0.5">{feature.detail}</p>
-                            </div>
-                            <span className="text-lg font-black text-[var(--accent)] whitespace-nowrap ml-4">
-                                {feature.price}
-                            </span>
-                        </div>
-                    ))}
-                </div>
+            <div className="mt-auto">
+                {features.map((feature) => (
+                    <div
+                        key={feature.name}
+                        className="flex items-center justify-between gap-4 border-t border-[var(--line)] py-3"
+                    >
+                        <span className="min-w-0">
+                            <span className="block text-[13px] font-semibold text-[var(--ink-hi)]">{feature.name}</span>
+                            {feature.detail && (
+                                <span className="block text-[11.5px] text-[var(--ink-faint)]">{feature.detail}</span>
+                            )}
+                        </span>
+                        <span className="shrink-0 font-display text-[15px] font-black text-[var(--accent)] tabular-nums">
+                            {feature.price}
+                        </span>
+                    </div>
+                ))}
             </div>
-        </motion.div>
+        </div>
     );
 }
 
-function DemoBar({ label, percentage, delay }: { label: string; percentage: number; delay: number }) {
+function DemoBar({ label, percentage }: { label: string; percentage: number; delay?: number }) {
     return (
-        <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay, duration: 0.5 }}
-            className="space-y-2"
-        >
+        <div className="space-y-2">
             <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70 font-medium">{label}</span>
-                <span className="text-sm text-[var(--accent)] font-bold">{percentage}%</span>
+                <span className="text-[12.5px] font-medium text-[var(--ink-mid)]">{label}</span>
+                <span className="text-[12.5px] font-bold tabular-nums text-[var(--accent)]">{percentage}%</span>
             </div>
-            <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-                <motion.div
-                    className="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-orange-500"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${percentage}%` }}
-                    viewport={{ once: true }}
-                    transition={{ delay: delay + 0.2, duration: 0.8, ease: "easeOut" }}
-                />
+            <div className="h-1.5 rounded-full bg-[var(--fill-2)] overflow-hidden">
+                <span className="block h-full rounded-full bg-[var(--accent)]" style={{ width: `${percentage}%` }} />
             </div>
-        </motion.div>
+        </div>
     );
 }
 
@@ -201,14 +139,12 @@ function DemoBar({ label, percentage, delay }: { label: string; percentage: numb
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════
 
-export default function MediaKitClient() {
-    const { data, isLoading, error } = useMediaKit();
+export default function MediaKitClient({ data }: { data: MediaKitData }) {
     const [packageModalOpen, setPackageModalOpen] = useState(false);
 
-    if (isLoading) return <MediaKitSkeleton />;
-    if (error) return <ErrorState message="Failed to load media kit data" />;
-
-    const stats = data.statistics;
+    // The API can be unreachable at build time, and every figure below already
+    // has a fallback — so an empty shape here means the page still renders.
+    const stats = data.statistics ?? ({} as MediaKitData["statistics"]);
 
     const handleDownloadPDF = () => {
         toast("PDF download functionality coming soon!");
@@ -235,7 +171,7 @@ export default function MediaKitClient() {
 
 
     return (
-        <div className="min-h-screen">
+        <main className="min-h-screen bg-[var(--surface-0)]">
             {/* Request Package Modal */}
             <RequestPackageModal
                 isOpen={packageModalOpen}
@@ -249,7 +185,7 @@ export default function MediaKitClient() {
                 onDownloadPDF={handleDownloadPDF}
             />
 
-            <div className="container mx-auto px-4 space-y-32 py-24">
+            <div className="container-page space-y-10 md:space-y-14 py-10 md:py-14">
 
                 {/* ═══ ABOUT SECTION ═══ */}
                 <Section id="about">
@@ -535,55 +471,45 @@ export default function MediaKitClient() {
 
                 {/* ═══ CONTACT CTA ═══ */}
                 <Section id="contact">
-                    <div className="relative rounded-3xl overflow-hidden">
-                        {/* Background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent)]/[0.1] via-[var(--bg-card)] to-blue-600/[0.05]" />
-                        <div className="absolute inset-0 border border-white/[0.06] rounded-3xl pointer-events-none" />
+                    <div className="rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] p-8 text-center">
+                        <span className="block mb-3 font-display text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--accent)]">
+                            Interested?
+                        </span>
+                        <h2 className="font-display text-[19px] md:text-[22px] font-black uppercase tracking-tight text-[var(--ink-hi)] mb-3">
+                            Let&apos;s talk about your campaign
+                        </h2>
+                        <p className="mx-auto mb-7 max-w-2xl text-[13.5px] text-[var(--ink-low)] leading-relaxed">
+                            Send us an email and we&apos;ll get back to you with pricing and options. Usually within
+                            a few hours.
+                        </p>
 
-                        {/* Content */}
-                        <div className="relative z-10 py-20 px-8 text-center">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.6 }}
+                        <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center">
+                            <a
+                                href={`mailto:${data.about?.contact_email || 'marketing@techplay.gg'}`}
+                                className="btn-command inline-flex items-center justify-center gap-2 h-11 px-6 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-display text-[13px] font-bold uppercase tracking-wider transition-colors duration-300"
                             >
-                                <span className="text-[var(--accent)] text-sm font-semibold uppercase tracking-widest mb-4 block">
-                                    Interested?
-                                </span>
-                                <h2 className="text-4xl md:text-5xl font-black text-white mb-5 tracking-tight">
-                                    Let's Talk About Your Campaign
-                                </h2>
-                                <p className="text-lg text-white/50 mb-10 max-w-2xl mx-auto leading-relaxed">
-                                    Send us an email and we'll get back to you with pricing and options. Usually within a few hours.
-                                </p>
-                                <div className="flex flex-wrap gap-4 justify-center">
-                                    <motion.a
-                                        href={`mailto:${data.about?.contact_email || 'marketing@techplay.gg'}`}
-                                        className="inline-flex items-center gap-3 px-8 py-4
-                                                 bg-gradient-to-r from-[var(--accent)] to-orange-600
-                                                 text-white font-bold rounded-2xl
-                                                 shadow-lg shadow-[var(--accent)]/25 hover:shadow-xl hover:shadow-[var(--accent)]/40
-                                                 transition-shadow duration-500"
-                                        whileHover={{ scale: 1.03 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <Mail className="w-5 h-5" />
-                                        <span className="text-lg">
-                                            {data.about?.contact_email || 'marketing@techplay.gg'}
-                                        </span>
-                                        <ChevronRight className="w-5 h-5 opacity-60" />
-                                    </motion.a>
-                                </div>
-                            </motion.div>
-                        </div>
+                                <Mail className="w-4 h-4" />
+                                {data.about?.contact_email || 'marketing@techplay.gg'}
+                            </a>
 
-                        {/* Decorative orbs */}
-                        <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-[var(--accent)]/10 rounded-full blur-[80px] pointer-events-none" />
-                        <div className="absolute -top-16 -left-16 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none" />
+                            {/*
+                              The button RequestPackageModal was waiting for. The modal was
+                              built, imported and rendered, but setPackageModalOpen(true) was
+                              never called anywhere — 347 lines of form that could only ever
+                              be closed.
+                            */}
+                            <button
+                                type="button"
+                                onClick={() => setPackageModalOpen(true)}
+                                className="btn-command btn-command-quiet inline-flex items-center justify-center gap-2 h-11 px-6 bg-[var(--fill-2)] text-[var(--ink-hi)] font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--fill-3)] transition-colors duration-300"
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                Request a package
+                            </button>
+                        </div>
                     </div>
                 </Section>
             </div>
-        </div>
+        </main>
     );
 }

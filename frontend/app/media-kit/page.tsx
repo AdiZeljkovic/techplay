@@ -1,5 +1,7 @@
 import MediaKitClient from "./MediaKitClient";
 import { Metadata } from "next";
+import { getServerApiUrl } from "@/lib/api";
+import type { MediaKitData } from "@/hooks/useMediaKit";
 
 export const revalidate = 3600; // ISR: 1 hour
 
@@ -188,7 +190,34 @@ const structuredData = {
     ]
 };
 
-export default function MediaKitPage() {
+/**
+ * The media kit's own figures, fetched on the server.
+ *
+ * They used to arrive through SWR after hydration, so the page a media buyer
+ * opens showed eight pulsing grey blocks first and the numbers second — and a
+ * crawler reading it for the advertising keywords in the metadata above found
+ * a skeleton. It rides the route's ISR now.
+ */
+async function getMediaKit(): Promise<MediaKitData> {
+    const empty = {} as MediaKitData;
+
+    try {
+        const res = await fetch(`${getServerApiUrl()}/media-kit`, {
+            next: { revalidate: 3600 },
+            headers: { Accept: 'application/json' },
+        });
+
+        if (!res.ok) return empty;
+
+        return (await res.json()) as MediaKitData;
+    } catch {
+        return empty;
+    }
+}
+
+export default async function MediaKitPage() {
+    const data = await getMediaKit();
+
     return (
         <>
             {/* JSON-LD Structured Data */}
@@ -196,7 +225,7 @@ export default function MediaKitPage() {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
             />
-            <MediaKitClient />
+            <MediaKitClient data={data} />
         </>
     );
 }
