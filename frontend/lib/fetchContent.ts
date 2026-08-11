@@ -93,5 +93,22 @@ export async function fetchContent<T = unknown>(
         }
     }
 
+    // At request time a 5xx must be loud: an empty page published as if it were
+    // the real one is worse than an error. During the production build the same
+    // throw is a different thing entirely — `next build` prerenders every
+    // article, game and character it can name, so one API hiccup on one of them
+    // fails the whole build and blocks a deploy that had nothing to do with it.
+    //
+    // That is not hypothetical: on 11 August 2026 a dropped Redis connection
+    // lasting seconds took down a deploy on /gta6/characters/lucia-caminos,
+    // a page whose data was fine a minute later.
+    //
+    // So the build treats an unanswerable page as missing and moves on. ISR
+    // renders it properly on the first request after the deploy.
+    if (process.env.NEXT_PHASE === "phase-production-build") {
+        console.warn(`[fetchContent] skipped during build: ${url} (${lastStatus ?? "no response"})`);
+        return null;
+    }
+
     throw new ContentUnavailable(url, lastStatus, lastCause);
 }

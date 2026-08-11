@@ -1,8 +1,24 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { X, Send, Mail, Building2, User, MessageSquare, DollarSign, Target } from "lucide-react";
-import { useState } from "react";
+
+/**
+ * "Request a custom package" — the form a media buyer fills instead of writing
+ * an email from scratch.
+ *
+ * It was unreachable until now: built, imported, rendered, and never opened,
+ * because setPackageModalOpen(true) was not called anywhere. Reaching it
+ * exposed two things worth fixing rather than restyling.
+ *
+ * The submit handler waited 1.5 seconds on a setTimeout commented "Simulate API
+ * call" before opening a mailto: link. There is no API — the form hands its
+ * contents to the visitor's mail client, which is a reasonable thing to do
+ * without a backend, but the fake wait only made a working action look slow.
+ *
+ * And the whole thing was painted in #001540, a blue that appears nowhere else
+ * on the site, fourteen times over.
+ */
 
 interface RequestPackageModalProps {
     isOpen: boolean;
@@ -10,338 +26,213 @@ interface RequestPackageModalProps {
     contactEmail?: string;
 }
 
-export default function RequestPackageModal({ isOpen, onClose, contactEmail }: RequestPackageModalProps) {
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        company: "",
-        budget: "",
-        objective: "",
-        message: ""
-    });
+const BUDGETS = [
+    ["<5k", "Under €5,000"],
+    ["5k-10k", "€5,000 – €10,000"],
+    ["10k-25k", "€10,000 – €25,000"],
+    ["25k-50k", "€25,000 – €50,000"],
+    ["50k+", "€50,000+"],
+];
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+const OBJECTIVES = [
+    ["brand-awareness", "Brand awareness"],
+    ["product-launch", "Product launch"],
+    ["lead-generation", "Lead generation"],
+    ["sales", "Direct sales"],
+    ["engagement", "Community engagement"],
+    ["other", "Something else"],
+];
+
+const EMPTY = { name: "", email: "", company: "", budget: "", objective: "", message: "" };
+
+const LABEL = "block mb-2 text-[11px] font-bold uppercase tracking-wider text-[var(--ink-faint)]";
+const FIELD =
+    "w-full h-11 rounded-[var(--radius-inner)] bg-[var(--surface-0)] border border-[var(--line)] " +
+    "pl-10 pr-3 text-[13px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] " +
+    "focus:outline-none focus:ring-2 focus:ring-[var(--accent)]";
+const ICON = "absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-faint)] pointer-events-none";
+
+export default function RequestPackageModal({ isOpen, onClose, contactEmail }: RequestPackageModalProps) {
+    const [formData, setFormData] = useState(EMPTY);
     const [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    // Escape closes it, and the page behind stops scrolling while it is open.
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+        document.addEventListener("keydown", onKey);
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.removeEventListener("keydown", onKey);
+            document.body.style.overflow = "";
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    const set = (field: keyof typeof EMPTY) => (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+    ) => setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        const subject = `Media kit request from ${formData.name}`;
+        const body = [
+            `Name: ${formData.name}`,
+            `Email: ${formData.email}`,
+            `Company: ${formData.company}`,
+            `Budget: ${formData.budget}`,
+            `Objective: ${formData.objective}`,
+            "",
+            "Message:",
+            formData.message,
+        ].join("\n");
 
-        // Create mailto link with form data
-        const subject = `Media Kit Request from ${formData.name}`;
-        const body = `
-Name: ${formData.name}
-Email: ${formData.email}
-Company: ${formData.company}
-Budget: ${formData.budget}
-Objective: ${formData.objective}
+        window.location.href =
+            `mailto:${contactEmail || "marketing@techplay.gg"}` +
+            `?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-Message:
-${formData.message}
-        `.trim();
-
-        window.location.href = `mailto:${contactEmail || 'marketing@techplay.gg'}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-        setIsSubmitting(false);
         setSubmitted(true);
-
-        setTimeout(() => {
-            setSubmitted(false);
-            setFormData({
-                name: "",
-                email: "",
-                company: "",
-                budget: "",
-                objective: "",
-                message: ""
-            });
-            onClose();
-        }, 2000);
     };
 
     return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        onClick={onClose}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
-                    />
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-6">
+            <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            />
 
-                    {/* Modal */}
-                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            transition={{ duration: 0.3, ease: "easeOut" }}
-                            className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto
-                                     bg-[#001540] rounded-3xl border border-white/[0.12]
-                                     shadow-2xl shadow-black/50"
-                            onClick={(e) => e.stopPropagation()}
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="package-modal-title"
+                className="relative w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto rounded-t-[var(--radius-panel)] sm:rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line-strong)] p-6 md:p-8"
+            >
+                <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label="Close"
+                    className="absolute right-4 top-4 inline-flex w-9 h-9 rounded-[var(--radius-inner)] bg-[var(--fill-2)] text-[var(--ink-low)] items-center justify-center hover:text-[var(--ink-hi)] transition-colors duration-300"
+                >
+                    <X className="w-4 h-4" />
+                </button>
+
+                {submitted ? (
+                    <div className="py-10 text-center">
+                        <span className="inline-flex w-12 h-12 rounded-[var(--radius-inner)] bg-[var(--fill-2)] text-[var(--accent)] items-center justify-center mb-4">
+                            <Mail className="w-5 h-5" />
+                        </span>
+                        <h2 className="font-display text-[15px] font-bold uppercase tracking-wider text-[var(--ink-hi)] mb-2">
+                            Your email is ready
+                        </h2>
+                        <p className="mx-auto max-w-md text-[13px] text-[var(--ink-low)] leading-relaxed">
+                            We&apos;ve opened your mail client with the details filled in. Send it and we&apos;ll
+                            come back with a plan — usually within a few hours.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => { setFormData(EMPTY); setSubmitted(false); onClose(); }}
+                            className="btn-command btn-command-quiet mt-6 inline-flex items-center h-11 px-6 bg-[var(--fill-2)] text-[var(--ink-hi)] font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--fill-3)] transition-colors duration-300"
                         >
-                            {/* Close button */}
+                            Close
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <div className="mb-6 pr-10">
+                            <h2 id="package-modal-title" className="font-display text-[17px] font-black uppercase tracking-tight text-[var(--ink-hi)]">
+                                Request a custom package
+                            </h2>
+                            <p className="mt-2 text-[13px] text-[var(--ink-low)] leading-relaxed">
+                                Tell us about your campaign goals and we&apos;ll put together a media plan with
+                                pricing and placement options.
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="pkg-name" className={LABEL}>Your name *</label>
+                                    <div className="relative">
+                                        <User className={ICON} />
+                                        <input id="pkg-name" required value={formData.name} onChange={set("name")} placeholder="John Doe" className={FIELD} />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="pkg-email" className={LABEL}>Email *</label>
+                                    <div className="relative">
+                                        <Mail className={ICON} />
+                                        <input id="pkg-email" type="email" required value={formData.email} onChange={set("email")} placeholder="john@company.com" className={FIELD} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="pkg-company" className={LABEL}>Company</label>
+                                <div className="relative">
+                                    <Building2 className={ICON} />
+                                    <input id="pkg-company" value={formData.company} onChange={set("company")} placeholder="Your Company" className={FIELD} />
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="pkg-budget" className={LABEL}>Budget</label>
+                                    <div className="relative">
+                                        <DollarSign className={ICON} />
+                                        <select id="pkg-budget" value={formData.budget} onChange={set("budget")} className={`${FIELD} appearance-none`}>
+                                            <option value="">Select a range…</option>
+                                            {BUDGETS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="pkg-objective" className={LABEL}>Objective</label>
+                                    <div className="relative">
+                                        <Target className={ICON} />
+                                        <select id="pkg-objective" value={formData.objective} onChange={set("objective")} className={`${FIELD} appearance-none`}>
+                                            <option value="">What are you after?</option>
+                                            {OBJECTIVES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="pkg-message" className={LABEL}>Message</label>
+                                <div className="relative">
+                                    <MessageSquare className="absolute left-3.5 top-3.5 w-4 h-4 text-[var(--ink-faint)] pointer-events-none" />
+                                    <textarea
+                                        id="pkg-message"
+                                        rows={4}
+                                        value={formData.message}
+                                        onChange={set("message")}
+                                        placeholder="Tell us about your campaign, target audience, timeline, or any specific requirements…"
+                                        className="w-full rounded-[var(--radius-inner)] bg-[var(--surface-0)] border border-[var(--line)] py-3 pl-10 pr-3 text-[13px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+                                    />
+                                </div>
+                            </div>
+
                             <button
-                                onClick={onClose}
-                                className="absolute top-6 right-6 w-10 h-10 rounded-xl
-                                         bg-white/[0.04] border border-white/[0.08]
-                                         flex items-center justify-center text-white/60
-                                         hover:bg-white/[0.08] hover:text-white
-                                         transition-all duration-300 z-10"
+                                type="submit"
+                                className="btn-command inline-flex w-full items-center justify-center gap-2 h-11 px-6 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-display text-[13px] font-bold uppercase tracking-wider transition-colors duration-300"
                             >
-                                <X className="w-5 h-5" />
+                                <Send className="w-4 h-4" />
+                                Send request
                             </button>
 
-                            <div className="p-8 md:p-12">
-                                {!submitted ? (
-                                    <>
-                                        {/* Header */}
-                                        <div className="mb-8">
-                                            <motion.div
-                                                initial={{ scale: 0 }}
-                                                animate={{ scale: 1 }}
-                                                transition={{ type: "spring", duration: 0.6, delay: 0.1 }}
-                                                className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--accent)] to-orange-600
-                                                         flex items-center justify-center shadow-lg shadow-[var(--accent)]/25 mb-6"
-                                            >
-                                                <Mail className="w-8 h-8 text-white" />
-                                            </motion.div>
-                                            <h2 className="text-3xl md:text-4xl font-black text-white mb-3">
-                                                Request Custom Package
-                                            </h2>
-                                            <p className="text-white/60 leading-relaxed">
-                                                Tell us about your campaign goals and we'll create a tailored media plan
-                                                with custom pricing and placement options.
-                                            </p>
-                                        </div>
-
-                                        {/* Form */}
-                                        <form onSubmit={handleSubmit} className="space-y-5">
-                                            <div className="grid md:grid-cols-2 gap-5">
-                                                {/* Name */}
-                                                <div>
-                                                    <label className="block text-sm font-bold text-white/80 mb-2">
-                                                        Your Name *
-                                                    </label>
-                                                    <div className="relative">
-                                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                                                        <input
-                                                            type="text"
-                                                            required
-                                                            value={formData.name}
-                                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                            placeholder="John Doe"
-                                                            className="w-full pl-12 pr-4 py-3.5 rounded-xl
-                                                                     bg-white/[0.04] border border-white/[0.08]
-                                                                     text-white placeholder:text-white/30
-                                                                     focus:bg-white/[0.06] focus:border-[var(--accent)]/50
-                                                                     outline-none transition-all duration-300"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Email */}
-                                                <div>
-                                                    <label className="block text-sm font-bold text-white/80 mb-2">
-                                                        Email Address *
-                                                    </label>
-                                                    <div className="relative">
-                                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                                                        <input
-                                                            type="email"
-                                                            required
-                                                            value={formData.email}
-                                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                            placeholder="john@company.com"
-                                                            className="w-full pl-12 pr-4 py-3.5 rounded-xl
-                                                                     bg-white/[0.04] border border-white/[0.08]
-                                                                     text-white placeholder:text-white/30
-                                                                     focus:bg-white/[0.06] focus:border-[var(--accent)]/50
-                                                                     outline-none transition-all duration-300"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Company */}
-                                                <div>
-                                                    <label className="block text-sm font-bold text-white/80 mb-2">
-                                                        Company
-                                                    </label>
-                                                    <div className="relative">
-                                                        <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                                                        <input
-                                                            type="text"
-                                                            value={formData.company}
-                                                            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                                                            placeholder="Your Company"
-                                                            className="w-full pl-12 pr-4 py-3.5 rounded-xl
-                                                                     bg-white/[0.04] border border-white/[0.08]
-                                                                     text-white placeholder:text-white/30
-                                                                     focus:bg-white/[0.06] focus:border-[var(--accent)]/50
-                                                                     outline-none transition-all duration-300"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* Budget */}
-                                                <div>
-                                                    <label className="block text-sm font-bold text-white/80 mb-2">
-                                                        Budget Range
-                                                    </label>
-                                                    <div className="relative">
-                                                        <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                                                        <select
-                                                            value={formData.budget}
-                                                            onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                                                            className="w-full pl-12 pr-4 py-3.5 rounded-xl
-                                                                     bg-white/[0.04] border border-white/[0.08]
-                                                                     text-white
-                                                                     focus:bg-white/[0.06] focus:border-[var(--accent)]/50
-                                                                     outline-none transition-all duration-300 appearance-none
-                                                                     cursor-pointer"
-                                                        >
-                                                            <option value="" className="bg-[#001540]">Select budget range</option>
-                                                            <option value="<5k" className="bg-[#001540]">Less than $5,000</option>
-                                                            <option value="5k-10k" className="bg-[#001540]">$5,000 - $10,000</option>
-                                                            <option value="10k-25k" className="bg-[#001540]">$10,000 - $25,000</option>
-                                                            <option value="25k-50k" className="bg-[#001540]">$25,000 - $50,000</option>
-                                                            <option value="50k+" className="bg-[#001540]">$50,000+</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Objective */}
-                                            <div>
-                                                <label className="block text-sm font-bold text-white/80 mb-2">
-                                                    Campaign Objective
-                                                </label>
-                                                <div className="relative">
-                                                    <Target className="absolute left-4 top-4 w-4 h-4 text-white/40" />
-                                                    <select
-                                                        value={formData.objective}
-                                                        onChange={(e) => setFormData({ ...formData, objective: e.target.value })}
-                                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl
-                                                                 bg-white/[0.04] border border-white/[0.08]
-                                                                 text-white
-                                                                 focus:bg-white/[0.06] focus:border-[var(--accent)]/50
-                                                                 outline-none transition-all duration-300 appearance-none
-                                                                 cursor-pointer"
-                                                    >
-                                                        <option value="" className="bg-[#001540]">Select objective</option>
-                                                        <option value="brand-awareness" className="bg-[#001540]">Brand Awareness</option>
-                                                        <option value="product-launch" className="bg-[#001540]">Product Launch</option>
-                                                        <option value="lead-generation" className="bg-[#001540]">Lead Generation</option>
-                                                        <option value="sales" className="bg-[#001540]">Drive Sales</option>
-                                                        <option value="engagement" className="bg-[#001540]">Engagement</option>
-                                                        <option value="other" className="bg-[#001540]">Other</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            {/* Message */}
-                                            <div>
-                                                <label className="block text-sm font-bold text-white/80 mb-2">
-                                                    Additional Details
-                                                </label>
-                                                <div className="relative">
-                                                    <MessageSquare className="absolute left-4 top-4 w-4 h-4 text-white/40" />
-                                                    <textarea
-                                                        value={formData.message}
-                                                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                                        placeholder="Tell us more about your campaign, target audience, timeline, or any specific requirements..."
-                                                        rows={4}
-                                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl
-                                                                 bg-white/[0.04] border border-white/[0.08]
-                                                                 text-white placeholder:text-white/30
-                                                                 focus:bg-white/[0.06] focus:border-[var(--accent)]/50
-                                                                 outline-none transition-all duration-300 resize-none"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            {/* Submit button */}
-                                            <motion.button
-                                                type="submit"
-                                                disabled={isSubmitting}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                className="w-full flex items-center justify-center gap-3 px-8 py-4
-                                                         bg-gradient-to-r from-[var(--accent)] to-orange-600
-                                                         text-white text-lg font-bold rounded-2xl
-                                                         shadow-lg shadow-[var(--accent)]/25
-                                                         hover:shadow-xl hover:shadow-[var(--accent)]/40
-                                                         transition-shadow duration-500
-                                                         disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {isSubmitting ? (
-                                                    <>
-                                                        <motion.div
-                                                            animate={{ rotate: 360 }}
-                                                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                                                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                                                        />
-                                                        <span>Sending...</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Send className="w-5 h-5" />
-                                                        <span>Send Request</span>
-                                                    </>
-                                                )}
-                                            </motion.button>
-                                        </form>
-                                    </>
-                                ) : (
-                                    // Success state
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="text-center py-12"
-                                    >
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            transition={{ type: "spring", duration: 0.6 }}
-                                            className="w-20 h-20 rounded-full bg-green-500/20 border-4 border-green-500
-                                                     flex items-center justify-center mx-auto mb-6"
-                                        >
-                                            <motion.svg
-                                                initial={{ pathLength: 0 }}
-                                                animate={{ pathLength: 1 }}
-                                                transition={{ duration: 0.6, delay: 0.3 }}
-                                                className="w-10 h-10 text-green-500"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="3"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <motion.path
-                                                    d="M5 13l4 4L19 7"
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </motion.svg>
-                                        </motion.div>
-                                        <h3 className="text-2xl font-black text-white mb-3">Request Sent!</h3>
-                                        <p className="text-white/60">
-                                            We'll get back to you within 24 hours with a custom proposal.
-                                        </p>
-                                    </motion.div>
-                                )}
-                            </div>
-                        </motion.div>
-                    </div>
-                </>
-            )}
-        </AnimatePresence>
+                            <p className="text-center text-[11px] text-[var(--ink-faint)]">
+                                This opens your mail client with the details filled in — nothing is sent from here.
+                            </p>
+                        </form>
+                    </>
+                )}
+            </div>
+        </div>
     );
 }
