@@ -26,13 +26,23 @@ php artisan view:cache
 # Setup storage link (no-op / non-fatal when it already exists)
 php artisan storage:link || true
 
-# Reload Octane workers so they pick up the new code (graceful, finishes
-# in-flight requests). Falls back to a supervisor restart if reload fails.
-php artisan octane:reload || sudo supervisorctl restart techplay-octane:*
+# Restart Octane workers so they pick up the new code AND the freshly cached
+# config — a worker holds both in memory from the moment it booted.
+#
+# Deliberately not octane:reload. Reload does not reliably retire the old
+# workers, and each one holds a PostgreSQL connection: on 4 August that left
+# 197 idle connections against a max of ~200 and the deploy failed outright
+# with "remaining connection slots are reserved". Reload also exits 0, so the
+# supervisor fallback this line used to carry never ran.
+sudo supervisorctl restart techplay-octane:*
 
 # Signal queue workers to restart after their current job (supervisor
 # autorestart brings them back with the new code).
 php artisan queue:restart
+
+# Same for the Pulse daemons, which cache code like any other long-running
+# process. Non-fatal: Pulse being down must not fail a deploy.
+php artisan pulse:restart || true
 
 # 3. FRONTEND SETUP
 echo "🎨 Building Frontend..."
