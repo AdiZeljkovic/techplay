@@ -16,6 +16,14 @@ interface PageHeroProps {
     title: string;
     description?: string;
     icon?: LucideIcon;
+    /**
+     * An already-rendered icon, for callers that are server components.
+     * A Lucide icon is a function, and a function cannot cross from a server
+     * component into a client one — LegalLayout hit exactly that. Rendering it
+     * on the caller's side turns it into an element, which travels fine.
+     * Ignored when `icon` is given.
+     */
+    iconNode?: React.ReactNode;
     /** Full-bleed backdrop, treated like the Leaderboard and Games heroes. */
     backgroundImage?: string;
     categories?: CategoryItem[];
@@ -34,6 +42,7 @@ export default function PageHero({
     title,
     description = "",
     icon: MainIcon,
+    iconNode,
     backgroundImage,
     categories,
     selectedCategory,
@@ -69,9 +78,11 @@ export default function PageHero({
             <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
             <div className="relative z-10 container-page pt-12 pb-9 flex flex-col items-center text-center">
-                {MainIcon && (
+                {(MainIcon || iconNode) && (
                     <span className="w-12 h-12 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center mb-4">
-                        <MainIcon className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />
+                        {MainIcon
+                            ? <MainIcon className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />
+                            : iconNode}
                     </span>
                 )}
 

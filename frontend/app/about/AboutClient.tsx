@@ -1,281 +1,162 @@
-"use client";
-
+import Link from "next/link";
 import PageHero from "@/components/ui/PageHero";
-import { motion } from "framer-motion";
-import { Target, Zap, Heart, Globe, Shield, Users, ArrowRight, Gamepad2, Monitor, Cpu, Keyboard } from "lucide-react";
+import Panel from "@/components/ui/Panel";
+import { Target, Zap, Heart, Globe, Shield, Users, ArrowRight } from "lucide-react";
 
-// SEO handled by parent layout + generateMetadata pattern
-// For client components, metadata is set via head in parent or layout
+/**
+ * About — the first of the static pages brought onto the current language.
+ *
+ * It used to hand-roll every card, drive its own framer-motion choreography
+ * per section, and fill a 400px block with floating icons over a gradient.
+ * Panel's own note rules that out: gradients and corner blooms read as
+ * decoration, and the approved tone is a matte instrument panel where the
+ * content is the only thing that glows.
+ *
+ * Not a client component any more. Nothing here reacts to anything, so the
+ * entrance is the shared `tp-fade-up` choreography in CSS and framer-motion
+ * leaves this route's bundle entirely.
+ */
 
-const fadeInUp = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-};
+const VALUES = [
+    { icon: Target, title: "We Actually Test Things", desc: "Benchmarks, stress tests, daily use. We don't copy-paste press releases and call it a review." },
+    { icon: Shield, title: "No Sponsored Bullshit", desc: "If a product sucks, we'll tell you. Even if the brand sent us 10 units for free." },
+    { icon: Users, title: "Community First", desc: "You guys keep the lights on, not advertisers. Your trust matters more than any partnership deal." },
+    { icon: Heart, title: "We're Gamers Too", desc: "Our writers grind ranked, debate console wars in Slack, and spend paychecks on RGB. We get it." },
+    { icon: Zap, title: "Fast & Accurate", desc: "Breaking news drops while it's still fresh. Deep dives go live when we've tested everything twice." },
+    { icon: Globe, title: "For Everyone", desc: "Whether you're building a €3000 rig or gaming on a laptop from 2015, you belong here." },
+];
 
-const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1
-        }
-    }
-};
+const COVERAGE = [
+    { title: "Hardware Reviews", items: ["GPUs, CPUs, and motherboards", "Gaming laptops and peripherals", "Monitors, mice, keyboards", "Real-world benchmarks"] },
+    { title: "Game Coverage", items: ["Day-one reviews (no spoilers)", "Patch notes breakdowns", "Indie game spotlights", "Performance analysis"] },
+    { title: "Guides & Tutorials", items: ["PC building for beginners", "Optimization guides", "Troubleshooting common issues", "Settings deep dives"] },
+    { title: "Industry News", items: ["Game announcements", "Tech releases and rumors", "Esports updates", "Developer interviews"] },
+];
 
-export default function AboutPage() {
+const STORY = [
+    "TechPlay started back in 2020 as a small blog covering local gaming news from the Balkans. Gaming has always been in our blood — late-night sessions, heated debates about which console is better, and that constant itch to know what's coming next.",
+    "What began as a passion project quickly grew into something bigger. We realized there was a gap: people wanted honest takes on games and tech, not recycled press releases dressed up as reviews.",
+    "Today, we cover everything from the latest AAA releases and esports drama to hardware reviews and that weird indie game everyone's sleeping on. Gaming isn't just what we write about — it's what we do when the keyboards go silent.",
+];
+
+/** Section heading, same treatment the homepage rails use. */
+function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
     return (
-        <div className="min-h-screen">
+        <div className="mb-6">
+            <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+                <span aria-hidden className="w-[3px] h-[14px] rounded-full bg-[var(--accent)]" />
+                {children}
+            </h2>
+            {sub && <p className="mt-2.5 text-[13px] text-[var(--ink-low)] leading-relaxed">{sub}</p>}
+        </div>
+    );
+}
+
+export default function AboutClient() {
+    return (
+        <main className="min-h-screen bg-[var(--surface-0)]">
             <PageHero
                 title="About TechPlay"
                 description="Built by gamers, for gamers. Just honest gaming and tech talk."
             />
 
-            <div className="container-page py-16 space-y-24">
-
-                {/* Mission Section */}
-                <motion.section
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={fadeInUp}
-                    className="text-center max-w-3xl mx-auto"
-                >
-                    <h2 className="font-display text-3xl font-bold text-white mb-6 uppercase tracking-tight">What We Do</h2>
-                    <p className="text-lg text-white/55 leading-relaxed mb-6">
-                        We test hardware until it breaks. We play games until 4 AM to write honest reviews.
-                        We dig through patch notes so you don't have to. And we do it because we genuinely care
-                        about this stuff—not because some PR agency asked nicely.
-                    </p>
-                    <p className="text-lg text-white/55 leading-relaxed">
-                        TechPlay exists to answer one simple question: "Is this actually worth buying?"
-                        No fluff, no sponsored hot takes, just real opinions from people who spend their own money on gear.
-                    </p>
-                </motion.section>
-
-                {/* Values Grid */}
-                <motion.section
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={staggerContainer}
-                >
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-white">Core Values</h2>
-                        <div className="w-20 h-1 bg-[var(--accent)] mx-auto mt-4 rounded-full"></div>
+            <div className="container-page py-10 md:py-14 space-y-10 md:space-y-14">
+                <section className="tp-fade-up tp-d1 max-w-3xl">
+                    <SectionTitle>What We Do</SectionTitle>
+                    <div className="space-y-4 text-[14.5px] text-[var(--ink-mid)] leading-relaxed">
+                        <p>
+                            We test hardware until it breaks. We play games until 4 AM to write honest reviews.
+                            We dig through patch notes so you don&apos;t have to. And we do it because we genuinely
+                            care about this stuff — not because some PR agency asked nicely.
+                        </p>
+                        <p>
+                            TechPlay exists to answer one simple question: &ldquo;Is this actually worth buying?&rdquo;
+                            No fluff, no sponsored hot takes, just real opinions from people who spend their own
+                            money on gear.
+                        </p>
                     </div>
+                </section>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {[
-                            { icon: Target, title: "We Actually Test Things", desc: "Benchmarks, stress tests, daily use. We don't copy-paste press releases and call it a review." },
-                            { icon: Shield, title: "No Sponsored Bullshit", desc: "If a product sucks, we'll tell you. Even if the brand sent us 10 units for free." },
-                            { icon: Users, title: "Community First", desc: "You guys keep the lights on, not advertisers. Your trust matters more than any partnership deal." },
-                            { icon: Heart, title: "We're Gamers Too", desc: "Our writers grind ranked, debate console wars in Slack, and spend paychecks on RGB. We get it." },
-                            { icon: Zap, title: "Fast & Accurate", desc: "Breaking news drops while it's still fresh. Deep dives go live when we've tested everything twice." },
-                            { icon: Globe, title: "For Everyone", desc: "Whether you're building a €3000 rig or gaming on a laptop from 2015, you belong here." },
-                        ].map((item, idx) => (
-                            <motion.div
-                                key={idx}
-                                variants={fadeInUp}
-                                className="bg-[var(--surface-1)] p-8 rounded-[var(--radius-panel)] border border-[var(--line)] hover:border-[var(--accent)] transition-colors group"
+                <section className="tp-fade-up tp-d2">
+                    <SectionTitle>Core Values</SectionTitle>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {VALUES.map((item) => (
+                            <div
+                                key={item.title}
+                                className="group rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] p-5 hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                             >
-                                <div className="w-12 h-12 bg-[var(--surface-2)] rounded-[var(--radius-card)] flex items-center justify-center mb-6 text-[var(--accent)] group-hover:scale-110 transition-transform">
-                                    <item.icon className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
-                                <p className="text-white/55">{item.desc}</p>
-                            </motion.div>
+                                <span className="inline-flex w-9 h-9 rounded-[var(--radius-inner)] bg-[var(--fill-2)] text-[var(--accent)] items-center justify-center mb-4">
+                                    <item.icon className="w-[18px] h-[18px]" />
+                                </span>
+                                <h3 className="font-display text-[13px] font-bold uppercase tracking-wider text-[var(--ink-hi)] mb-2 group-hover:text-[var(--accent)] transition-colors duration-300">
+                                    {item.title}
+                                </h3>
+                                <p className="text-[13px] text-[var(--ink-low)] leading-relaxed">{item.desc}</p>
+                            </div>
                         ))}
                     </div>
-                </motion.section>
+                </section>
 
-                {/* History / Story */}
-                <motion.section
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={fadeInUp}
-                    className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center"
-                >
+                <section className="tp-fade-up tp-d3 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
                     <div>
-                        <h2 className="text-3xl font-bold text-white mb-6">Our Story</h2>
-                        <div className="space-y-4 text-white/55">
-                            <p>
-                                TechPlay started back in 2020 as a small blog covering local gaming news from the Balkans.
-                                Gaming has always been in our blood—late-night sessions, heated debates about which console is better,
-                                and that constant itch to know what's coming next.
-                            </p>
-                            <p>
-                                What began as a passion project quickly grew into something bigger. We realized there was a gap:
-                                people wanted honest takes on games and tech, not recycled press releases dressed up as reviews.
-                            </p>
-                            <p>
-                                Today, we cover everything from the latest AAA releases and esports drama to hardware reviews
-                                and that weird indie game everyone's sleeping on. Gaming isn't just what we write about—it's what we do
-                                when the keyboards go silent.
-                            </p>
-                            <p className="text-white font-semibold">
-                                We're not the biggest, but gaming runs in our veins. And we're just getting started.
+                        <SectionTitle>Our Story</SectionTitle>
+                        <div className="space-y-4 text-[14px] text-[var(--ink-mid)] leading-relaxed">
+                            {STORY.map((p) => <p key={p.slice(0, 24)}>{p}</p>)}
+                            <p className="text-[var(--ink-hi)] font-semibold">
+                                We&apos;re not the biggest, but gaming runs in our veins. And we&apos;re just getting started.
                             </p>
                         </div>
                     </div>
-                    <div className="relative h-[400px] rounded-[var(--radius-panel)] overflow-hidden border border-[var(--line)]">
-                        {/* Gaming-themed visual background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-[var(--surface-2)] via-[var(--surface-1)] to-[var(--surface-2)]">
-                            {/* Grid pattern overlay */}
-                            <div className="absolute inset-0 opacity-5" style={{
-                                backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-                                backgroundSize: '40px 40px'
-                            }} />
 
-                            {/* Glowing orbs */}
-
-                            {/* Floating gaming icons */}
-                            <motion.div
-                                animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute top-12 left-[15%]"
-                            >
-                                <div className="p-4 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-panel)] border border-[var(--line)] shadow-lg">
-                                    <Gamepad2 className="w-10 h-10 text-[var(--accent)]" />
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                animate={{ y: [0, 10, 0], rotate: [0, -5, 0] }}
-                                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                                className="absolute top-16 right-[20%]"
-                            >
-                                <div className="p-4 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-panel)] border border-[var(--line)] shadow-lg">
-                                    <Monitor className="w-10 h-10 text-white/45" />
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                animate={{ y: [0, -8, 0], rotate: [0, -3, 0] }}
-                                transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                                className="absolute top-1/3 left-[8%]"
-                            >
-                                <div className="p-3 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-card)] border border-[var(--line)] shadow-lg">
-                                    <Keyboard className="w-8 h-8 text-white/45" />
-                                </div>
-                            </motion.div>
-
-                            <motion.div
-                                animate={{ y: [0, 12, 0], rotate: [0, 8, 0] }}
-                                transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-                                className="absolute top-1/4 right-[10%]"
-                            >
-                                <div className="p-3 bg-[var(--surface-1)]/80 backdrop-blur-sm rounded-[var(--radius-card)] border border-[var(--line)] shadow-lg">
-                                    <Cpu className="w-8 h-8 text-white/45" />
-                                </div>
-                            </motion.div>
-
-                            {/* Center logo/text */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                                <motion.div
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    whileInView={{ scale: 1, opacity: 1 }}
-                                    viewport={{ once: true }}
-                                    className="text-6xl font-black text-transparent bg-clip-text text-[var(--accent)]"
-                                >
-                                    TP
-                                </motion.div>
-                                <p className="text-sm text-white/35 mt-2 tracking-widest uppercase">Est. 2020</p>
-                            </div>
-                        </div>
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-transparent to-transparent"></div>
-
-                        {/* Stats overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-8">
-                            <div className="flex justify-around text-center">
-                                <div>
-                                    <div className="text-3xl font-black text-white">2020</div>
-                                    <div className="text-xs text-white/35 uppercase tracking-wider">Founded</div>
-                                </div>
-                                <div>
-                                    <div className="text-3xl font-black text-[var(--accent)]">0</div>
-                                    <div className="text-xs text-white/35 uppercase tracking-wider">Sponsored Reviews</div>
-                                </div>
-                                <div>
-                                    <div className="text-3xl font-black text-white">∞</div>
-                                    <div className="text-xs text-white/35 uppercase tracking-wider">Gaming Hours</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </motion.section>
-
-                {/* What We Cover */}
-                <motion.section
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={staggerContainer}
-                    className="bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] p-12 relative overflow-hidden"
-                >
-
-                    <div className="relative z-10">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl font-bold text-white mb-4">What You'll Find Here</h2>
-                            <p className="text-white/55 max-w-2xl mx-auto">
-                                We cover the full spectrum of gaming and tech. Here's what to expect:
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Panel title="By the numbers" variant="console" className="lg:sticky lg:top-24">
+                        <dl className="divide-y divide-[var(--line)]">
                             {[
-                                {
-                                    title: "Hardware Reviews",
-                                    items: ["GPUs, CPUs, and motherboards", "Gaming laptops and peripherals", "Monitors, mice, keyboards", "Real-world benchmarks"]
-                                },
-                                {
-                                    title: "Game Coverage",
-                                    items: ["Day-one reviews (no spoilers)", "Patch notes breakdowns", "Indie game spotlights", "Performance analysis"]
-                                },
-                                {
-                                    title: "Guides & Tutorials",
-                                    items: ["PC building for beginners", "Optimization guides", "Troubleshooting common issues", "Settings deep dives"]
-                                },
-                                {
-                                    title: "Industry News",
-                                    items: ["Game announcements", "Tech releases and rumors", "Esports updates", "Developer interviews"]
-                                }
-                            ].map((category, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    variants={fadeInUp}
-                                    className="bg-[var(--surface-1)] p-6 rounded-[var(--radius-panel)] border border-[var(--line)] hover:border-[var(--accent)] transition-colors"
-                                >
-                                    <h3 className="text-lg font-bold text-white mb-4">{category.title}</h3>
-                                    <ul className="space-y-2">
-                                        {category.items.map((item, i) => (
-                                            <li key={i} className="text-sm text-white/55 flex items-start gap-2">
-                                                <span className="text-[var(--accent)] mt-1">•</span>
-                                                <span>{item}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </motion.div>
+                                ["2020", "Founded"],
+                                ["0", "Sponsored reviews"],
+                                ["∞", "Gaming hours"],
+                            ].map(([value, label]) => (
+                                <div key={label} className="flex items-baseline justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                                    <dt className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-faint)]">{label}</dt>
+                                    <dd className="font-display text-[22px] font-black tabular-nums text-[var(--ink-hi)]">{value}</dd>
+                                </div>
                             ))}
-                        </div>
+                        </dl>
+                    </Panel>
+                </section>
 
-                        <div className="mt-12 text-center">
-                            <p className="text-white/35 mb-6">
-                                Questions? Suggestions? Think we missed something important?
-                            </p>
-                            <a
-                                href="/contact"
-                                className="btn-command inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-semibold transition-colors"
-                            >
-                                Get in Touch
-                                <ArrowRight className="w-4 h-4" />
-                            </a>
-                        </div>
+                <section className="tp-fade-up tp-d4">
+                    <SectionTitle sub="We cover the full spectrum of gaming and tech. Here's what to expect.">
+                        What You&apos;ll Find Here
+                    </SectionTitle>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {COVERAGE.map((category) => (
+                            <Panel key={category.title} title={category.title}>
+                                <ul className="space-y-2.5">
+                                    {category.items.map((item) => (
+                                        <li key={item} className="flex items-start gap-2 text-[13px] text-[var(--ink-low)] leading-snug">
+                                            <span aria-hidden className="mt-[6px] w-1 h-1 rounded-full bg-[var(--accent)] shrink-0" />
+                                            <span>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </Panel>
+                        ))}
                     </div>
-                </motion.section>
+                </section>
 
+                <section className="tp-fade-up tp-d5 flex flex-col items-center gap-4 py-4 text-center">
+                    <p className="text-[13px] text-[var(--ink-low)]">
+                        Questions? Suggestions? Think we missed something important?
+                    </p>
+                    <Link
+                        href="/contact"
+                        className="btn-command inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-display text-[13px] font-bold uppercase tracking-wider transition-colors duration-300"
+                    >
+                        Get in Touch
+                        <ArrowRight className="w-4 h-4" />
+                    </Link>
+                </section>
             </div>
-        </div>
+        </main>
     );
 }
