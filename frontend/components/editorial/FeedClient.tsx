@@ -48,6 +48,12 @@ interface FeedBody {
     };
 }
 
+/** The hero's own row: which feed, not which section. */
+const VIEWS = [
+    { id: "latest", label: "Latest", icon: Clock },
+    { id: "you", label: "For you", icon: Sparkles },
+];
+
 const SECTIONS = [
     { id: "all", label: "Everything", icon: Layers },
     { id: "news", label: "News", icon: Newspaper },
@@ -149,26 +155,21 @@ export default function FeedClient() {
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
+            {/* Which feed you are reading is the page's first question, so it
+                is asked in the hero rather than under it. PageHero already
+                carries a row for exactly this. */}
             <PageHero
                 title="The Feed"
                 description="Everything we publish, in one place — news, reviews, tech and guides as they land."
                 iconNode={<Rss className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />}
+                categories={VIEWS}
+                selectedCategory={tab}
+                onSelectCategory={(id) => reset(() => setTab(id as "latest" | "you"))}
             />
 
             <div className="container-page py-8">
-                {/* The switcher the leaderboard uses, so two pages that do the
-                    same thing — pick a view, then a filter — look alike. */}
-                <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
-                    <SwitchTab icon={Clock} active={tab === "latest"} onClick={() => reset(() => setTab("latest"))}>
-                        Latest
-                    </SwitchTab>
-                    <SwitchTab icon={Sparkles} active={tab === "you"} onClick={() => reset(() => setTab("you"))}>
-                        For you
-                    </SwitchTab>
-                </div>
-
                 {tab === "latest" && (
-                    <div className="mt-3 flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                    <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         {SECTIONS.map((s) => (
                             <SwitchTab
                                 key={s.id}
