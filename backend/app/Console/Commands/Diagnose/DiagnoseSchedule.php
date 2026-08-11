@@ -35,8 +35,10 @@ class DiagnoseSchedule extends Command
             $this->line('  Ili cron ne radi, ili je keš očišćen u zadnjoj minuti.');
             $this->line('  Provjeri: crontab -l | grep schedule:run');
         } else {
-            $age = now()->diffInSeconds(Carbon::parse($beat));
-            $this->line('  zadnji: '.$beat.'  ('.$age.' s ranije)');
+            // diffInSeconds is signed and fractional in Carbon 3; a heartbeat
+            // written a moment ago printed as "-14.983623 s ranije".
+            $age = (int) round(abs(now()->diffInSeconds(Carbon::parse($beat))));
+            $this->line('  zadnji: '.$beat.'  (prije '.$age.' s)');
 
             if ($age > 180) {
                 $this->error('  Stariji od tri minute — raspored stoji.');

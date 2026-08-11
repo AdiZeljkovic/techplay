@@ -54,7 +54,7 @@ class DiagnoseStorage extends Command
         $this->oversized();
 
         if ($this->option('orphans')) {
-            $this->orphanFiles($referenced);
+            $this->orphanFiles($referenced + $this->referencedInHtml());
         }
 
         return self::SUCCESS;
@@ -343,9 +343,56 @@ class DiagnoseStorage extends Command
     }
 
     /**
-     * Files on disk that no column mentions. Candidates only — never a
-     * delete list. Nothing here proves a file is unreachable; it proves no
-     * column this command can see names it.
+     * Images embedded in article and guide bodies.
+     *
+     * The editor writes `<img src="…/storage/articles/content/x.png">` straight
+     * into the HTML, so those files are referenced by no column at all. Without
+     * reading the bodies, the orphan list is mostly live article images — on
+     * production that was 466 files and 196 MB of them, which makes the list
+     * useless as anything but a warning label.
+     *
+     * @return array<string, true>
+     */
+    private function referencedInHtml(): array
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return [];
+        }
+
+        $columns = DB::select("
+            select table_name, column_name
+            from information_schema.columns
+            where table_schema = 'public'
+              and data_type = 'text'
+              and column_name in ('content', 'body', 'description_html')
+        ");
+
+        $found = [];
+
+        foreach ($columns as $column) {
+            DB::table($column->table_name)
+                ->whereNotNull($column->column_name)
+                ->where($column->column_name, 'like', '%/storage/%')
+                ->orderBy($column->column_name)
+                ->chunk(200, function ($rows) use (&$found, $column) {
+                    foreach ($rows as $row) {
+                        preg_match_all('#/storage/([\w\-./]+\.[a-z0-9]{2,5})#i',
+                            (string) $row->{$column->column_name}, $matches);
+
+                        foreach ($matches[1] as $path) {
+                            $found[$this->stem($path)] = true;
+                        }
+                    }
+                });
+        }
+
+        return $found;
+    }
+
+    /**
+     * Files on disk that nothing mentions — not a column, not an article body.
+     * Candidates only, never a delete list. Nothing here proves a file is
+     * unreachable; it proves nothing this command can read names it.
      *
      * @param  array<string, true>  $referenced
      */
@@ -395,8 +442,8 @@ class DiagnoseStorage extends Command
 
         $this->newLine();
         $this->warn('  Ovo NIJE spisak za brisanje.');
-        $this->line('  Sadržaj članaka drži slike u HTML-u, ne u koloni — te su ovdje iako se koriste.');
-        $this->line('  Vrijedi samo kao trag gdje disk odlazi.');
+        $this->line('  Slike ugrađene u tekst članaka i vodiča su odbijene i ne pojavljuju se ovdje,');
+        $this->line('  ali sadržaj može doći i s mjesta koje ova komanda ne čita. Trag, ne presuda.');
     }
 
     private function human(int $bytes): string

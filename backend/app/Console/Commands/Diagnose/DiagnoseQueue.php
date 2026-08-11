@@ -31,9 +31,17 @@ class DiagnoseQueue extends Command
             return self::FAILURE;
         }
 
+        // Which driver is in play decides where "pending" even lives, and an
+        // empty result means two very different things depending on it.
+        $connection = (string) config('queue.default');
+        $driver = (string) config("queue.connections.{$connection}.driver", '?');
+
+        $this->newLine();
+        $this->line("  Veza: {$connection} (drajver: {$driver})");
+
         $this->failedByClass();
         $this->failureTimeline();
-        $this->pending();
+        $this->pending($driver);
 
         return self::SUCCESS;
     }
@@ -87,13 +95,30 @@ class DiagnoseQueue extends Command
         }
     }
 
-    private function pending(): void
+    private function pending(string $driver): void
     {
         $this->newLine();
         $this->info('Poslovi koji čekaju');
 
+        // The `jobs` table ships with Laravel and exists whatever the queue is
+        // set to, so its presence proves nothing. Only the driver does — and
+        // reading an empty table on a Redis queue prints a reassuring zero
+        // about a queue nobody looked at.
+        if ($driver === 'sync') {
+            $this->warn('  Drajver je sync — reda nema, poslovi se izvršavaju u samom zahtjevu.');
+            $this->line('  Na produkciji to znači da posjetilac čeka svaki posao. Provjeri QUEUE_CONNECTION.');
+
+            return;
+        }
+
+        if ($driver !== 'database') {
+            $this->line("  Red je na drajveru '{$driver}', ne u bazi — dubina je u diagnose:redis.");
+
+            return;
+        }
+
         if (! Schema::hasTable('jobs')) {
-            $this->line('  Red je na Redisu, ne u bazi — dubina je u diagnose:redis.');
+            $this->line('  Nema tabele jobs.');
 
             return;
         }
@@ -107,7 +132,7 @@ class DiagnoseQueue extends Command
 
         $oldest = DB::table('jobs')->orderBy('created_at')->first();
         if ($oldest && isset($oldest->created_at)) {
-            $age = now()->diffInMinutes(Carbon::createFromTimestamp($oldest->created_at));
+            $age = (int) round(abs(now()->diffInMinutes(Carbon::createFromTimestamp($oldest->created_at))));
             $this->line('  najstariji čeka: '.$age.' min');
 
             if ($age > 30) {

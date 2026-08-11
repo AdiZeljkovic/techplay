@@ -163,6 +163,133 @@ komentaru, ne u kodu.
 
 ---
 
+## Prvo produkcijsko pokretanje — i šta je alat pogriješio
+
+Tri provjere su na produkciji dale neupotrebljiv izlaz. Popravljene su prije
+nego što je iz njih išta zaključeno.
+
+### `diagnose:config` je prijavio da ništa nije postavljeno
+
+Ispisao je `(nije postavljeno)` za svih dvanaest postavki i svih šezdeset
+ključeva iz `.env.example` kao nedostajuće — na serveru koji radi na svima
+njima.
+
+Uzrok: koristio je `env()`. Kad je `config:cache` jednom pokrenut — a na
+ispravno deployanom serveru jeste, i sam izlaz to kaže (`config: da`) — Laravel
+**više nikad ne čita `.env`** i `env()` vraća `null` za sve.
+
+Sada žive vrijednosti dolaze iz `config()`, a poređenje s `.env.example` čita
+fajl s diska, jer je to jedino mjesto gdje taj odgovor postoji. Dodana je i
+sekcija koja provjerava postoje li ključne tajne — nikad ne ispisuje vrijednost,
+samo ima li je.
+
+### `diagnose:perf` je mjerio odbijanje, ne aplikaciju
+
+Petnaest ruta, svih petnaest `403`, sve oko 52 ms. To nije aplikacija — to je
+nginx ili WAF koji odbija podrazumijevani Guzzle User-Agent prije nego zahtjev
+uopšte stigne do Laravela.
+
+Dvije izmjene: alat sada šalje User-Agent kakav šalje browser, i **prepoznaje
+situaciju** — kad sve rute vrate isti ne-2xx status, prestaje praviti tabelu i
+kaže da mjerenje nije doprlo do aplikacije, uz komandu za mjerenje iza ruba
+(`--base=http://127.0.0.1:PORT --host=api-beta.techplay.gg`).
+
+### Popis „ničijih" fajlova je bio tri četvrtine lažan
+
+466 fajlova i 196 MB u `articles`, 61 fajl i 67 MB u `guides`. Skoro sve su
+slike ugrađene u tekst članaka, gdje ih drži HTML a ne kolona.
+
+Sada se čitaju i `content` kolone i iz njih vade `/storage/…` putanje. Lokalno
+je popis pao s 408 fajlova (173 MB) na 64 (17,3 MB) — tek to je nešto o čemu se
+može odlučivati.
+
+### Sitnije
+
+- Otkucaj rasporeda je pisao `-14.983623 s ranije`; Carbonov `diffInSeconds` je
+  predznačen i decimalan.
+- `diagnose:queue` je gledao tabelu `jobs` na osnovu `Schema::hasTable('jobs')`.
+  Ta tabela postoji bez obzira na drajver, pa bi na Redis redu ispisala umirujuću
+  nulu o redu koji nije ni pogledala. Sada grana po drajveru i imenuje ga; `sync`
+  na produkciji se posebno prijavljuje, jer tada posjetilac čeka svaki posao.
+- „Nula skenova" je tvrdnja o periodu, a period se nije ispisivao. Sada se čita
+  `stats_reset`, uz `pg_postmaster_start_time()` kao donju granicu kad brojači
+  nikad nisu ručno resetovani, i ispod tri dana se nula izričito označava kao
+  neizmjerena.
+
+---
+
+## Nalazi s produkcije (11. 08. 2026, 03:28)
+
+### Redis nema gornju granicu — najozbiljnije
+
+```
+iskorišteno: 133.2 MB
+maxmemory:   NIJE POSTAVLJEN
+politika:    noeviction
+```
+
+Redis će rasti dok mašina ne odbije, a RAM dijeli s Postgresom. S `noeviction`
+ishod nije usporenje nego **greška pri svakom upisu u keš** čim se memorija
+napuni.
+
+Ublažavajuće: od 20.000 pregledanih ključeva **nijedan nema beskonačan rok** —
+svi ističu. To znači da je `volatile-lru` ispravan izbor (izbacuje samo ključeve
+s rokom), a ne `allkeys-lru`, koji bi mogao pojesti i podatke koji nisu keš.
+
+### `pg_stat_statements` nije uključen
+
+Bez njega baza ne pamti koji upiti troše vrijeme. To je jedini alat koji na
+pitanje „gdje odlazi vrijeme" odgovara imenom upita umjesto pretpostavkom.
+Traži liniju u `postgresql.conf` i restart baze.
+
+### Pulse piše, niko ne čita
+
+`pulse_entries` i `pulse_aggregates` imaju **nula skenova** na svim indeksima
+(ukupno ~3,1 MB indeksa). Pulse je instaliran i uključen po defaultu
+(`PULSE_ENABLED`), snima na svaki zahtjev i servira na `/pulse` — a dashboard
+očito niko nije otvorio.
+
+Ovo je odluka, ne kvar: ili se koristi (odgovara baš na pitanja koja nam fale),
+ili se gasi. Ono što se ne isplati je pisati na svaki zahtjev za nikoga.
+
+### Ostali indeksi bez ijednog skena
+
+`games_hub_name_idx` (6,7 MB), `games_release_precision_index` (1,2 MB),
+`idx_article_views_throttle` (224 kB), `idx_threads_fulltext` (40 kB).
+
+`idx_threads_fulltext` je zanimljiv: postoji fulltext indeks za forum, a
+pretraga ga ne dira — vjerovatno ide kroz `ILIKE`. `idx_article_views_throttle`
+je vjerovatno stvarno suvišan otkad se pregledi broje u Redisu.
+
+**Sve ovo čeka ponovno pokretanje s ispravljenom komandom**, jer se sada uz
+brojke ispisuje i otkad se broji.
+
+### Disk: 577,7 MB, od toga 92,5 MB u prevelikim slikama
+
+54 slike preko 1,5 MB. Next optimizacija je namjerno isključena, pa je ono što
+je uploadovano tačno ono što posjetilac skine.
+
+### 13 redova u `media.path` bez fajla
+
+Slomljene slike na živim stranicama.
+
+### Dvije aktivne sezone
+
+Poznato i odgođeno: `Summer of Gaming 2026` se primjenjuje, `Season 1: Ignition`
+traje ali je ignorisana, pa njeni questovi ne napreduju.
+
+### Ono što je čisto
+
+Svi sigurnosni headeri postoje (HSTS, CSP, X-Frame-Options, Permissions-Policy),
+TLS ističe za 46 dana, `robots.txt` ne blokira sajt, raspored kuca, nijedan
+posao nije pao, integritet podataka bez ijednog siročeta, nijedna isplata se
+nije ponovila.
+
+Jedina sitnica: `server: nginx/1.24.0 (Ubuntu)` i `x-powered-by: Next.js` odaju
+verzije. Nije rupa, ali je besplatna informacija.
+
+---
+
 ## Šta ostaje
 
 Brojke s produkcije. Sve gore je lokalna kopija; jedina stvar koju lokalni izlaz

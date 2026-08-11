@@ -87,6 +87,17 @@ class DiagnoseRedis extends Command
         $this->newLine();
         $this->info('Redovi poslova');
 
+        $connection = (string) config('queue.default');
+        $driver = (string) config("queue.connections.{$connection}.driver", '?');
+
+        if ($driver !== 'redis') {
+            $this->line("  Red nije na Redisu — veza je '{$connection}' (drajver: {$driver}).");
+
+            return;
+        }
+
+        $empty = true;
+
         foreach (['default', 'high', 'low'] as $queue) {
             try {
                 $depth = (int) Redis::llen("queues:{$queue}");
@@ -100,8 +111,13 @@ class DiagnoseRedis extends Command
                 continue;
             }
 
+            $empty = false;
             $this->line(sprintf('  %-10s čeka: %-8s odgođeno: %-8s u obradi: %s',
                 $queue, number_format($depth), number_format($delayed), number_format($reserved)));
+        }
+
+        if ($empty) {
+            $this->line('  Svi redovi prazni.');
         }
     }
 

@@ -63,9 +63,52 @@ class DiagnoseDb extends Command
         }
 
         $this->line('  Svaki od njih usporava svaki upis u tu tabelu, a nijedno čitanje ne ubrzava.');
-        $this->line('  Napomena: brojači se resetuju restartom baze, pa svjež server pokazuje nule lažno.');
+        $this->countingSince();
         $this->table(['Tabela', 'Indeks', 'Skenova', 'Veličina'],
             array_map(fn ($r) => [$r->table_name, $r->index_name, $r->idx_scan, $r->size], $rows));
+    }
+
+    /**
+     * How long these counters have been accumulating.
+     *
+     * "Zero scans" is a claim about a period, and without the period it is not
+     * a finding at all — a database restarted an hour ago reports zero for
+     * every index it has, including the ones carrying all the traffic.
+     */
+    private function countingSince(): void
+    {
+        $row = DB::selectOne('
+            select d.stats_reset,
+                   pg_postmaster_start_time() as started,
+                   extract(epoch from (now() - coalesce(d.stats_reset, pg_postmaster_start_time()))) as seconds
+            from pg_stat_database d
+            where d.datname = current_database()
+        ');
+
+        if (! $row) {
+            $this->line('  Ne mogu utvrditi otkad se broji — tretiraj nule kao neizmjerene.');
+
+            return;
+        }
+
+        // A null stats_reset means nobody ever called pg_stat_reset(), not that
+        // the period is unknown. The server start time is then the safe lower
+        // bound: on PostgreSQL 15+ statistics survive a clean shutdown, so the
+        // real period is at least this long, possibly much longer.
+        $days = (int) floor(((float) $row->seconds) / 86400);
+        $since = substr((string) ($row->stats_reset ?: $row->started), 0, 16);
+
+        $origin = $row->stats_reset
+            ? sprintf('Broji od %s', $since)
+            : sprintf('Brojači nikad nisu resetovani; baza radi od %s, dakle najmanje toliko', $since);
+
+        if ($days < 3) {
+            $this->warn(sprintf('  %s — samo %d dana, prekratko da nula nešto znači.', $origin, $days));
+
+            return;
+        }
+
+        $this->line(sprintf('  %s — %d dana. Nula kroz toliko vremena je nula.', $origin, $days));
     }
 
     private function foreignKeysWithoutIndex(): void
