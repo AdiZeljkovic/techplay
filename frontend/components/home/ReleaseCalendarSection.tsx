@@ -95,7 +95,7 @@ export default function ReleaseCalendarSection() {
 
                                 <div className="relative w-[46px] h-[46px] shrink-0 rounded-[var(--radius-card)] overflow-hidden border border-white/[0.06] bg-black/40">
                                     {game.cover_url ? (
-                                        <Image
+                                        <Image unoptimized
                                             src={game.cover_url}
                                             alt={game.name}
                                             fill

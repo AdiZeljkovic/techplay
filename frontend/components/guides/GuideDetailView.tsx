@@ -197,7 +197,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                                 className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
                                             >
                                                 {guide.author?.avatar_url ? (
-                                                    <Image
+                                                    <Image unoptimized
                                                         src={guide.author.avatar_url}
                                                         alt={guide.author.display_name || guide.author.username || "Author"}
                                                         width={46}

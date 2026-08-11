@@ -957,7 +957,7 @@ export default function ThreadPage() {
                                             <div className="hidden md:block shrink-0">
                                                 <div className="w-12 h-12 rounded-full overflow-hidden bg-white/[0.03] ring-2 ring-white/[0.07]">
                                                     {getAvatarSrc(user.avatar_url) ? (
-                                                        <Image src={getAvatarSrc(user.avatar_url)!} alt={user.username} width={48} height={48} className="object-cover w-full h-full" />
+                                                        <Image unoptimized src={getAvatarSrc(user.avatar_url)!} alt={user.username} width={48} height={48} className="object-cover w-full h-full" />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--accent)]">
                                                             {user.username?.charAt(0)?.toUpperCase() || '?'}

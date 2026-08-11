@@ -276,7 +276,7 @@ function MiniGameCard({ game }: { game: GameListItem }) {
         >
             <div className="relative aspect-video bg-black/40 overflow-hidden">
                 {game.cover_url ? (
-                    <Image src={game.cover_url} alt={game.name} fill sizes="220px"
+                    <Image unoptimized src={game.cover_url} alt={game.name} fill sizes="220px"
                         className="object-cover group-hover:scale-[1.04] transition-transform duration-500" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">

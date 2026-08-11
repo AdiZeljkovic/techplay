@@ -90,7 +90,7 @@ const TeamMemberCard = ({ member, featured = false }: { member: StaffMember; fea
                 <div className={`relative ${featured ? 'w-28 h-28' : 'w-20 h-20'} mb-4`}>
                     <div className={`relative w-full h-full rounded-full overflow-hidden border-2 ${roleColors.border} bg-[var(--surface-2)]`}>
                         {member.avatar_url ? (
-                            <Image
+                            <Image unoptimized
                                 src={member.avatar_url}
                                 alt={member.name}
                                 fill

@@ -213,7 +213,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                                 className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
                                             >
                                                 {article.author?.avatar_url ? (
-                                                    <Image
+                                                    <Image unoptimized
                                                         src={article.author.avatar_url}
                                                         alt={article.author.display_name || article.author.username || "Author"}
                                                         width={46}

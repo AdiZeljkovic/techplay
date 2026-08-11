@@ -86,7 +86,7 @@ export default function UpcomingReleasesWidget() {
                         {/* Thumbnail */}
                         <div className="relative w-14 h-9 rounded-[var(--radius-card)] overflow-hidden shrink-0 bg-white/[0.05] border border-white/[0.06]">
                             {game.cover_url && (
-                                <Image
+                                <Image unoptimized
                                     src={game.cover_url}
                                     alt={game.name}
                                     fill

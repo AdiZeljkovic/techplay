@@ -91,12 +91,36 @@ const nextConfig: NextConfig = {
     webpackBuildWorker: true,
   },
 
-  // Images: disable server-side processing for external CDN images.
-  // media.rawg.io is already a CDN — Next.js optimization creates millions of cached
-  // variants on disk (16+ per image × 900k games = disk exhaustion).
-  // <Image> component still provides lazy loading and CLS prevention without caching.
+  // Images: optimisation is OFF by default and opted into per image.
+  //
+  // Off by default because game covers are an external catalogue of ~187k
+  // titles, already WebP on MobyGames' CDN. Running those through the
+  // optimiser fills the disk with variants of art somebody else already
+  // optimised. That reasoning has not changed.
+  //
+  // What it also did, though, was drop `srcset` and `sizes` from OUR uploads,
+  // which are stored raw and are where the weight actually is. HeroSlider
+  // passes sizes="(max-width: 1024px) 100vw, 45vw" and the production HTML
+  // carried neither attribute, so a 412px phone downloaded a 1170x658 JPEG.
+  //
+  // So the switch is inverted: optimisation is on, and everything that is not
+  // ours — game covers, Steam icons, Discord avatars — carries `unoptimized`
+  // at the call site. Those are small and already served by a CDN.
+  //
+  // It has to be this way round. Two narrower approaches were tried and both
+  // are impossible in Next 16: a custom loader disables the built-in
+  // /_next/image endpoint entirely, and `unoptimized: true` in config does the
+  // same, so a per-image `unoptimized={false}` has no endpoint to call.
   images: {
-    unoptimized: true,
+    // WebP only. AVIF encodes far slower and these are resized on demand.
+    formats: ['image/webp'],
+
+    // A resized variant of an immutable upload never changes.
+    minimumCacheTTL: 31536000,
+
+    // Trimmed from the default: nothing here is served at 2K or 4K, and every
+    // extra width is another cached file per image.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
 
     // Next.js 16 requires every quality value used by <Image quality={...}> to be declared
     qualities: [60, 70, 75, 80, 90],
@@ -137,6 +161,34 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'media.rawg.io',
+      },
+      // The hosts production data actually returns, sampled across /home,
+      // /news, /reviews, /guides, /leaderboard, /staff, /shop, /giveaways,
+      // /rewards, /gta6 and /games. These images carry `unoptimized` at the
+      // call site; the patterns are the safety net, because an unlisted host
+      // does not degrade — it throws and takes the section with it.
+      {
+        // Where game covers come from since the catalogue rebuild.
+        protocol: 'https',
+        hostname: 'cdn.mobygames.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'shared.akamai.steamstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.steamstatic.com',
+      },
+      {
+        // Discord avatars arrive as absolute URLs and pass straight through
+        // getAvatarSrc().
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.gravatar.com',
       },
       {
         protocol: 'https',

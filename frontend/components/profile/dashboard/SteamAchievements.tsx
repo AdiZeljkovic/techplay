@@ -74,7 +74,7 @@ export default function SteamAchievements({ username }: { username: string }) {
         {data.items.map(ach => (
           <div key={ach.id} className="flex items-center gap-3 bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-3">
             {ach.icon_url ? (
-              <Image src={ach.icon_url} alt={ach.display_name ?? ''} width={40} height={40}
+              <Image unoptimized src={ach.icon_url} alt={ach.display_name ?? ''} width={40} height={40}
                 className="w-10 h-10 rounded flex-shrink-0" />
             ) : (
               <div className="w-10 h-10 rounded bg-white/[0.06] flex items-center justify-center flex-shrink-0">

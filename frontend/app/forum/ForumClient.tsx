@@ -143,7 +143,7 @@ function CategoryCard({ category, viewMode }: { category: ForumCategory; viewMod
                             style={{ background: `color-mix(in srgb, ${color} 22%, transparent)` }}
                         >
                             {getAvatarSrc(category.latest_thread.author?.avatar_url) ? (
-                                <Image
+                                <Image unoptimized
                                     src={getAvatarSrc(category.latest_thread.author?.avatar_url)!}
                                     alt={category.latest_thread.author?.username || ""}
                                     width={28}
@@ -182,7 +182,7 @@ function ThreadRow({ thread, cta }: { thread: ActiveThread; cta: "replies" | "re
         >
             <span className="w-11 h-11 shrink-0 rounded-full overflow-hidden bg-[var(--accent-soft)] flex items-center justify-center font-display text-[14px] font-black text-[var(--accent)]">
                 {getAvatarSrc(thread.author?.avatar_url) ? (
-                    <Image
+                    <Image unoptimized
                         src={getAvatarSrc(thread.author?.avatar_url)!}
                         alt={thread.author?.username || ""}
                         width={44}

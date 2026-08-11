@@ -183,7 +183,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                     <div className="flex gap-3">
                         <div className="hidden sm:block shrink-0 w-9 h-9 rounded-full overflow-hidden bg-[var(--surface-2)] ring-2 ring-white/5 mt-0.5">
                             {user.avatar_url ? (
-                                <Image src={user.avatar_url} alt={user.username} width={36} height={36} className="object-cover" />
+                                <Image unoptimized src={user.avatar_url} alt={user.username} width={36} height={36} className="object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center font-bold text-[var(--accent)] text-sm">
                                     {user?.username?.charAt(0)?.toUpperCase() || '?'}
@@ -319,7 +319,7 @@ const CommentItem = memo(function CommentItem({
                 <Link href={`/profile/${comment.user.username}`} className="shrink-0 relative">
                     <div className={`w-10 h-10 rounded-full overflow-hidden bg-[var(--surface-2)] ring-2 transition-all ${isStaff ? 'ring-[var(--accent)]' : 'ring-transparent group-hover:ring-white/20'}`}>
                         {comment.user.avatar_url ? (
-                            <Image src={comment.user.avatar_url} alt={comment.user.username} width={40} height={40} className="object-cover" />
+                            <Image unoptimized src={comment.user.avatar_url} alt={comment.user.username} width={40} height={40} className="object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center font-bold text-[var(--accent)] text-lg">
                                 {comment.user?.username?.charAt(0)?.toUpperCase() || '?'}

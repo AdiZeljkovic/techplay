@@ -126,7 +126,7 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
 
                         <span className="relative w-[86px] h-[52px] rounded-[8px] overflow-hidden shrink-0 bg-white/[0.04]">
                             {game.cover_url && (
-                                <Image src={game.cover_url} alt={game.name} fill sizes="86px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <Image unoptimized src={game.cover_url} alt={game.name} fill sizes="86px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                             )}
                         </span>
 

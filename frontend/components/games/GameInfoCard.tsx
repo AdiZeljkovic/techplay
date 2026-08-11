@@ -38,7 +38,7 @@ export default function GameInfoCard({ game }: { game: LinkedGame }) {
             <Link href={`/games/${game.slug}`} prefetch={false} className="group block">
                 <div className="relative mx-4 mt-3 aspect-video rounded-[5px] overflow-hidden border border-white/[0.06] bg-black/40">
                     {game.cover_url ? (
-                        <Image src={game.cover_url} alt={game.name} fill sizes="308px"
+                        <Image unoptimized src={game.cover_url} alt={game.name} fill sizes="308px"
                             className="object-cover group-hover:scale-[1.03] transition-transform duration-500" />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">

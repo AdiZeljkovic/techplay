@@ -197,7 +197,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                                 className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
                                             >
                                                 {review.author?.avatar_url ? (
-                                                    <Image
+                                                    <Image unoptimized
                                                         src={review.author.avatar_url}
                                                         alt={review.author.display_name || review.author.username || "Author"}
                                                         width={46}
