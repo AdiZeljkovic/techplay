@@ -1,203 +1,57 @@
-"use client";
-
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import * as LucideIcons from "lucide-react";
-import { RoadmapFeature } from "@/lib/roadmapData";
-import { CheckCircle2, Clock, Circle, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { decodeHtml } from "@/lib/decode";
+import { CheckCircle2, Clock, Circle } from "lucide-react";
+import type { RoadmapFeature } from "@/lib/roadmapData";
 
-interface FeatureCardProps {
-    feature: RoadmapFeature;
-    index: number;
-}
+/**
+ * One roadmap item.
+ *
+ * The old card tilted in 3D under the cursor, driven by two springs and a
+ * getBoundingClientRect on every mousemove — which is the exact shape of the
+ * forced reflow PageSpeed keeps reporting, spent on a decoration. It also gave
+ * every feature its own hex colour from the data file, so a roadmap of twelve
+ * items rendered in twelve unrelated hues.
+ *
+ * Status is the only thing that varies now, because status is the only thing a
+ * reader is scanning for.
+ */
 
-export default function FeatureCard({ feature, index }: FeatureCardProps) {
-    const [isHovered, setIsHovered] = useState(false);
-    const Icon = (LucideIcons as any)[feature.icon] || LucideIcons.Box;
+const STATUS = {
+    completed: { icon: CheckCircle2, label: "Completed", className: "text-[var(--accent)] border-[color-mix(in_srgb,var(--accent)_45%,transparent)] bg-[var(--fill-2)]" },
+    in_progress: { icon: Clock, label: "In progress", className: "text-[var(--ink-hi)] border-[var(--line-strong)] bg-[var(--fill-2)]" },
+    planned: { icon: Circle, label: "Planned", className: "text-[var(--ink-faint)] border-[var(--line)] bg-[var(--fill-1)]" },
+} as const;
 
-    // 3D tilt effect
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-
-    const mouseXSpring = useSpring(x);
-    const mouseYSpring = useSpring(y);
-
-    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["7.5deg", "-7.5deg"]);
-    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-7.5deg", "7.5deg"]);
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const xPct = mouseX / width - 0.5;
-        const yPct = mouseY / height - 0.5;
-        x.set(xPct);
-        y.set(yPct);
-    };
-
-    const handleMouseLeave = () => {
-        x.set(0);
-        y.set(0);
-        setIsHovered(false);
-    };
-
-    const statusConfig = {
-        completed: {
-            icon: CheckCircle2,
-            label: 'Completed',
-            color: '#10B981',
-            bgColor: 'rgba(16, 185, 129, 0.1)'
-        },
-        in_progress: {
-            icon: Clock,
-            label: 'In Progress',
-            color: '#F59E0B',
-            bgColor: 'rgba(245, 158, 11, 0.1)'
-        },
-        planned: {
-            icon: Circle,
-            label: 'Planned',
-            color: '#6B7280',
-            bgColor: 'rgba(107, 114, 128, 0.1)'
-        }
-    };
-
-    const status = statusConfig[feature.status];
+export default function FeatureCard({ feature }: { feature: RoadmapFeature; index?: number }) {
+    const icons = LucideIcons as unknown as Record<string, LucideIcons.LucideIcon>;
+    const Icon = icons[feature.icon] ?? LucideIcons.Box;
+    const status = STATUS[feature.status];
     const StatusIcon = status.icon;
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
-            style={{
-                rotateX,
-                rotateY,
-                transformStyle: "preserve-3d",
-            }}
-            onMouseMove={handleMouseMove}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={handleMouseLeave}
-            className="relative group h-full"
-        >
-            {/* Simple glow on hover */}
-            <div
-                className="absolute -inset-0.5 rounded-[var(--radius-panel)] opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-500"
-                style={{
-                    backgroundColor: feature.color + '20'
-                }}
-            />
+        <article className="flex h-full flex-col rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line)] p-5 hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300">
+            <div className="flex items-start justify-between gap-3 mb-4">
+                <span className="inline-flex w-10 h-10 shrink-0 rounded-[var(--radius-inner)] bg-[var(--fill-2)] text-[var(--accent)] items-center justify-center">
+                    <Icon className="w-[18px] h-[18px]" />
+                </span>
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${status.className}`}>
+                    <StatusIcon className="w-3 h-3" />
+                    {status.label}
+                </span>
+            </div>
 
-            {/* Glassmorphism card */}
-            <motion.div
-                style={{ transformStyle: "preserve-3d" }}
-                className="relative h-full backdrop-blur-sm bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] p-6 flex flex-col overflow-hidden group-hover:border-[var(--accent)]/30 transition-all duration-500"
-            >
+            <h3 className="font-display text-[14px] font-bold uppercase tracking-wider text-[var(--ink-hi)] mb-2">
+                {feature.title}
+            </h3>
+            <p className="text-[13px] text-[var(--ink-low)] leading-relaxed mb-4">{feature.description}</p>
 
-                {/* Sparkle effect for in_progress */}
-                {feature.status === 'in_progress' && isHovered && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0 }}
-                        animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5], rotate: [0, 180, 360] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute top-8 right-8"
-                    >
-                        <Sparkles className="w-4 h-4 text-[var(--accent)]" />
-                    </motion.div>
-                )}
-
-                {/* Status badge */}
-                <div className="absolute top-4 right-4 z-10">
-                    <motion.div
-                        whileHover={{ scale: 1.05 }}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border backdrop-blur-md"
-                        style={{
-                            backgroundColor: status.bgColor,
-                            borderColor: status.color + '40',
-                            boxShadow: `0 0 20px ${status.color}20`
-                        }}
-                    >
-                        <motion.div
-                            animate={feature.status === 'in_progress' ? { rotate: 360 } : {}}
-                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        >
-                            <StatusIcon className="w-3 h-3" style={{ color: status.color }} />
-                        </motion.div>
-                        <span className="text-xs font-bold tracking-wide" style={{ color: status.color }}>
-                            {status.label.toUpperCase()}
-                        </span>
-                    </motion.div>
-                </div>
-
-                {/* Icon with enhanced effects */}
-                <div className="relative mb-6 mt-2">
-                    {/* Icon container */}
-                    <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className="relative w-16 h-16 rounded-[var(--radius-card)] flex items-center justify-center"
-                        style={{
-                            backgroundColor: feature.color + '20'
-                        }}
-                    >
-                        <Icon className="w-8 h-8" style={{ color: feature.color }} />
-                    </motion.div>
-                </div>
-
-                {/* Title */}
-                <h3 className="text-xl font-bold text-white mb-3 pr-20 leading-tight group-hover:text-[var(--accent)] transition-colors duration-300">
-                    {decodeHtml(feature.title)}
-                </h3>
-
-                {/* Description */}
-                <p className="text-sm text-white/55 mb-5 leading-relaxed">
-                    {decodeHtml(feature.description)}
-                </p>
-
-                {/* Divider */}
-                <div className="w-full h-px bg-gradient-to-r from-transparent via-[var(--line)] to-transparent mb-5" />
-
-                {/* Details list */}
-                <div className="mt-auto">
-                    <ul className="space-y-3">
-                        {feature.details.map((detail, i) => (
-                            <motion.li
-                                key={i}
-                                initial={{ opacity: 0, x: -10 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1 + i * 0.05 }}
-                                whileHover={{ x: 5 }}
-                                className="flex items-start gap-3 text-xs text-white/35 group/item cursor-default"
-                            >
-                                <CheckCircle2
-                                    className="w-4 h-4 mt-0.5 flex-shrink-0 transition-all duration-200 group-hover/item:scale-125"
-                                    style={{ color: feature.color }}
-                                />
-                                <span className="leading-relaxed group-hover/item:text-white transition-colors duration-200">
-                                    {detail}
-                                </span>
-                            </motion.li>
-                        ))}
-                    </ul>
-                </div>
-
-                {/* Bottom accent */}
-                <motion.div
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 + 0.3, duration: 0.6 }}
-                    className="absolute bottom-0 left-0 w-16 h-1 origin-left"
-                    style={{
-                        backgroundColor: feature.color
-                    }}
-                />
-            </motion.div>
-        </motion.div>
+            <ul className="mt-auto space-y-2 border-t border-[var(--line)] pt-4">
+                {feature.details.map((detail) => (
+                    <li key={detail} className="flex items-start gap-2 text-[12.5px] text-[var(--ink-low)] leading-snug">
+                        <span aria-hidden className="mt-[6px] w-1 h-1 shrink-0 rounded-full bg-[var(--accent)]" />
+                        <span>{detail}</span>
+                    </li>
+                ))}
+            </ul>
+        </article>
     );
 }
