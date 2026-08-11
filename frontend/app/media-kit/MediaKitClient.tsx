@@ -245,7 +245,7 @@ export default function MediaKitClient({ data }: { data: MediaKitData }) {
                                                         whileInView={{ width: `${item.percentage}%` }}
                                                         viewport={{ once: true }}
                                                         transition={{ delay: i * 0.05 + 0.2, duration: 0.6 }}
-                                                        className="h-full bg-gradient-to-r from-[var(--accent)] to-orange-500"
+                                                        className="h-full bg-[var(--accent)]"
                                                     />
                                                 </div>
                                                 <span className="text-white font-bold text-sm w-10 text-right">
@@ -286,7 +286,7 @@ export default function MediaKitClient({ data }: { data: MediaKitData }) {
                             label="Social following"
                             value={2000}
                             icon={Globe}
-                            gradient="bg-gradient-to-r from-[var(--accent)] to-orange-400"
+                            gradient=""
                             delay={0.2}
                         />
                     </div>
@@ -366,7 +366,7 @@ export default function MediaKitClient({ data }: { data: MediaKitData }) {
                                             </div>
                                             <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
                                                 <motion.div
-                                                    className="h-full rounded-full bg-gradient-to-r from-[var(--accent)] to-orange-400"
+                                                    className="h-full rounded-full bg-[var(--accent)]"
                                                     initial={{ width: 0 }}
                                                     whileInView={{ width: `${d.pct}%` }}
                                                     viewport={{ once: true }}
