@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight, Clock, User as UserIcon } from "lucide-react";

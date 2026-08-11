@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import useSWR from "swr";
 import { Gamepad2 } from "lucide-react";
+import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 
-export interface AnniversaryGame {
+interface AnniversaryGame {
     slug: string;
     name: string;
     cover_url: string | null;
@@ -12,20 +16,21 @@ export interface AnniversaryGame {
     years_ago: number;
 }
 
-export interface OnThisDayData {
-    results: AnniversaryGame[];
-    date?: string;
-}
+const fetcher = () =>
+    axios.get("/games/on-this-day").then((r) => ({
+        results: (r.data?.results ?? []) as AnniversaryGame[],
+        date: r.data?.date as string | undefined,
+    }));
 
-/**
- * Games that launched on today's date in earlier years, drawn as a timeline.
- *
- * A server component. Fetched through SWR this section appeared only after
- * hydration, which is a long wait for a list that is fixed for the whole day.
- */
-export default function OnThisDay({ data }: { data: OnThisDayData }) {
-    const games = data.results;
-    if (games.length === 0) return null;
+/** Games that launched on today's date in earlier years, drawn as a timeline. */
+export default function OnThisDay() {
+    const { data } = useSWR("on-this-day", fetcher, {
+        dedupingInterval: 600_000,
+        revalidateOnFocus: false,
+    });
+
+    const games = data?.results;
+    if (games && games.length === 0) return null;
 
     return (
         <Panel
@@ -35,11 +40,19 @@ export default function OnThisDay({ data }: { data: OnThisDayData }) {
             bodyClassName="p-4"
         >
             <p className="text-[11px] text-[var(--ink-low)] mb-3.5">
-                Gaming history from {data.date ?? "today"}.
+                Gaming history from {data?.date ?? "today"}.
             </p>
 
+            {!games && (
+                <div className="space-y-2">
+                    {[0, 1, 2, 3].map((i) => (
+                        <div key={i} className="h-[62px] rounded-[var(--radius-card)] bg-[var(--fill-2)] animate-pulse" />
+                    ))}
+                </div>
+            )}
+
             <div className="flex flex-col">
-                {games.slice(0, 4).map((g, i, arr) => {
+                {games?.slice(0, 4).map((g, i, arr) => {
                     const year = g.released ? new Date(g.released).getFullYear() : null;
                     const isLast = i === arr.length - 1;
 
