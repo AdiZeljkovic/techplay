@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Friendship;
-use App\Models\Message;
+use App\Services\ChatService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -64,10 +64,14 @@ class NotificationController extends Controller
     {
         $userId = Auth::id();
 
-        $unreadMessages = Message::where('receiver_id', $userId)
-            ->where('is_read', false)
-            ->where('deleted_by_receiver', false)
-            ->count();
+        // The envelope in the header used to count messages.is_read = false
+        // for rows addressed to this user. Nothing has written is_read since
+        // the Social Hub replaced the old inbox — unread is derived from
+        // conversation_participants.last_read_at now — and group messages carry
+        // no receiver_id at all. So the badge counted every direct message ever
+        // received, never cleared when the conversation was read, and missed
+        // groups entirely: the header said 1 while the hub said 0 unread.
+        $unreadMessages = app(ChatService::class)->unreadCount($request->user());
 
         $pendingRequests = Friendship::where('receiver_id', $userId)
             ->where('status', 'pending')

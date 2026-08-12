@@ -579,6 +579,29 @@ Komentar uz rutu i dalje govori o "OpenAI costs" iako se koristi Groq.
 **API:** `/notifications`, `/user/notifications/counts`
 **Napomene:** Backend implementiran. Frontend — UNKNOWN koliko je kompletno.
 
+### Audit 12.08.2026 — notifikacije, komentari, pretraga
+
+**Bug: koverta u headeru brojala je iz ukinutog sistema poruka.**
+`NotificationController::counts()` je računao
+`Message::where('receiver_id', $userId)->where('is_read', false)`. Otkad je Social Hub
+zamijenio stari inbox, **`messages.is_read` niko ne piše** — nepročitano se izvodi iz
+`conversation_participants.last_read_at` — a grupne poruke uopšte nemaju `receiver_id`.
+Posljedica: bedž je brojao **svaku direktnu poruku ikad primljenu**, nikad se nije
+očistio kad pročitaš razgovor, i grupe nije vidio. Zato je header pokazivao 1 dok je
+Social Hub u istom trenutku pisao "0 UNREAD". Sada koristi
+`ChatService::unreadCount()` — jedan upit, ista definicija koju hub crta.
+
+**Komentari — čisto.** Moderacija se primjenjuje na **svakoj dubini** (odgovori su
+filtrirani po `status = approved`, ne samo prvi nivo), glasovi se učitavaju u jednom
+upitu umjesto N+1, dubina je ograničena (100/50/25), i `UserResource` propušta `email`
+samo vlasniku. Payload 621 B.
+
+**Pretraga — čisto.** Tri endpointa (`articles`, `games`, `users`), svaki keširan 60 s i
+ograničen na 5–10 rezultata. Pretraga korisnika **poštuje privatnost** — profili
+"friends only" ispadaju iz rezultata, direktan link i dalje vodi na zaključani teaser.
+Upit za igre usput upisuje `player_signals` za Chronicle, u try/catch da učenje nikad ne
+obori pretragu.
+
 ---
 
 ## Steam Integration

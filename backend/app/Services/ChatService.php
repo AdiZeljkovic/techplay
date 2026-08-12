@@ -334,9 +334,28 @@ class ChatService
     }
 
     /** Total unread across every conversation — the header badge. */
+    /**
+     * How many messages are waiting, in one query.
+     *
+     * Unread lives in conversation_participants.last_read_at — the same
+     * definition the hub's badges use — not in messages.is_read, which the
+     * chat has never written.
+     */
+    public function unreadCount(User $user): int
+    {
+        return (int) DB::table('messages as m')
+            ->join('conversation_participants as p', function ($join) use ($user) {
+                $join->on('p.conversation_id', '=', 'm.conversation_id')
+                    ->where('p.user_id', '=', $user->id);
+            })
+            ->where('m.sender_id', '!=', $user->id)
+            ->where(fn ($q) => $q->whereNull('p.last_read_at')->orWhereColumn('m.created_at', '>', 'p.last_read_at'))
+            ->count();
+    }
+
     public function unreadTotal(User $user): int
     {
-        return collect($this->inbox($user))->sum('unread');
+        return $this->unreadCount($user);
     }
 
     /* ── helpers ──────────────────────────────────────────────────────── */
