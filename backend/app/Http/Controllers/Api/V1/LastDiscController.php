@@ -59,7 +59,9 @@ class LastDiscController extends Controller
             'stats' => $stats,
             'poll' => $this->poll(),
             'signed' => $this->alreadySigned($request),
-            'voted' => $this->alreadyVoted($request),
+            // The choice, not just the fact — a result page that cannot show
+            // you which one you picked makes you check twice.
+            'your_choice' => $this->myChoice($request),
         ]);
     }
 
@@ -125,7 +127,7 @@ class LastDiscController extends Controller
 
         Cache::forget('last-disc.poll.v1');
 
-        return $this->success(['poll' => $this->poll()], 'Vote counted.');
+        return $this->success(['poll' => $this->poll(), 'your_choice' => $data['choice']], 'Vote counted.');
     }
 
     /* ── the numbers ──────────────────────────────────────────────────── */
@@ -173,9 +175,10 @@ class LastDiscController extends Controller
             ->exists();
     }
 
-    private function alreadyVoted(Request $request): bool
+    /** Which way this reader voted, or null if they have not. */
+    private function myChoice(Request $request): ?string
     {
-        return LastDiscVote::where('voter_hash', $this->voterHash($request))->exists();
+        return LastDiscVote::where('voter_hash', $this->voterHash($request))->value('choice');
     }
 
     /**

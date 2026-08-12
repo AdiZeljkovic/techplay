@@ -31,7 +31,7 @@ interface Payload {
     };
     poll: { total: number; options: { choice: string; votes: number; percent: number }[] };
     signed: boolean;
-    voted: boolean;
+    your_choice: string | null;
 }
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as Payload);
@@ -63,9 +63,11 @@ function useCountdown(iso: string) {
     return left;
 }
 
-/** One digit of the clock, rendered as separate glyph cells. */
-function Digits({ value, label }: { value: number | null; label: string }) {
-    const text = value === null ? "––" : String(value).padStart(2, "0");
+/** One unit of the clock, its digits in separate cells. */
+function Digits({ value, label, wide = false }: { value: number | null; label: string; wide?: boolean }) {
+    // Days runs past two figures long before the deadline does, so that unit
+    // takes as many cells as it needs and the rest stay at two.
+    const text = value === null ? "––" : String(value).padStart(wide ? 3 : 2, "0");
 
     return (
         <span className="text-center">
@@ -73,15 +75,25 @@ function Digits({ value, label }: { value: number | null; label: string }) {
                 {text.split("").map((ch, i) => (
                     <span
                         key={i}
-                        className="w-[38px] sm:w-[46px] py-2.5 rounded-[6px] bg-white/[0.05] border border-white/[0.08] font-display text-[26px] sm:text-[32px] font-black tabular-nums leading-none text-white"
+                        className="w-[40px] sm:w-[54px] py-3 sm:py-4 rounded-[8px] bg-black/45 border border-white/[0.1] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] font-display text-[30px] sm:text-[42px] font-black tabular-nums leading-none text-white"
                     >
                         {ch}
                     </span>
                 ))}
             </span>
-            <span className="mt-2 block font-display text-[8.5px] font-bold uppercase tracking-[0.18em] text-white/35">
+            <span className="mt-2.5 block font-display text-[8.5px] font-bold uppercase tracking-[0.2em] text-white/35">
                 {label}
             </span>
+        </span>
+    );
+}
+
+/** The separator between units — aligned to the digits, not to the labels. */
+function Colon() {
+    return (
+        <span aria-hidden className="hidden sm:flex flex-col justify-center gap-2 pt-[26px]">
+            <span className="w-[3px] h-[3px] rounded-full bg-[var(--accent)]" />
+            <span className="w-[3px] h-[3px] rounded-full bg-[var(--accent)]" />
         </span>
     );
 }
@@ -97,12 +109,16 @@ export default function LastDiscClient() {
 
     /* ── the poll ── */
     const [voting, setVoting] = useState<string | null>(null);
+    // Held locally so the result appears the moment the vote lands, rather
+    // than after the next revalidation.
+    const [justVoted, setJustVoted] = useState<string | null>(null);
 
     const vote = async (choice: string) => {
         setVoting(choice);
 
         try {
             await axios.post("/last-disc/vote", { choice });
+            setJustVoted(choice);
             toast.success("Vote counted.");
             mutate();
         } catch (e: unknown) {
@@ -150,7 +166,8 @@ export default function LastDiscClient() {
     };
 
     const signed = justSigned || Boolean(data?.signed);
-    const voted = Boolean(data?.voted);
+    const yourChoice = justVoted ?? data?.your_choice ?? null;
+    const voted = yourChoice !== null;
 
     const field =
         "w-full h-11 px-3.5 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] text-[13.5px] text-white placeholder:text-[var(--ink-faint)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] transition-colors";
@@ -159,33 +176,43 @@ export default function LastDiscClient() {
     return (
         <>
             {/* ══ countdown + poll ══ */}
-            <div className="container-page grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-4 items-start">
-                <section className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-6 text-center">
-                    <p className="font-display text-[10px] font-black uppercase tracking-[0.2em] text-white/45">
-                        Countdown to <span className="text-[var(--accent)]">January 2028</span>
-                    </p>
+            <div className="container-page grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-stretch">
+                {/* ── the clock ──
+                    A deadline, not a widget: the panel is lit from the accent,
+                    the digits are the largest thing on the page after the
+                    headline, and the sentence that explains them sits under
+                    them rather than beside them. */}
+                <section className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[var(--surface-1)] p-6 lg:p-8 flex flex-col justify-center">
+                    <span
+                        aria-hidden
+                        className="absolute inset-0"
+                        style={{ background: "radial-gradient(80% 120% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 62%)" }}
+                    />
 
-                    <div className="mt-5 flex flex-wrap items-start justify-center gap-4 sm:gap-6">
-                        <Digits value={left?.d ?? null} label="Days" />
-                        <Digits value={left?.h ?? null} label="Hours" />
-                        <Digits value={left?.m ?? null} label="Minutes" />
-                        <Digits value={left?.s ?? null} label="Seconds" />
+                    <div className="relative z-10 text-center">
+                        <p className="font-display text-[10px] font-black uppercase tracking-[0.22em] text-white/45">
+                            Countdown to <span className="text-[var(--accent)]">January 2028</span>
+                        </p>
+
+                        <div className="mt-6 flex items-start justify-center gap-2 sm:gap-4">
+                            <Digits value={left?.d ?? null} label="Days" wide />
+                            <Colon />
+                            <Digits value={left?.h ?? null} label="Hours" />
+                            <Colon />
+                            <Digits value={left?.m ?? null} label="Minutes" />
+                            <Colon />
+                            <Digits value={left?.s ?? null} label="Seconds" />
+                        </div>
+
+                        <p className="mt-7 mx-auto max-w-[460px] text-[13px] leading-relaxed text-white/45">
+                            Sony plans to stop producing physical discs for new PlayStation games in January 2028.
+                            After that, the only way to buy a game is to be lent one.
+                        </p>
                     </div>
-
-                    <p className="mt-6 mx-auto max-w-[440px] text-[12.5px] leading-relaxed text-white/40">
-                        Sony plans to stop producing physical discs for new PlayStation games in January 2028.
-                    </p>
-
-                    <Link
-                        href="/news"
-                        className="mt-4 inline-flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-[var(--accent)] hover:brightness-125 transition-[filter]"
-                    >
-                        Read our coverage →
-                    </Link>
                 </section>
 
                 {/* ── the poll ── */}
-                <section className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-5">
+                <section className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-5 flex flex-col">
                     <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40">
                         What do you think?
                     </p>
@@ -193,36 +220,65 @@ export default function LastDiscClient() {
                         Do you want Sony to keep physical games available?
                     </h2>
 
-                    <div className="mt-4 space-y-3">
-                        {(poll?.options ?? []).map((option) => (
-                            <div key={option.choice}>
+                    {/* Before a vote it is a question: three things to press,
+                        no numbers. Bars and percentages before anyone has
+                        answered read as a result, and a row of zeroes is not a
+                        result. Afterwards it is the tally, with your own answer
+                        marked. */}
+                    {!voted ? (
+                        <div className="mt-4 space-y-2">
+                            {(poll?.options ?? []).map((option) => (
                                 <button
+                                    key={option.choice}
                                     onClick={() => vote(option.choice)}
-                                    disabled={voted || voting !== null}
-                                    className="w-full flex items-baseline justify-between gap-3 text-left group disabled:cursor-default"
+                                    disabled={voting !== null}
+                                    className="w-full flex items-center gap-3 h-11 px-3.5 rounded-[var(--radius-card)] border border-white/[0.09] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-[var(--accent-soft)] text-left transition-colors disabled:opacity-50"
                                 >
-                                    <span className={`text-[12.5px] ${voted ? "text-white/60" : "text-white/70 group-hover:text-white"} transition-colors`}>
+                                    <span className="w-4 h-4 shrink-0 rounded-full border border-white/25 group-hover:border-[var(--accent)] flex items-center justify-center">
+                                        {voting === option.choice && <Loader2 className="w-3 h-3 animate-spin text-[var(--accent)]" />}
+                                    </span>
+                                    <span className="text-[12.5px] text-white/75">
                                         {CHOICE_LABELS[option.choice] ?? option.choice}
                                     </span>
-                                    <span className="shrink-0 font-display text-[11px] font-black tabular-nums text-white/45">
-                                        {voting === option.choice ? <Loader2 className="w-3 h-3 animate-spin" /> : `${option.percent}%`}
-                                    </span>
                                 </button>
-                                <span className="mt-1.5 block h-[6px] rounded-full bg-[var(--track)] overflow-hidden">
-                                    <span
-                                        className={`block h-full rounded-full transition-[width] duration-700 ${
-                                            option.choice === "keep" ? "bg-[var(--accent)]" : "bg-white/20"
-                                        }`}
-                                        style={{ width: `${option.percent}%` }}
-                                    />
-                                </span>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="mt-4 space-y-3.5">
+                            {(poll?.options ?? []).map((option) => {
+                                const mine = option.choice === yourChoice;
 
-                    <p className="mt-4 pt-3 border-t border-white/[0.07] font-display text-[10px] font-bold tabular-nums text-white/30">
-                        {(poll?.total ?? 0).toLocaleString("en-US")} {poll?.total === 1 ? "vote" : "votes"}
-                        {voted && <span className="ml-2 text-emerald-400/70">· you voted</span>}
+                                return (
+                                    <div key={option.choice}>
+                                        <p className="flex items-baseline justify-between gap-3">
+                                            <span className={`text-[12.5px] ${mine ? "text-white font-semibold" : "text-white/55"}`}>
+                                                {CHOICE_LABELS[option.choice] ?? option.choice}
+                                                {mine && <span className="ml-1.5 text-[var(--accent)]">·</span>}
+                                            </span>
+                                            <span className="shrink-0 font-display text-[11.5px] font-black tabular-nums text-white/60">
+                                                {option.percent}%
+                                            </span>
+                                        </p>
+                                        <span className="mt-1.5 block h-[7px] rounded-full bg-[var(--track)] overflow-hidden">
+                                            <span
+                                                className={`block h-full rounded-full transition-[width] duration-700 ${
+                                                    mine ? "bg-[var(--accent)]" : "bg-white/22"
+                                                }`}
+                                                style={{ width: `${option.percent}%` }}
+                                            />
+                                        </span>
+                                        <span className="mt-1 block font-display text-[9.5px] font-bold tabular-nums text-white/25">
+                                            {option.votes.toLocaleString("en-US")} {option.votes === 1 ? "vote" : "votes"}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    <p className="mt-auto pt-4 font-display text-[10px] font-bold tabular-nums text-white/30">
+                        {(poll?.total ?? 0).toLocaleString("en-US")} {poll?.total === 1 ? "vote" : "votes"} so far
+                        {voted && <span className="ml-2 text-emerald-400/70">· thanks for voting</span>}
                     </p>
                 </section>
             </div>
