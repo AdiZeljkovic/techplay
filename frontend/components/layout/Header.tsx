@@ -11,7 +11,9 @@ import { useCart } from "@/context/CartContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
-import { Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Gamepad2, Newspaper, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers } from "lucide-react";
+import {
+    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Gamepad2, Newspaper, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, Sparkles, MapPinned, Disc3,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
 import { levelForXp, xpForLevel } from "@/lib/level";
@@ -46,8 +48,10 @@ const UTILITY_LINKS = [
 interface NavSubCategory {
     name: string;
     href: string;
-    icon?: React.ComponentType<{ className?: string }>;
-    /** Commissioned art replaces the icon+box entirely when present. */
+    // Lucide's own prop shape: the menus set strokeWidth so the marks read as
+    // line art rather than as heavy glyphs.
+    icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+    /** Commissioned art, for the panels that still carry a painted tile. */
     art?: string;
     description?: string;
 }
@@ -621,21 +625,21 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         name: "Community", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
         activePaths: ["/forum", "/leaderboard", "/social", "/giveaways", "/frontiers"],
         children: [
-            { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp",       description: "Discussions and help" },
-            { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp", description: "Top gamers by XP & reputation" },
-            { name: "Social Hub",  href: "/social",     art: "/images/menu/menu-social.webp",      description: "Chat, friends and squads" },
-            { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp",   description: "Win games & gear" },
-            { name: "Frontiers",   href: "/frontiers",   art: "/images/menu/menu-frontiers.webp",   description: "Clans, territory, resources — coming" },
+            { name: "Forum",       href: "/forum",       icon: MessagesSquare, description: "Discussions and help" },
+            { name: "Leaderboard", href: "/leaderboard", icon: Trophy,         description: "Top gamers by XP & reputation" },
+            { name: "Social Hub",  href: "/social",      icon: Users,          description: "Chat, friends and squads" },
+            { name: "Giveaways",   href: "/giveaways",   icon: Gift,           description: "Win games & gear" },
+            { name: "Frontiers",   href: "/frontiers",   icon: Swords,         description: "Clans, territory, resources — coming" },
         ] },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
         activePaths: ["/wow-analyzer", "/backlog-advisor", "/wrapped", "/gta6", "/last-disc"],
         children: [
-            { name: "WoW Analyzer",    href: "/wow-analyzer",    art: "/images/menu/menu-wow-analyzer.webp",    description: "AI character readiness check" },
-            { name: "Backlog Advisor", href: "/backlog-advisor", art: "/images/menu/menu-backlog-advisor.webp", description: "What should you play next?" },
-            { name: "Gaming Wrapped",  href: "/wrapped",         art: "/images/menu/menu-wrapped.webp",         description: "Your year in gaming, shareable" },
-            { name: "GTA 6 Hub",       href: "/gta6",            art: "/images/menu/menu-gta6.webp",            description: "Map, characters, vehicles, weapons" },
-            { name: "The Last Disc",   href: "/last-disc",       art: "/images/menu/menu-last-disc.webp",       description: "Open letter: keep physical games" },
+            { name: "WoW Analyzer",    href: "/wow-analyzer",    icon: ShieldHalf, description: "Character readiness check" },
+            { name: "Backlog Advisor", href: "/backlog-advisor", icon: Compass,    description: "What should you play next?" },
+            { name: "Gaming Wrapped",  href: "/wrapped",         icon: Sparkles,   description: "Your year in gaming, shareable" },
+            { name: "GTA 6 Hub",       href: "/gta6",            icon: MapPinned,  description: "Map, characters, vehicles, weapons" },
+            { name: "The Last Disc",   href: "/last-disc",       icon: Disc3,      description: "Open letter: keep physical games" },
         ] },
     { name: "Shop", href: "/shop" },
 ];
@@ -753,8 +757,13 @@ function NavItem({ item, badge, onHoverChange }: {
                                                 <img src={child.art} alt="" aria-hidden
                                                     className="w-7 h-7 shrink-0 object-contain select-none transition-transform duration-300 group-hover/row:scale-[1.08]" />
                                             ) : Icon && (
-                                                <span className="w-10 h-10 shrink-0 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line)] flex items-center justify-center text-[var(--ink-low)] group-hover/row:bg-[var(--accent)] group-hover/row:border-transparent group-hover/row:text-white transition-colors duration-300">
-                                                    <Icon className="w-[18px] h-[18px]" />
+                                                /* The mark IS the icon: line art in the
+                                                   accent at a light stroke, no tinted box
+                                                   under it. A grey square behind every
+                                                   entry makes five different destinations
+                                                   look like five of the same thing. */
+                                                <span className="w-9 h-9 shrink-0 flex items-center justify-center text-[var(--accent)]">
+                                                    <Icon className="w-[26px] h-[26px] transition-transform duration-300 group-hover/row:scale-110" strokeWidth={1.4} />
                                                 </span>
                                             )}
                                             <span className="flex flex-col min-w-0 flex-1">
@@ -1439,14 +1448,18 @@ export default function Header() {
                                                                                         </div>
                                                                                     ))}
                                                                                 </div>
-                                                                            ) : item.children?.[0]?.art ? (
-                                                                                /* Community and Tools carry their own art */
+                                                                            ) : item.children?.[0]?.icon || item.children?.[0]?.art ? (
+                                                                                /* Community and Tools, marked the same way they are on the desktop panel */
                                                                                 <div className="flex flex-col gap-1">
                                                                                     {item.children.map((child, idx) => (
                                                                                         <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
                                                                                             className="flex items-center gap-3 py-2 rounded-[var(--radius-card)] active:bg-white/[0.03] transition-colors">
-                                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                                            <img src={child.art} alt="" aria-hidden className="w-7 h-7 shrink-0 object-contain select-none" />
+                                                                                            {child.icon ? (
+                                                                                                <child.icon className="w-[22px] h-[22px] shrink-0 text-[var(--accent)]" strokeWidth={1.4} />
+                                                                                            ) : (
+                                                                                                // eslint-disable-next-line @next/next/no-img-element
+                                                                                                <img src={child.art} alt="" aria-hidden className="w-7 h-7 shrink-0 object-contain select-none" />
+                                                                                            )}
                                                                                             <span className="min-w-0">
                                                                                                 <span className="block font-display text-[12.5px] font-black text-white leading-tight">{child.name}</span>
                                                                                                 {child.description && (
