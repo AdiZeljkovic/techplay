@@ -47,8 +47,6 @@ Pri pokretanju:
 | `API_URL` | Backend URL (`https://techplay.gg/api/v1`) |
 | `RECAP_CHANNEL_ID` | Channel za weekly recap |
 | `LATEST_NEWS_CHANNEL_ID` | Channel za news |
-| `SOCIAL_MEDIA_CHANNEL_ID` | Channel za Privée videa |
-| `PRIVEE_USER_ID` | Privée user ID za video polling |
 | `CHECK_INTERVAL_SECONDS` | Polling interval (default: 600) |
 
 ---
@@ -135,9 +133,6 @@ Pri pokretanju:
 - Korisnik prihvaća challenge reakcijom na poruku
 - Detalji nagrada UNKNOWN
 
-### `PriveeService.ts`
-- Integracija s Privée platformom
-- Polira Privée videa za `PRIVEE_USER_ID`
 - Šalje u `SOCIAL_MEDIA_CHANNEL_ID`
 
 ### `StatusService.ts`
@@ -176,7 +171,6 @@ Pri pokretanju:
 - ✅ Account linking
 - ✅ Presence tracking (Discord Rich Presence → backend)
 - ✅ Challenge sistem
-- ✅ Privée video sharing
 
 ## Što bot NE RADI (ili je UNKNOWN)
 

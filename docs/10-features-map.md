@@ -434,12 +434,8 @@ Speakable. Canonical pokazuje na pravi URL. IndexNow se okida iz `ContentObserve
 
 **Status:** COMPLETE
 
-**Opis:** TechPlay native giveaways + Privée giveaway platforma integracija.
 
 **Frontend:** `app/giveaways/`, `app/giveaway/`, `components/giveaway/`
-**Backend:** `GiveawayController`, `PriveeGiveawayController`
-**Database:** `giveaways`, `giveaway_entries`, `giveaway_tasks`, `privee_giveaway_entries`
-**Napomene:** Dvije zasebne logike (TechPlay i Privée). Discord bot šalje giveaway notifikacije.
 Pobjednik se izvlači **ručno** iz Filamenta (`GiveawayResource` akcija) — nema scheduled joba.
 
 ### Audit 12.08.2026

@@ -103,12 +103,10 @@
 | `order_items` | Stavke narudžbi | order_id, product_id, quantity, price |
 | `support_tiers` | Support/subscription nivo | id, name, price, paypal_plan_id, xp_multiplier |
 | `user_supports` | Korisnikova aktivna podrška | user_id, support_tier_id, **payment_id** (unique), amount, status, **is_recurring**, expires_at |
-| `giveaways` | Giveaway events | id, title, slug, description, ends_at, winner_count, privee_id |
 | `giveaway_entries` | Prijave na giveaway | giveaway_id, user_id, tickets, daily_bonus_claimed_at, streak |
 | `giveaway_prize_tiers` | Nagrade | giveaway_id, rank, description |
 | `giveaway_tasks` | Bonus zadaci | giveaway_id, type, description, bonus_tickets |
 | `giveaway_task_completions` | Kompletizacija | entry_id, task_id |
-| `privee_giveaway_entries` | Privée giveaway | giveaway_id, email, privee_user_id |
 
 ### Messaging
 

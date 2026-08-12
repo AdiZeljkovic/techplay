@@ -64,7 +64,7 @@ flowchart TB
     subgraph BOT["🦉  DISCORD BOT — Professor Buffy — discord.js v14"]
         B1["PollingService — news polling svakih 600s → Discord news channel"]
         B2["XpService — 15 XP/poruku · 60s cooldown → POST /discord/xp"]
-        B3["TriviaService · RecapService tjedni · ChallengeService · PriveeService"]
+        B3["TriviaService · RecapService tjedni · ChallengeService"]
         B4["ServerStatsService — update voice channel naziva sa live stats"]
         B5["Slash komande: /profile /daily /leaderboard /search /latest /forum /giveaways /link /sync"]
         B6["Event handleri: setupWelcome · setupModeration · setupPresenceTracking · setupChallengeReactions"]
@@ -81,7 +81,6 @@ flowchart TB
         E7["Gemini 2.5 Flash + GPT-4 Turbo + Groq — AI analiza"]
         E8["IndexNow — Bing + Yandex instant indexing"]
         E9["RaiderIO — Mythic+ podaci za WoW analizu"]
-        E10["Google OAuth — Privee giveaway login"]
     end
 
     %% ─── SEO EKOSISTEM ───────────────────────
@@ -143,7 +142,6 @@ flowchart TB
     BA6 -->|"GeminiService + OpenAIService"| E7
     BI1 -->|"IndexNowService"| E8
     BA6 -->|"RaiderIOService"| E9
-    BA6 -->|"Google OAuth — Privee"| E10
 
     %% ─── STILOVI ─────────────────────────────
     classDef fe fill:#0d1b2a,stroke:#4a9eff,color:#e0e0e0

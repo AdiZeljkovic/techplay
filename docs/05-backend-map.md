@@ -179,7 +179,6 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `GiveawayPrizeTier` | `giveaway_prize_tiers` | Nagrade u giveaway |
 | `GiveawayTask` | `giveaway_tasks` | Zadaci za bonus bodove |
 | `GiveawayTaskCompletion` | `giveaway_task_completions` | Kompletizacija taskova |
-| `PriveeGiveawayEntry` | `privee_giveaway_entries` | Privée giveaway prijave |
 
 ---
 
@@ -211,7 +210,6 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `PayPalService` | PayPal API pozivi |
 | `PremiumService` | Premium/subscription logika |
 | `PresenceService` | Game presence tracking + banking odigranog vremena (`bankSession`: 2min–12h, samo igre već u kolekciji, nikad ne dira Steam-owned unose) |
-| `PriveeService` | Privée giveaway integracija |
 | `ProfileService` | Profilni podaci agregacija + `canViewProfile()` / `friendStatus()` / `friendIds()` / `hoursPlayed()` |
 | `QuestService` | Quest dodjela i praćenje |
 | `RaiderIOService` | RaiderIO Mythic+ data |

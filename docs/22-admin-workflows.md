@@ -139,7 +139,6 @@
 2. `Title`, `Slug`, `Description`, `Ends At`, `Winner Count`
 3. Prize Tiers — nested editor za nagrade
 4. Tasks — bonus zadaci za extra tickets
-5. Privée ID (ako je Privée giveaway)
 6. Publish
 
 ---

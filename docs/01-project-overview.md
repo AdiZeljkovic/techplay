@@ -9,7 +9,6 @@ TechPlay.gg je custom gaming platforma namijenjena gaming zajednici na globalnom
 - **Release calendar** (kalendar datuma izlaska igara)
 - **Community** (forum, profili, XP, achievements, prijatelji)
 - **Discord integracija** (bot "Professor Buffy" koji povezuje web i Discord server)
-- **Shop i giveaways** (PayPal, Privée platforma)
 - **WoW Analyzer** (AI-powered World of Warcraft character analiza)
 
 ---
@@ -65,8 +64,6 @@ TechPlay.gg je custom gaming platforma namijenjena gaming zajednici na globalnom
 | Discord OAuth | Social login + bot auth |
 | Steam API | Library import, presence tracking |
 | PayPal | Shop narudžbe i subscription |
-| Privée | Giveaway platforma (vanjska) |
-| Google OAuth | Privée giveaway login |
 | Gemini 2.5 Flash | AI WoW analiza (primarni) |
 | OpenAI GPT-4 Turbo | AI WoW analiza (alternativa) |
 | Groq | Brza AI inferencija |
@@ -93,7 +90,6 @@ TechPlay.gg je custom gaming platforma namijenjena gaming zajednici na globalnom
 - Komentari (na news, reviews, guides, videos)
 - Admin panel (Filament v5, svi resursi)
 - Discord bot (Professor Buffy — polling, XP, leaderboard, trivia, presence)
-- Giveaways (TechPlay + Privée)
 - Shop (PayPal narudžbe i pretplate)
 - WoW Analyzer (Blizzard API + AI analiza)
 - SEO (meta tagovi, OG, structured data, sitemap, IndexNow)

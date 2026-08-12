@@ -11,8 +11,6 @@
 | Discord | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` | OAuth login + bot | `SocialAuthController`, `discord/` |
 | Steam | `STEAM_API_KEY` | Library import, presence | `SteamService`, `SyncSteamLibrary` |
 | PayPal | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_MODE` | Shop, subscriptions | `PayPalService`, `PayPalWebhookController` |
-| Privée | `PRIVEE_*` env | Giveaway platforma | `PriveeService` (backend + bot) |
-| Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Privée giveaway login | `PriveeGiveawayController` |
 | OpenAI | `OPENAI_API_KEY` | GPT-4 Turbo WoW analiza | `OpenAIService` |
 | Gemini | `GEMINI_API_KEY` | Gemini 2.5 Flash WoW analiza | `GeminiService` |
 | Groq | `GROQ_API_KEY` | Brza AI inferencija | `GroqService` |
@@ -104,17 +102,6 @@
 - Digitalni shop (one-time purchase)
 - Support tier pretplate (recurring)
 - Webhook: potvrda plaćanja, cancel subscriptions
-
----
-
-## Privée
-
-**Svrha:** Giveaway platforma s vlastitim auth sistemom
-**Servis:** `app/Services/PriveeService.php`
-**Kontroler:** `PriveeGiveawayController`
-**Env:** `PRIVEE_USER_ID` (u Discord bot .env za video polling)
-**Posebnosti:** Privée ima vlastiti auth (email/Google OAuth), ne koristi TechPlay Sanctum token
-**Bot:** `PriveeService.ts` u Discord botu — polira Privée videa
 
 ---
 

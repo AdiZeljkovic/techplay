@@ -288,9 +288,6 @@ Pun payload dodatno nosi `friend_status` (`self|none|pending|incoming|accepted`)
 | POST | `/giveaways/{slug}/tasks/{taskId}/complete` | GiveawayController::completeTask | ✓ | Kompletizuj task |
 | POST | `/giveaways/{slug}/daily-bonus` | GiveawayController::claimDailyBonus | ✓ | Daily bonus |
 | GET | `/giveaways/{slug}/my-entry` | GiveawayController::myEntry | ✓ | Moja prijava |
-| POST | `/giveaways/{slug}/privee/login` | PriveeGiveawayController::login | - | Privée login |
-| POST | `/giveaways/{slug}/privee/google-login` | PriveeGiveawayController::googleLogin | - | Privée Google login |
-| GET | `/giveaways/{slug}/privee/entry` | PriveeGiveawayController::myEntry | - | Privée entry status |
 
 ---
 

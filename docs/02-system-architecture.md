@@ -145,8 +145,6 @@ Cron → php artisan schedule:run → Artisan Commands:
 | `API_URL` | Backend API base URL |
 | `RECAP_CHANNEL_ID` | Channel za weekly recap |
 | `LATEST_NEWS_CHANNEL_ID` | Channel za news |
-| `SOCIAL_MEDIA_CHANNEL_ID` | Channel za Privée videa |
-| `PRIVEE_USER_ID` | Privée user ID |
 
 ---
 

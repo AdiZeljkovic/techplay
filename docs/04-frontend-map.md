@@ -59,7 +59,6 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 | `/leaderboard` | `app/leaderboard/` | XP leaderboard |
 | `/compare` | `app/compare/` | Profile compare `[username]/[other]` |
 | `/giveaways` | `app/giveaways/` | Giveaways listing + `[slug]` |
-| `/giveaway` | `app/giveaway/` | Privée giveaway (poseban flow) |
 | `/shop` | `app/shop/` | Shop katalog |
 | `/cart` | `app/cart/` | Košarica |
 | `/checkout` | `app/checkout/` | PayPal checkout |

@@ -102,7 +102,7 @@ frontend/
 │   ├── forum/              Forum (kategorije, threadovi)
 │   ├── friends/            Prijatelji
 │   ├── games/              Game database
-│   ├── giveaway/           Single giveaway (Privée)
+│   ├── giveaway/           Single giveaway
 │   ├── giveaways/          Giveaways listing
 │   ├── guides/             Guides sekcija
 │   ├── hardware/           Tech/hardware sadržaj
@@ -192,7 +192,6 @@ discord/
 │       ├── ChallengeService.ts Gaming izazovi
 │       ├── LinkService.ts      Discord↔TechPlay account linking
 │       ├── PollingService.ts   Polling za news/giveaways
-│       ├── PriveeService.ts    Privée platforma integracija
 │       ├── RecapService.ts     Tjedni recap
 │       ├── ServerStatsService.ts Voice channel stats
 │       ├── StatusService.ts    Bot status rotacija

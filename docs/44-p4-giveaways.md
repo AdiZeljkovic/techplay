@@ -112,7 +112,6 @@ između "nasumično" i "nasumično koliko treba".
 - **IP ograničenje po mreži** (`max_entries_per_ip`) postaje smisleno tek od P1,
   otkad `X-Forwarded-For` više nije slobodan izbor pozivaoca. Vrijedi provjeriti
   na produkciji da nije prestrogo za korisnike iza istog NAT-a.
-- **Privée tok** ima vlastitu prijavu i nije dio ove cjeline.
 
 ---
 
