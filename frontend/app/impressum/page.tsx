@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { getServerApiUrl } from "@/lib/api";
 import { generatePageMetadata } from "@/lib/seo";
 import ImpressumClient from "./ImpressumClient";
 
@@ -10,11 +11,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 async function getStaffData() {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-    // Ensure we don't double the prefix if it's already there
-    const url = baseUrl.endsWith('/api/v1')
-        ? `${baseUrl}/staff`
-        : `${baseUrl}/api/v1/staff`;
+    // Server-side, so the internal address — the public hostname goes out
+    // through Cloudflare and back for no reason. The staff list has been
+    // rendering empty on this page.
+    const baseUrl = getServerApiUrl();
+    const url = baseUrl.endsWith('/api/v1') ? `${baseUrl}/staff` : `${baseUrl}/api/v1/staff`;
 
 
     try {

@@ -342,6 +342,34 @@ XP kao dobitak te sedmice (snapshot job pokriva sve korisnike ponedjeljkom).
 
 ---
 
+### Audit 12.08.2026 — posljednje stranice
+
+**Bug: stranica pojedinačnog giveawaya bila je nevidljiva dijeljenju i pretraživačima.**
+`generateMetadata` je dohvatao podatke preko `NEXT_PUBLIC_API_URL` — javnog hosta — iz
+**servera**, dakle van kroz Cloudflare i nazad. Fetch nikad nije dao JSON, pa je svaki
+giveaway podijeljen na Discordu ili Facebooku izlazio kao **"Giveaway | TechPlay |
+TechPlay"**, bez opisa i bez slike. Tijelo stranice je klijentsko, pa je čitalac u
+pregledniku vidio sve — ali u izvornom HTML-u nema ni riječi o nagradi. Sada ide kroz
+`getServerApiUrl()`, kao svaka druga serverska komponenta.
+
+Isti obrazac popravljen na još dva mjesta: **impressum** (spisak redakcije se
+renderovao prazan) i **komentari na stranici članka** (sam članak je oduvijek išao kroz
+`getServerApiUrl`, komentari nisu). `newsletter/verify` je ostavljen — to je klijentska
+komponenta, tamo je javni URL ispravan.
+
+**Bug: nijedna autorska stranica nije postojala.** `AuthorController::findEditorialAuthor`
+traži isključivo po `author_slug`, a ta kolona je **null na svakom nalogu** — pa je
+`/author/{bilo šta}` vraćao 404. Uz to, JSON-LD na svakom članku, reviewu i vodiču
+postavlja `author.url` na `/author/{author_slug || username}`, dakle **strukturirani
+podaci su svuda upućivali na mrtav link**. Sada se razrješava i po `username`, uz
+prednost `author_slug` kad postoji.
+
+**Čisto:** `/contact` (throttle 3/10min, validacija, šalje mail — jedina zamjerka je da
+je adresa primaoca zakucana u kodu umjesto u configu), `/rating-system`,
+`/newsletter/verify`, `/giveaway/{slug}` sadržajno.
+
+---
+
 ## SEO
 
 **Status:** COMPLETE (osnova), PARTIAL (game pages, structured data)

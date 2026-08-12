@@ -129,12 +129,10 @@ export async function generateMetadata(
 }
 
 async function getComments(id: number, type: string = 'article') {
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
+    // The article itself already comes through getServerApiUrl; its comments
+    // were the one call still going out to the public hostname and back.
     try {
-        const res = await fetch(`${apiUrl}/comments/${type}/${id}`, {
+        const res = await fetch(`${getServerApiUrl()}/comments/${type}/${id}`, {
             next: { revalidate: 0 }, // Comments should be fresh? Or short cache?
             // User requested "Instant".
             // Since we have cache tags/invalidation, we can cache it short term e.g 10s or 0.

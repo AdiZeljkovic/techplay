@@ -1,4 +1,5 @@
 import GiveawayClient from "./GiveawayClient";
+import { getServerApiUrl } from "@/lib/api";
 import { Metadata } from "next";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
@@ -27,18 +28,19 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
 
-    let apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (apiUrl && apiUrl.includes('localhost')) {
-        apiUrl = apiUrl.replace('localhost', '127.0.0.1');
-    }
-
+    // getServerApiUrl prefers NEXT_PRIVATE_API_URL — the address that does not
+    // leave the box. Reaching for the public hostname from the server means
+    // going out through Cloudflare and back, and this page was the one place
+    // still doing it: the fetch never produced JSON, so every giveaway shared
+    // to Discord or Facebook came out titled "Giveaway" with no description
+    // and no image.
     try {
-        const res = await fetch(`${apiUrl}/giveaways/${slug}`, {
+        const res = await fetch(`${getServerApiUrl()}/giveaways/${slug}`, {
             next: { revalidate: 60 },
         });
 
         if (!res.ok) {
-            return { title: "Giveaway | TechPlay" };
+            return { title: "Giveaway" };
         }
 
         const data = await res.json();
@@ -52,7 +54,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         const images = imageUrl ? [{ url: imageUrl, width: 1200, height: 630, alt: title }] : [];
 
         return {
-            title: `${title} | TechPlay Giveaway`,
+            title,
             description,
             openGraph: {
                 title: `🎁 ${title}`,
@@ -70,7 +72,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             },
         };
     } catch {
-        return { title: "Giveaway | TechPlay" };
+        return { title: "Giveaway" };
     }
 }
 

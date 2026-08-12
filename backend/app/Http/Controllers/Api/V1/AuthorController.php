@@ -34,7 +34,22 @@ class AuthorController extends Controller
 
     private function findEditorialAuthor(string $slug): User
     {
-        $user = User::where('author_slug', $slug)->with('roles')->firstOrFail();
+        // author_slug first, then username.
+        //
+        // Only author_slug was ever consulted, and nobody fills that column —
+        // it is null on every account — so every author page 404'd and the
+        // whole section was unreachable. The JSON-LD on every article, review
+        // and guide points at /author/{author_slug || username}, so those links
+        // were broken too, in structured data a search engine follows.
+        $user = User::where('author_slug', $slug)
+            ->orWhere('username', $slug)
+            ->with('roles')
+            ->orderByRaw('CASE WHEN author_slug = ? THEN 0 ELSE 1 END', [$slug])
+            ->first();
+
+        if (! $user) {
+            abort(404, 'Author not found.');
+        }
 
         // One question, asked the way the whole codebase now asks it. This
         // used to keep its own normalised list of role names and check the
