@@ -287,7 +287,7 @@ export default function LastDiscClient() {
             <div className="container-page mt-4">
                 <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] grid grid-cols-1 lg:grid-cols-2">
                     {/* ── the case ── */}
-                    <div className="p-6 lg:p-8 lg:border-r border-white/[0.07]">
+                    <div className="p-6 lg:p-8 lg:border-r border-white/[0.07] flex flex-col">
                         <p className="font-display text-[9.5px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
                             Sign the open letter
                         </p>
@@ -319,26 +319,48 @@ export default function LastDiscClient() {
                             ))}
                         </div>
 
-                        <blockquote className="mt-6 rounded-[var(--radius-card)] border border-[color-mix(in_srgb,var(--accent)_22%,transparent)] bg-[var(--accent-soft)] p-4">
+                        {/* The excerpt takes whatever height the form leaves,
+                            and carries enough of the letter to deserve it — the
+                            box used to end halfway up the column with nothing
+                            under it. */}
+                        <blockquote className="mt-6 flex-1 flex flex-col rounded-[var(--radius-card)] border border-[color-mix(in_srgb,var(--accent)_22%,transparent)] bg-[var(--accent-soft)] p-5">
                             <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
                                 An open letter to Sony Interactive Entertainment
                             </p>
-                            <p className="mt-2.5 text-[12.5px] leading-relaxed text-white/55">
+
+                            <p className="mt-3 text-[12.5px] leading-relaxed text-white/55">
+                                We understand your decision, and that it follows a broader trend in this industry — that
+                                digital sales today make up the vast majority of your revenue. Our goal is not to dispute
+                                your right to follow the market.
+                            </p>
+
+                            <p className="mt-3 text-[12.5px] leading-relaxed text-white/55">
                                 We are not asking Sony to abandon digital distribution, nor to slow it down in any way.
                                 What we are asking is simply that physical copies remain an option for those who want
                                 them — just as has been the case until now. Discontinuing them offers no improvement in
                                 service and no quality-of-life change; it represents nothing but a loss of choice.
                             </p>
+
+                            <p className="mt-3 text-[12.5px] leading-relaxed text-white/55">
+                                A disc you own cannot be revoked, altered or switched off. It can be lent, gifted,
+                                traded and kept — and when the servers are gone, it is still a game. Physical copies
+                                don&apos;t need to be the majority of the market for their preservation to matter.
+                            </p>
+
+                            <p className="mt-4 pt-3.5 border-t border-[color-mix(in_srgb,var(--accent)_20%,transparent)] font-display text-[10.5px] font-black uppercase tracking-[0.12em] text-white/70">
+                                — The TechPlay Community
+                            </p>
+
                             <Link
                                 href="/last-disc/letter"
-                                className="mt-3.5 inline-flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-[var(--accent)] hover:brightness-125 transition-[filter]"
+                                className="mt-auto pt-4 inline-flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-[var(--accent)] hover:brightness-125 transition-[filter]"
                             >
                                 Read the full letter →
                             </Link>
                         </blockquote>
 
                         {(stats?.recent.length ?? 0) > 0 && (
-                            <div className="mt-5">
+                            <div className="mt-5 shrink-0">
                                 <p className="font-display text-[8.5px] font-black uppercase tracking-[0.16em] text-white/30">
                                     Latest signatures
                                 </p>
