@@ -123,46 +123,71 @@ class PayPalController extends Controller
 
         $orderId = $request->orderID;
 
+        // The order is found before PayPal is asked for anything.
+        //
+        // Scoping the lookup stopped one caller finishing another's order
+        // locally, but the capture itself still ran first — so a known order id
+        // could still force somebody else's approved payment to be taken, and
+        // when the lookup then found nothing this method answered "Payment
+        // completed successfully" with no order, no stock movement and not a
+        // line in the log.
+        $order = Order::with('items')
+            ->where('paypal_order_id', $orderId)
+            ->where('user_id', $request->user()->id)
+            ->first();
+
+        if (! $order) {
+            Log::warning('Capture refused: no such order for this buyer', [
+                'paypal_order_id' => $orderId,
+                'user_id' => $request->user()->id,
+            ]);
+
+            return response()->json(['error' => 'That order is not yours.'], 403);
+        }
+
+        // Already captured. Asking PayPal to capture it a second time is an
+        // error there and a double charge in the worst case; the buyer just
+        // reloaded the page.
+        if ($order->status === 'completed') {
+            return response()->json([
+                'status' => 'COMPLETED',
+                'message' => 'Payment completed successfully',
+                'order_id' => $order->id,
+                'paypal_order_id' => $orderId,
+            ]);
+        }
+
         try {
             $response = $this->paypal->captureOrder($orderId);
 
             if (isset($response['status']) && $response['status'] === 'COMPLETED') {
-                // Scoped to the caller: the order id alone used to be enough to
-                // drive someone else's capture and stock decrement.
-                $order = Order::with('items')
-                    ->where('paypal_order_id', $orderId)
-                    ->where('user_id', $request->user()->id)
-                    ->first();
+                DB::transaction(function () use ($order, $response) {
+                    // Paid goods leave the shelf. The cash-on-delivery path
+                    // has always done this; PayPal orders never did, so a
+                    // one-off item could be sold repeatedly.
+                    foreach ($order->items as $line) {
+                        $taken = Product::where('id', $line->product_id)
+                            ->where('stock', '>=', $line->quantity)
+                            ->decrement('stock', $line->quantity);
 
-                if ($order && $order->status !== 'completed') {
-                    DB::transaction(function () use ($order, $response) {
-                        // Paid goods leave the shelf. The cash-on-delivery path
-                        // has always done this; PayPal orders never did, so a
-                        // one-off item could be sold repeatedly.
-                        foreach ($order->items as $line) {
-                            $taken = Product::where('id', $line->product_id)
-                                ->where('stock', '>=', $line->quantity)
-                                ->decrement('stock', $line->quantity);
-
-                            // Money has already changed hands, so this is not a
-                            // reason to refuse the order — but somebody has paid
-                            // for something that is not on the shelf, and that
-                            // has to reach a human rather than pass silently.
-                            if ($taken === 0) {
-                                Log::warning('Oversold: paid order exceeds stock', [
-                                    'order_id' => $order->id,
-                                    'product_id' => $line->product_id,
-                                    'quantity' => $line->quantity,
-                                ]);
-                            }
+                        // Money has already changed hands, so this is not a
+                        // reason to refuse the order — but somebody has paid
+                        // for something that is not on the shelf, and that
+                        // has to reach a human rather than pass silently.
+                        if ($taken === 0) {
+                            Log::warning('Oversold: paid order exceeds stock', [
+                                'order_id' => $order->id,
+                                'product_id' => $line->product_id,
+                                'quantity' => $line->quantity,
+                            ]);
                         }
+                    }
 
-                        $order->update([
-                            'status' => 'completed',
-                            'paypal_transaction_id' => $response['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
-                        ]);
-                    });
-                }
+                    $order->update([
+                        'status' => 'completed',
+                        'paypal_transaction_id' => $response['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
+                    ]);
+                });
 
                 // 'status' carries the PayPal vocabulary the client checks for;
                 // it used to answer 'success' here and 'COMPLETED' nowhere, so
@@ -170,7 +195,7 @@ class PayPalController extends Controller
                 return response()->json([
                     'status' => 'COMPLETED',
                     'message' => 'Payment completed successfully',
-                    'order_id' => $order->id ?? null,
+                    'order_id' => $order->id,
                     'paypal_order_id' => $orderId,
                 ]);
             }
