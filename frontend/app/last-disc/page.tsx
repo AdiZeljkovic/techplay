@@ -86,72 +86,60 @@ export default async function LastDiscPage() {
         <main className="min-h-screen bg-[var(--surface-0)] pb-14">
             {/* ══ hero ══
                 The disc sits in the left third of the art and shatters to the
-                right, so the type takes the right two thirds and the break
-                reads as the thing the page is about. */}
+                right, so everything the page says is set over the right two
+                thirds and the break reads as the subject rather than as
+                decoration behind it.
+
+                The four words sit inside the frame, on the art, under the
+                sentence they qualify. Below the fold they were four labels;
+                here they are the terms of the argument. */}
             <section
-                className="relative overflow-hidden border-b border-white/[0.07] min-h-[420px] lg:min-h-[560px] flex items-center"
+                className="relative overflow-hidden border-b border-white/[0.07] min-h-[440px] lg:min-h-[540px] flex items-center"
                 style={{
                     backgroundImage:
-                        "linear-gradient(270deg, rgba(5,7,10,0.86) 0%, rgba(5,7,10,0.62) 30%, rgba(5,7,10,0.12) 58%, transparent 74%), url('/images/last-disc/last-disc-hero.webp')",
+                        "linear-gradient(270deg, rgba(5,7,10,0.82) 0%, rgba(5,7,10,0.58) 32%, rgba(5,7,10,0.10) 60%, transparent 76%), url('/images/last-disc/last-disc-hero.webp')",
                     backgroundSize: "cover, cover",
                     backgroundPosition: "center, center left",
                     backgroundRepeat: "no-repeat, no-repeat",
                     backgroundColor: "#05070A",
                 }}
             >
-                <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 w-full container-page py-14 lg:py-16">
-                    <div className="lg:ml-auto lg:max-w-[620px] lg:text-right">
-                        <h1 className="font-display font-black uppercase leading-[0.86] tracking-tight text-[46px] sm:text-[64px] lg:text-[80px]">
+                <div className="relative z-10 w-full container-page py-12 lg:py-14">
+                    <div className="lg:ml-auto lg:w-[68%] text-center">
+                        <h1 className="font-display font-black uppercase leading-[0.86] tracking-tight text-[44px] sm:text-[62px] lg:text-[78px]">
                             <span className="text-white">The Last </span>
                             <span className="text-[var(--accent)]">Disc</span>
                         </h1>
 
-                        <p className="mt-5 lg:ml-auto max-w-[520px] text-[14px] sm:text-[15px] leading-relaxed text-white/55">
+                        <p className="mt-4 mx-auto max-w-[520px] text-[14px] sm:text-[15.5px] leading-relaxed text-white/60">
                             An open letter from players around the world asking Sony to keep physical PlayStation
                             games alive.
                         </p>
 
-                        <p className="mt-4 lg:ml-auto max-w-[520px] font-display text-[12.5px] sm:text-[14px] font-black uppercase tracking-[0.1em] text-white/80">
-                            Digital is only bad when it&apos;s the only option.
-                        </p>
-
-                        <div className="mt-7 flex flex-wrap gap-2.5 lg:justify-end">
-                            <a
-                                href="#sign"
-                                className="btn-command inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] hover:brightness-110 font-display text-[11px] font-black uppercase tracking-[0.14em] text-white transition-[filter]"
-                            >
-                                <PenLine className="w-4 h-4" /> Sign the letter
-                            </a>
-                            <Link
-                                href="/last-disc/letter"
-                                className="btn-command inline-flex items-center gap-2 h-11 px-6 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.12] font-display text-[11px] font-black uppercase tracking-[0.12em] text-white transition-colors"
-                            >
-                                Read the full letter
-                            </Link>
+                        {/* the terms of the argument */}
+                        <div className="mt-9 flex flex-wrap justify-center items-center gap-y-6">
+                            {BANNER.map(({ icon: Icon, title, body }, i) => (
+                                <div
+                                    key={title}
+                                    className={`flex items-center gap-3 px-4 sm:px-6 ${
+                                        i > 0 ? "sm:border-l sm:border-white/[0.12]" : ""
+                                    }`}
+                                >
+                                    <span className="w-9 h-9 shrink-0 rounded-full border border-[color-mix(in_srgb,var(--accent)_55%,transparent)] flex items-center justify-center">
+                                        <Icon className="w-[15px] h-[15px] text-[var(--accent)]" strokeWidth={1.9} />
+                                    </span>
+                                    <span className="text-left">
+                                        <span className="block font-display text-[10.5px] font-black uppercase tracking-[0.14em] text-white">
+                                            {title}
+                                        </span>
+                                        <span className="mt-0.5 block text-[11px] text-white/40">{body}</span>
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                </div>
-            </section>
-
-            {/* the four words, under the art rather than over it */}
-            <section className="container-page mt-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
-                    {BANNER.map(({ icon: Icon, title, body }, i) => (
-                        <div
-                            key={title}
-                            className={`flex items-center gap-3 ${i > 0 ? "lg:border-l lg:border-white/[0.07] lg:pl-6" : ""}`}
-                        >
-                            <Icon className="w-5 h-5 shrink-0 text-[var(--accent)]" strokeWidth={1.6} />
-                            <span>
-                                <span className="block font-display text-[10.5px] font-black uppercase tracking-[0.14em] text-white">
-                                    {title}
-                                </span>
-                                <span className="mt-0.5 block text-[11px] text-white/35">{body}</span>
-                            </span>
-                        </div>
-                    ))}
                 </div>
             </section>
 
