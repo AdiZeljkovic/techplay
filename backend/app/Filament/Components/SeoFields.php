@@ -12,6 +12,27 @@ use Illuminate\Support\HtmlString;
 class SeoFields
 {
     /**
+     * A title cut back to `$max` characters on a word boundary.
+     *
+     * Returns the title untouched when it already fits.
+     */
+    public static function shorten(string $title, int $max = 60): string
+    {
+        $title = trim($title);
+
+        if (mb_strlen($title) <= $max) {
+            return $title;
+        }
+
+        $head = mb_substr($title, 0, $max + 1);
+        $break = mb_strrpos($head, ' ');
+
+        $cut = $break === false ? mb_substr($title, 0, $max) : mb_substr($head, 0, $break);
+
+        return rtrim($cut, ' 	,.:;-–—');
+    }
+
+    /**
      * Get SEO Tab schema with auto-fill and SEO checker
      */
     public static function make(string $urlPrefix = 'techplay.gg/', bool $includeCanonical = true): array
@@ -256,12 +277,19 @@ class SeoFields
                         ->tooltip('Fill from Article Title')
                         ->action(function ($get, $set) {
                             $title = $get('title');
+
                             if ($title) {
-                                // Truncate to 60 chars if needed
-                                $seoTitle = strlen($title) > 60
-                                    ? substr($title, 0, 57).'...'
-                                    : $title;
-                                $set('meta_title', $seoTitle);
+                                // Cut on a word, and never fabricate an ellipsis.
+                                //
+                                // This used to be substr($title, 0, 57).'...', so
+                                // every article with a title over sixty characters
+                                // got a <title> tag ending mid-word: "makes a
+                                // surprise return to …", "Extended Look o…". Google
+                                // truncates the SERP line itself — a title tag with
+                                // an ellipsis in it is just a shorter title that
+                                // reads as broken, in the tab and on every share
+                                // card.
+                                $set('meta_title', SeoFields::shorten($title, 60));
                             }
                         })
                 ),

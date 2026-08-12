@@ -355,6 +355,41 @@ XP kao dobitak te sedmice (snapshot job pokriva sve korisnike ponedjeljkom).
 **API:** `GET /page-seo`, `GET /page-seo/{path}`, `POST /seo/suggest-links`
 **Napomene:** IndexNow integrisano (Bing/Yandex instant indexing). AI-powered SEO analiza i link prijedlozi.
 
+### Audit 12.08.2026 — SEO vodovod
+
+**Bug: `<title>` se sijekao usred riječi.** Dugme "Fill from Article Title" u admin
+panelu radilo je `substr($title, 0, 57).'...'`, pa je svaki članak s naslovom preko 60
+znakova dobijao title tag koji se prekida usred riječi — *"makes a surprise return to
+…"*, *"Extended Look o…"*, *"world's greatest action g…"*. Taj `meta_title` je i
+`<title>` i `og:title`, dakle i tab u pregledniku i svaka podijeljena kartica.
+**Uzorak od 13 članaka: 5 ih ima elipsu** (svi kojima je naslov > 60 znakova).
+
+Google ionako sam skraćuje red u rezultatima — title tag s elipsom je samo kraći naslov
+koji izgleda pokvareno. Dugme sada siječe **na granici riječi i bez elipse**
+(`SeoFields::shorten`). Za već spremljene redove postoji
+`php artisan seo:fix-truncated-titles` — **suho po defaultu**, piše tek s `--apply`, i
+preskače elipsu koju je neko namjerno napisao (mijenja samo ono što je stvarno rez
+vlastitog naslova).
+
+**`frontend/public/robots.txt` je bio mrtav fajl.** Živi robots dolazi iz backenda
+(`routes/web.php` → `SiteSetting::get('seo_robots_txt_content')`), uređuje se iz admin
+panela, i **oba hosta serviraju identičan sadržaj** (provjereno md5 sumom). Fajl u repou
+se nikad nije servirao a govorio je nešto drugo — obrisan, da izvor istine bude jedan.
+
+**Za ispraviti u admin panelu** (`seo_robots_txt_content`, nije kod):
+1. `Disallow: /_next/` — blokira Nextove JS i CSS pakete. Google mora dohvatiti te
+   fajlove da bi renderovao stranicu; blokiranje resursa za render je klasična greška.
+2. `Sitemap: https://api-beta.techplay.gg/sitemap.xml` — deklarisan na API hostu, a
+   kanonski host je `techplay.gg`. Oba serviraju isti sadržaj, ali sitemap se prijavljuje
+   na hostu čije URL-ove nabraja.
+3. `Allow: /tech/` u Googlebot-News bloku — ruta je `/hardware`, `/tech` ne postoji.
+
+**Provjereno kao ispravno:** sitemap index nabraja 10 pod-sitemapova (38 stranica, 617
+članaka, 3 × ~50k igara) i `sitemap-articles.xml` je osvježen sinoć u 23:54 — dokaz da
+`sitemap:generate` prolazi. Strukturirani podaci na članku su bogati i tačni:
+NewsArticle, BreadcrumbList, Organization, WebSite + SearchAction, Person, ImageObject,
+Speakable. Canonical pokazuje na pravi URL. IndexNow se okida iz `ContentObserver`.
+
 ---
 
 ## Auth
