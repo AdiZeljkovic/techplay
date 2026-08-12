@@ -1,23 +1,26 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Castle, Users, Globe, Swords } from "lucide-react";
 import FrontiersClient from "./FrontiersClient";
 
 export const metadata: Metadata = {
     title: "Frontiers",
     description:
-        "Nova MMO strategija za klanove, teritorije i resurse. Izgradi bazu, ujedini klan i osvoji svijet — TechPlay Frontiers.",
+        "A new MMO strategy of clans, territory and resources. Build your base, unite your clan, take the map — TechPlay Frontiers.",
     alternates: { canonical: "https://techplay.gg/frontiers" },
     openGraph: {
-        title: "TechPlay Frontiers — Izgradi. Ujedini. Osvoji.",
-        description: "Nova MMO strategija za klanove, teritorije i resurse. Tvoja priča. Tvoj klan. Tvoja dominacija.",
+        title: "TechPlay Frontiers — Build. Unite. Conquer.",
+        description: "A new MMO strategy of clans, territory and resources. Your story. Your clan. Your map.",
         url: "https://techplay.gg/frontiers",
         type: "website",
         siteName: "TechPlay",
+        images: [{ url: "https://techplay.gg/images/frontiers/frontiers-hero.webp", width: 1672, height: 941, alt: "TechPlay Frontiers" }],
     },
     twitter: {
         card: "summary_large_image",
-        title: "TechPlay Frontiers — Izgradi. Ujedini. Osvoji.",
-        description: "Nova MMO strategija za klanove, teritorije i resurse.",
+        title: "TechPlay Frontiers — Build. Unite. Conquer.",
+        description: "A new MMO strategy of clans, territory and resources.",
+        images: ["https://techplay.gg/images/frontiers/frontiers-hero.webp"],
     },
 };
 
@@ -28,23 +31,23 @@ export const metadata: Metadata = {
 const PILLARS = [
     {
         icon: Castle,
-        title: "Izgradi bazu",
-        body: "Razvijaj svoju bazu, istražuj tehnologije i jačaj odbranu.",
+        title: "Build your base",
+        body: "Grow your base, research technology and harden your defences.",
     },
     {
         icon: Users,
-        title: "Ujedini klan",
-        body: "Regrutuj igrače, planiraj zajedno i kontroliši teritorije.",
+        title: "Unite your clan",
+        body: "Recruit players, plan together and hold territory.",
     },
     {
         icon: Globe,
-        title: "Osvoji svijet",
-        body: "Bori se za resurse, napadaj neprijatelje i širi utjecaj.",
+        title: "Take the map",
+        body: "Fight over resources, raid your rivals and widen your reach.",
     },
     {
         icon: Swords,
-        title: "Klan ratovi",
-        body: "Veliki ratovi između klanova. Samo najbolji ostaju.",
+        title: "Clan wars",
+        body: "Full wars between clans. Only the best are left standing.",
     },
 ];
 
@@ -53,9 +56,8 @@ const PILLARS = [
  *
  * The art carries the right half — the map, the compass, the dog tags — and
  * leaves the left dark on purpose, which is where the type goes. Two scrims on
- * top of it: one across the left so the headline holds its contrast at any
- * width, and one at the foot so the section meets the page rather than
- * stopping at a hard edge.
+ * top of it: one across the left so the lockup holds its contrast at any width,
+ * and one at the foot, which is what the pillar strip sits on.
  *
  * A background layer rather than an <img>: the photo is the section's ground,
  * not its content, and nothing here should be announced to a screen reader.
@@ -74,75 +76,80 @@ const GROUND: React.CSSProperties = {
 export default function FrontiersPage() {
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
-            <section className="relative overflow-hidden border-b border-white/[0.07] min-h-[560px] lg:min-h-[86vh] flex items-center" style={GROUND}>
-                {/* the section meets the page instead of stopping at an edge */}
-                <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
-
-                <div className="relative z-10 w-full container-page py-16 lg:py-20">
-                    <div className="lg:max-w-[540px]">
-                        {/* ── the mark ── */}
-                        <p className="flex items-center gap-3 font-display text-[11px] font-black uppercase tracking-[0.42em] text-[var(--accent)]">
-                            <span aria-hidden className="h-px w-8 bg-gradient-to-r from-transparent to-[var(--accent)]" />
-                            TechPlay
-                            <span aria-hidden className="h-px w-8 bg-gradient-to-l from-transparent to-[var(--accent)]" />
-                        </p>
-
-                        <h1 className="mt-3 font-display font-black uppercase text-white leading-[0.84] tracking-[-0.01em] text-[64px] sm:text-[86px] lg:text-[104px]">
-                            Frontiers
+            <section
+                className="relative overflow-hidden border-b border-white/[0.07] min-h-[680px] lg:min-h-[92vh] flex flex-col justify-center"
+                style={GROUND}
+            >
+                <div className="relative z-10 w-full container-page pt-14 pb-[210px] lg:pt-16 lg:pb-[190px]">
+                    <div className="lg:max-w-[560px]">
+                        {/* ── the lockup ──
+                            The mark is drawn art, not type: the distressed cut,
+                            the flourishes and the winged star are the identity,
+                            and nothing set in Archivo would be that. It carries
+                            the h1 so the page still has one heading. */}
+                        <h1 className="m-0">
+                            <Image
+                                src="/images/frontiers/frontiers-logo.webp"
+                                alt="TechPlay Frontiers"
+                                width={1040}
+                                height={544}
+                                priority
+                                sizes="(max-width: 640px) 92vw, 520px"
+                                className="w-full max-w-[460px] lg:max-w-[520px] h-auto"
+                            />
                         </h1>
 
-                        {/* the star, drawn small — a rank insignia, not a decoration */}
-                        <span aria-hidden className="mt-4 flex items-center gap-3">
-                            <span className="h-px flex-1 max-w-[120px] bg-gradient-to-r from-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
-                            <svg viewBox="0 0 24 24" className="w-4 h-4 shrink-0 fill-[var(--accent)]" aria-hidden>
-                                <path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2z" />
-                            </svg>
-                            <span className="h-px flex-1 max-w-[120px] bg-gradient-to-l from-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
-                        </span>
-
-                        {/* ── the promise ── */}
-                        <p className="mt-6 inline-flex items-center gap-3 font-display text-[13px] sm:text-[15px] font-black uppercase tracking-[0.26em] text-white">
-                            <span aria-hidden className="text-[var(--accent)]">&#91;</span>
-                            Izgradi. Ujedini. Osvoji.
-                            <span aria-hidden className="text-[var(--accent)]">&#93;</span>
+                        {/* ── the promise, inside drawn corner ticks ── */}
+                        <p className="relative mt-5 inline-block px-5 py-2.5 font-display text-[13px] sm:text-[15px] font-black uppercase tracking-[0.26em] text-white">
+                            {([
+                                "top-0 left-0 border-t-2 border-l-2",
+                                "top-0 right-0 border-t-2 border-r-2",
+                                "bottom-0 left-0 border-b-2 border-l-2",
+                                "bottom-0 right-0 border-b-2 border-r-2",
+                            ] as const).map((corner) => (
+                                <span key={corner} aria-hidden className={`absolute w-2.5 h-2.5 border-[var(--accent)] ${corner}`} />
+                            ))}
+                            Build. Unite. Conquer.
                         </p>
 
-                        <p className="mt-5 max-w-[420px] text-[13.5px] leading-relaxed text-white/55">
-                            Nova MMO strategija za klanove, teritorije i resurse.
+                        <p className="mt-5 max-w-[430px] text-[13.5px] leading-relaxed text-white/55">
+                            A new MMO strategy of clans, territory and resources.
                             <br />
-                            Tvoja priča. Tvoj klan. Tvoja dominacija.
+                            Your story. Your clan. Your map.
                         </p>
 
                         {/* countdown, CTA and the notify form all live client-side */}
                         <FrontiersClient />
 
-                        <p className="mt-8 max-w-[420px] text-[11.5px] leading-relaxed text-white/25">
-                            Frontiers je u izradi. Ova stranica je najava — datum i detalji se mogu promijeniti
-                            dok se sistem gradi.
+                        <p className="mt-7 max-w-[430px] text-[11.5px] leading-relaxed text-white/25">
+                            Frontiers is in development. This page is the announcement — the date and the details
+                            can still move while it is being built.
                         </p>
                     </div>
                 </div>
-            </section>
 
-            {/* ── the four pillars ── */}
-            <section className="container-page py-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {PILLARS.map(({ icon: Icon, title, body }) => (
-                        <div
-                            key={title}
-                            className="group flex items-start gap-3.5 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-4 hover:border-[color-mix(in_srgb,var(--accent)_38%,transparent)] transition-colors"
-                        >
-                            <span className="w-11 h-11 shrink-0 rounded-[var(--radius-card)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_22%,transparent)] flex items-center justify-center">
-                                <Icon className="w-5 h-5 text-[var(--accent)]" strokeWidth={1.75} />
-                            </span>
-                            <span className="min-w-0">
-                                <span className="block font-display text-[13px] font-black uppercase tracking-[0.08em] text-white">
-                                    {title}
-                                </span>
-                                <span className="mt-1 block text-[12px] leading-snug text-white/40">{body}</span>
-                            </span>
+                {/* ── the four pillars, on the art rather than under it ──
+                    They belong to the pitch, so they sit inside the same frame
+                    the map does, on a scrim dark enough to read against it. */}
+                <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-[#05070A] via-[#05070A]/94 to-transparent pt-16 pb-6">
+                    <div className="container-page">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5 border-t border-white/[0.09] pt-5">
+                            {PILLARS.map(({ icon: Icon, title, body }, i) => (
+                                <div
+                                    key={title}
+                                    className={`flex items-start gap-3 ${i > 0 ? "lg:pl-6 lg:border-l lg:border-white/[0.07]" : ""}`}
+                                >
+                                    <Icon className="w-6 h-6 shrink-0 mt-0.5 text-[var(--accent)]" strokeWidth={1.5} />
+                                    <span className="min-w-0">
+                                        <span className="block font-display text-[12.5px] font-black uppercase tracking-[0.1em] text-white">
+                                            {title}
+                                        </span>
+                                        <span className="mt-1 block text-[11.5px] leading-snug text-white/45">{body}</span>
+                                    </span>
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    </div>
                 </div>
             </section>
         </main>

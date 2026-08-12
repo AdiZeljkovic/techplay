@@ -625,7 +625,7 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
             { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp", description: "Top gamers by XP & reputation" },
             { name: "Social Hub",  href: "/social",     art: "/images/menu/menu-social.webp",      description: "Chat, friends and squads" },
             { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp",   description: "Win games & gear" },
-            { name: "Frontiers",   href: "/frontiers",   art: "/images/menu/menu-frontiers.webp",   description: "Klanovi, teritorije, resursi — uskoro" },
+            { name: "Frontiers",   href: "/frontiers",   art: "/images/menu/menu-frontiers.webp",   description: "Clans, territory, resources — coming" },
         ] },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
