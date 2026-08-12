@@ -283,8 +283,11 @@ export default function LastDiscClient() {
                 </section>
             </div>
 
-            {/* ══ the letter ══ */}
-            <div className="container-page mt-4">
+            {/* ══ the letter ══
+                #sign lands here. It used to sit on the wrapper around the
+                countdown, so "Add your voice" dropped the reader at the clock
+                and left them to find the form themselves. */}
+            <div id="sign" className="container-page mt-4 scroll-mt-24">
                 <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] grid grid-cols-1 lg:grid-cols-2">
                     {/* ── the case ── */}
                     <div className="p-6 lg:p-8 lg:border-r border-white/[0.07] flex flex-col">

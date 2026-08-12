@@ -144,7 +144,7 @@ export default async function LastDiscPage() {
             </section>
 
             {/* countdown, poll and the letter are all live */}
-            <div id="sign" className="mt-5 scroll-mt-24">
+            <div className="mt-5">
                 <LastDiscClient />
             </div>
 
@@ -174,7 +174,7 @@ export default async function LastDiscPage() {
             </section>
 
             {/* ══ coverage + the forum ══ */}
-            <section className="container-page mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            <section className="container-page mt-4 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
                 {coverage.length > 0 && (
                     <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-5">
                         <div className="flex items-center justify-between gap-3 mb-4">
@@ -208,18 +208,21 @@ export default async function LastDiscPage() {
                     </div>
                 )}
 
-                <div className={`rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-6 ${coverage.length > 0 ? "" : "lg:col-span-2"}`}>
-                    <MessageSquare className="w-5 h-5 text-[var(--accent)]" strokeWidth={1.6} />
-                    <h2 className="mt-3.5 font-display text-[16px] font-black text-white">
+                {/* Stretches to whatever the coverage list is: two panels side
+                    by side that stop at different heights read as one of them
+                    having failed to load. */}
+                <div className={`flex flex-col rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-6 ${coverage.length > 0 ? "" : "lg:col-span-2"}`}>
+                    <MessageSquare className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.5} />
+                    <h2 className="mt-4 font-display text-[16px] font-black text-white">
                         Argue it out on the forum
                     </h2>
-                    <p className="mt-2 max-w-[440px] text-[12.5px] leading-relaxed text-white/45">
+                    <p className="mt-2.5 max-w-[440px] text-[12.5px] leading-relaxed text-white/45">
                         A signature is a number. A thread is a case. Tell the rest of us why physical still matters to
                         you — or why you think the disc has had its run.
                     </p>
                     <Link
                         href="/forum"
-                        className="btn-command mt-5 inline-flex items-center gap-2 h-10 px-5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] font-display text-[10px] font-black uppercase tracking-[0.12em] text-white transition-colors"
+                        className="btn-command mt-auto pt-0 self-start inline-flex items-center gap-2 h-10 px-5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] font-display text-[10px] font-black uppercase tracking-[0.12em] text-white transition-colors"
                     >
                         Join the discussion <ArrowRight className="w-3.5 h-3.5" />
                     </Link>
@@ -242,20 +245,21 @@ export default async function LastDiscPage() {
                         backgroundColor: "#05070A",
                     }}
                 >
-                    <div className="relative z-10 w-full p-7 lg:p-9 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-8 items-center">
-                        <div className="max-w-[420px]">
-                            <p className="font-display text-[20px] lg:text-[24px] font-black text-white leading-tight">
-                                This is our moment.
-                                <br />
-                                Our games. Our choice. Our future.
-                            </p>
-                            <p className="mt-3.5 text-[12.5px] leading-relaxed text-white/50">
-                                The more voices we have, the stronger our message. Let&apos;s show Sony that physical
-                                games still have a powerful place in the PlayStation future.
-                            </p>
-                        </div>
+                    {/* Everything stays on the left half. The figure is the
+                        right half of the frame, and a button over his arm reads
+                        as something that landed there by accident. */}
+                    <div className="relative z-10 w-full p-7 lg:p-10 max-w-[560px]">
+                        <p className="font-display text-[20px] lg:text-[24px] font-black text-white leading-tight">
+                            This is our moment.
+                            <br />
+                            Our games. Our choice. Our future.
+                        </p>
+                        <p className="mt-3.5 max-w-[420px] text-[12.5px] leading-relaxed text-white/50">
+                            The more voices we have, the stronger our message. Let&apos;s show Sony that physical
+                            games still have a powerful place in the PlayStation future.
+                        </p>
 
-                        <div className="lg:pr-2">
+                        <div className="mt-6 flex flex-wrap items-end gap-x-8 gap-y-5">
                             <a
                                 href="#sign"
                                 className="btn-command inline-flex items-center gap-2 h-12 px-7 bg-[var(--accent)] hover:brightness-110 font-display text-[12px] font-black uppercase tracking-[0.14em] text-white transition-[filter]"
@@ -263,9 +267,7 @@ export default async function LastDiscPage() {
                                 <PenLine className="w-4 h-4" /> Add your voice
                             </a>
 
-                            <div className="mt-5">
-                                <ShareRow />
-                            </div>
+                            <ShareRow />
                         </div>
                     </div>
                 </div>
