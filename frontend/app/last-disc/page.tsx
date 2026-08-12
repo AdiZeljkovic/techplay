@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { getServerApiUrl } from "@/lib/api";
 import LastDiscClient from "./LastDiscClient";
+import ShareRow from "./ShareRow";
 
 export const revalidate = 900;
 
@@ -234,24 +235,47 @@ export default async function LastDiscPage() {
                 </div>
             </section>
 
-            {/* ══ the closing line ══ */}
+            {/* ══ the closing line ══
+                The art is a boy holding a disc up against a sunset, and he is
+                on the right of the frame — so the words take the left and the
+                image finishes the sentence. */}
             <section className="container-page mt-4">
-                <div className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] bg-[var(--surface-1)] p-7 lg:p-9">
-                    <span
-                        aria-hidden
-                        className="absolute inset-0"
-                        style={{ background: "radial-gradient(70% 140% at 88% 50%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%)" }}
-                    />
-                    <div className="relative z-10 max-w-[560px]">
-                        <p className="font-display text-[20px] lg:text-[24px] font-black text-white leading-tight">
-                            This is our moment.
-                            <br />
-                            Our games. Our choice. Our future.
-                        </p>
-                        <p className="mt-3 text-[12.5px] leading-relaxed text-white/45">
-                            The more voices we have, the stronger the message. Let&apos;s show Sony that physical games
-                            still have a place in the PlayStation future.
-                        </p>
+                <div
+                    className="relative overflow-hidden rounded-[var(--radius-panel)] border border-white/[0.09] min-h-[300px] lg:min-h-[280px] flex items-center"
+                    style={{
+                        backgroundImage:
+                            "linear-gradient(90deg, rgba(5,7,10,0.94) 0%, rgba(5,7,10,0.86) 34%, rgba(5,7,10,0.42) 56%, transparent 74%), url('/images/last-disc/last-disc-cta.webp')",
+                        backgroundSize: "cover, cover",
+                        backgroundPosition: "center, center right",
+                        backgroundRepeat: "no-repeat, no-repeat",
+                        backgroundColor: "#05070A",
+                    }}
+                >
+                    <div className="relative z-10 w-full p-7 lg:p-9 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-8 items-center">
+                        <div className="max-w-[420px]">
+                            <p className="font-display text-[20px] lg:text-[24px] font-black text-white leading-tight">
+                                This is our moment.
+                                <br />
+                                Our games. Our choice. Our future.
+                            </p>
+                            <p className="mt-3.5 text-[12.5px] leading-relaxed text-white/50">
+                                The more voices we have, the stronger our message. Let&apos;s show Sony that physical
+                                games still have a powerful place in the PlayStation future.
+                            </p>
+                        </div>
+
+                        <div className="lg:pr-2">
+                            <a
+                                href="#sign"
+                                className="btn-command inline-flex items-center gap-2 h-12 px-7 bg-[var(--accent)] hover:brightness-110 font-display text-[12px] font-black uppercase tracking-[0.14em] text-white transition-[filter]"
+                            >
+                                <PenLine className="w-4 h-4" /> Add your voice
+                            </a>
+
+                            <div className="mt-5">
+                                <ShareRow />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
