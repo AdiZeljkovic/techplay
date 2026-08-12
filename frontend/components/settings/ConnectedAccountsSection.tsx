@@ -4,7 +4,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { Loader2, Link2, Link2Off, RefreshCw, CheckCircle2, Clock, AlertCircle, Shield, X } from "lucide-react";
+import { Loader2, Link2, Link2Off, RefreshCw, CheckCircle2, Clock, AlertCircle, Shield, X, Eye, EyeOff } from "lucide-react";
 
 interface ConnectedAccount {
     id: number;
@@ -137,6 +137,25 @@ export default function ConnectedAccountsSection() {
         }
     }
 
+    /**
+     * The copy above this list has always said the reader controls visibility.
+     * Until now there was no control: connecting set it public and only
+     * disconnecting could undo that.
+     */
+    async function handleVisibility(id: number, next: "public" | "private") {
+        setBusyId(id);
+
+        try {
+            const res = await axios.patch(`/connected-accounts/${id}/visibility`, { visibility: next });
+            toast.success(res.data?.message ?? "Updated.");
+            mutate();
+        } catch {
+            toast.error("Couldn't change that.");
+        } finally {
+            setBusyId(null);
+        }
+    }
+
     async function handleDisconnect(id: number, displayName: string | null) {
         if (!confirm(`Disconnect ${displayName ?? "this account"}? Your existing collection won't be removed.`)) return;
         setBusyId(id);
@@ -191,6 +210,23 @@ export default function ConnectedAccountsSection() {
                         <div className="flex items-center gap-2 shrink-0">
                             {account ? (
                                 <>
+                                    <button
+                                        onClick={() => handleVisibility(account.id, account.visibility === "public" ? "private" : "public")}
+                                        disabled={isBusy}
+                                        title={account.visibility === "public"
+                                            ? "Shown on your profile — click to hide"
+                                            : "Hidden from your profile — click to show"}
+                                        className={`flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold border transition-colors disabled:opacity-40 ${
+                                            account.visibility === "public"
+                                                ? "text-emerald-400 bg-emerald-500/[0.06] border-emerald-500/[0.18] hover:bg-emerald-500/[0.12]"
+                                                : "text-white/45 bg-white/[0.04] border-white/[0.1] hover:text-white"
+                                        }`}
+                                    >
+                                        {isBusy
+                                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                            : account.visibility === "public" ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                        {account.visibility === "public" ? "Visible" : "Hidden"}
+                                    </button>
                                     <button onClick={() => handleSync(account.id)} disabled={isBusy || account.sync_status === "syncing"}
                                         className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors disabled:opacity-40">
                                         {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\FunnelAnalytics;
 use App\Services\OpenXblService;
+use App\Services\PresenceService;
 use App\Services\SteamService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -206,6 +207,46 @@ class ConnectedAccountController extends Controller
         };
 
         return $this->success(['message' => 'Sync queued']);
+    }
+
+    /**
+     * PATCH /connected-accounts/{id}/visibility — show or hide what this
+     * account says about you.
+     *
+     * The settings page has always told the reader "only you control its
+     * visibility", and there was no control: connecting set `public` and
+     * nothing could ever change it, so the only way to stop publishing what you
+     * are playing was to disconnect the account.
+     *
+     * The column was already doing real work — PollSteamPresence only reads
+     * accounts marked public, and the profile's Xbox chip checks the same — so
+     * this is a switch for a mechanism that already existed.
+     */
+    public function visibility(Request $request, int $id): JsonResponse
+    {
+        $data = $request->validate([
+            'visibility' => 'required|in:public,private',
+        ]);
+
+        $account = ConnectedAccount::where('user_id', $request->user()->id)->findOrFail($id);
+
+        $account->update(['visibility' => $data['visibility']]);
+
+        // Going private stops the poller at its next pass, but whatever it last
+        // wrote is on the profile now.
+        if ($data['visibility'] === 'private') {
+            $presence = app(PresenceService::class);
+            $active = $presence->getActive($request->user());
+
+            if ($active && $active->source === $account->provider) {
+                $presence->clear($request->user());
+            }
+        }
+
+        return $this->success(
+            ['visibility' => $account->visibility],
+            $data['visibility'] === 'public' ? 'Visible on your profile.' : 'Hidden from your profile.'
+        );
     }
 
     /**

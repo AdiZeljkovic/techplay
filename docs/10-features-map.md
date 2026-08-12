@@ -650,6 +650,32 @@ obori pretragu.
 **API:** `GET /users/{username}/steam-achievements`
 **Napomene:** Import job postoji. Frontend prikaz steam achievementa na profilu. Detalji integracije UNKNOWN.
 
+### Audit 12.08.2026 — presence, Steam, Discord bot
+
+**Nespojeno (sada spojeno): nije se moglo sakriti šta igraš.** Tekst iznad liste
+povezanih naloga oduvijek kaže *"only you control its visibility"* — a kontrole nije
+bilo. Povezivanje Steama postavlja `visibility = 'public'`, i **nijedan endpoint to nije
+mogao promijeniti**; jedini izlaz je bio odspojiti nalog. Kolona je pritom radila pravi
+posao: `PollSteamPresence` čita samo naloge označene kao public. Dodano
+`PATCH /connected-accounts/{id}/visibility` + prekidač Visible/Hidden u settingsima;
+prelazak na Hidden usput obriše trenutnu presence ako je došla s tog izvora.
+
+**Mrtav kod u botu:** `ApiService.getUserProfile()` nije pozvan nigdje.
+
+**Provjereno kao ispravno:**
+- Steam OpenID callback radi pravi `check_authentication` round-trip prema Steamu — ne
+  vjeruje parametrima na riječ. `state` je jednokratan (`Cache::pull`), pa se ponovljeni
+  callback ne može iskoristiti.
+- `GET /presence/{username}` poštuje privatan profil i vraća **null, ne 403** — odbijanje
+  bi potvrdilo da nalog postoji. Bez toga bi anketiranje s `started_at` rekonstruisalo
+  dnevni raspored igranja privatnog profila bez ijednog naloga.
+- `PollSteamPresence` grupiše po 100 ID-eva (Steamov limit), ne pregazi ručnu ili Discord
+  presence, i svaki korisnik je u vlastitom try/catch.
+- Discord bot ↔ backend: **svih 19 endpointa koje bot zove postoji** (provjereno uživo
+  za javne, `route:list` za `/discord/*`). Bot-token provjera stoji na grupi, ne po
+  endpointu — raniji copy-paste je ostavljao `/discord/presence` i `/discord/user`
+  otvorenim.
+
 ---
 
 ## Backlog Advisor
