@@ -541,6 +541,30 @@ prijatelja povukao bi ih sve na svako otvaranje stranice.
 **Database:** `wow_analyses`, `user_wow_characters`
 **API:** `/wow/*`
 
+### Audit 12.08.2026
+
+**Bug: prolazni kvar se keširao 24 sata.** Cijela `analyze()` metoda je stajala unutar
+`Cache::remember`, zajedno sa svim greškama — pa se `JsonResponse` čuvao **šta god da je
+u njemu pisalo**. Pogrešno otkucano ime lika keširalo je 404 na dan, a — daleko gore —
+jedan trenutak nedostupnosti inference servisa keširao je
+*"Professor Buffy is currently unavailable"* na **24 sata**, pretvarajući treptaj u
+cjelodnevni ispad za taj lik. Sada se kešira samo gotova analiza; greške prolaze
+nekeširane.
+
+**Payload: leaderboard je slao 48 kolona za listu od 10.**
+`WowAnalysis::leaderboard()->get()` je vraćao **cijeli red** — uključujući AI savjet
+(~640 B po liku), kompletan popis opreme, raid progres, profesije i enchant/gem liste —
+da bi se nacrtali ime, portret i postotak. UI čita tačno **9 polja**. Isto i `recent()`.
+**19,7 KB → ~2 KB.**
+
+**Nema nijednog testa.** `--filter=Wow|Blizzard|Groq` → "No tests found". Ovo je
+podsistem koji je u avgustu bio slomljen sedam dana (`BlizzardDataTransformer` obrisan
+kao "mrtav", a `BlizzardDataTransformerV2` ga nasljeđuje).
+
+**Napomene bez izmjene:** `throttle:60,1` dopušta 60 analiza u minuti po IP-u, a svaka
+zove Blizzard (12 endpointa), Raider.IO i Groq — keš pomaže samo za ponovljene likove.
+Komentar uz rutu i dalje govori o "OpenAI costs" iako se koristi Groq.
+
 ---
 
 ## Notifications
