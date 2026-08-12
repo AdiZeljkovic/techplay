@@ -733,6 +733,33 @@ gdje niko ne gleda.
 **Backend:** `WrappedController`
 **API:** `GET /users/{username}/wrapped/{year}`
 
+### Audit 12.08.2026 — GTA6, Wrapped, liste, kalendar detalj
+
+Sve četiri cjeline su **čiste** — nijedan bug, nijedan mrtav poziv, nijedan
+prenapuhan payload.
+
+| Endpoint | Payload | Napomena |
+|---|---|---|
+| `gta6/vehicles` | 19,3 KB / 2,2 KB brotli | 121 vozila × 7 kratkih polja = 170 B po redu; nema šta da se skida |
+| `gta6/weapons` | 4,9 KB | |
+| `gta6/characters` | 2,0 KB | |
+| `users/{u}/wrapped/{god}` | 2,8 KB | |
+| `users/{u}/lists` | 583 B | |
+| `calendar/{slug}` | 5,1 KB | 2 KB screenshoti + 1,9 KB "also this month", oboje se crta |
+
+**Provjereno:** svih 6 GTA6 stranica vraća 200 s punim SEO naslovima; svih 11
+referenciranih slika postoji (`hero` je `.jpg`, ne `.png` — moj prvi test je lažno
+prijavio 404); `/gta6/vehicles/classes` je registrovan **prije** `/gta6/vehicles/{slug}`
+pa ga slug ruta ne guta; `/lists/{user}/{slug}` za nepostojeću listu vraća **404**, ne
+praznu indeksabilnu stranicu kao što su radili game listinzi; `/wrapped` bez imena
+preusmjerava na svoj wrapped ili na login.
+
+**Nespojeno:** `GET /gta6/vehicles/{slug}` i `GET /gta6/weapons/{slug}` postoje na
+backendu, ali **nemaju stranicu ni pozivaoca** — likovi imaju detaljnu stranicu, vozila i
+oružja nemaju. Nespojena funkcija, ne mrtav kod.
+
+**Siroče:** `public/gta6/card-gameplay.png` se ne referencira nigdje.
+
 ---
 
 ## Media/Uploads
