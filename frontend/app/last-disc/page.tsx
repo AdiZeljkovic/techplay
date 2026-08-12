@@ -158,13 +158,16 @@ export default async function LastDiscPage() {
                     {REASONS.map(({ icon: Icon, title, body }) => (
                         <div
                             key={title}
-                            className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-4 hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors"
+                            className="group rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-5 text-center hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors"
                         >
-                            <Icon className="w-5 h-5 text-[var(--accent)]" strokeWidth={1.6} />
-                            <p className="mt-3.5 font-display text-[11.5px] font-black uppercase tracking-[0.12em] text-white">
+                            <Icon
+                                className="w-8 h-8 mx-auto text-[var(--accent)] group-hover:scale-110 transition-transform duration-300"
+                                strokeWidth={1.4}
+                            />
+                            <p className="mt-4 font-display text-[11.5px] font-black uppercase tracking-[0.12em] text-white">
                                 {title}
                             </p>
-                            <p className="mt-1.5 text-[12px] leading-snug text-white/40">{body}</p>
+                            <p className="mt-2 text-[12px] leading-snug text-white/40">{body}</p>
                         </div>
                     ))}
                 </div>
