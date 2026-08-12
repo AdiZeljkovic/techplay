@@ -4,79 +4,31 @@ import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { Shield, Mail, RefreshCw, Zap, Trophy, MessageSquare, Gift, ChevronsRight } from "lucide-react";
+import { Shield, Mail, RefreshCw, ChevronsRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Turnstile from "@/components/ui/Turnstile";
 import axios from "@/lib/axios";
+import BrandPanel from "@/components/auth/BrandPanel";
 
-const PERKS = [
-    { icon: Zap,           text: "Earn XP for every comment and article you read" },
-    { icon: Trophy,        text: "Level up and unlock community ranks" },
-    { icon: MessageSquare, text: "Join discussions on the forum" },
-    { icon: Gift,          text: "Enter exclusive giveaways" },
-];
+/**
+ * The strip along the foot of the brand panel.
+ *
+ * Marketing copy, and only the login page makes these claims — BrandPanel
+ * takes it as a prop so nothing else inherits numbers it cannot show its
+ * working for.
+ */
+const LOGIN_FOOTNOTE = (
+    <>
+        <span><span className="text-white">15K+</span> MEMBERS</span>
+        <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
+        <span><span className="text-white">50K+</span> GAMES</span>
+        <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
+        <span><span className="text-white">24/7</span> COMMUNITY</span>
+    </>
+);
 
 const inputClass = "w-full h-[48px] bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 text-[14px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]/60 transition-colors";
 const labelClass = "block text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--ink-low)] mb-2";
-
-/* Left-side brand panel shared visual */
-function BrandPanel() {
-    return (
-        <div className="relative hidden lg:flex flex-col justify-between p-10 bg-[var(--surface-0)] overflow-hidden">
-            {/* Decorations */}
-            <div className="absolute -top-[120px] -left-[80px] w-[400px] h-[400px] bg-[var(--accent)]/15 blur-[120px] rounded-full pointer-events-none" />
-            <div className="absolute -bottom-[150px] -right-[100px] w-[350px] h-[350px] bg-[var(--accent)]/10 blur-[100px] rounded-full pointer-events-none" />
-            <div
-                className="absolute inset-0 opacity-[0.05]"
-                style={{ backgroundImage: 'radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.9) 1px, transparent 0)', backgroundSize: '28px 28px' }}
-            />
-            {/* HUD corner brackets */}
-            <div className="absolute top-5 left-5 w-6 h-6 border-t-2 border-l-2 border-[var(--accent)]/40" />
-            <div className="absolute bottom-5 right-5 w-6 h-6 border-b-2 border-r-2 border-[var(--accent)]/40" />
-
-            {/* Logo */}
-<Link href="/" className="relative z-10 flex items-center group w-max" aria-label="TechPlay — home">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/techplay-logo.png" alt="TechPlay" width={156} height={26} className="h-[26px] w-auto group-hover:brightness-110 transition-[filter]" />
-            </Link>
-
-            {/* Middle */}
-            <div className="relative z-10">
-                <span className="flex items-center gap-2 text-[var(--accent)] font-bold tracking-[0.2em] text-[11px] uppercase mb-4">
-                    <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse" />
-                    PLAYER LOGIN
-                </span>
-                <h2 className="font-display text-[42px] font-black text-white uppercase leading-[0.95] tracking-tight mb-5">
-                    GAME<br />
-                    <span className="text-[var(--accent)]">ON.</span>
-                </h2>
-                <p className="text-[14px] text-white/45 leading-relaxed max-w-[300px] mb-8">
-                    Sign back in and pick up where you left off — your XP, rank and community are waiting.
-                </p>
-
-                <ul className="flex flex-col gap-3.5">
-                    {PERKS.map(({ icon: Icon, text }) => (
-                        <li key={text} className="flex items-center gap-3">
-                            <span className="w-8 h-8 rounded-[var(--radius-card)] bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center shrink-0">
-                                <Icon className="w-4 h-4 text-[var(--accent)]" />
-                            </span>
-                            <span className="text-[13px] text-[#D4D4D8]">{text}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            {/* Bottom strip */}
-            <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
-                <span><span className="text-white">15K+</span> MEMBERS</span>
-                <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
-                <span><span className="text-white">50K+</span> GAMES</span>
-                <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
-                <span><span className="text-white">24/7</span> COMMUNITY</span>
-            </div>
-        </div>
-    );
-}
 
 export default function LoginClient() {
     const [isLoading, setIsLoading] = useState(false);
@@ -109,9 +61,20 @@ export default function LoginClient() {
         }
     }, [searchParams]);
 
+    /**
+     * Where to land after signing in.
+     *
+     * The gates around the site send people here with the page they wanted
+     * attached, so signing in finishes the trip instead of dropping them on the
+     * homepage. Only site-relative paths are honoured: a `//host` value is a
+     * path to the browser and an open redirect to everyone else.
+     */
+    const wanted = searchParams.get('redirect');
+    const afterLogin = wanted && wanted.startsWith('/') && !wanted.startsWith('//') ? wanted : '/';
+
     const { login } = useAuth({
         middleware: 'guest',
-        redirectIfAuthenticated: '/'
+        redirectIfAuthenticated: afterLogin
     });
 
     const {
@@ -236,7 +199,7 @@ export default function LoginClient() {
             <div className="relative w-full max-w-[1000px] grid lg:grid-cols-2 rounded-[var(--radius-panel)] overflow-hidden border border-[var(--line)] shadow-[0_24px_64px_rgba(0,0,0,0.6)] bg-[var(--surface-1)]">
                     <span aria-hidden className="absolute top-0 left-8 right-8 h-[2px] z-10 bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent" />
 
-                <BrandPanel />
+                <BrandPanel footnote={LOGIN_FOOTNOTE} />
 
                 {/* Form side */}
                 <div className="relative p-8 md:p-10 lg:p-12">

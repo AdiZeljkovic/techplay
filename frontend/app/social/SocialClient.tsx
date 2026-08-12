@@ -9,6 +9,7 @@ import {
     MessageCircle, Users, Mail, UsersRound, Search, X, Send, Loader2, Check, UserPlus, Ban, Plus, ImageIcon, Gamepad2, ArrowLeft, Hash, LogOut, Sparkles, Inbox, Trash2,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import SignInWall from "@/components/auth/SignInWall";
 import Panel from "@/components/ui/Panel";
 import Avatar from "@/components/ui/Avatar";
 import { getEcho } from "@/lib/echo";
@@ -476,15 +477,20 @@ export default function SocialClient() {
 
     if (!user) {
         return (
-            <main className="min-h-screen bg-[var(--surface-0)] flex items-center justify-center">
-                <div className="text-center">
-                    <MessageCircle className="w-8 h-8 mx-auto mb-3 text-white/20" />
-                    <p className="font-display text-[15px] font-bold text-white">Sign in to open the Social Hub</p>
-                    <Link href="/login" className="mt-4 inline-flex items-center h-10 px-6 rounded-[9px] bg-[var(--accent)] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em]">
-                        Sign in
-                    </Link>
-                </div>
-            </main>
+            <SignInWall
+                eyebrow="Members only"
+                headline={["Squad", "Up."]}
+                blurb="Direct messages, group chats and who is online — the hub is yours once you are signed in."
+                perks={[
+                    { icon: MessageCircle, text: "Message any player directly" },
+                    { icon: UsersRound, text: "Start a group and plan together" },
+                    { icon: Users, text: "See which friends are online and playing" },
+                    { icon: UserPlus, text: "Send and answer friend requests" },
+                ]}
+                icon={MessageCircle}
+                title="The Social Hub"
+                description="Chat, squad up and stay connected across TechPlay. Sign in and it opens where you left it."
+            />
         );
     }
 

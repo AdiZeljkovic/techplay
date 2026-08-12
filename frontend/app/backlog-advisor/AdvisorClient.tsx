@@ -6,6 +6,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { Compass, Library, CheckCircle2, BarChart3, Plus, Check, Loader2, Users, Star, CalendarClock, Info, X, ChevronDown, Gamepad2 } from "lucide-react";
+import SignInWall from "@/components/auth/SignInWall";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import RingMeter from "@/components/ui/RingMeter";
@@ -242,16 +243,20 @@ export default function AdvisorClient() {
 
     if (!user) {
         return (
-            <main className="min-h-screen bg-[var(--surface-0)] flex items-center justify-center">
-                <div className="text-center">
-                    <Compass className="w-8 h-8 mx-auto mb-3 text-white/20" />
-                    <p className="font-display text-[15px] font-bold text-white">Sign in for recommendations</p>
-                    <p className="mt-1.5 text-[12.5px] text-white/40">They are built from your collection, so they need one.</p>
-                    <Link href="/login" className="mt-4 inline-flex items-center h-10 px-6 rounded-[9px] bg-[var(--accent)] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em]">
-                        Sign in
-                    </Link>
-                </div>
-            </main>
+            <SignInWall
+                eyebrow="Members only"
+                headline={["Play", "Next."]}
+                blurb="The advisor reads your collection and tells you what to start tonight — so it needs a collection to read."
+                perks={[
+                    { icon: Compass, text: "A pick for tonight, with the reason why" },
+                    { icon: Library, text: "Track what you own across every platform" },
+                    { icon: CalendarClock, text: "Sort by how long a game takes to finish" },
+                    { icon: Check, text: "Mark games played, beaten or dropped" },
+                ]}
+                icon={Compass}
+                title="Backlog Advisor"
+                description="Built from the games you own and how you rate them. Sign in and it starts working immediately."
+            />
         );
     }
 
