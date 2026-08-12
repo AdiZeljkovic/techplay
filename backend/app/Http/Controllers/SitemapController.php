@@ -121,6 +121,7 @@ class SitemapController extends Controller
             ['/giveaways', 'weekly', '0.6'],
             ['/frontiers', 'weekly', '0.6'],
             ['/last-disc', 'weekly', '0.6'],
+            ['/last-disc/letter', 'monthly', '0.5'],
             ['/about', 'monthly', '0.5'],
             ['/contact', 'monthly', '0.5'],
             ['/impressum', 'yearly', '0.3'],

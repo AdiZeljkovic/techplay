@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-    Disc3, ShieldCheck, Library, Users2, HandCoins, Repeat2, Scale, MessageSquare, ArrowRight,
+    Disc3, ShieldCheck, Library, Users2, HandCoins, Repeat2, Scale, MessageSquare, ArrowRight, PenLine,
 } from "lucide-react";
 import { getServerApiUrl } from "@/lib/api";
 import LastDiscClient from "./LastDiscClient";
@@ -19,11 +19,13 @@ export const metadata: Metadata = {
         url: "https://techplay.gg/last-disc",
         type: "website",
         siteName: "TechPlay",
+        images: [{ url: "https://techplay.gg/images/last-disc/last-disc-hero.webp", width: 1983, height: 793, alt: "A shattering PlayStation disc" }],
     },
     twitter: {
         card: "summary_large_image",
         title: "The Last Disc — keep physical PlayStation games alive",
         description: "An open letter from players asking Sony to keep physical PlayStation games beyond 2028.",
+        images: ["https://techplay.gg/images/last-disc/last-disc-hero.webp"],
     },
 };
 
@@ -81,52 +83,79 @@ export default async function LastDiscPage() {
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)] pb-14">
-            {/* ══ hero ══ */}
-            <section className="relative overflow-hidden border-b border-white/[0.07]">
-                <span
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{
-                        background:
-                            "radial-gradient(90% 120% at 22% 45%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 62%), radial-gradient(80% 100% at 80% 20%, rgba(37,99,235,0.14), transparent 60%)",
-                    }}
-                />
+            {/* ══ hero ══
+                The disc sits in the left third of the art and shatters to the
+                right, so the type takes the right two thirds and the break
+                reads as the thing the page is about. */}
+            <section
+                className="relative overflow-hidden border-b border-white/[0.07] min-h-[420px] lg:min-h-[560px] flex items-center"
+                style={{
+                    backgroundImage:
+                        "linear-gradient(270deg, rgba(5,7,10,0.86) 0%, rgba(5,7,10,0.62) 30%, rgba(5,7,10,0.12) 58%, transparent 74%), url('/images/last-disc/last-disc-hero.webp')",
+                    backgroundSize: "cover, cover",
+                    backgroundPosition: "center, center left",
+                    backgroundRepeat: "no-repeat, no-repeat",
+                    backgroundColor: "#05070A",
+                }}
+            >
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page py-14 lg:py-20 text-center">
-                    <h1 className="font-display font-black uppercase leading-[0.86] tracking-tight text-[46px] sm:text-[68px] lg:text-[86px]">
-                        <span className="text-white">The Last </span>
-                        <span className="text-[var(--accent)]">Disc</span>
-                    </h1>
+                <div className="relative z-10 w-full container-page py-14 lg:py-16">
+                    <div className="lg:ml-auto lg:max-w-[620px] lg:text-right">
+                        <h1 className="font-display font-black uppercase leading-[0.86] tracking-tight text-[46px] sm:text-[64px] lg:text-[80px]">
+                            <span className="text-white">The Last </span>
+                            <span className="text-[var(--accent)]">Disc</span>
+                        </h1>
 
-                    <p className="mt-5 mx-auto max-w-[620px] text-[14px] sm:text-[15px] leading-relaxed text-white/55">
-                        An open letter from players around the world asking Sony to keep physical PlayStation games alive.
-                    </p>
+                        <p className="mt-5 lg:ml-auto max-w-[520px] text-[14px] sm:text-[15px] leading-relaxed text-white/55">
+                            An open letter from players around the world asking Sony to keep physical PlayStation
+                            games alive.
+                        </p>
 
-                    {/* the four words, on one rule */}
-                    <div className="mt-9 mx-auto max-w-[900px] grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5 border-t border-white/[0.09] pt-6">
-                        {BANNER.map(({ icon: Icon, title, body }, i) => (
-                            <div
-                                key={title}
-                                className={`flex items-center gap-3 justify-center ${
-                                    i > 0 ? "lg:border-l lg:border-white/[0.07] lg:pl-6" : ""
-                                }`}
+                        <p className="mt-4 lg:ml-auto max-w-[520px] font-display text-[12.5px] sm:text-[14px] font-black uppercase tracking-[0.1em] text-white/80">
+                            Digital is only bad when it&apos;s the only option.
+                        </p>
+
+                        <div className="mt-7 flex flex-wrap gap-2.5 lg:justify-end">
+                            <a
+                                href="#sign"
+                                className="btn-command inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] hover:brightness-110 font-display text-[11px] font-black uppercase tracking-[0.14em] text-white transition-[filter]"
                             >
-                                <Icon className="w-5 h-5 shrink-0 text-[var(--accent)]" strokeWidth={1.6} />
-                                <span className="text-left">
-                                    <span className="block font-display text-[10.5px] font-black uppercase tracking-[0.14em] text-white">
-                                        {title}
-                                    </span>
-                                    <span className="mt-0.5 block text-[11px] text-white/35">{body}</span>
-                                </span>
-                            </div>
-                        ))}
+                                <PenLine className="w-4 h-4" /> Sign the letter
+                            </a>
+                            <Link
+                                href="/last-disc/letter"
+                                className="btn-command inline-flex items-center gap-2 h-11 px-6 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.12] font-display text-[11px] font-black uppercase tracking-[0.12em] text-white transition-colors"
+                            >
+                                Read the full letter
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </section>
 
+            {/* the four words, under the art rather than over it */}
+            <section className="container-page mt-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
+                    {BANNER.map(({ icon: Icon, title, body }, i) => (
+                        <div
+                            key={title}
+                            className={`flex items-center gap-3 ${i > 0 ? "lg:border-l lg:border-white/[0.07] lg:pl-6" : ""}`}
+                        >
+                            <Icon className="w-5 h-5 shrink-0 text-[var(--accent)]" strokeWidth={1.6} />
+                            <span>
+                                <span className="block font-display text-[10.5px] font-black uppercase tracking-[0.14em] text-white">
+                                    {title}
+                                </span>
+                                <span className="mt-0.5 block text-[11px] text-white/35">{body}</span>
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
             {/* countdown, poll and the letter are all live */}
-            <div className="mt-5">
+            <div id="sign" className="mt-5 scroll-mt-24">
                 <LastDiscClient />
             </div>
 

@@ -268,11 +268,17 @@ export default function LastDiscClient() {
                                 An open letter to Sony Interactive Entertainment
                             </p>
                             <p className="mt-2.5 text-[12.5px] leading-relaxed text-white/55">
-                                We are PlayStation players, collectors, preservation advocates and members of the gaming
-                                community who believe that physical games still matter. We respectfully ask Sony to keep
-                                physical PlayStation games alive beyond 2028 — at least as an option for major releases,
-                                limited editions, collector&apos;s editions and preservation-focused releases.
+                                We are not asking Sony to abandon digital distribution, nor to slow it down in any way.
+                                What we are asking is simply that physical copies remain an option for those who want
+                                them — just as has been the case until now. Discontinuing them offers no improvement in
+                                service and no quality-of-life change; it represents nothing but a loss of choice.
                             </p>
+                            <Link
+                                href="/last-disc/letter"
+                                className="mt-3.5 inline-flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-[var(--accent)] hover:brightness-125 transition-[filter]"
+                            >
+                                Read the full letter →
+                            </Link>
                         </blockquote>
 
                         {(stats?.recent.length ?? 0) > 0 && (

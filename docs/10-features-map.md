@@ -602,6 +602,9 @@ odbrojavanjem do januara 2028, anketom i formom za potpis.
 **API:** `GET /last-disc`, `POST /last-disc/sign` (throttle 5/10min),
 `POST /last-disc/vote` (throttle 10/10min), `GET /last-disc/export` (staff, CSV)
 **Meni:** Tools → The Last Disc
+**Pismo:** `/last-disc/letter` — puni tekst na vlastitoj stranici. Hiljadu i dvjesto
+riječi iznad forme zatrpa formu, a dokument koji se traži da se potpiše zaslužuje
+vlastitu adresu za dijeljenje i citiranje.
 
 **Napomene:**
 - **Sve brojke su stvarne.** Kampanjska stranica koja naduva broj potpisa vrijedi manje
