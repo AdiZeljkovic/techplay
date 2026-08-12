@@ -119,6 +119,7 @@ class SitemapController extends Controller
             ['/forum', 'hourly', '0.7'],
             ['/shop', 'weekly', '0.6'],
             ['/giveaways', 'weekly', '0.6'],
+            ['/frontiers', 'weekly', '0.6'],
             ['/about', 'monthly', '0.5'],
             ['/contact', 'monthly', '0.5'],
             ['/impressum', 'yearly', '0.3'],

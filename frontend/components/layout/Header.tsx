@@ -572,6 +572,7 @@ const MOBILE_QUICK_TILES = [
     { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp" },
     { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp" },
     { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp" },
+    { name: "Frontiers",   href: "/frontiers",   art: "/images/menu/menu-frontiers.webp" },
 ];
 
 // App-style grouped navigation. DISCOVER's column items are populated with
@@ -618,12 +619,13 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     ]},
     {
         name: "Community", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
-        activePaths: ["/forum", "/leaderboard", "/social", "/giveaways"],
+        activePaths: ["/forum", "/leaderboard", "/social", "/giveaways", "/frontiers"],
         children: [
             { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp",       description: "Discussions and help" },
             { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp", description: "Top gamers by XP & reputation" },
             { name: "Social Hub",  href: "/social",     art: "/images/menu/menu-social.webp",      description: "Chat, friends and squads" },
             { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp",   description: "Win games & gear" },
+            { name: "Frontiers",   href: "/frontiers",   art: "/images/menu/menu-frontiers.webp",   description: "Klanovi, teritorije, resursi — uskoro" },
         ] },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
