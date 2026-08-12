@@ -2,7 +2,14 @@
 
 // A scheduled task that fails silently is the most expensive kind of bug here:
 // enrichment stops, chronicles freeze, sitemaps go stale, and the site keeps
-// rendering perfectly. Anything registered below that matters gets this hook.
+// rendering perfectly. Every scheduled *command* below carries this hook.
+//
+// Schedule::job() entries do not: onFailure there fires if the dispatch fails,
+// not if the job does, so those are answered for by the failed_jobs table and
+// `diagnose:queue`. The weekly reputation snapshot and the release sync are the
+// two worth watching hardest — when they fail nothing breaks visibly, the
+// weekly leaderboard just quietly starts measuring from nowhere and the
+// calendar quietly stops learning about new games.
 $reportFailure = function (string $task) {
     return function () use ($task) {
         Log::error("Scheduled task failed: {$task}");
@@ -34,7 +41,7 @@ Schedule::call(function () {
     Cache::put('scheduler:heartbeat', now()->toIso8601String(), 3600);
 })->everyMinute()->name('scheduler-heartbeat')->withoutOverlapping();
 
-Schedule::command('ads:sync-metrics')->hourly();
+Schedule::command('ads:sync-metrics')->hourly()->onFailure($reportFailure('ads:sync-metrics'));
 
 // GIVEAWAYS: Send reminder emails for giveaways ending in 24 hours (runs every 6 hours)
 Schedule::job(new SendGiveawayReminders)->everySixHours();
@@ -76,7 +83,7 @@ Schedule::command('articles:publish-scheduled')->everyMinute()->withoutOverlappi
 Schedule::job(new PollSteamPresence)->everyTwoMinutes();
 
 // WISHLIST: Notify users when wishlisted games release today (runs at 09:00 daily)
-Schedule::command('wishlist:check-releases')->dailyAt('09:00');
+Schedule::command('wishlist:check-releases')->dailyAt('09:00')->onFailure($reportFailure('wishlist:check-releases'));
 
 // SEO: Regenerate XML sitemaps every 6 hours
 Schedule::command('sitemap:generate')->withoutOverlapping(30)->everySixHours()->onFailure($reportFailure('sitemap:generate'));
@@ -87,24 +94,24 @@ Schedule::command('sitemap:generate')->withoutOverlapping(30)->everySixHours()->
 // CALENDAR: read the stores into our own tables, then fold the duplicates.
 // The window is relative to today, so the far month joins it on its own, and a
 // weekly pass is nearly free — a title we already hold costs no request.
-Schedule::command('releases:sync')->weeklyOn(1, '03:00')->withoutOverlapping();
-Schedule::command('releases:merge')->weeklyOn(1, '05:30');
+Schedule::command('releases:sync')->weeklyOn(1, '03:00')->withoutOverlapping()->onFailure($reportFailure('releases:sync'));
+Schedule::command('releases:merge')->weeklyOn(1, '05:30')->onFailure($reportFailure('releases:merge'));
 
 // PROFILE: Snapshot reputation + monthly contribution on the 1st of each month
-Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30');
+Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30')->onFailure($reportFailure('profile:snapshot-reputation'));
 
 // LEADERBOARD: Weekly baseline snapshot every Monday (powers period=week boards)
-Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10');
+Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10')->onFailure($reportFailure('profile:snapshot-reputation --weekly'));
 
 // SEASONS: Conclude finished seasons (awards champion badges) — daily check
-Schedule::command('season:conclude')->dailyAt('00:20')->withoutOverlapping(30);
+Schedule::command('season:conclude')->dailyAt('00:20')->withoutOverlapping(30)->onFailure($reportFailure('season:conclude'));
 
 // RETENTION: Weekly digest email every Friday afternoon
-Schedule::command('profile:send-weekly-digest')->weeklyOn(5, '16:00');
+Schedule::command('profile:send-weekly-digest')->weeklyOn(5, '16:00')->onFailure($reportFailure('profile:send-weekly-digest'));
 
 // FORUM: Unpin bounty-funded self-pins once their 24h window expires
-Schedule::command('forum:clear-expired-pins')->hourly()->withoutOverlapping(10);
+Schedule::command('forum:clear-expired-pins')->hourly()->withoutOverlapping(10)->onFailure($reportFailure('forum:clear-expired-pins'));
 
 // CAMPAIGN: Founder badge for the first 50 full profiles — no-ops once all
 // 50 are awarded, so it can stay scheduled for the whole campaign
-Schedule::command('campaign:founders')->dailyAt('10:00');
+Schedule::command('campaign:founders')->dailyAt('10:00')->onFailure($reportFailure('campaign:founders'));
