@@ -589,6 +589,37 @@ prijatelja povukao bi ih sve na svako otvaranje stranice.
 
 ---
 
+## The Last Disc (kampanja)
+
+**Status:** COMPLETE (stranica + potpisi + anketa)
+
+**Opis:** Otvoreno pismo Sonyju da zadrži fizička PlayStation izdanja poslije 2028, s
+odbrojavanjem do januara 2028, anketom i formom za potpis.
+
+**Frontend:** `app/last-disc/` (`page.tsx` SSR + `LastDiscClient.tsx` za anketu i potpis)
+**Backend:** `LastDiscController`
+**Database:** `last_disc_signatures`, `last_disc_votes`
+**API:** `GET /last-disc`, `POST /last-disc/sign` (throttle 5/10min),
+`POST /last-disc/vote` (throttle 10/10min), `GET /last-disc/export` (staff, CSV)
+**Meni:** Tools → The Last Disc
+
+**Napomene:**
+- **Sve brojke su stvarne.** Kampanjska stranica koja naduva broj potpisa vrijedi manje
+  od one koja prizna da ih ima jedanaest — broj **jeste** argument, pa mora biti tačan.
+  Kreće od nule.
+- Jedan potpis po e-mail adresi (unique indeks); jedan glas po posjetiocu
+  (`voter_hash` = HMAC nad IP+UA s `app.key`, prijavljeni glasaju kao nalog pa im glas
+  prelazi između uređaja). **Sirovi IP se nigdje ne upisuje.**
+- Ime se čuva **samo ako će biti prikazano** — ko potpiše anonimno, njegovo ime se ne
+  sprema uopšte.
+- `GET /last-disc/export` daje CSV za onoga ko pismo bude predavao. Peticija koja se ne
+  može izvući iz baze nije peticija.
+- "Latest coverage" se puni pretragom (`/search/articles?q=physical`) i **sakriva se dok
+  nema članaka** — prazan naslov je gori od nikakvog.
+- Zajednica vodi na forum umjesto da izmišlja teme; kad se otvori prava tema, tu se linka.
+
+---
+
 ## WoW Analyzer
 
 **Status:** COMPLETE

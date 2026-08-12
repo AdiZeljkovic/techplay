@@ -44,6 +44,7 @@ use App\Http\Controllers\Api\V1\Gta6WeaponsController;
 use App\Http\Controllers\Api\V1\GuideController;
 use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\JournalController;
+use App\Http\Controllers\Api\V1\LastDiscController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\MediaKitController;
 use App\Http\Controllers\Api\V1\NavigationController;
@@ -151,6 +152,7 @@ Route::prefix('v1')->group(function () {
         Route::put('/user/preferences', [AuthController::class, 'updatePreferences']);
         Route::put('/user/password', [AuthController::class, 'changePassword']);
         Route::get('/user/export-data', [AuthController::class, 'exportData']);
+        Route::get('/last-disc/export', [LastDiscController::class, 'export']);
         Route::delete('/user/account', [AuthController::class, 'deleteAccount']);
         Route::get('/user/notifications/counts', [NotificationController::class, 'counts']);
         Route::get('/notifications', [NotificationController::class, 'index']);
@@ -346,6 +348,13 @@ Route::prefix('v1')->group(function () {
         Route::middleware('throttle:5,60')->group(function () {
             Route::post('/newsletter/verify', [NewsletterController::class, 'verify']);
         });
+
+        // The Last Disc — open letter and poll. Reads are open; writing is
+        // throttled hard, because a petition's whole value is that its number
+        // is real.
+        Route::get('/last-disc', [LastDiscController::class, 'index']);
+        Route::middleware('throttle:5,10')->post('/last-disc/sign', [LastDiscController::class, 'sign']);
+        Route::middleware('throttle:10,10')->post('/last-disc/vote', [LastDiscController::class, 'vote']);
 
         // Contact Form (Rate limited - 3 per 10 minutes to prevent spam)
         Route::middleware('throttle:3,10')->group(function () {

@@ -629,12 +629,13 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         ] },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
-        activePaths: ["/wow-analyzer", "/backlog-advisor", "/wrapped", "/gta6"],
+        activePaths: ["/wow-analyzer", "/backlog-advisor", "/wrapped", "/gta6", "/last-disc"],
         children: [
             { name: "WoW Analyzer",    href: "/wow-analyzer",    art: "/images/menu/menu-wow-analyzer.webp",    description: "AI character readiness check" },
             { name: "Backlog Advisor", href: "/backlog-advisor", art: "/images/menu/menu-backlog-advisor.webp", description: "What should you play next?" },
             { name: "Gaming Wrapped",  href: "/wrapped",         art: "/images/menu/menu-wrapped.webp",         description: "Your year in gaming, shareable" },
             { name: "GTA 6 Hub",       href: "/gta6",            art: "/images/menu/menu-gta6.webp",            description: "Map, characters, vehicles, weapons" },
+            { name: "The Last Disc",   href: "/last-disc",       art: "/images/menu/menu-last-disc.webp",       description: "Open letter: keep physical games" },
         ] },
     { name: "Shop", href: "/shop" },
 ];
