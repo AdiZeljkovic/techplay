@@ -25,12 +25,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const year = sp.year ? parseInt(sp.year, 10) : new Date().getFullYear();
     const data = await fetchWrapped(username, year);
 
-    if (!data) return { title: "Gaming Wrapper — TechPlay" };
+    if (!data) return { title: "Gaming Wrapped" };
 
     const stat = (key: string) => data.stats.find((s) => s.key === key)?.value ?? 0;
 
     return {
-        title: `${data.display_name}'s ${year} Gaming Wrapper — TechPlay`,
+        title: `${data.display_name}'s ${year} Gaming Wrapper`,
         description: `${stat("games_completed")} games completed, ${stat("hours")}h played and ${stat("achievements")} achievements in ${year}. ${data.archetype.name}.`,
         openGraph: {
             title: `${data.display_name}'s ${year} in gaming`,

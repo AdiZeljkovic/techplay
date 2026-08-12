@@ -29,7 +29,7 @@ async function fetchList(username: string, slug: string): Promise<GameListDetail
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { username, slug } = await params;
     const list = await fetchList(username, slug);
-    if (!list) return { title: "Game List — TechPlay" };
+    if (!list) return { title: "Game List" };
 
     const owner = list.user?.display_name || list.user?.username || username;
     const description = list.description

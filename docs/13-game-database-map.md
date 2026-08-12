@@ -243,3 +243,30 @@ Sort `-views` postoji u API-ju ali ga frontend ne nudi.
   `community_ratings`, `tracked`; dvije od tih brojki bile su
   `count(distinct unnest(...))` preko 141k redova. Ostaje samo `games`, koji
   hero rečenica i dalje čita. Cache ključ podignut na `games.hub.stats.v2`.
+
+
+## Changelog 2026-08-12 — SEO audit game stranica
+
+**Bug: "TechPlay" dva puta u svakom naslovu.** Root layout već dodaje
+`| TechPlay` kroz `title.template`, a 13 stranica je i samo pisalo `— TechPlay` —
+rezultat: `Elden Ring (2022) — TechPlay | TechPlay`, na svih ~187k game stranica plus
+listinzi, kalendar, profil, wrapped, liste, leaderboard, social i advisor. Dokument
+naslov je očišćen; `openGraph.title` i `twitter.title` **zadržavaju** sufiks jer oni ne
+prolaze kroz template.
+
+**Bug: bilo koji string je bio indeksabilna stranica.**
+`/games/genre/asdfghjkl` → 200, `index, follow`, naslov *"Best Asdfghjkl Games in 2026"*.
+Isto `/games/year/1066` i `/games/platform/nonexistent`. To je neograničena doorway
+površina — svako s URL trakom može kovati tanke stranice u nedogled, a Google taj obrazac
+kažnjava. Sada: žanr/platforma/tag se indeksiraju samo ako su u kuriranoj mapi
+(14/5/15 unosa), godina samo u rasponu 1972…sljedeća godina. Sve ostalo se i dalje
+renderuje čitaocu i **prosljeđuje link equity** (`follow: true`), samo nije u indeksu.
+
+**Payload `/games/{slug}`: 2,7 KB, od čega 59% opis** koji stranica renderuje — nema
+šta da se skida. Podendpointi (`screenshots`, `videos`, `series`, `suggested`,
+`ratings`) su 24 B – 1,5 KB.
+
+**Provjereno kao ispravno:** game stranica **noindeksira tanak sadržaj** (opis kraći od
+50 znakova → `index: false`), što je s obzirom na ~85k igara bez opisa upravo ono što
+treba; canonical na svakoj stranici pokazuje na sebe; strukturirani podaci
+(BreadcrumbList + CollectionPage na listinzima) su prisutni.

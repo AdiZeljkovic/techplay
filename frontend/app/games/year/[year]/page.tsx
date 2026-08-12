@@ -31,11 +31,18 @@ export async function generateMetadata({ params }: { params: Promise<{ year: str
     const meta = getMeta(year);
     const url = `https://techplay.gg/games/year/${year}`;
 
+    // /games/year/1066 answered 200 with "Best Games of 1066" and index,
+    // follow. Any number did. Only years the medium has existed in are worth
+    // an index entry; the rest still render, they are just not indexed.
+    const n = Number(year);
+    const indexable = Number.isInteger(n) && n >= 1972 && n <= new Date().getFullYear() + 1;
+
     return {
-        title:       `${meta.title} — TechPlay`,
+        title:       `${meta.title}`,
         description: meta.description,
         keywords:    meta.keywords,
         alternates:  { canonical: url },
+        ...(indexable ? {} : { robots: { index: false, follow: true } }),
         openGraph: {
             title:       `${meta.title} — TechPlay`,
             description: meta.description,

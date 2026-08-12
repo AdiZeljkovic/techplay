@@ -111,11 +111,20 @@ export async function generateMetadata({ params }: { params: Promise<{ genre: st
     const meta = getMeta(genre);
     const url = `https://techplay.gg/games/genre/${genre}`;
 
+    // Any string reaching this route rendered an indexable page: "Best
+    // Asdfghjkl Games in 2026" answered 200 with index, follow. That is an
+    // unbounded doorway surface — a crawler or anyone with a URL bar can
+    // mint thin pages forever. The curated set is what we wrote landing
+    // copy for and what belongs in an index; everything else still renders
+    // for a reader, and still passes link equity, it just is not indexed.
+    const curated = Object.prototype.hasOwnProperty.call(GENRE_META, genre);
+
     return {
-        title:       `${meta.title} — TechPlay`,
+        title:       `${meta.title}`,
         description: meta.description,
         keywords:    meta.keywords,
         alternates:  { canonical: url },
+        ...(curated ? {} : { robots: { index: false, follow: true } }),
         openGraph: {
             title:       `${meta.title} — TechPlay`,
             description: meta.description,

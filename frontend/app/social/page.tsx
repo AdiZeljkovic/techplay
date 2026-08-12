@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import SocialClient from "./SocialClient";
 
 export const metadata: Metadata = {
-    title: "Social Hub — TechPlay",
+    title: "Social Hub",
     description: "Chat, squad up, and stay connected across TechPlay.",
 };
 

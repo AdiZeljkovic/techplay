@@ -111,7 +111,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     try {
         const game = await fetchContent<GameDetail>(`${getApiUrl()}/games/${slug}`);
-        if (!game) return { title: "Game Not Found — TechPlay" };
+        if (!game) return { title: "Game Not Found" };
 
         const year      = game.released ? new Date(game.released).getFullYear() : null;
         const platforms = (game.platforms ?? []).slice(0, 3).join(", ");
@@ -148,8 +148,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             "game", "review", "rating",
         ].filter(Boolean).join(", ");
 
-        const title      = year ? `${game.name} (${year}) — TechPlay` : `${game.name} — TechPlay`;
-        const hasContent = plainDescription.length > 50;
+        // The root layout's title template already appends "| TechPlay" to the
+        // document title, so writing it here too produced
+        // "Elden Ring (2022) — TechPlay | TechPlay" on every game page.
+        // openGraph and twitter titles do not go through that template, so
+        // those keep the suffix.
+        const title       = year ? `${game.name} (${year})` : game.name;
+        const socialTitle = `${title} — TechPlay`;
+        const hasContent  = plainDescription.length > 50;
 
         return {
             title,
@@ -158,7 +164,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             ...(!hasContent ? { robots: { index: false, follow: false } } : {}),
             alternates: { canonical: `https://techplay.gg/games/${slug}` },
             openGraph: {
-                title,
+                title: socialTitle,
                 description,
                 url:   `https://techplay.gg/games/${slug}`,
                 type:  "website",
@@ -169,7 +175,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             },
             twitter: {
                 card:        "summary_large_image",
-                title,
+                title: socialTitle,
                 description,
                 images: game.cover_url ? [game.cover_url] : [],
             },

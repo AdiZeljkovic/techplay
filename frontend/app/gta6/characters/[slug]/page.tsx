@@ -37,7 +37,7 @@ async function fetchCharacter(slug: string): Promise<Gta6Character | null> {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
     const c = await fetchCharacter(slug);
-    if (!c) return { title: "Character Not Found — TechPlay" };
+    if (!c) return { title: "Character Not Found" };
     const roleText = c.role ? `the ${c.role}` : "a character";
     const firstSentence = c.description ? c.description.split(".")[0] + "." : "";
     const desc = `${c.name} is ${roleText} in Grand Theft Auto VI. ${firstSentence} Full profile, story details and gallery.`.slice(0, 160);

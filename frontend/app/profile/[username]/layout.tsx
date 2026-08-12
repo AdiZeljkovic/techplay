@@ -7,7 +7,7 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     const ogImage = `${APP_URL}/og/profile?username=${encodeURIComponent(username)}`;
 
     return {
-        title: `${username}'s Profile — TechPlay`,
+        title: `${username}'s Profile`,
         description: `Check out ${username}'s gaming profile on TechPlay.gg`,
         openGraph: {
             title: `${username} on TechPlay`,

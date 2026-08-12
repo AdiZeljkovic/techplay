@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     const release = await getRelease(slug);
 
-    if (!release) return { title: "Release not found — TechPlay" };
+    if (!release) return { title: "Release not found" };
 
     const when = release.released
         ? new Date(release.released).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
@@ -69,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         `${release.name} arrives ${when} on ${release.platforms.join(", ")}.`;
 
     return {
-        title: `${release.name} — release date, trailers and platforms — TechPlay`,
+        title: `${release.name} — release date, trailers and platforms`,
         description,
         alternates: { canonical: `https://techplay.gg/calendar/${slug}` },
         openGraph: {
