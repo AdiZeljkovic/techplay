@@ -203,6 +203,33 @@ payload prije bilo kakvog grananja, `bounty_balance` se skida svima osim vlasnik
 
 ---
 
+### Audit settings + auth 12.08.2026
+
+**Bug: prelazak na privatan profil nije skidao korisnika s leaderboarda.**
+`updateProfile` je brisao `leaderboard:{board}` i `leaderboard:{board}:week:{key}` —
+ključeve koje **niko nikad nije pisao**. `LeaderboardController` kešira pod
+`leaderboard.v2.{type}.{period}.{periodKey}`, pa je komentar "drop off the public boards
+now rather than in five minutes" opisivao nešto što se nije dešavalo: stari javni red se
+servirao do isteka TTL-a. Sada se brišu stvarni ključevi (6 ploča × 3 perioda + viewer
+keš + `rising`).
+
+**Nespojeno:** kolona `users.email_notifications` postoji i putuje u payloadu, ali
+**nema nijedne kontrole u settingsima** — korisnik ne može isključiti e-mail obavijesti.
+
+**Provjereno kao ispravno (bez izmjena):**
+- Login ide kroz Turnstile; bypass token je tajna iz configa, nema ga po defaultu.
+- Neuspješna prijava vraća generičko "Invalid credentials" — nema nabrajanja korisnika.
+- `forgot-password` i `reset-password` su na `throttle:5,10`; **uživo provjereno** da
+  nepostojeći i postojeći e-mail vraćaju isti odgovor (200), pa se ni tu ne može nabrajati.
+- Promjena lozinke traži trenutnu i **briše sve ostale tokene** — ukradeni token ne
+  preživi promjenu.
+- Brisanje naloga traži lozinku i anonimizuje 15 kolona (uključujući platform handle-ove,
+  `author_slug` i hardver).
+- `updateProfile` ima strogu bijelu listu polja; upload ide kroz `_method=PUT` spoofing
+  jer PUT ne nosi fajlove.
+
+---
+
 ## Profile Privacy
 
 **Status:** COMPLETE (08/2026)

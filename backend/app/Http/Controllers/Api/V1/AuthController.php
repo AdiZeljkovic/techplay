@@ -514,12 +514,26 @@ class AuthController extends Controller
         Cache::forget('profile.show.v1.'.strtolower($user->username));
 
         // …and drop off the public boards now rather than in five minutes.
+        //
+        // These used to forget "leaderboard:xp" and "leaderboard:xp:week:…",
+        // keys nothing has ever written. LeaderboardController caches under
+        // leaderboard.v2.{type}.{period}.{periodKey}, so going private cleared
+        // nothing and the old public row kept being served for the full TTL.
         if ($user->wasChanged('profile_visibility')) {
-            $weekKey = now()->format('o-\WW');
-            foreach (['xp', 'reputation', 'collection', 'completions'] as $board) {
-                Cache::forget("leaderboard:{$board}");
-                Cache::forget("leaderboard:{$board}:week:{$weekKey}");
+            $periodKeys = [
+                'all' => 'all',
+                'month' => now()->format('Y-m'),
+                'week' => now()->format('o-\WW'),
+            ];
+
+            foreach (['xp', 'reputation', 'collection', 'completions', 'reviews', 'achievements'] as $board) {
+                foreach ($periodKeys as $period => $key) {
+                    Cache::forget("leaderboard.v2.{$board}.{$period}.{$key}");
+                    Cache::forget("leaderboard.v2.viewer.{$user->id}.{$board}.{$period}");
+                }
             }
+
+            Cache::forget('leaderboard.v2.rising');
         }
 
         // Gamer Tag / Multi-Platform / Battlestation had no trigger before this
