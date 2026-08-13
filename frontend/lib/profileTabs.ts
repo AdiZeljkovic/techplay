@@ -1,10 +1,10 @@
-import { UserRound, Library, Award, ListOrdered, Dna, type LucideIcon } from "lucide-react";
+import { UserRound, Library, Award, ListOrdered, Dna, ShoppingBag, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
  * page's tab router and any deep link that wants to name a section.
  */
-export type ProfileTab = "overview" | "library" | "lists" | "progression" | "stats";
+export type ProfileTab = "overview" | "library" | "lists" | "progression" | "rewards" | "stats";
 
 /**
  * Sections that used to exist on their own, and where they went.
@@ -15,7 +15,6 @@ export type ProfileTab = "overview" | "library" | "lists" | "progression" | "sta
  */
 export const LEGACY_TABS: Record<string, ProfileTab> = {
     achievements: "progression",
-    rewards: "progression",
     collection: "library",
     journal: "library",
     // The activity tab folded into the overview a while back.
@@ -27,8 +26,7 @@ export const PROFILE_TABS: {
     id: ProfileTab;
     label: string;
     icon: LucideIcon;
-    /** Owner-only sections. Nothing uses this since Rewards folded into
-     *  Progression, which shows its public half to everyone. */
+    /** Owner-only sections — a wallet and what it buys is nobody else's. */
     ownOnly?: boolean;
 }[] = [
     { id: "overview", label: "Overview", icon: UserRound },
@@ -37,5 +35,10 @@ export const PROFILE_TABS: {
     // Top 10, Top 25, Top 100 — and ticks would promise a to-do.
     { id: "lists", label: "Lists", icon: ListOrdered },
     { id: "progression", label: "Progression", icon: Award },
+    // Its own destination rather than the third lens inside Progression: it is
+    // the only part of the loop you *do* something in, and it was the one part
+    // a visitor could never see, so it kept a switch position that was empty
+    // for half the people looking at it.
+    { id: "rewards", label: "Rewards", icon: ShoppingBag, ownOnly: true },
     { id: "stats", label: "Gamer DNA", icon: Dna },
 ];

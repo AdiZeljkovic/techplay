@@ -595,20 +595,28 @@ Bila su to dva taba koja se međusobno nikad nisu spomenula, pa je petlja koju
 ono u prodavnici. Razdvojeno na dva odredišta, čitalac je morao već razumjeti
 sistem da bi ga primijetio.
 
-Redoslijed na stranici prati redoslijed radnje:
+**Ispravka 13.08.2026 — pet sekcija na jednom skrolbaru.** Sve četiri odjednom
+nisu bile jedna stranica nego pet koje dijele skrolbar, i svaka je dohvaćala
+podatke na mount — otvaranje taba je ispaljivalo osam zahtjeva prije nego što
+si išta pogledao. Progression sada ima **`Segmented` prekidač s dva objektiva**
+(Season, Achievements) i učitava samo onaj u kojem jesi. Posjetilac slijeće na
+Achievements — sezona je ista za sve.
 
-1. **Sezona** (`SeasonPanel`) — ime, preostali dani, traka proteklog vremena,
-   množitelji ako nisu 1.00. Prije je to bila tanka traka unutar Daily Huba,
-   zbog čega skoro niko nije znao da sezona uopšte teče. Između sezona se ne
-   crta ništa — prazan okvir s „nema sezone" je gori od nikakvog.
-2. **Dostignuća** — postojeći `AchievementsTab`, javno.
-3. **Steam dostignuća** — pod istim krovom, ne u zasebnoj sekciji niže.
-4. **Prodavnica, inventar, historija** — samo vlasnik.
+- **Season** — `SeasonPanel` + `QuestBoard` (samo vlasnik).
+- **Achievements** — `AchievementsTab` + Steam dostignuća.
 
-`PROFILE_TABS` je sa sedam na šest ulaza (Rewards više nije zaseban), a
-**`LEGACY_TABS`** preusmjerava stare linkove: `?tab=achievements` i
-`?tab=rewards` slijeću na Progression, `?tab=activity` i `?tab=forum` na
-Overview. Podijeljen link nikad ne otvara sekciju koja više ne postoji.
+**Rewards je opet zaseban tab** (`ownOnly: true`). Kao objektiv unutar
+Progressiona držao je poziciju prekidača koja je za pola posjetilaca prazna, a
+to je jedini dio petlje u kojem se nešto *radi*. `LEGACY_TABS` više ne
+preusmjerava `?tab=rewards`; posjetilac koji otvori taj link na tuđem profilu
+slijeće na Overview umjesto na traku bez sadržaja ispod.
+
+`SeasonPanel` je prerađen: traka je **segmentirana po sedmicama sezone**
+(popunjene iza, prazne ispred, tekuća upaljena i viša), krajevi nose datume
+početka i kraja, množitelji su instrument polja umjesto pilula, a odbrojavanje
+ima svoje kućište koje pocrveni na ≤7 dana. Protek se računa iz
+`days_remaining` a ne iz `Date.now()` — inače traka i brojač pored nje mogu
+protivrječiti jedno drugom preko ponoći ili u stajaćem tabu.
 
 **Uklonjen deveti duplikat:** `Daily Missions` je stajao i u prodavnici i u
 Daily Hubu na Overviewu. Ostaje na Overviewu — to je stranica koju vlasnik prvo

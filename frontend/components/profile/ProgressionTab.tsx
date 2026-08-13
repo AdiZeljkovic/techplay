@@ -1,39 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { Flame, Trophy, ShoppingBag } from "lucide-react";
+import { Flame, Trophy } from "lucide-react";
 import Segmented from "@/components/ui/Segmented";
 import SeasonPanel from "./dashboard/SeasonPanel";
 import QuestBoard from "./dashboard/QuestBoard";
 import SectionCard from "./dashboard/SectionCard";
 import SteamAchievements from "./dashboard/SteamAchievements";
 import AchievementsTab from "./AchievementsTab";
-import RewardsStore from "./RewardsStore";
 
-type View = "season" | "achievements" | "rewards";
+type View = "season" | "achievements";
 
 /**
- * Progression — earn, receive, spend. Three lenses, not one long page.
+ * Progression — what is running, and what you have earned from it.
  *
- * The loop is right and the order is right: you unlock something, it pays XP
- * and bounty, and the bounty buys what is in the store. Putting all of it on
- * one screen was how that loop became visible after Achievements and Rewards
- * had spent months as two tabs that never mentioned each other.
+ * Five full sections used to be stacked here: season, quest board, our
+ * achievements with their own filters and sidebar, Steam's, and the whole
+ * rewards store. That is not one page, it is five pages that happen to share
+ * a scrollbar — and every one of them fetched on mount, so opening this tab
+ * fired eight requests before you had looked at anything.
  *
- * But five full sections stacked — season, quest board, our achievements with
- * its own filters and sidebar, Steam's, and a store with a wallet, a history
- * and an inventory — is not one page, it is five pages that happen to share a
- * scrollbar. Nobody arrives at Progression wanting all five at once; they come
- * to check the season, or to look at badges, or to spend.
+ * Two lenses now, and only the one you are in loads. The store left entirely:
+ * it is the part of the loop you *do* something in and the only part a
+ * visitor can never see, so as a lens here it held a switch position that was
+ * empty for half the people looking at the page. It has its own tab.
  *
- * The switch also fixes something that was never visible: every one of those
- * sections fetches on mount, so opening this tab fired eight requests before
- * you had looked at anything. Only the lens you are in loads now.
- *
- * A visitor gets the season and the achievements and stops there, which is
- * exactly what was public before. They also land on achievements rather than
- * the season, because the season is the same for everyone and the badges are
- * the reason they opened somebody else's profile.
+ * A visitor lands on achievements rather than the season, because the season
+ * is the same for everyone and the badges are the reason they opened somebody
+ * else's profile.
  */
 export default function ProgressionTab({ username, isOwnProfile }: { username: string; isOwnProfile: boolean }) {
     const [view, setView] = useState<View>(isOwnProfile ? "season" : "achievements");
@@ -41,9 +35,6 @@ export default function ProgressionTab({ username, isOwnProfile }: { username: s
     const views = [
         { id: "season", label: "Season", icon: Flame, title: "What is running, and what it asks of you" },
         { id: "achievements", label: "Achievements", icon: Trophy, title: "Everything unlocked, ours and Steam's" },
-        ...(isOwnProfile
-            ? [{ id: "rewards", label: "Rewards", icon: ShoppingBag, title: "What your bounty buys" }]
-            : []),
     ];
 
     return (
@@ -75,9 +66,6 @@ export default function ProgressionTab({ username, isOwnProfile }: { username: s
                 </div>
             )}
 
-            {view === "rewards" && isOwnProfile && (
-                <RewardsStore username={username} isOwnProfile={isOwnProfile} />
-            )}
         </div>
     );
 }

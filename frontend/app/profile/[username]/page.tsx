@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { User, Gamepad2, Trophy, ListChecks, Flame } from "lucide-react";
 import toast from "react-hot-toast";
 import ProgressionTab from "@/components/profile/ProgressionTab";
+import RewardsStore from "@/components/profile/RewardsStore";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHero from "@/components/home-dashboard/ProfileHero";
 import SignInWall from "@/components/auth/SignInWall";
@@ -41,11 +42,16 @@ function ProfilePageInner() {
 
     // Sections move as the profile is reorganised, and links out in the wild
     // keep pointing at where they used to be. LEGACY_TABS forwards them —
-    // ?tab=achievements and ?tab=rewards both land on Progression now — so a
-    // shared link never opens on a section that no longer exists.
+    // ?tab=achievements lands on Progression now — so a shared link never
+    // opens on a section that no longer exists.
     const rawTabParam = searchParams.get("tab") ?? "";
     const tabParam = (LEGACY_TABS[rawTabParam] ?? rawTabParam) as ProfileTab;
-    const activeTab: ProfileTab = VALID_TABS.includes(tabParam) ? tabParam : "overview";
+    const wanted: ProfileTab = VALID_TABS.includes(tabParam) ? tabParam : "overview";
+    // Owner-only sections are not on a visitor's tab strip, so a link to one
+    // has to land somewhere rather than on a page with a strip and nothing
+    // under it. This is the only such section.
+    const viewerIsOwner = !!currentUser?.username && currentUser.username === username;
+    const activeTab: ProfileTab = wanted === "rewards" && !viewerIsOwner ? "overview" : wanted;
 
     // Optimistic override — the payload's friend_status is the source of truth
     // until the viewer acts on this page.
@@ -235,6 +241,10 @@ function ProfilePageInner() {
 
                     {activeTab === "progression" && (
                         <ProgressionTab username={userData.username} isOwnProfile={isOwnProfile} />
+                    )}
+
+                    {activeTab === "rewards" && isOwnProfile && (
+                        <RewardsStore username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
                     {activeTab === "lists" && (
