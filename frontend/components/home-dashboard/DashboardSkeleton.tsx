@@ -1,48 +1,59 @@
 "use client";
 
+/** One placeholder panel, at the height its real counterpart settles on. */
+function Block({ h, className = "" }: { h: number; className?: string }) {
+    return (
+        <div
+            className={`rounded-[var(--radius-panel)] bg-[var(--fill-2)] ${className}`}
+            style={{ height: h }}
+        />
+    );
+}
+
 /**
- * Mirrors DashboardHome's geometry (profile hero + tab strip, highlight
- * strip, 8/4 grid) so the skeleton → data swap causes no layout shift.
+ * Mirrors DashboardHome's geometry so the skeleton → data swap causes no
+ * layout shift. It had drifted a long way from it — two 5/4/3 triptychs that
+ * the page has not drawn in some time — so the placeholder was reserving
+ * space in a shape nothing ever filled.
+ *
  * Also shown by HomeGate while auth resolves — keep it deterministic.
  */
 export default function DashboardSkeleton() {
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
-            <div className="container-page py-8 space-y-6 animate-pulse">
-                {/* Profile hero — tab strip is inside it */}
+            <div className="container-page py-6 space-y-5 animate-pulse">
                 {/* banner identity, record strip, section bar */}
                 <div className="space-y-4">
-                    <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[330px]" />
-                    <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[88px]" />
-                    <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[58px]" />
+                    <Block h={330} />
+                    <Block h={88} />
+                    <Block h={58} />
                 </div>
 
-                {/* three pillars */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className="lg:col-span-5 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[290px]" />
-                    <div className="lg:col-span-4 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[290px]" />
-                    <div className="lg:col-span-3 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[290px]" />
+                {/* today: continue playing + favourites | daily hub */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    <div className="lg:col-span-8 flex flex-col gap-5">
+                        <Block h={276} />
+                        <Block h={290} />
+                    </div>
+                    <Block h={520} className="lg:col-span-4" />
+                </div>
+
+                {/* achievements | friends */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    <Block h={300} className="lg:col-span-8" />
+                    <Block h={300} className="lg:col-span-4" />
                 </div>
 
                 {/* editorial strip */}
-                <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[250px]" />
+                <Block h={280} />
 
-                {/* second triptych */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                    <div className="lg:col-span-5 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[340px]" />
-                    <div className="lg:col-span-4 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[340px]" />
-                    <div className="lg:col-span-3 rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[340px]" />
-                </div>
+                {/* upcoming */}
+                <Block h={330} />
 
-                {/* the tail: full width and pairs */}
-                <div className="space-y-6">
-                        {/* upcoming (panel-wrapped now) */}
-                        <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
-                        {/* recommended + campaign pair */}
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                            <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px]" />
-                            <div className="rounded-[var(--radius-panel)] bg-[var(--fill-2)] h-[300px] hidden xl:block" />
-                        </div>
+                {/* recommended + campaign pair */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                    <Block h={480} />
+                    <Block h={480} className="hidden xl:block" />
                 </div>
             </div>
         </main>

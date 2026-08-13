@@ -4,13 +4,18 @@ import Link from "next/link";
 import axios from "@/lib/axios";
 import { track } from "@/lib/track";
 import toast from "react-hot-toast";
-import { CheckCircle2, Circle, Gamepad2, Play, ListChecks, Tag, MessagesSquare, Rocket, Sparkles } from "lucide-react";
+import { CheckCircle2, Circle, Gamepad2, Play, ListChecks, Tag, MessagesSquare, Rocket, Sparkles, Heart, Star } from "lucide-react";
 import type { ProfileStats } from "@/lib/types/profile";
 
 interface Props {
     /** Only a few counters are read, and both the profile and dashboard
         payloads carry them — so accept either shape. */
-    stats: Partial<ProfileStats> & { games_count?: number; playing_count?: number };
+    stats: Partial<ProfileStats> & {
+        games_count?: number;
+        playing_count?: number;
+        wishlist_count?: number;
+        favorites_count?: number;
+    };
     listsCount: number;
     hasGamertags: boolean;
     steamConnected: boolean;
@@ -55,6 +60,22 @@ export default function ProfileChecklist({ stats, listsCount, hasGamertags, stea
             done: (stats.playing_count ?? 0) > 0,
             icon: Play,
             onClick: () => onOpenTab("library"),
+        },
+        // These two came off the "Get Started" card, which stood further down
+        // the same page saying the same thing to the same empty account.
+        {
+            key: "wishlist",
+            label: "Wishlist something unreleased — we'll tell you when it lands",
+            done: (stats.wishlist_count ?? 0) > 0,
+            icon: Heart,
+            href: "/calendar",
+        },
+        {
+            key: "favorite",
+            label: "Star a favourite — favourites headline your profile",
+            done: (stats.favorites_count ?? 0) > 0,
+            icon: Star,
+            href: "/games",
         },
         {
             key: "list",

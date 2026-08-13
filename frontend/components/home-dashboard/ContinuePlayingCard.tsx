@@ -36,8 +36,10 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                 <>
                     {/* A fixed art height keeps the whole row short — left to
                         stretch, this card sets the height for two others that
-                        have nothing to fill it with. */}
-                    <Link href={`/games/${game.slug}`} prefetch={false} className="group relative h-[142px] block overflow-hidden">
+                        have nothing to fill it with. It grows a little on wide
+                        screens because the card now runs the full main column:
+                        142px across 840 is a letterbox, not a key art. */}
+                    <Link href={`/games/${game.slug}`} prefetch={false} className="group relative h-[142px] lg:h-[176px] block overflow-hidden">
                         {game.cover_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
