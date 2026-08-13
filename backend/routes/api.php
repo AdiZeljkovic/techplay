@@ -300,6 +300,10 @@ Route::prefix('v1')->group(function () {
         });
 
         // Bounty + Rewards (Auth)
+        // Sessions the site noticed from Steam playtime, waiting to be confirmed
+        Route::get('/journal/suggestions', [JournalController::class, 'suggestions']);
+        Route::post('/journal/suggestions/{suggestion}', [JournalController::class, 'acceptSuggestion']);
+        Route::delete('/journal/suggestions/{suggestion}', [JournalController::class, 'dismissSuggestion']);
         Route::post('/journal/sessions', [JournalController::class, 'store']);
         Route::put('/journal/sessions/{session}', [JournalController::class, 'update']);
         Route::delete('/journal/sessions/{session}', [JournalController::class, 'destroy']);

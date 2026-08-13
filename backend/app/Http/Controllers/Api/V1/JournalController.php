@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\GamingMoment;
 use App\Models\PlaySession;
+use App\Models\SessionSuggestion;
 use App\Models\User;
 use App\Services\JournalService;
 use App\Services\QuestService;
 use App\Services\SanitizationService;
+use App\Services\SessionSuggestionService;
 use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
 use Illuminate\Http\JsonResponse;
@@ -97,6 +99,66 @@ class JournalController extends Controller
         $journal->syncPlaytime($user, $game->id);
 
         return $this->success($this->presentSession($session->load('game', 'moments'), true), 'Session logged.');
+    }
+
+    /**
+     * GET /journal/suggestions — sessions the site noticed, awaiting a yes.
+     */
+    public function suggestions(Request $request, SessionSuggestionService $suggestions): JsonResponse
+    {
+        return $this->success(['items' => $suggestions->pending($request->user())]);
+    }
+
+    /**
+     * POST /journal/suggestions/{suggestion} — confirm one into the journal.
+     *
+     * The reader may correct the number on the way in. Steam counts time spent
+     * in the pause menu and time spent making a sandwich, and the person who
+     * was there knows better than the clock did.
+     */
+    public function acceptSuggestion(
+        Request $request,
+        SessionSuggestion $suggestion,
+        SessionSuggestionService $suggestions,
+        JournalService $journal,
+    ): JsonResponse {
+        if ($suggestion->user_id !== $request->user()->id) {
+            return $this->error('Not your suggestion.', 403);
+        }
+
+        if ($suggestion->status !== 'pending') {
+            return $this->error('That one has already been answered.', 409);
+        }
+
+        $data = $request->validate(['minutes' => 'nullable|integer|min:1|max:'.SessionSuggestion::MAX_MINUTES]);
+
+        $session = $suggestions->accept($suggestion, $data['minutes'] ?? null);
+
+        // A confirmed session is a logged session — same quest progress, same
+        // playtime sync as one typed by hand.
+        app(QuestService::class)->progress($request->user(), 'session_logged');
+        $journal->syncPlaytime($request->user(), $session->game_id);
+
+        return $this->success(
+            $this->presentSession($session->load('game', 'moments'), true),
+            'Logged.'
+        );
+    }
+
+    /**
+     * DELETE /journal/suggestions/{suggestion} — no, that was not a session.
+     */
+    public function dismissSuggestion(Request $request, SessionSuggestion $suggestion): JsonResponse
+    {
+        if ($suggestion->user_id !== $request->user()->id) {
+            return $this->error('Not your suggestion.', 403);
+        }
+
+        // Kept rather than deleted: the row is what stops the same afternoon
+        // being proposed again an hour later.
+        $suggestion->update(['status' => 'dismissed']);
+
+        return $this->success(null, 'Dismissed.');
     }
 
     /**

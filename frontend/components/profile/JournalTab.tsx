@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { BookOpen, Plus, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers , Image as ImageIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
+import SessionSuggestions from "./SessionSuggestions";
 import { useCountUp } from "@/hooks/useCountUp";
 import { timeAgo } from "@/lib/timeAgo";
 import type { JournalPayload, PlaySession } from "@/lib/types/profile";
@@ -650,6 +651,10 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                     )}
                 </div>
             </div>
+
+            {/* Sessions Steam already noticed, above the button that asks you
+                to type one in. Nodding beats writing. */}
+            {journal.is_owner && view === "diary" && <SessionSuggestions onLogged={mutate} />}
 
             {journal.is_owner && !showComposer && (
                 <button

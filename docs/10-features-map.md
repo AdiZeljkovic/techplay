@@ -237,6 +237,44 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Redizajn profila — Faza 5: predložene sesije, 13.08.2026
+
+**Dnevnikov pravi problem nikad nije bio dizajn — nego to što traži da sjedneš
+i pišeš.** Steam nam cijelo vrijeme javlja ukupno vrijeme igranja po igri, a mi
+ga pitamo po rasporedu. **Razlika između dva očitanja je sesija koja se
+desila.** Falilo je samo mjesto gdje ta razlika čeka potvrdu.
+
+- Nova tabela `session_suggestions` (`user_id`, `game_id`, `minutes`, `source`,
+  `played_on`, `status`) + kolona `user_games.playtime_seen_minutes` — bez nje
+  nema „prije" od kojeg se oduzima, pa bi svaki sync izgledao kao prvi.
+- `SessionSuggestionService::noticeSteamPlaytime()` se zove iz
+  `SyncSteamLibrary` za svaku postojeću stavku.
+- `GET /journal/suggestions` · `POST /journal/suggestions/{id}` (potvrdi) ·
+  `DELETE /journal/suggestions/{id}` (odbaci)
+
+**Granice su namjerne:**
+
+| Pravilo | Zašto |
+|---|---|
+| Prvo očitanje je **baseline, ne sesija** | Svježe povezan nalog javlja doživotni zbir; „igrao si 300 sati juče" je gore od ničega |
+| < 15 min se ignoriše | Steam broji i pokretanje koje je stiglo do glavnog menija |
+| > 16 h se ignoriše | To je greška u očitanju, ne izuzetan dan |
+| Više naleta istog dana **nadopunjava jedan prijedlog** | Večer u tri navrata ujutru treba biti jedna sesija, ne tri reda za odbacivanje |
+| Odbačen prijedlog se **ne briše** | Red je ono što sprječava da se isto popodne ponudi sat kasnije |
+| Minute su **izmjenjive pri potvrdi** | Steam broji i vrijeme u pauzi i vrijeme provedeno u pravljenju sendviča |
+
+Ništa ne ulazi u dnevnik dok čovjek ne kaže da — „Steam je izbrojao 140 minuta"
+i „igrao sam malo sinoć" su različite tvrdnje, a samo druga je dnevnički zapis.
+Potvrđena sesija ide kroz isti put kao ručno upisana: quest napreduje,
+`syncPlaytime` se zove (i sam odustaje kad je izvor Steam, pa ukupni sati
+ostaju Steamova nadležnost).
+
+**Usput uhvaćen bug:** `playtime_seen_minutes` nije bio u `$fillable` na
+`UserGame`, pa se tiho odbacivao i u samom sync jobu — nova stavka nikad ne bi
+dobila baseline.
+
+---
+
 ### Redizajn profila — Faza 4: Library, 13.08.2026
 
 **Collection + Journal → Library.** Bila su to dva taba koja opisuju iste

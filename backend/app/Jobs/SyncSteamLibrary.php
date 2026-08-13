@@ -6,6 +6,7 @@ use App\Models\ConnectedAccount;
 use App\Models\SteamAchievement;
 use App\Models\UserGame;
 use App\Services\GameMatchingService;
+use App\Services\SessionSuggestionService;
 use App\Services\SteamService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -25,7 +26,7 @@ class SyncSteamLibrary implements ShouldQueue
 
     public function __construct(private readonly int $connectedAccountId) {}
 
-    public function handle(SteamService $steam, GameMatchingService $matcher): void
+    public function handle(SteamService $steam, GameMatchingService $matcher, SessionSuggestionService $suggestions): void
     {
         $account = ConnectedAccount::with('user')->find($this->connectedAccountId);
 
@@ -68,6 +69,11 @@ class SyncSteamLibrary implements ShouldQueue
                     ->first();
 
                 if ($existingEntry) {
+                    // The difference between this reading and the last one is a
+                    // session that happened. Steam has been telling us this all
+                    // along; nothing was listening.
+                    $suggestions->noticeSteamPlaytime($existingEntry, $minutesPlayed);
+
                     // Only update playtime — never overwrite a user-set status.
                     // Steam reports lifetime playtime, so it wins over any
                     // session total we accumulated ourselves.
@@ -77,6 +83,8 @@ class SyncSteamLibrary implements ShouldQueue
                         'playtime_source' => 'steam',
                         'last_played_at' => $isRecent ? now() : null,
                     ]));
+
+                    $existingEntry->forceFill(['playtime_seen_minutes' => $minutesPlayed])->save();
                 } else {
                     $status = $isRecent ? 'playing' : 'backlog';
                     UserGame::create([
@@ -87,6 +95,11 @@ class SyncSteamLibrary implements ShouldQueue
                         'playtime_minutes' => $minutesPlayed,
                         'playtime_source' => 'steam',
                         'last_played_at' => $isRecent ? now() : null,
+                        // The baseline, not a session. A first sync sees a
+                        // lifetime total, and offering "you played for 300
+                        // hours yesterday" would be worse than offering
+                        // nothing.
+                        'playtime_seen_minutes' => $minutesPlayed,
                     ]);
                 }
             }

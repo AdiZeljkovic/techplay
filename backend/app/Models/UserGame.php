@@ -27,6 +27,10 @@ class UserGame extends Model
         // Written by SyncSteamLibrary and PresenceService only.
         'playtime_minutes',
         'playtime_source',
+        // What the last Steam sync reported. The difference between this and
+        // the next reading is what SessionSuggestionService proposes as a
+        // session, so it is a floor rather than a fact about the game.
+        'playtime_seen_minutes',
         'notify_on_release',
     ];
 
@@ -34,6 +38,7 @@ class UserGame extends Model
         'is_favorite' => 'boolean',
         'from_backlog' => 'boolean',
         'playtime_minutes' => 'integer',
+        'playtime_seen_minutes' => 'integer',
         'notify_on_release' => 'boolean',
         'showcase_order' => 'integer',
         'progress' => 'integer',
