@@ -44,6 +44,25 @@ Judge the result on a contact sheet at **60px against `#0B0E14`**, never at full
 size. An icon that looks right at 512px and turns to mush on the strip is the
 mistake that produced the set these replaced.
 
+## `avatar-frame.webp`
+
+The house ring around the profile portrait, also hand-supplied. Preparing one
+is not the icon recipe — the frame has to be centred on **its opening**, not on
+its own bounding box, or the portrait sits off-centre inside it:
+
+1. Flood-fill the transparent middle to find the opening. Take the **widest
+   horizontal chord** as the diameter; the vertical run is shorter because the
+   crest at the bottom reaches into the circle, and the circle is still round.
+2. Build a square canvas whose centre is the opening's centre, sized so the
+   whole artwork still fits, then downscale to 512.
+3. The portrait inset is `(1 − diameter ÷ canvas) ÷ 2`, minus about half a
+   percent so its edge tucks under the metal instead of meeting it flush.
+
+For the current frame that came out at 978 across a 1280 square → 11.8%, drawn
+at **11.3%**. Check the result by compositing the frame over a plain disc at
+that inset and looking at 150px: a hairline of page between portrait and ring
+is the failure this step exists to catch.
+
 ## `components/home-dashboard/StatIcon.tsx`
 
 Adds the behaviour: the icon turns toward the pointer, lifts on approach, and

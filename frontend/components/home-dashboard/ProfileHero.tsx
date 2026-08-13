@@ -68,7 +68,12 @@ function AvatarRing({
                 />
             )}
 
-            <span className={`absolute rounded-full overflow-hidden bg-[var(--surface-2)] ${cosmetic ? "inset-[7px]" : "inset-[11.5%]"}`}>
+            {/* 11.3%, not a round number: the ring's opening measures 978px
+                across a 1280 square, which is an inset of 11.8% exactly. Half
+                a percent tighter puts the portrait's edge under the metal
+                rather than flush against it, so no hairline of page shows
+                between them where the art anti-aliases. */}
+            <span className={`absolute rounded-full overflow-hidden bg-[var(--surface-2)] ${cosmetic ? "inset-[7px]" : "inset-[11.3%]"}`}>
                 {src ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -84,9 +89,10 @@ function AvatarRing({
             </span>
 
             {online && (
-                // Clear of the crest that sits at the bottom of the house
-                // frame — the old position put the dot straight through it.
-                <span className={`absolute z-30 w-[18px] h-[18px] ${cosmetic ? "bottom-[6%] left-[13%]" : "bottom-[13%] left-[6%]"}`} title="Online now">
+                // On the ring's lower-left arc, between the crest at the bottom
+                // and the ornament on the left. Further out it floated in the
+                // corner of the box, detached from the portrait it belongs to.
+                <span className={`absolute z-30 w-[18px] h-[18px] ${cosmetic ? "bottom-[6%] left-[13%]" : "bottom-[13%] left-[13%]"}`} title="Online now">
                     <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
                     <span
                         className="relative block w-full h-full rounded-full ring-[3px] ring-[var(--surface-0)]"
