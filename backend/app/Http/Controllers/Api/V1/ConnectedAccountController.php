@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncPlayStationLibrary;
 use App\Jobs\SyncSteamLibrary;
 use App\Jobs\SyncXboxLibrary;
 use App\Models\ConnectedAccount;
@@ -10,6 +11,7 @@ use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\FunnelAnalytics;
 use App\Services\OpenXblService;
+use App\Services\PlayStationService;
 use App\Services\PresenceService;
 use App\Services\SteamService;
 use App\Traits\ApiResponse;
@@ -30,8 +32,25 @@ class ConnectedAccountController extends Controller
     public function index(Request $request): JsonResponse
     {
         $accounts = ConnectedAccount::where('user_id', $request->user()->id)
-            ->get(['id', 'provider', 'provider_user_id', 'display_name', 'sync_status', 'last_synced_at', 'visibility']);
+            ->get(['id', 'provider', 'display_name', 'sync_status', 'sync_error', 'last_synced_at', 'visibility', 'metadata'])
+            ->map(fn (ConnectedAccount $account) => [
+                'id' => $account->id,
+                'provider' => $account->provider,
+                'display_name' => $account->display_name,
+                'sync_status' => $account->sync_status,
+                'sync_error' => $account->sync_error,
+                'last_synced_at' => $account->last_synced_at?->toIso8601String(),
+                'visibility' => $account->visibility,
+                // Whether the gamertag was ever proved, and when a PlayStation
+                // link will need a fresh token — both things the screen has to
+                // say out loud rather than discover by failing.
+                'verified' => data_get($account->metadata, 'verified_at') !== null,
+                'reconnect_after' => data_get($account->metadata, 'reconnect_after'),
+            ]);
 
+        // provider_user_id is deliberately not here. It is a Steam ID or an
+        // XUID — a stable handle to somebody's account elsewhere, and the
+        // screen has a display name to show instead.
         return $this->success($accounts);
     }
 
@@ -188,6 +207,141 @@ class ConnectedAccountController extends Controller
     }
 
     /**
+     * POST /connected-accounts/playstation/connect
+     *
+     * Sony runs no developer programme and offers no consent screen, so the
+     * only way in is the token the PlayStation website already put in the
+     * reader's own browser. We ask for it plainly and say what it does.
+     */
+    public function playstationConnect(Request $request, PlayStationService $psn): JsonResponse
+    {
+        if (! $psn->enabled()) {
+            return $this->error('PlayStation linking is switched off right now.', 503);
+        }
+
+        $data = $request->validate([
+            // Sony's npsso is a 64-character token. Loose on the length so a
+            // format change does not lock everybody out before we notice.
+            'npsso' => 'required|string|min:32|max:256',
+        ]);
+
+        $tokens = $psn->exchangeNpsso(trim($data['npsso']));
+
+        if (! $tokens) {
+            return $this->error(
+                "That token didn't work. It expires quickly — sign in to Sony, open the npsso page again and copy a fresh one.",
+                422
+            );
+        }
+
+        $profile = $psn->profile($tokens['access_token']);
+
+        if (! $profile) {
+            return $this->error("Signed in, but PlayStation didn't say who you are. Try again in a minute.", 502);
+        }
+
+        $takenByAnother = ConnectedAccount::where('provider', 'playstation')
+            ->where('provider_user_id', $profile['account_id'])
+            ->where('user_id', '!=', $request->user()->id)
+            ->exists();
+
+        if ($takenByAnother) {
+            return $this->error('That PlayStation account is already linked to another TechPlay account.', 409);
+        }
+
+        $account = ConnectedAccount::updateOrCreate(
+            ['user_id' => $request->user()->id, 'provider' => 'playstation'],
+            [
+                'provider_user_id' => $profile['account_id'],
+                'display_name' => $profile['online_id'],
+                'access_token' => $tokens['access_token'],
+                'refresh_token' => $tokens['refresh_token'],
+                'token_expires_at' => now()->addSeconds($tokens['expires_in']),
+                'sync_status' => 'pending',
+                'visibility' => 'public',
+                // Roughly two months, which is what Sony's refresh window has
+                // been. The connections screen warns before it lands rather
+                // than letting a sync fail on the day.
+                'metadata' => ['reconnect_after' => now()->addDays(55)->toDateString()],
+            ]
+        );
+
+        SyncPlayStationLibrary::dispatch($account->id)->onQueue('default');
+
+        try {
+            app(AchievementService::class)->check($request->user(), ['connected_accounts']);
+        } catch (\Throwable) {
+        }
+
+        return $this->success(
+            ['online_id' => $profile['online_id']],
+            "Connected as {$profile['online_id']} — importing your trophies now."
+        );
+    }
+
+    /**
+     * POST /connected-accounts/xbox/verify — start proving the gamertag is yours.
+     *
+     * Linking an Xbox account has only ever needed the gamertag typed in,
+     * because OpenXBL reads public data and does not care who is asking. First
+     * claimant wins, which stops the collision being a crash but proves
+     * nothing. This is the same trick PSNProfiles uses: put a code somewhere
+     * only the account owner can write, then go and read it back.
+     */
+    public function xboxVerifyStart(Request $request): JsonResponse
+    {
+        $account = ConnectedAccount::where('user_id', $request->user()->id)
+            ->where('provider', 'xbox')
+            ->firstOrFail();
+
+        $code = 'TP-'.strtoupper(Str::random(6));
+
+        $account->update([
+            'metadata' => array_merge($account->metadata ?? [], [
+                'verification_code' => $code,
+                'verification_started_at' => now()->toIso8601String(),
+            ]),
+        ]);
+
+        return $this->success([
+            'code' => $code,
+            'instructions' => 'Put this code in your Xbox profile bio, then come back and press Verify. You can remove it afterwards.',
+        ]);
+    }
+
+    /**
+     * POST /connected-accounts/xbox/verify/confirm — go and read it back.
+     */
+    public function xboxVerifyConfirm(Request $request, OpenXblService $xbl): JsonResponse
+    {
+        $account = ConnectedAccount::where('user_id', $request->user()->id)
+            ->where('provider', 'xbox')
+            ->firstOrFail();
+
+        $code = data_get($account->metadata, 'verification_code');
+
+        if (! $code) {
+            return $this->error('Start the verification first.', 422);
+        }
+
+        $summary = $xbl->playerSummary($account->provider_user_id);
+        $bio = (string) data_get($summary, 'bio', '');
+
+        if (! str_contains(strtoupper($bio), $code)) {
+            return $this->error("Couldn't find the code in that Xbox profile yet. Xbox can take a minute to publish a bio change.", 422);
+        }
+
+        $account->update([
+            'metadata' => array_merge($account->metadata ?? [], [
+                'verified_at' => now()->toIso8601String(),
+                'verification_code' => null,
+            ]),
+        ]);
+
+        return $this->success(null, 'Verified — that gamertag is yours.');
+    }
+
+    /**
      * POST /connected-accounts/{id}/sync — re-trigger a sync.
      */
     public function sync(Request $request, int $id): JsonResponse
@@ -203,6 +357,7 @@ class ConnectedAccountController extends Controller
         match ($account->provider) {
             'steam' => SyncSteamLibrary::dispatch($account->id)->onQueue('default'),
             'xbox' => SyncXboxLibrary::dispatch($account->id)->onQueue('default'),
+            'playstation' => SyncPlayStationLibrary::dispatch($account->id)->onQueue('default'),
             default => null,
         };
 

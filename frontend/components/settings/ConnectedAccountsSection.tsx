@@ -9,11 +9,16 @@ import { Loader2, Link2, Link2Off, RefreshCw, CheckCircle2, Clock, AlertCircle, 
 interface ConnectedAccount {
     id: number;
     provider: string;
-    provider_user_id: string;
     display_name: string | null;
-    sync_status: "idle" | "pending" | "syncing" | "done" | "error";
+    /** 'expired' is PlayStation's own: the token aged out and only the reader can renew it. */
+    sync_status: "idle" | "pending" | "syncing" | "done" | "error" | "expired";
+    sync_error?: string | null;
     last_synced_at: string | null;
     visibility: string;
+    /** Xbox only — whether the gamertag was ever proved to be theirs. */
+    verified?: boolean;
+    /** PlayStation only — the date its token stops refreshing. */
+    reconnect_after?: string | null;
 }
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data ?? []);
@@ -24,7 +29,9 @@ const PROVIDERS: {
     description: string;
     color: string;
     iconBg: string;
-    connectMode?: "redirect" | "gamertag";
+    connectMode?: "redirect" | "gamertag" | "npsso";
+    /** Said plainly on the card, because it is not obvious and it matters. */
+    caveat?: string;
     logo: React.ReactNode;
 }[] = [
     {
@@ -48,9 +55,24 @@ const PROVIDERS: {
         color: "#107C10",
         iconBg: "#0e2f0e",
         connectMode: "gamertag",
+        caveat: "Xbox reports achievements but not playtime, so hours stay blank for these games.",
         logo: (
             <svg viewBox="0 0 24 24" className="w-6 h-6" fill="#3FBB48" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4.102 21.033A11.947 11.947 0 0 0 12 24a11.96 11.96 0 0 0 7.902-2.967c1.877-1.912-4.316-8.709-7.902-11.417-3.582 2.708-9.779 9.505-7.898 11.417zm11.16-14.406c2.5 2.961 7.484 10.313 6.076 12.912A11.942 11.942 0 0 0 24 12.004a11.95 11.95 0 0 0-3.57-8.536s-.027-.022-.082-.042a.847.847 0 0 0-.281-.045c-.592 0-1.985.434-4.805 3.246zM3.654 3.426c-.057.02-.082.041-.086.042A11.956 11.956 0 0 0 0 12.004c0 2.854.998 5.473 2.661 7.533-1.401-2.605 3.579-9.951 6.08-12.91-2.82-2.813-4.216-3.245-4.806-3.245a.725.725 0 0 0-.281.045zM12 4.958S9.055 3.233 6.755 3.152c-.905-.033-1.454.295-1.52.335C7.379 1.996 9.659 0 12 0h.016c2.341 0 4.615 1.996 6.762 3.487-.065-.04-.611-.368-1.518-.335-2.3.081-5.244 1.8-5.26 1.806z"/>
+            </svg>
+        ),
+    },
+    {
+        id: "playstation",
+        name: "PlayStation",
+        description: "Import the games you have trophies in, and how far through each one you are",
+        color: "#003791",
+        iconBg: "#00246b",
+        connectMode: "npsso",
+        caveat: "Sony has no official sign-in for other sites, so this needs a token you copy from your own browser — and it needs renewing about every two months.",
+        logo: (
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="#5B8BF7" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.985 2.596v17.548l3.915 1.261V6.688c0-.69.304-1.151.794-.991.636.181.76.814.76 1.505v5.876c2.441 1.193 4.362-.002 4.362-3.153 0-3.237-1.126-4.675-4.438-5.827-1.307-.448-3.728-1.186-5.393-1.502zm4.656 16.242l6.296-2.275c.715-.258.826-.625.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.499v-2.385l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.06 1.472 1.588 2.072-.473.601-1.622 1.03-1.622 1.03l-8.536 3.079v-2.276zM1.807 18.867c-1.9-.535-2.213-1.65-1.348-2.29.802-.594 2.16-1.04 2.16-1.04l5.626-2.003v2.286l-4.05 1.45c-.715.257-.826.62-.246.813.586.192 1.637.14 2.352-.117l1.944-.705v2.045c-.124.02-.26.04-.386.06-1.939.318-4.004.187-6.052-.5z"/>
             </svg>
         ),
     },
@@ -70,6 +92,12 @@ function syncStatusBadge(status: ConnectedAccount["sync_status"], lastSynced: st
             return (
                 <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-400">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing…
+                </span>
+            );
+        case "expired":
+            return (
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-400">
+                    <AlertCircle className="w-3.5 h-3.5" /> Connection expired — reconnect
                 </span>
             );
         case "error":
@@ -93,6 +121,54 @@ export default function ConnectedAccountsSection() {
     const [connecting, setConnecting] = useState<string | null>(null);
     const [gamertagFor, setGamertagFor] = useState<string | null>(null);
     const [gamertag, setGamertag] = useState("");
+    const [npssoOpen, setNpssoOpen] = useState(false);
+    const [npsso, setNpsso] = useState("");
+    const [verifying, setVerifying] = useState<number | null>(null);
+    const [verifyCode, setVerifyCode] = useState<string | null>(null);
+
+    async function handleNpssoConnect() {
+        if (npsso.trim().length < 32) {
+            toast.error("That doesn't look like an npsso token.");
+            return;
+        }
+
+        setConnecting("playstation");
+        try {
+            const res = await axios.post("/connected-accounts/playstation/connect", { npsso: npsso.trim() });
+            toast.success(res.data?.message ?? "Connected.");
+            setNpssoOpen(false);
+            setNpsso("");
+            mutate();
+        } catch (err: unknown) {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Couldn't connect to PlayStation.");
+        } finally {
+            setConnecting(null);
+        }
+    }
+
+    async function startVerification() {
+        try {
+            const res = await axios.post("/connected-accounts/xbox/verify");
+            setVerifyCode(res.data?.data?.code ?? null);
+        } catch {
+            toast.error("Couldn't start verification.");
+            setVerifying(null);
+        }
+    }
+
+    async function confirmVerification() {
+        try {
+            await axios.post("/connected-accounts/xbox/verify/confirm");
+            toast.success("Verified — that gamertag is yours.");
+            setVerifying(null);
+            setVerifyCode(null);
+            mutate();
+        } catch (err: unknown) {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Couldn't verify yet.");
+        }
+    }
 
     async function handleGamertagConnect(providerId: string) {
         if (gamertag.trim().length < 2) {
@@ -195,14 +271,43 @@ export default function ConnectedAccountsSection() {
                                 <span className="text-[14px] font-bold text-white">{provider.name}</span>
                                 {account && (
                                     <span className="text-[11px] font-semibold text-white/40 truncate">
-                                        {account.display_name ?? account.provider_user_id}
+                                        {account.display_name ?? "Connected"}
                                     </span>
+                                )}
+                                {/* Linking a gamertag proves nothing on its own —
+                                    OpenXBL reads public data and does not care who
+                                    is asking. This says which state it is in. */}
+                                {account && provider.id === "xbox" && (
+                                    account.verified ? (
+                                        <span className="inline-flex items-center gap-1 h-[18px] px-1.5 rounded-[4px] bg-emerald-500/[0.12] text-[9.5px] font-bold uppercase tracking-[0.08em] text-emerald-400">
+                                            <Shield className="w-2.5 h-2.5" /> Verified
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center h-[18px] px-1.5 rounded-[4px] bg-white/[0.07] text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/40">
+                                            Unverified
+                                        </span>
+                                    )
                                 )}
                             </div>
                             {account ? (
-                                syncStatusBadge(account.sync_status, account.last_synced_at)
+                                <div className="flex flex-col gap-1">
+                                    {syncStatusBadge(account.sync_status, account.last_synced_at)}
+                                    {account.reconnect_after && account.sync_status !== "expired" && (
+                                        <span className="text-[11px] text-white/30">
+                                            Needs reconnecting after {new Date(account.reconnect_after).toLocaleDateString()}
+                                        </span>
+                                    )}
+                                    {account.sync_error && (
+                                        <span className="text-[11px] text-amber-400/70">{account.sync_error}</span>
+                                    )}
+                                </div>
                             ) : (
-                                <span className="text-[12px] text-white/40">{provider.description}</span>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-[12px] text-white/40">{provider.description}</span>
+                                    {provider.caveat && (
+                                        <span className="text-[11px] text-white/25 leading-snug">{provider.caveat}</span>
+                                    )}
+                                </div>
                             )}
                         </div>
 
@@ -227,6 +332,12 @@ export default function ConnectedAccountsSection() {
                                             : account.visibility === "public" ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                                         {account.visibility === "public" ? "Visible" : "Hidden"}
                                     </button>
+                                    {provider.id === "xbox" && !account.verified && (
+                                        <button onClick={() => setVerifying(account.id)} disabled={isBusy}
+                                            className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors disabled:opacity-40">
+                                            <Shield className="w-3.5 h-3.5" /> Verify
+                                        </button>
+                                    )}
                                     <button onClick={() => handleSync(account.id)} disabled={isBusy || account.sync_status === "syncing"}
                                         className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors disabled:opacity-40">
                                         {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
@@ -238,6 +349,11 @@ export default function ConnectedAccountsSection() {
                                         Disconnect
                                     </button>
                                 </>
+                            ) : provider.connectMode === "npsso" ? (
+                                <button onClick={() => setNpssoOpen(true)}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
+                                    <Link2 className="w-3.5 h-3.5" /> Connect
+                                </button>
                             ) : provider.connectMode === "gamertag" ? (
                                 gamertagFor === provider.id ? (
                                     <div className="flex items-center gap-2">
@@ -277,6 +393,95 @@ export default function ConnectedAccountsSection() {
                     </div>
                 );
             })}
+
+            {/* ── PlayStation: the token, and why we have to ask ── */}
+            {npssoOpen && (
+                <div className="rounded-[var(--radius-card)] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[var(--surface-1)] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <p className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">Connect PlayStation</p>
+                            <p className="mt-2 text-[12px] text-white/45 leading-relaxed max-w-[560px]">
+                                Sony runs no sign-in for other sites, so there is no button we can send you to. Instead:
+                                sign in at <span className="text-white/70">playstation.com</span>, then open{" "}
+                                <a
+                                    href="https://ca.account.sony.com/api/v1/ssocookie"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[var(--accent)] hover:underline"
+                                >
+                                    this page
+                                </a>{" "}
+                                and copy the long value next to <span className="text-white/70">npsso</span>.
+                            </p>
+                            <p className="mt-2 text-[11px] text-white/25 leading-relaxed max-w-[560px]">
+                                The token is encrypted before it is stored and is only used to read your trophy list. It stops
+                                working after about two months, and this page will tell you before it does.
+                            </p>
+                        </div>
+                        <button onClick={() => { setNpssoOpen(false); setNpsso(""); }} className="text-white/30 hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                        <input
+                            autoFocus
+                            value={npsso}
+                            onChange={(e) => setNpsso(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") handleNpssoConnect(); }}
+                            placeholder="Paste your npsso token"
+                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                        />
+                        <button
+                            onClick={handleNpssoConnect}
+                            disabled={connecting === "playstation"}
+                            className="flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60"
+                        >
+                            {connecting === "playstation" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Xbox: proving the gamertag is yours ── */}
+            {verifying !== null && (
+                <div className="rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <p className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">Prove it is yours</p>
+                            <p className="mt-2 text-[12px] text-white/45 leading-relaxed max-w-[560px]">
+                                Anyone can type any gamertag, so linking one proves nothing. Put a short code in your Xbox
+                                profile bio and we will go and read it back — then you can take it out again.
+                            </p>
+                        </div>
+                        <button onClick={() => { setVerifying(null); setVerifyCode(null); }} className="text-white/30 hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    {verifyCode ? (
+                        <div className="mt-3.5 flex flex-wrap items-center gap-3">
+                            <code className="h-10 px-4 inline-flex items-center rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] font-display text-[15px] font-black tracking-[0.14em] text-[var(--accent)]">
+                                {verifyCode}
+                            </code>
+                            <button
+                                onClick={confirmVerification}
+                                className="flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors"
+                            >
+                                <CheckCircle2 className="w-3.5 h-3.5" /> I have added it
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={startVerification}
+                            className="mt-3.5 flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors"
+                        >
+                            <Shield className="w-3.5 h-3.5" /> Give me a code
+                        </button>
+                    )}
+                </div>
+            )}
 
             <div className="flex items-start gap-2 mt-2 p-3 rounded-[var(--radius-card)] bg-white/[0.02] border border-white/[0.05]">
                 <Shield className="w-3.5 h-3.5 text-white/25 mt-0.5 shrink-0" />

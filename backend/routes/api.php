@@ -294,6 +294,12 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [ConnectedAccountController::class, 'index']);
             Route::get('/steam/connect', [ConnectedAccountController::class, 'steamConnectUrl']);
             Route::middleware('throttle:10,1')->post('/xbox/connect', [ConnectedAccountController::class, 'xboxConnect']);
+            // Proving the gamertag is actually yours — a code in the Xbox bio,
+            // read back by us. Linking alone never proved anything.
+            Route::middleware('throttle:10,1')->post('/xbox/verify', [ConnectedAccountController::class, 'xboxVerifyStart']);
+            Route::middleware('throttle:20,1')->post('/xbox/verify/confirm', [ConnectedAccountController::class, 'xboxVerifyConfirm']);
+            // Sony offers no consent screen, so the reader pastes their own npsso.
+            Route::middleware('throttle:6,1')->post('/playstation/connect', [ConnectedAccountController::class, 'playstationConnect']);
             Route::post('/{id}/sync', [ConnectedAccountController::class, 'sync']);
             Route::patch('/{id}/visibility', [ConnectedAccountController::class, 'visibility']);
             Route::delete('/{id}', [ConnectedAccountController::class, 'destroy']);

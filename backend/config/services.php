@@ -98,6 +98,14 @@ return [
         'key' => env('STEAM_API_KEY', ''),
     ],
 
+    'psn' => [
+        // Off unless switched on. There is no official PlayStation API — the
+        // integration talks to the endpoints the mobile app uses, and the
+        // shape of a response can change without warning. This is the switch
+        // that turns it off without a deploy.
+        'enabled' => env('PSN_ENABLED', false),
+    ],
+
     'battlenet' => [
         'client_id' => env('BATTLENET_CLIENT_ID'),
         'client_secret' => env('BATTLENET_CLIENT_SECRET'),

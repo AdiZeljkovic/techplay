@@ -237,6 +237,49 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Redizajn profila — Faza 8: PlayStation i jedan ekran za veze, 13.08.2026
+
+**PlayStation — radi, ali s otvorenim kartama.** Sony ne vodi developerski
+program i nema pristanak-ekran na koji možemo poslati korisnika. Svaki tracker
+koji pokazuje trofeje priča s endpointima koje koristi PlayStation mobilna
+aplikacija, dokumentovanim od zajednice a ne od Sonyja. Dvije posljedice koje se
+ne mogu zaobići dizajnom:
+
+1. Korisnik nam mora **ručno predati `npsso` token** koji kopira iz svog
+   browsera. Drugog načina nema.
+2. **Može prestati raditi bilo kad** — ne „biće ukinuto jednom", nego oblik
+   odgovora se može promijeniti u utorak.
+
+Zato: `PSN_ENABLED` u configu (**podrazumijevano isključeno**), svaki poziv pada
+meko i loguje kao `warning`, a ništa drugo na sajtu ne ovisi o PlayStationu.
+Kad se pokvari, profil izgubi trofeje i nastavi raditi.
+
+- `PlayStationService` — npsso → authorization code → tokeni; refresh; profil;
+  trophy titles. Tokeni idu kroz postojeću enkripciju na `ConnectedAccount`.
+- `SyncPlayStationLibrary` — puni policu i procenat, **ne dira playtime**: Sony
+  ga ne javlja, a nula bi izgledala kao mjerenje.
+- Novo stanje sinhronizacije **`expired`** — refresh prozor je zatvoren i samo
+  korisnik ga može otvoriti. Rečeno tim riječima, jer bi „sync failed" poslalo
+  čovjeka da traži kvar kod nas.
+
+**Xbox dokaz vlasništva.** Veza je dotad tražila samo da upišeš gamertag —
+OpenXBL čita javne podatke i ne pita ko pita. „Prvi ko uzme drži" je sprječavalo
+pad, ali nije dokazivalo ništa. Sada: kod u Xbox bio polju koji mi pročitamo
+nazad (isti trik koji koristi PSNProfiles). Kartica pokazuje **Verified** ili
+**Unverified**.
+
+**Jedan ekran, tri platforme.** `ConnectedAccountsSection` je dobio PlayStation,
+značku verifikacije, `expired` stanje, upozorenje o datumu obnove i **caveat po
+platformi** — Xbox javlja dostignuća ali ne i sate, pa kartica to kaže umjesto
+da sati stoje prazni bez objašnjenja.
+
+**Usput poravnato:** PSN job je prvo pisao `synced`/`failed` dok ostatak koda
+koristi `done`/`error` — frontend bi završen sync prikazao kao „Never synced".
+`index()` je prestao slati `provider_user_id` (Steam ID / XUID) — ekran ima ime
+za prikaz.
+
+---
+
 ### Redizajn profila — Faza 7: questovi i sezonski luk, 13.08.2026
 
 **Devet questova brojalo je samo dvije stvari** — kolekciju i dnevnik. Ko je
