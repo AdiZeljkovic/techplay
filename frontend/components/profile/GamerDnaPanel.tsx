@@ -3,11 +3,10 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Dna, Share2, Check, Clock3, Gamepad2, Trophy, Monitor, Sparkles, BookOpen, Swords, Moon, Compass, Feather, Cpu, MemoryStick, MonitorPlay, MessageSquare, MessagesSquare, Bookmark, Gem, HelpCircle, type LucideIcon } from "lucide-react";
+import { Dna, Share2, Check, Clock3, Gamepad2, Trophy, Sparkles, BookOpen, Swords, Moon, Compass, Feather, HelpCircle, type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
-import { getStorageUrl } from "@/lib/imageUrl";
 import type { DistributionStat, DnaArchetype, DnaAxis, GamerDnaPayload } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -15,32 +14,10 @@ const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 /** The donut palette — deliberately wide so eight genres stay separable. */
 const WHEEL = ["#f97316", "#ef4444", "#a78bfa", "#22d3ee", "#38bdf8", "#34d399", "#84cc16", "#eab308"];
 
-const STATUS_COLORS: Record<string, string> = {
-    playing: "#34d399",
-    completed: "#22c55e",
-    backlog: "#60a5fa",
-    wishlist: "#f472b6",
-    favorites: "#f97316" };
-
-const PLATFORM_ICONS: Record<string, string> = {
-    pc: "🖥️", playstation: "🎮", xbox: "🎯", nintendo: "🕹️", switch: "🕹️",
-    steam: "🖥️", mobile: "📱", retro: "👾" };
-
 const ARCHETYPE_ICONS: Record<string, LucideIcon> = {
     book: BookOpen, chess: Swords, trophy: Trophy, moon: Moon, compass: Compass, quill: Feather };
 
 const ARCHETYPE_TINTS = ["#a78bfa", "#f97316", "#eab308", "#60a5fa"];
-
-const SPEC_META: Record<string, { label: string; icon: LucideIcon }> = {
-    cpu: { label: "CPU", icon: Cpu },
-    gpu: { label: "GPU", icon: MonitorPlay },
-    ram: { label: "RAM", icon: MemoryStick },
-    display: { label: "Display", icon: Monitor },
-    monitor: { label: "Display", icon: Monitor },
-    storage: { label: "Storage", icon: MemoryStick },
-    motherboard: { label: "Motherboard", icon: Cpu } };
-
-const CONTRIBUTION_ICONS = [MessageSquare, MessagesSquare, Bookmark, Gem];
 
 /* ── donut ────────────────────────────────────────────────────────────── */
 
@@ -335,17 +312,6 @@ export default function GamerDnaPanel({ username }: { username: string }) {
 
     const dna = data?.data;
 
-    const collectionSlices = useMemo(() => {
-        if (!dna) return [];
-        const c = dna.collection;
-        return [
-            { label: "Playing", value: c.playing, color: STATUS_COLORS.playing },
-            { label: "Completed", value: c.completed, color: STATUS_COLORS.completed },
-            { label: "Backlog", value: c.backlog, color: STATUS_COLORS.backlog },
-            { label: "Wishlist", value: c.wishlist, color: STATUS_COLORS.wishlist },
-        ].filter((s) => s.value > 0);
-    }, [dna]);
-
     const share = () => {
         navigator.clipboard?.writeText(`${window.location.origin}/profile/${username}?tab=stats`).then(() => {
             setCopied(true);
@@ -362,6 +328,10 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                     <div className="xl:col-span-3 h-[300px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
                     <div className="xl:col-span-4 h-[300px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
                 </div>
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
+                    <div className="xl:col-span-7 h-[240px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
+                    <div className="xl:col-span-5 h-[240px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
+                </div>
             </div>
         );
     }
@@ -369,9 +339,6 @@ export default function GamerDnaPanel({ username }: { username: string }) {
     if (!dna) {
         return <EmptyState icon={<Dna className="w-[18px] h-[18px]" />} title="No DNA yet" body="Add games to your collection and this page fills in." />;
     }
-
-    const specEntries = Object.entries(dna.setup.specs).filter(([, v]) => v);
-    const gamertagEntries = Object.entries(dna.setup.gamertags ?? {}).filter(([, v]) => v);
 
     return (
         <div className="space-y-4">
@@ -383,7 +350,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                     </span>
                     <div>
                         <h2 className="font-display text-[22px] font-black uppercase tracking-[0.02em] text-white leading-none">Gamer DNA</h2>
-                        <p className="mt-1 text-[12px] text-white/40">The statistics of your taste in games</p>
+                        <p className="mt-1 text-[12px] text-white/40">What your library says about you</p>
                     </div>
                 </div>
 
@@ -448,84 +415,15 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
             </div>
 
-            {/* ── row 2 — collection, platforms, eras ── */}
+            {/* ── row 2 — eras and archetypes ──
+
+                Collection Breakdown and Platform Affinity used to open this
+                row, and both were the Library's job: the shelf counts its own
+                statuses, and the Collection tab already draws a Platforms
+                panel from the same aggregation. Two readings of one number in
+                two places is how they end up disagreeing. */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
-                <div className="xl:col-span-3 min-w-0">
-                    <Panel title="Collection Breakdown" className="h-full" bodyClassName="flex flex-col justify-center">
-                        {dna.collection.total === 0 ? (
-                            <EmptyState variant="compact" title="Nothing on the shelf yet" />
-                        ) : (
-                            <div className="flex items-center gap-4">
-                                <Donut size={118} thickness={15} slices={collectionSlices}>
-                                    <span className="text-center">
-                                        <span className="block font-display text-[17px] font-black tabular-nums leading-none text-white">
-                                            {dna.collection.total}
-                                        </span>
-                                        <span className="block mt-0.5 font-display text-[7.5px] font-bold uppercase tracking-[0.14em] text-white/30">
-                                            Games
-                                        </span>
-                                    </span>
-                                </Donut>
-                                <div className="flex-1 min-w-0 space-y-2">
-                                    {(["playing", "completed", "backlog", "wishlist", "favorites"] as const).map((k) => (
-                                        <div key={k} className="flex items-center gap-2.5">
-                                            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: STATUS_COLORS[k] }} />
-                                            <span className="flex-1 text-[12px] text-white/60 capitalize">{k}</span>
-                                            <span className="font-display text-[12px] font-black tabular-nums text-white">
-                                                {dna.collection[k]}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </Panel>
-                </div>
-
-                <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Platform Affinity" className="h-full" bodyClassName="flex flex-col justify-center">
-                        {dna.platforms.length === 0 ? (
-                            <EmptyState variant="compact" title="No platforms tagged" body="Tag a platform on your collection entries." />
-                        ) : (
-                            <>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                                    {dna.platforms.slice(0, 5).map((p, i) => (
-                                        <div
-                                            key={p.name}
-                                            className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-[10px] border transition-colors ${
-                                                i === 0
-                                                    ? "border-[color-mix(in_srgb,var(--accent)_45%,transparent)] bg-[var(--accent-soft)]"
-                                                    : "border-white/[0.07] bg-white/[0.02]"
-                                            }`}
-                                        >
-                                            <span className="text-[19px] leading-none">
-                                                {PLATFORM_ICONS[p.name.toLowerCase()] ?? "🎮"}
-                                            </span>
-                                            <span className="font-display text-[10px] font-bold text-white/70 text-center leading-tight px-1 truncate max-w-full">
-                                                {p.name}
-                                            </span>
-                                            <span className={`font-display text-[13px] font-black tabular-nums ${i === 0 ? "text-[var(--accent)]" : "text-white"}`}>
-                                                {p.percent}%
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-3 flex h-[5px] rounded-full overflow-hidden bg-[var(--track)]">
-                                    {dna.platforms.map((p, i) => (
-                                        <span
-                                            key={p.name}
-                                            style={{
-                                                width: `${p.percent}%`,
-                                                background: i === 0 ? "var(--accent)" : WHEEL[(i + 2) % WHEEL.length] }}
-                                        />
-                                    ))}
-                                </div>
-                            </>
-                        )}
-                    </Panel>
-                </div>
-
-                <div className="xl:col-span-5 min-w-0">
+                <div className="xl:col-span-7 min-w-0">
                     <Panel title="Gaming Eras" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.eras.every((e) => e.count === 0) ? (
                             <EmptyState variant="compact" title="No release dates yet" body="Games without a release year can't be placed on the timeline." />
@@ -569,135 +467,8 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                         )}
                     </Panel>
                 </div>
-            </div>
 
-            {/* ── row 3 — contribution, setup, archetypes ── */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
-                <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Community Contribution" className="h-full">
-                        <div className="grid grid-cols-2 gap-4">
-                            {dna.contribution.map((c, i) => {
-                                const Icon = CONTRIBUTION_ICONS[i] ?? MessageSquare;
-                                return (
-                                    <div key={c.label}>
-                                        <p className="flex items-center gap-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/40 leading-tight">
-                                            <Icon className="w-3.5 h-3.5 shrink-0" />
-                                            {c.label}
-                                        </p>
-                                        <p className="mt-1.5 flex items-baseline gap-1">
-                                            <span className="font-display text-[19px] font-black tabular-nums leading-none text-white">
-                                                {c.value.toLocaleString("en-US")}
-                                            </span>
-                                            <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
-                                                /{c.target.toLocaleString("en-US")}
-                                            </span>
-                                        </p>
-                                        <span className="block mt-2 h-[4px] rounded-full bg-[var(--track)] overflow-hidden">
-                                            <span className="block h-full rounded-full bg-emerald-400/80" style={{ width: `${c.percent}%` }} />
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {dna.badges.items.length > 0 && (
-                            <div className="mt-5 pt-4 border-t border-white/[0.07]">
-                                <p className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2.5">Top badges</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {dna.badges.items.map((b) => (
-                                        <span
-                                            key={b.id}
-                                            title={`${b.name} · ${b.points} pts`}
-                                            className="inline-flex items-center gap-1.5 h-[26px] pl-1.5 pr-2.5 rounded-[6px] bg-white/[0.04] border border-white/[0.08]"
-                                        >
-                                            {b.icon_path ? (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={getStorageUrl(b.icon_path)} alt="" aria-hidden className="w-4 h-4 object-contain" />
-                                            ) : (
-                                                <Trophy className="w-3 h-3 text-[var(--accent)]" />
-                                            )}
-                                            <span className="text-[10.5px] font-bold text-white/70">{b.name}</span>
-                                        </span>
-                                    ))}
-                                    {dna.badges.more > 0 && (
-                                        <span className="inline-flex items-center h-[26px] px-2.5 rounded-[6px] font-display text-[10px] font-bold text-white/35">
-                                            +{dna.badges.more} more
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </Panel>
-                </div>
-
-                <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Setup Overview" className="h-full">
-                        {specEntries.length === 0 ? (
-                            <EmptyState
-                                variant="compact"
-                                title="No rig on file"
-                                body="Add your specs in settings and they show up here."
-                                action={{ label: "Add specs", href: "/settings" }}
-                            />
-                        ) : (
-                            <>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {specEntries.slice(0, 4).map(([key, value]) => {
-                                        const meta = SPEC_META[key.toLowerCase()] ?? { label: key, icon: Cpu };
-                                        const Icon = meta.icon;
-                                        return (
-                                            <div key={key} className="p-3 rounded-[10px] border border-white/[0.07] bg-white/[0.02]">
-                                                <p className="flex items-center gap-1.5 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/40">
-                                                    <Icon className="w-3.5 h-3.5" />
-                                                    {meta.label}
-                                                </p>
-                                                <p className="mt-1.5 text-[12.5px] font-bold text-white leading-snug break-words">{value}</p>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-
-                                {dna.setup.tier && (
-                                    <div className="mt-3 flex items-center gap-3 flex-wrap">
-                                        <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/40">
-                                            Performance tier
-                                        </span>
-                                        <span className="font-display text-[12px] font-black text-[var(--accent)]">{dna.setup.tier.label}</span>
-                                        <span className="flex items-center gap-1">
-                                            {[1, 2, 3, 4].map((n) => (
-                                                <span
-                                                    key={n}
-                                                    className="block w-[18px] h-[5px] rounded-full"
-                                                    style={{ background: n <= dna.setup.tier!.level ? "var(--accent)" : "var(--track)" }}
-                                                />
-                                            ))}
-                                        </span>
-                                        <span className="ml-auto text-[11px] text-white/35">{dna.setup.tier.note}</span>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {gamertagEntries.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-white/[0.07]">
-                                <p className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2.5">Gamer IDs</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {gamertagEntries.map(([platform, handle]) => (
-                                        <span
-                                            key={platform}
-                                            className="inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-[6px] bg-white/[0.04] border border-white/[0.08]"
-                                        >
-                                            <span className="text-[12px] leading-none">{PLATFORM_ICONS[platform.toLowerCase()] ?? "🎮"}</span>
-                                            <span className="text-[10.5px] font-bold text-white/70">{handle}</span>
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </Panel>
-                </div>
-
-                <div className="xl:col-span-4 min-w-0">
+                <div className="xl:col-span-5 min-w-0">
                     <Panel title="Player Archetype" className="h-full">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {dna.archetypes.map((a, i) => (

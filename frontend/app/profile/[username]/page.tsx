@@ -8,7 +8,7 @@ import { useParams, useRouter, useSearchParams, usePathname } from "next/navigat
 import { useAuth } from "@/hooks/useAuth";
 import { User, Gamepad2, Trophy, ListChecks, Flame } from "lucide-react";
 import toast from "react-hot-toast";
-import AchievementsTab from "@/components/profile/AchievementsTab";
+import ProgressionTab from "@/components/profile/ProgressionTab";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHero from "@/components/home-dashboard/ProfileHero";
 import SignInWall from "@/components/auth/SignInWall";
@@ -16,14 +16,11 @@ import LockedProfile from "@/components/profile/LockedProfile";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import DashboardHome from "@/components/home-dashboard/DashboardHome";
 import CollectionGrid from "@/components/profile/CollectionGrid";
-import RewardsStore from "@/components/profile/RewardsStore";
 import JournalTab from "@/components/profile/JournalTab";
 import ListsTab from "@/components/profile/ListsTab";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
-import SectionCard from "@/components/profile/dashboard/SectionCard";
-import SteamAchievements from "@/components/profile/dashboard/SteamAchievements";
-import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
+import { PROFILE_TABS, LEGACY_TABS, type ProfileTab } from "@/lib/profileTabs";
 import { heroFromProfile } from "@/lib/hero";
 import type { FriendStatus, UserProfile } from "@/lib/types/profile";
 
@@ -42,11 +39,13 @@ function ProfilePageInner() {
     const username = rawUsername === "me" && currentUser ? currentUser.username : rawUsername;
     const shouldFetch = username && username !== "me";
 
-    // The Activity tab is gone — its feed lives on the overview, and the
-    // long-dead ?tab=forum link lands there too rather than 404-ing a tab.
-    const rawTabParam = searchParams.get("tab");
-    const tabParam = (rawTabParam === "forum" || rawTabParam === "activity" ? null : rawTabParam) as ProfileTab | null;
-    const activeTab: ProfileTab = tabParam && VALID_TABS.includes(tabParam) ? tabParam : "overview";
+    // Sections move as the profile is reorganised, and links out in the wild
+    // keep pointing at where they used to be. LEGACY_TABS forwards them —
+    // ?tab=achievements and ?tab=rewards both land on Progression now — so a
+    // shared link never opens on a section that no longer exists.
+    const rawTabParam = searchParams.get("tab") ?? "";
+    const tabParam = (LEGACY_TABS[rawTabParam] ?? rawTabParam) as ProfileTab;
+    const activeTab: ProfileTab = VALID_TABS.includes(tabParam) ? tabParam : "overview";
 
     // Optimistic override — the payload's friend_status is the source of truth
     // until the viewer acts on this page.
@@ -180,12 +179,9 @@ function ProfilePageInner() {
         );
     }
 
-    // Rewards is the owner's economy hub — not part of the public profile
-    const effectiveTab: ProfileTab = activeTab === "rewards" && !isOwnProfile ? "overview" : activeTab;
-
     // Your own Overview *is* the logged-in homepage — literally the same page,
     // reachable at both / and /profile/{you}.
-    if (isOwnProfile && effectiveTab === "overview") {
+    if (isOwnProfile && activeTab === "overview") {
         return (
             <div style={rootStyle}>
                 <DashboardHome user={currentUser} />
@@ -201,7 +197,7 @@ function ProfilePageInner() {
                     <div className="tp-fade-up tp-d1">
                         <ProfileHero
                             hero={hero}
-                            activeTab={effectiveTab}
+                            activeTab={activeTab}
                             isOwnProfile={isOwnProfile}
                             friendStatus={friendStatus}
                             friendActionBusy={loadingAction}
@@ -214,7 +210,7 @@ function ProfilePageInner() {
                 )}
 
                 <div className="tp-fade-up tp-d2">
-                    {effectiveTab === "overview" && (
+                    {activeTab === "overview" && (
                         <ProfileOverviewDashboard
                             userData={userData}
                             stats={stats}
@@ -233,32 +229,23 @@ function ProfilePageInner() {
                         />
                     )}
 
-                    {effectiveTab === "collection" && (
+                    {activeTab === "collection" && (
                         <CollectionGrid username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
-                    {effectiveTab === "achievements" && (
-                        <div className="space-y-6">
-                            <AchievementsTab username={userData.username} />
-                            <SectionCard title="Steam Achievements">
-                                <SteamAchievements username={userData.username} />
-                            </SectionCard>
-                        </div>
+                    {activeTab === "progression" && (
+                        <ProgressionTab username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
-                    {effectiveTab === "journal" && (
+                    {activeTab === "journal" && (
                         <JournalTab username={userData.username} />
                     )}
 
-                    {effectiveTab === "lists" && (
+                    {activeTab === "lists" && (
                         <ListsTab username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
-                    {effectiveTab === "rewards" && isOwnProfile && (
-                        <RewardsStore username={userData.username} isOwnProfile={isOwnProfile} />
-                    )}
-
-                    {effectiveTab === "stats" && (
+                    {activeTab === "stats" && (
                         <GamerDnaPanel username={userData.username} />
                     )}
                 </div>

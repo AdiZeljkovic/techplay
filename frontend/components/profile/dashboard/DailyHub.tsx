@@ -126,7 +126,7 @@ export default function DailyHub({ bounty, username, onOpenTab }: Props) {
         <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] overflow-hidden">
             {/* Wallet row */}
             <button
-                onClick={() => onOpenTab("rewards")}
+                onClick={() => onOpenTab("progression")}
                 className="group w-full flex items-center justify-between px-5 py-4 border-b border-[var(--line)] hover:bg-white/[0.02] transition-colors"
             >
                 <span className="flex items-center gap-2.5">

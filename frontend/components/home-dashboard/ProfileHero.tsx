@@ -331,7 +331,7 @@ export default function ProfileHero({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-achievements.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
-            href: `${base}?tab=achievements` },
+            href: `${base}?tab=progression` },
         {
             label: "Streak",
             value: (

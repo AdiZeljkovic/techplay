@@ -4,12 +4,12 @@ import { useMemo, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, ChevronRight, ChevronDown, Target, Clock3, TrendingUp, TrendingDown, ShoppingBag, type LucideIcon } from "lucide-react";
+import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, ChevronRight, ChevronDown, TrendingUp, TrendingDown, ShoppingBag , type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
 import { getStorageUrl } from "@/lib/imageUrl";
-import { timeAgo, timeLeft } from "@/lib/timeAgo";
+import { timeAgo } from "@/lib/timeAgo";
 import type {
     BountyWallet, RewardRedemption, StoreCatalog, StoreItem, StoreRarity } from "@/lib/types/profile";
 
@@ -408,55 +408,10 @@ function WalletBreakdown({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () 
     );
 }
 
-function DailyBounties() {
-    const { data } = useSWR<{ data: Quest[] }>("/user/quests", fetcher, { revalidateOnFocus: false });
-    const quests = (data?.data ?? []).filter((q) => q.bounty_reward > 0).slice(0, 4);
-
-    if (quests.length === 0) return null;
-
-    const soonest = quests.map((q) => q.expires_at).filter(Boolean).sort()[0];
-
-    return (
-        <Panel
-            title="Daily Missions"
-            meta={soonest ? (
-                <span className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold tabular-nums text-amber-400/80">
-                    <Clock3 className="w-3.5 h-3.5" /> {timeLeft(soonest)}
-                </span>
-            ) : undefined}
-        >
-            <div className="space-y-3">
-                {quests.map((q) => {
-                    const pct = Math.min(100, Math.round((q.progress / Math.max(1, q.criteria_value)) * 100));
-                    return (
-                        <div key={q.id} className="flex items-center gap-3">
-                            <span className={`w-7 h-7 shrink-0 rounded-[7px] flex items-center justify-center ${q.completed ? "bg-emerald-500/15" : "bg-white/[0.05]"}`}>
-                                {q.completed ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Target className="w-3.5 h-3.5 text-white/35" />}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                                <span className="flex items-center justify-between gap-2">
-                                    <span className="text-[12px] font-semibold text-white/80 truncate">{q.name}</span>
-                                    <span className="font-display text-[10px] font-bold tabular-nums text-white/30 shrink-0">
-                                        {Math.min(q.progress, q.criteria_value)}/{q.criteria_value}
-                                    </span>
-                                </span>
-                                <span className="block mt-1.5 h-[4px] rounded-full bg-[var(--track)] overflow-hidden">
-                                    <span
-                                        className="block h-full rounded-full"
-                                        style={{ width: `${pct}%`, background: q.completed ? "#34d399" : "var(--accent)" }}
-                                    />
-                                </span>
-                            </span>
-                            <span className="shrink-0 inline-flex items-center gap-1 font-display text-[11px] font-black tabular-nums text-amber-400">
-                                <Coins className="w-3 h-3" /> {q.bounty_reward}
-                            </span>
-                        </div>
-                    );
-                })}
-            </div>
-        </Panel>
-    );
-}
+/* Daily Missions used to sit here as well as in the overview's Daily Hub,
+   which is the owner's landing page and the natural home for anything with a
+   deadline. One of the two had to go, and it was not going to be the one on
+   the page people open first. */
 
 /* ── the tab ──────────────────────────────────────────────────────────── */
 
@@ -752,8 +707,6 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                         </div>
                     )}
                 </Panel>
-
-                <DailyBounties />
             </aside>
         </div>
     );

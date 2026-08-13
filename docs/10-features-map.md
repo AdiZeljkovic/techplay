@@ -237,6 +237,51 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Redizajn profila — Faze 2 i 3, 13.08.2026
+
+**Faza 2 — Insights (Gamer DNA): 8 panela → 5, 715 → 486 linija.**
+
+Van su išla četiri panela koja su ponavljala druge sekcije:
+
+| Panel | Zašto | Gdje živi |
+|---|---|---|
+| Collection Breakdown | polica broji svoje statuse | Collection tab |
+| Platform Affinity | ista agregacija, drugi crtež | Collection sidebar |
+| Community Contribution | isti podatak | Overview → Community Standing |
+| Setup Overview | hardver je identitet, ne analiza ukusa | Overview → Rig & IDs |
+
+Ostaje ono što je stvarno DNK: Identity Card, Genre Profile, Playstyle
+Fingerprint, Gaming Eras i Player Archetype. Podnaslov je s „The statistics of
+your taste in games" prešao na „What your library says about you".
+
+**Faza 3 — Progression: Achievements + Rewards + sezona na jednom ekranu.**
+
+Bila su to dva taba koja se međusobno nikad nisu spomenula, pa je petlja koju
+čine bila nevidljiva: otključaš dostignuće → dobiješ XP i bounty → bounty kupuje
+ono u prodavnici. Razdvojeno na dva odredišta, čitalac je morao već razumjeti
+sistem da bi ga primijetio.
+
+Redoslijed na stranici prati redoslijed radnje:
+
+1. **Sezona** (`SeasonPanel`) — ime, preostali dani, traka proteklog vremena,
+   množitelji ako nisu 1.00. Prije je to bila tanka traka unutar Daily Huba,
+   zbog čega skoro niko nije znao da sezona uopšte teče. Između sezona se ne
+   crta ništa — prazan okvir s „nema sezone" je gori od nikakvog.
+2. **Dostignuća** — postojeći `AchievementsTab`, javno.
+3. **Steam dostignuća** — pod istim krovom, ne u zasebnoj sekciji niže.
+4. **Prodavnica, inventar, historija** — samo vlasnik.
+
+`PROFILE_TABS` je sa sedam na šest ulaza (Rewards više nije zaseban), a
+**`LEGACY_TABS`** preusmjerava stare linkove: `?tab=achievements` i
+`?tab=rewards` slijeću na Progression, `?tab=activity` i `?tab=forum` na
+Overview. Podijeljen link nikad ne otvara sekciju koja više ne postoji.
+
+**Uklonjen deveti duplikat:** `Daily Missions` je stajao i u prodavnici i u
+Daily Hubu na Overviewu. Ostaje na Overviewu — to je stranica koju vlasnik prvo
+otvori i prirodno mjesto za sve što ima rok.
+
+---
+
 ### Sezone i Discord članstvo 13.08.2026
 
 **Bug: dvije aktivne sezone su se preklapale šest sedmica.** Produkcija je nosila
