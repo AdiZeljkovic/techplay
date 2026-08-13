@@ -81,7 +81,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         <ProfileChecklist
                             stats={data.stats}
                             listsCount={0}
-                            hasGamertags={Object.keys(data.user.gamertags ?? {}).length > 0}
                             steamConnected={(data.stats.games_count ?? 0) > 0}
                             onOpenTab={openTab}
                         />

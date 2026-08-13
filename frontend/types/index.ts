@@ -41,6 +41,14 @@ export interface User {
     articles?: Article[];
     xp?: number;
     display_name?: string;
+    /** Drawn on the profile hero, edited in Settings. */
+    tagline?: string | null;
+    location?: string | null;
+    cover_image?: string | null;
+    profile_visibility?: "public" | "friends";
+    /** Own account only — the API withholds both from anybody else. */
+    email_notifications?: boolean;
+    discord_linked?: boolean;
     cookie_preferences?: {
         necessary: boolean;
         analytics: boolean;

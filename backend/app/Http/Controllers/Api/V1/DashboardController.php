@@ -97,7 +97,6 @@ class DashboardController extends Controller
                 'member_since' => $user->created_at?->format('M Y'),
                 // the handles themselves, not just which platforms exist — the
                 // hero prints them under each platform mark
-                'gamertags' => array_filter((array) ($user->gamertags ?? [])),
                 // a bought avatar frame has to actually show up on the avatar
                 'frame' => UserCustomization::where('user_customizations.user_id', $user->id)
                     ->where('user_customizations.is_equipped', true)
@@ -221,7 +220,7 @@ class DashboardController extends Controller
             'bio' => ['label' => 'Write your bio', 'done' => ! empty($user->bio)],
             'location' => ['label' => 'Add location or tagline', 'done' => ! empty($user->location) || ! empty($user->tagline)],
             'playstyle' => ['label' => 'Pick playstyle tags', 'done' => ! empty($user->playstyle_tags)],
-            'gamertags' => ['label' => 'Add your gamertags', 'done' => ! empty(array_filter((array) ($user->gamertags ?? [])))],
+
             'favorite' => ['label' => 'Star a favorite game', 'done' => $counts['favorites_count'] > 0],
             'review' => ['label' => 'Publish a game review', 'done' => $reviewsCount > 0],
             'connect' => ['label' => 'Link a gaming account', 'done' => ConnectedAccount::where('user_id', $user->id)->exists()],

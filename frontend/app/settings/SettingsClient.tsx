@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAuth as useAuthContext } from "@/context/AuthContext";
 import axios from "@/lib/axios";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Loader2, Save, User, Gamepad2, Cpu, Monitor, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2, Eye, Globe, Users, Check } from "lucide-react";
+import {
+    Loader2, Save, User, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2, Eye, Globe, Users, Check,
+    Bell, MapPin, Quote, ImageIcon, type LucideIcon,
+} from "lucide-react";
 import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
 import ProfileCompletionWidget from "@/components/home-dashboard/ProfileCompletionWidget";
 import { useRouter } from "next/navigation";
@@ -15,32 +18,81 @@ import { mutate } from "swr";
 import { AnimatePresence, motion } from "framer-motion";
 import toast from "react-hot-toast";
 
-type Visibility = 'public' | 'friends';
+type Visibility = "public" | "friends";
+type SectionId = "profile" | "connections" | "notifications" | "privacy" | "security" | "account";
 
-const VISIBILITY_OPTIONS: { id: Visibility; label: string; description: string; icon: typeof Globe }[] = [
+const VISIBILITY_OPTIONS: { id: Visibility; label: string; description: string; icon: LucideIcon }[] = [
     {
-        id: 'public',
-        label: 'Public',
-        description: 'Anyone can open your profile, and you appear on leaderboards and in member search.',
+        id: "public",
+        label: "Public",
+        description: "Anyone can open your profile, and you appear on leaderboards and in member search.",
         icon: Globe,
     },
     {
-        id: 'friends',
-        label: 'Friends only',
-        description: 'Only accepted friends see your collection, stats and activity. Everyone else gets your name, level and rank — and a way to send a friend request.',
+        id: "friends",
+        label: "Friends only",
+        description: "Only accepted friends see your collection, stats and activity. Everyone else gets your name, level and rank — and a way to send a friend request.",
         icon: Users,
     },
 ];
 
+/**
+ * The sections, in the order somebody actually needs them.
+ *
+ * Two are gone. Gamertags asked you to type a handle on five platforms and
+ * proved none of them; Connected platforms links the same accounts through
+ * OAuth and syncs a library off the back of it, so the typed version was a
+ * worse copy of a thing sitting one tab away. PC Specs was never displayed to
+ * the person filling it in — their own Overview is the dashboard, and the card
+ * that drew specs only rendered on somebody else's screen.
+ */
+const SECTIONS: { id: SectionId; label: string; icon: LucideIcon; blurb: string }[] = [
+    { id: "profile", label: "Profile", icon: User, blurb: "Name, tagline, bio and the pictures" },
+    { id: "connections", label: "Connections", icon: Link2, blurb: "Steam, PlayStation, Xbox and Discord" },
+    { id: "notifications", label: "Notifications", icon: Bell, blurb: "What may reach your inbox" },
+    { id: "privacy", label: "Privacy", icon: Eye, blurb: "Who can see your profile" },
+    { id: "security", label: "Security", icon: Lock, blurb: "Password" },
+    { id: "account", label: "Your data", icon: ShieldCheck, blurb: "Export or delete everything" },
+];
+
+/** One labelled block inside a section. */
+function Field({ label, hint, children }: { label: string; hint?: React.ReactNode; children: React.ReactNode }) {
+    return (
+        <div>
+            <div className="flex items-baseline justify-between gap-3 mb-2">
+                <label className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40">{label}</label>
+                {hint && <span className="text-[11px] text-white/30">{hint}</span>}
+            </div>
+            {children}
+        </div>
+    );
+}
+
+/** A section's own frame, so every one of them opens the same way. */
+function Section({ title, blurb, children }: { title: string; blurb: string; children: React.ReactNode }) {
+    return (
+        <div
+            className="rounded-[var(--radius-panel)] border overflow-hidden"
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
+        >
+            <header className="px-5 md:px-6 py-4 border-b border-white/[0.07]">
+                <h2 className="font-display text-[12px] font-black uppercase tracking-[0.15em] text-white">{title}</h2>
+                <p className="mt-1 text-[12px] text-white/35">{blurb}</p>
+            </header>
+            <div className="p-5 md:p-6">{children}</div>
+        </div>
+    );
+}
+
 export default function SettingsClient() {
-    const { user, isLoading, logout } = useAuth({ middleware: 'auth' });
+    const { user, isLoading, logout } = useAuth({ middleware: "auth" });
     // The hook handles the redirect; the context is what actually holds the
     // user everything else renders from, so a save has to update that too.
     const { updateUser } = useAuthContext();
     const router = useRouter();
 
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'bio' | 'ids' | 'specs' | 'platforms' | 'security' | 'privacy'>('bio');
+    const [section, setSection] = useState<SectionId>("profile");
     const [isExporting, setIsExporting] = useState(false);
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -48,54 +100,28 @@ export default function SettingsClient() {
     const [deletePassword, setDeletePassword] = useState("");
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    // Form States
+    // ── the profile form ──
     const [bio, setBio] = useState(user?.bio || "");
     const [displayName, setDisplayName] = useState(user?.display_name || "");
-    const [gamertags, setGamertags] = useState(user?.gamertags || {});
-    const [specs, setSpecs] = useState(user?.pc_specs || {});
+    // Both of these are drawn on the profile hero and neither had a field
+    // here — the hero even carries an "Edit your tagline" link that landed on
+    // a page with nowhere to edit it.
+    const [tagline, setTagline] = useState(user?.tagline || "");
+    const [location, setLocation] = useState(user?.location || "");
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar_url || null);
     const [coverFile, setCoverFile] = useState<File | null>(null);
     const [coverPreview, setCoverPreview] = useState<string | null>(user?.cover_image || null);
 
-    // Password State
-    const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+    const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
 
-    // Visibility saves on click rather than waiting for the Save button —
-    // it lives on a different tab from the profile form.
-    const [visibility, setVisibility] = useState<Visibility>((user?.profile_visibility as Visibility) || 'public');
+    // Toggles that save on click rather than waiting for the profile form's
+    // button — they live in sections that have no form to submit.
+    const [visibility, setVisibility] = useState<Visibility>((user?.profile_visibility as Visibility) || "public");
     const [savingVisibility, setSavingVisibility] = useState(false);
+    const [emails, setEmails] = useState<boolean>(user?.email_notifications ?? true);
+    const [savingEmails, setSavingEmails] = useState(false);
 
-    // Adopt the server value once, on first load. After that the local state
-    // wins, so an optimistic toggle isn't reverted by a stale auth payload.
-    const visibilitySynced = useRef(false);
-    useEffect(() => {
-        if (visibilitySynced.current || !user) return;
-        visibilitySynced.current = true;
-        setVisibility((user.profile_visibility as Visibility) || 'public');
-    }, [user]);
-
-    const handleVisibilityChange = async (next: Visibility) => {
-        if (next === visibility || savingVisibility) return;
-        const previous = visibility;
-        setVisibility(next);
-        setSavingVisibility(true);
-        try {
-            const form = new FormData();
-            form.append('_method', 'PUT');
-            form.append('profile_visibility', next);
-            await axios.post('/user/profile', form, { headers: { 'Content-Type': 'multipart/form-data' } });
-            if (user?.username) mutate(`/users/${user.username}`);
-            toast.success(next === 'friends' ? 'Your profile is now friends only.' : 'Your profile is public.');
-        } catch {
-            setVisibility(previous);
-            toast.error('Could not update profile visibility.');
-        } finally {
-            setSavingVisibility(false);
-        }
-    };
-
-    // Sync state when user loads
     // Seed the form from the account once. This used to run during render on
     // every pass, so deleting the last character of a bio immediately restored
     // the old text — the field could be edited but never emptied.
@@ -104,13 +130,69 @@ export default function SettingsClient() {
         if (seeded.current || !user) return;
         seeded.current = true;
 
-        if (user.bio) setBio(user.bio);
-        if (user.display_name) setDisplayName(user.display_name);
-        if (user.gamertags) setGamertags(user.gamertags);
-        if (user.pc_specs) setSpecs(user.pc_specs);
+        setBio(user.bio || "");
+        setDisplayName(user.display_name || "");
+        setTagline(user.tagline || "");
+        setLocation(user.location || "");
+        setVisibility((user.profile_visibility as Visibility) || "public");
+        setEmails(user.email_notifications ?? true);
         if (user.avatar_url) setAvatarPreview(user.avatar_url);
         if (user.cover_image) setCoverPreview(user.cover_image);
     }, [user]);
+
+    // Nothing to save is a disabled button, not a request that changes
+    // nothing and reports success anyway.
+    const dirty = useMemo(() => {
+        if (!user) return false;
+
+        return bio !== (user.bio || "")
+            || displayName !== (user.display_name || "")
+            || tagline !== (user.tagline || "")
+            || location !== (user.location || "")
+            || !!avatarFile
+            || !!coverFile
+            || coverPreview !== (user.cover_image || null);
+    }, [user, bio, displayName, tagline, location, avatarFile, coverFile, coverPreview]);
+
+    const handleVisibilityChange = async (next: Visibility) => {
+        if (next === visibility || savingVisibility) return;
+        const previous = visibility;
+        setVisibility(next);
+        setSavingVisibility(true);
+        try {
+            const form = new FormData();
+            form.append("_method", "PUT");
+            form.append("profile_visibility", next);
+            await axios.post("/user/profile", form, { headers: { "Content-Type": "multipart/form-data" } });
+            if (user?.username) mutate(`/users/${user.username}`);
+            toast.success(next === "friends" ? "Your profile is now friends only." : "Your profile is public.");
+        } catch {
+            setVisibility(previous);
+            toast.error("Could not update profile visibility.");
+        } finally {
+            setSavingVisibility(false);
+        }
+    };
+
+    const handleEmailsChange = async (next: boolean) => {
+        if (next === emails || savingEmails) return;
+        const previous = emails;
+        setEmails(next);
+        setSavingEmails(true);
+        try {
+            const form = new FormData();
+            form.append("_method", "PUT");
+            form.append("email_notifications", next ? "1" : "0");
+            const { data } = await axios.post("/user/profile", form, { headers: { "Content-Type": "multipart/form-data" } });
+            if (data?.user) updateUser(data.user);
+            toast.success(next ? "We'll email you again." : "Emails off. Everything still shows on site.");
+        } catch {
+            setEmails(previous);
+            toast.error("Could not save that.");
+        } finally {
+            setSavingEmails(false);
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -132,39 +214,21 @@ export default function SettingsClient() {
         setSaving(true);
         try {
             const formData = new FormData();
-            formData.append('_method', 'PUT'); // Trick for Laravel to handle PUT with files
-            formData.append('bio', bio);
-            formData.append('display_name', displayName);
+            formData.append("_method", "PUT"); // PUT cannot carry files; Laravel reads the spoof
+            formData.append("bio", bio);
+            formData.append("display_name", displayName);
+            formData.append("tagline", tagline);
+            formData.append("location", location);
 
-            // Empty entries are skipped, but the *set* must still be sent —
-            // otherwise clearing the last gamertag omitted the field entirely
-            // and the API fell back to the old value, so it could never be
-            // emptied. An explicit marker keeps the key present.
-            const gamertagKeys = Object.keys(gamertags).filter((k) => gamertags[k]);
-            gamertagKeys.forEach((key) => formData.append(`gamertags[${key}]`, gamertags[key]));
-            if (gamertagKeys.length === 0) formData.append('gamertags_cleared', '1');
-
-            const specKeys = Object.keys(specs).filter((k) => specs[k]);
-            specKeys.forEach((key) => formData.append(`pc_specs[${key}]`, specs[key]));
-            if (specKeys.length === 0) formData.append('pc_specs_cleared', '1');
-
-            if (avatarFile) {
-                formData.append('avatar', avatarFile);
-            }
+            if (avatarFile) formData.append("avatar", avatarFile);
 
             // Removing a cover is not the same as not changing it: without an
             // explicit flag the API kept the old image and "Remove" did nothing.
-            if (!coverFile && !coverPreview) {
-                formData.append('remove_cover', '1');
-            }
+            if (!coverFile && !coverPreview) formData.append("remove_cover", "1");
+            if (coverFile) formData.append("cover_image", coverFile);
 
-            if (coverFile) {
-                formData.append('cover_image', coverFile);
-            }
-
-            // POST with _method spoofing, because PUT cannot carry files.
-            const { data } = await axios.post('/user/profile', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+            const { data } = await axios.post("/user/profile", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
             });
 
             // Without this the page keeps rendering the user it was given on
@@ -176,19 +240,14 @@ export default function SettingsClient() {
                 setAvatarFile(null);
             }
 
-            // Revalidate SWR cache for profile page if needed
-            if (user?.username) {
-                mutate(`/users/${user.username}`);
-            }
+            if (user?.username) mutate(`/users/${user.username}`);
             // Completion is computed from these very fields — refresh it now
-            mutate('/me/dashboard');
-            toast.success('Settings saved successfully!');
+            mutate("/me/dashboard");
+            toast.success("Saved.");
             router.refresh();
-        } catch (error: any) {
-            console.error("Failed to save settings", error);
-            // Show specific error if available
-            const msg = error.response?.data?.message || "Failed to save settings.";
-            toast.error(msg);
+        } catch (error: unknown) {
+            const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(msg ?? "Failed to save settings.");
         } finally {
             setSaving(false);
         }
@@ -197,18 +256,17 @@ export default function SettingsClient() {
     const handlePasswordChange = async () => {
         setSaving(true);
         try {
-            await axios.put('/user/password', {
+            await axios.put("/user/password", {
                 current_password: passwords.current,
                 new_password: passwords.new,
-                new_password_confirmation: passwords.confirm
+                new_password_confirmation: passwords.confirm,
             });
-            // Show Custom Modal instead of Alert
             setShowSuccessModal(true);
-            setPasswords({ current: '', new: '', confirm: '' });
-        } catch (error: any) {
-            console.error("Failed to change password", error);
-            const msg = error.response?.data?.message || "Failed to change password.";
-            const valErrors = error.response?.data?.errors ? Object.values(error.response.data.errors).flat().join('\n') : '';
+            setPasswords({ current: "", new: "", confirm: "" });
+        } catch (error: unknown) {
+            const res = (error as { response?: { data?: { message?: string; errors?: Record<string, string[]> } } })?.response;
+            const msg = res?.data?.message || "Failed to change password.";
+            const valErrors = res?.data?.errors ? Object.values(res.data.errors).flat().join("\n") : "";
             toast.error(valErrors ? `${msg}\n${valErrors}` : msg);
         } finally {
             setSaving(false);
@@ -218,15 +276,15 @@ export default function SettingsClient() {
     const handleExportData = async () => {
         setIsExporting(true);
         try {
-            const res = await axios.get('/user/export-data', { responseType: 'blob' });
+            const res = await axios.get("/user/export-data", { responseType: "blob" });
             const url = window.URL.createObjectURL(new Blob([res.data]));
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
-            a.download = `techplay-data-${user?.username}-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `techplay-data-${user?.username}-${new Date().toISOString().split("T")[0]}.json`;
             a.click();
             window.URL.revokeObjectURL(url);
         } catch {
-            toast.error('Failed to export data. Please try again.');
+            toast.error("Failed to export data. Please try again.");
         } finally {
             setIsExporting(false);
         }
@@ -237,15 +295,15 @@ export default function SettingsClient() {
             toast.error(`Please type your username "${user?.username}" to confirm.`);
             return;
         }
-        if (!confirm('This will permanently delete your account. This action CANNOT be undone.')) return;
+        if (!confirm("This will permanently delete your account. This action CANNOT be undone.")) return;
         setIsDeletingAccount(true);
         try {
-            await axios.delete('/user/account', { data: { current_password: deletePassword } });
+            await axios.delete("/user/account", { data: { current_password: deletePassword } });
             logout();
-        } catch (err: any) {
-            const message = err?.response?.status === 422
-                ? 'That password is not correct.'
-                : 'Failed to delete account. Please contact support.';
+        } catch (err: unknown) {
+            const message = (err as { response?: { status?: number } })?.response?.status === 422
+                ? "That password is not correct."
+                : "Failed to delete account. Please contact support.";
             toast.error(message);
         } finally {
             setIsDeletingAccount(false);
@@ -260,466 +318,405 @@ export default function SettingsClient() {
         );
     }
 
-    const renderTabButton = (id: 'bio' | 'ids' | 'specs' | 'platforms' | 'security' | 'privacy', label: string, icon: any) => (
-        <button
-            onClick={() => setActiveTab(id)}
-            className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[8px] border font-display text-[9.5px] font-black uppercase tracking-[0.1em] whitespace-nowrap shrink-0 transition-colors ${
-                activeTab === id
-                    ? 'bg-[var(--accent)] border-transparent text-white'
-                    : 'bg-white/[0.03] border-white/[0.07] text-white/45 hover:text-white hover:border-white/[0.16]'
-            }`}
-        >
-            {icon}
-            {label}
-        </button>
-    );
+    const current = SECTIONS.find((s) => s.id === section)!;
 
     return (
         <div className="min-h-screen pt-24 pb-12">
             <div className="container-page">
-                <div className="flex items-center justify-between mb-8">
+                <header className="mb-6">
                     <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-tight leading-none">
-                        <span className="text-white">Profile </span>
+                        <span className="text-white">Account </span>
                         <span className="text-[var(--accent)]">Settings</span>
                     </h1>
-                    {activeTab !== 'security' && activeTab !== 'platforms' && (
-                        <Button onClick={handleSave} disabled={saving}>
-                            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                            Save Changes
-                        </Button>
-                    )}
-                </div>
+                    <p className="mt-2 text-[13px] text-white/40">
+                        Signed in as <span className="font-semibold text-white/70">{user.username}</span> · {user.email}
+                    </p>
+                </header>
 
                 {/* What's still missing — every step here is actionable on this page */}
                 <div className="mb-6">
                     <ProfileCompletionWidget />
                 </div>
 
-                <div className="flex flex-wrap gap-1.5 mb-4 overflow-x-auto scrollbar-hide">
-                        {renderTabButton('bio', 'Basic Info', <User className="w-4 h-4" />)}
-                        {renderTabButton('ids', 'Gamertags', <Gamepad2 className="w-4 h-4" />)}
-                        {renderTabButton('specs', 'PC Specs', <Cpu className="w-4 h-4" />)}
-                        {renderTabButton('platforms', 'Connected Platforms', <Link2 className="w-4 h-4" />)}
-                        {renderTabButton('security', 'Security', <Lock className="w-4 h-4" />)}
-                    {renderTabButton('privacy', 'Privacy & Data', <ShieldCheck className="w-4 h-4" />)}
-                </div>
+                {/* A rail rather than a chip bar. Settings are navigated, not
+                    browsed: you arrive knowing which one you came for, and a
+                    list you can read down finds it faster than six chips that
+                    scroll sideways. */}
+                <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-5 items-start">
+                    <nav className="lg:sticky lg:top-24" aria-label="Settings sections">
+                        <div className="flex lg:flex-col gap-1 overflow-x-auto scrollbar-none">
+                            {SECTIONS.map(({ id, label, icon: Icon }) => {
+                                const on = id === section;
 
-                <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] overflow-hidden">
-                    <div className="p-5 md:p-7">
-                        {activeTab === 'bio' && (
-                            <div className="space-y-6 max-w-xl">
-                                <div>
-                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                        Username (Unique ID)
-                                    </label>
-                                    <Input value={user.username} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
-                                </div>
-                                <div>
-                                    <div className="flex justify-between mb-2">
-                                        <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40">
-                                            Display Name
-                                        </label>
-                                        <span className="text-xs text-white/35">Publicly visible name</span>
-                                    </div>
-                                    <Input
-                                        value={displayName}
-                                        onChange={(e) => setDisplayName(e.target.value)}
-                                        placeholder={user.username}
-                                        maxLength={50}
-                                    />
-                                    <p className="text-xs text-white/35 mt-1">If left empty, your username (<b>{user.username}</b>) will be displayed.</p>
-                                </div>
-                                <div>
-                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                        Email Address
-                                    </label>
-                                    <Input value={user.email} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
-                                </div>
-                                <div>
-                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                        Bio / About Me
-                                    </label>
-                                    <Textarea
-                                        value={bio}
-                                        onChange={(e) => setBio(e.target.value)}
-                                        placeholder="Tell us about yourself..."
-                                        className="h-32"
-                                    />
-                                    <p className="text-xs text-white/35 mt-1 text-right">
-                                        {bio.length}/500 characters
-                                    </p>
-                                </div>
+                                return (
+                                    <button
+                                        key={id}
+                                        onClick={() => setSection(id)}
+                                        aria-current={on ? "page" : undefined}
+                                        className={`group/nav shrink-0 flex items-center gap-3 h-11 px-3.5 rounded-[9px] font-display text-[11px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-colors duration-300 ${
+                                            on
+                                                ? "bg-[var(--accent)]/[0.12] text-[var(--accent-ink)]"
+                                                : "text-white/40 hover:text-white hover:bg-white/[0.04]"
+                                        }`}
+                                    >
+                                        <Icon
+                                            className="w-[19px] h-[19px] shrink-0 transition-transform duration-300 group-hover/nav:scale-110"
+                                            strokeWidth={1.6}
+                                        />
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </nav>
 
-                                {/* Cover Image Upload */}
-                                <div className="pt-4 border-t border-[var(--line)]">
-                                    <label className="block text-sm font-medium text-white/55 mb-4">
-                                        Profile Cover Image
-                                    </label>
-                                    <div className="space-y-3">
-                                        <div className="relative aspect-[4/1] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-2)]">
-                                            {coverPreview ? (
-                                                <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-white/35 bg-gradient-to-br from-[var(--surface-1)] via-[var(--accent-deep)] to-[var(--surface-2)]">
-                                                    <span className="text-sm">No cover image</span>
-                                                </div>
-                                            )}
+                    <div className="min-w-0 space-y-5">
+                        {section === "profile" && (
+                            <>
+                                <Section title="Who you are" blurb={current.blurb}>
+                                    <div className="space-y-5 max-w-xl">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <Field label="Username" hint="Cannot be changed">
+                                                <Input value={user.username} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
+                                            </Field>
+                                            <Field label="Email" hint="Cannot be changed here">
+                                                <Input value={user.email} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
+                                            </Field>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleCoverChange}
-                                                className="block w-full text-sm text-white/35
-                                                  file:mr-4 file:py-2 file:px-4
-                                                  file:rounded-full file:border-0
-                                                  file:text-sm file:font-semibold
-                                                  file:bg-[var(--accent)] file:text-white
-                                                  hover:file:bg-[var(--accent)]/90
-                                                  cursor-pointer"
+
+                                        <Field label="Display name" hint={`Falls back to ${user.username}`}>
+                                            <Input
+                                                value={displayName}
+                                                onChange={(e) => setDisplayName(e.target.value)}
+                                                placeholder={user.username}
+                                                maxLength={50}
                                             />
-                                            {coverPreview && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => { setCoverFile(null); setCoverPreview(null); }}
-                                                    className="text-xs text-red-400 hover:text-red-300 whitespace-nowrap"
-                                                >
-                                                    Remove
-                                                </button>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-white/35">
-                                            Recommended: 1920x480px. JPG, PNG or WEBP. Max 5MB.
-                                        </p>
-                                    </div>
-                                </div>
+                                        </Field>
 
-                                {/* Avatar Upload */}
-                                <div className="pt-4 border-t border-[var(--line)]">
-                                    <label className="block text-sm font-medium text-white/55 mb-4">
-                                        Profile Picture via Upload
-                                    </label>
-                                    <div className="flex items-center gap-6">
-                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[var(--line)] bg-[var(--surface-2)]">
-                                            {avatarPreview ? (
-                                                <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-white/35">
-                                                    <User className="w-8 h-8" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFileChange}
-                                                className="block w-full text-sm text-white/35
-                                                  file:mr-4 file:py-2 file:px-4
-                                                  file:rounded-full file:border-0
-                                                  file:text-sm file:font-semibold
-                                                  file:bg-[var(--accent)] file:text-white
-                                                  hover:file:bg-[var(--accent)]/90
-                                                  cursor-pointer"
+                                        <Field label="Tagline" hint={`${tagline.length}/120`}>
+                                            <Input
+                                                value={tagline}
+                                                onChange={(e) => setTagline(e.target.value.slice(0, 120))}
+                                                placeholder="One line, under your name on your profile"
                                             />
-                                            <p className="text-xs text-white/35 mt-2">
-                                                JPG, PNG or WEBP. Max 2MB.
+                                            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
+                                                <Quote className="w-3 h-3" /> Shown on your profile header, above your bio.
                                             </p>
+                                        </Field>
+
+                                        <Field label="Location" hint={`${location.length}/100`}>
+                                            <Input
+                                                value={location}
+                                                onChange={(e) => setLocation(e.target.value.slice(0, 100))}
+                                                placeholder="Sarajevo, BA"
+                                            />
+                                            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
+                                                <MapPin className="w-3 h-3" /> Optional, and public.
+                                            </p>
+                                        </Field>
+
+                                        <Field label="Bio" hint={`${bio.length}/500`}>
+                                            <Textarea
+                                                value={bio}
+                                                onChange={(e) => setBio(e.target.value.slice(0, 500))}
+                                                placeholder="What you play, and why."
+                                                className="h-32"
+                                            />
+                                        </Field>
+                                    </div>
+                                </Section>
+
+                                <Section title="Pictures" blurb="The portrait and the banner behind it">
+                                    <div className="space-y-6 max-w-xl">
+                                        <div>
+                                            <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-3">Avatar</p>
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-20 h-20 shrink-0 rounded-full overflow-hidden border-2 border-[var(--line)] bg-[var(--surface-2)]">
+                                                    {avatarPreview ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img src={avatarPreview} alt="" aria-hidden className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="w-full h-full flex items-center justify-center text-white/30"><User className="w-8 h-8" /></span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={handleFileChange}
+                                                        className="block w-full text-sm text-white/35 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--accent)] file:text-white hover:file:brightness-110 cursor-pointer"
+                                                    />
+                                                    <p className="text-[11px] text-white/30 mt-2">JPG, PNG or WEBP. Max 2MB.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-5 border-t border-white/[0.07]">
+                                            <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-3">Cover</p>
+                                            <div className="relative aspect-[4/1] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-2)]">
+                                                {coverPreview ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img src={coverPreview} alt="" aria-hidden className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="w-full h-full flex items-center justify-center gap-2 text-white/25 text-[12px]">
+                                                        <ImageIcon className="w-4 h-4" /> No cover image
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="mt-3 flex items-center gap-3">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleCoverChange}
+                                                    className="block w-full text-sm text-white/35 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--accent)] file:text-white hover:file:brightness-110 cursor-pointer"
+                                                />
+                                                {coverPreview && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setCoverFile(null); setCoverPreview(null); }}
+                                                        className="text-[11px] font-bold text-red-400 hover:text-red-300 whitespace-nowrap"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="text-[11px] text-white/30 mt-2">Recommended 1920×480. Max 5MB.</p>
                                         </div>
                                     </div>
+                                </Section>
+
+                                {/* The bar only appears when there is something to
+                                    save. A permanently live Save button teaches
+                                    people to press it and find out. */}
+                                <div className="sticky bottom-4 z-10">
+                                    <div
+                                        className={`flex items-center justify-between gap-4 rounded-[12px] border px-4 py-3 transition-opacity duration-300 ${dirty ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+                                        style={{
+                                            background: "var(--surface-2)",
+                                            borderColor: "color-mix(in srgb, var(--accent) 35%, transparent)",
+                                            boxShadow: "0 18px 40px -20px rgba(0,0,0,0.9)",
+                                        }}
+                                    >
+                                        <span className="font-display text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/45">
+                                            Unsaved changes
+                                        </span>
+                                        <Button onClick={handleSave} disabled={saving}>
+                                            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                                            Save changes
+                                        </Button>
+                                    </div>
                                 </div>
-                            </div>
+                            </>
                         )}
 
-                        {activeTab === 'ids' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {['Steam', 'Epic', 'PSN', 'Xbox', 'Discord'].map((platform) => {
-                                    const key = platform.toLowerCase();
+                        {section === "connections" && (
+                            <Section title="Connected platforms" blurb={current.blurb}>
+                                <div className="max-w-xl">
+                                    <ConnectedAccountsSection />
 
-                                    if (platform === 'Discord') {
-                                        return (
-                                            <div key={key}>
-                                                <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                                    Discord Integration
-                                                </label>
-                                                {gamertags['discord'] ? (
-                                                    <div className="flex items-center gap-3 p-3 bg-[#5865F2]/10 border border-[#5865F2]/30 rounded-[var(--radius-card)]">
-                                                        <div className="w-8 h-8 rounded-full bg-[#5865F2] flex items-center justify-center text-white">
-                                                            <svg className="w-5 h-5" viewBox="0 0 127.14 96.36" fill="currentColor">
-                                                                <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.09,105.09,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c.12-23.61-4.38-47.56-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-                                                            </svg>
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="text-sm font-semibold text-white">Connected</div>
-                                                            <div className="text-xs text-white/55">{gamertags['discord']}</div>
-                                                        </div>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            className="text-red-500 hover:text-red-400 hover:bg-red-500/10 h-8"
-                                                            onClick={() => setGamertags({ ...gamertags, discord: '' })}
-                                                        >
-                                                            Disconnect
-                                                        </Button>
-                                                    </div>
-                                                ) : (
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        className="w-full hover:bg-[#5865F2]/10 hover:border-[#5865F2] hover:text-[#5865F2] transition-colors"
-                                                        onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/discord/redirect`}
-                                                    >
-                                                        <svg className="w-5 h-5 mr-2" viewBox="0 0 127.14 96.36" fill="currentColor">
-                                                            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.09,105.09,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.11,77.11,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.89,105.89,0,0,0,126.6,80.22c.12-23.61-4.38-47.56-18.9-72.15ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z" />
-                                                        </svg>
-                                                        Connect Discord Account
-                                                    </Button>
-                                                )}
-                                                <p className="text-xs text-white/35 mt-2">
-                                                    Link your account to get special roles in our Discord server!
+                                    {/* Discord used to live under Gamertags, next to
+                                        four text fields — a real OAuth link filed
+                                        beside four strings anybody could type. */}
+                                    <div className="mt-6 pt-6 border-t border-white/[0.07]">
+                                        <div className="flex items-center gap-4">
+                                            <span className="w-11 h-11 shrink-0 rounded-[10px] bg-[#5865F2]/12 border border-[#5865F2]/30 flex items-center justify-center text-[18px]">
+                                                💬
+                                            </span>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-display text-[12.5px] font-bold text-white">Discord</p>
+                                                <p className="text-[11.5px] text-white/35 leading-snug">
+                                                    {user.discord_linked
+                                                        ? "Linked. Professor Buffy can see you in our server and mirror your XP."
+                                                        : "Link it so the bot recognises you in our server, and your membership shows on your profile."}
                                                 </p>
                                             </div>
-                                        );
-                                    }
-
-                                    return (
-                                        <div key={key}>
-                                            <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                                {platform} ID
-                                            </label>
-                                            <Input
-                                                value={gamertags[key] || ''}
-                                                onChange={(e) => setGamertags({ ...gamertags, [key]: e.target.value })}
-                                                placeholder={`Your ${platform} username`}
-                                            />
+                                            {user.discord_linked ? (
+                                                <span className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-[8px] bg-emerald-500/12 border border-emerald-500/30 font-display text-[10px] font-black uppercase tracking-[0.1em] text-emerald-400">
+                                                    <Check className="w-3.5 h-3.5" /> Linked
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => { window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/discord/redirect`; }}
+                                                    className="shrink-0 inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-[#5865F2] hover:brightness-110 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white transition-[filter]"
+                                                >
+                                                    <Link2 className="w-3.5 h-3.5" /> Connect
+                                                </button>
+                                            )}
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                    </div>
+                                </div>
+                            </Section>
                         )}
 
-                        {activeTab === 'specs' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="md:col-span-2 pb-4 border-b border-[var(--line)] mb-4">
-                                    <h3 className="flex items-center gap-2 font-bold text-white">
-                                        <Cpu className="w-5 h-5 text-[var(--accent)]" /> Core Components
-                                    </h3>
-                                </div>
+                        {section === "notifications" && (
+                            <Section title="Notifications" blurb={current.blurb}>
+                                <div className="max-w-xl">
+                                    <button
+                                        onClick={() => handleEmailsChange(!emails)}
+                                        disabled={savingEmails}
+                                        role="switch"
+                                        aria-checked={emails}
+                                        className="w-full flex items-center gap-4 text-left group/sw disabled:opacity-60"
+                                    >
+                                        <span className={`shrink-0 ${emails ? "text-[var(--accent)]" : "text-white/25"}`}>
+                                            <Bell className="w-5 h-5" strokeWidth={1.6} />
+                                        </span>
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block text-[13px] font-semibold text-white">Email me</span>
+                                            <span className="block text-[11.5px] text-white/35 leading-snug">
+                                                Giveaway reminders and anything else that needs to reach you when you are not here.
+                                                Turning this off never hides anything on the site.
+                                            </span>
+                                        </span>
+                                        <span className={`shrink-0 relative w-[42px] h-[24px] rounded-full transition-colors duration-300 ${emails ? "bg-[var(--accent)]" : "bg-white/[0.12]"}`}>
+                                            <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white transition-transform duration-300 ${emails ? "translate-x-[21px]" : "translate-x-[3px]"}`} />
+                                        </span>
+                                    </button>
 
-                                {['CPU', 'GPU', 'RAM', 'Motherboard', 'Storage', 'Case'].map((item) => {
-                                    const key = item.toLowerCase();
-                                    return (
-                                        <div key={key}>
-                                            <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                                {item}
-                                            </label>
-                                            <Input
-                                                value={specs[key] || ''}
-                                                onChange={(e) => setSpecs({ ...specs, [key]: e.target.value })}
-                                                placeholder={`e.g. ${item === 'CPU' ? 'Intel i9-13900K' : item === 'GPU' ? 'RTX 4090' : ''}`}
-                                            />
-                                        </div>
-                                    );
-                                })}
-
-                                <div className="md:col-span-2 pb-4 border-b border-[var(--line)] mb-4 mt-4">
-                                    <h3 className="flex items-center gap-2 font-bold text-white">
-                                        <Monitor className="w-5 h-5 text-[var(--accent)]" /> Peripherals
-                                    </h3>
-                                </div>
-
-                                {['Monitor', 'Mouse', 'Keyboard', 'Headphones'].map((item) => {
-                                    const key = item.toLowerCase();
-                                    return (
-                                        <div key={key}>
-                                            <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                                {item}
-                                            </label>
-                                            <Input
-                                                value={specs[key] || ''}
-                                                onChange={(e) => setSpecs({ ...specs, [key]: e.target.value })}
-                                                placeholder={`e.g. ${item === 'Mouse' ? 'Logitech G Pro X' : ''}`}
-                                            />
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {activeTab === 'platforms' && (
-                            <div className="max-w-xl">
-                                <ConnectedAccountsSection />
-                            </div>
-                        )}
-
-                        {activeTab === 'security' && (
-                            <div className="max-w-md mx-auto space-y-6">
-                                <div>
-                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                        Current Password
-                                    </label>
-                                    <Input
-                                        type="password"
-                                        value={passwords.current}
-                                        onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
-                                        placeholder="Enter current password"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                        New Password
-                                    </label>
-                                    <Input
-                                        type="password"
-                                        value={passwords.new}
-                                        onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
-                                        placeholder="Enter new password"
-                                    />
-                                    <p className="text-xs text-white/35 mt-1">
-                                        Min 8 chars, letters & numbers.
+                                    <p className="mt-5 pt-5 border-t border-white/[0.07] text-[11.5px] text-white/30 leading-relaxed">
+                                        Release reminders are set per game, on the calendar — the bell on any unreleased title.
+                                        On-site notifications are always on; they are the bell in the header.
                                     </p>
                                 </div>
-                                <div>
-                                    <label className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2">
-                                        Confirm New Password
-                                    </label>
-                                    <Input
-                                        type="password"
-                                        value={passwords.confirm}
-                                        onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
-                                        placeholder="Confirm new password"
-                                    />
-                                </div>
-                                <div className="pt-4">
-                                    <Button onClick={handlePasswordChange} disabled={saving} className="w-full bg-red-600 hover:bg-red-700">
-                                        Change Password
-                                    </Button>
-                                </div>
-                            </div>
+                            </Section>
                         )}
 
-                        {activeTab === 'privacy' && (
-                            <div className="max-w-lg mx-auto space-y-8">
-                                {/* Who can see the profile */}
-                                <div className="p-5 bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)]">
-                                    <div className="flex items-start gap-3 mb-4">
-                                        <div className="p-2 rounded-[var(--radius-card)] bg-[var(--accent)]/10 text-[var(--accent)]">
-                                            <Eye className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-white">Profile Visibility</h3>
-                                            <p className="text-sm text-white/35 mt-1">
-                                                Controls who can open your collection, stats, activity and achievements.
-                                                Your forum posts, comments and published reviews stay public either way —
-                                                they were posted to public pages.
-                                            </p>
-                                        </div>
-                                    </div>
+                        {section === "privacy" && (
+                            <Section title="Profile visibility" blurb={current.blurb}>
+                                <div className="max-w-lg space-y-2">
+                                    <p className="text-[12.5px] text-white/40 leading-relaxed mb-3">
+                                        Controls who can open your collection, stats, activity and achievements. Your forum
+                                        posts, comments and published reviews stay public either way — they were posted to
+                                        public pages.
+                                    </p>
 
-                                    <div className="space-y-2">
-                                        {VISIBILITY_OPTIONS.map((opt) => {
-                                            const active = visibility === opt.id;
-                                            return (
-                                                <button
-                                                    key={opt.id}
-                                                    onClick={() => handleVisibilityChange(opt.id)}
-                                                    disabled={savingVisibility}
-                                                    className={`w-full text-left p-4 rounded-[var(--radius-card)] border transition-colors disabled:opacity-60 ${
-                                                        active
-                                                            ? 'border-[var(--accent)] bg-[var(--accent)]/[0.07]'
-                                                            : 'border-[var(--line)] hover:border-[var(--text-muted)]'
-                                                    }`}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <opt.icon className={`w-4 h-4 ${active ? 'text-[var(--accent)]' : 'text-white/35'}`} />
-                                                        <span className={`font-bold text-sm ${active ? 'text-[var(--accent)]' : 'text-white'}`}>
-                                                            {opt.label}
-                                                        </span>
-                                                        {active && <Check className="w-4 h-4 ml-auto text-[var(--accent)]" />}
-                                                    </div>
-                                                    <p className="text-xs text-white/35 mt-1.5 leading-relaxed">{opt.description}</p>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                    {VISIBILITY_OPTIONS.map((opt) => {
+                                        const active = visibility === opt.id;
 
-                                    {visibility === 'friends' && (
-                                        <p className="mt-3 text-xs text-white/35 leading-relaxed">
-                                            While private you also drop off the leaderboards and out of member search.
-                                            Anyone with your link still sees your name, level and rank — with an
-                                            <strong> Add Friend</strong> button.
+                                        return (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => handleVisibilityChange(opt.id)}
+                                                disabled={savingVisibility}
+                                                className={`w-full text-left p-4 rounded-[var(--radius-card)] border transition-colors disabled:opacity-60 ${
+                                                    active
+                                                        ? "border-[var(--accent)] bg-[var(--accent)]/[0.07]"
+                                                        : "border-[var(--line)] hover:border-white/25"
+                                                }`}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <opt.icon className={`w-4 h-4 ${active ? "text-[var(--accent)]" : "text-white/35"}`} />
+                                                    <span className={`font-bold text-sm ${active ? "text-[var(--accent)]" : "text-white"}`}>
+                                                        {opt.label}
+                                                    </span>
+                                                    {active && <Check className="w-4 h-4 ml-auto text-[var(--accent)]" />}
+                                                </span>
+                                                <span className="block text-[11.5px] text-white/35 mt-1.5 leading-relaxed">{opt.description}</span>
+                                            </button>
+                                        );
+                                    })}
+
+                                    {visibility === "friends" && (
+                                        <p className="pt-2 text-[11.5px] text-white/35 leading-relaxed">
+                                            While private you also drop off the leaderboards and out of member search. Anyone
+                                            with your link still sees your name, level and rank — with an <strong>Add Friend</strong> button.
                                         </p>
                                     )}
                                 </div>
+                            </Section>
+                        )}
 
-                                {/* Export Data */}
-                                <div className="p-5 bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)]">
-                                    <div className="flex items-start gap-3 mb-4">
-                                        <div className="p-2 rounded-[var(--radius-card)] bg-[var(--accent)]/10 text-[var(--accent)]">
-                                            <Download className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-white">Download My Data</h3>
-                                            <p className="text-sm text-white/35 mt-1">
-                                                Export all your account data including profile, forum posts, orders, and achievements as a JSON file.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <Button onClick={handleExportData} disabled={isExporting} variant="outline" className="w-full">
-                                        {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
-                                        {isExporting ? 'Preparing export...' : 'Export My Data'}
+                        {section === "security" && (
+                            <Section title="Password" blurb={current.blurb}>
+                                <div className="max-w-md space-y-5">
+                                    <Field label="Current password">
+                                        <Input
+                                            type="password"
+                                            autoComplete="current-password"
+                                            value={passwords.current}
+                                            onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                                        />
+                                    </Field>
+                                    <Field label="New password" hint="Min 8 characters">
+                                        <Input
+                                            type="password"
+                                            autoComplete="new-password"
+                                            value={passwords.new}
+                                            onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                                        />
+                                    </Field>
+                                    <Field label="Confirm new password">
+                                        <Input
+                                            type="password"
+                                            autoComplete="new-password"
+                                            value={passwords.confirm}
+                                            onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                                        />
+                                    </Field>
+                                    <Button
+                                        onClick={handlePasswordChange}
+                                        disabled={saving || !passwords.current || !passwords.new || passwords.new !== passwords.confirm}
+                                        className="w-full"
+                                    >
+                                        {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Lock className="w-4 h-4 mr-2" />}
+                                        Change password
                                     </Button>
                                 </div>
+                            </Section>
+                        )}
 
-                                {/* Delete Account */}
-                                <div className="p-5 bg-red-500/5 border border-red-500/20 rounded-[var(--radius-card)]">
-                                    <div className="flex items-start gap-3 mb-4">
-                                        <div className="p-2 rounded-[var(--radius-card)] bg-red-500/10 text-red-400">
-                                            <Trash2 className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-red-400">Delete My Account</h3>
-                                            <p className="text-sm text-white/35 mt-1">
-                                                Permanently delete your account and anonymize all your data. This action cannot be undone.
-                                            </p>
-                                        </div>
+                        {section === "account" && (
+                            <>
+                                <Section title="Download your data" blurb="Everything we hold, as one JSON file">
+                                    <div className="max-w-lg">
+                                        <p className="text-[12.5px] text-white/40 leading-relaxed mb-4">
+                                            Your profile, collection, forum posts, orders and achievements. Nothing is deleted
+                                            by exporting.
+                                        </p>
+                                        <Button onClick={handleExportData} disabled={isExporting} variant="outline">
+                                            {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                                            {isExporting ? "Preparing export…" : "Export my data"}
+                                        </Button>
                                     </div>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="block text-sm text-white/55 mb-1">
-                                                Type your username <strong>{user.username}</strong> to confirm:
-                                            </label>
+                                </Section>
+
+                                <div className="rounded-[var(--radius-panel)] border border-red-500/25 bg-red-500/[0.04] overflow-hidden">
+                                    <header className="px-5 md:px-6 py-4 border-b border-red-500/20">
+                                        <h2 className="flex items-center gap-2 font-display text-[12px] font-black uppercase tracking-[0.15em] text-red-400">
+                                            <Trash2 className="w-4 h-4" /> Delete your account
+                                        </h2>
+                                        <p className="mt-1 text-[12px] text-white/35">Permanent, and it cannot be undone.</p>
+                                    </header>
+                                    <div className="p-5 md:p-6 max-w-lg space-y-3">
+                                        <Field label={`Type ${user.username} to confirm`}>
                                             <input
                                                 type="text"
                                                 value={deleteConfirmText}
                                                 onChange={(e) => setDeleteConfirmText(e.target.value)}
                                                 placeholder={user.username}
-                                                className="w-full border border-red-500/30 rounded-[var(--radius-card)] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500"
+                                                className="w-full border border-red-500/30 bg-white/[0.03] rounded-[var(--radius-card)] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                                             />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-white/55 mb-1">
-                                                Confirm your password:
-                                            </label>
+                                        </Field>
+                                        <Field label="Confirm your password">
                                             <input
                                                 type="password"
                                                 value={deletePassword}
                                                 onChange={(e) => setDeletePassword(e.target.value)}
                                                 autoComplete="current-password"
-                                                className="w-full border border-red-500/30 rounded-[var(--radius-card)] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500"
+                                                className="w-full border border-red-500/30 bg-white/[0.03] rounded-[var(--radius-card)] px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                                             />
-                                        </div>
+                                        </Field>
                                         <Button
                                             onClick={handleDeleteAccount}
                                             disabled={isDeletingAccount || deleteConfirmText !== user.username || !deletePassword}
                                             className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50"
                                         >
                                             {isDeletingAccount ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />}
-                                            {isDeletingAccount ? 'Deleting...' : 'Delete My Account'}
+                                            {isDeletingAccount ? "Deleting…" : "Delete my account"}
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>
@@ -742,20 +739,15 @@ export default function SettingsClient() {
                             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <CheckCircle className="w-8 h-8 text-green-500" />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">
-                                Password Changed
-                            </h3>
+                            <h3 className="text-xl font-bold text-white mb-2">Password changed</h3>
                             <p className="text-white/55 mb-6">
                                 Password changed successfully. Please log out and log in again for security reasons.
                             </p>
                             <Button
-                                onClick={() => {
-                                    setShowSuccessModal(false);
-                                    logout();
-                                }}
+                                onClick={() => { setShowSuccessModal(false); logout(); }}
                                 className="w-full bg-[var(--accent)] hover:brightness-110 text-white font-bold"
                             >
-                                OK, Log out
+                                OK, log out
                             </Button>
                         </motion.div>
                     </motion.div>

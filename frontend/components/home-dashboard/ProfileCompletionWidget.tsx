@@ -25,7 +25,6 @@ const ACTION_HREFS: Record<string, string> = {
     bio: "/settings",
     location: "/settings",
     playstyle: "/settings",
-    gamertags: "/settings",
     connect: "/settings",
     favorite: "/games",
     review: "/profile/me?tab=library",

@@ -1,97 +1,86 @@
 "use client";
 
 import Link from "next/link";
-import { Cpu, MonitorCog, MemoryStick, CircuitBoard, Box, Wrench } from "lucide-react";
+import { Link2, Check } from "lucide-react";
 import SectionCard from "./SectionCard";
-import type { ProfileUser } from "@/lib/types/profile";
+import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 
-const SPEC_META: Record<string, { label: string; icon: typeof Cpu }> = {
-    cpu: { label: "CPU", icon: Cpu },
-    gpu: { label: "GPU", icon: MonitorCog },
-    ram: { label: "RAM", icon: MemoryStick },
-    mobo: { label: "Motherboard", icon: CircuitBoard },
-    case: { label: "Case", icon: Box },
-};
-
-const PLATFORM_GLYPH: Record<string, string> = {
-    steam: "🎮", epic: "🕹️", psn: "🎯", xbox: "🟩", discord: "💬", pc: "🖥️", switch: "🔴",
-};
+/** The platforms an account can actually be linked to, in the order we ask. */
+const PLATFORMS: { id: string; label: string; mark: string }[] = [
+    { id: "steam", label: "Steam", mark: "PC" },
+    { id: "playstation", label: "PlayStation", mark: "PLAYSTATION" },
+    { id: "xbox", label: "Xbox", mark: "XBOX" },
+];
 
 /**
- * The rig and the handles — who you are on hardware.
+ * Where this player is, on the platforms they proved.
  *
- * Lifted out of Gamer DNA, where it sat under a heading about taste. What
- * machine somebody plays on and what they are called on each platform is
- * identity, not analysis, so it belongs beside the name.
+ * This was Rig & IDs — a list of PC parts and a row of handles somebody typed
+ * into a form. Both were write-only: the owner's Overview is the dashboard, so
+ * the only person who ever saw the card was a visitor, and the only person who
+ * could fill it never saw what they were filling. Typed handles proved nothing
+ * either; anybody could claim any gamertag.
+ *
+ * What replaces them is the thing that was always the real answer — the OAuth
+ * links, which the site verifies and already syncs libraries from — plus the
+ * Discord server, which is a fact about this community rather than a claim
+ * about a stranger's account.
  */
 export default function RigCard({
-    user, discord, isOwnProfile,
+    connectedAccounts = [], discord, isOwnProfile,
 }: {
-    user: ProfileUser;
+    connectedAccounts?: string[];
     discord?: { member: boolean; since: string | null } | null;
     isOwnProfile: boolean;
 }) {
-    const specs = Object.entries((user.pc_specs ?? {}) as Record<string, string>).filter(([, v]) => !!v);
-    const tags = Object.entries((user.gamertags ?? {}) as Record<string, string>).filter(([, v]) => !!v);
+    const linked = PLATFORMS.filter((p) => connectedAccounts.includes(p.id));
+    const inDiscord = !!discord?.member;
 
     // A visitor gets nothing rather than an empty frame; the owner gets the
     // frame, because it is the prompt to fill it.
-    if (specs.length === 0 && tags.length === 0 && !discord && !isOwnProfile) return null;
+    if (linked.length === 0 && !inDiscord && !isOwnProfile) return null;
 
     return (
-        <SectionCard title="Rig & IDs" material="instrument" action={isOwnProfile ? { label: "Edit", href: "/settings" } : undefined}>
-            {specs.length === 0 && tags.length === 0 ? (
+        <SectionCard
+            title="Platforms"
+            material="instrument"
+            action={isOwnProfile ? { label: "Connect", href: "/settings" } : undefined}
+        >
+            {linked.length === 0 && !inDiscord ? (
                 <Link
                     href="/settings"
                     className="flex flex-col items-center justify-center gap-2 py-6 rounded-[var(--radius-card)] border border-dashed border-white/[0.12] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
                 >
-                    <Wrench className="w-5 h-5 text-white/25" />
-                    <span className="font-display text-[11.5px] font-bold text-white">Add your rig</span>
-                    <span className="text-[11px] text-white/30">Specs and gamertags show up here.</span>
+                    <Link2 className="w-5 h-5 text-white/25" />
+                    <span className="font-display text-[11.5px] font-bold text-white">Connect a platform</span>
+                    <span className="text-[11px] text-white/30">Steam pulls your library across in one click.</span>
                 </Link>
             ) : (
-                <>
-                    {specs.length > 0 && (
-                        <div className="space-y-2">
-                            {specs.slice(0, 4).map(([key, value]) => {
-                                const meta = SPEC_META[key.toLowerCase()] ?? { label: key, icon: Cpu };
-                                const Icon = meta.icon;
+                <div className="flex flex-wrap gap-1.5">
+                    {linked.map((p) => (
+                        <span
+                            key={p.id}
+                            className="inline-flex items-center gap-2 h-[28px] px-2.5 rounded-[7px] bg-white/[0.04] border border-white/[0.08]"
+                            title={`${p.label} connected`}
+                        >
+                            <span style={{ color: platformBrandColor(p.mark) ?? undefined }}>
+                                <PlatformIcon label={p.mark} className="w-[15px] h-[15px]" />
+                            </span>
+                            <span className="text-[10.5px] font-bold text-white/70">{p.label}</span>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                        </span>
+                    ))}
 
-                                return (
-                                    <div key={key} className="flex items-baseline gap-2.5">
-                                        <span className="flex items-center gap-1.5 shrink-0 w-[92px] font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35">
-                                            <Icon className="w-3.5 h-3.5" /> {meta.label}
-                                        </span>
-                                        <span className="min-w-0 text-[12px] font-semibold text-white leading-snug break-words">{value}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                    {/* Being in the server is a different fact from having
+                        linked an account, and only the one worth showing is
+                        shown. */}
+                    {inDiscord && (
+                        <span className="inline-flex items-center gap-1.5 h-[28px] px-2.5 rounded-[7px] bg-[#5865F2]/12 border border-[#5865F2]/35">
+                            <span className="text-[12px] leading-none">💬</span>
+                            <span className="text-[10.5px] font-bold text-[#A3ACFF]">In our Discord</span>
+                        </span>
                     )}
-
-                    {(tags.length > 0 || discord) && (
-                        <div className={specs.length > 0 ? "mt-4 pt-4 border-t border-white/[0.07]" : ""}>
-                            <div className="flex flex-wrap gap-1.5">
-                                {tags.map(([platform, handle]) => (
-                                    <span key={platform} className="inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-[6px] bg-white/[0.04] border border-white/[0.08]">
-                                        <span className="text-[12px] leading-none">{PLATFORM_GLYPH[platform.toLowerCase()] ?? "🎮"}</span>
-                                        <span className="text-[10.5px] font-bold text-white/70">{handle}</span>
-                                    </span>
-                                ))}
-
-                                {/* Being in the server is a different fact from
-                                    having linked an account, and only the one
-                                    worth showing is shown. */}
-                                {discord?.member && (
-                                    <span className="inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-[6px] bg-[#5865F2]/12 border border-[#5865F2]/35">
-                                        <span className="text-[12px] leading-none">💬</span>
-                                        <span className="text-[10.5px] font-bold text-[#A3ACFF]">In our Discord</span>
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </>
+                </div>
             )}
         </SectionCard>
     );

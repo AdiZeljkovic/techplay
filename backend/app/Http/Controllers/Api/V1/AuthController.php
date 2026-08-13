@@ -474,24 +474,14 @@ class AuthController extends Controller
             'tagline' => 'nullable|string|max:120',
             'playstyle_tags' => 'nullable|array',
             'playstyle_tags.*' => 'string|max:40',
-            'gamertags' => 'nullable|array',
-            'gamertags.steam' => 'nullable|string|max:255',
-            'gamertags.epic' => 'nullable|string|max:255',
-            'gamertags.psn' => 'nullable|string|max:255',
-            'gamertags.xbox' => 'nullable|string|max:255',
-            'gamertags.discord' => 'nullable|string|max:255',
-            'pc_specs' => 'nullable|array',
-            'pc_specs.cpu' => 'nullable|string|max:255',
-            'pc_specs.gpu' => 'nullable|string|max:255',
-            'pc_specs.ram' => 'nullable|string|max:255',
-            'pc_specs.mobo' => 'nullable|string|max:255',
-            'pc_specs.case' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|max:2048', // 2MB Max
             'cover_image' => 'nullable|image|max:5120', // 5MB Max
             'remove_cover' => 'nullable|boolean',
-            'gamertags_cleared' => 'nullable|boolean',
-            'pc_specs_cleared' => 'nullable|boolean',
             'profile_visibility' => 'nullable|in:public,friends',
+            // Whether we may email this reader at all. The column has existed
+            // since January and SendGiveawayReminders has been honouring it the
+            // whole time; nothing ever let anybody set it.
+            'email_notifications' => 'nullable|boolean',
         ]);
 
         // Handle Avatar Upload
@@ -518,9 +508,10 @@ class AuthController extends Controller
             'location' => $validated['location'] ?? $user->location,
             'tagline' => $validated['tagline'] ?? $user->tagline,
             'playstyle_tags' => $validated['playstyle_tags'] ?? $user->playstyle_tags,
-            'gamertags' => $request->boolean('gamertags_cleared') ? [] : ($validated['gamertags'] ?? $user->gamertags),
-            'pc_specs' => $request->boolean('pc_specs_cleared') ? [] : ($validated['pc_specs'] ?? $user->pc_specs),
             'profile_visibility' => $validated['profile_visibility'] ?? $user->profile_visibility ?? User::VISIBILITY_PUBLIC,
+            'email_notifications' => $request->has('email_notifications')
+                ? $request->boolean('email_notifications')
+                : ($user->email_notifications ?? true),
         ]);
 
         // Going private has to evict the shared visitor cache immediately,

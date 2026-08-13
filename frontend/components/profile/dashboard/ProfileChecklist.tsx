@@ -17,7 +17,6 @@ interface Props {
         favorites_count?: number;
     };
     listsCount: number;
-    hasGamertags: boolean;
     steamConnected: boolean;
     onOpenTab: (tab: string) => void;
 }
@@ -38,7 +37,7 @@ async function startSteamConnect() {
  * Own-profile onboarding card: one checklist instead of a page full of
  * empty-state cards. Each item is a CTA; the card disappears once complete.
  */
-export default function ProfileChecklist({ stats, listsCount, hasGamertags, steamConnected, onOpenTab }: Props) {
+export default function ProfileChecklist({ stats, listsCount, steamConnected, onOpenTab }: Props) {
     const items = [
         {
             key: "steam",
@@ -83,13 +82,6 @@ export default function ProfileChecklist({ stats, listsCount, hasGamertags, stea
             done: listsCount > 0,
             icon: ListChecks,
             onClick: () => onOpenTab("lists"),
-        },
-        {
-            key: "gamertags",
-            label: "Set your gamertags",
-            done: hasGamertags,
-            icon: Tag,
-            href: "/settings",
         },
         {
             key: "forum",

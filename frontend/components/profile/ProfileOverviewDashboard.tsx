@@ -79,7 +79,6 @@ export default function ProfileOverviewDashboard({
             game: null,
             unlocked_at: a.unlocked_at ?? null,
         }));
-    const hasGamertags = !!userData.gamertags && Object.values(userData.gamertags as Record<string, unknown>).some(Boolean);
 
     /** A strip's heading: what it is, and where the rest of it lives. */
     const StripHead = ({ label, count, href, cta }: { label: string; count?: number; href: string; cta: string }) => (
@@ -104,7 +103,6 @@ export default function ProfileOverviewDashboard({
                     <ProfileChecklist
                         stats={stats}
                         listsCount={lists.length}
-                        hasGamertags={hasGamertags}
                         steamConnected={connectedAccounts.includes("steam")}
                         onOpenTab={onOpenTab}
                     />
@@ -182,9 +180,8 @@ export default function ProfileOverviewDashboard({
                     </div>
                 )}
 
-                {/* The rig and the handles — identity, not analysis, which is why
-                    it left Gamer DNA. */}
-                <RigCard user={userData} discord={discord} isOwnProfile={isOwnProfile} />
+                {/* Where this player is, on the platforms they proved. */}
+                <RigCard connectedAccounts={connectedAccounts} discord={discord} isOwnProfile={isOwnProfile} />
             </div>
         </div>
     );

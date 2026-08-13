@@ -27,7 +27,22 @@ class UserResource extends JsonResource
             // "no cover image" and an upload looked like it had failed.
             'cover_image' => $this->coverImageUrl(),
             'bio' => $this->bio,
+            // Both are drawn on the profile hero. Neither was published here,
+            // so the settings form seeded them empty and the first save wiped
+            // whatever was already set.
+            'tagline' => $this->tagline,
+            'location' => $this->location,
             'email' => $this->when($request->user()?->id === $this->id, $this->email),
+            // Own settings only. Discord ships as a boolean rather than the id:
+            // the page needs to know whether it is linked, not which account.
+            'email_notifications' => $this->when(
+                $request->user()?->id === $this->id,
+                (bool) ($this->email_notifications ?? true)
+            ),
+            'discord_linked' => $this->when(
+                $request->user()?->id === $this->id,
+                ! empty($this->discord_id)
+            ),
             // Own setting only — nobody else needs to know how you're configured
             'profile_visibility' => $this->when(
                 $request->user()?->id === $this->id,

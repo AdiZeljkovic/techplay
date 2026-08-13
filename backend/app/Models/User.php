@@ -74,6 +74,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'battletag',
         'post_color',
         'profile_visibility',
+        'email_notifications',
     ];
 
     /** Only accepted friends may open the profile. */

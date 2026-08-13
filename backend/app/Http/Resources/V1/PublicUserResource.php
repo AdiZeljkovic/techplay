@@ -51,8 +51,6 @@ class PublicUserResource extends JsonResource
             'forum_reputation' => $this->forum_reputation ?? 0,
             'xp' => $this->xp ?? 0,
             // Public profile data
-            'gamertags' => $this->gamertags ?? [],
-            'pc_specs' => $this->pc_specs ?? [],
             // Relations when loaded
             'threads' => $this->whenLoaded('threads', fn () => $this->threads),
             'posts' => $this->whenLoaded('posts', fn () => $this->posts),
