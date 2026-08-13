@@ -355,13 +355,13 @@ function GameCard({
 /* ── the ledger across the top ────────────────────────────────────────── */
 
 function StatCell({
-    icon,
+    icon: Icon,
     label,
     value,
     sub,
     tint,
 }: {
-    icon: React.ReactNode;
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
     label: string;
     value: number;
     sub?: React.ReactNode;
@@ -370,12 +370,17 @@ function StatCell({
     const shown = useCountUp(value, 900);
 
     return (
-        <div className="flex items-center gap-3 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
-            <span
-                className="shrink-0 w-9 h-9 rounded-[9px] flex items-center justify-center"
-                style={{ background: `${tint}1f`, color: tint }}
-            >
-                {icon}
+        <div className="group/bay flex items-center gap-3.5 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
+            {/* The mark IS the icon — the same way the Community and Tools
+                menus draw theirs. It used to be a 16px glyph inside a tinted
+                rounded box, and the box was the loudest thing in the cell:
+                five different readings ended up looking like five of the same
+                thing in five colours, with the actual mark too small inside to
+                tell a trophy from a bookmark. Line art at a light stroke, in
+                the reading's own colour, at a size you aim at rather than
+                decorate with. */}
+            <span className="shrink-0 w-9 h-9 flex items-center justify-center" style={{ color: tint }}>
+                <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.4} />
             </span>
             <span className="min-w-0">
                 <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
@@ -425,15 +430,15 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
                 style={{ background: "var(--line)" }}
             >
                 <StatCell
-                    icon={<Library className="w-4 h-4" />}
+                    icon={Library}
                     label="Total games"
                     value={total}
-                    tint="var(--accent)"
+                    tint="var(--accent-ink)"
                     sub={added > 0 ? <span className="font-display text-[11px] font-bold tabular-nums text-emerald-400">+{added} this month</span> : null}
                 />
-                <StatCell icon={<Trophy className="w-4 h-4" />} label="Completed" value={completed} tint={STATUS.completed.color} sub={pct(share(completed))} />
-                <StatCell icon={<Layers className="w-4 h-4" />} label="Backlog" value={backlog} tint={STATUS.backlog.color} sub={pct(share(backlog))} />
-                <StatCell icon={<Bookmark className="w-4 h-4" />} label="Wishlist" value={wishlist} tint={STATUS.wishlist.color} sub={pct(share(wishlist))} />
+                <StatCell icon={Trophy} label="Completed" value={completed} tint={STATUS.completed.color} sub={pct(share(completed))} />
+                <StatCell icon={Layers} label="Backlog" value={backlog} tint={STATUS.backlog.color} sub={pct(share(backlog))} />
+                <StatCell icon={Bookmark} label="Wishlist" value={wishlist} tint={STATUS.wishlist.color} sub={pct(share(wishlist))} />
 
                 {/* the one figure that is a verdict, not a count */}
                 <div className="flex items-center gap-3.5 px-5 py-4 col-span-2 md:col-span-3 lg:col-span-1" style={{ background: "var(--surface-2)" }}>
