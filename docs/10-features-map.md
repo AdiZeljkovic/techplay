@@ -237,6 +237,44 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Redizajn profila — Faza 4: Library, 13.08.2026
+
+**Collection + Journal → Library.** Bila su to dva taba koja opisuju iste
+objekte: sesija je uvijek o igri s police, a „Completed Timeline" i „Reviews" su
+podaci kolekcije pod naslovom dnevnika. Razdvojeno, dnevnik je skoro svakome
+izgledao kao prazan tab — a prazan tab izgleda kao pokvaren proizvod, dok prazan
+dnevnik unutar pune police izgleda kao poziv.
+
+Tri sočiva nad jednim skupom:
+
+| Pogled | Šta pokazuje | Odakle |
+|---|---|---|
+| **Shelf** | polica s filterima, featured kartica, sidebar | `CollectionGrid` |
+| **Diary** | sesije **i** kalendar toplote, složeni | Journal `sessions` + `calendar` |
+| **Timeline** | završene igre **i** recenzije o njima | Journal `completed` + `reviews` |
+
+Journalova četiri taba su postala dva sočiva: sesije i kalendar odgovaraju na
+isto pitanje (šta sam igrao i kada), pa se slažu jedno ispod drugog umjesto da
+se kriju jedno iza drugog. Isto vrijedi za završenu igru i ono što si o njoj
+napisao.
+
+**„Log a session" s kartice igre.** Do sad je bilježenje značilo napustiti
+policu, otvoriti dnevnik i unatrag tražiti igru koju si upravo spustio — to je
+obrazac za popunjavanje, ne dnevnik. Pero na omotu sad predaje igru dnevniku s
+već otvorenim composerom. Predaja se **izvodi** iz propa, ne kopira u state:
+roditelj drži predaju, a njeno brisanje zatvara composer, pa se to dvoje ne
+može raziću oko toga je li otvoren.
+
+Izbor sočiva je lokalni state, ne URL parametar: `?tab=` već imenuje sekciju, a
+kad neko podijeli svoju biblioteku misli na biblioteku, ne na način na koji je
+baš tad gledao.
+
+`PROFILE_TABS` je sa šest na **pet** ulaza. `LEGACY_TABS` prima
+`?tab=collection` i `?tab=journal` → `library`. Svih 12 internih linkova je
+preusmjereno direktno, ne kroz forwarder.
+
+---
+
 ### Redizajn profila — Faze 2 i 3, 13.08.2026
 
 **Faza 2 — Insights (Gamer DNA): 8 panela → 5, 715 → 486 linija.**

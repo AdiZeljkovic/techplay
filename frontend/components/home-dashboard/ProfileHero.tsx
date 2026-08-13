@@ -298,7 +298,7 @@ export default function ProfileHero({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-games.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
-            href: `${base}?tab=collection` },
+            href: `${base}?tab=library` },
         {
             label: "Completed",
             value: hero.stats.completed,
@@ -306,7 +306,7 @@ export default function ProfileHero({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src="/images/profile/stat-completed.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
             ),
-            href: `${base}?tab=collection` },
+            href: `${base}?tab=library` },
         {
             label: "Reviews",
             value: hero.stats.reviews,

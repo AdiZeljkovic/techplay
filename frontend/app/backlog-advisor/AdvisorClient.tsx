@@ -333,7 +333,7 @@ export default function AdvisorClient() {
                             <div className="min-w-0">
                                 <p className="text-[12.5px] font-bold text-white leading-snug">{summary?.health_note}</p>
                                 <Link
-                                    href="/profile/me?tab=collection"
+                                    href="/profile/me?tab=library"
                                     className="mt-2.5 inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[7px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.09] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/70 transition-colors"
                                 >
                                     View backlog

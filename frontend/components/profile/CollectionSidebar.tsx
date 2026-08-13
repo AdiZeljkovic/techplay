@@ -29,7 +29,7 @@ export function RecentlyAdded({ username }: { username: string }) {
     return (
         <Panel
             title="Recently Added"
-            action={{ label: "View all", href: `/profile/${username}?tab=collection` }}
+            action={{ label: "View all", href: `/profile/${username}?tab=library` }}
             bodyClassName="p-3"
         >
             {isLoading ? (

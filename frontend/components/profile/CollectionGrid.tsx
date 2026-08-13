@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { differenceInDays, parseISO } from "date-fns";
 import {
     Library, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, ChevronDown,
-    Trophy, Layers, Bookmark, ChevronDown as ChevronMore,
+    Trophy, Layers, Bookmark, NotebookPen, ChevronDown as ChevronMore,
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
@@ -52,6 +52,15 @@ const FILTERS: { id: string; label: string; countKey?: keyof NonNullable<UserPro
 interface Props {
     username: string;
     isOwnProfile: boolean;
+    /**
+     * Send a game to the diary with the composer already open.
+     *
+     * Logging used to mean leaving the shelf, opening the journal and
+     * searching backwards for the game you had just put down — a form to fill
+     * in rather than a diary to keep. The Library wires this to its own view
+     * switch, so the pen on a cover is one click from a written session.
+     */
+    onLogSession?: (game: { slug: string; name: string; cover_url: string | null }) => void;
 }
 
 interface UpcomingGame {
@@ -168,12 +177,15 @@ function GameCard({
     onUpdate,
     onRemove,
     onShowcase,
+    onLog,
 }: {
     entry: CollectionEntry;
     isOwnProfile: boolean;
     onUpdate: (slug: string, payload: Record<string, unknown>) => void;
     onRemove: (slug: string) => void;
     onShowcase: (slug: string) => void;
+    /** Hand this game to the diary, composer already open. */
+    onLog?: (game: { slug: string; name: string; cover_url: string | null }) => void;
 }) {
     const meta = STATUS[entry.status] ?? STATUS.backlog;
     const pinned = entry.showcase_order != null;
@@ -279,6 +291,15 @@ function GameCard({
                     >
                         <Heart className={`w-3.5 h-3.5 ${entry.is_favorite ? "fill-amber-400" : ""}`} />
                     </button>
+                    {onLog && (
+                        <button
+                            onClick={() => onLog({ slug: entry.game!.slug, name: entry.game!.name, cover_url: entry.game!.cover_url ?? null })}
+                            title="Log a session"
+                            className="shrink-0 p-1.5 rounded-[6px] hover:bg-white/10 text-white/35 hover:text-[var(--accent)] transition-colors"
+                        >
+                            <NotebookPen className="w-3.5 h-3.5" />
+                        </button>
+                    )}
                     <button
                         onClick={() => onShowcase(entry.game!.slug)}
                         title={pinned ? "Unpin from showcase" : "Pin to showcase"}
@@ -471,7 +492,7 @@ function FeaturedCard({ entry }: { entry: CollectionEntry }) {
 
 /* ── the shelf ────────────────────────────────────────────────────────── */
 
-export default function CollectionGrid({ username, isOwnProfile }: Props) {
+export default function CollectionGrid({ username, isOwnProfile, onLogSession }: Props) {
     const [filter, setFilter] = useState("all");
     const [pages, setPages] = useState(1);
     const [addOpen, setAddOpen] = useState(false);
@@ -710,6 +731,7 @@ export default function CollectionGrid({ username, isOwnProfile }: Props) {
                                             onUpdate={updateEntry}
                                             onRemove={removeEntry}
                                             onShowcase={toggleShowcase}
+                                            onLog={isOwnProfile ? onLogSession : undefined}
                                         />
                                     </div>
                                 ))}

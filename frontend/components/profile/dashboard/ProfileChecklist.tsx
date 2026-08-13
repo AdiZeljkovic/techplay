@@ -54,7 +54,7 @@ export default function ProfileChecklist({ stats, listsCount, hasGamertags, stea
             label: "Mark a game as Playing",
             done: (stats.playing_count ?? 0) > 0,
             icon: Play,
-            onClick: () => onOpenTab("collection"),
+            onClick: () => onOpenTab("library"),
         },
         {
             key: "list",

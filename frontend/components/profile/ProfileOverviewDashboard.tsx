@@ -132,7 +132,7 @@ export default function ProfileOverviewDashboard({
 
                 {/* Playing Now detail rail — only when playing more than the showcase shows */}
                 {playingNow.length > 4 && (
-                    <SectionCard title="Also Playing" action={{ label: "View Collection", href: "?tab=collection" }}>
+                    <SectionCard title="Also Playing" action={{ label: "View Collection", href: "?tab=library" }}>
                         <PlayingNow games={playingNow.slice(4)} />
                     </SectionCard>
                 )}
@@ -140,7 +140,7 @@ export default function ProfileOverviewDashboard({
                 {/* Collection — a strip, not a panel. The tab is the destination. */}
                 {nonZeroBuckets.length > 0 && (
                     <div>
-                        <StripHead label="Collection" count={stats.games_count} href="?tab=collection" cta={isOwnProfile ? "Manage" : "View all"} />
+                        <StripHead label="Collection" count={stats.games_count} href="?tab=library" cta={isOwnProfile ? "Manage" : "View all"} />
                         <CollectionSnapshot tiles={nonZeroBuckets} />
                     </div>
                 )}

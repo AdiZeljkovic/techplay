@@ -15,8 +15,7 @@ import SignInWall from "@/components/auth/SignInWall";
 import LockedProfile from "@/components/profile/LockedProfile";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import DashboardHome from "@/components/home-dashboard/DashboardHome";
-import CollectionGrid from "@/components/profile/CollectionGrid";
-import JournalTab from "@/components/profile/JournalTab";
+import LibraryTab from "@/components/profile/LibraryTab";
 import ListsTab from "@/components/profile/ListsTab";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
@@ -229,16 +228,12 @@ function ProfilePageInner() {
                         />
                     )}
 
-                    {activeTab === "collection" && (
-                        <CollectionGrid username={userData.username} isOwnProfile={isOwnProfile} />
+                    {activeTab === "library" && (
+                        <LibraryTab username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
                     {activeTab === "progression" && (
                         <ProgressionTab username={userData.username} isOwnProfile={isOwnProfile} />
-                    )}
-
-                    {activeTab === "journal" && (
-                        <JournalTab username={userData.username} />
                     )}
 
                     {activeTab === "lists" && (

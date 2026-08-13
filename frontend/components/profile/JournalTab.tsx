@@ -5,11 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import {
-    BookOpen, Plus, Clock3, Flame, CalendarDays, Gamepad2, Trophy, Star, Loader2,
-    Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Image as ImageIcon,
-    Film, Check, ChevronDown, Layers,
-} from "lucide-react";
+import { BookOpen, Plus, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers , Image as ImageIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -31,14 +27,15 @@ const MOODS: Record<string, { label: string; color: string }> = {
 
 const PLATFORMS = ["PC", "PlayStation", "Xbox", "Nintendo", "Mobile", "Retro"];
 
-type View = "sessions" | "calendar" | "completed" | "reviews";
-
-const VIEWS: { id: View; label: string; icon: React.ReactNode }[] = [
-    { id: "sessions", label: "Play Sessions", icon: <BookOpen className="w-3.5 h-3.5" /> },
-    { id: "calendar", label: "Calendar", icon: <CalendarDays className="w-3.5 h-3.5" /> },
-    { id: "completed", label: "Completed", icon: <Trophy className="w-3.5 h-3.5" /> },
-    { id: "reviews", label: "Reviews", icon: <Star className="w-3.5 h-3.5" /> },
-];
+/**
+ * Two lenses instead of four tabs.
+ *
+ * Sessions and the calendar are the same question — what did I play, and when —
+ * so they stack rather than hide behind each other. Completed games and the
+ * reviews written about them are likewise one thing seen twice: a finished game
+ * and what you said about finishing it.
+ */
+export type JournalView = "diary" | "timeline";
 
 const hhmm = (minutes: number) => {
     const h = Math.floor(minutes / 60);
@@ -537,14 +534,44 @@ function CalendarHeat({ calendar }: { calendar: JournalPayload["calendar"] }) {
 
 /* ── the tab ──────────────────────────────────────────────────────────── */
 
-export default function JournalTab({ username }: { username: string }) {
+interface JournalProps {
+    username: string;
+    /** Which lens to draw. The Library owns the switch. */
+    view?: JournalView;
+    /**
+     * A game handed over from the shelf, so "log a session" on a cover opens
+     * the composer already knowing what you played. Logging used to mean
+     * coming here first and searching backwards for the game you had just put
+     * down, which is a form to fill in rather than a diary to keep.
+     */
+    prefill?: { slug: string; name: string; cover_url: string | null } | null;
+    onPrefillConsumed?: () => void;
+}
+
+export default function JournalTab({ username, view = "diary", prefill, onPrefillConsumed }: JournalProps) {
     const { data, isLoading, mutate } = useSWR<{ data: JournalPayload }>(
         `/users/${username}/journal`, fetcher, { revalidateOnFocus: false }
     );
 
-    const [view, setView] = useState<View>("sessions");
     const [composing, setComposing] = useState(false);
     const [editing, setEditing] = useState<PlaySession | null>(null);
+
+    // A game handed over from the shelf opens the composer already holding it.
+    // Derived rather than copied into state: the parent owns the handover, and
+    // clearing it there is what closes the composer, so the two can never
+    // disagree about whether one is open.
+    const showComposer = composing || editing !== null || prefill != null;
+    const draft = editing
+        ? draftFromSession(editing)
+        : prefill
+            ? { ...emptyDraft(), game: prefill }
+            : emptyDraft();
+
+    const closeComposer = () => {
+        setComposing(false);
+        setEditing(null);
+        onPrefillConsumed?.();
+    };
 
     const journal = data?.data;
 
@@ -624,7 +651,7 @@ export default function JournalTab({ username }: { username: string }) {
                 </div>
             </div>
 
-            {journal.is_owner && !composing && !editing && (
+            {journal.is_owner && !showComposer && (
                 <button
                     onClick={() => setComposing(true)}
                     className="inline-flex items-center gap-2 h-10 px-5 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[11px] font-bold uppercase tracking-[0.1em] transition-[filter]"
@@ -633,34 +660,19 @@ export default function JournalTab({ username }: { username: string }) {
                 </button>
             )}
 
-            {(composing || editing) && (
+            {showComposer && (
                 <SessionComposer
-                    key={editing?.id ?? "new"}
-                    initial={editing ? draftFromSession(editing) : emptyDraft()}
+                    key={editing?.id ?? prefill?.slug ?? "new"}
+                    initial={draft}
                     sessionId={editing?.id ?? null}
-                    onDone={() => { setComposing(false); setEditing(null); mutate(); }}
-                    onCancel={() => { setComposing(false); setEditing(null); }}
+                    onDone={() => { closeComposer(); mutate(); }}
+                    onCancel={closeComposer}
                 />
             )}
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                 <div className="xl:col-span-8 min-w-0 space-y-4">
-                    {/* view switcher */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        {VIEWS.map((v) => (
-                            <button
-                                key={v.id}
-                                onClick={() => setView(v.id)}
-                                className={`inline-flex items-center gap-2 h-8 px-3.5 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
-                                    view === v.id ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]"
-                                }`}
-                            >
-                                {v.icon} {v.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {view === "sessions" && (
+                    {view === "diary" && (
                         journal.sessions.length === 0 ? (
                             <EmptyState
                                 icon={<BookOpen className="w-[18px] h-[18px]" />}
@@ -686,7 +698,7 @@ export default function JournalTab({ username }: { username: string }) {
                         )
                     )}
 
-                    {view === "calendar" && (
+                    {view === "diary" && (
                         <Panel
                             title="Gaming Calendar"
                             meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Last 12 months</span>}
@@ -708,7 +720,7 @@ export default function JournalTab({ username }: { username: string }) {
                         </Panel>
                     )}
 
-                    {view === "completed" && (
+                    {view === "timeline" && (
                         <Panel title="Completed Timeline">
                             {journal.completed_timeline.length === 0 ? (
                                 <EmptyState variant="compact" title="Nothing finished yet" body="Mark a game completed in your collection and it lands here." />
@@ -745,7 +757,7 @@ export default function JournalTab({ username }: { username: string }) {
                         </Panel>
                     )}
 
-                    {view === "reviews" && (
+                    {view === "timeline" && (
                         <Panel title="Reviews">
                             {journal.reviews.length === 0 ? (
                                 <EmptyState variant="compact" title="No reviews yet" body="Rate a game with a few words and it shows up here." />

@@ -34,7 +34,7 @@ export default function FavoriteGamesRail({
     return (
         <Panel
             title="Favorite Games"
-            action={favorites.length > 0 ? { label: `View all (${count})`, href: `/profile/${username}?tab=collection` } : undefined}
+            action={favorites.length > 0 ? { label: `View all (${count})`, href: `/profile/${username}?tab=library` } : undefined}
             className="h-full flex flex-col"
             bodyClassName="p-4 flex-1 flex flex-col"
         >
@@ -74,7 +74,7 @@ export default function FavoriteGamesRail({
                     {/* the fifth slot: the rest of the shelf, or room for one more */}
                     {overflow > 0 ? (
                         <Link
-                            href={`/profile/${username}?tab=collection`}
+                            href={`/profile/${username}?tab=library`}
                             className="relative aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07] bg-[var(--fill-1)] flex items-center justify-center hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                         >
                             {favorites[SHOWN]?.cover_url && (

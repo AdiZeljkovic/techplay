@@ -1,10 +1,10 @@
-import { User, Gamepad2, Award, List, Dna, BookOpen, type LucideIcon } from "lucide-react";
+import { User, Library, Award, List, Dna, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
  * page's tab router and any deep link that wants to name a section.
  */
-export type ProfileTab = "overview" | "collection" | "journal" | "lists" | "progression" | "stats";
+export type ProfileTab = "overview" | "library" | "lists" | "progression" | "stats";
 
 /**
  * Sections that used to exist on their own, and where they went.
@@ -16,6 +16,8 @@ export type ProfileTab = "overview" | "collection" | "journal" | "lists" | "prog
 export const LEGACY_TABS: Record<string, ProfileTab> = {
     achievements: "progression",
     rewards: "progression",
+    collection: "library",
+    journal: "library",
     // The activity tab folded into the overview a while back.
     activity: "overview",
     forum: "overview",
@@ -30,8 +32,7 @@ export const PROFILE_TABS: {
     ownOnly?: boolean;
 }[] = [
     { id: "overview", label: "Overview", icon: User },
-    { id: "collection", label: "Collection", icon: Gamepad2 },
-    { id: "journal", label: "Journal", icon: BookOpen },
+    { id: "library", label: "Library", icon: Library },
     { id: "lists", label: "Lists", icon: List },
     { id: "progression", label: "Progression", icon: Award },
     { id: "stats", label: "Gamer DNA", icon: Dna },

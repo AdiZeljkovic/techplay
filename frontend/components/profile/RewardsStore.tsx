@@ -40,16 +40,6 @@ const SORTS: { id: SortId; label: string }[] = [
 
 const RARITY_ORDER: StoreRarity[] = ["legendary", "epic", "rare", "uncommon", "common"];
 
-interface Quest {
-    id: number;
-    name: string;
-    criteria_value: number;
-    bounty_reward: number;
-    progress: number;
-    completed: boolean;
-    expires_at: string | null;
-}
-
 /* ── card art ─────────────────────────────────────────────────────────── */
 
 /**

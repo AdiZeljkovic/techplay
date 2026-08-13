@@ -40,7 +40,7 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
                             <><Star className="w-4 h-4 text-[var(--accent)]" /> Game Showcase</>
                         )}
                     </h2>
-                    <Link href="?tab=collection" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">
+                    <Link href="?tab=library" className="text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-[var(--accent)] transition-colors">
                         {!pinned && hasPlaying && playingCount ? `All ${playingCount} playing` : "View collection"}
                     </Link>
                 </div>
@@ -82,7 +82,7 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
                         {coveredBuckets.slice(0, 4).map((t, i) => (
                             <Link
                                 key={t.status}
-                                href="?tab=collection"
+                                href="?tab=library"
                                 className={`group relative aspect-[16/10] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] hover:border-[var(--accent)]/60 transition-all bg-[var(--surface-2)] tp-fade-up tp-d${Math.min(6, i + 1)}`}
                             >
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
