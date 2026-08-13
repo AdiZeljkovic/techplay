@@ -330,22 +330,18 @@ function WalletBanner({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () => 
             <div className="relative grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_1fr] gap-px" style={{ background: "var(--line)" }}>
                 {/* what you can spend */}
                 <div className="flex items-center gap-5 p-6" style={{ background: "var(--surface-2)" }}>
-                    <span className="relative w-[84px] h-[84px] shrink-0">
-                        <span aria-hidden className="absolute inset-0 rounded-full border-2 border-amber-500/30" />
-                        <span aria-hidden className="absolute inset-[7px] rounded-full border border-amber-400/20" />
-                        <span
-                            aria-hidden
-                            className="absolute inset-[13px] rounded-full"
-                            style={{ background: "radial-gradient(circle, rgba(240,180,41,0.22), transparent 70%)" }}
-                        />
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                            src="/images/profile/v2-bounty.webp"
-                            alt=""
-                            aria-hidden
-                            className="absolute inset-0 m-auto w-[46px] h-[46px] object-contain"
-                        />
-                    </span>
+                    {/* The coin, alone. It sat inside two drawn rings and a
+                        radial glow, which left a 46px object at the centre of
+                        an 84px target — the rings were the thing you saw and
+                        the icon was what they were pointing at. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src="/images/profile/v2-bounty.webp"
+                        alt=""
+                        aria-hidden
+                        className="w-[84px] h-[84px] shrink-0 object-contain"
+                        style={{ filter: "drop-shadow(0 6px 20px rgba(240,180,41,0.28))" }}
+                    />
 
                     <div className="min-w-0">
                         <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-amber-400/70">
@@ -368,19 +364,18 @@ function WalletBanner({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () => 
 
                 {/* where you stand */}
                 <div className="flex items-center gap-5 p-6" style={{ background: "var(--surface-2)" }}>
-                    <span
-                        className="relative w-[58px] h-[66px] shrink-0 flex items-center justify-center"
-                        style={{ background: tier.color, clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
-                    >
-                        <span
-                            className="w-[48px] h-[56px] flex items-center justify-center bg-[var(--surface-2)]"
-                            style={{ clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
-                        >
-                            <span className="font-display text-[15px] font-black" style={{ color: tier.color }}>
-                                {tier.numeral}
-                            </span>
-                        </span>
-                    </span>
+                    {/* The rank insignia we already draw everywhere else.
+                        A hollow hexagon with a roman numeral in it was a
+                        placeholder for exactly this art, and the reward
+                        families are named after the ranks — Bronze, Silver,
+                        Gold, Platinum — so the crest already exists. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={`/images/ranks/${tier.family.toLowerCase()}.webp`}
+                        alt={tier.family}
+                        className="w-[86px] h-[86px] shrink-0 object-contain"
+                        style={{ filter: `drop-shadow(0 6px 20px color-mix(in srgb, ${tier.color} 35%, transparent))` }}
+                    />
 
                     <div className="min-w-0 flex-1">
                         <p className="flex items-baseline justify-between gap-3">
