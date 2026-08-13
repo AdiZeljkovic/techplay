@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AttachRewards;
 use App\Http\Middleware\CheckUserBan;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TrackUserActivity;
@@ -59,6 +60,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Track authenticated users as online (used for forum online counter)
         $middleware->appendToGroup('api', TrackUserActivity::class);
         $middleware->appendToGroup('api', CheckUserBan::class);
+        // Last in, so it sees a response every other middleware has finished
+        // with: what this request earned, attached to the answer that reports
+        // it. Everything that pays out was doing so silently.
+        $middleware->appendToGroup('api', AttachRewards::class);
 
         $middleware->alias([
             'ban.check' => CheckUserBan::class,

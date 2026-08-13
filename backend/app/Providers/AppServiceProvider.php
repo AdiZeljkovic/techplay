@@ -39,6 +39,7 @@ use App\Observers\ReviewObserver;
 use App\Observers\SiteSettingObserver;
 use App\Observers\ThreadObserver;
 use App\Services\LoggingService;
+use App\Services\RewardLedger;
 use App\Services\Socialite\BattleNetProvider;
 use App\Services\Socialite\DiscordProvider;
 use Filament\Forms\Components\FileUpload;
@@ -60,6 +61,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Request-scoped: a singleton lives and dies with the request, so what
+        // one reader earned can never leak into another's response.
+        $this->app->singleton(RewardLedger::class);
+
         // A floor under every outbound HTTP call. Guzzle's default timeout is
         // zero — meaning wait forever — and several integrations in the request
         // path (Turnstile on login, Steam OpenID, the PayPal webhook verifier)

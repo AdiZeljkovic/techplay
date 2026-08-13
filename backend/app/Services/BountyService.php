@@ -67,6 +67,14 @@ class BountyService
                 'balance_after' => $balance,
             ]);
 
+            // Inside the transaction on purpose: a payout that rolls back
+            // should not have been announced. Spending is deliberately not
+            // recorded — the reader knows what they just bought, and "-500
+            // bounty" flying out of a purchase button is a scolding.
+            if ($type !== 'spend') {
+                app(RewardLedger::class)->bounty($amount, $reason);
+            }
+
             return $balance;
         });
     }

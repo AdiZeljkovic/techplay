@@ -237,6 +237,49 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Redizajn profila — Faza 9: sloj osjećaja, 13.08.2026
+
+Sve što sajt isplaćuje — XP, bounty, otključano dostignuće, napredovanje u rangu
+— dešavalo se na serveru i pojavljivalo se, ako uopšte, pri sljedećem učitavanju
+stranice. **Dodavanje igre je plaćalo 10 XP i izgledalo tačno kao da se ništa
+nije desilo.**
+
+**Jedno mjesto umjesto sto.** Umjesto da se mijenja stotinu kontrolera da vraćaju
+svoje nagrade, servisi koji ih dodjeljuju upisuju red u `RewardLedger`, a jedan
+middleware (`AttachRewards`) zakači cjelinu na JSON koji ionako ide nazad.
+
+- `RewardLedger` je **request-scoped singleton** — živi i umire sa zahtjevom, pa
+  nema curenja između korisnika ni ičega za čišćenje.
+- `XpService` upisuje **koliko je stvarno plaćeno**, ne koliko je traženo: dnevni
+  limit i sezonski množitelj mijenjaju taj broj.
+- `BountyService` upisuje unutar transakcije — isplata koja se povuče nije
+  smjela biti ni najavljena. **Trošenje se namjerno ne upisuje**: „−500 bounty"
+  koje izleti iz dugmeta za kupovinu je prijekor.
+- `AchievementService` upisuje otključavanje s ikonom.
+- Middleware radi **samo na pisanjima**. GET koji slučajno okine dnevnu prijavu
+  bi inače pustio konfete usred nevezanog učitavanja stranice.
+- Ne dira odgovore koji su goli niz (paginirane kolekcije) — pretvaranje liste u
+  objekat bi slomilo njenog čitaoca.
+
+**Dva registra na frontu.** `RewardFeed` sluša jedan axios interceptor:
+
+| Šta | Kako izgleda |
+|---|---|
+| XP i bounty | mali čipovi koji se dignu u uglu i nestanu za 2,6 s — klimanje glavom, ne prekid |
+| Otključano dostignuće ili rang | sredina ekrana, jednom, čeka da se zatvori |
+
+Napredovanje u rangu ima prednost nad otključavanjem — može ti se reći samo
+jedna stvar odjednom, a penjanje ranga je veća. `prefers-reduced-motion` gasi
+kretanje ali **ne i tajming čipa**, inače bi se gomilao u uglu zauvijek.
+
+**Globalni „+" (`QuickAdd`).** Dodavanje igre je tražilo da si na Collection
+tabu, bilježenje sesije na dnevniku, lista na Lists tabu — a svaka od tih misli
+stiže dok si negdje sasvim drugdje. Sada: pretraga igre s „Playing"/„Backlog"
+u dva klika, plus prečice ka dnevniku i listama. Odjavljenima se ne prikazuje —
+prečica ka zaključanim vratima nije prečica.
+
+---
+
 ### Redizajn profila — Faza 8: PlayStation i jedan ekran za veze, 13.08.2026
 
 **PlayStation — radi, ali s otvorenim kartama.** Sony ne vodi developerski

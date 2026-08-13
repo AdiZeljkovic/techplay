@@ -646,8 +646,32 @@ body.tp-navigating .tp-page {
 .tp-d5 { animation-delay: 0.33s; }
 .tp-d6 { animation-delay: 0.40s; }
 
+/* Rewards: a chip rises out of the corner and fades; a moment lands once.
+   Both are announcements, so both are short and neither loops. */
+@keyframes tp-reward-chip {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.94); }
+  14%  { opacity: 1; transform: translateY(0) scale(1); }
+  78%  { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.98); }
+}
+.tp-reward-chip {
+  animation: tp-reward-chip 2.6s var(--ease-hud) forwards;
+}
+
+@keyframes tp-reward-moment {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.tp-reward-moment {
+  animation: tp-reward-moment 0.42s var(--ease-hud) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tp-fade-up { animation: none; opacity: 1; transform: none; }
+  /* The chip still has to leave, or it stacks up in the corner forever —
+     so it keeps its timing and loses its movement. */
+  .tp-reward-chip { animation: tp-reward-chip 2.6s linear forwards; transform: none; }
+  .tp-reward-moment { animation: none; opacity: 1; transform: none; }
 }
 
 /* Ticker: the strip of what just landed, sliding left forever.

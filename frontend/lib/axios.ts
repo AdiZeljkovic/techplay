@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { announceReward } from '@/components/ui/RewardFeed';
 import toast from 'react-hot-toast';
 
 // Base API URL (without /api/v1 suffix for CSRF cookie endpoint)
@@ -144,7 +145,18 @@ function endSession(): void {
 
 // Response interceptor - handle 401 and 419 (CSRF) errors gracefully
 axiosInstance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // The API attaches what a write earned; this is the one place that has
+        // to notice, so no caller has to remember to. Everything that pays out
+        // used to do it silently and show up on the next page load.
+        const rewards = response.data?.rewards;
+
+        if (rewards && typeof rewards === "object") {
+            announceReward(rewards);
+        }
+
+        return response;
+    },
     async (error) => {
         const originalRequest = error.config;
 

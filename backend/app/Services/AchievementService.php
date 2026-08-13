@@ -319,6 +319,10 @@ class AchievementService
 
         $user->achievements()->attach($achievement->id, ['unlocked_at' => now()]);
 
+        // An unlock is the one thing on the site worth interrupting somebody
+        // for, and it used to arrive as a notification they might read later.
+        app(RewardLedger::class)->unlocked($achievement->name, $achievement->versionedIconPath());
+
         try {
             $user->notify(new AchievementUnlockedNotification($achievement));
         } catch (\Throwable) {

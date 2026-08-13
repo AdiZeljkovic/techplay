@@ -77,6 +77,11 @@ class XpService
         // 3. Award XP
         $user->increment('xp', $actualAmount);
 
+        // What was actually paid, not what was asked for — the daily cap and
+        // the season multiplier both move this number, and the page should
+        // show the one that landed.
+        app(RewardLedger::class)->xp($actualAmount, $actionType);
+
         // NOTE (economy split, V2): XP no longer mirrors into Bounty.
         // XP = progression; Bounty = currency earned through deliberate
         // actions (daily streak, quests, game completions, publishing,
@@ -120,6 +125,8 @@ class XpService
         if (! $isPromotion) {
             return;
         }
+
+        app(RewardLedger::class)->promoted($newRank);
 
         try {
             $user->notify(new RankUpNotification($newRank));
