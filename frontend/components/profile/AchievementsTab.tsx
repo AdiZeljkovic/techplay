@@ -57,8 +57,12 @@ const CATEGORY_MARKS: Record<string, LucideIcon> = {
     Shop: ShoppingBag,
 };
 
-/** One page of the shelf — about the height of the rail beside it. */
-const PAGE = 12;
+/**
+ * One page of the shelf — ten rows of two, which is about the height of the
+ * rail beside it. Twelve left the column finishing well above the rail's
+ * floor, which is the same hole as before with the sides swapped.
+ */
+const PAGE = 20;
 
 type FilterId = "all" | "unlocked" | "locked" | "progress" | "rare";
 type SortId = "default" | "closest" | "rarest" | "points" | "recent";
@@ -519,8 +523,11 @@ export default function AchievementsTab({ username }: { username: string }) {
     ];
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-            <div className="xl:col-span-9 min-w-0">
+        // No items-start: the two columns stretch to the taller of them, so
+        // the shelf can push its Load more down to the rail's floor instead of
+        // stopping halfway up with a screen of nothing under it.
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+            <div className="xl:col-span-9 min-w-0 flex flex-col">
                 <ScoreStrip data={payload} />
 
                 {/* ── controls ──
@@ -602,7 +609,7 @@ export default function AchievementsTab({ username }: { username: string }) {
                             an achievement nobody had scrolled to on purpose.
                             One page is about the rail's own height. */}
                         {visible.length > shown.length && (
-                            <div className="mt-4 flex flex-col items-center gap-2">
+                            <div className="mt-auto pt-6 flex flex-col items-center gap-2">
                                 <button
                                     onClick={() => setPaging({ question, limit: limit + PAGE })}
                                     className="inline-flex items-center gap-2 h-10 px-5 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white transition-colors"
