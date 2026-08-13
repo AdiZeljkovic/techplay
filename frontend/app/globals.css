@@ -646,6 +646,84 @@ body.tp-navigating .tp-page {
 .tp-d5 { animation-delay: 0.33s; }
 .tp-d6 { animation-delay: 0.40s; }
 
+/* ========================================
+   STAT ICONS — rendered objects that behave like objects
+   ========================================
+   The six hero stat icons are 3D renders and were pasted in flat. Three
+   things give them back their depth: a turn toward the pointer, a specular
+   highlight cut to the object's own silhouette, and a lift on approach.
+
+   All of it rides CSS variables the component writes directly, so pointer
+   movement never touches React. */
+
+.tp-stat-icon {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --spec-x: 50%;
+  --spec-y: 50%;
+  --spec-o: 0;
+  perspective: 320px;
+}
+
+.tp-stat-icon-body {
+  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) translateZ(0);
+  transform-style: preserve-3d;
+  transition: transform 260ms var(--ease-hud), filter 260ms var(--ease-hud);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.65));
+  will-change: transform;
+}
+
+/* The lift. The shadow grows with it, or the object looks like it slid
+   rather than rose. */
+.tp-stat-icon:hover .tp-stat-icon-body {
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.7))
+          drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 30%, transparent));
+}
+
+.tp-stat-spec {
+  opacity: var(--spec-o);
+  transition: opacity 220ms var(--ease-hud);
+  background: radial-gradient(
+    circle at var(--spec-x) var(--spec-y),
+    rgba(255, 255, 255, 0.55) 0%,
+    color-mix(in srgb, var(--accent) 40%, transparent) 26%,
+    transparent 62%
+  );
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  mix-blend-mode: screen;
+}
+
+/* Spent state: a streak at zero is not a dimmer flame, it is a cold one. */
+.tp-stat-icon.is-spent .tp-stat-icon-body {
+  filter: grayscale(1) brightness(0.55) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+}
+.tp-stat-icon.is-spent .tp-stat-spec { display: none; }
+
+/* Idle life, for the two objects that have a reason to move. Slow and small:
+   six animating icons at once is a screensaver. */
+@keyframes tp-stat-flicker {
+  0%, 100% { transform: scale(1) translateY(0); filter: brightness(1); }
+  38%      { transform: scale(1.045) translateY(-1px); filter: brightness(1.12); }
+  62%      { transform: scale(0.985) translateY(0.5px); filter: brightness(0.96); }
+}
+.tp-stat-flicker { animation: tp-stat-flicker 2.6s ease-in-out infinite; }
+
+@keyframes tp-stat-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+.tp-stat-pulse { animation: tp-stat-pulse 3.4s var(--ease-hud) infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-stat-icon-body { transition: none; }
+  .tp-stat-flicker, .tp-stat-pulse { animation: none; }
+}
+
 /* Rewards: a chip rises out of the corner and fades; a moment lands once.
    Both are announcements, so both are short and neither loops. */
 @keyframes tp-reward-chip {

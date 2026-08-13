@@ -11,6 +11,7 @@ import { rankTier } from "@/lib/ranks";
 import { useCountUp } from "@/hooks/useCountUp";
 import ProfileTabStrip from "./ProfileTabStrip";
 import ShareCard from "@/components/profile/ShareCard";
+import StatIcon from "./StatIcon";
 import { RankInsigniaMark, XpRail } from "./RankInsignia";
 import { xpForLevel } from "@/lib/level";
 
@@ -166,7 +167,7 @@ function StatCell({ cell }: { cell: StripCell }) {
         <span className="flex items-center gap-3 min-w-0">
             {cell.icon}
             <span className="min-w-0">
-                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
+                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40 group-hover/cell:text-white/70 transition-colors duration-300 whitespace-nowrap">
                     {cell.label}
                 </span>
                 <span className="block mt-1.5 font-display text-[19px] font-black tabular-nums leading-none text-white truncate">
@@ -177,7 +178,10 @@ function StatCell({ cell }: { cell: StripCell }) {
     );
 
     return cell.href ? (
-        <Link href={cell.href} className="flex items-center min-w-0 hover:opacity-80 transition-opacity duration-200">
+        // Dimming the whole cell on hover used to fight the icon, which lifts
+        // and catches light on the same gesture — one said "come closer" while
+        // the other said "fading out". The label brightens instead.
+        <Link href={cell.href} className="group/cell flex items-center min-w-0">
             {body}
         </Link>
     ) : (
@@ -296,26 +300,17 @@ export default function ProfileHero({
         {
             label: "Games",
             value: hero.stats.games,
-            icon: (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-games.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
-            ),
+            icon: <StatIcon src="/images/profile/stat-games.webp" />,
             href: `${base}?tab=library` },
         {
             label: "Completed",
             value: hero.stats.completed,
-            icon: (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-completed.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
-            ),
+            icon: <StatIcon src="/images/profile/stat-completed.webp" />,
             href: `${base}?tab=library` },
         {
             label: "Reviews",
             value: hero.stats.reviews,
-            icon: (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-reviews.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
-            ),
+            icon: <StatIcon src="/images/profile/stat-reviews.webp" />,
             // Reviews surface in the overview's activity feed — there is no
             // longer a tab of their own to point at.
             href: base },
@@ -329,10 +324,7 @@ export default function ProfileHero({
                     )}
                 </>
             ),
-            icon: (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-achievements.webp" alt="" aria-hidden className="w-[60px] h-[60px] shrink-0 object-contain select-none" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
-            ),
+            icon: <StatIcon src="/images/profile/stat-achievements.webp" />,
             href: `${base}?tab=progression` },
         {
             label: "Streak",
@@ -343,9 +335,11 @@ export default function ProfileHero({
                 </>
             ),
             icon: (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src="/images/profile/stat-streak.webp" alt="" aria-hidden
-                    className={`w-[60px] h-[60px] shrink-0 object-contain select-none ${hero.streak_days > 0 ? "" : "opacity-40 grayscale"}`} style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.65))" }} />
+                <StatIcon
+                    src="/images/profile/stat-streak.webp"
+                    active={hero.streak_days > 0}
+                    idle="flicker"
+                />
             ) },
         {
             label: `Level ${hero.level + 1} loot`,
@@ -354,18 +348,7 @@ export default function ProfileHero({
                     {levelToGoShown.toLocaleString()} <span className="text-[13px] text-white/35">XP to go</span>
                 </span>
             ),
-            icon: (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                    src="/images/profile/stat-loot.webp"
-                    alt=""
-                    aria-hidden
-                    width={44}
-                    height={44}
-                    className="w-[64px] h-[64px] shrink-0 object-contain"
-                    style={{ filter: "drop-shadow(0 3px 8px rgba(0,0,0,0.6))" }}
-                />
-            ),
+            icon: <StatIcon src="/images/profile/stat-loot.webp" size={64} idle="pulse" />,
             href: `${base}?tab=stats` },
     ];
 
