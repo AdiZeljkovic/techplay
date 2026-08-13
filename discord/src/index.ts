@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits, Events, REST, Routes } from 'discord.js';
 import { config } from './config';
 import { commands } from './commands/definitions';
 import { handleCommand } from './handlers/commands';
-import { setupWelcome, setupModeration, setupChallengeReactions, setupPresenceTracking } from './handlers/events';
+import { setupWelcome, setupModeration, setupChallengeReactions, setupPresenceTracking, setupGuildMembership } from './handlers/events';
 import { PollingService } from './services/PollingService';
 import { ServerStatsService } from './services/ServerStatsService';
 import { XpService } from './services/XpService';
@@ -101,6 +101,9 @@ setupChallengeReactions(client);
 
 // Discord Rich Presence → TechPlay "Playing Now"
 setupPresenceTracking(client);
+
+// Who is actually in the server → the community badge on the profile
+setupGuildMembership(client);
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SLASH COMMAND HANDLER

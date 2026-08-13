@@ -37,7 +37,14 @@ class Season extends Model
         return static::where('is_active', true)
             ->where(fn ($q) => $q->whereNull('start_date')->orWhere('start_date', '<=', now()))
             ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
-            ->orderBy('id')
+            // Newest first, not lowest id. Two overlapping active seasons is a
+            // data mistake an admin can make in thirty seconds, and resolving
+            // it by id meant the older one silently won — which is how
+            // "Season 1: Ignition" spent six weeks invisible underneath
+            // "Summer of Gaming 2026". If it ever happens again, the season
+            // that started most recently is the one people think they are in.
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
             ->first();
     }
 

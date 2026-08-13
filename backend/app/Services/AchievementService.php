@@ -175,7 +175,15 @@ class AchievementService
 
             'orders_count' => $this->resolveOrdersCount($user),
 
-            'discord' => $user->discord_id ? 1 : 0,
+            // Linking an account and being in the server are different
+            // facts. This counted the link, so somebody who connected once and
+            // left years ago still held the badge for being part of the
+            // community. The bot reports the membership; if it has never
+            // reported at all, the link still counts, so nobody loses a badge
+            // to a bot that has not been deployed yet.
+            'discord' => $user->discord_id
+                ? (($user->discord_guild_checked_at === null || $user->discord_guild_member) ? 1 : 0)
+                : 0,
 
             'daily_streak' => (int) ($user->daily_streak ?? 0),
 

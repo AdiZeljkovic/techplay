@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\DiscordDailyController;
 use App\Http\Controllers\Api\V1\DiscordGiftController;
 use App\Http\Controllers\Api\V1\DiscordIntegrationController;
 use App\Http\Controllers\Api\V1\DiscordLeaderboardController;
+use App\Http\Controllers\Api\V1\DiscordMembershipController;
 use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
 use App\Http\Controllers\Api\V1\FeedController;
@@ -125,6 +126,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/xp', [DiscordXpController::class, 'addXp']);
         // Presence from Discord Rich Presence (bot reports game activity)
         Route::post('/presence', [PresenceController::class, 'discordUpdate']);
+        // Guild membership — the bot is the only thing that knows who is
+        // actually in the server, as opposed to who linked an account once.
+        Route::post('/membership', [DiscordMembershipController::class, 'update']);
+        Route::post('/membership/sync', [DiscordMembershipController::class, 'sync']);
         Route::get('/leaderboard', [DiscordLeaderboardController::class, 'top']);
         Route::post('/daily', [DiscordDailyController::class, 'claim']);
 

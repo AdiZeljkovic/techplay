@@ -202,6 +202,45 @@ export class ApiService {
     }
 
     /**
+     * Reports one member joining or leaving the guild.
+     *
+     * Most guild members have no TechPlay account, so the backend answers
+     * `linked: false` rather than 404 — there is nothing to log about it.
+     */
+    public async reportMembership(discordId: string, inGuild: boolean, joinedAt?: string): Promise<void> {
+        try {
+            await this.client.post('/discord/membership', {
+                discord_id: discordId,
+                in_guild: inGuild,
+                joined_at: joinedAt,
+            });
+        } catch (error) {
+            console.error(`[ApiService] Failed to report membership for ${discordId}:`, error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+
+    /**
+     * Sends the whole roster so the backend can repair its flags.
+     *
+     * Single join/leave events go missing whenever the bot is down; this is
+     * what makes that self-healing rather than permanent.
+     */
+    public async syncMembership(discordIds: string[]): Promise<void> {
+        if (discordIds.length === 0) {
+            console.warn('[ApiService] Refusing to sync an empty guild roster.');
+            return;
+        }
+
+        try {
+            const response = await this.client.post('/discord/membership/sync', { discord_ids: discordIds });
+            const data = response.data?.data;
+            console.log(`👥 Guild roster synced — ${data?.roster ?? discordIds.length} members, ${data?.newly_in ?? 0} newly in, ${data?.newly_out ?? 0} newly out`);
+        } catch (error) {
+            console.error('[ApiService] Failed to sync guild roster:', error instanceof Error ? error.message : 'Unknown error');
+        }
+    }
+
+    /**
      * Adds XP to a user via Discord ID
      */
     public async addXp(discordId: string, xp: number): Promise<any | null> {

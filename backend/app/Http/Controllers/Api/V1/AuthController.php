@@ -448,6 +448,13 @@ class AuthController extends Controller
             ],
             // V3 — which external accounts are linked (providers only, no tokens)
             'connected_accounts' => ConnectedAccount::where('user_id', $user->id)->pluck('provider')->values(),
+            // Discord links through the users table rather than
+            // connected_accounts, and being linked is not the same as being in
+            // the server — the bot reports the second.
+            'discord' => $user->discord_id ? [
+                'member' => (bool) $user->discord_guild_member,
+                'since' => $user->discord_guild_joined_at?->toIso8601String(),
+            ] : null,
         ];
     }
 

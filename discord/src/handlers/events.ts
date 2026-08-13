@@ -1,4 +1,5 @@
 import { Client, Events, GuildMember, Message, Presence, TextChannel } from 'discord.js';
+import { ApiService } from '../services/ApiService';
 import axios from 'axios';
 import { config } from '../config';
 import { BuffyService } from '../services/BuffyService';
@@ -55,6 +56,43 @@ export function setupWelcome(client: Client) {
     });
 
     console.log('👋 Welcome handler registered');
+}
+
+/**
+ * Tells the site who is actually in the server.
+ *
+ * Linking a Discord account and being in the guild are different facts, and
+ * the site only ever knew the first — so a profile could show the community
+ * badge for somebody who left a year ago. The bot has always held the answer;
+ * this is it finally saying so.
+ *
+ * Joins and leaves are reported as they happen, and the full roster goes over
+ * on startup, which repairs anything missed while the bot was down.
+ */
+export function setupGuildMembership(client: Client) {
+    const api = ApiService.getInstance();
+
+    client.on(Events.GuildMemberAdd, (member: GuildMember) => {
+        void api.reportMembership(member.id, true, member.joinedAt?.toISOString());
+    });
+
+    client.on(Events.GuildMemberRemove, (member) => {
+        void api.reportMembership(member.id, false);
+    });
+
+    client.once(Events.ClientReady, async () => {
+        try {
+            const guild = client.guilds.cache.first();
+            if (!guild) return;
+
+            const members = await guild.members.fetch();
+            await api.syncMembership(members.map((m) => m.id));
+        } catch (error) {
+            console.error('⚠️ Guild roster sync failed:', error instanceof Error ? error.message : 'Unknown error');
+        }
+    });
+
+    console.log('👥 Guild membership handler registered');
 }
 
 /**
