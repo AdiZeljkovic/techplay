@@ -3,7 +3,11 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Trophy, Lock, Search, X, Sparkles, Award, ChevronDown, Star } from "lucide-react";
+import {
+    Trophy, Lock, Search, X, Sparkles, Award, ChevronDown, Star,
+    UserRound, Gamepad2, Library, MessagesSquare, MessageCircle, TrendingUp, Flame, Users, ShoppingBag,
+    type LucideIcon,
+} from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
 import Panel from "@/components/ui/Panel";
@@ -26,6 +30,36 @@ const RARITY: Record<AchievementRarity, { label: string; color: string }> = {
     common: { label: "Common", color: "#9ca3af" },
 };
 
+/**
+ * One mark per category, drawn the way the Community and Tools menus draw
+ * theirs: line art at a light stroke, no plate under it.
+ *
+ * The row used to carry the badge artwork at 58×82. That art is a finished
+ * card with the achievement's own name and points printed inside it, so at
+ * that size it was a smudge of illegible type sitting next to the same name
+ * and points set properly — the artwork competing with the row rather than
+ * introducing it. It still runs at full size where there is room for it: the
+ * rail, the trophy case, the hero strip.
+ *
+ * The category comes from the API (AchievementController::CATEGORIES), so a
+ * new criteria type lands on Other rather than on nothing.
+ */
+const CATEGORY_MARKS: Record<string, LucideIcon> = {
+    Account: UserRound,
+    Platform: Gamepad2,
+    Collection: Library,
+    Reviews: Star,
+    Forum: MessagesSquare,
+    Community: MessageCircle,
+    Progression: TrendingUp,
+    Activity: Flame,
+    Social: Users,
+    Shop: ShoppingBag,
+};
+
+/** One page of the shelf — about the height of the rail beside it. */
+const PAGE = 12;
+
 type FilterId = "all" | "unlocked" | "locked" | "progress" | "rare";
 type SortId = "default" | "closest" | "rarest" | "points" | "recent";
 
@@ -40,32 +74,29 @@ const SORTS: { id: SortId; label: string }[] = [
 /* ── the score strip ──────────────────────────────────────────────────── */
 
 function ScoreCell({
-    icon, label, value, sub, tint,
+    icon: Icon, label, value, sub, tint,
 }: {
-    icon: React.ReactNode;
+    icon: LucideIcon;
     label: string;
     value: React.ReactNode;
     sub?: React.ReactNode;
     tint: string;
 }) {
     return (
-        <span className="flex items-center gap-3 shrink-0">
-            <span
-                className="w-9 h-9 rounded-[9px] flex items-center justify-center shrink-0"
-                style={{ background: `color-mix(in srgb, ${tint} 14%, transparent)`, color: tint }}
-            >
-                {icon}
+        <div className="group/bay flex items-center gap-3.5 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
+            <span className="shrink-0 w-10 h-10 flex items-center justify-center" style={{ color: tint }}>
+                <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
             </span>
-            <span>
+            <span className="min-w-0">
                 <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
                     {label}
                 </span>
-                <span className="flex items-baseline gap-2 mt-0.5">
+                <span className="flex items-baseline gap-2 mt-1">
                     <span className="font-display text-[19px] font-black tabular-nums leading-none text-white">{value}</span>
                     {sub}
                 </span>
             </span>
-        </span>
+        </div>
     );
 }
 
@@ -82,31 +113,30 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
 
     return (
         <div
-            className="rounded-[var(--radius-panel)] border px-5 py-4 mb-4"
-            style={{
-                background: "var(--surface-2)",
-                borderColor: "var(--line-strong)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
-            }}
+            className="rounded-[var(--radius-panel)] border overflow-hidden mb-4"
+            style={{ borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)" }}
         >
-            <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
+            {/* Equal bays with hairlines, and the marks unplated — the same
+                instrument the Library ledger and the journal strip are drawn
+                with. Spread across the page with justify-between, four
+                readings sat in the far corners with a rule stranded in the
+                middle of each gap. */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-px" style={{ background: "var(--line)" }}>
                 <ScoreCell
-                    icon={<Trophy className="w-4 h-4" />}
+                    icon={Trophy}
                     label="Achievement score"
                     value={score.toLocaleString("en-US")}
-                    tint="var(--accent)"
+                    tint="var(--accent-ink)"
                 />
-                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
                 <ScoreCell
-                    icon={<Award className="w-4 h-4" />}
+                    icon={Award}
                     label="Unlocked"
                     value={data.unlocked_count}
                     sub={<span className="font-display text-[12px] font-bold tabular-nums text-white/30">/ {data.total}</span>}
                     tint="#34d399"
                 />
-                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
                 <ScoreCell
-                    icon={<Sparkles className="w-4 h-4" />}
+                    icon={Sparkles}
                     label="Rarest owned"
                     value={rarest ? `${rarest.rarity_percent}%` : "—"}
                     sub={
@@ -118,13 +148,12 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
                     }
                     tint={RARITY.epic.color}
                 />
-                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
 
-                <span className="flex items-center gap-3.5 shrink-0">
+                <div className="flex items-center gap-3.5 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
                     <RingMeter value={ring} size={54} strokeWidth={5}>
                         <span className="font-display text-[12px] font-black tabular-nums text-[var(--accent)]">{ring}%</span>
                     </RingMeter>
-                    <span>
+                    <span className="min-w-0">
                         <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
                             Completion
                         </span>
@@ -136,7 +165,7 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
                                 : "Just getting started"}
                         </span>
                     </span>
-                </span>
+                </div>
             </div>
         </div>
     );
@@ -147,6 +176,7 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
 function AchievementCard({ a }: { a: AchievementEntry }) {
     const rarity = a.rarity ? RARITY[a.rarity] : null;
     const inProgress = !a.is_unlocked && a.percent != null && a.percent > 0;
+    const Mark = CATEGORY_MARKS[a.category] ?? Trophy;
 
     return (
         <div
@@ -156,27 +186,19 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
                     : "border-white/[0.05] bg-white/[0.012] hover:border-white/[0.11]"
             }`}
         >
-            {/* the badge itself — greyed while locked, so the shelf reads at a glance */}
-            {/* No plate behind it: the artwork is a card with its own frame and
-                glow, and a tinted square around it was a frame around a frame.
-                Sized 2:3 to match the card, so it fills the space instead of
-                letterboxing inside a square. */}
-            <span className="relative w-[58px] h-[82px] shrink-0 flex items-center justify-center">
-                {a.icon_path ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={getStorageUrl(a.icon_path)}
-                        alt=""
-                        aria-hidden
-                        loading="lazy"
-                        className={`w-full h-full object-contain ${a.is_unlocked ? "" : "grayscale opacity-30"}`}
-                    />
-                ) : (
-                    <Trophy className={`w-6 h-6 ${a.is_unlocked ? "text-[var(--accent)]" : "text-white/15"}`} />
-                )}
+            {/* The mark IS the icon: line art at a light stroke, no plate under
+                it, in the achievement's own colour. It carries what the badge
+                is about; the finished artwork runs at full size in the rail
+                and the trophy case, where it is legible. */}
+            <span className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+                <Mark
+                    className={`w-[27px] h-[27px] transition-transform duration-300 group-hover:scale-110 ${a.is_unlocked ? "" : "opacity-60"}`}
+                    strokeWidth={1.5}
+                    style={{ color: a.is_unlocked ? (rarity?.color ?? "var(--accent-ink)") : "rgba(255,255,255,0.22)" }}
+                />
                 {!a.is_unlocked && (
-                    <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[var(--surface-2)] border border-white/[0.09] flex items-center justify-center">
-                        <Lock className="w-2.5 h-2.5 text-white/35" />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-[15px] h-[15px] rounded-full bg-[var(--surface-2)] border border-white/[0.09] flex items-center justify-center">
+                        <Lock className="w-2 h-2 text-white/35" />
                     </span>
                 )}
             </span>
@@ -405,6 +427,14 @@ export default function AchievementsTab({ username }: { username: string }) {
     const [category, setCategory] = useState<string>("all");
     const [sort, setSort] = useState<SortId>("default");
     const [query, setQuery] = useState("");
+    // Narrowing the set starts the page count over — otherwise a filter that
+    // leaves four results still claims to be showing thirty-six of them.
+    // Derived rather than reset in an effect: the paged count belongs to the
+    // question being asked, so it is stored with it and read back only while
+    // the question is the same one.
+    const question = `${filter}|${category}|${sort}|${query}`;
+    const [paging, setPaging] = useState({ question, limit: PAGE });
+    const limit = paging.question === question ? paging.limit : PAGE;
 
     const payload = data?.data;
     const items = useMemo(() => payload?.items ?? [], [payload]);
@@ -456,6 +486,8 @@ export default function AchievementsTab({ username }: { username: string }) {
             }
         });
     }, [items, filter, category, query, sort]);
+
+    const shown = visible.slice(0, limit);
 
     if (isLoading) {
         return (
@@ -555,13 +587,35 @@ export default function AchievementsTab({ username }: { username: string }) {
                 {visible.length === 0 ? (
                     <EmptyState variant="compact" title="Nothing matches" body="Try a different filter or clear the search." />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {visible.map((a, i) => (
-                            <div key={a.id} className={i < 8 ? `tp-fade-up tp-d${Math.min(6, i + 1)}` : undefined}>
-                                <AchievementCard a={a} />
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {shown.map((a, i) => (
+                                <div key={a.id} className={i < 8 ? `tp-fade-up tp-d${Math.min(6, i + 1)}` : undefined}>
+                                    <AchievementCard a={a} />
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* The catalogue runs to sixty-odd. Drawn in full it
+                            ran the column a couple of thousand pixels past the
+                            rail beside it, and the last thing on the page was
+                            an achievement nobody had scrolled to on purpose.
+                            One page is about the rail's own height. */}
+                        {visible.length > shown.length && (
+                            <div className="mt-4 flex flex-col items-center gap-2">
+                                <button
+                                    onClick={() => setPaging({ question, limit: limit + PAGE })}
+                                    className="inline-flex items-center gap-2 h-10 px-5 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white transition-colors"
+                                >
+                                    Load more
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                                <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
+                                    {shown.length} of {visible.length}
+                                </span>
                             </div>
-                        ))}
-                    </div>
+                        )}
+                    </>
                 )}
             </div>
 
