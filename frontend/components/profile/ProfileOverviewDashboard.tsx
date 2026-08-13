@@ -1,68 +1,99 @@
 "use client";
 
 import Link from "next/link";
-import { format } from "date-fns";
-import { Trophy, Shield } from "lucide-react";
-import { getStorageUrl } from "@/lib/imageUrl";
 import CommentsSection from "@/components/comments/CommentsSection";
 import SectionCard from "./dashboard/SectionCard";
 import PlayingNow from "./dashboard/PlayingNow";
 import CollectionSnapshot from "./dashboard/CollectionSnapshot";
-import GamerDnaPanel from "./dashboard/GamerDnaPanel";
 import CustomLists from "./dashboard/CustomLists";
-import LoyaltyCustomization from "./dashboard/LoyaltyCustomization";
-import HexBadge from "./dashboard/HexBadge";
+import TrophyCase from "./dashboard/TrophyCase";
+import RigCard from "./dashboard/RigCard";
 import ActivityFeed from "./ActivityFeed";
-import FriendActivityFeed from "./FriendActivityFeed";
 import ForumActivityTab from "./ForumActivityTab";
-import UpcomingReleasesWidget from "./dashboard/UpcomingReleasesWidget";
 import ShowcaseStrip from "./dashboard/ShowcaseStrip";
 import GiveRecognitionButton from "@/components/profile/GiveRecognitionButton";
 import CommunityStanding from "./dashboard/CommunityStanding";
 import ProfileChecklist from "./dashboard/ProfileChecklist";
 import DailyHub from "./dashboard/DailyHub";
-import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, GamerDna, ReputationData, Recognition, GameListPreview, CustomizationData, CollectionSnapshotTile } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, ReputationData, Recognition, GameListPreview, CollectionSnapshotTile, TrophyCaseItem } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
     stats: ProfileStats;
+    /** Recent unlocks — the trophy case falls back to these until one is arranged. */
     achievements: Achievement[];
     isOwnProfile: boolean;
     collectionSnapshot?: CollectionSnapshotTile[];
     playingNow?: PlayingNowGame[];
     showcase?: PlayingNowGame[];
-    gamerDna?: GamerDna;
     reputation?: ReputationData;
     recognitions?: Recognition[];
     lists?: GameListPreview[];
-    customization?: CustomizationData;
-    nextRank?: { name: string; min_xp: number } | null;
+    trophyCase?: TrophyCaseItem[];
+    discord?: { member: boolean; since: string | null } | null;
     connectedAccounts?: string[];
     onOpenTab?: (tab: string) => void;
 }
 
 /**
- * Overview — showcase-first composition.
+ * Overview — the vitrine, not the index.
  *
- * Empty-state rules:
- *  - Visitors NEVER see an empty card: sections without data don't render.
- *  - The owner gets a single "Level up your profile" checklist instead of
- *    a page full of empty cards.
+ * The rule that shapes this page: nothing that has its own tab gets a panel
+ * here. It used to carry eleven, and most were a shortened copy of a section —
+ * collection counts, achievements, lists, DNA, cosmetics, daily missions. A
+ * visitor arrived at a table of contents instead of a reason.
+ *
+ * What survives is what has no other home: the showcase, the case the owner
+ * arranged, the standing, the rig, the wall and the two feeds. Collection and
+ * lists stay as bare strips — a glance and a way through, without the frame
+ * that made them look like destinations.
+ *
+ * Forum Activity stays its own block on purpose. Watched and bookmarked
+ * threads are a tool — places to go back to — and folding them into the
+ * activity feed would turn "where I left off" into "what already happened".
+ *
+ * Empty-state rules, unchanged:
+ *  - Visitors never see an empty card; sections without data don't render.
+ *  - The owner gets one "level up your profile" checklist instead of a page
+ *    full of empty frames.
  */
 export default function ProfileOverviewDashboard({
-    userData, stats, achievements, isOwnProfile,
-    collectionSnapshot = [], playingNow = [], showcase = [], gamerDna,
-    reputation, recognitions = [], lists = [], customization, nextRank,
+    userData, stats, achievements = [], isOwnProfile,
+    collectionSnapshot = [], playingNow = [], showcase = [],
+    reputation, recognitions = [], lists = [], trophyCase = [], discord,
     connectedAccounts = [],
     onOpenTab = () => {} }: Props) {
-    const recentUnlocked = (achievements || [])
-        .filter((a) => a.is_unlocked)
-        .sort((a, b) => new Date(b.unlocked_at || "").getTime() - new Date(a.unlocked_at || "").getTime())
-        .slice(0, 5);
-
     const nonZeroBuckets = collectionSnapshot.filter((t) => t.count > 0);
-    const hasDna = !!gamerDna && (gamerDna.genres.length > 0 || gamerDna.playstyle.length > 0 || gamerDna.franchises.length > 0);
+
+    // The payload's five most recent unlocks, in the shape a shelf draws.
+    const recentUnlocks: TrophyCaseItem[] = (achievements || [])
+        .filter((a) => a.is_unlocked)
+        .slice(0, 5)
+        .map((a) => ({
+            source: "techplay" as const,
+            reference: a.id,
+            name: a.name,
+            description: null,
+            icon: a.icon_path ?? null,
+            points: a.points ?? null,
+            game: null,
+            unlocked_at: a.unlocked_at ?? null,
+        }));
     const hasGamertags = !!userData.gamertags && Object.values(userData.gamertags as Record<string, unknown>).some(Boolean);
+
+    /** A strip's heading: what it is, and where the rest of it lives. */
+    const StripHead = ({ label, count, href, cta }: { label: string; count?: number; href: string; cta: string }) => (
+        <div className="flex items-baseline justify-between gap-3 mb-3">
+            <h2 className="flex items-center gap-2.5 font-display text-[11px] font-black uppercase tracking-[0.16em] text-white/55">
+                <span className="w-1 h-3 rounded-full bg-[var(--accent)]" />
+                {label}
+                {typeof count === "number" && <span className="font-black tabular-nums text-white/25">{count}</span>}
+            </h2>
+            <Link href={href} className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-[var(--accent)] transition-colors">
+                {cta}
+            </Link>
+        </div>
+    );
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
@@ -79,7 +110,7 @@ export default function ProfileOverviewDashboard({
                     />
                 )}
 
-                {/* Showcase — the visual centerpiece (user pins take priority) */}
+                {/* Showcase — the visual centrepiece (user pins take priority) */}
                 <ShowcaseStrip
                     playingNow={playingNow}
                     snapshot={collectionSnapshot}
@@ -87,8 +118,12 @@ export default function ProfileOverviewDashboard({
                     showcase={showcase}
                 />
 
-                {/* Mobile: Daily Hub right after the showcase (sidebar copy is lg-only;
-                    SWR dedupes the underlying requests, so the double mount is cheap) */}
+                {/* The five the owner chose. Replaces Achievement Spotlight,
+                    which showed the five most recent — a sorting, not a choice. */}
+                <TrophyCase username={userData.username} isOwnProfile={isOwnProfile} initial={trophyCase} fallback={recentUnlocks} />
+
+                {/* Mobile: Daily Hub after the showcase (the sidebar copy is
+                    lg-only; SWR dedupes the requests, so the double mount is cheap) */}
                 {isOwnProfile && (
                     <div className="lg:hidden">
                         <DailyHub bounty={stats.bounty_balance ?? 0} username={userData.username} onOpenTab={onOpenTab} />
@@ -102,80 +137,37 @@ export default function ProfileOverviewDashboard({
                     </SectionCard>
                 )}
 
-                {/* Collection pulse — non-zero buckets only */}
+                {/* Collection — a strip, not a panel. The tab is the destination. */}
                 {nonZeroBuckets.length > 0 && (
-                    <SectionCard title="Collection" action={{ label: isOwnProfile ? "Manage" : "View All", href: "?tab=collection" }}>
+                    <div>
+                        <StripHead label="Collection" count={stats.games_count} href="?tab=collection" cta={isOwnProfile ? "Manage" : "View all"} />
                         <CollectionSnapshot tiles={nonZeroBuckets} />
-                    </SectionCard>
+                    </div>
                 )}
 
-                {/* Upcoming Releases — own only */}
-                {isOwnProfile && (
-                    <SectionCard title="Upcoming Releases" action={{ label: "View Calendar", href: "/calendar" }}>
-                        <UpcomingReleasesWidget />
-                    </SectionCard>
+                {/* Lists — same treatment */}
+                {lists.length > 0 && (
+                    <div>
+                        <StripHead label="Game Lists" count={lists.length} href="?tab=lists" cta="View all" />
+                        <CustomLists lists={lists.slice(0, 4)} />
+                    </div>
                 )}
 
-                {/* Recent Activity */}
+                {/* The one thing a visitor can actually do, above the reading. */}
+                <SectionCard title="Profile Wall">
+                    <CommentsSection commentableId={userData.id} commentableType="profile" />
+                </SectionCard>
+
                 <SectionCard title="Recent Activity">
                     <ActivityFeed username={userData.username} compact />
                 </SectionCard>
 
-                {/* Watched and bookmarked threads lost their host when the
-                    Activity tab was removed — they live here now. */}
                 {isOwnProfile && <ForumActivityTab isOwnProfile={isOwnProfile} />}
-
-                {/* Achievement Spotlight — only with unlocks */}
-                {recentUnlocked.length > 0 && (
-                    <SectionCard title="Achievement Spotlight" action={{ label: "View All", href: "?tab=achievements" }}>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                            {recentUnlocked.map((ach) => (
-                                <div key={ach.id} className="rounded-[var(--radius-card)] bg-white/[0.03] border border-[var(--line)] p-4 flex flex-col items-center text-center hover:border-white/[0.14] transition-colors">
-                                    <div className="w-14 h-14 mb-3 flex items-center justify-center">
-                                        {ach.icon_path ? (
-                                            <img src={getStorageUrl(ach.icon_path)} alt={ach.name} className="w-14 h-14 object-contain drop-shadow-[0_3px_8px_rgba(0,0,0,0.5)]" />
-                                        ) : (
-                                            <HexBadge size={52} color="#f59e0b"><Trophy className="w-5 h-5" /></HexBadge>
-                                        )}
-                                    </div>
-                                    <h4 className="font-bold text-[12.5px] text-white line-clamp-1 mb-1">{ach.name}</h4>
-                                    {ach.unlocked_at && <span className="text-[10px] text-white/30">{format(new Date(ach.unlocked_at), "MMM d, yyyy")}</span>}
-                                </div>
-                            ))}
-                        </div>
-                    </SectionCard>
-                )}
-
-                {/* Custom Lists — only when there are lists */}
-                {lists.length > 0 && (
-                    <SectionCard title="Game Lists" action={{ label: "View All", href: "?tab=lists" }}>
-                        <CustomLists lists={lists} />
-                    </SectionCard>
-                )}
-
-                {/* Gamer DNA — only with data */}
-                {hasDna && (
-                    <SectionCard title="Gamer DNA">
-                        <GamerDnaPanel dna={gamerDna!} />
-                    </SectionCard>
-                )}
-
-                {/* Friend Activity — own only */}
-                {isOwnProfile && (
-                    <SectionCard title="Friend Activity" action={{ label: "All Friends", href: "/friends" }}>
-                        <FriendActivityFeed />
-                    </SectionCard>
-                )}
-
-                {/* Profile Wall — visitors can leave a message */}
-                <SectionCard title="Profile Wall">
-                    <CommentsSection commentableId={userData.id} commentableType="profile" />
-                </SectionCard>
             </div>
 
             {/* === SIDEBAR === */}
             <div className="space-y-6 min-w-0">
-                {/* Community Standing (merges reputation + ranking + recognitions) */}
+                {/* Community Standing (reputation + ranking + recognitions) */}
                 {reputation && (
                     <SectionCard title="Community Standing">
                         <CommunityStanding reputation={reputation} recognitions={recognitions} />
@@ -183,27 +175,16 @@ export default function ProfileOverviewDashboard({
                     </SectionCard>
                 )}
 
-                {/* 2. Daily Hub — owner's engagement center (mobile copy lives in the main column) */}
+                {/* Daily Hub — owner's engagement centre (mobile copy is above) */}
                 {isOwnProfile && (
                     <div className="hidden lg:block">
                         <DailyHub bounty={stats.bounty_balance ?? 0} username={userData.username} onOpenTab={onOpenTab} />
                     </div>
                 )}
 
-                {/* 3. Supporter & Cosmetics */}
-                {customization && (isOwnProfile || customization.tier || customization.equipped?.theme || customization.equipped?.frame || customization.equipped?.badge) && (
-                    <SectionCard title="Supporter & Cosmetics">
-                        <LoyaltyCustomization
-                            data={customization}
-                            isOwnProfile={isOwnProfile}
-                            username={userData.username}
-                            xp={stats.xp ?? 0}
-                            nextXp={nextRank?.min_xp ?? null}
-                            nextTierName={nextRank?.name ?? null}
-                            tierColor={reputation?.tier_color}
-                        />
-                    </SectionCard>
-                )}
+                {/* The rig and the handles — identity, not analysis, which is why
+                    it left Gamer DNA. */}
+                <RigCard user={userData} discord={discord} isOwnProfile={isOwnProfile} />
             </div>
         </div>
     );

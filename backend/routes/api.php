@@ -76,6 +76,7 @@ use App\Http\Controllers\Api\V1\SupportController;
 use App\Http\Controllers\Api\V1\SystemController;
 use App\Http\Controllers\Api\V1\TechController;
 use App\Http\Controllers\Api\V1\TrackingController;
+use App\Http\Controllers\Api\V1\TrophyCaseController;
 use App\Http\Controllers\Api\V1\UserWowCharactersController;
 use App\Http\Controllers\Api\V1\VerificationController;
 use App\Http\Controllers\Api\V1\WebhookController;
@@ -253,6 +254,10 @@ Route::prefix('v1')->group(function () {
 
         // Collection goals (targets are yours to set; progress is read live)
         Route::put('/me/collection-goals', [CollectionGoalController::class, 'update']);
+
+        // Trophy case — the five achievements the owner chooses to show
+        Route::get('/me/trophy-case/available', [TrophyCaseController::class, 'available']);
+        Route::put('/me/trophy-case', [TrophyCaseController::class, 'update']);
 
         // Personalized feed
         Route::get('/feed/personalized', [FeedController::class, 'personalized']);
@@ -473,6 +478,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{username}/activity', [ActivityController::class, 'index']);
         Route::get('/users/{username}/recognitions', [RecognitionController::class, 'index']);
         Route::get('/users/{username}/steam-achievements', [SteamAchievementController::class, 'index']);
+        Route::get('/users/{username}/trophy-case', [TrophyCaseController::class, 'show']);
         Route::get('/users/{username}', [AuthController::class, 'show']);
 
         // Redirects

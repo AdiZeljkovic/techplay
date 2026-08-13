@@ -17,6 +17,7 @@ use App\Services\AchievementService;
 use App\Services\LevelService;
 use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
+use App\Services\TrophyCaseService;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -403,6 +404,10 @@ class AuthController extends Controller
         return [
             'user' => (new PublicUserResource($user))->resolve(),
             'achievements' => $allAchievements,
+            // The five the reader chose, from any source they have. Empty until
+            // they arrange one — the page falls back to recent unlocks, so a
+            // profile is never blank where the case would be.
+            'trophy_case' => app(TrophyCaseService::class)->forUser($user),
             'next_rank' => $nextRank ? [
                 'name' => $nextRank->name,
                 'min_xp' => $nextRank->min_xp,

@@ -223,12 +223,11 @@ function ProfilePageInner() {
                             collectionSnapshot={profile.collection_snapshot}
                             playingNow={profile.playing_now}
                             showcase={profile.showcase}
-                            gamerDna={profile.gamer_dna}
                             reputation={profile.reputation}
                             recognitions={profile.recognitions}
                             lists={profile.lists}
-                            customization={profile.customization}
-                            nextRank={profile.next_rank}
+                            trophyCase={profile.trophy_case}
+                            discord={profile.discord}
                             connectedAccounts={profile.connected_accounts}
                             onOpenTab={(t) => setActiveTab(t as ProfileTab)}
                         />

@@ -203,6 +203,82 @@ payload prije bilo kakvog grananja, `bounty_balance` se skida svima osim vlasnik
 
 ---
 
+### Redizajn profila — Faza 1, 13.08.2026
+
+Plan: sedam sekcija → pet, grupisano po glagolu (upravljaj / bilježi / kuriraj /
+juri / razumij / budi viđen). Faza 1 je Overview i Trophy Case.
+
+**Overview: 11 panela → 5 panela i 3 trake.** Pravilo koje oblikuje stranicu:
+*ništa što ima svoj tab ne dobija panel ovdje*. Van su išli Gamer DNA panel,
+Upcoming Releases, Friend Activity i Supporter & Cosmetics — svaki od njih je bio
+skraćena kopija neke sekcije. Collection i Lists ostaju kao **gole trake** s
+naslovom i „vidi sve", bez okvira koji ih je činio odredištima.
+
+**Forum Activity ostaje svoja sekcija** (odluka korisnika): watched i bookmarked
+teme su alat — mjesta na koja se vraćaš — a stapanje u feed bi ih pretvorilo u
+„šta se već desilo".
+
+**Trophy Case** — nova tabela `trophy_case_slots` (`source` + `reference` +
+`position`), `TrophyCaseService` i tri rute. Pet mjesta koja vlasnik bira, iz
+**bilo kojeg izvora**: naša dostignuća i pojedinačna Steam dostignuća koja već
+čuvamo (`steam_achievements` ima naziv, ikonu i datum). Zamjenjuje „Achievement
+Spotlight", koji je pokazivao pet **najnovijih** — a to je sortiranje, ne izbor.
+Dok polica nije složena, sekcija se zove „Recent Unlocks" i pokazuje iste te
+najnovije, pa nijedan profil ne ostane prazan.
+
+- Slot koji pokazuje na nešto obrisano se **preskače**, ne crta kao rupa.
+- Može se zakačiti samo ono što je stvarno otključano — provjerava se protiv
+  istog resolvera iz kojeg stranica čita.
+- Preko kapaciteta je 422, ne tiho odbacivanje; duplikat se ignoriše.
+
+**Rig & IDs** — novi sidebar panel: PC specifikacije, gamertagovi i Discord
+značka. Preseljeno iz Gamer DNK gdje je stajalo pod naslovom o ukusu — kakva ti
+je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
+
+---
+
+### Sezone i Discord članstvo 13.08.2026
+
+**Bug: dvije aktivne sezone su se preklapale šest sedmica.** Produkcija je nosila
+„Summer of Gaming 2026" (20.6.–21.9.) i „Season 1: Ignition" (7.8.–7.11.), obje
+`is_active`. `Season::active()` je remi rješavao po **najmanjem id-u**, pa je
+Summer pobjeđivao a Ignition bio nevidljiv cijelo vrijeme dok je trebao teći —
+množitelji mu se nisu primjenjivali i ništa vezano za njega se ne bi pojavilo.
+
+Summer je ostavljen netaknut (teče, ljudi su zarađivali pod ×1.25, pomjeranje
+kraja bi prepisalo ono što se već desilo). Ignition klizi na dan poslije Summera,
+Overdrive ide za njim:
+
+| Sezona | Od | Do | Množitelji |
+|---|---|---|---|
+| Summer of Gaming 2026 | 20.6.2026. | 21.9.2026. | ×1.25 |
+| Season 1: Ignition | 22.9.2026. | 21.12.2026. | ×1.00 |
+| Season 2: Overdrive | 22.12.2026. | 21.3.2027. | ×1.00 |
+
+Novi množitelji su namjerno 1.00: množitelj čini da XP znači različitu količinu
+rada ovisno o tome kad je zarađen, a XP je jedini broj na kojem stoji cijela
+ljestvica rankova. Sezona treba da znači kroz questove, ljestvicu i značku.
+`active()` sad rješava remi po **najnovijem datumu početka**, pa ako se greška
+ponovi pobjeđuje sezona u kojoj ljudi misle da jesu.
+
+Dva questa vezana za sezonu (`Season Grind`, `Season Chronicler`) bila su generični
+mjesečni questovi zakačeni za sezonu koja je slučajno postojala — nestali bi na
+dan njenog kraja. Odvezani.
+
+**Discord: bot je znao ko je na serveru i nikad to nije rekao backendu.** Radi s
+`GuildMembers` intentom i povlači listu članova za statistiku kanala. Zato je
+profil mogao pokazivati značku zajednice nekome ko je otišao prije godinu dana.
+
+- `POST /discord/membership` — jedan član ušao/izašao (`GuildMemberAdd/Remove`)
+- `POST /discord/membership/sync` — cijela lista na startu bota; popravlja sve
+  propušteno dok je bot bio ugašen. **Prazna lista se odbija** (422) jer skoro
+  sigurno znači neuspjelo dohvaćanje, a ne da se server ispraznio.
+- `users.discord_guild_member` + `_joined_at` + `_checked_at`
+- Achievement `discord` broji **članstvo**, ne vezu — uz popust: ako bot nikad
+  nije javio, veza i dalje vrijedi, pa niko ne gubi značku zbog nedeployanog bota.
+
+---
+
 ### Popravke profila 13.08.2026
 
 Drugi prolaz kroz profil — ovaj put s produkcije, s izmjerenim payloadom.

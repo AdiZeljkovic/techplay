@@ -516,6 +516,20 @@ export interface ActivityItem {
     created_at: string | null;
 }
 
+/** One shelf in the trophy case, already resolved to something drawable. */
+export interface TrophyCaseItem {
+    source: "techplay" | "steam";
+    reference: number;
+    name: string;
+    description: string | null;
+    icon: string | null;
+    /** Null for platform unlocks — they carry no score of ours. */
+    points: number | null;
+    game: { name: string; slug: string } | null;
+    unlocked_at: string | null;
+    position?: number;
+}
+
 /** How the viewer relates to the profile owner. 'incoming' = they asked me. */
 export type FriendStatus = "self" | "none" | "pending" | "incoming" | "accepted";
 
@@ -523,6 +537,9 @@ export interface UserProfile {
     user: ProfileUser;
     stats: ProfileStats;
     achievements: Achievement[];
+    trophy_case?: TrophyCaseItem[];
+    /** Linked Discord, and whether they are actually in the server. */
+    discord?: { member: boolean; since: string | null } | null;
     next_rank: { name: string; min_xp: number; color?: string | null } | null;
     is_online?: boolean;
     /** What they are playing while the dot is lit; null when nothing is set. */
