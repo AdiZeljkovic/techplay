@@ -128,6 +128,10 @@ class ProfileService
     public function collectionSnapshot(User $user): array
     {
         $buckets = [
+            // Playing led the stats block and the hero deck but had no tile
+            // here, so the one bucket a reader is most likely to click was the
+            // one the shelf never offered.
+            ['status' => 'playing', 'label' => 'Playing', 'color' => '#a78bfa', 'favorite' => false],
             ['status' => 'backlog', 'label' => 'Backlog', 'color' => '#60a5fa', 'favorite' => false],
             ['status' => 'completed', 'label' => 'Completed', 'color' => '#22c55e', 'favorite' => false],
             ['status' => 'wishlist', 'label' => 'Wishlist', 'color' => '#f472b6', 'favorite' => false],
@@ -221,25 +225,37 @@ class ProfileService
         if (DB::connection()->getDriverName() === 'pgsql') {
             $total = UserGame::where('user_id', $user->id)->count();
 
-            $aggregate = function (string $column) use ($user, $top, $total) {
+            $aggregate = function (string $column) use ($user, $top) {
+                // The share is of the distribution, not of the shelf. Dividing
+                // by the number of games made the bars add up to 125% on a
+                // four-game collection, because one game carries several
+                // genres — every row was true and the column was nonsense.
+                // SUM(COUNT(*)) OVER () totals every name, including the ones
+                // past the top N, so the visible bars stay a fair slice of the
+                // whole.
                 $rows = DB::select("
-                    SELECT trim(raw_name) AS name, COUNT(*) AS c
+                    SELECT name, c, SUM(c) OVER () AS mentions
                     FROM (
-                        SELECT unnest(games.{$column}) AS raw_name
-                        FROM user_games
-                        JOIN games ON games.id = user_games.game_id
-                        WHERE user_games.user_id = ?
-                    ) x
-                    WHERE trim(raw_name) <> ''
-                    GROUP BY trim(raw_name)
+                        SELECT trim(raw_name) AS name, COUNT(*) AS c
+                        FROM (
+                            SELECT unnest(games.{$column}) AS raw_name
+                            FROM user_games
+                            JOIN games ON games.id = user_games.game_id
+                            WHERE user_games.user_id = ?
+                        ) x
+                        WHERE trim(raw_name) <> ''
+                        GROUP BY trim(raw_name)
+                    ) counted
                     ORDER BY c DESC
                     LIMIT {$top}
                 ", [$user->id]);
 
+                $mentions = (int) ($rows[0]->mentions ?? 0);
+
                 return array_map(fn ($row) => [
                     'name' => $row->name,
                     'count' => (int) $row->c,
-                    'percent' => $total > 0 ? (int) round(((int) $row->c / $total) * 100) : 0,
+                    'percent' => $mentions > 0 ? (int) round(((int) $row->c / $mentions) * 100) : 0,
                 ], $rows);
             };
 
@@ -281,7 +297,9 @@ class ProfileService
             }
         }
 
-        $format = function (array $counts) use ($total, $top) {
+        // Same denominator as the Postgres path: every mention, not every game.
+        $format = function (array $counts) use ($top) {
+            $mentions = array_sum($counts);
             arsort($counts);
             $counts = array_slice($counts, 0, $top, true);
             $out = [];
@@ -289,7 +307,7 @@ class ProfileService
                 $out[] = [
                     'name' => $name,
                     'count' => $count,
-                    'percent' => $total > 0 ? (int) round(($count / $total) * 100) : 0,
+                    'percent' => $mentions > 0 ? (int) round(($count / $mentions) * 100) : 0,
                 ];
             }
 
@@ -372,10 +390,19 @@ class ProfileService
         $contribDelta = ($snap && $snap->contribution_points > 0) ? (int) round((($contribution - $snap->contribution_points) / $snap->contribution_points) * 100) : null;
 
         // Sparkline series — last 6 monthly snapshots + the current value.
+        //
+        // Two corrections live in this query. It sorted ascending and took six,
+        // which is the *oldest* six, so the line would have frozen on early
+        // 2026 the moment a seventh month existed. And the weekly leaderboard
+        // baseline writes to this same table with a period like `2026-W32`,
+        // which sorts after `2026-08` as a string — so the series was mixing
+        // two cadences. Months only, newest six, then back into reading order.
         $history = ReputationSnapshot::where('user_id', $user->id)
-            ->orderBy('period')
+            ->where('period', 'not like', '%W%')
+            ->orderByDesc('period')
             ->limit(6)
             ->pluck('reputation')
+            ->reverse()
             ->map(fn ($v) => (int) $v)
             ->push($rep)
             ->values()

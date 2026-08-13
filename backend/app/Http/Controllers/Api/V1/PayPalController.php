@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\AchievementService;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -187,6 +188,15 @@ class PayPalController extends Controller
                         'status' => 'completed',
                         'paypal_transaction_id' => $response['purchase_units'][0]['payments']['captures'][0]['id'] ?? null,
                     ]);
+
+                    // Collector and Gear Collector count completed orders and
+                    // nothing was counting them here.
+                    if ($order->user_id) {
+                        try {
+                            app(AchievementService::class)->check($order->user, ['orders_count']);
+                        } catch (\Throwable) {
+                        }
+                    }
                 });
 
                 // 'status' carries the PayPal vocabulary the client checks for;

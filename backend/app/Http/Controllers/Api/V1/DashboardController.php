@@ -134,6 +134,17 @@ class DashboardController extends Controller
             'backlog_preview' => $this->gameCovers($user, ['status' => 'backlog'], 4),
             'backlog_suggestion' => $this->backlogSuggestion($user, $libraryGameIds->all()),
             'streak' => $this->streakService->info($user),
+            // What you told the site you are playing. Same shape the public
+            // profile returns, so one hero renders both.
+            'presence' => (function () use ($user) {
+                $presence = Presence::where('user_id', $user->id)->where('is_active', true)->first();
+
+                return $presence ? [
+                    'game_name' => $presence->game_name,
+                    'game_slug' => $presence->game_slug,
+                    'source' => $presence->source,
+                ] : null;
+            })(),
             'recent_achievements' => $this->recentAchievements($user),
             'friends_online' => $this->friendsOnline($friendIds->all()),
             'profile_completion' => $this->profileCompletion($user, $counts, $reviewsCount),

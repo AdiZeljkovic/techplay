@@ -15,7 +15,6 @@ use App\Models\User;
 use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Services\LevelService;
-use App\Services\PremiumService;
 use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
 use App\Traits\ApiResponse;
@@ -351,6 +350,15 @@ class AuthController extends Controller
 
         $unlockedCount = count($userUnlockedIds);
 
+        // How many there are to unlock, counted the same way the Achievements
+        // tab counts them: hidden ones stay out unless this reader has one.
+        // The hero prints "16 / N" and was reading N off the `achievements`
+        // array — which is the five most recent unlocks — so every visitor saw
+        // "16 / 5".
+        $visibleTotal = $achievementCatalog
+            ->filter(fn ($achievement) => ! $achievement->is_hidden || $userAchievementsMap->has($achievement->id))
+            ->count();
+
         // Game collection aggregates (Phase 1)
         $profileService = new ProfileService;
         $collectionCounts = $profileService->collectionCounts($user);
@@ -363,6 +371,7 @@ class AuthController extends Controller
             'reputation' => $user->forum_reputation ?? 0,
             'joined_at' => $user->created_at->format('M Y'), // Only month/year
             'achievements_count' => $unlockedCount,
+            'achievements_total' => $visibleTotal,
             'level' => app(LevelService::class)->forXp($user->xp),
             'xp' => $user->xp ?? 0,
             // Published game reviews — same definition as /me/dashboard, so the
@@ -389,6 +398,8 @@ class AuthController extends Controller
 
         $nextRank = $user->nextRank();
 
+        $presence = Presence::where('user_id', $user->id)->where('is_active', true)->first();
+
         return [
             'user' => (new PublicUserResource($user))->resolve(),
             'achievements' => $allAchievements,
@@ -397,9 +408,16 @@ class AuthController extends Controller
                 'min_xp' => $nextRank->min_xp,
                 'color' => $nextRank->color,
             ] : null,
-            // The hero's presence dot. Only the live flag leaves the server —
-            // never last_seen_at.
-            'is_online' => Presence::where('user_id', $user->id)->where('is_active', true)->exists(),
+            // The hero's presence dot, and what they are playing while it is
+            // lit. Setting "Now Playing" wrote a row nothing ever read back:
+            // the picker existed, the endpoint existed, and the game name went
+            // nowhere. Still only the live row — never last_seen_at.
+            'is_online' => $presence !== null,
+            'presence' => $presence ? [
+                'game_name' => $presence->game_name,
+                'game_slug' => $presence->game_slug,
+                'source' => $presence->source,
+            ] : null,
             'is_private' => $user->hasPrivateProfile(),
             'can_view' => true,
             'is_staff' => $isStaff,
@@ -408,44 +426,28 @@ class AuthController extends Controller
             'collection_snapshot' => $profileService->collectionSnapshot($user),
             'playing_now' => $profileService->playingNow($user),
             'showcase' => $profileService->showcase($user),
+            // Also the Collection tab's Platforms panel, which is why it
+            // travels rather than staying a local: one aggregation, two
+            // readers.
             'platforms_genres' => $platformsGenres = $profileService->platformsAndGenres($user),
             'gamer_dna' => $profileService->gamerDna($user, $platformsGenres),
-            // Phase 2 — reputation, ranking, recognitions, milestones
+            // Phase 2 — reputation, ranking, recognitions
             // (recognitions cached giver-agnostic; viewer overlay is applied in show())
             'reputation' => $profileService->reputation($user),
             'recognitions' => $profileService->recognitions($user, null),
-            'milestones' => $profileService->milestones([
-                'forum_posts' => $stats['posts_count'],
-                'threads' => $stats['threads_count'],
-                'wishlist' => $stats['wishlist_count'],
-                'games' => $stats['games_count'],
-                'reputation' => $stats['reputation'],
-            ]),
             // Phase 4 — public custom lists
             'lists' => $profileService->publicLists($user),
             // Phase 5 — loyalty & customization
             'customization' => $profileService->customization($user),
-            // Phase D — premium + streak
-            'is_premium' => app(PremiumService::class)->isPremium($user),
-            'premium_tier' => app(PremiumService::class)->tierName($user),
+            // The hero's flame. is_premium/premium_tier sat beside it and no
+            // component has ever read either — the supporter state the profile
+            // actually draws comes from customization.tier.
             'streak' => [
                 'days' => $user->daily_streak ?? 0,
                 'claimed_today' => $user->last_daily_claim && Carbon::parse($user->last_daily_claim)->isToday(),
             ],
             // V3 — which external accounts are linked (providers only, no tokens)
             'connected_accounts' => ConnectedAccount::where('user_id', $user->id)->pluck('provider')->values(),
-            // Xbox public identity (gamertag + gamerscore) for the hero chip
-            'xbox_profile' => (function () use ($user) {
-                $xbox = ConnectedAccount::where('user_id', $user->id)
-                    ->where('provider', 'xbox')
-                    ->where('visibility', 'public')
-                    ->first(['display_name', 'metadata']);
-
-                return $xbox ? [
-                    'gamertag' => $xbox->display_name,
-                    'gamerscore' => (int) data_get($xbox->metadata, 'gamerscore', 0),
-                ] : null;
-            })(),
         ];
     }
 

@@ -55,6 +55,7 @@ class CollectionGoalController extends Controller
         $completed = fn () => UserGame::where('user_id', $user->id)->where('status', 'completed')->count();
         $backlog = fn () => UserGame::where('user_id', $user->id)->where('status', 'backlog')->count();
         $achievements = fn () => $user->achievements()->count();
+        $library = fn () => UserGame::where('user_id', $user->id)->count();
 
         $goals = [];
         foreach (CollectionGoal::TYPES as $type) {
@@ -64,8 +65,16 @@ class CollectionGoalController extends Controller
             // so its bar fills as the pile shrinks rather than as it grows.
             if ($type === 'shrink_backlog') {
                 $current = $backlog();
-                $start = max($current, $target + 1);
-                $percent = $current <= $target ? 100 : (int) round((($start - $current) / max(1, $start - $target)) * 100);
+
+                // An empty shelf is not a conquered backlog. This read
+                // "Get the backlog under 10 — done" to anyone who had never
+                // added a game, which is the first thing a new account sees.
+                if ($library() === 0) {
+                    $percent = 0;
+                } else {
+                    $start = max($current, $target + 1);
+                    $percent = $current <= $target ? 100 : (int) round((($start - $current) / max(1, $start - $target)) * 100);
+                }
             } else {
                 $current = $type === 'complete_games' ? $completed() : $achievements();
                 $percent = $target > 0 ? min(100, (int) round(($current / $target) * 100)) : 0;

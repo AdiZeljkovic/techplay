@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Friendship;
 use App\Models\User;
 use App\Notifications\FriendRequestNotification;
+use App\Services\AchievementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -107,6 +108,16 @@ class FriendController extends Controller
         try {
             $friendship->load('sender');
             $friendship->sender->notify(new FriendRequestNotification(Auth::user(), 'accepted'));
+        } catch (\Throwable) {
+        }
+
+        // Both sides just gained a friend, and three achievements are counted
+        // off exactly this. Nothing checked them here, so Friendly, Socialite
+        // and Popular could only ever be granted by running a console command
+        // by hand.
+        try {
+            app(AchievementService::class)->check(Auth::user(), ['friends_count']);
+            app(AchievementService::class)->check($friendship->sender, ['friends_count']);
         } catch (\Throwable) {
         }
 

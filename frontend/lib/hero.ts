@@ -43,6 +43,10 @@ export interface HeroModel {
     backdrop_fallback: string | null;
     /** Drives the owner's primary CTA; visitors get a friend action instead. */
     continue_playing: { slug: string; name: string } | null;
+    /** What they said they are playing right now. Null when nothing is set. */
+    playing_label: string | null;
+    /** The game page, when the picker matched one in the catalogue. */
+    playing_slug: string | null;
 }
 
 /** Drops empty tags and fixes the order, so the chips never shuffle. */
@@ -75,6 +79,8 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
         next_rank: user.next_rank,
         // You are looking at your own page, so you are online by definition.
         is_online: true,
+        playing_label: data.presence?.game_name ?? null,
+        playing_slug: data.presence?.game_slug ?? null,
         verified: !!user.is_staff,
         platforms: toPlatforms(user.gamertags),
         frame_value: user.frame ?? null,
@@ -116,14 +122,18 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
             ? { name: profile.next_rank.name, min_xp: profile.next_rank.min_xp, color: profile.next_rank.color ?? null }
             : null,
         is_online: profile.is_online ?? false,
+        playing_label: profile.presence?.game_name ?? null,
+        playing_slug: profile.presence?.game_slug ?? null,
         verified: !!profile.is_staff,
         platforms: toPlatforms(user.gamertags),
         frame_value: profile.customization?.equipped?.frame?.value ?? null,
         rank_min_xp: user.rank?.min_xp ?? 0,
         streak_days: profile.streak?.days ?? 0,
         joined: stats.joined_at ?? null,
-        // the profile payload returns the whole visible catalog with unlock flags
-        achievements_total: profile.achievements?.length ?? null,
+        // The catalogue size, from the payload. This used to count the
+        // `achievements` array — which is the five most recent unlocks, not the
+        // catalogue — so every visitor read "16 / 5".
+        achievements_total: profile.stats?.achievements_total ?? null,
         stats: {
             games: stats.games_count ?? 0,
             completed: stats.completed_count ?? 0,

@@ -18,6 +18,19 @@ interface Props {
 
 const searchFetcher = (url: string) => axios.get(url).then((r) => r.data);
 
+/**
+ * Everything that shows a presence, refreshed at once.
+ *
+ * This used to invalidate keys beginning `/presence/` — a route nothing on the
+ * site ever fetched, so the picker updated nothing at all. The two surfaces
+ * that actually carry it are the profile payload and the owner's dashboard.
+ */
+function refreshPresence() {
+    globalMutate(
+        (key) => typeof key === "string" && (key === "/me/dashboard" || key.startsWith("/users/")),
+    );
+}
+
 /** Inline "Now Playing" picker — POST /presence with a manually chosen game. */
 function NowPlayingPicker() {
     const [open, setOpen] = useState(false);
@@ -43,7 +56,7 @@ function NowPlayingPicker() {
             toast.success(`Now playing: ${name}`);
             setOpen(false);
             setQuery("");
-            globalMutate((key) => typeof key === "string" && key.startsWith("/presence/"));
+            refreshPresence();
         } catch {
             toast.error("Couldn't set presence.");
         } finally {
@@ -57,7 +70,7 @@ function NowPlayingPicker() {
             await axios.delete("/presence");
             toast.success("Presence cleared");
             setOpen(false);
-            globalMutate((key) => typeof key === "string" && key.startsWith("/presence/"));
+            refreshPresence();
         } catch {
             toast.error("Couldn't clear presence.");
         } finally {

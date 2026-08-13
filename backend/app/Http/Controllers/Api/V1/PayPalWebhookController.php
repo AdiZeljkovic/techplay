@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\AchievementService;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -209,6 +210,15 @@ class PayPalWebhookController extends Controller
             'status' => 'completed',
             'paypal_transaction_id' => $paypalTransactionId,
         ]);
+
+        // Same grant as the inline capture path — a payment that lands by
+        // webhook is still a purchase.
+        if ($order->user_id) {
+            try {
+                app(AchievementService::class)->check($order->user, ['orders_count']);
+            } catch (\Throwable) {
+            }
+        }
 
         Log::info('Payment completed via webhook', ['order_id' => $orderId]);
     }

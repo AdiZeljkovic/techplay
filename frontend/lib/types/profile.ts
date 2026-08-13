@@ -203,6 +203,8 @@ export interface ProfileStats {
     joined_at: string;
     xp: number;
     achievements_count: number;
+    /** Catalogue size, counted the way the Achievements tab counts it. */
+    achievements_total?: number;
     level: number;
     /** Published game reviews — same definition as /me/dashboard */
     reviews_count?: number;
@@ -523,6 +525,8 @@ export interface UserProfile {
     achievements: Achievement[];
     next_rank: { name: string; min_xp: number; color?: string | null } | null;
     is_online?: boolean;
+    /** What they are playing while the dot is lit; null when nothing is set. */
+    presence?: { game_name: string | null; game_slug: string | null; source: string | null } | null;
     streak?: { days: number; claimed_today: boolean };
     /** Owner's setting. `can_view` is the resolved answer for *this* viewer. */
     is_private?: boolean;
@@ -533,12 +537,14 @@ export interface UserProfile {
     playing_now?: PlayingNowGame[];
     showcase?: PlayingNowGame[];
     connected_accounts?: string[];
-    xbox_profile?: { gamertag: string | null; gamerscore: number } | null;
+    /** Feeds the Collection tab's Platforms panel. */
     platforms_genres?: PlatformsGenres;
+    /* xbox_profile, milestones, is_premium and premium_tier used to arrive here
+       too, and no component has ever read one of them — they were built for
+       panels that were never wired. */
     gamer_dna?: GamerDna;
     reputation?: ReputationData;
     recognitions?: Recognition[];
-    milestones?: Milestone[];
     lists?: GameListPreview[];
     customization?: CustomizationData;
 }

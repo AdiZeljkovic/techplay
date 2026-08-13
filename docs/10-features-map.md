@@ -203,6 +203,73 @@ payload prije bilo kakvog grananja, `bounty_balance` se skida svima osim vlasnik
 
 ---
 
+### Popravke profila 13.08.2026
+
+Drugi prolaz kroz profil — ovaj put s produkcije, s izmjerenim payloadom.
+
+**Hero je pisao "16 / 5" dostignuća svakom posjetiocu.** `heroFromProfile` je uzimao
+`profile.achievements.length` kao veličinu kataloga, ali taj niz je od prethodnog audita
+**pet zadnjih otključanih**, ne katalog. Payload sada nosi `stats.achievements_total`,
+brojan istim pravilom kao Achievements tab (skriveni ulaze samo ako ih taj čitalac ima),
+pa se dvije stranice više ne mogu razići. Na vlastitom profilu je oduvijek bilo tačno jer
+`/me/dashboard` šalje pravi total.
+
+**Svaki izmišljeni username bio je indeksabilna stranica.** `/profile/bilo-sta` je vraćao
+200 s `index, follow` i generisanom OG slikom od ~100 KB — beskonačna crawl površina, i
+render slike po pogotku. Layout je sada server komponenta koja pita backend: 404 od
+backenda → `notFound()`; backend ne odgovara → stranica se pušta (kvar API-ja ne smije
+pretvoriti sve profile u 404). Privatan profil dobija `noindex` jer zaključana vrata u
+rezultatima pretrage nisu bolja od ničega. `/og/profile` vraća 404 umjesto da slika bilo
+koji string.
+
+**12 od 66 dostignuća se nije moglo otključati.** Njihovi criteria tipovi nisu imali
+nijedan poziv `AchievementService::check()` u trenutku kad postanu istiniti, a
+`achievements:sync` nije bio u scheduleru — postojao je samo kao ručna komanda. Dokaz:
+`Early Adopter` je na osnivačevom profilu stajao `1/1, unlocked=false`. Sada:
+`friends_count` na prihvaćen zahtjev (obje strane), `email_verified` na verifikaciju,
+`orders_count` na obje putanje naplate (inline capture i webhook), a **nightly sweep u
+04:15** hvata ostatak (`early_adopter`, `support_duration`, `long_posts`,
+`comment_likes_received`, `thread_upvotes_received`). Komanda je prešla s `User::all()` na
+`chunkById(200)` i preživljava grešku pojedinog korisnika.
+
+**Sparkline u Community Standingu crtao je pogrešnih šest tačaka.** Upit je bio
+`orderBy('period')->limit(6)` — to je *najstarijih* šest, pa bi se linija zamrzla na
+početku 2026. čim postoji sedmi mjesec. Gore: tjedni baseline za leaderboard piše
+`2026-W32` u **istu kolonu**, a to string-sortiranjem dolazi iza `2026-08`, pa se serija
+miješala. Sada: samo mjesečni redovi, zadnjih šest, obrnuto u čitljiv redoslijed.
+
+**Gamer DNA je sabirao 125%.** Postotak se dijelio brojem igara, a jedna igra nosi više
+žanrova — svaki red je bio tačan a kolona besmislena. Nazivnik je sada ukupan broj
+spominjanja (`SUM(COUNT(*)) OVER ()`, uključujući imena izvan top 5), pa vidljive trake
+ostaju poštena kriška cjeline. SQLite fallback prati istu matematiku.
+
+**"Now Playing" je gubio ime igre.** Picker u Daily Hubu je pisao `POST /presence`, a
+`GET /presence/{username}` **nije imao nijednog potrošača na frontu** — jedini efekat je
+bila zelena tačkica. Presence sada putuje u oba payloada (profil i `/me/dashboard`) i
+hero crta pill "Playing X" uz @handle, s linkom na igru kad postoji slug. `globalMutate`
+je gađao `/presence/` prefiks koji niko ne čita; sada osvježava `/me/dashboard` i
+`/users/…`.
+
+**Sitnije:**
+- `collection_snapshot` je dobio **Playing** kockicu — jedini bucket koji je vodio u
+  statistici a nije imao pločicu.
+- "Get the backlog under 10" je pisalo *done* svakome ko nema nijednu igru. Prazna polica
+  nije osvojen backlog: prazna kolekcija je sada 0%.
+- `/profile/me` bez prijave je vječno vrtio skeleton (jedini uslov u čuvaru koji nikad ne
+  prestane biti tačan). Sada je `SignInWall`, isti dizajn kao `/login`.
+- `milestones` (700 B), `xbox_profile`, `is_premium` i `premium_tier` izbačeni iz
+  payloada — nijedna komponenta ih nikad nije čitala. `ProfileService::milestones()`
+  ostaje ako se panel ikad spoji. `platforms_genres` **ostaje** jer ga crta panel
+  Platforms na Collection tabu.
+
+**Provjereno kao ispravno:** privatnost drži na svih 11 per-user endpointa (trait
+`ProfilePrivacy` čita **sanctum** guard, ne default) — provjeren svaki; `bounty_balance`
+se skida svima osim vlasniku; svih 8 owner ruta vraća 401 anonimno; svih 32 poziva s
+fronta imaju rutu; nema mrtvih komponenti (34 u `components/profile`, 19 u
+`home-dashboard`).
+
+---
+
 ### Audit settings + auth 12.08.2026
 
 **Bug: prelazak na privatan profil nije skidao korisnika s leaderboarda.**

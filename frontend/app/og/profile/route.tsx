@@ -25,6 +25,15 @@ export async function GET(req: NextRequest) {
 
     try {
         const res = await fetch(`${API}/users/${encodeURIComponent(username)}`, { next: { revalidate: 300 } });
+
+        // No such account, no card. This route used to paint a full 1200×630
+        // for any string handed to it, so a crawler could mint an image per
+        // guess — expensive, and it made a page that does not exist look like
+        // one that does.
+        if (res.status === 404) {
+            return new Response("Not found", { status: 404 });
+        }
+
         if (res.ok) {
             const json = await res.json();
             const u = json.user ?? {};

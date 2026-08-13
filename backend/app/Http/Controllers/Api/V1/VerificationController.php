@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\AchievementService;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 
@@ -75,6 +76,14 @@ class VerificationController extends Controller
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
+
+            // "Verified Gamer" is counted off exactly this and nothing checked
+            // it here, so the one achievement every account can earn on day one
+            // waited for a nightly sweep.
+            try {
+                app(AchievementService::class)->check($user, ['email_verified']);
+            } catch (\Throwable) {
+            }
         }
 
         // Redirect to frontend verification page with query param

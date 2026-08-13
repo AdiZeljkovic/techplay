@@ -6,11 +6,12 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { User } from "lucide-react";
+import { User, Gamepad2, Trophy, ListChecks, Flame } from "lucide-react";
 import toast from "react-hot-toast";
 import AchievementsTab from "@/components/profile/AchievementsTab";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHero from "@/components/home-dashboard/ProfileHero";
+import SignInWall from "@/components/auth/SignInWall";
 import LockedProfile from "@/components/profile/LockedProfile";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import DashboardHome from "@/components/home-dashboard/DashboardHome";
@@ -91,6 +92,28 @@ function ProfilePageInner() {
     };
 
     const hero = useMemo(() => (profile?.user ? heroFromProfile(profile) : null), [profile]);
+
+    // /profile/me with nobody signed in resolved to nothing and sat on the
+    // skeleton forever — the one condition in the guard below that never
+    // stopped being true. It is a sign-in gate, so it looks like one.
+    if (rawUsername === "me" && !authLoading && !currentUser) {
+        return (
+            <SignInWall
+                eyebrow="Members only"
+                headline={["Your", "Profile."]}
+                blurb="Your collection, your rank, your achievements — all of it lives behind one sign-in."
+                perks={[
+                    { icon: Gamepad2, text: "Track every game you own, play and finish" },
+                    { icon: Trophy, text: "Climb the ranks and unlock achievements" },
+                    { icon: ListChecks, text: "Build and share game lists" },
+                    { icon: Flame, text: "Keep your daily streak alive" },
+                ]}
+                icon={User}
+                title="Your Profile"
+                description="Sign in and this page becomes yours — collection, journal, lists, rewards and all."
+            />
+        );
+    }
 
     if (isLoading || authLoading || (rawUsername === "me" && !currentUser)) {
         return (
@@ -200,11 +223,9 @@ function ProfilePageInner() {
                             collectionSnapshot={profile.collection_snapshot}
                             playingNow={profile.playing_now}
                             showcase={profile.showcase}
-                            platformsGenres={profile.platforms_genres}
                             gamerDna={profile.gamer_dna}
                             reputation={profile.reputation}
                             recognitions={profile.recognitions}
-                            milestones={profile.milestones}
                             lists={profile.lists}
                             customization={profile.customization}
                             nextRank={profile.next_rank}

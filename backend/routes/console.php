@@ -103,6 +103,15 @@ Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30')->onFailu
 // LEADERBOARD: Weekly baseline snapshot every Monday (powers period=week boards)
 Schedule::command('profile:snapshot-reputation --weekly')->weeklyOn(1, '00:10')->onFailure($reportFailure('profile:snapshot-reputation --weekly'));
 
+// PROFILE: Nightly achievement sweep.
+//
+// Most achievements are granted inline by whatever caused them. A dozen have
+// no such moment — early_adopter, support_duration, long_posts,
+// comment_likes_received, thread_upvotes_received — and until this was
+// scheduled they could only be handed out by running the command by hand,
+// which meant they sat earned and ungranted for months.
+Schedule::command('achievements:sync')->dailyAt('04:15')->withoutOverlapping(60)->onFailure($reportFailure('achievements:sync'));
+
 // SEASONS: Conclude finished seasons (awards champion badges) — daily check
 Schedule::command('season:conclude')->dailyAt('00:20')->withoutOverlapping(30)->onFailure($reportFailure('season:conclude'));
 

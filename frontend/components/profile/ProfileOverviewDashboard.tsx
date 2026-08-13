@@ -21,7 +21,7 @@ import GiveRecognitionButton from "@/components/profile/GiveRecognitionButton";
 import CommunityStanding from "./dashboard/CommunityStanding";
 import ProfileChecklist from "./dashboard/ProfileChecklist";
 import DailyHub from "./dashboard/DailyHub";
-import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, PlatformsGenres, GamerDna, ReputationData, Recognition, Milestone, GameListPreview, CustomizationData, CollectionSnapshotTile } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, GamerDna, ReputationData, Recognition, GameListPreview, CustomizationData, CollectionSnapshotTile } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -31,11 +31,9 @@ interface Props {
     collectionSnapshot?: CollectionSnapshotTile[];
     playingNow?: PlayingNowGame[];
     showcase?: PlayingNowGame[];
-    platformsGenres?: PlatformsGenres;
     gamerDna?: GamerDna;
     reputation?: ReputationData;
     recognitions?: Recognition[];
-    milestones?: Milestone[];
     lists?: GameListPreview[];
     customization?: CustomizationData;
     nextRank?: { name: string; min_xp: number } | null;
@@ -53,7 +51,7 @@ interface Props {
  */
 export default function ProfileOverviewDashboard({
     userData, stats, achievements, isOwnProfile,
-    collectionSnapshot = [], playingNow = [], showcase = [], platformsGenres, gamerDna,
+    collectionSnapshot = [], playingNow = [], showcase = [], gamerDna,
     reputation, recognitions = [], lists = [], customization, nextRank,
     connectedAccounts = [],
     onOpenTab = () => {} }: Props) {
@@ -63,7 +61,6 @@ export default function ProfileOverviewDashboard({
         .slice(0, 5);
 
     const nonZeroBuckets = collectionSnapshot.filter((t) => t.count > 0);
-    const hasCollection = (stats.games_count ?? 0) > 0;
     const hasDna = !!gamerDna && (gamerDna.genres.length > 0 || gamerDna.playstyle.length > 0 || gamerDna.franchises.length > 0);
     const hasGamertags = !!userData.gamertags && Object.values(userData.gamertags as Record<string, unknown>).some(Boolean);
 

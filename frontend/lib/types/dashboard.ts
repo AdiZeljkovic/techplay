@@ -101,6 +101,8 @@ export interface DashboardData {
     backlog_suggestion: BacklogSuggestion | null;
     /** Shape mirrors StreakService::info */
     streak: { streak: number; claimed_today: boolean; last_claim: string | null; next_bounty: number };
+    /** What you told the site you are playing; same shape the profile returns. */
+    presence?: { game_name: string | null; game_slug: string | null; source: string | null } | null;
     recent_achievements: DashboardAchievement[];
     friends_online: FriendOnline[];
     profile_completion: ProfileCompletion;

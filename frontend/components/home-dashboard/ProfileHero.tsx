@@ -416,7 +416,31 @@ export default function ProfileHero({
                                 )}
                             </h1>
 
-                            <p className="mt-1.5 text-[13.5px] font-semibold text-white/50">@{hero.username}</p>
+                            <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13.5px] font-semibold text-white/50">
+                                <span>@{hero.username}</span>
+
+                                {/* What they are playing, beside the name.
+                                    The picker in the Daily Hub has always
+                                    written this and no surface has ever read it
+                                    back, so setting it lit a green dot and lost
+                                    the game. */}
+                                {hero.playing_label && (
+                                    hero.playing_slug ? (
+                                        <Link
+                                            href={`/games/${hero.playing_slug}`}
+                                            className="inline-flex items-center gap-1.5 h-[22px] px-2.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] text-[11.5px] font-bold text-[var(--accent)] hover:brightness-125 transition-[filter] max-w-full"
+                                        >
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse shrink-0" />
+                                            <span className="truncate">Playing {hero.playing_label}</span>
+                                        </Link>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 h-[22px] px-2.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] text-[11.5px] font-bold text-[var(--accent)] max-w-full">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse shrink-0" />
+                                            <span className="truncate">Playing {hero.playing_label}</span>
+                                        </span>
+                                    )
+                                )}
+                            </p>
 
                             {(hero.tagline || hero.bio) && (
                                 <p className="mt-3 flex items-center gap-2 text-[13.5px] text-white/75 min-w-0">
