@@ -39,7 +39,7 @@ export default function RigCard({
     if (specs.length === 0 && tags.length === 0 && !discord && !isOwnProfile) return null;
 
     return (
-        <SectionCard title="Rig & IDs" action={isOwnProfile ? { label: "Edit", href: "/settings" } : undefined}>
+        <SectionCard title="Rig & IDs" material="instrument" action={isOwnProfile ? { label: "Edit", href: "/settings" } : undefined}>
             {specs.length === 0 && tags.length === 0 ? (
                 <Link
                     href="/settings"

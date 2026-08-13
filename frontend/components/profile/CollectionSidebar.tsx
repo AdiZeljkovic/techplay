@@ -109,6 +109,7 @@ export function CollectionGoals({ username, isOwnProfile }: { username: string; 
     return (
         <Panel
             title="Collection Goals"
+            material="instrument"
             action={
                 isOwnProfile && !isLoading
                     ? { label: editing ? "Cancel" : "Edit goals", onClick: () => setEditing((v) => !v) }
@@ -189,6 +190,7 @@ export function PlatformBreakdown({ data }: { data?: PlatformsGenres }) {
     return (
         <Panel
             title="Platforms"
+            material="instrument"
             bodyClassName="p-4"
         >
             {platforms.length === 0 ? (

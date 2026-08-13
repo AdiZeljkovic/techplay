@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import axios from "@/lib/axios";
+import Meter from "@/components/ui/Meter";
 import { Compass, Flame, CalendarDays, CalendarRange, Check, Zap, Coins } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
@@ -27,8 +28,6 @@ const LAYERS: { type: Quest["type"]; label: string; blurb: string; icon: typeof 
 ];
 
 function QuestRow({ quest }: { quest: Quest }) {
-    const pct = Math.min(100, Math.round((quest.progress / Math.max(1, quest.criteria_value)) * 100));
-
     return (
         <div
             className={`rounded-[var(--radius-card)] border p-3.5 transition-colors duration-300 ${
@@ -62,17 +61,13 @@ function QuestRow({ quest }: { quest: Quest }) {
 
             {/* A one-step quest has nothing to measure — the tick says it all. */}
             {quest.criteria_value > 1 && (
-                <div className="mt-3 flex items-center gap-2.5">
-                    <span className="flex-1 h-[5px] rounded-full bg-[var(--track)] overflow-hidden">
-                        <span
-                            className={`block h-full rounded-full transition-[width] duration-700 ${quest.completed ? "bg-emerald-400" : "bg-[var(--accent)]"}`}
-                            style={{ width: `${pct}%` }}
-                        />
-                    </span>
-                    <span className="shrink-0 font-display text-[10px] font-bold tabular-nums text-white/30">
-                        {quest.progress}/{quest.criteria_value}
-                    </span>
-                </div>
+                <Meter
+                    value={quest.progress}
+                    max={quest.criteria_value}
+                    showCount
+                    tone={quest.completed ? "#34d399" : undefined}
+                    className="mt-3"
+                />
             )}
         </div>
     );
@@ -106,7 +101,15 @@ export default function QuestBoard() {
                 const done = group.filter((q) => q.completed).length;
 
                 return (
-                    <section key={type} className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] p-4">
+                    <section
+                        key={type}
+                        className="rounded-[var(--radius-panel)] border p-4"
+                        style={{
+                            background: "var(--surface-2)",
+                            borderColor: "var(--line-strong)",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+                        }}
+                    >
                         <header className="flex items-baseline gap-2.5 mb-3">
                             <Icon className="w-4 h-4 shrink-0 self-center text-[var(--accent)]" />
                             <h3 className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">{label}</h3>

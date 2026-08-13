@@ -22,7 +22,7 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
             : "Ready when you are";
 
     return (
-        <Panel title="Continue Playing" padding="none" className="h-full flex flex-col" bodyClassName="flex-1 flex flex-col">
+        <Panel title="Continue Playing" material="lit" padding="none" className="h-full flex flex-col" bodyClassName="flex-1 flex flex-col">
             {!game ? (
                 <div className="flex-1 flex p-4">
                     <EmptyState

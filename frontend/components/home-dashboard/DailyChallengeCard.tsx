@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { Clock3, Sparkles, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
+import Meter from "@/components/ui/Meter";
 import { useCountUp } from "@/hooks/useCountUp";
 import { timeLeft } from "@/lib/timeAgo";
 
@@ -90,11 +91,8 @@ export default function DailyChallengeCard() {
         })[0];
 
     const remaining = featured ? timeLeft(featured.expires_at) : null;
-    const target = Math.max(1, featured?.criteria_value ?? 1);
-    const percent = featured ? Math.min(100, Math.round((featured.progress / target) * 100)) : 0;
     const paysXp = !!featured && featured.xp_reward > 0;
 
-    const fill = useCountUp(percent, 1100);
     const done = useCountUp(featured?.progress ?? 0, 1100);
 
     return (
@@ -107,6 +105,7 @@ export default function DailyChallengeCard() {
                     </span>
                 ) : undefined
             }
+            material="instrument"
             className="h-full flex flex-col"
             bodyClassName="p-4 flex-1 flex flex-col"
         >
@@ -124,27 +123,15 @@ export default function DailyChallengeCard() {
                             {featured.description || featured.name}
                         </p>
 
-                        {/* the bar charges, and keeps a highlight moving while
-                            there's still ground to cover */}
-                        <span className="relative mt-3.5 block h-[8px] rounded-full bg-[var(--track)] overflow-hidden">
-                            <span
-                                className="absolute inset-y-0 left-0 rounded-full overflow-hidden transition-[width] duration-700 ease-[var(--ease-hud)]"
-                                style={{
-                                    width: `${fill}%`,
-                                    background: "linear-gradient(90deg, var(--accent) 0%, var(--accent-bright) 100%)",
-                                    boxShadow: "0 0 12px color-mix(in srgb, var(--accent) 55%, transparent)",
-                                }}
-                            >
-                                {fill > 6 && fill < 100 && (
-                                    <span className="tp-xp-shimmer absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/45 to-transparent" />
-                                )}
-                            </span>
-                        </span>
-
-                        <p className="mt-2 font-display text-[13px] font-black tabular-nums text-white">
-                            {done}
-                            <span className="text-white/30"> / {featured.criteria_value}</span>
-                        </p>
+                        {/* Countable when there is something to count. A
+                            challenge asking for three games drawn as a smooth
+                            bar hid the one number that mattered. */}
+                        <Meter
+                            value={done}
+                            max={featured.criteria_value}
+                            showCount
+                            className="mt-3.5"
+                        />
                     </div>
 
                     <RewardHex amount={paysXp ? featured.xp_reward : featured.bounty_reward} paysXp={paysXp} />

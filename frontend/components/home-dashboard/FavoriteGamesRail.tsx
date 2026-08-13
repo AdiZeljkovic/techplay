@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import type { DashboardGameCover } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
 import AddFavoriteInline from "./AddFavoriteInline";
+import { EmptySlot } from "@/components/ui/GameTile";
 
 /** How many covers the shelf shows before the overflow tile takes a slot. */
 const SHOWN = 4;
@@ -34,6 +35,7 @@ export default function FavoriteGamesRail({
     return (
         <Panel
             title="Favorite Games"
+            material="matte"
             action={favorites.length > 0 ? { label: `View all (${count})`, href: `/profile/${username}?tab=library` } : undefined}
             className="h-full flex flex-col"
             bodyClassName="p-4 flex-1 flex flex-col"
@@ -89,14 +91,10 @@ export default function FavoriteGamesRail({
                             <span className="relative font-display text-[17px] font-black text-white">+{overflow}</span>
                         </Link>
                     ) : (
-                        <button
-                            onClick={() => setPickerOpen(true)}
-                            title="Add a favorite"
-                            className="aspect-[3/4] rounded-[10px] border border-dashed border-white/[0.14] bg-white/[0.02] flex flex-col items-center justify-center gap-1.5 text-white/30 hover:text-[var(--accent)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
-                        >
-                            <Plus className="w-6 h-6" />
-                            <span className="font-display text-[9px] font-bold uppercase tracking-[0.1em]">Add</span>
-                        </button>
+                        /* A slot, not a dashed box. It sits next to the
+                           showcase and used to be the weakest thing on the
+                           page. */
+                        <EmptySlot label="Add" onClick={() => setPickerOpen(true)} className="rounded-[var(--radius-card)]" />
                     )}
                 </div>
             )}

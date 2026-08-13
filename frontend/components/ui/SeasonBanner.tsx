@@ -68,7 +68,13 @@ export default function SeasonBanner() {
         {season.days_remaining !== null && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] bg-black/30 border border-white/10">
             <Clock className="w-3.5 h-3.5 text-white/45" />
-            <span className="text-xs font-bold text-white">{season.days_remaining}d left</span>
+            {/* The API answers in fractional days, and this printed the
+                float — "38.75770886099537d left" was on every dashboard. A
+                countdown is read at a glance; the decimals were never
+                information. */}
+            <span className="text-xs font-bold text-white tabular-nums">
+              {Math.max(0, Math.floor(season.days_remaining))}d left
+            </span>
           </div>
         )}
       </div>

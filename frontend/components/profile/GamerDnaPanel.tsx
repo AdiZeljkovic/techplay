@@ -376,7 +376,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="xl:col-span-3 min-w-0">
-                    <Panel title="Genre Profile" className="h-full" bodyClassName="flex flex-col justify-center">
+                    <Panel title="Genre Profile" material="instrument" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.genres.length === 0 ? (
                             <EmptyState variant="compact" title="No genres yet" body="Add games and the wheel fills in." />
                         ) : (
@@ -401,6 +401,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 <div className="xl:col-span-4 min-w-0">
                     <Panel
                         title="Playstyle Fingerprint"
+                        material="instrument"
                         className="h-full"
                         bodyClassName="flex flex-col justify-center"
                     >
@@ -424,7 +425,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 two places is how they end up disagreeing. */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
                 <div className="xl:col-span-7 min-w-0">
-                    <Panel title="Gaming Eras" className="h-full" bodyClassName="flex flex-col justify-center">
+                    <Panel title="Gaming Eras" material="instrument" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.eras.every((e) => e.count === 0) ? (
                             <EmptyState variant="compact" title="No release dates yet" body="Games without a release year can't be placed on the timeline." />
                         ) : (
@@ -469,7 +470,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="xl:col-span-5 min-w-0">
-                    <Panel title="Player Archetype" className="h-full">
+                    <Panel title="Player Archetype" material="lit" className="h-full">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {dna.archetypes.map((a, i) => (
                                 <ArchetypeCard key={a.key} a={a} tint={ARCHETYPE_TINTS[i % ARCHETYPE_TINTS.length]} />

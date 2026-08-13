@@ -375,7 +375,14 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
         v ? <span className="font-display text-[11px] font-bold tabular-nums text-white/30">{v}</span> : null;
 
     return (
-        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4 mb-4 overflow-x-auto scrollbar-none">
+        <div
+            className="rounded-[var(--radius-panel)] border px-5 py-4 mb-4 overflow-x-auto scrollbar-none"
+            style={{
+                background: "var(--surface-2)",
+                borderColor: "var(--line-strong)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+            }}
+        >
             <div className="flex items-center gap-6 md:gap-0 md:justify-between min-w-max md:min-w-0">
                 <StatCell
                     icon={<Library className="w-4 h-4" />}

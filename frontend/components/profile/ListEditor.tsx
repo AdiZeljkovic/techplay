@@ -620,6 +620,7 @@ export function CommunityInspiration({ variant = "rail" }: { variant?: "rail" | 
 
     return (
         <Panel
+            material="matte"
             title={variant === "row" ? "What others ranked" : "Community Inspiration"}
             action={{ label: "View all", href: "/lists" }}
             bodyClassName="p-3"

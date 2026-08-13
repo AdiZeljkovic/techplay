@@ -374,7 +374,7 @@ function WalletBreakdown({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () 
     );
 
     return (
-        <Panel title="Wallet Breakdown">
+        <Panel title="Wallet Breakdown" material="instrument">
             <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/[0.07]">
                     <span className="flex items-center gap-2 text-[12.5px] font-semibold text-white">

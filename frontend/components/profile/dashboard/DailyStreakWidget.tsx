@@ -6,6 +6,7 @@ import { Flame, Check, Loader2 } from "lucide-react";
 import axios from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
+import Readout from "@/components/ui/Readout";
 
 interface StreakInfo {
   streak: number;
@@ -53,24 +54,22 @@ export default function DailyStreakWidget() {
           : "border-[var(--line)] bg-[var(--fill-1)] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)]"
       }`}
     >
-      <div className="relative shrink-0">
-        <div className={`w-11 h-11 rounded-[var(--radius-inner)] flex items-center justify-center ${claimed ? "bg-[var(--accent-soft)]" : "bg-[var(--fill-2)]"}`}>
-          <Flame className={`w-5 h-5 ${claimed ? "text-[var(--accent)]" : "text-[var(--ink-faint)]"}`} />
-        </div>
-        {days > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[var(--accent)] text-white text-[10px] font-black tabular-nums flex items-center justify-center">
-            {days > 99 ? "99+" : days}
-          </span>
-        )}
+      {/* The flame is the state: lit while the streak is alive, dark when it
+          is not. The badge counting days on top of an icon that already said
+          "streak" was saying it twice. */}
+      <div className="shrink-0 w-11 h-11 rounded-[var(--radius-inner)] flex items-center justify-center"
+        style={{ background: days > 0 ? "var(--accent-soft)" : "var(--fill-2)" }}>
+        <Flame className="w-5 h-5" style={{ color: days > 0 ? "var(--accent)" : "var(--ink-faint)" }} />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-display text-[13px] font-bold text-[var(--ink-hi)]">
-          {days > 0 ? `${days}-day streak` : "Start your streak"}
-        </p>
-        <p className="text-[11px] text-[var(--ink-low)]">
-          {claimed ? "Come back tomorrow" : `Claim +${streak.next_bounty} bounty`}
-        </p>
+        <Readout
+          label={claimed ? "Streak · back tomorrow" : `Streak · +${streak.next_bounty} waiting`}
+          value={days}
+          unit={days === 1 ? "day" : "days"}
+          size="sm"
+          tone={days > 0 ? "var(--accent-ink)" : undefined}
+        />
       </div>
 
       <button

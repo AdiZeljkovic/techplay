@@ -169,7 +169,7 @@ export default function ProfileOverviewDashboard({
             <div className="space-y-6 min-w-0">
                 {/* Community Standing (reputation + ranking + recognitions) */}
                 {reputation && (
-                    <SectionCard title="Community Standing">
+                    <SectionCard title="Community Standing" material="instrument">
                         <CommunityStanding reputation={reputation} recognitions={recognitions} />
                         {!isOwnProfile && <GiveRecognitionButton username={userData.username} />}
                     </SectionCard>

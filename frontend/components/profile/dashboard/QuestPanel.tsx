@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { Trophy } from "lucide-react";
 import axios from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
+import Meter from "@/components/ui/Meter";
 
 interface Quest {
   id: number;
@@ -30,7 +31,6 @@ const TYPE_CONFIG = {
 };
 
 function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
-  const pct = Math.min(100, Math.round((quest.progress / quest.criteria_value) * 100));
   const cfg = TYPE_CONFIG[quest.type];
 
   return (
@@ -63,17 +63,17 @@ function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
           </div>
           {!compact && <p className="text-[11px] text-[var(--ink-low)] mb-2">{quest.description}</p>}
 
-          <div className={`flex items-center gap-2${compact ? " mt-1.5" : ""}`}>
-            <div className="flex-1 h-1.5 rounded-full bg-[var(--track)] overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-300 ${quest.completed ? "bg-emerald-500" : "bg-[var(--accent)]"}`}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-            <span className="text-[10px] text-[var(--ink-low)] font-display font-bold tabular-nums shrink-0">
-              {quest.progress}/{quest.criteria_value}
-            </span>
-          </div>
+          {/* "Complete 3 games — 0/3" drawn as a smooth bar makes the
+              reader go and find the numbers. Three empty segments say it in
+              the shape. */}
+          <Meter
+            value={quest.progress}
+            max={quest.criteria_value}
+            size="sm"
+            showCount
+            tone={quest.completed ? "#34d399" : undefined}
+            className={compact ? "mt-1.5" : ""}
+          />
         </div>
 
         <div className="flex flex-col items-end gap-1 shrink-0">

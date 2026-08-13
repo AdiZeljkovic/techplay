@@ -611,7 +611,14 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
     return (
         <div className="space-y-4">
             {/* ── summary strip ── */}
-            <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4">
+            <div
+                className="rounded-[var(--radius-panel)] border px-5 py-4"
+                style={{
+                    background: "var(--surface-2)",
+                    borderColor: "var(--line-strong)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+                }}
+            >
                 <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                     {([
                         [<Clock3 key="h" className="w-4 h-4" />, "Hours played", `${hours}`, "var(--xp-bright)", s.minutes > 0 ? hhmm(s.minutes) : null],
@@ -706,6 +713,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                     {view === "diary" && (
                         <Panel
                             title="Gaming Calendar"
+                            material="lit"
                             meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Last 12 months</span>}
                         >
                             {journal.calendar.length === 0 ? (
@@ -802,7 +810,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
 
                 {/* ── sidebar ── */}
                 <aside className="xl:col-span-4 min-w-0 space-y-4">
-                    <Panel title="Where the hours went">
+                    <Panel title="Where the hours went" material="instrument">
                         {journal.per_game.length === 0 ? (
                             <EmptyState variant="compact" title="No sessions yet" />
                         ) : (

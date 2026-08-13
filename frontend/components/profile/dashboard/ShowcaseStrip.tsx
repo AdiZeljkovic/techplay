@@ -26,10 +26,26 @@ export default function ShowcaseStrip({ playingNow, snapshot, playingCount, show
     if (!hasPlaying && coveredBuckets.length === 0) return null;
 
     return (
-        <div className="relative overflow-hidden rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)]">
-            <span className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-[var(--accent)]/70 via-[var(--accent)]/15 to-transparent" />
+        <div
+            className="relative overflow-hidden rounded-[var(--radius-panel)] border"
+            style={{
+                background: "var(--surface-2)",
+                borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.09)",
+            }}
+        >
+            {/* The vitrine is the one lit thing in the main column. It kept a
+                hairline crown while sitting on the same flat sheet as
+                everything under it, which is a crown on a card rather than a
+                card that leads. */}
+            <span
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: "radial-gradient(72% 120% at 12% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 62%)" }}
+            />
+            <span aria-hidden className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-[var(--accent)]/70 via-[var(--accent)]/15 to-transparent" />
 
-            <div className="p-5 md:p-6">
+            <div className="relative p-5 md:p-6">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="flex items-center gap-2.5 text-[13px] font-black uppercase tracking-[0.14em] text-white">
                         {pinned ? (

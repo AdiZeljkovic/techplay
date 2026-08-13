@@ -80,7 +80,14 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
     }, [data.items]);
 
     return (
-        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-2)] px-5 py-4 mb-4">
+        <div
+            className="rounded-[var(--radius-panel)] border px-5 py-4 mb-4"
+            style={{
+                background: "var(--surface-2)",
+                borderColor: "var(--line-strong)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+            }}
+        >
             <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
                 <ScoreCell
                     icon={<Trophy className="w-4 h-4" />}
@@ -316,7 +323,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
     return (
         <div className="space-y-4">
             {rarest && (
-                <Panel title="Rarest Owned" variant="console">
+                <Panel title="Rarest Owned" material="lit">
                     <div className="flex flex-col items-center text-center py-1">
                         <span className="w-[72px] h-[102px] flex items-center justify-center mb-3">
                             {rarest.icon_path ? (
@@ -340,7 +347,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
             )}
 
             {next.length > 0 && (
-                <Panel title="Next to Unlock">
+                <Panel title="Next to Unlock" material="instrument">
                     <div className="space-y-3.5">
                         {next.map((a) => <MiniRow key={a.id} a={a} />)}
                     </div>

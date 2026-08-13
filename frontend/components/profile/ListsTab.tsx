@@ -91,6 +91,13 @@ function ListCard({
                     )}
                     <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-1)] via-[var(--surface-1)]/30 to-transparent" />
 
+                    {/* The same corner bracket the game tiles carry, so a list
+                        of covers reads as part of the same object family. */}
+                    <span
+                        aria-hidden
+                        className="absolute right-1.5 bottom-1.5 w-4 h-4 border-b-2 border-r-2 border-[var(--accent)] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    />
+
                     <span className="absolute top-2.5 left-2.5 flex flex-wrap items-center gap-1.5">
                         {list.list_type && list.list_type !== "custom" && (
                             <span className="inline-flex items-center h-[19px] px-2 rounded-[4px] bg-[var(--accent)] font-display text-[8px] font-black uppercase tracking-[0.12em] text-white">

@@ -247,8 +247,22 @@ export default function TrophyCase({ isOwnProfile, initial, fallback = [] }: Pro
     if (shown.length === 0 && !isOwnProfile) return null;
 
     return (
-        <section className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] p-5 md:p-6">
-            <div className="flex items-center justify-between gap-3 mb-4">
+        <section
+            className="relative rounded-[var(--radius-panel)] border p-5 md:p-6 overflow-hidden"
+            style={{
+                background: "var(--surface-2)",
+                borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.09)",
+            }}
+        >
+            {/* Lit, because this is the part of the profile that talks. One per
+                column — the standing and the rig beside it stay instruments. */}
+            <span
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: "radial-gradient(72% 120% at 12% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 62%)" }}
+            />
+            <div className="relative flex items-center justify-between gap-3 mb-4">
                 <h2 className="flex items-center gap-2.5 font-display text-[13px] font-black uppercase tracking-[0.14em] text-white">
                     <Trophy className="w-4 h-4 text-[var(--accent)]" />
                     {arranged ? "Trophy Case" : "Recent Unlocks"}
@@ -283,7 +297,7 @@ export default function TrophyCase({ isOwnProfile, initial, fallback = [] }: Pro
                     </span>
                 </button>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="relative grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                     {shown.map((item, i) => (
                         <div key={`${item.source}:${item.reference}`} className={`tp-fade-up tp-d${Math.min(6, i + 1)}`}>
                             <Slot

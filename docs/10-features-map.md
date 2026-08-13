@@ -237,6 +237,52 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Vizuelni sistem profila — M1–M6, 13.08.2026
+
+Tokeni su bili dobri; primjena nije. Postoje **četiri tokena za površine, a
+`--surface-1` je radio 241 posao** — `--surface-3` se nije koristio nijednom.
+Svaka kartica je bila ista ravna ploča s istim zaglavljem, pa nijedna nije bila
+prva.
+
+**M1 — tri materijala i dva instrumenta.** Sve kartice profila već prolaze kroz
+jedan `Panel`, pa se stil digao centralno.
+
+| Materijal | Lice | Za šta |
+|---|---|---|
+| `matte` | `surface-1` + tanka linija | liste, feedovi, sekundarno |
+| `instrument` | `surface-2` + **svjetlo na gornjoj ivici** | sve što javlja broj ili stanje |
+| `lit` | instrument + akcentni sjaj i obojena ivica | **najviše jedan po koloni** |
+
+Model svjetla je jedan: izvor je gore, uzdignute površine hvataju
+`inset 0 1px 0 rgba(255,255,255,.07)`, ravne ne. To je jedini potez koji ploču
+pretvara iz `div`-a u panel.
+
+**Akcentni tik je otišao sa svakog zaglavlja** i ostao samo na `lit` panelima.
+Naglasak koji stoji dvadeset puta na ekranu prestaje biti naglasak. `instrument`
+umjesto tika dobija tanku liniju do akcije koja poravnava oko preko reda
+očitanja.
+
+Nove primitive: **`Readout`** (kicker + tabularna vrijednost + jedinica),
+**`Meter`** (do 12 koraka **brojivi segmenti**, iznad toga traka),
+**`GameTile`** (jedan tretman omota: zaključan omjer, zastor, traka statusa,
+ugaona zagrada) i **`EmptySlot`** (ležište sa zarezanim uglom umjesto
+isprekidanog kvadrata).
+
+**M2–M6 — primjena.** Continue Playing, Showcase, Trophy Case, sezona, Rarest
+Owned, Player Archetype i kalendar dnevnika su `lit`; bounty, streak, izazov,
+ciljevi, platforme, DNK paneli, quest grupe i sve ledger trake su `instrument`;
+feedovi članaka i tuđe liste ostaju `matte` — **jer jesu sekundarni i treba tako
+da izgledaju**.
+
+Quest trake i dnevni izazov su prešli na brojive metere: „Complete 3 games —
+0/3" je sada tri prazna mjesta, jer to i jeste. Wallet i streak su postali
+očitanja.
+
+**Usput popravljeno:** `SeasonBanner` je štampao sirovi float —
+**`38.75770886099537d left`** je stajalo na svakoj naslovnoj.
+
+---
+
 ### Redizajn profila — Faza 9: sloj osjećaja, 13.08.2026
 
 Sve što sajt isplaćuje — XP, bounty, otključano dostignuće, napredovanje u rangu

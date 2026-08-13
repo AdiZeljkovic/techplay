@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Flame, Zap, Coins } from "lucide-react";
+import Readout from "@/components/ui/Readout";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
 
@@ -48,11 +49,18 @@ export default function SeasonPanel() {
     ].filter(Boolean) as { icon: typeof Zap; label: string }[];
 
     return (
-        <section className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--accent)_26%,transparent)] bg-[var(--surface-1)] p-5 md:p-6">
+        <section
+            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-5 md:p-6"
+            style={{
+                background: "var(--surface-2)",
+                borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.09)",
+            }}
+        >
             <span
                 aria-hidden
                 className="absolute inset-0 pointer-events-none"
-                style={{ background: "radial-gradient(70% 130% at 15% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 60%)" }}
+                style={{ background: "radial-gradient(72% 120% at 12% 0%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 62%)" }}
             />
 
             <div className="relative z-10 flex flex-wrap items-start gap-x-6 gap-y-4">
@@ -81,10 +89,7 @@ export default function SeasonPanel() {
                 </div>
 
                 <div className="shrink-0 text-right">
-                    <p className="font-display text-[34px] md:text-[42px] font-black tabular-nums leading-none text-white">{days}</p>
-                    <p className="mt-1 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
-                        {days === 1 ? "Day left" : "Days left"}
-                    </p>
+                    <Readout label={days === 1 ? "Day left" : "Days left"} value={days} size="lg" animate className="text-right" />
                 </div>
             </div>
 

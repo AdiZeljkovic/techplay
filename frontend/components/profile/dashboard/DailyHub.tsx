@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import { Coins, Target, ChevronRight, Radio, X, Loader2, Gem, Rocket } from "lucide-react";
 import SeasonBanner from "@/components/ui/SeasonBanner";
+import Readout from "@/components/ui/Readout";
 import DailyStreakWidget from "./DailyStreakWidget";
 import QuestPanel from "./QuestPanel";
 
@@ -123,22 +124,31 @@ function NowPlayingPicker() {
  */
 export default function DailyHub({ bounty, username, onOpenTab }: Props) {
     return (
-        <div className="rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] overflow-hidden">
-            {/* Wallet row */}
+        <div
+            className="rounded-[var(--radius-panel)] border overflow-hidden"
+            style={{
+                background: "var(--surface-2)",
+                borderColor: "var(--line-strong)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+            }}
+        >
+            {/* The wallet reads as a gauge now. It was a sentence with an icon
+                beside it — the largest number a member owns, styled like a
+                caption. */}
             <button
                 onClick={() => onOpenTab("progression")}
-                className="group w-full flex items-center justify-between px-5 py-4 border-b border-[var(--line)] hover:bg-white/[0.02] transition-colors"
+                className="group w-full flex items-end justify-between gap-4 px-5 py-4 border-b border-white/[0.07] hover:bg-white/[0.02] transition-colors text-left"
             >
-                <span className="flex items-center gap-2.5">
-                    <span className="w-8 h-8 rounded-[var(--radius-card)] bg-amber-400/10 border border-amber-400/25 flex items-center justify-center">
-                        <Coins className="w-4 h-4 text-amber-400" />
-                    </span>
-                    <span className="text-left">
-                        <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">Bounty</span>
-                        <span className="block text-[17px] font-black text-white tabular-nums leading-tight">{bounty.toLocaleString("en-US")}</span>
-                    </span>
-                </span>
-                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/35 group-hover:text-[var(--accent)] transition-colors">
+                <Readout
+                    label="Bounty"
+                    value={bounty}
+                    unit="B"
+                    size="lg"
+                    animate
+                    tone="#fbbf24"
+                    icon={<Coins className="w-3 h-3 text-amber-400" />}
+                />
+                <span className="flex items-center gap-1 pb-1.5 shrink-0 font-display text-[10px] font-bold uppercase tracking-widest text-white/35 group-hover:text-[var(--accent-ink)] transition-colors">
                     Rewards <ChevronRight className="w-3.5 h-3.5" />
                 </span>
             </button>
