@@ -26,7 +26,7 @@ interface Props {
 export default function DailyHub({ onOpenTab }: Props) {
     return (
         <div
-            className="rounded-[var(--radius-panel)] border overflow-hidden"
+            className="h-full flex flex-col rounded-[var(--radius-panel)] border overflow-hidden"
             style={{
                 background: "var(--surface-2)",
                 borderColor: "var(--line-strong)",
@@ -38,7 +38,7 @@ export default function DailyHub({ onOpenTab }: Props) {
                 <h3 className="font-display text-[11px] font-black uppercase tracking-[0.15em] text-white">Today</h3>
             </header>
 
-            <div className="p-4 space-y-3.5">
+            <div className="flex-1 p-4 space-y-3.5">
                 {/* The frame the day sits in. */}
                 <SeasonBanner />
 

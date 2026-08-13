@@ -34,8 +34,8 @@ export default function DashboardSkeleton() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                     <Block h={296} className="lg:col-span-3" />
                     <Block h={296} className="lg:col-span-5" />
-                    <Block h={520} className="lg:col-span-4 lg:row-span-2 self-start" />
-                    <Block h={300} className="lg:col-span-8" />
+                    <Block h={520} className="lg:col-span-4 lg:row-span-2" />
+                    <Block h={210} className="lg:col-span-8" />
                 </div>
 
                 {/* editorial strip | friends */}

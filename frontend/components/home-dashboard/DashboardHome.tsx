@@ -111,10 +111,9 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         streak and a quest list stack up. Rather than pad the
                         short ones out to meet it or leave a hole under it, it
                         takes both rows of this band and the achievements rail
-                        fills the space it leaves. self-start keeps it at its
-                        own height instead of stretching an empty panel floor
-                        down to the bottom of the second row. */}
-                    <div className="lg:col-span-4 lg:row-span-2 self-start min-w-0">
+                        fills the depth it leaves. Both stretch, so the band
+                        closes on one straight floor. */}
+                    <div className="lg:col-span-4 lg:row-span-2 min-w-0">
                         <DailyHub username={data.user.username} onOpenTab={openTab} />
                     </div>
 

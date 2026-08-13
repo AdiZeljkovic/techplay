@@ -35,16 +35,25 @@ function Medallion({ achievement, size = 66 }: { achievement: DashboardAchieveme
 
     if (icon) {
         return (
-            // The art is a 2:3 card, so the frame it sits in is too — a square
-            // would letterbox it and waste the height the shelf just gained.
+            // Fitted to the cell's height, not its width.
+            //
+            // These are hand-drawn cards and no two share an aspect ratio, so
+            // fitting them to a common width left every one of them a
+            // different height and the shelf came out as a ragged line. The
+            // cell is now wider than the art needs, which makes height the
+            // limiting edge — so they all stand exactly as tall as each other
+            // and the small differences fall on the sides, where a centred row
+            // absorbs them.
+            //
+            // No drop shadow either: the art already carries its own glow, and
+            // a coloured one underneath read as a smear on the panel floor.
             // eslint-disable-next-line @next/next/no-img-element
             <img
                 src={icon}
                 alt=""
                 aria-hidden
                 loading="lazy"
-                className="block w-full aspect-[2/3] object-contain"
-                style={{ filter: `drop-shadow(0 3px 10px color-mix(in srgb, ${tier.color} 40%, transparent))` }}
+                className="block w-full h-full object-contain"
             />
         );
     }
@@ -108,16 +117,21 @@ export default function RecentAchievementsRail({
                         its name and its points, so repeating them under each one
                         said everything twice and left room for very little art.
                         No plate either — the card has its own frame; a tile
-                        behind it was a frame around a frame. */}
-                    <div className="flex-1 grid grid-cols-4 sm:grid-cols-5 gap-2 content-center">
+                        behind it was a frame around a frame.
+
+                        Ten across on a wide screen, one row: this panel sits
+                        under the day's two cards and beside Today, and the
+                        badges at their old size ran it three hundred pixels
+                        past Today's floor. */}
+                    <div className="flex-1 grid grid-cols-5 sm:grid-cols-7 xl:grid-cols-10 gap-2 content-center justify-items-center">
                         {achievements.slice(0, 10).map((a, i) => (
                             <div
                                 key={a.id}
                                 title={`${a.name}${a.description ? ` — ${a.description}` : ""}`}
-                                className={`group relative flex items-center justify-center tp-fade-up tp-d${Math.min(6, i + 1)}`}
+                                className={`group relative w-full h-[86px] xl:h-[100px] flex items-center justify-center tp-fade-up tp-d${Math.min(6, i + 1)}`}
                             >
-                                <span className="block w-full transition-transform duration-500 ease-[var(--ease-hud)] group-hover:scale-[1.06]">
-                                    <Medallion achievement={a} />
+                                <span className="flex items-center justify-center w-full h-full transition-transform duration-500 ease-[var(--ease-hud)] group-hover:scale-[1.08]">
+                                    <Medallion achievement={a} size={72} />
                                 </span>
                             </div>
                         ))}

@@ -23,6 +23,9 @@ interface Quest {
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as Quest[]);
 
+/** How soon a quest of this kind comes round again — the urgency order. */
+const CADENCE: Record<Quest["type"], number> = { daily: 0, weekly: 1, monthly: 2, permanent: 3 };
+
 const TYPE_CONFIG = {
   daily: { label: "Daily", color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20" },
   weekly: { label: "Weekly", color: "text-blue-400 bg-blue-400/10 border-blue-400/20" },
@@ -108,10 +111,16 @@ export default function QuestPanel({ isOwnProfile, compact = false }: { isOwnPro
 
   if (!isOwnProfile || !quests?.length) return null;
 
-  // Nearest deadline first, undated ones last. This is what the separate
-  // Daily Challenge card used to pick out and show above the list — it is the
-  // same quest, so it leads the list instead of being drawn twice.
+  // Shortest cadence first, then nearest deadline within it.
+  //
+  // Sorting on expires_at alone put every season quest above every daily one,
+  // because a daily carries no expiry date at all — it resets on the date it
+  // was completed, so the column is null and null sorted last. The Today panel
+  // shows three quests, and all three were season quests with 38 days on them
+  // while the two that reset tonight sat below the fold.
   const active = [...quests.filter((q) => !q.completed)].sort((a, b) => {
+    const cadence = CADENCE[a.type] - CADENCE[b.type];
+    if (cadence !== 0) return cadence;
     if (!a.expires_at) return 1;
     if (!b.expires_at) return -1;
     return new Date(a.expires_at).getTime() - new Date(b.expires_at).getTime();
