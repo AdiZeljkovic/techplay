@@ -143,8 +143,33 @@ export interface GamerDnaPayload {
         best_day: { name: string; minutes: number } | null;
         moods: DistributionStat[];
     };
-    /** Worlds gone back to — two entries is the floor, one is just a game. */
-    series: { name: string; count: number }[];
+    /** Medians, not means: the habit rather than its worst night. */
+    milestones: {
+        collecting_since: string | null;
+        collecting_days: number;
+        finish_days: number | null;
+        finish_sample: number;
+        backlog_months: number | null;
+        clears_per_month: number;
+        patience_days: number | null;
+        patience_label: string | null;
+    };
+    /** Member ratings are 1-5, the catalogue is 0-10 — both sides here are 0-10. */
+    verdicts: {
+        sample: number;
+        yours: number | null;
+        crowd: number | null;
+        delta: number | null;
+        label: string | null;
+    };
+    /** Dropped is a decision, dormant is a drift. Both are true. */
+    graveyard: {
+        dropped: number;
+        dormant: number;
+        items: { slug: string; name: string; cover_url: string | null; hours: number; status: string }[];
+    };
+    /** Shelves that overlap yours, straight off the chronicle. */
+    peers: { username: string; display_name: string | null; avatar_url: string | null }[];
     updated_at: string;
 }
 

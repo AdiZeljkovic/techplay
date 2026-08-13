@@ -34,7 +34,7 @@ class GamerDnaController extends Controller
         // fields the page had just been rebuilt around. Bump it whenever
         // GamerDnaService::build gains or loses a key.
         $payload = Cache::remember(
-            "gamer-dna.{$user->id}.v2",
+            "gamer-dna.{$user->id}.v3",
             900,
             fn () => $dna->build($user)
         );

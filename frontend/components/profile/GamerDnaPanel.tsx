@@ -6,7 +6,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import {
     Dna, Clock3, Gamepad2, Trophy, Sparkles, BookOpen, Swords, Moon, Compass, Feather, HelpCircle,
-    Flame, CalendarDays, Timer, Layers, Heart, Star, type LucideIcon,
+    Flame, CalendarDays, Timer, Layers, Heart, Hourglass, Scale, Ghost, Users, type LucideIcon,
 } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
@@ -421,6 +421,272 @@ function RhythmPanel({ rhythm }: { rhythm: GamerDnaPayload["rhythm"] }) {
     );
 }
 
+/* ── milestones ───────────────────────────────────────────────────────── */
+
+/**
+ * The four figures nobody else's profile has.
+ *
+ * Everything else on this page could describe two different people
+ * identically as long as their shelves matched. These cannot: how long a game
+ * survives once you start it, how fast the backlog is really moving, how long
+ * you have been at this, and how long you make a game wait before you buy it.
+ *
+ * Each one carries what it is built on. "24 days" over three finished games is
+ * a coincidence, and a page that hides the sample size is inviting the reader
+ * to mistake one for a fact.
+ */
+function MilestoneStrip({ m }: { m: GamerDnaPayload["milestones"] }) {
+    const since = m.collecting_since
+        ? new Date(`${m.collecting_since}T00:00:00`).toLocaleDateString("en-GB", { month: "short", year: "numeric" })
+        : null;
+
+    const cells: { icon: LucideIcon; label: string; value: string; sub: string; tint: string }[] = [
+        {
+            icon: CalendarDays,
+            label: "Collecting since",
+            value: since ?? "—",
+            sub: since ? `${m.collecting_days.toLocaleString("en-US")} days on the shelf` : "Add a game to start the clock",
+            tint: "var(--accent-ink)",
+        },
+        {
+            icon: Timer,
+            label: "A game survives",
+            value: m.finish_days === null ? "—" : `${m.finish_days} ${m.finish_days === 1 ? "day" : "days"}`,
+            sub: m.finish_days === null
+                ? "Mark something playing, then finished"
+                : `Median across ${m.finish_sample} finished`,
+            tint: "#34d399",
+        },
+        {
+            icon: Layers,
+            label: "Backlog clears in",
+            value: m.backlog_months === null
+                ? "Not at this pace"
+                : m.backlog_months >= 24 ? `${Math.round(m.backlog_months / 12)} years` : `${m.backlog_months} months`,
+            sub: `${m.clears_per_month} finished a month`,
+            tint: "#60a5fa",
+        },
+        {
+            icon: Hourglass,
+            label: "You buy",
+            value: m.patience_label ?? "—",
+            sub: m.patience_days === null
+                ? "Needs games with a release date"
+                : m.patience_days === 0 ? "On release day" : `${m.patience_days.toLocaleString("en-US")} days after release`,
+            tint: "#fbbf24",
+        },
+    ];
+
+    return (
+        <div
+            className="rounded-[var(--radius-panel)] border overflow-hidden"
+            style={{ borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)" }}
+        >
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-px" style={{ background: "var(--line)" }}>
+                {cells.map(({ icon: Icon, label, value, sub, tint }) => (
+                    <div key={label} className="group/bay flex items-start gap-3.5 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
+                        <span className="shrink-0 w-10 h-10 flex items-center justify-center" style={{ color: tint }}>
+                            <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">{label}</span>
+                            <span className="block mt-1 font-display text-[19px] font-black leading-none text-white truncate">{value}</span>
+                            <span className="block mt-1.5 text-[10.5px] text-white/30 leading-snug">{sub}</span>
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/* ── the verdict ──────────────────────────────────────────────────────── */
+
+/**
+ * Whether this player marks harder or softer than the room.
+ *
+ * Both figures are on the catalogue's ten-point scale — a member rates out of
+ * five, so their score is doubled to sit beside it. Five stars is a ten; that
+ * is the only honest bridge, and the page says it out loud rather than leaving
+ * the reader to wonder why their four became an eight.
+ */
+function VerdictPanel({ v }: { v: GamerDnaPayload["verdicts"] }) {
+    if (v.label === null || v.yours === null || v.crowd === null) {
+        return (
+            <Panel title="Your scores vs the room" material="instrument" className="h-full" bodyClassName="flex-1 flex">
+                <EmptyState
+                    variant="compact"
+                    icon={<Scale className="w-[18px] h-[18px]" />}
+                    title="Not enough ratings yet"
+                    body={`Rate three games that carry a public score and this says whether you mark harder than everybody else. ${v.sample} so far.`}
+                />
+            </Panel>
+        );
+    }
+
+    const harsh = (v.delta ?? 0) < 0;
+    const tint = harsh ? "#f87171" : (v.delta ?? 0) > 0.3 ? "#34d399" : "var(--accent-ink)";
+
+    return (
+        <Panel
+            title="Your scores vs the room"
+            material="instrument"
+            className="h-full"
+            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/30">{v.sample} rated</span>}
+        >
+            <p className="font-display text-[24px] font-black uppercase tracking-tight leading-none" style={{ color: tint }}>
+                {v.label}
+            </p>
+            <p className="mt-2 text-[12px] text-white/45 leading-snug">
+                You average <span className="font-bold text-white tabular-nums">{v.yours.toFixed(1)}</span> where the room gives{" "}
+                <span className="font-bold text-white tabular-nums">{v.crowd.toFixed(1)}</span> —{" "}
+                {Math.abs(v.delta ?? 0).toFixed(1)} of a point {harsh ? "below" : "above"}.
+            </p>
+
+            {/* Both marks on one ten-point rule, because the whole claim is
+                the distance between them. */}
+            <div className="relative mt-5 h-[34px]">
+                <span aria-hidden className="absolute inset-x-0 top-[13px] h-[6px] rounded-full bg-[var(--track)]" />
+                {([["crowd", v.crowd, "rgba(255,255,255,0.4)"], ["you", v.yours, tint]] as const).map(([who, val, color]) => (
+                    <span
+                        key={who}
+                        className="absolute top-0 -translate-x-1/2 flex flex-col items-center"
+                        style={{ left: `${Math.min(97, Math.max(3, (val / 10) * 100))}%` }}
+                    >
+                        <span className="block w-[3px] h-[32px] rounded-full" style={{ background: color }} />
+                        <span className="mt-1 font-display text-[8.5px] font-black uppercase tracking-[0.12em] whitespace-nowrap" style={{ color }}>
+                            {who}
+                        </span>
+                    </span>
+                ))}
+            </div>
+
+            <p className="mt-6 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/25 leading-snug">
+                Both on the catalogue&apos;s ten-point scale. You rate out of five, so five stars counts as a ten.
+            </p>
+        </Panel>
+    );
+}
+
+/* ── the graveyard ────────────────────────────────────────────────────── */
+
+/**
+ * Games that stopped.
+ *
+ * A shelf full of green ticks is a flattering lie. Dropped is a decision,
+ * dormant is a drift, and both say more about how somebody plays than another
+ * count of what they own — which is why this is on the page rather than
+ * quietly filtered out of it.
+ */
+function GraveyardPanel({ g }: { g: GamerDnaPayload["graveyard"] }) {
+    const total = g.dropped + g.dormant;
+
+    return (
+        <Panel
+            title="The graveyard"
+            material="instrument"
+            className="h-full"
+            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Dropped, and gone quiet</span>}
+        >
+            {total === 0 ? (
+                <EmptyState
+                    variant="compact"
+                    icon={<Ghost className="w-[18px] h-[18px]" />}
+                    title="Nothing abandoned"
+                    body="Every game you own is either in play or finished. That is rarer than it sounds."
+                />
+            ) : (
+                <>
+                    <div className="flex items-center gap-6">
+                        <span>
+                            <span className="block font-display text-[28px] font-black tabular-nums leading-none text-white">{g.dropped}</span>
+                            <span className="block mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">Dropped</span>
+                        </span>
+                        <span aria-hidden className="w-px h-9 bg-white/[0.08]" />
+                        <span>
+                            <span className="block font-display text-[28px] font-black tabular-nums leading-none text-white/70">{g.dormant}</span>
+                            <span className="block mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">Untouched 6mo+</span>
+                        </span>
+                    </div>
+
+                    {g.items.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {g.items.map((it) => (
+                                <Link
+                                    key={it.slug}
+                                    href={`/games/${it.slug}`}
+                                    prefetch={false}
+                                    title={`${it.name}${it.hours > 0 ? ` — ${it.hours}h in` : ""}`}
+                                    className="group relative w-[54px] aspect-[3/4] rounded-[8px] overflow-hidden border border-white/[0.07] bg-white/[0.04]"
+                                >
+                                    {it.cover_url ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={it.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover grayscale opacity-45 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" />
+                                    ) : (
+                                        <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-4 h-4" /></span>
+                                    )}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
+        </Panel>
+    );
+}
+
+/* ── taste twins ──────────────────────────────────────────────────────── */
+
+/** Shelves that overlap yours, ranked by the chronicle's own peer score. */
+function PeersPanel({ peers }: { peers: GamerDnaPayload["peers"] }) {
+    return (
+        <Panel
+            title="Taste twins"
+            material="instrument"
+            className="h-full"
+            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Shelves like yours</span>}
+        >
+            {peers.length === 0 ? (
+                <EmptyState
+                    variant="compact"
+                    icon={<Users className="w-[18px] h-[18px]" />}
+                    title="Nobody matched yet"
+                    body="This fills in as you rate and play — the more the site knows about your taste, the closer it can find."
+                />
+            ) : (
+                <div className="space-y-1.5">
+                    {peers.map((p) => (
+                        <Link
+                            key={p.username}
+                            href={`/profile/${p.username}`}
+                            className="group flex items-center gap-3 p-2 rounded-[10px] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300"
+                        >
+                            <span className="w-9 h-9 shrink-0 rounded-full overflow-hidden bg-white/[0.06] border border-white/[0.09] flex items-center justify-center">
+                                {p.avatar_url ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={p.avatar_url} alt="" aria-hidden className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="font-display text-[13px] font-black text-[var(--accent)]">
+                                        {(p.display_name || p.username).charAt(0).toUpperCase()}
+                                    </span>
+                                )}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-[12.5px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
+                                    {p.display_name || p.username}
+                                </span>
+                                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
+                                    @{p.username}
+                                </span>
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            )}
+        </Panel>
+    );
+}
+
 /* ── fingerprint ──────────────────────────────────────────────────────── */
 
 function AxisRow({ axis }: { axis: DnaAxis }) {
@@ -552,8 +818,13 @@ export default function GamerDnaPanel({ username }: { username: string }) {
     // takes the whole tab down — a missing section is a far cheaper failure,
     // so every field added after the first release is read defensively.
     const signature = dna.signature ?? [];
-    const series = dna.series ?? [];
     const rhythm = dna.rhythm ?? { sessions: 0, minutes: 0, average: 0, longest: 0, best_day: null, moods: [] };
+    const milestones = dna.milestones ?? {
+        collecting_since: null, collecting_days: 0, finish_days: null, finish_sample: 0,
+        backlog_months: null, clears_per_month: 0, patience_days: null, patience_label: null };
+    const verdicts = dna.verdicts ?? { sample: 0, yours: null, crowd: null, delta: null, label: null };
+    const graveyard = dna.graveyard ?? { dropped: 0, dormant: 0, items: [] };
+    const peers = dna.peers ?? [];
 
     return (
         <div className="space-y-4">
@@ -590,11 +861,21 @@ export default function GamerDnaPanel({ username }: { username: string }) {
             {/* ── who you are ── */}
             <IdentityCard data={dna} />
 
+            {/* ── the figures that are only yours ── */}
+            <MilestoneStrip m={milestones} />
+
             {/* ── what the hours went into ── */}
             <SignatureStrip games={signature} />
 
             {/* ── how you play ── */}
             <RhythmPanel rhythm={rhythm} />
+
+            {/* ── how you judge, what you abandoned, who plays like you ── */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 items-stretch">
+                <VerdictPanel v={verdicts} />
+                <GraveyardPanel g={graveyard} />
+                <PeersPanel peers={peers} />
+            </div>
 
             {/* ── what you play ── */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
@@ -650,7 +931,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 panel from the same aggregation. Two readings of one number in
                 two places is how they end up disagreeing. */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
-                <div className="xl:col-span-8 min-w-0">
+                <div className="xl:col-span-12 min-w-0">
                     <Panel title="Gaming Eras" material="instrument" className="h-full" bodyClassName="flex flex-col justify-center">
                         {dna.eras.every((e) => e.count === 0) ? (
                             <EmptyState variant="compact" title="No release dates yet" body="Games without a release year can't be placed on the timeline." />
@@ -695,38 +976,6 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                     </Panel>
                 </div>
 
-                <div className="xl:col-span-4 min-w-0">
-                    <Panel title="Worlds you return to" material="instrument" className="h-full" bodyClassName="flex-1 flex flex-col">
-                        {series.length === 0 ? (
-                            <EmptyState
-                                variant="compact"
-                                icon={<Layers className="w-[18px] h-[18px]" />}
-                                title="No series yet"
-                                body="Own two games from the same series and the loyalty shows up here."
-                            />
-                        ) : (
-                            <div className="space-y-2.5">
-                                {series.map((s, i) => (
-                                    <div
-                                        key={s.name}
-                                        className="flex items-center gap-3 rounded-[10px] border border-white/[0.07] bg-white/[0.02] px-3 py-2.5"
-                                    >
-                                        <span
-                                            className="shrink-0 w-7 h-7 rounded-[7px] flex items-center justify-center font-display text-[12px] font-black tabular-nums"
-                                            style={{ background: `color-mix(in srgb, ${WHEEL[i % WHEEL.length]} 16%, transparent)`, color: WHEEL[i % WHEEL.length] }}
-                                        >
-                                            {i + 1}
-                                        </span>
-                                        <span className="min-w-0 flex-1 text-[12.5px] font-semibold text-white truncate">{s.name}</span>
-                                        <span className="shrink-0 inline-flex items-center gap-1 font-display text-[11px] font-black tabular-nums text-white/45">
-                                            <Star className="w-3 h-3 text-white/25" /> {s.count}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </Panel>
-                </div>
             </div>
 
             {/* ── what you have become ── */}

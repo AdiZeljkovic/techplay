@@ -89,7 +89,7 @@ class GamerDnaService
     public function build(User $user): array
     {
         $entries = UserGame::where('user_id', $user->id)
-            ->with(['game:id,name,slug,released,genres,tags,cover_url,series_name'])
+            ->with(['game:id,name,slug,released,genres,tags,cover_url'])
             ->get();
 
         $games = $entries->pluck('game')->filter();
@@ -136,14 +136,186 @@ class GamerDnaService
             'badges' => $this->badges($user),
             'setup' => $this->setup($user),
             'archetypes' => $this->archetypes($user, $entries, $games, $counts, $achievementsOwned, $reviews, $genres),
-            // What the collection cannot say on its own: which games actually
-            // took the hours, when the hours happen, and which worlds the
-            // player keeps going back to.
+            // What a shelf cannot say on its own: which games took the hours,
+            // when the hours happen, how long a game survives, whether this
+            // player marks harder than the room, and what stopped.
             'signature' => $this->signature($entries),
             'rhythm' => $this->rhythm($user),
-            'series' => $this->series($games),
+            'milestones' => $this->milestones($user, $entries, $counts),
+            'verdicts' => $this->verdicts($user),
+            'graveyard' => $this->graveyard($entries),
+            'peers' => $this->peers($user),
             'updated_at' => now()->toIso8601String(),
         ];
+    }
+
+    /** Middle value of a list, or null when there is nothing to take a middle of. */
+    private function median(array $values): ?float
+    {
+        if ($values === []) {
+            return null;
+        }
+
+        sort($values);
+        $mid = intdiv(count($values), 2);
+
+        return count($values) % 2 ? (float) $values[$mid] : ($values[$mid - 1] + $values[$mid]) / 2;
+    }
+
+    /**
+     * The four figures nobody else's profile has.
+     *
+     * Medians, not averages: one game abandoned for two years drags a mean
+     * into nonsense, and the number is supposed to describe the habit rather
+     * than its worst night.
+     */
+    private function milestones(User $user, Collection $entries, array $counts): array
+    {
+        $first = $entries->min('created_at');
+
+        // How long a game takes from "playing" to "finished". Both stamps are
+        // written by the collection controller on the status change, so this
+        // only counts games actually moved through the shelf.
+        $finishDays = $entries
+            ->filter(fn (UserGame $e) => $e->started_at && $e->completed_at && $e->completed_at >= $e->started_at)
+            ->map(fn (UserGame $e) => Carbon::parse($e->started_at)->diffInDays(Carbon::parse($e->completed_at)))
+            ->values()->all();
+
+        // How fast the backlog is actually shrinking, measured over the last
+        // half year rather than all time — a burst in 2024 should not promise
+        // anything about 2026.
+        $recent = $entries->filter(fn (UserGame $e) => $e->completed_at && Carbon::parse($e->completed_at)->gt(now()->subDays(180)))->count();
+        $perMonth = $recent / 6;
+        $forecast = $counts['backlog'] > 0 && $perMonth > 0
+            ? (int) ceil($counts['backlog'] / $perMonth)
+            : null;
+
+        // Days between a game coming out and this shelf claiming it. Negative
+        // means it was added before release — a pre-order is day zero, not
+        // minus ninety.
+        $waits = $entries
+            ->filter(fn (UserGame $e) => $e->game?->released && $e->created_at)
+            ->map(fn (UserGame $e) => max(0, Carbon::parse($e->game->released)->diffInDays(Carbon::parse($e->created_at), false)))
+            ->values()->all();
+        $patience = $this->median($waits);
+
+        return [
+            'collecting_since' => $first ? Carbon::parse($first)->toDateString() : null,
+            'collecting_days' => $first ? (int) Carbon::parse($first)->diffInDays(now()) : 0,
+            'finish_days' => $finishDays === [] ? null : (int) round($this->median($finishDays)),
+            'finish_sample' => count($finishDays),
+            'backlog_months' => $forecast,
+            'clears_per_month' => round($perMonth, 1),
+            'patience_days' => $patience === null ? null : (int) round($patience),
+            'patience_label' => $patience === null ? null : match (true) {
+                $patience <= 7 => 'Day one',
+                $patience <= 60 => 'Early adopter',
+                $patience <= 365 => 'Waits for reviews',
+                $patience <= 1825 => 'Bargain hunter',
+                default => 'Time traveller',
+            },
+        ];
+    }
+
+    /**
+     * Whether this player marks harder or softer than the room.
+     *
+     * The two scales are not the same: a member rates 1–5, the catalogue
+     * carries a 0–10 figure. Doubling the member's score is the only honest
+     * bridge — five stars is a ten — and the comparison is only drawn over
+     * games that carry both, with the sample size published beside it,
+     * because a verdict off three ratings is not a verdict.
+     */
+    private function verdicts(User $user): array
+    {
+        $rows = DB::table('game_ratings')
+            ->join('games', 'games.slug', '=', 'game_ratings.game_slug')
+            ->where('game_ratings.user_id', $user->id)
+            ->where('game_ratings.is_draft', false)
+            ->where('games.rating', '>', 0)
+            ->get(['game_ratings.rating as mine', 'games.rating as crowd']);
+
+        if ($rows->count() < 3) {
+            return ['sample' => $rows->count(), 'yours' => null, 'crowd' => null, 'delta' => null, 'label' => null];
+        }
+
+        $yours = $rows->avg('mine') * 2;
+        $crowd = (float) $rows->avg('crowd');
+        $delta = $yours - $crowd;
+
+        return [
+            'sample' => $rows->count(),
+            'yours' => round($yours, 1),
+            'crowd' => round($crowd, 1),
+            'delta' => round($delta, 1),
+            'label' => match (true) {
+                $delta <= -1.0 => 'Hard marker',
+                $delta < -0.3 => 'Tough but fair',
+                $delta <= 0.3 => 'In step with the room',
+                $delta < 1.0 => 'Generous',
+                default => 'Easily pleased',
+            },
+        ];
+    }
+
+    /**
+     * Games that stopped.
+     *
+     * Dropped is a decision and dormant is a drift, and both are true things
+     * about a player that a shelf full of green ticks will never admit. Six
+     * months is the line: shorter and it catches anybody between seasons.
+     */
+    private function graveyard(Collection $entries): array
+    {
+        $cutoff = now()->subMonths(6);
+
+        $dormant = $entries->filter(fn (UserGame $e) => in_array($e->status, ['playing', 'backlog'], true)
+            && $e->last_played_at
+            && Carbon::parse($e->last_played_at)->lt($cutoff));
+
+        $dropped = $entries->where('status', 'dropped');
+
+        return [
+            'dropped' => $dropped->count(),
+            'dormant' => $dormant->count(),
+            'items' => $dropped->concat($dormant)
+                ->filter(fn (UserGame $e) => $e->game !== null)
+                ->sortByDesc(fn (UserGame $e) => $e->hours_played ?? 0)
+                ->take(6)
+                ->map(fn (UserGame $e) => [
+                    'slug' => $e->game->slug,
+                    'name' => $e->game->name,
+                    'cover_url' => $e->game->cover_url,
+                    'hours' => (int) ($e->hours_played ?? 0),
+                    'status' => $e->status,
+                ])->values()->all(),
+        ];
+    }
+
+    /**
+     * Members whose shelves overlap this one.
+     *
+     * Straight off the chronicle, which already ranks peers by the dot product
+     * of two affinity vectors — recomputing that here would be a second
+     * opinion nobody asked for and a chance for the two to disagree.
+     */
+    private function peers(User $user): array
+    {
+        $ids = DB::table('user_chronicles')->where('user_id', $user->id)->value('peer_ids');
+        $ids = array_slice(json_decode((string) $ids, true) ?: [], 0, 5);
+
+        if ($ids === []) {
+            return [];
+        }
+
+        return User::whereIn('id', $ids)
+            ->get(['id', 'username', 'display_name', 'avatar'])
+            ->sortBy(fn (User $u) => array_search($u->id, $ids, true))
+            ->map(fn (User $u) => [
+                'username' => $u->username,
+                'display_name' => $u->display_name,
+                'avatar_url' => $u->avatar_url ?? null,
+            ])->values()->all();
     }
 
     /**
@@ -226,26 +398,6 @@ class GamerDnaService
                 ])->values()->all(),
         ];
     }
-
-    /**
-     * Worlds the player keeps going back to.
-     *
-     * A series with one entry is not loyalty, it is a game — so two is the
-     * floor. `series_name` comes off the aggregator, so this fills in without
-     * anybody tagging anything.
-     */
-    private function series(Collection $games): array
-    {
-        $tally = $games->pluck('series_name')->filter()->countBy()
-            ->filter(fn ($count) => $count >= 2)
-            ->sortDesc();
-
-        return $tally->take(4)
-            ->map(fn ($count, $name) => ['name' => $name, 'count' => $count])
-            ->values()->all();
-    }
-
-    /* ── taste ─────────────────────────────────────────────────────────── */
 
     /**
      * The five axes. The first three read taste out of the genre and tag
