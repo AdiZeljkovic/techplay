@@ -7,6 +7,7 @@ use App\Models\Friendship;
 use App\Models\User;
 use App\Notifications\FriendRequestNotification;
 use App\Services\AchievementService;
+use App\Services\QuestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +119,8 @@ class FriendController extends Controller
         try {
             app(AchievementService::class)->check(Auth::user(), ['friends_count']);
             app(AchievementService::class)->check($friendship->sender, ['friends_count']);
+            app(QuestService::class)->progress(Auth::user(), 'friend_made');
+            app(QuestService::class)->progress($friendship->sender, 'friend_made');
         } catch (\Throwable) {
         }
 

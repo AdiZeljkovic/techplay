@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\ArticleCommentNotification;
 use App\Notifications\CommentReplyNotification;
 use App\Services\AchievementService;
+use App\Services\QuestService;
 use App\Services\SanitizationService;
 use App\Services\XpService;
 use Illuminate\Http\Request;
@@ -193,6 +194,13 @@ class CommentController extends Controller
         // 4. Check comment-count achievements (fire-and-forget)
         try {
             app(AchievementService::class)->check(Auth::user(), ['comments_count']);
+
+            // Same rule as the XP above: a held comment has not happened yet
+            // as far as anyone else is concerned, so it does not move a quest
+            // either. CommentObserver credits it if a moderator approves.
+            if ($comment->status === 'approved') {
+                app(QuestService::class)->progress(Auth::user(), 'comment_posted');
+            }
         } catch (\Throwable) {
         }
 

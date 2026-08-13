@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Post;
 use App\Services\AchievementService;
+use App\Services\QuestService;
 use App\Services\XpService;
 
 class PostObserver
@@ -33,6 +34,7 @@ class PostObserver
         // replacing the old hardcoded "First Steps"/"Active Voice" unlocks
         try {
             app(AchievementService::class)->check($user, ['posts_count']);
+            app(QuestService::class)->progress($user, 'forum_post');
         } catch (\Throwable) {
         }
     }

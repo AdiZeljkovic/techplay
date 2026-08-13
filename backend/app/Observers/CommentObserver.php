@@ -6,6 +6,7 @@ use App\Events\CommentPosted;
 use App\Events\NotificationReceived;
 use App\Models\Comment;
 use App\Models\User;
+use App\Services\QuestService;
 use App\Services\XpService;
 
 class CommentObserver
@@ -42,6 +43,7 @@ class CommentObserver
 
                     if ($author) {
                         app(XpService::class)->awardXp($author, XpService::XP_COMMENT, 'comment');
+                        app(QuestService::class)->progress($author, 'comment_posted');
                         $comment->forceFill(['xp_awarded_at' => now()])->saveQuietly();
                     }
                 } catch (\Throwable) {

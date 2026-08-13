@@ -237,6 +237,55 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Redizajn profila — Faza 7: questovi i sezonski luk, 13.08.2026
+
+**Devet questova brojalo je samo dvije stvari** — kolekciju i dnevnik. Ko je
+provodio svaku večer na forumu, pisao liste i sticao prijatelje, mogao je
+proći cijelu sezonu a da ga nijedan quest ne primijeti.
+
+**Prvo okidači, pa katalog.** Isti obrazac koji je dvanaest dostignuća držao
+nedostižnima: quest čiji criteria tip niko ne zove je bar napretka koji stoji.
+Dodano pet novih okidača:
+
+| Criteria | Gdje se zove |
+|---|---|
+| `forum_post` | `PostObserver` |
+| `thread_started` | `ThreadObserver` |
+| `comment_posted` | `CommentController` **i** `CommentObserver` |
+| `list_published` | `GameListController::update` — u prazan `try/catch` koji je stajao na putu objave |
+| `friend_made` | `FriendController::acceptRequest`, obje strane |
+
+`comment_posted` ima isto pravilo kao XP: **zadržan komentar ne pomjera quest.**
+Prvi pokušaj je nagrađivao komentar koji čeka moderaciju i `ForumEconomyTest` ga
+je s pravom oborio. Sada kredit ide na odobrenje, jednom.
+
+**Četiri sloja, 14 novih questova (9 → 23):**
+
+| Sloj | Pitanje na koje odgovara | Primjeri |
+|---|---|---|
+| `permanent` | „šta je ovo mjesto?" | lanac prve sedmice: profil → 5 igara → komentar → forum → lista |
+| `daily` | „zašto danas?" | Roll Call, Speak Up |
+| `weekly` | „zašto ove sedmice?" | Curator, Regular, Conversationalist, Good Company |
+| `monthly` | „zašto ostati sezonu?" | Season Voice, Season Curator, Season Critic |
+
+**Katalog je namjerno veći od table.** 23 otvorena questa su lista za skrolanje,
+ne skup stvari koje se rade — a poenta dnevnog questa je da je dovoljno mali da
+se završi danas. `QuestController::shortlist()` bira **3 dnevna, 3 sedmična, 5
+sezonskih** i ostatak welcome lanca.
+
+- **Rotacija je deterministička po čitaocu i periodu**: ista tri cijeli dan,
+  druga tri sutra, i nisu ista kao tuđa. Sjeme je period, pa nema stanja koje se
+  čuva ni joba koji se vrti — dan **jeste** miješanje.
+- **Završen onboarding quest napušta tablu.** Permanent se nikad ne resetuje, pa
+  bi petostepena dobrodošlica inače zauvijek visila kao pet kvačica.
+- **Dnevni završen danas ostaje vidljiv** — tabla pokazuje dnevni učinak, ne
+  samo ono što je preostalo.
+
+Novi `QuestBoard` na Progressionu grupiše po sloju, ispod sezone. Vlasnik samo —
+tuđa lista zadataka nije sadržaj.
+
+---
+
 ### Redizajn profila — Faza 6: liste dobijaju težinu, 13.08.2026
 
 Liste su bile funkcionalno kompletne — stavke, redoslijed, lajkovi, komentari,

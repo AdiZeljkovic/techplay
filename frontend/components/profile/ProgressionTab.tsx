@@ -1,6 +1,7 @@
 "use client";
 
 import SeasonPanel from "./dashboard/SeasonPanel";
+import QuestBoard from "./dashboard/QuestBoard";
 import SectionCard from "./dashboard/SectionCard";
 import SteamAchievements from "./dashboard/SteamAchievements";
 import AchievementsTab from "./AchievementsTab";
@@ -24,6 +25,11 @@ export default function ProgressionTab({ username, isOwnProfile }: { username: s
     return (
         <div className="space-y-6">
             <SeasonPanel />
+
+            {/* The season's work, in the order the layers ask for it. Owner
+                only — a quest board is a to-do list, and somebody else's to-do
+                list is not a thing to read. */}
+            {isOwnProfile && <QuestBoard />}
 
             <AchievementsTab username={username} />
 

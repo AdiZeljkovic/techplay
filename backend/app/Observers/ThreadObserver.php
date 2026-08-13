@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Events\ThreadCreated;
 use App\Models\Thread;
 use App\Services\AchievementService;
+use App\Services\QuestService;
 use App\Services\XpService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -66,6 +67,7 @@ class ThreadObserver
             $user->increment('forum_reputation', 3);
             app(XpService::class)->awardXp($user, 15, 'forum_thread');
             app(AchievementService::class)->check($user, ['threads_count', 'reputation']);
+            app(QuestService::class)->progress($user, 'thread_started');
         } catch (\Throwable $e) {
             Log::warning('Thread creation reward failed: '.$e->getMessage(), ['thread_id' => $thread->id]);
         }

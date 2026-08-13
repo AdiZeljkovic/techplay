@@ -9,6 +9,7 @@ use App\Models\GameListComment;
 use App\Models\GameListItem;
 use App\Models\GameListLike;
 use App\Models\User;
+use App\Services\QuestService;
 use App\Services\SanitizationService;
 use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
@@ -162,9 +163,12 @@ class GameListController extends Controller
         $list->fill($data)->save();
         $list->loadCount('items');
 
-        // Publishing is the moment a list starts existing for other people.
+        // Publishing is the moment a list starts existing for other people —
+        // which is why the quest counts that rather than creation. A draft is
+        // a note to yourself.
         if ($wasDraft && ! $list->is_draft) {
             try {
+                app(QuestService::class)->progress($request->user(), 'list_published');
             } catch (\Throwable) {
             }
         }
