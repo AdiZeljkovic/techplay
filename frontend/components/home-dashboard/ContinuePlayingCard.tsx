@@ -36,10 +36,8 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                 <>
                     {/* A fixed art height keeps the whole row short — left to
                         stretch, this card sets the height for two others that
-                        have nothing to fill it with. It grows a little on wide
-                        screens because the card now runs the full main column:
-                        142px across 840 is a letterbox, not a key art. */}
-                    <Link href={`/games/${game.slug}`} prefetch={false} className="group relative h-[142px] lg:h-[176px] block overflow-hidden">
+                        have nothing to fill it with. */}
+                    <Link href={`/games/${game.slug}`} prefetch={false} className="group relative h-[142px] block overflow-hidden">
                         {game.cover_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -55,7 +53,11 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                         <span aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
                     </Link>
 
-                    <div className="flex-1 flex items-center justify-between gap-3 px-4 py-3.5 border-t border-white/[0.06]">
+                    {/* Title over button, not beside it. Side by side, the
+                        button took a fixed 130px out of a card that is three
+                        columns wide, and the game left holding the remainder
+                        was "Assassin's Cr…" at every width the page uses. */}
+                    <div className="flex-1 flex flex-col justify-between gap-3 px-4 py-3.5 border-t border-white/[0.06]">
                         <div className="min-w-0">
                             <Link
                                 href={`/games/${game.slug}`}
@@ -70,7 +72,7 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                         <Link
                             href={`/games/${game.slug}`}
                             prefetch={false}
-                            className="shrink-0 inline-flex items-center gap-2 h-10 px-4 rounded-[8px] bg-[var(--accent)] text-white font-display text-[11.5px] font-bold uppercase tracking-[0.08em] hover:brightness-110 transition-[filter] duration-200"
+                            className="shrink-0 inline-flex items-center justify-center gap-2 w-full h-10 px-4 rounded-[8px] bg-[var(--accent)] text-white font-display text-[11.5px] font-bold uppercase tracking-[0.08em] hover:brightness-110 transition-[filter] duration-200"
                         >
                             {/* The link opens the game's page on this site. It
                                 never resumed anything, and a button that

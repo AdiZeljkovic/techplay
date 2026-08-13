@@ -53,16 +53,15 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                 so nothing lined up with the thing above it and the eye had to
                 re-find the column five times on the way down. Every split row
                 is 8/4 now: a main column and a rail, one edge straight through
-                the page. The two bands that break out to full width do it
-                because their contents are grids that need the room (five
-                release cards across, six article cards across), and a
-                deliberate full-width band between two aligned ones reads as
-                punctuation rather than drift.
+                the page. The first band splits its own main column 3/5, which
+                keeps that edge — and the one band that breaks out to full width
+                does it because five release cards across genuinely need the
+                room, which reads as punctuation rather than drift.
 
                 Order is the day, then the reward, then what to do next: what
                 you are in the middle of and what today asks of you → what you
-                have earned and who is around → what is coming and what to
-                start. Gaps are 20px rather than 24, which takes a screenful
+                have earned and what is worth reading → what is coming and what
+                to start. Gaps are 20px rather than 24, which takes a screenful
                 out of the scroll without crowding anything.
             */}
             <div className="container-page py-6 space-y-5">
@@ -96,43 +95,48 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     the other's first row. The hub keeps it, because that is
                     where the streak, the season and the wallet the quest pays
                     into already are. */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start tp-fade-up tp-d2">
-                    <div className="lg:col-span-8 min-w-0 flex flex-col gap-5">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 tp-fade-up tp-d2">
+                    <div className="lg:col-span-3 min-w-0">
                         <ContinuePlayingCard games={data.playing_now} />
+                    </div>
+                    <div className="lg:col-span-5 min-w-0">
                         <FavoriteGamesRail
                             favorites={data.favorites}
                             username={data.user.username}
                             total={data.stats.favorites_count}
                         />
                     </div>
-                    <div className="lg:col-span-4 min-w-0">
+
+                    {/* Today runs deeper than the two beside it — a season, a
+                        streak and a quest list stack up. Rather than pad the
+                        short ones out to meet it or leave a hole under it, it
+                        takes both rows of this band and the achievements rail
+                        fills the space it leaves. self-start keeps it at its
+                        own height instead of stretching an empty panel floor
+                        down to the bottom of the second row. */}
+                    <div className="lg:col-span-4 lg:row-span-2 self-start min-w-0">
                         <DailyHub username={data.user.username} onOpenTab={openTab} />
                     </div>
-                </div>
 
-                {/* ── what you've earned, and who's around ──
-
-                    Daily Missions stood between these two and drew the streak
-                    and the quest list a second time — the Daily Hub in the rail
-                    above carries both, and it is the column the eye is already
-                    in. */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch tp-fade-up tp-d3">
+                    {/* Daily Missions used to stand here and draw the streak
+                        and the quest list a second time — Today carries both,
+                        and it is now right beside this. */}
                     <div className="lg:col-span-8 min-w-0">
                         <RecentAchievementsRail
                             achievements={data.recent_achievements}
                             total={data.stats.achievements_count}
                         />
                     </div>
+                </div>
+
+                {/* ── what is worth reading, and who is around ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch tp-fade-up tp-d3">
+                    <div className="lg:col-span-8 min-w-0">
+                        <LatestArticlesFeed />
+                    </div>
                     <div className="lg:col-span-4 min-w-0">
                         <FriendsOnlineWidget friends={data.friends_online} />
                     </div>
-                </div>
-
-                {/* Six article cards across — this was living in a 7-column
-                    slot, where three per row left each headline about 200px
-                    beside a 104px picture. */}
-                <div className="tp-fade-up tp-d3">
-                    <LatestArticlesFeed />
                 </div>
 
                 {/* ── what to play next ── */}

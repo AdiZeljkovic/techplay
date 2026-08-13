@@ -29,23 +29,20 @@ export default function DashboardSkeleton() {
                     <Block h={58} />
                 </div>
 
-                {/* today: continue playing + favourites | daily hub */}
+                {/* today: continue playing | favourites | daily hub,
+                    with achievements filling the depth Today leaves */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                    <div className="lg:col-span-8 flex flex-col gap-5">
-                        <Block h={276} />
-                        <Block h={290} />
-                    </div>
-                    <Block h={520} className="lg:col-span-4" />
-                </div>
-
-                {/* achievements | friends */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    <Block h={296} className="lg:col-span-3" />
+                    <Block h={296} className="lg:col-span-5" />
+                    <Block h={520} className="lg:col-span-4 lg:row-span-2 self-start" />
                     <Block h={300} className="lg:col-span-8" />
-                    <Block h={300} className="lg:col-span-4" />
                 </div>
 
-                {/* editorial strip */}
-                <Block h={280} />
+                {/* editorial strip | friends */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    <Block h={420} className="lg:col-span-8" />
+                    <Block h={420} className="lg:col-span-4" />
+                </div>
 
                 {/* upcoming */}
                 <Block h={330} />

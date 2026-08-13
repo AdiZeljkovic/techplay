@@ -128,7 +128,7 @@ export default function LatestArticlesFeed() {
             </div>
 
             {isLoading && !articles ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 pt-3 items-stretch">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 items-stretch">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className="h-[89px] rounded-[var(--radius-card)] bg-white/[0.04] animate-pulse" />
                     ))}
@@ -143,7 +143,10 @@ export default function LatestArticlesFeed() {
                     />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 pt-3 items-stretch">
+                // Two across, never three. This panel sits in the page's
+                // eight-column slot, where a third column would leave each
+                // headline about 150px beside a 104px picture.
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3 items-stretch">
                     {articles.slice(0, 6).map((a, i) => (
                         <Row key={a.id} article={a} index={i} />
                     ))}
