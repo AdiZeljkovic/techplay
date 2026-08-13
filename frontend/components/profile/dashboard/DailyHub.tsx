@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Coins, Target, ChevronRight, Radio, X, Loader2, Gem, Rocket } from "lucide-react";
 import SeasonBanner from "@/components/ui/SeasonBanner";
 import Readout from "@/components/ui/Readout";
+import StatIcon from "@/components/home-dashboard/StatIcon";
 import DailyStreakWidget from "./DailyStreakWidget";
 import QuestPanel from "./QuestPanel";
 
@@ -139,15 +140,14 @@ export default function DailyHub({ bounty, username, onOpenTab }: Props) {
                 onClick={() => onOpenTab("progression")}
                 className="group w-full flex items-end justify-between gap-4 px-5 py-4 border-b border-white/[0.07] hover:bg-white/[0.02] transition-colors text-left"
             >
-                <Readout
-                    label="Bounty"
-                    value={bounty}
-                    unit="B"
-                    size="lg"
-                    animate
-                    tone="#fbbf24"
-                    icon={<Coins className="w-3 h-3 text-amber-400" />}
-                />
+                <span className="flex items-center gap-3.5 min-w-0">
+                    {/* The struck token, not a line glyph. It is the only gold
+                        object in the set and the only one that is not crimson,
+                        because currency should not read like every other
+                        number on the page. */}
+                    <StatIcon src="/images/profile/v2-bounty.webp" size={46} />
+                    <Readout label="Bounty" value={bounty} unit="B" size="lg" animate tone="#fbbf24" />
+                </span>
                 <span className="flex items-center gap-1 pb-1.5 shrink-0 font-display text-[10px] font-bold uppercase tracking-widest text-white/35 group-hover:text-[var(--accent-ink)] transition-colors">
                     Rewards <ChevronRight className="w-3.5 h-3.5" />
                 </span>

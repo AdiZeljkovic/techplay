@@ -7,6 +7,7 @@ import axios from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
 import Readout from "@/components/ui/Readout";
+import StatIcon from "@/components/home-dashboard/StatIcon";
 
 interface StreakInfo {
   streak: number;
@@ -57,10 +58,14 @@ export default function DailyStreakWidget() {
       {/* The flame is the state: lit while the streak is alive, dark when it
           is not. The badge counting days on top of an icon that already said
           "streak" was saying it twice. */}
-      <div className="shrink-0 w-11 h-11 rounded-[var(--radius-inner)] flex items-center justify-center"
-        style={{ background: days > 0 ? "var(--accent-soft)" : "var(--fill-2)" }}>
-        <Flame className="w-5 h-5" style={{ color: days > 0 ? "var(--accent)" : "var(--ink-faint)" }} />
-      </div>
+      {/* The flame is the state: lit and breathing while the streak is
+          alive, cold and grey the moment it is not. */}
+      <StatIcon
+        src="/images/profile/v2-streak.webp"
+        size={46}
+        active={days > 0}
+        idle="flicker"
+      />
 
       <div className="flex-1 min-w-0">
         <Readout

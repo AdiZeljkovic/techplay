@@ -300,17 +300,17 @@ export default function ProfileHero({
         {
             label: "Games",
             value: hero.stats.games,
-            icon: <StatIcon src="/images/profile/stat-games.webp" />,
+            icon: <StatIcon src="/images/profile/v2-games.webp" />,
             href: `${base}?tab=library` },
         {
             label: "Completed",
             value: hero.stats.completed,
-            icon: <StatIcon src="/images/profile/stat-completed.webp" />,
+            icon: <StatIcon src="/images/profile/v2-completed.webp" />,
             href: `${base}?tab=library` },
         {
             label: "Reviews",
             value: hero.stats.reviews,
-            icon: <StatIcon src="/images/profile/stat-reviews.webp" />,
+            icon: <StatIcon src="/images/profile/v2-reviews.webp" />,
             // Reviews surface in the overview's activity feed — there is no
             // longer a tab of their own to point at.
             href: base },
@@ -324,7 +324,7 @@ export default function ProfileHero({
                     )}
                 </>
             ),
-            icon: <StatIcon src="/images/profile/stat-achievements.webp" />,
+            icon: <StatIcon src="/images/profile/v2-achievements.webp" />,
             href: `${base}?tab=progression` },
         {
             label: "Streak",
@@ -336,7 +336,7 @@ export default function ProfileHero({
             ),
             icon: (
                 <StatIcon
-                    src="/images/profile/stat-streak.webp"
+                    src="/images/profile/v2-streak.webp"
                     active={hero.streak_days > 0}
                     idle="flicker"
                 />
@@ -348,7 +348,7 @@ export default function ProfileHero({
                     {levelToGoShown.toLocaleString()} <span className="text-[13px] text-white/35">XP to go</span>
                 </span>
             ),
-            icon: <StatIcon src="/images/profile/stat-loot.webp" size={64} idle="pulse" />,
+            icon: <StatIcon src="/images/profile/v2-loot.webp" size={64} idle="pulse" />,
             href: `${base}?tab=stats` },
     ];
 

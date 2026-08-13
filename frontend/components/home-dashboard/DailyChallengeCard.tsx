@@ -6,6 +6,7 @@ import { Clock3, Sparkles, ChevronRight } from "lucide-react";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 import Meter from "@/components/ui/Meter";
+import StatIcon from "./StatIcon";
 import { useCountUp } from "@/hooks/useCountUp";
 import { timeLeft } from "@/lib/timeAgo";
 
@@ -24,8 +25,6 @@ interface Quest {
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as Quest[]);
 
-const HEX = "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
-
 /**
  * The reward, struck as a hex medal. Violet when the quest pays XP
  * (progression), amber when it pays only bounty (currency) — the same colour
@@ -33,35 +32,19 @@ const HEX = "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
  */
 function RewardHex({ amount, paysXp }: { amount: number; paysXp: boolean }) {
     const shown = useCountUp(amount, 1100);
-    const tint = paysXp ? "var(--xp)" : "#f59e0b";
     const bright = paysXp ? "var(--xp-bright)" : "#fbbf24";
 
     return (
         <span className="shrink-0 flex flex-col items-center gap-2">
-            <span className="relative block w-[62px] h-[62px]">
-                {/* a slow halo, so the pay reads as live loot */}
-                <span
-                    aria-hidden
-                    className="tp-pulse-ring absolute inset-0"
-                    style={{ clipPath: HEX, background: tint }}
-                />
-                <span
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{
-                        clipPath: HEX,
-                        background: `linear-gradient(160deg, ${bright} 0%, ${tint} 55%, ${paysXp ? "var(--xp-deep)" : "#b45309"} 100%)`,
-                        filter: `drop-shadow(0 0 14px color-mix(in srgb, ${tint} 55%, transparent))`,
-                    }}
-                />
-                <span aria-hidden className="absolute inset-[3px]" style={{ clipPath: HEX, background: "var(--surface-1)" }} />
-                <span
-                    className="absolute inset-0 flex items-center justify-center font-display text-[14px] font-black"
-                    style={{ color: bright }}
-                >
-                    {paysXp ? "XP" : "B"}
-                </span>
-            </span>
+            {/* The reward, as the object it is. A flat hexagon with the letters
+                XP printed on it was a label; the cell and the token are the
+                same two things the rest of the profile already uses to mean
+                progression and currency. */}
+            <StatIcon
+                src={paysXp ? "/images/profile/v2-xp.webp" : "/images/profile/v2-bounty.webp"}
+                size={62}
+                idle="pulse"
+            />
             <span className="font-display text-[17px] font-black tabular-nums leading-none" style={{ color: bright }}>
                 {shown}
             </span>

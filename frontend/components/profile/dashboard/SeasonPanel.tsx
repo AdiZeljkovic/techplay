@@ -4,6 +4,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Flame, Zap, Coins } from "lucide-react";
 import Readout from "@/components/ui/Readout";
+import StatIcon from "@/components/home-dashboard/StatIcon";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
 
@@ -64,6 +65,10 @@ export default function SeasonPanel() {
             />
 
             <div className="relative z-10 flex flex-wrap items-start gap-x-6 gap-y-4">
+                {/* The dial: how much of the season has gone, as an object
+                    rather than a word. */}
+                <StatIcon src="/images/profile/v2-season.webp" size={64} idle="pulse" className="hidden sm:block mt-0.5" />
+
                 <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-2 font-display text-[9.5px] font-black uppercase tracking-[0.2em] text-[var(--accent)]">
                         <Flame className="w-3.5 h-3.5" /> Current season
