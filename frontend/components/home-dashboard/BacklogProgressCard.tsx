@@ -17,7 +17,13 @@ export default function BacklogProgressCard({
 }) {
     const total = stats.playing_count + stats.backlog_count + stats.completed_count;
     const percent = total > 0 ? Math.round((stats.completed_count / total) * 100) : 0;
-    const isEmpty = total === 0;
+
+    // This panel charts a backlog being cleared. The guard used to ask whether
+    // the whole library was empty, so somebody with one game in progress and
+    // nothing else got the full layout with three zeros in it and a void
+    // where the suggestion goes. Nothing to clear and nothing cleared is the
+    // condition that actually has nothing to draw.
+    const isEmpty = stats.backlog_count === 0 && stats.completed_count === 0;
 
     // the ring draws and the counters climb together
     const ringValue = useCountUp(percent, 1100);
@@ -67,6 +73,44 @@ export default function BacklogProgressCard({
                     <span className="font-display text-[20px] font-black text-[var(--accent)] tabular-nums leading-none">{ringValue}%</span>
                     <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/40">Cleared</span>
                 </RingMeter>
+            </div>
+
+            {/* Where the library stands, which is the one thing this panel
+                always has to say. Without it, a member with no suggestion
+                waiting got a row of counters and then empty panel down to the
+                button. */}
+            <div className="mt-4">
+                <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2.5">
+                    Where the shelf stands
+                </p>
+                <div className="flex h-[10px] rounded-full overflow-hidden bg-[var(--track)]">
+                    {([
+                        ["Playing", stats.playing_count, "#34d399"],
+                        ["Backlog", stats.backlog_count, "#60a5fa"],
+                        ["Completed", stats.completed_count, "#22c55e"],
+                    ] as const).map(([label, count, tone]) =>
+                        count > 0 ? (
+                            <span
+                                key={label}
+                                title={`${label}: ${count}`}
+                                style={{ width: `${(count / Math.max(1, total)) * 100}%`, background: tone }}
+                            />
+                        ) : null
+                    )}
+                </div>
+                <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                    {([
+                        ["Playing", stats.playing_count, "#34d399"],
+                        ["Backlog", stats.backlog_count, "#60a5fa"],
+                        ["Completed", stats.completed_count, "#22c55e"],
+                    ] as const).map(([label, count, tone]) => (
+                        <span key={label} className="inline-flex items-center gap-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
+                            <span aria-hidden className="w-1.5 h-1.5 rounded-full" style={{ background: tone }} />
+                            {label}
+                            <span className="tabular-nums text-white/60">{count}</span>
+                        </span>
+                    ))}
+                </div>
             </div>
 
             {/* Suggested next from the backlog */}

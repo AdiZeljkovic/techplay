@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { Gamepad2, Sparkles } from "lucide-react";
+import { Gamepad2, Sparkles, Star } from "lucide-react";
 import axios from "@/lib/axios";
 import MatchRing from "./MatchRing";
 import Panel from "@/components/ui/Panel";
@@ -13,6 +13,7 @@ interface Recommendation {
     slug: string;
     name: string;
     cover_url: string | null;
+    rating: number | null;
     match_percent: number;
     matched_genres: string[];
 }
@@ -24,12 +25,14 @@ function Row({
     name,
     image,
     genres,
+    rating,
     match,
 }: {
     slug: string;
     name: string;
     image: string | null;
     genres: string[];
+    rating?: number | null;
     match?: number;
 }) {
     return (
@@ -49,8 +52,18 @@ function Row({
 
             <div className="min-w-0 flex-1">
                 <p className="font-display text-[14px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{name}</p>
-                <p className="mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 line-clamp-1">
-                    {genres.length ? genres.join(" · ") : "From your backlog"}
+                {/* matched_genres is the overlap with your own profile, so it
+                    is identical on every row — four picks all reading
+                    "ACTION · SIMULATION" looked like the list had failed. The
+                    score leads, because it is the thing that differs. */}
+                <p className="mt-1 flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 line-clamp-1">
+                    {typeof rating === "number" && rating > 0 && (
+                        <span className="inline-flex items-center gap-1 text-amber-400/90">
+                            <Star className="w-3 h-3 fill-current" />
+                            <span className="tabular-nums">{rating.toFixed(1)}</span>
+                        </span>
+                    )}
+                    <span className="truncate">{genres.length ? genres[0] : "From your backlog"}</span>
                 </p>
             </div>
 
@@ -93,7 +106,7 @@ export default function RecommendedNext({ games }: { games: DashboardGameCover[]
                 <div className="flex-1 divide-y divide-white/[0.07]">
                     {hasRecs
                         ? recs!.slice(0, 4).map((r) => (
-                            <Row key={r.slug} slug={r.slug} name={r.name} image={r.cover_url} genres={r.matched_genres} match={r.match_percent} />
+                            <Row key={r.slug} slug={r.slug} name={r.name} image={r.cover_url} genres={r.matched_genres} rating={r.rating} match={r.match_percent} />
                         ))
                         : games.slice(0, 4).map((g) => (
                             <Row key={g.slug} slug={g.slug} name={g.name} image={g.cover_url} genres={[]} />

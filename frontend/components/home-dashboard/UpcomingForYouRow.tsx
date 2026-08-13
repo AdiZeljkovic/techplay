@@ -27,20 +27,30 @@ function releaseLabel(released: string): string {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-/** Days until launch, split so the number can carry the tile. */
-function countdown(released: string): { value: string; unit: string; imminent: boolean } | null {
+/**
+ * Days until launch, as a badge rather than an arithmetic result.
+ *
+ * The old one printed "0 TODAY" and "1 WEEKS", because it always split into a
+ * number and a unit even when the number was the wrong thing to say. A launch
+ * happening today is not a quantity, and one week is not weeks.
+ */
+function countdown(released: string): { value: string; unit: string | null; imminent: boolean } | null {
     const date = new Date(released);
     if (Number.isNaN(date.getTime())) return null;
 
     const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     const days = Math.round((startOfDay(date) - startOfDay(new Date())) / 86_400_000);
 
-    if (days < 0) return { value: "OUT", unit: "now", imminent: false };
-    if (days === 0) return { value: "0", unit: "today", imminent: true };
-    if (days === 1) return { value: "1", unit: "day", imminent: true };
+    if (days < 0) return { value: "Out", unit: "now", imminent: false };
+    if (days === 0) return { value: "Today", unit: null, imminent: true };
+    if (days === 1) return { value: "Tomorrow", unit: null, imminent: true };
     if (days < 7) return { value: String(days), unit: "days", imminent: true };
-    if (days < 30) return { value: String(Math.round(days / 7)), unit: "weeks", imminent: false };
-    return { value: String(Math.round(days / 30)), unit: "months", imminent: false };
+
+    const weeks = Math.round(days / 7);
+    if (days < 30) return { value: String(weeks), unit: weeks === 1 ? "week" : "weeks", imminent: false };
+
+    const months = Math.round(days / 30);
+    return { value: String(months), unit: months === 1 ? "month" : "months", imminent: false };
 }
 
 function shortPlatforms(platforms?: CalendarGame["platforms"]): string {
@@ -115,15 +125,20 @@ export default function UpcomingForYouRow() {
                                     const c = g.released ? countdown(g.released) : null;
                                     if (!c) return null;
                                     return (
+                                        // A word-shaped badge for a word, a
+                                        // number-shaped one for a number —
+                                        // rather than one tile forcing both.
                                         <span
-                                            className={`absolute top-2 left-2 flex flex-col items-center justify-center w-[46px] py-1.5 rounded-[var(--radius-inner)] backdrop-blur-md leading-none ${
+                                            className={`absolute top-2 left-2 inline-flex items-baseline gap-1 h-[26px] px-2.5 rounded-full backdrop-blur-md leading-none ${
                                                 c.imminent
                                                     ? "bg-[var(--accent)] text-white shadow-[var(--glow-accent)]"
-                                                    : "bg-[color-mix(in_srgb,var(--surface-0)_82%,transparent)] border border-[var(--line-strong)] text-[var(--ink-hi)]"
+                                                    : "bg-[color-mix(in_srgb,var(--surface-0)_78%,transparent)] border border-[var(--line-strong)] text-white/85"
                                             }`}
                                         >
-                                            <span className="font-display text-[16px] font-black tabular-nums">{c.value}</span>
-                                            <span className="mt-0.5 font-display text-[8px] font-bold uppercase tracking-[0.14em] opacity-80">{c.unit}</span>
+                                            <span className="self-center font-display text-[11px] font-black uppercase tracking-[0.1em] tabular-nums">{c.value}</span>
+                                            {c.unit && (
+                                                <span className="self-center font-display text-[9px] font-bold uppercase tracking-[0.12em] opacity-70">{c.unit}</span>
+                                            )}
                                         </span>
                                     );
                                 })()}
