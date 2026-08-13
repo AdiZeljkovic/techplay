@@ -14,10 +14,8 @@ import UpcomingForYouRow from "./UpcomingForYouRow";
 import RecommendedNext from "./RecommendedNext";
 import BacklogProgressCard from "./BacklogProgressCard";
 import OnboardingCard from "./OnboardingCard";
-import DailyMissions from "./DailyMissions";
 import DailyHub from "@/components/profile/dashboard/DailyHub";
 import ProfileChecklist from "@/components/profile/dashboard/ProfileChecklist";
-import FriendActivityFeed from "@/components/profile/FriendActivityFeed";
 import { useRouter } from "next/navigation";
 import { heroFromDashboard } from "@/lib/hero";
 import type { DashboardData } from "@/lib/types/dashboard";
@@ -98,19 +96,20 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     </div>
                 </div>
 
-                {/* ── the second triptych: what you've earned, what today asks
-                    of you, who's around ── */}
+                {/* ── what you've earned, and who's around ──
+
+                    Daily Missions stood between these two and drew the streak
+                    and the quest list a second time — the Daily Hub in the
+                    sidebar carries both, and it is the column the eye is
+                    already in. */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch tp-fade-up tp-d3">
-                    <div className="lg:col-span-5 min-w-0">
+                    <div className="lg:col-span-8 min-w-0">
                         <RecentAchievementsRail
                             achievements={data.recent_achievements}
                             total={data.stats.achievements_count}
                         />
                     </div>
-                    <div id="daily-missions" className="lg:col-span-4 min-w-0 scroll-mt-24">
-                        <DailyMissions streak={data.streak} />
-                    </div>
-                    <div className="lg:col-span-3 min-w-0">
+                    <div className="lg:col-span-4 min-w-0">
                         <FriendsOnlineWidget friends={data.friends_online} />
                     </div>
                 </div>
@@ -126,10 +125,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
 
                     <div className="tp-fade-up tp-d4">
                         <UpcomingForYouRow />
-                    </div>
-
-                    <div className="tp-fade-up tp-d5">
-                        <FriendActivityFeed />
                     </div>
 
                     {hasGames && (

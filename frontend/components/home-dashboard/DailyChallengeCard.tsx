@@ -139,7 +139,7 @@ export default function DailyChallengeCard() {
             )}
 
             <Link
-                href="#daily-missions"
+                href="/profile/me?tab=progression"
                 className="mt-4 inline-flex items-center justify-center gap-1.5 h-10 w-full rounded-[8px] border border-white/[0.12] bg-white/[0.04] font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white hover:bg-white/[0.09] hover:border-white/25 transition-colors duration-300"
             >
                 View all challenges <ChevronRight className="w-4 h-4" />
