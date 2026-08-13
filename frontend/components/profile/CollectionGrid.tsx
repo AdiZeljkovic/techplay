@@ -9,8 +9,9 @@ import toast from "react-hot-toast";
 import { differenceInDays, parseISO } from "date-fns";
 import {
     Library, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, ChevronDown,
-    Trophy, Layers, Bookmark, NotebookPen, ChevronDown as ChevronMore,
+    NotebookPen, ChevronDown as ChevronMore,
 } from "lucide-react";
+import { ShelfMark, FinishMark, PileMark, WishMark } from "./ShelfMarks";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -379,8 +380,8 @@ function StatCell({
                 tell a trophy from a bookmark. Line art at a light stroke, in
                 the reading's own colour, at a size you aim at rather than
                 decorate with. */}
-            <span className="shrink-0 w-9 h-9 flex items-center justify-center" style={{ color: tint }}>
-                <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.4} />
+            <span className="shrink-0 w-10 h-10 flex items-center justify-center" style={{ color: tint }}>
+                <Icon className="w-[27px] h-[27px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.6} />
             </span>
             <span className="min-w-0">
                 <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
@@ -430,15 +431,15 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
                 style={{ background: "var(--line)" }}
             >
                 <StatCell
-                    icon={Library}
+                    icon={ShelfMark}
                     label="Total games"
                     value={total}
                     tint="var(--accent-ink)"
                     sub={added > 0 ? <span className="font-display text-[11px] font-bold tabular-nums text-emerald-400">+{added} this month</span> : null}
                 />
-                <StatCell icon={Trophy} label="Completed" value={completed} tint={STATUS.completed.color} sub={pct(share(completed))} />
-                <StatCell icon={Layers} label="Backlog" value={backlog} tint={STATUS.backlog.color} sub={pct(share(backlog))} />
-                <StatCell icon={Bookmark} label="Wishlist" value={wishlist} tint={STATUS.wishlist.color} sub={pct(share(wishlist))} />
+                <StatCell icon={FinishMark} label="Completed" value={completed} tint={STATUS.completed.color} sub={pct(share(completed))} />
+                <StatCell icon={PileMark} label="Backlog" value={backlog} tint={STATUS.backlog.color} sub={pct(share(backlog))} />
+                <StatCell icon={WishMark} label="Wishlist" value={wishlist} tint={STATUS.wishlist.color} sub={pct(share(wishlist))} />
 
                 {/* the one figure that is a verdict, not a count */}
                 <div className="flex items-center gap-3.5 px-5 py-4 col-span-2 md:col-span-3 lg:col-span-1" style={{ background: "var(--surface-2)" }}>
