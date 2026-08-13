@@ -269,7 +269,7 @@ export default function TrophyCase({ isOwnProfile, initial, fallback = [] }: Pro
                 </h2>
 
                 <div className="flex items-center gap-3">
-                    <Link href="?tab=progression" className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-[var(--accent)] transition-colors">
+                    <Link href="?tab=achievements" className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-[var(--accent)] transition-colors">
                         All achievements
                     </Link>
                     {isOwnProfile && !editing && (

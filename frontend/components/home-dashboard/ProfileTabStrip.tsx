@@ -6,15 +6,17 @@ import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
 /**
  * The profile's section bar.
  *
- * Every section is on it. Five fit the container with room to spare, and an
- * overflow menu that never overflows is a menu you have to open to find out it
- * was pointless. Narrow screens scroll it.
+ * Every section is on it, and there are seven now — an overflow menu that
+ * hides two of them is a menu you have to open to find out what it was
+ * hiding. The bay padding is tuned so the full set clears a desktop
+ * container; below that it scrolls, which is honest about there being more
+ * to the right.
  *
  * The marks are drawn the way the Community and Tools menus draw theirs: line
  * art at a light stroke, no plate under them, sized large enough to be a mark
  * rather than a decoration beside a word. A 17px glyph at a heavy stroke next
- * to a 12px label is a bullet point; at 22px and 1.5 it is the thing you aim
- * for.
+ * to a 12px label is a bullet point; at twenty-odd and 1.5 it is the thing you
+ * aim for.
  *
  * The active section lights from its floor, the same gesture the record panel
  * above uses for its bays — so the two surfaces read as one instrument stack
@@ -78,9 +80,9 @@ export default function ProfileTabStrip({
                                 }}
                             />
 
-                            <span className="relative flex items-center gap-3">
+                            <span className="relative flex items-center gap-2.5 lg:gap-3">
                                 <Icon
-                                    className={`w-[22px] h-[22px] shrink-0 transition-[color,transform] duration-300 group-hover/tab:scale-110 ${
+                                    className={`w-[20px] h-[20px] xl:w-[22px] xl:h-[22px] shrink-0 transition-[color,transform] duration-300 group-hover/tab:scale-110 ${
                                         active ? "text-[var(--accent-ink)]" : "text-white/35 group-hover/tab:text-[var(--accent-ink)]"
                                     }`}
                                     strokeWidth={1.5}
@@ -96,7 +98,7 @@ export default function ProfileTabStrip({
                         </>
                     );
 
-                    const shell = "group/tab relative shrink-0 flex items-center h-[62px] px-4 md:px-6";
+                    const shell = "group/tab relative shrink-0 flex items-center h-[62px] px-4 lg:px-5 xl:px-6";
 
                     return active ? (
                         <span key={id} aria-current="page" className={shell}>{inner}</span>
@@ -113,7 +115,7 @@ export default function ProfileTabStrip({
                     send one for anybody else. */}
                 {isOwnProfile && bounty !== null && (
                     <Link
-                        href={`${base}?tab=progression`}
+                        href={`${base}?tab=rewards`}
                         scroll={false}
                         className="group/wallet ml-auto shrink-0 hidden sm:flex items-center gap-2.5 pl-5 pr-5 border-l border-white/[0.04] hover:bg-white/[0.02] transition-colors"
                     >

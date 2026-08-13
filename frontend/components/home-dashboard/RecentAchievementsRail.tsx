@@ -100,7 +100,7 @@ export default function RecentAchievementsRail({
     return (
         <Panel
             title="Recent Achievements"
-            action={{ label: "All achievements", href: "/profile/me?tab=progression" }}
+            action={{ label: "All achievements", href: "/profile/me?tab=achievements" }}
             className="h-full flex flex-col"
             bodyClassName="p-4 flex-1 flex flex-col"
         >
@@ -109,7 +109,7 @@ export default function RecentAchievementsRail({
                     variant="compact"
                     title="No achievements unlocked yet"
                     body="Add games, keep your streak, and publish reviews — trophies follow."
-                    action={{ label: "See what's unlockable", href: "/profile/me?tab=progression" }}
+                    action={{ label: "See what's unlockable", href: "/profile/me?tab=achievements" }}
                 />
             ) : (
                 <>

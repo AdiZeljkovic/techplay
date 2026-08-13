@@ -1,10 +1,10 @@
-import { UserRound, Library, Award, ListOrdered, Dna, ShoppingBag, type LucideIcon } from "lucide-react";
+import { UserRound, Library, Flame, Trophy, ListOrdered, Dna, ShoppingBag, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
  * page's tab router and any deep link that wants to name a section.
  */
-export type ProfileTab = "overview" | "library" | "lists" | "progression" | "rewards" | "stats";
+export type ProfileTab = "overview" | "library" | "lists" | "progression" | "achievements" | "rewards" | "stats";
 
 /**
  * Sections that used to exist on their own, and where they went.
@@ -14,7 +14,6 @@ export type ProfileTab = "overview" | "library" | "lists" | "progression" | "rew
  * mistake to absorb, not the reader's.
  */
 export const LEGACY_TABS: Record<string, ProfileTab> = {
-    achievements: "progression",
     collection: "library",
     journal: "library",
     // The activity tab folded into the overview a while back.
@@ -34,7 +33,11 @@ export const PROFILE_TABS: {
     // Ordered, not a checklist: every list type on the site is a ranking —
     // Top 10, Top 25, Top 100 — and ticks would promise a to-do.
     { id: "lists", label: "Lists", icon: ListOrdered },
-    { id: "progression", label: "Progression", icon: Award },
+    // The season and its quests: the run you are on. Achievements are what
+    // the run leaves behind, which is a different question and a different
+    // visit — one is a to-do list with a deadline, the other a cabinet.
+    { id: "progression", label: "Progression", icon: Flame },
+    { id: "achievements", label: "Achievements", icon: Trophy },
     // Its own destination rather than the third lens inside Progression: it is
     // the only part of the loop you *do* something in, and it was the one part
     // a visitor could never see, so it kept a switch position that was empty

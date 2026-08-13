@@ -385,7 +385,7 @@ export default function ProfileHero({
                 </>
             ),
             icon: <StatIcon src="/images/profile/v2-achievements.webp" />,
-            href: `${base}?tab=progression` },
+            href: `${base}?tab=achievements` },
         {
             label: "Streak",
             value: (

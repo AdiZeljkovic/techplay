@@ -152,7 +152,7 @@ export default function RewardFeed() {
                         )}
 
                         <Link
-                            href="/profile/me?tab=progression"
+                            href="/profile/me?tab=achievements"
                             onClick={() => setMoment(null)}
                             className="btn-command mt-6 inline-flex items-center justify-center w-full h-11 bg-[var(--accent)] hover:brightness-110 font-display text-[11px] font-black uppercase tracking-[0.14em] text-white transition-[filter]"
                         >

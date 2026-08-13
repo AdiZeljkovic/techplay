@@ -9,6 +9,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { User, Gamepad2, Trophy, ListChecks, Flame } from "lucide-react";
 import toast from "react-hot-toast";
 import ProgressionTab from "@/components/profile/ProgressionTab";
+import AchievementsTab from "@/components/profile/AchievementsTab";
+import SectionCard from "@/components/profile/dashboard/SectionCard";
+import SteamAchievements from "@/components/profile/dashboard/SteamAchievements";
 import RewardsStore from "@/components/profile/RewardsStore";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHero from "@/components/home-dashboard/ProfileHero";
@@ -241,6 +244,17 @@ function ProfilePageInner() {
 
                     {activeTab === "progression" && (
                         <ProgressionTab username={userData.username} isOwnProfile={isOwnProfile} />
+                    )}
+
+                    {activeTab === "achievements" && (
+                        <div className="space-y-5">
+                            <AchievementsTab username={userData.username} />
+                            {/* Platform unlocks under the same roof as ours,
+                                rather than in a section of their own. */}
+                            <SectionCard title="Steam Achievements">
+                                <SteamAchievements username={userData.username} />
+                            </SectionCard>
+                        </div>
                     )}
 
                     {activeTab === "rewards" && isOwnProfile && (

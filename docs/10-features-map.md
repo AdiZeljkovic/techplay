@@ -598,18 +598,21 @@ sistem da bi ga primijetio.
 **Ispravka 13.08.2026 — pet sekcija na jednom skrolbaru.** Sve četiri odjednom
 nisu bile jedna stranica nego pet koje dijele skrolbar, i svaka je dohvaćala
 podatke na mount — otvaranje taba je ispaljivalo osam zahtjeva prije nego što
-si išta pogledao. Progression sada ima **`Segmented` prekidač s dva objektiva**
-(Season, Achievements) i učitava samo onaj u kojem jesi. Posjetilac slijeće na
-Achievements — sezona je ista za sve.
+si išta pogledao. Sve troje su sada **zasebni tabovi**, jer su to tri
+različita pitanja postavljena u tri različite posjete:
 
-- **Season** — `SeasonPanel` + `QuestBoard` (samo vlasnik).
-- **Achievements** — `AchievementsTab` + Steam dostignuća.
+- **Progression** — `SeasonPanel` + `QuestBoard` (samo vlasnik). Trka na kojoj
+  jesi, s rokom.
+- **Achievements** — `AchievementsTab` + Steam dostignuća. Vitrina onoga što
+  je trka ostavila.
+- **Rewards** — `RewardsStore`, `ownOnly: true`. Jedini dio petlje u kojem se
+  nešto *radi*, i jedini koji posjetilac nikad ne vidi.
 
-**Rewards je opet zaseban tab** (`ownOnly: true`). Kao objektiv unutar
-Progressiona držao je poziciju prekidača koja je za pola posjetilaca prazna, a
-to je jedini dio petlje u kojem se nešto *radi*. `LEGACY_TABS` više ne
-preusmjerava `?tab=rewards`; posjetilac koji otvori taj link na tuđem profilu
-slijeće na Overview umjesto na traku bez sadržaja ispod.
+`PROFILE_TABS` ima sedam ulaza (šest za posjetioca). `LEGACY_TABS` više ne
+preusmjerava ni `?tab=achievements` ni `?tab=rewards` — oba su stvarni tabovi.
+Posjetilac koji otvori `?tab=rewards` na tuđem profilu slijeće na Overview
+umjesto na traku bez sadržaja ispod. Novčanik u traci vodi na `?tab=rewards`
+(tamo se troši), a svi linkovi „All achievements" na `?tab=achievements`.
 
 `SeasonPanel` je prerađen: traka je **segmentirana po sedmicama sezone**
 (popunjene iza, prazne ispred, tekuća upaljena i viša), krajevi nose datume
