@@ -1,4 +1,4 @@
-import { User, Library, Award, List, Dna, type LucideIcon } from "lucide-react";
+import { UserRound, Library, Award, ListOrdered, Dna, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
@@ -31,9 +31,11 @@ export const PROFILE_TABS: {
      *  Progression, which shows its public half to everyone. */
     ownOnly?: boolean;
 }[] = [
-    { id: "overview", label: "Overview", icon: User },
+    { id: "overview", label: "Overview", icon: UserRound },
     { id: "library", label: "Library", icon: Library },
-    { id: "lists", label: "Lists", icon: List },
+    // Ordered, not a checklist: every list type on the site is a ranking —
+    // Top 10, Top 25, Top 100 — and ticks would promise a to-do.
+    { id: "lists", label: "Lists", icon: ListOrdered },
     { id: "progression", label: "Progression", icon: Award },
     { id: "stats", label: "Gamer DNA", icon: Dna },
 ];
