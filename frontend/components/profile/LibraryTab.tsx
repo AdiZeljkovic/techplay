@@ -46,7 +46,18 @@ export default function LibraryTab({ username, isOwnProfile }: Props) {
 
     return (
         <div className="space-y-5">
-            <nav className="flex flex-wrap items-center gap-1.5" aria-label="Library views">
+            {/* One switch, not three loose buttons.
+                These pick a lens on the same set of games — a thing with one
+                setting at a time — and three separated pills say "three
+                filters, choose any" instead. Housed together in a single track
+                the control reads as what it is, and it stops competing with
+                the status chips further down the page, which really are loose
+                pills because they really are a filter. */}
+            <nav
+                className="inline-flex items-center p-1 rounded-[10px] border"
+                style={{ background: "var(--surface-2)", borderColor: "var(--line-strong)" }}
+                aria-label="Library views"
+            >
                 {VIEWS.map(({ id, label, icon: Icon, hint }) => {
                     const on = view === id;
 
@@ -56,10 +67,10 @@ export default function LibraryTab({ username, isOwnProfile }: Props) {
                             onClick={() => setView(id)}
                             aria-pressed={on}
                             title={hint}
-                            className={`inline-flex items-center gap-2 h-9 px-4 rounded-full font-display text-[10.5px] font-bold uppercase tracking-[0.12em] border transition-colors duration-300 ${
+                            className={`inline-flex items-center gap-2 h-8 px-3.5 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.12em] transition-colors duration-300 ${
                                 on
-                                    ? "bg-[var(--accent)] border-transparent text-white"
-                                    : "bg-white/[0.03] border-white/[0.09] text-white/45 hover:text-white hover:border-white/25"
+                                    ? "bg-[var(--accent)] text-white shadow-[0_2px_10px_color-mix(in_srgb,var(--accent)_35%,transparent)]"
+                                    : "text-white/40 hover:text-white hover:bg-white/[0.05]"
                             }`}
                         >
                             <Icon className="w-3.5 h-3.5" /> {label}

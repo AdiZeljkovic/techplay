@@ -112,7 +112,7 @@
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
-| GET | `/users/{username}/collection` | GameCollectionController::index | - | Javna kolekcija |
+| GET | `/users/{username}/collection` | GameCollectionController::index | - | Javna kolekcija. Query: `status`, `favorite`, `search` (ILIKE po imenu igre), `sort` = recent\|added\|name\|hours\|rating\|released, `page`, `page_size` (max 60) |
 | GET | `/collection/games/{slug}` | GameCollectionController::show | ✓ | Status igre u kolekciji |
 | PUT | `/collection/games/{slug}` | GameCollectionController::upsert | ✓ | Dodaj/ažuriraj igru |
 | DELETE | `/collection/games/{slug}` | GameCollectionController::destroy | ✓ | Ukloni iz kolekcije |

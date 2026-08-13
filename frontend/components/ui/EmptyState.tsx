@@ -9,7 +9,8 @@ interface EmptyStateProps {
     icon?: ReactNode;
     title: string;
     body?: string;
-    action?: { label: string; href: string; icon?: ReactNode };
+    /** A way out. Some empty states lead somewhere, others undo what emptied them. */
+    action?: { label: string; icon?: ReactNode } & ({ href: string; onClick?: never } | { onClick: () => void; href?: never });
     className?: string;
 }
 
@@ -42,15 +43,15 @@ export default function EmptyState({ variant = "full", icon, title, body, action
             )}
             <p className={cn("font-display font-bold text-white", variant === "full" ? "text-[13px]" : "text-[12px]")}>{title}</p>
             {body && <p className="text-[11px] text-white/35 max-w-[260px] -mt-1">{body}</p>}
-            {action && (
-                <Link
-                    href={action.href}
-                    className="mt-1 inline-flex items-center gap-1.5 px-4 h-9 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300"
-                >
-                    {action.icon}
-                    {action.label}
-                </Link>
-            )}
+            {action && (() => {
+                const look = "mt-1 inline-flex items-center gap-1.5 px-4 h-9 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300";
+
+                return action.href ? (
+                    <Link href={action.href} className={look}>{action.icon}{action.label}</Link>
+                ) : (
+                    <button onClick={action.onClick} className={look}>{action.icon}{action.label}</button>
+                );
+            })()}
         </div>
     );
 }

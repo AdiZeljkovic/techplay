@@ -39,17 +39,21 @@ class GameCollectionController extends Controller
         $status = $request->query('status');
         $favorite = $request->boolean('favorite');
         $pageSize = min(60, max(10, (int) $request->query('page_size', 24)));
-
-        // 'added' powers the Recently Added rail; the shelf itself still leads
-        // with whatever you touched last.
-        $sort = $request->query('sort') === 'added' ? 'created_at' : 'updated_at';
+        $search = trim((string) $request->query('search', ''));
 
         $q = UserGame::query()
             ->where('user_id', $user->id)
             ->when($status && in_array($status, UserGame::STATUSES), fn ($q) => $q->where('status', $status))
             ->when($favorite, fn ($q) => $q->where('is_favorite', true))
-            ->with(['game:id,slug,name,released,rating,cover_url,platforms,genres'])
-            ->orderByDesc($sort);
+            // A shelf you cannot search is fine at twenty games and useless at
+            // four hundred, which is what one Steam import produces.
+            ->when($search !== '', fn ($q) => $q->whereHas(
+                'game',
+                fn ($g) => $g->where('name', 'ilike', '%'.str_replace('%', '\%', $search).'%')
+            ))
+            ->with(['game:id,slug,name,released,rating,cover_url,platforms,genres']);
+
+        $this->applySort($q, (string) $request->query('sort', 'recent'));
 
         $items = $q->paginate($pageSize);
 
@@ -390,6 +394,30 @@ class GameCollectionController extends Controller
         }
 
         return $this->success(null, 'Removed from collection');
+    }
+
+    /**
+     * Order the shelf.
+     *
+     * Only 'added' existed, and only because the Recently Added rail needed
+     * it — every other view got "whatever you touched last", which is the one
+     * order a person can neither predict nor ask for. The four that sort on
+     * the game rather than the entry join rather than use whereHas, because a
+     * subquery cannot be ordered by.
+     */
+    private function applySort($q, string $sort): void
+    {
+        $joined = fn () => $q->leftJoin('games', 'games.id', '=', 'user_games.game_id')
+            ->select('user_games.*');
+
+        match ($sort) {
+            'added' => $q->orderByDesc('user_games.created_at'),
+            'hours' => $q->orderByDesc('user_games.hours_played')->orderByDesc('user_games.updated_at'),
+            'name' => $joined()->orderBy('games.name'),
+            'rating' => $joined()->orderByRaw('games.rating DESC NULLS LAST'),
+            'released' => $joined()->orderByRaw('games.released DESC NULLS LAST'),
+            default => $q->orderByDesc('user_games.updated_at'),
+        };
     }
 
     private function present(UserGame $ug): array

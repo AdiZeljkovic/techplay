@@ -37,6 +37,37 @@ const STATUS: Record<string, { label: string; color: string }> = {
 
 const STATUS_OPTIONS: CollectionStatus[] = ["playing", "backlog", "completed", "wishlist", "dropped"];
 
+/** How the shelf can be ordered. The API keeps the same names. */
+const SORTS = [
+    { id: "recent", label: "Last touched" },
+    { id: "added", label: "Recently added" },
+    { id: "name", label: "Title A–Z" },
+    { id: "hours", label: "Most played" },
+    { id: "rating", label: "Highest rated" },
+    { id: "released", label: "Newest release" },
+] as const;
+
+type SortId = (typeof SORTS)[number]["id"];
+
+/** Past this many games, typing beats scrolling — so the search field appears. */
+const SEARCHABLE_FROM = 8;
+
+/** The shelf's one grid. The featured tile spans two of these cells each way. */
+const SHELF_GRID = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3";
+
+/** Holds a value still until it stops changing — one request per word, not per key. */
+function useDebounced<T>(value: T, ms: number): T {
+    const [held, setHeld] = useState(value);
+
+    useEffect(() => {
+        const t = setTimeout(() => setHeld(value), ms);
+
+        return () => clearTimeout(t);
+    }, [value, ms]);
+
+    return held;
+}
+
 /** Filters, plus which stat on the profile payload counts them. */
 const FILTERS: { id: string; label: string; countKey?: keyof NonNullable<UserProfile["stats"]> }[] = [
     { id: "all", label: "All", countKey: "games_count" },
@@ -339,7 +370,7 @@ function StatCell({
     const shown = useCountUp(value, 900);
 
     return (
-        <span className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
             <span
                 className="shrink-0 w-9 h-9 rounded-[9px] flex items-center justify-center"
                 style={{ background: `${tint}1f`, color: tint }}
@@ -355,7 +386,7 @@ function StatCell({
                     {sub}
                 </span>
             </span>
-        </span>
+        </div>
     );
 }
 
@@ -376,14 +407,23 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
 
     return (
         <div
-            className="rounded-[var(--radius-panel)] border px-5 py-4 mb-4 overflow-x-auto scrollbar-none"
+            className="rounded-[var(--radius-panel)] border overflow-hidden"
             style={{
-                background: "var(--surface-2)",
                 borderColor: "var(--line-strong)",
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
             }}
         >
-            <div className="flex items-center gap-6 md:gap-0 md:justify-between min-w-max md:min-w-0">
+            {/* Five equal bays, hairlines between them.
+                It used to be one flex row with justify-between, which on a
+                wide monitor pushed the five readings to the far corners of
+                nineteen hundred pixels with a dividing rule stranded in the
+                middle of each gap. The gap-px trick draws the rules: the grid
+                shows through between cells that each paint their own face, so
+                the seams stay correct however the cells wrap. */}
+            <div
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px"
+                style={{ background: "var(--line)" }}
+            >
                 <StatCell
                     icon={<Library className="w-4 h-4" />}
                     label="Total games"
@@ -391,20 +431,16 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
                     tint="var(--accent)"
                     sub={added > 0 ? <span className="font-display text-[11px] font-bold tabular-nums text-emerald-400">+{added} this month</span> : null}
                 />
-                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
                 <StatCell icon={<Trophy className="w-4 h-4" />} label="Completed" value={completed} tint={STATUS.completed.color} sub={pct(share(completed))} />
-                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
                 <StatCell icon={<Layers className="w-4 h-4" />} label="Backlog" value={backlog} tint={STATUS.backlog.color} sub={pct(share(backlog))} />
-                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
                 <StatCell icon={<Bookmark className="w-4 h-4" />} label="Wishlist" value={wishlist} tint={STATUS.wishlist.color} sub={pct(share(wishlist))} />
-                <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />
 
                 {/* the one figure that is a verdict, not a count */}
-                <span className="flex items-center gap-3.5 shrink-0">
+                <div className="flex items-center gap-3.5 px-5 py-4 col-span-2 md:col-span-3 lg:col-span-1" style={{ background: "var(--surface-2)" }}>
                     <RingMeter value={ring} size={54} strokeWidth={5}>
                         <span className="font-display text-[12px] font-black tabular-nums text-[var(--accent)]">{ring}%</span>
                     </RingMeter>
-                    <span>
+                    <span className="min-w-0">
                         <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
                             Completion rate
                         </span>
@@ -412,7 +448,7 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
                             {total === 0 ? "Add your first game" : rate >= 50 ? "Great progress" : rate >= 20 ? "Chipping away" : "Plenty left to play"}
                         </span>
                     </span>
-                </span>
+                </div>
             </div>
         </div>
     );
@@ -424,6 +460,13 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
  * The pinned game, given the room it deserves. Pinning already existed and
  * did nothing visible; this is its reward. With nothing pinned it falls back
  * to what you're playing, so the slot is never empty on an active shelf.
+ *
+ * It is a cell of the shelf's own grid — two columns by two rows — rather
+ * than a card in a column beside it. Kept apart, it stood a fixed 320px tall
+ * next to rows the covers had sized, so its floor landed a hundred and thirty
+ * pixels below theirs and the shelf came out as two things that missed each
+ * other. Two cells of a 3:4 grid make one 3:4 card, so at double size it is
+ * the same object, and every edge on the shelf lines up.
  */
 function FeaturedCard({ entry }: { entry: CollectionEntry }) {
     const meta = STATUS[entry.status] ?? STATUS.backlog;
@@ -434,7 +477,7 @@ function FeaturedCard({ entry }: { entry: CollectionEntry }) {
     return (
         <Link
             href={entry.game ? `/games/${entry.game.slug}` : "#"}
-            className="group relative flex flex-col justify-end h-full min-h-[320px] rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+            className="group relative flex flex-col justify-end h-full min-h-[260px] rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
         >
             {entry.game?.cover_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -504,6 +547,9 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
     const [pages, setPages] = useState(1);
     const [addOpen, setAddOpen] = useState(false);
     const [importing, setImporting] = useState(false);
+    const [sort, setSort] = useState<SortId>("recent");
+    const [term, setTerm] = useState("");
+    const search = useDebounced(term, 300);
     const fileRef = useRef<HTMLInputElement>(null);
 
     const query = filter === "all" || filter === "upcoming" ? "" : filter === "favorites" ? "?favorite=1" : `&status=${filter}`;
@@ -512,7 +558,9 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
     // Real pages, accumulated as they arrive.
     const key = filter === "upcoming"
         ? null
-        : `/users/${username}/collection?page=${pages}&page_size=${PAGE_SIZE}${filter === "favorites" ? "&favorite=1" : query.replace("?favorite=1", "")}`;
+        : `/users/${username}/collection?page=${pages}&page_size=${PAGE_SIZE}&sort=${sort}`
+            + (search ? `&search=${encodeURIComponent(search)}` : "")
+            + (filter === "favorites" ? "&favorite=1" : query.replace("?favorite=1", ""));
     const { data, isLoading, mutate } = useSWR<{ data: CollectionEntry[]; pagination?: { total: number } }>(
         key, fetcher, { keepPreviousData: true }
     );
@@ -538,11 +586,22 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
         setPages(1);
     };
 
+    // Any change to what is being asked for starts the accumulation over —
+    // otherwise page 2 of a search lands on top of page 1 of the old order.
+    useEffect(() => { setPages(1); }, [sort, search]);
+
     // The pinned game leads the shelf; with nothing pinned, whatever you're
     // playing does. It's lifted out of the grid so it can't appear twice.
-    const featured = filter === "all"
+    //
+    // Only on the unsorted, unsearched, unfiltered shelf: a hero tile in the
+    // middle of search results is a game that ignored what was asked for. And
+    // only with enough games behind it to wrap around a double-width cell —
+    // below that the shelf is a hero tile and three stragglers with a hole
+    // under them.
+    const candidate = filter === "all" && sort === "recent" && !search
         ? entries.find((e) => e.showcase_order != null) ?? entries.find((e) => e.status === "playing")
         : undefined;
+    const featured = candidate && entries.length >= 7 ? candidate : undefined;
     const rest = featured ? entries.filter((e) => e.id !== featured.id) : entries;
 
     const updateEntry = async (slug: string, payload: Record<string, unknown>) => {
@@ -608,15 +667,22 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
     };
 
     return (
-        <div>
+        <div className="space-y-5">
             <CollectionLedger stats={stats} />
 
             {/* shelf on the left, the reading of it on the right */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
             <div className="xl:col-span-9 min-w-0">
-            {/* ── toolbar ── */}
-            <div className="flex items-center justify-between gap-3 flex-wrap mb-5">
-                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            {/* ── toolbar ──
+
+                Two tiers, and neither of them wraps. Filters and the two
+                buttons shared one flex-wrap row before, so on any width where
+                the chips did not quite fit, Import and Add game dropped to a
+                line of their own and then justify-between pinned them to the
+                left margin under the chips, looking like a rendering fault. */}
+            <div className="mb-5 space-y-3">
+            <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
                     {FILTERS.map((f) => {
                         const on = filter === f.id;
                         const count = f.countKey ? stats?.[f.countKey] : undefined;
@@ -678,15 +744,72 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                 )}
             </div>
 
+            {/* Search and order, once there is enough shelf to lose something
+                on. Four games do not need a search field; four hundred — which
+                is what one Steam import leaves behind — cannot be read without
+                one. */}
+            {filter !== "upcoming" && ((stats?.games_count ?? 0) >= SEARCHABLE_FROM || !!term) && (
+                <div className="flex items-center gap-2">
+                    <div className="relative flex-1 min-w-0 max-w-[340px]">
+                        <Search aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/25" />
+                        <input
+                            value={term}
+                            onChange={(e) => setTerm(e.target.value)}
+                            placeholder="Search this shelf…"
+                            aria-label="Search your collection"
+                            className="w-full h-9 pl-9 pr-8 rounded-[8px] bg-white/[0.03] border border-white/[0.09] text-[12.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] transition-colors"
+                        />
+                        {term && (
+                            <button
+                                onClick={() => setTerm("")}
+                                aria-label="Clear search"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-[5px] text-white/30 hover:text-white hover:bg-white/10 transition-colors"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
+                    </div>
+
+                    <span className="relative shrink-0">
+                        <select
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value as SortId)}
+                            aria-label="Order the shelf"
+                            className="appearance-none h-9 pl-3 pr-8 rounded-[8px] bg-white/[0.03] border border-white/[0.09] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/70 hover:text-white focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] cursor-pointer transition-colors"
+                        >
+                            {SORTS.map((s) => (
+                                <option key={s.id} value={s.id} className="bg-[var(--surface-1)] normal-case">{s.label}</option>
+                            ))}
+                        </select>
+                        <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/35" />
+                    </span>
+
+                    {(search || sort !== "recent") && (
+                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                            {total} {total === 1 ? "game" : "games"}
+                        </span>
+                    )}
+                </div>
+            )}
+            </div>
+
             {/* ── shelf ── */}
             {filter === "upcoming" ? (
                 <UpcomingList isOwnProfile={isOwnProfile} />
             ) : isLoading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                <div className={SHELF_GRID}>
                     {Array.from({ length: 12 }).map((_, i) => (
                         <div key={i} className="aspect-[3/4] rounded-[12px] bg-white/[0.04] animate-pulse" />
                     ))}
                 </div>
+            ) : entries.length === 0 && search ? (
+                <EmptyState
+                    variant="compact"
+                    icon={<Search className="w-[18px] h-[18px]" />}
+                    title={`Nothing on this shelf matches “${search}”`}
+                    body="Try a shorter word, or clear the filter beside it."
+                    action={{ label: "Clear search", onClick: () => setTerm("") }}
+                />
             ) : entries.length === 0 ? (
                 isOwnProfile ? (
                     // Two real ways in, not a link that goes nowhere
@@ -721,29 +844,45 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                 )
             ) : (
                 <>
-                    {/* the pinned game takes a two-by-two slot beside the grid */}
-                    <div className={featured ? "grid grid-cols-1 lg:grid-cols-12 gap-3 items-stretch" : ""}>
+                    {/* One grid, and the pinned game is a two-by-two cell of
+                        it rather than a card in a column beside it. */}
+                    <div className={SHELF_GRID}>
                         {featured && (
-                            <div className="lg:col-span-4 xl:col-span-3 min-w-0">
+                            <div className="col-span-2 row-span-2 min-w-0">
                                 <FeaturedCard entry={featured} />
                             </div>
                         )}
-                        <div className={featured ? "lg:col-span-8 xl:col-span-9 min-w-0" : ""}>
-                            <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 ${featured ? "lg:grid-cols-4 xl:grid-cols-5" : "lg:grid-cols-5 xl:grid-cols-6"}`}>
-                                {rest.map((e, i) => (
-                                    <div key={e.id} className={`tp-fade-up tp-d${Math.min(6, Math.floor(i / 3) + 1)}`}>
-                                        <GameCard
-                                            entry={e}
-                                            isOwnProfile={isOwnProfile}
-                                            onUpdate={updateEntry}
-                                            onRemove={removeEntry}
-                                            onShowcase={toggleShowcase}
-                                            onLog={isOwnProfile ? onLogSession : undefined}
-                                        />
-                                    </div>
-                                ))}
+                        {rest.map((e, i) => (
+                            <div key={e.id} className={`min-w-0 tp-fade-up tp-d${Math.min(6, Math.floor(i / 3) + 1)}`}>
+                                <GameCard
+                                    entry={e}
+                                    isOwnProfile={isOwnProfile}
+                                    onUpdate={updateEntry}
+                                    onRemove={removeEntry}
+                                    onShowcase={toggleShowcase}
+                                    onLog={isOwnProfile ? onLogSession : undefined}
+                                />
                             </div>
-                        </div>
+                        ))}
+
+                        {/* The empty slot at the end of the row — the shelf
+                            says it has room, which a wall of covers stopping
+                            mid-row does not. Only when there is nothing more to
+                            load, or it would read as the end of a list that
+                            has another page behind it. */}
+                        {isOwnProfile && !hasMore && !search && (
+                            <button
+                                onClick={() => setAddOpen(true)}
+                                className="group aspect-[3/4] min-w-0 rounded-[12px] border border-dashed border-white/[0.12] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-[var(--accent)]/[0.04] flex flex-col items-center justify-center gap-2 transition-colors duration-300"
+                            >
+                                <span className="w-9 h-9 rounded-full bg-white/[0.05] group-hover:bg-[var(--accent)]/15 flex items-center justify-center text-white/30 group-hover:text-[var(--accent)] transition-colors">
+                                    <Plus className="w-4 h-4" />
+                                </span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/25 group-hover:text-white/60 transition-colors">
+                                    Add game
+                                </span>
+                            </button>
+                        )}
                     </div>
 
                     {hasMore && (
