@@ -11,6 +11,9 @@ type Props = { params: Promise<{ username: string; slug: string }> };
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://techplay.gg";
 
+/** Gold, silver, bronze — the only three colours a podium is allowed. */
+const MEDAL = ["#ffd700", "#d4d9e0", "#cd7f32"];
+
 const TYPE_LABEL: Record<string, string> = {
     top10: "Top 10",
     top25: "Top 25",
@@ -68,6 +71,13 @@ export default async function GameListPage({ params }: Props) {
     const owner = list.user;
     const items = (list.items ?? []).filter((it) => it.game);
     const typeLabel = list.list_type ? TYPE_LABEL[list.list_type] : null;
+
+    // A genre list is a set, not a ranking — giving its first three a podium
+    // would invent a claim its author never made. And a podium needs a list
+    // under it: three cards over two rows is a podium that ate the list.
+    const ranked = list.list_type !== "genre";
+    const podium = ranked && items.length >= 6 ? items.slice(0, 3) : [];
+    const rest = items.slice(podium.length);
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
@@ -144,79 +154,212 @@ export default async function GameListPage({ params }: Props) {
             </div>
 
             {/* ── the ranking ── */}
-            <div className="container-page py-10">
+            <div className="container-page py-10 space-y-8">
                 {items.length === 0 ? (
                     <div className="flex flex-col items-center gap-3 py-20 text-white/40">
                         <Gamepad2 className="w-10 h-10" />
                         <p className="text-[14px]">This list is empty — for now.</p>
                     </div>
                 ) : (
-                    <div className="space-y-2.5">
-                        {items.map((it, i) => (
-                            <Link
-                                key={it.id}
-                                href={`/games/${it.game!.slug}`}
-                                prefetch={false}
-                                className="group flex items-center gap-4 p-3 rounded-[12px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
-                            >
-                                {/* the rank is the point of a ranked list */}
-                                <span className={`shrink-0 w-10 text-center font-display font-black tabular-nums leading-none ${
-                                    i < 3 ? "text-[26px] text-[var(--accent)]" : "text-[20px] text-white/30"
-                                }`}>
-                                    {i + 1}
-                                </span>
+                    <>
+                        {/* The top of a ranking is the whole argument. It was
+                            drawn as row one of forty-seven with a slightly
+                            larger number on it, so a list's headline pick had
+                            the same weight as its also-rans. Three podium
+                            cards, then the rest as the list they are.
 
-                                <span className="relative w-[112px] h-[64px] shrink-0 rounded-[8px] overflow-hidden bg-white/[0.04]">
-                                    {it.game!.cover_url ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={it.game!.cover_url}
-                                            alt={it.game!.name}
-                                            loading={i < 6 ? "eager" : "lazy"}
-                                            className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-6 h-6" /></span>
-                                    )}
-                                </span>
+                            Not on a genre list: that one is a set, and giving
+                            its first three a podium would invent a claim its
+                            author never made. */}
+                        {podium.length > 0 && (
+                            <section>
+                                <h2 className="flex items-center gap-3 mb-4">
+                                    <span className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/35">The top {podium.length}</span>
+                                    <span aria-hidden className="flex-1 h-px bg-white/[0.07]" />
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
+                                    {podium.map((it, i) => (
+                                        <Link
+                                            key={it.id}
+                                            href={`/games/${it.game!.slug}`}
+                                            prefetch={false}
+                                            className="group relative flex flex-col rounded-[14px] overflow-hidden border bg-[var(--surface-1)] transition-colors duration-300"
+                                            style={{ borderColor: `color-mix(in srgb, ${MEDAL[i]} 35%, transparent)` }}
+                                        >
+                                            <span className="relative block aspect-[16/10] overflow-hidden bg-white/[0.04]">
+                                                {it.game!.cover_url ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img
+                                                        src={it.game!.cover_url}
+                                                        alt={it.game!.name}
+                                                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700"
+                                                    />
+                                                ) : (
+                                                    <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-8 h-8" /></span>
+                                                )}
+                                                <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
-                                <span className="min-w-0 flex-1">
-                                    <span className="flex items-center gap-2.5 min-w-0">
-                                        <span className="font-display text-[15px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
-                                            {it.game!.name}
-                                        </span>
-                                        <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
-                                            {it.game!.released ? it.game!.released.slice(0, 4) : "TBA"}
-                                        </span>
-                                        {it.game!.rating > 0 && (
-                                            <span className="shrink-0 inline-flex items-center gap-1 text-[11px] tabular-nums text-white/35">
-                                                <Star className="w-3 h-3 text-amber-400 fill-amber-400" /> {Number(it.game!.rating).toFixed(1)}
+                                                <span
+                                                    className="absolute top-3 left-3 flex items-center justify-center w-[38px] h-[38px] rounded-full font-display text-[19px] font-black tabular-nums leading-none text-black"
+                                                    style={{ background: MEDAL[i], boxShadow: `0 4px 18px color-mix(in srgb, ${MEDAL[i]} 45%, transparent)` }}
+                                                >
+                                                    {i + 1}
+                                                </span>
+
+                                                {it.score != null && (
+                                                    <span className="absolute top-3 right-3 flex flex-col items-center justify-center w-[52px] h-[42px] rounded-[9px] bg-black/60 backdrop-blur-md border border-white/[0.12]">
+                                                        <span className="font-display text-[16px] font-black tabular-nums leading-none text-white">
+                                                            {Number(it.score).toFixed(1)}
+                                                        </span>
+                                                        <span className="mt-0.5 font-display text-[7px] font-bold uppercase tracking-[0.14em] text-white/40">Score</span>
+                                                    </span>
+                                                )}
                                             </span>
-                                        )}
-                                    </span>
 
-                                    {/* the argument for the rank — the whole reason
-                                        this is a list and not a folder */}
-                                    {it.note && (
-                                        <span className="block mt-1.5 text-[12.5px] text-white/50 leading-snug line-clamp-2">{it.note}</span>
-                                    )}
-                                </span>
+                                            <span className="flex-1 flex flex-col p-4">
+                                                <span className="flex items-baseline gap-2.5 min-w-0">
+                                                    <span className="font-display text-[16px] font-black text-white leading-tight line-clamp-1 group-hover:text-[var(--accent)] transition-colors">
+                                                        {it.game!.name}
+                                                    </span>
+                                                    <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
+                                                        {it.game!.released ? it.game!.released.slice(0, 4) : "TBA"}
+                                                    </span>
+                                                </span>
+                                                {it.game!.rating > 0 && (
+                                                    <span className="mt-1.5 inline-flex items-center gap-1 font-display text-[11px] font-bold tabular-nums text-amber-400/80">
+                                                        <Star className="w-3 h-3 fill-current" /> {Number(it.game!.rating).toFixed(1)}
+                                                    </span>
+                                                )}
+                                                {it.note && (
+                                                    <span className="mt-2.5 text-[12.5px] text-white/55 leading-snug line-clamp-4">{it.note}</span>
+                                                )}
+                                            </span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
 
-                                {it.score != null && (
-                                    <span className="shrink-0 flex flex-col items-center justify-center w-[58px] h-[46px] rounded-[8px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)]">
-                                        <span className="font-display text-[17px] font-black tabular-nums leading-none text-[var(--accent)]">
-                                            {Number(it.score).toFixed(1)}
+                        {rest.length > 0 && (
+                            <section>
+                                {podium.length > 0 && (
+                                    <h2 className="flex items-center gap-3 mb-4">
+                                        <span className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                                            {podium.length + 1}–{items.length}
                                         </span>
-                                        <span className="mt-0.5 font-display text-[7.5px] font-bold uppercase tracking-[0.14em] text-white/30">
-                                            Score
-                                        </span>
-                                    </span>
+                                        <span aria-hidden className="flex-1 h-px bg-white/[0.07]" />
+                                    </h2>
                                 )}
-                            </Link>
-                        ))}
-                    </div>
+                                <div className="space-y-2.5">
+                                    {rest.map((it, idx) => {
+                                        const rank = podium.length + idx + 1;
+
+                                        return (
+                                            <Link
+                                                key={it.id}
+                                                href={`/games/${it.game!.slug}`}
+                                                prefetch={false}
+                                                className="group flex items-center gap-4 p-3 rounded-[12px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
+                                            >
+                                                <span className="shrink-0 w-10 text-center font-display text-[20px] font-black tabular-nums leading-none text-white/30">
+                                                    {rank}
+                                                </span>
+
+                                                {/* 3:4, the shape a game wears everywhere
+                                                    else on this site. A 112×64 letterbox
+                                                    crops key art to a strip of sky. */}
+                                                <span className="relative w-[56px] shrink-0 aspect-[3/4] rounded-[8px] overflow-hidden bg-white/[0.04] border border-white/[0.06]">
+                                                    {it.game!.cover_url ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
+                                                        <img
+                                                            src={it.game!.cover_url}
+                                                            alt={it.game!.name}
+                                                            loading={idx < 6 ? "eager" : "lazy"}
+                                                            className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500"
+                                                        />
+                                                    ) : (
+                                                        <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-5 h-5" /></span>
+                                                    )}
+                                                </span>
+
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="flex items-center gap-2.5 min-w-0">
+                                                        <span className="font-display text-[15px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
+                                                            {it.game!.name}
+                                                        </span>
+                                                        <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
+                                                            {it.game!.released ? it.game!.released.slice(0, 4) : "TBA"}
+                                                        </span>
+                                                        {it.game!.rating > 0 && (
+                                                            <span className="shrink-0 inline-flex items-center gap-1 text-[11px] tabular-nums text-white/35">
+                                                                <Star className="w-3 h-3 text-amber-400 fill-amber-400" /> {Number(it.game!.rating).toFixed(1)}
+                                                            </span>
+                                                        )}
+                                                    </span>
+
+                                                    {/* the argument for the rank — the whole reason
+                                                        this is a list and not a folder */}
+                                                    {it.note && (
+                                                        <span className="block mt-1.5 text-[12.5px] text-white/50 leading-snug line-clamp-2">{it.note}</span>
+                                                    )}
+                                                </span>
+
+                                                {it.score != null && (
+                                                    <span className="shrink-0 flex flex-col items-center justify-center w-[58px] h-[46px] rounded-[8px] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)]">
+                                                        <span className="font-display text-[17px] font-black tabular-nums leading-none text-[var(--accent)]">
+                                                            {Number(it.score).toFixed(1)}
+                                                        </span>
+                                                        <span className="mt-0.5 font-display text-[7.5px] font-bold uppercase tracking-[0.14em] text-white/30">
+                                                            Score
+                                                        </span>
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </section>
+                        )}
+
+                        {owner && (
+                            <p className="pt-2 text-center">
+                                <Link
+                                    href={`/profile/${owner.username}?tab=lists`}
+                                    className="inline-flex items-center gap-2 h-10 px-5 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white transition-colors"
+                                >
+                                    <ListChecks className="w-3.5 h-3.5" />
+                                    More lists by {owner.display_name || owner.username}
+                                </Link>
+                            </p>
+                        )}
+                    </>
                 )}
             </div>
+
+            {/* A ranked list is the textbook ItemList, and this one had no
+                structured data at all — on a site whose game database exists
+                for search reach. */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "ItemList",
+                        name: list.name,
+                        description: list.description ?? undefined,
+                        url: `${APP_URL}/lists/${username}/${slug}`,
+                        numberOfItems: items.length,
+                        itemListOrder: "https://schema.org/ItemListOrderDescending",
+                        author: owner ? { "@type": "Person", name: owner.display_name || owner.username } : undefined,
+                        itemListElement: items.slice(0, 100).map((it, i) => ({
+                            "@type": "ListItem",
+                            position: i + 1,
+                            url: `${APP_URL}/games/${it.game!.slug}`,
+                            name: it.game!.name,
+                        })),
+                    }),
+                }}
+            />
         </main>
     );
 }

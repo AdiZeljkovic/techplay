@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Eye, MessageSquare, AlertTriangle, Heart, Gamepad2, Trophy } from "lucide-react";
+import { ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Eye, MessageSquare, AlertTriangle, Heart, Gamepad2, Trophy, ChevronUp, ChevronDown } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import type { GameListDetail, GameListItemEntry, GameListPreview, ListType } from "@/lib/types/profile";
 
@@ -95,6 +95,11 @@ export default function ListEditor({
     const [saving, setSaving] = useState<"draft" | "publish" | null>(null);
     const [items, setItems] = useState<GameListItemEntry[]>([]);
     const dragFrom = useRef<number | null>(null);
+    // Held in state, not a ref, because the whole point is that you can see
+    // where the row will land. Dragging with no feedback at all is why the
+    // reorder read as broken even when it worked.
+    const [dragging, setDragging] = useState<number | null>(null);
+    const [over, setOver] = useState<number | null>(null);
 
     // Adopt the server's copy once it lands, then let local edits win.
     const loaded = useRef(false);
@@ -176,10 +181,16 @@ export default function ListEditor({
     const patchLocal = (itemId: number, patch: Partial<GameListItemEntry>) =>
         setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, ...patch } : i)));
 
-    const drop = async (to: number) => {
-        const from = dragFrom.current;
-        dragFrom.current = null;
-        if (from === null || from === to) return;
+    /**
+     * Move one entry to a new rank.
+     *
+     * Reordering was drag-and-drop only, and HTML5 drag events do not fire on
+     * touch at all — so on a phone the ranking could be built and never
+     * ranked. The arrows are the same call, and they are also the only way to
+     * do this from a keyboard.
+     */
+    const move = async (from: number, to: number) => {
+        if (from === to || to < 0 || to >= items.length) return;
 
         const next = [...items];
         const [moved] = next.splice(from, 1);
@@ -194,25 +205,52 @@ export default function ListEditor({
         }
     };
 
+    const drop = async (to: number) => {
+        const from = dragFrom.current;
+        dragFrom.current = null;
+        setDragging(null);
+        setOver(null);
+        if (from !== null) await move(from, to);
+    };
+
     if (!list) {
         return <div className="h-[60vh] rounded-[var(--radius-panel)] bg-[var(--fill-2)] animate-pulse" />;
     }
 
     return (
         <div>
-            {/* ── header ── */}
+            {/* ── header ──
+
+                The title is the header. It used to be a field in the first of
+                four settings panels, under a heading that said "Create New
+                List" — so the page announced itself and buried the one thing
+                that names it. Typing here is the first thing you do, and it is
+                the thing you see on every visit after. */}
             <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
-                <div className="min-w-0">
-                    <button
-                        onClick={onClose}
-                        className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 hover:text-white transition-colors mb-2"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5" /> Back to lists
-                    </button>
-                    <h2 className="font-display text-[26px] font-black text-white leading-none">
-                        {list.is_draft ? "Create New List" : "Edit List"}
-                    </h2>
-                    <p className="mt-1.5 text-[12.5px] text-white/40">Build ranked lists, genre picks, and personal favorites</p>
+                <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                        <button
+                            onClick={onClose}
+                            className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 hover:text-white transition-colors"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to lists
+                        </button>
+                        <span
+                            className="inline-flex items-center h-[19px] px-2 rounded-[4px] font-display text-[8px] font-black uppercase tracking-[0.12em]"
+                            style={list.is_draft
+                                ? { background: "rgba(251,191,36,0.18)", color: "#fbbf24" }
+                                : { background: "rgba(52,211,153,0.16)", color: "#34d399" }}
+                        >
+                            {list.is_draft ? "Draft" : "Published"}
+                        </span>
+                    </div>
+                    <input
+                        value={form.name}
+                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value.slice(0, 80) }))}
+                        placeholder="Name this list…"
+                        aria-label="List title"
+                        className="w-full max-w-[560px] bg-transparent border-0 border-b border-transparent hover:border-white/[0.09] focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] font-display text-[26px] font-black text-white leading-tight placeholder:text-white/20 focus:outline-none transition-colors py-0.5"
+                    />
                 </div>
 
                 <div className="flex items-center gap-2.5">
@@ -237,164 +275,74 @@ export default function ListEditor({
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 {/* ── left: the form ── */}
+                {/* ── left: the work ──
+
+                    Adding games and ranking them is what this screen is for,
+                    and both used to sit at the bottom, under four panels of
+                    settings you had to scroll past every time. The settings
+                    are set once; the ranking is the reason you came back. */}
                 <div className="xl:col-span-8 min-w-0 space-y-5">
-                    <Panel title="List Details" bodyClassName="p-5">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                            <div className="space-y-4">
-                                <label className="block">
-                                    <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
-                                        List title <span className="text-[var(--accent)]">*</span>
-                                    </span>
-                                    <input
-                                        value={form.name}
-                                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value.slice(0, 80) }))}
-                                        placeholder="e.g. Best RPGs of All Time"
-                                        className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
-                                    />
-                                </label>
-
-                                <label className="block">
-                                    <span className="flex items-baseline justify-between font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
-                                        <span>Short description</span>
-                                        <span className="tabular-nums text-white/25">{form.description.length} / 200</span>
-                                    </span>
-                                    <textarea
-                                        value={form.description}
-                                        onChange={(e) => setForm((f) => ({ ...f, description: e.target.value.slice(0, 200) }))}
-                                        rows={4}
-                                        placeholder="Describe your list in a few sentences…"
-                                        className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
-                                    />
-                                </label>
-                            </div>
-
-                            <div className="space-y-4">
-                                <label className="block">
-                                    <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">Category</span>
-                                    <select
-                                        value={form.category}
-                                        onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                                        className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white focus:outline-none cursor-pointer"
-                                    >
-                                        <option value="" className="bg-[var(--surface-1)]">Select category</option>
-                                        {CATEGORIES.map((c) => <option key={c} value={c} className="bg-[var(--surface-1)]">{c}</option>)}
-                                    </select>
-                                </label>
-
-                                <div>
-                                    <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
-                                        Tags <span className="text-white/25">(up to 5)</span>
-                                    </span>
-                                    <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                                        {form.tags.map((t) => (
-                                            <span key={t} className="inline-flex items-center gap-1.5 h-[26px] pl-2.5 pr-1.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] text-[10.5px] font-bold text-[var(--accent)]">
-                                                {t}
-                                                <button onClick={() => setForm((f) => ({ ...f, tags: f.tags.filter((x) => x !== t) }))} className="hover:text-white">
-                                                    <X className="w-3 h-3" />
-                                                </button>
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <input
-                                        value={tagDraft}
-                                        onChange={(e) => setTagDraft(e.target.value.slice(0, 24))}
-                                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
-                                        onBlur={addTag}
-                                        disabled={form.tags.length >= 5}
-                                        placeholder={form.tags.length >= 5 ? "Five is the limit" : "Add a tag and press Enter…"}
-                                        className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] disabled:opacity-50"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </Panel>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                        <Panel title="List Type" bodyClassName="p-5">
-                            <div className="flex flex-wrap gap-2">
-                                {TYPES.map((t) => {
-                                    const on = form.list_type === t.id;
-                                    // Switching down to a smaller type would orphan items — say so
-                                    // rather than silently truncating the ranking.
-                                    const blocked = t.limit !== null && items.length > t.limit;
-                                    return (
-                                        <button
-                                            key={t.id}
-                                            onClick={() => !blocked && setForm((f) => ({ ...f, list_type: t.id }))}
-                                            disabled={blocked}
-                                            title={blocked ? `Remove games first — ${t.label} holds ${t.limit}` : undefined}
-                                            className={`h-9 px-4 rounded-full font-display text-[10.5px] font-bold uppercase tracking-[0.1em] border transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed ${
-                                                on
-                                                    ? "bg-[var(--accent)] border-transparent text-white"
-                                                    : "bg-white/[0.03] border-white/[0.09] text-white/45 hover:text-white hover:border-white/25"
-                                            }`}
-                                        >
-                                            {t.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            {limit !== null && (
-                                <p className="mt-3 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
-                                    {items.length} / {limit} games
-                                </p>
-                            )}
-                        </Panel>
-
-                        <Panel title="Visibility & Settings" bodyClassName="p-5 space-y-4">
-                            <Toggle
-                                icon={<Eye className="w-4 h-4" />}
-                                title="Public list"
-                                body="Anyone can view this list"
-                                on={form.is_public}
-                                onChange={(v) => setForm((f) => ({ ...f, is_public: v }))}
-                            />
-                            <Toggle
-                                icon={<MessageSquare className="w-4 h-4" />}
-                                title="Allow comments"
-                                body="Let others comment on your list"
-                                on={form.allow_comments}
-                                onChange={(v) => setForm((f) => ({ ...f, allow_comments: v }))}
-                            />
-                            <Toggle
-                                icon={<AlertTriangle className="w-4 h-4" />}
-                                title="Spoiler warning"
-                                body="Mark list as containing spoilers"
-                                on={form.has_spoilers}
-                                onChange={(v) => setForm((f) => ({ ...f, has_spoilers: v }))}
-                            />
-                        </Panel>
-                    </div>
-
                     <GameSearch onAdd={addGame} disabled={full} limitLabel={full ? `This list holds ${limit}` : undefined} />
 
                     <Panel
-                        title="Ranking Preview"
-                        meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">Drag to reorder</span>}
-                        bodyClassName="p-4"
+                        title="The ranking"
+                        meta={
+                            <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                                {items.length}{limit !== null ? ` / ${limit}` : ""} games
+                            </span>
+                        }
+                        bodyClassName="p-3"
                     >
                         {items.length === 0 ? (
-                            <p className="py-10 text-center text-[12.5px] text-white/30">
-                                Add games above and they'll line up here, ready to rank.
-                            </p>
+                            <div className="py-8 px-4 text-center">
+                                <p className="text-[12.5px] text-white/35">Add games above and they line up here, ready to rank.</p>
+                                {/* The advice used to be a panel of its own in the
+                                    sidebar, permanently, which is where writing
+                                    nobody reads goes. It belongs in the moment
+                                    the page is still blank. */}
+                                <ul className="mt-4 inline-flex flex-col gap-2 text-left">
+                                    {TIPS.map((tip) => (
+                                        <li key={tip} className="flex gap-2.5 max-w-[420px] text-[11.5px] text-white/40 leading-snug">
+                                            <span aria-hidden className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--accent)] shrink-0" />
+                                            {tip}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         ) : (
                             <div className="space-y-1.5">
                                 {items.map((item, i) => (
                                     <div
                                         key={item.id}
                                         draggable
-                                        onDragStart={() => { dragFrom.current = i; }}
-                                        onDragOver={(e) => e.preventDefault()}
+                                        onDragStart={() => { dragFrom.current = i; setDragging(i); }}
+                                        onDragEnd={() => { dragFrom.current = null; setDragging(null); setOver(null); }}
+                                        onDragOver={(e) => { e.preventDefault(); if (over !== i) setOver(i); }}
                                         onDrop={() => drop(i)}
-                                        className="group flex items-center gap-3 p-2 rounded-[10px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300"
+                                        className={`group relative flex gap-3 p-2.5 rounded-[10px] border transition-[border-color,opacity] duration-200 ${
+                                            dragging === i
+                                                ? "opacity-40 border-[color-mix(in_srgb,var(--accent)_55%,transparent)] bg-[var(--accent-soft)]"
+                                                : "border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)]"
+                                        }`}
                                     >
-                                        <GripVertical className="w-4 h-4 shrink-0 text-white/20 cursor-grab active:cursor-grabbing" />
+                                        {/* where it will land */}
+                                        {over === i && dragging !== null && dragging !== i && (
+                                            <span
+                                                aria-hidden
+                                                className={`absolute inset-x-2 h-[2px] rounded-full bg-[var(--accent)] ${dragging > i ? "-top-1" : "-bottom-1"}`}
+                                            />
+                                        )}
 
-                                        <span className="shrink-0 w-6 text-center font-display text-[14px] font-black tabular-nums text-white/60">
+                                        <GripVertical className="w-4 h-4 shrink-0 self-center text-white/20 cursor-grab active:cursor-grabbing" />
+
+                                        <span
+                                            className="shrink-0 self-center w-7 text-center font-display text-[16px] font-black tabular-nums leading-none"
+                                            style={{ color: i < 3 ? "var(--accent-ink)" : "rgba(255,255,255,0.35)" }}
+                                        >
                                             {i + 1}
                                         </span>
 
-                                        <span className="relative w-[46px] h-[32px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.04]">
+                                        <span className="relative w-[44px] shrink-0 aspect-[3/4] rounded-[6px] overflow-hidden bg-white/[0.04] border border-white/[0.06]">
                                             {item.game?.cover_url ? (
                                                 // eslint-disable-next-line @next/next/no-img-element
                                                 <img src={item.game.cover_url} alt="" className="w-full h-full object-cover" />
@@ -403,38 +351,74 @@ export default function ListEditor({
                                             )}
                                         </span>
 
-                                        <span className="w-[150px] shrink-0 text-[12.5px] font-semibold text-white truncate">
-                                            {item.game?.name}
-                                        </span>
+                                        {/* The note gets its own line. Sharing one
+                                            with a 150px name and a score box left it
+                                            about eleven characters wide, which is
+                                            not room for the argument that is the
+                                            whole reason this is a list. */}
+                                        <div className="min-w-0 flex-1 flex flex-col justify-center gap-1.5">
+                                            <p className="flex items-baseline gap-2 min-w-0">
+                                                <span className="text-[13px] font-bold text-white truncate">{item.game?.name}</span>
+                                                {item.game?.released && (
+                                                    <span className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/25">
+                                                        {item.game.released.slice(0, 4)}
+                                                    </span>
+                                                )}
+                                            </p>
+                                            <input
+                                                value={item.note ?? ""}
+                                                onChange={(e) => patchLocal(item.id, { note: e.target.value.slice(0, 300) })}
+                                                onBlur={(e) => saveItem(item.id, { note: e.target.value.trim() || null })}
+                                                placeholder={`Why this game ranks #${i + 1}…`}
+                                                className="w-full h-8 px-2.5 rounded-[6px] bg-white/[0.03] border border-white/[0.08] text-[12px] text-white placeholder:text-white/20 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                            />
+                                        </div>
 
-                                        <input
-                                            value={item.note ?? ""}
-                                            onChange={(e) => patchLocal(item.id, { note: e.target.value.slice(0, 300) })}
-                                            onBlur={(e) => saveItem(item.id, { note: e.target.value.trim() || null })}
-                                            placeholder={`Why this game ranks #${i + 1}…`}
-                                            className="flex-1 min-w-0 h-9 px-3 rounded-[7px] bg-white/[0.03] border border-white/[0.08] text-[12px] text-white placeholder:text-white/20 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
-                                        />
+                                        <div className="shrink-0 self-center flex items-center gap-1.5">
+                                            <input
+                                                type="number"
+                                                step={0.1}
+                                                min={1}
+                                                max={10}
+                                                value={item.score ?? ""}
+                                                onChange={(e) => patchLocal(item.id, { score: e.target.value === "" ? null : Number(e.target.value) })}
+                                                onBlur={(e) => saveItem(item.id, { score: e.target.value === "" ? null : Math.min(10, Math.max(1, Number(e.target.value))) })}
+                                                placeholder="—"
+                                                title="Score out of 10"
+                                                className="w-[58px] h-9 px-2 rounded-[7px] bg-white/[0.03] border border-white/[0.08] font-display text-[13px] font-black tabular-nums text-center text-[var(--accent)] placeholder:text-white/20 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                            />
 
-                                        <input
-                                            type="number"
-                                            step={0.1}
-                                            min={1}
-                                            max={10}
-                                            value={item.score ?? ""}
-                                            onChange={(e) => patchLocal(item.id, { score: e.target.value === "" ? null : Number(e.target.value) })}
-                                            onBlur={(e) => saveItem(item.id, { score: e.target.value === "" ? null : Math.min(10, Math.max(1, Number(e.target.value))) })}
-                                            placeholder="—"
-                                            title="Score out of 10"
-                                            className="w-[64px] shrink-0 h-9 px-2 rounded-[7px] bg-white/[0.03] border border-white/[0.08] font-display text-[13px] font-black tabular-nums text-center text-[var(--accent)] placeholder:text-white/20 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
-                                        />
+                                            {/* Drag events never fire on touch, so on a
+                                                phone the ranking could be built and
+                                                never ranked. These are also the only
+                                                way to do it from a keyboard. */}
+                                            <span className="flex flex-col gap-0.5">
+                                                <button
+                                                    onClick={() => move(i, i - 1)}
+                                                    disabled={i === 0}
+                                                    aria-label={`Move ${item.game?.name ?? "this game"} up`}
+                                                    className="w-6 h-[17px] rounded-[4px] flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.08] disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                                                >
+                                                    <ChevronUp className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => move(i, i + 1)}
+                                                    disabled={i === items.length - 1}
+                                                    aria-label={`Move ${item.game?.name ?? "this game"} down`}
+                                                    className="w-6 h-[17px] rounded-[4px] flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.08] disabled:opacity-20 disabled:hover:bg-transparent transition-colors"
+                                                >
+                                                    <ChevronDown className="w-3.5 h-3.5" />
+                                                </button>
+                                            </span>
 
-                                        <button
-                                            onClick={() => removeItem(item.id)}
-                                            title="Remove from list"
-                                            className="shrink-0 p-1.5 rounded-[6px] text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
+                                            <button
+                                                onClick={() => removeItem(item.id)}
+                                                title="Remove from list"
+                                                className="p-1.5 rounded-[6px] text-white/25 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -442,21 +426,125 @@ export default function ListEditor({
                     </Panel>
                 </div>
 
-                {/* ── right: what it will look like, and how to make it good ── */}
+                {/* ── right: what it is, and what it will look like ── */}
                 <aside className="xl:col-span-4 min-w-0 space-y-5">
-                    <Panel title="Public Preview" bodyClassName="p-4">
-                        <PreviewCard form={form} list={list} items={items} username={username} />
+                    <Panel title="Details" material="instrument" bodyClassName="p-4 space-y-4">
+                        <label className="block">
+                            <span className="flex items-baseline justify-between font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
+                                <span>Short description</span>
+                                <span className="tabular-nums text-white/25">{form.description.length} / 200</span>
+                            </span>
+                            <textarea
+                                value={form.description}
+                                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value.slice(0, 200) }))}
+                                rows={3}
+                                placeholder="What is this list arguing for?"
+                                className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
+                            />
+                        </label>
+
+                        <label className="block">
+                            <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">Category</span>
+                            <div className="relative">
+                                <select
+                                    value={form.category}
+                                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                                    className="w-full appearance-none h-10 pl-3 pr-8 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white focus:outline-none cursor-pointer"
+                                >
+                                    <option value="" className="bg-[var(--surface-1)]">Select category</option>
+                                    {CATEGORIES.map((c) => <option key={c} value={c} className="bg-[var(--surface-1)]">{c}</option>)}
+                                </select>
+                                <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/35" />
+                            </div>
+                        </label>
+
+                        <div>
+                            <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
+                                Tags <span className="text-white/25">(up to 5)</span>
+                            </span>
+                            {form.tags.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                                    {form.tags.map((t) => (
+                                        <span key={t} className="inline-flex items-center gap-1.5 h-[26px] pl-2.5 pr-1.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] text-[10.5px] font-bold text-[var(--accent)]">
+                                            {t}
+                                            <button onClick={() => setForm((f) => ({ ...f, tags: f.tags.filter((x) => x !== t) }))} className="hover:text-white">
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <input
+                                value={tagDraft}
+                                onChange={(e) => setTagDraft(e.target.value.slice(0, 24))}
+                                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+                                onBlur={addTag}
+                                disabled={form.tags.length >= 5}
+                                placeholder={form.tags.length >= 5 ? "Five is the limit" : "Add a tag and press Enter…"}
+                                className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] disabled:opacity-50"
+                            />
+                        </div>
                     </Panel>
 
-                    <Panel title="List Tips" bodyClassName="p-4">
-                        <ul className="space-y-2.5">
-                            {TIPS.map((tip) => (
-                                <li key={tip} className="flex gap-2.5 text-[12px] text-white/50 leading-snug">
-                                    <span aria-hidden className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--accent)] shrink-0" />
-                                    {tip}
-                                </li>
-                            ))}
-                        </ul>
+                    <Panel
+                        title="List type"
+                        material="instrument"
+                        meta={limit !== null
+                            ? <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">{items.length} / {limit}</span>
+                            : undefined}
+                        bodyClassName="p-4"
+                    >
+                        <div className="flex flex-wrap gap-1.5">
+                            {TYPES.map((t) => {
+                                const on = form.list_type === t.id;
+                                // Switching down to a smaller type would orphan items — say so
+                                // rather than silently truncating the ranking.
+                                const blocked = t.limit !== null && items.length > t.limit;
+                                return (
+                                    <button
+                                        key={t.id}
+                                        onClick={() => !blocked && setForm((f) => ({ ...f, list_type: t.id }))}
+                                        disabled={blocked}
+                                        title={blocked ? `Remove games first — ${t.label} holds ${t.limit}` : undefined}
+                                        className={`h-8 px-3 rounded-[7px] font-display text-[10px] font-bold uppercase tracking-[0.1em] border transition-colors duration-300 disabled:opacity-30 disabled:cursor-not-allowed ${
+                                            on
+                                                ? "bg-[var(--accent)] border-transparent text-white"
+                                                : "bg-white/[0.03] border-white/[0.09] text-white/45 hover:text-white hover:border-white/25"
+                                        }`}
+                                    >
+                                        {t.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </Panel>
+
+                    <Panel title="Visibility" material="instrument" bodyClassName="p-4 space-y-4">
+                        <Toggle
+                            icon={<Eye className="w-4 h-4" />}
+                            title="Public list"
+                            body="Anyone can view this list"
+                            on={form.is_public}
+                            onChange={(v) => setForm((f) => ({ ...f, is_public: v }))}
+                        />
+                        <Toggle
+                            icon={<MessageSquare className="w-4 h-4" />}
+                            title="Allow comments"
+                            body="Let others comment on your list"
+                            on={form.allow_comments}
+                            onChange={(v) => setForm((f) => ({ ...f, allow_comments: v }))}
+                        />
+                        <Toggle
+                            icon={<AlertTriangle className="w-4 h-4" />}
+                            title="Spoiler warning"
+                            body="Mark list as containing spoilers"
+                            on={form.has_spoilers}
+                            onChange={(v) => setForm((f) => ({ ...f, has_spoilers: v }))}
+                        />
+                    </Panel>
+
+                    <Panel title="Public preview" bodyClassName="p-4">
+                        <PreviewCard form={form} list={list} items={items} username={username} />
                     </Panel>
 
                     <CommunityInspiration />
