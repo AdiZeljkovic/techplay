@@ -11,6 +11,7 @@ import {
     Library, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, ChevronDown,
     NotebookPen, ChevronDown as ChevronMore,
 } from "lucide-react";
+import Segmented from "@/components/ui/Segmented";
 import { ShelfMark, FinishMark, PileMark, WishMark } from "./ShelfMarks";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
@@ -688,40 +689,18 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                 left margin under the chips, looking like a rendering fault. */}
             <div className="mb-5 space-y-3">
             <div className="flex items-center gap-3">
-                <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-                    {FILTERS.map((f) => {
-                        const on = filter === f.id;
-                        const count = f.countKey ? stats?.[f.countKey] : undefined;
-                        const tint = STATUS[f.id]?.color;
-
-                        return (
-                            <button
-                                key={f.id}
-                                onClick={() => pick(f.id)}
-                                aria-pressed={on}
-                                className={`group/chip shrink-0 inline-flex items-center gap-2 h-9 px-3.5 rounded-full font-display text-[10.5px] font-bold uppercase tracking-[0.12em] border transition-colors duration-300 ${
-                                    on
-                                        ? "bg-[var(--accent)] border-transparent text-white"
-                                        : "bg-white/[0.03] border-white/[0.09] text-white/45 hover:text-white hover:border-white/25"
-                                }`}
-                            >
-                                {tint && (
-                                    <span
-                                        aria-hidden
-                                        className="w-1.5 h-1.5 rounded-full shrink-0"
-                                        style={{ background: on ? "#fff" : tint }}
-                                    />
-                                )}
-                                {f.label}
-                                {typeof count === "number" && (
-                                    <span className={`font-display text-[10px] font-black tabular-nums ${on ? "text-white/70" : "text-white/25"}`}>
-                                        {count}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
+                <Segmented
+                    ariaLabel="Filter the shelf"
+                    value={filter}
+                    onChange={pick}
+                    className="flex-1 min-w-0"
+                    items={FILTERS.map((f) => ({
+                        id: f.id,
+                        label: f.label,
+                        dot: STATUS[f.id]?.color,
+                        count: f.countKey && typeof stats?.[f.countKey] === "number" ? (stats[f.countKey] as number) : undefined,
+                    }))}
+                />
 
                 {isOwnProfile && (
                     <div className="flex items-center gap-2 shrink-0">

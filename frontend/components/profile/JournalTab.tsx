@@ -5,12 +5,11 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { BookOpen, Plus, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers , Image as ImageIcon } from "lucide-react";
+import { BookOpen, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers , Image as ImageIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import SessionSuggestions from "./SessionSuggestions";
 import { useCountUp } from "@/hooks/useCountUp";
-import { timeAgo } from "@/lib/timeAgo";
 import type { JournalPayload, PlaySession } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -43,6 +42,100 @@ const hhmm = (minutes: number) => {
     const m = minutes % 60;
     return h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
 };
+
+/** "August 2026" — a diary is read by the month, so that is what divides it. */
+const monthOf = (iso: string) => iso.slice(0, 7);
+const monthLabel = (key: string) =>
+    new Date(`${key}-01T00:00:00`).toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+const dayLabel = (iso: string) =>
+    new Date(`${iso}T00:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
+/** Keeps the given order, gathers runs under their key. */
+function groupRuns<T>(rows: T[], key: (row: T) => string): { key: string; rows: T[] }[] {
+    const out: { key: string; rows: T[] }[] = [];
+
+    for (const row of rows) {
+        const k = key(row);
+        const last = out[out.length - 1];
+        if (last && last.key === k) last.rows.push(row);
+        else out.push({ key: k, rows: [row] });
+    }
+
+    return out;
+}
+
+/**
+ * One finished game and what was said about finishing it.
+ *
+ * The timeline drew the games and the reviews as two separate panels, one
+ * under the other, listing largely the same titles — so a game you finished
+ * and rated appeared twice, and the verdict sat three hundred pixels below the
+ * thing it was a verdict on. They are one record.
+ */
+interface FinishedEntry {
+    slug: string;
+    name: string;
+    cover_url: string | null;
+    at: string | null;
+    hours: number;
+    from_backlog: boolean;
+    completed: boolean;
+    rating: number | null;
+    review: string | null;
+}
+
+function FinishedRow({ entry }: { entry: FinishedEntry }) {
+    return (
+        <div className="group flex gap-3.5 p-3 rounded-[12px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors duration-300">
+            <Link
+                href={`/games/${entry.slug}`}
+                className="relative w-[74px] shrink-0 aspect-[3/4] rounded-[9px] overflow-hidden bg-white/[0.04] border border-white/[0.06]"
+            >
+                {entry.cover_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={entry.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
+                ) : (
+                    <span className="w-full h-full flex items-center justify-center text-white/15"><Gamepad2 className="w-5 h-5" /></span>
+                )}
+            </Link>
+
+            <div className="min-w-0 flex-1 flex flex-col">
+                <p className="flex items-center gap-2.5 flex-wrap">
+                    <Link href={`/games/${entry.slug}`} className="font-display text-[14px] font-black text-white hover:text-[var(--accent)] transition-colors line-clamp-1">
+                        {entry.name}
+                    </Link>
+                    {entry.rating != null && (
+                        <span className="shrink-0 inline-flex items-center gap-1 font-display text-[11px] font-black tabular-nums text-amber-400">
+                            <Star className="w-3 h-3 fill-current" /> {entry.rating.toFixed(1)}
+                        </span>
+                    )}
+                </p>
+
+                <p className="mt-1.5 flex items-center gap-2 flex-wrap font-display text-[9.5px] font-bold uppercase tracking-[0.11em] text-white/30">
+                    <span
+                        className="inline-flex items-center gap-1 h-[18px] px-1.5 rounded-[4px]"
+                        style={entry.completed
+                            ? { background: "rgba(34,197,94,0.14)", color: "#22c55e" }
+                            : { background: "rgba(251,191,36,0.14)", color: "#fbbf24" }}
+                    >
+                        {entry.completed ? "Finished" : "Rated"}
+                    </span>
+                    {entry.at && <span className="tabular-nums">{dayLabel(entry.at)}</span>}
+                    {entry.hours > 0 && <span className="tabular-nums">{entry.hours}h</span>}
+                    {entry.from_backlog && (
+                        <span className="inline-flex items-center gap-1 h-[18px] px-1.5 rounded-[4px] bg-blue-500/15 text-blue-400">
+                            <Layers className="w-2.5 h-2.5" /> From backlog
+                        </span>
+                    )}
+                </p>
+
+                {entry.review && (
+                    <p className="mt-2 text-[12.5px] text-white/55 leading-snug line-clamp-3">{entry.review}</p>
+                )}
+            </div>
+        </div>
+    );
+}
 
 /* ── the composer ─────────────────────────────────────────────────────── */
 
@@ -608,69 +701,127 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
 
     const s = journal.summary;
 
+    // A finished game and what you said about finishing it are one record.
+    // They were two panels, one under the other, listing largely the same
+    // titles — so a game you finished and rated appeared twice and the verdict
+    // sat three hundred pixels below the thing it was a verdict on. Games you
+    // rated without finishing keep their place in the same run, marked as what
+    // they are rather than exiled to a list of their own.
+    const reviewFor = new Map(journal.reviews.map((r) => [r.game.slug, r]));
+    const finished: FinishedEntry[] = [
+        ...journal.completed_timeline.map((g) => {
+            const r = reviewFor.get(g.slug);
+
+            return {
+                slug: g.slug,
+                name: g.name,
+                cover_url: g.cover_url,
+                at: g.completed_at,
+                hours: g.hours,
+                from_backlog: g.from_backlog,
+                completed: true,
+                rating: r?.rating ?? null,
+                review: r?.review ?? null,
+            };
+        }),
+        ...journal.reviews
+            .filter((r) => !journal.completed_timeline.some((g) => g.slug === r.game.slug))
+            .map((r) => ({
+                slug: r.game.slug,
+                name: r.game.name,
+                cover_url: r.game.cover_url ?? null,
+                at: r.created_at ? r.created_at.slice(0, 10) : null,
+                hours: 0,
+                from_backlog: false,
+                completed: false,
+                rating: r.rating,
+                review: r.review,
+            })),
+    ].sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""));
+
     return (
         <div className="space-y-4">
-            {/* ── summary strip ── */}
+            {/* ── summary strip ──
+
+                Equal bays with hairlines between them, and the marks drawn as
+                marks: unplated line art in the reading's own colour, the way
+                the shelf ledger and the navigation menus do it. It used to
+                spread six readings across the full page with justify-between
+                and put a 16px glyph inside a tinted box, which at that width
+                left the boxes as the only thing you saw. */}
             <div
-                className="rounded-[var(--radius-panel)] border px-5 py-4"
-                style={{
-                    background: "var(--surface-2)",
-                    borderColor: "var(--line-strong)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
-                }}
+                className="rounded-[var(--radius-panel)] border overflow-hidden"
+                style={{ borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)" }}
             >
-                <div className="flex items-center gap-6 md:gap-0 md:justify-between overflow-x-auto scrollbar-none min-w-max md:min-w-0">
+                <div
+                    className={`grid grid-cols-2 md:grid-cols-3 gap-px ${s.busiest_month ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}
+                    style={{ background: "var(--line)" }}
+                >
                     {([
-                        [<Clock3 key="h" className="w-4 h-4" />, "Hours played", `${hours}`, "var(--xp-bright)", s.minutes > 0 ? hhmm(s.minutes) : null],
-                        [<BookOpen key="s" className="w-4 h-4" />, "Sessions", `${sessionCount}`, "var(--accent)", null],
-                        [<Gamepad2 key="g" className="w-4 h-4" />, "Games", `${s.games}`, "#34d399", null],
-                        [<CalendarDays key="d" className="w-4 h-4" />, "Days logged", `${s.days}`, "#60a5fa", null],
-                        [<Flame key="f" className="w-4 h-4" />, "Streak", `${s.current_streak}`, "#f97316", s.current_streak > 0 ? "days running" : "log today"],
-                    ] as const).map(([icon, label, value, tint, sub], i) => (
-                        <span key={label} className="flex items-center gap-3 shrink-0">
-                            {i > 0 && <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08] mr-6" />}
-                            <span
-                                className="w-9 h-9 rounded-[9px] flex items-center justify-center shrink-0"
-                                style={{ background: `color-mix(in srgb, ${tint} 14%, transparent)`, color: tint }}
-                            >
-                                {icon}
+                        [Clock3, "Hours played", `${hours}`, "var(--xp-bright)", s.minutes > 0 ? hhmm(s.minutes) : null],
+                        [BookOpen, "Sessions", `${sessionCount}`, "var(--accent-ink)", null],
+                        [Gamepad2, "Games", `${s.games}`, "#34d399", null],
+                        [CalendarDays, "Days logged", `${s.days}`, "#60a5fa", null],
+                        [Flame, "Streak", `${s.current_streak}`, "#f97316", s.current_streak > 0 ? "days running" : "log today"],
+                    ] as const).map(([Icon, label, value, tint, sub]) => (
+                        <div key={label} className="group/bay flex items-center gap-3.5 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
+                            <span className="shrink-0 w-10 h-10 flex items-center justify-center" style={{ color: tint }}>
+                                <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
                             </span>
-                            <span>
+                            <span className="min-w-0">
                                 <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">{label}</span>
-                                <span className="flex items-baseline gap-2 mt-0.5">
+                                <span className="flex items-baseline gap-2 mt-1">
                                     <span className="font-display text-[19px] font-black tabular-nums leading-none text-white">{value}</span>
                                     {sub && <span className="text-[11px] text-white/30 whitespace-nowrap">{sub}</span>}
                                 </span>
                             </span>
-                        </span>
+                        </div>
                     ))}
 
                     {s.busiest_month && (
-                        <span className="flex items-center gap-3 shrink-0">
-                            <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08] mr-6" />
-                            <span>
+                        <div className="flex items-center min-w-0 px-5 py-4 col-span-2 md:col-span-3 lg:col-span-1" style={{ background: "var(--surface-2)" }}>
+                            <span className="min-w-0">
                                 <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">Busiest month</span>
-                                <span className="block mt-1 text-[12px] font-semibold text-white whitespace-nowrap">
+                                <span className="block mt-1.5 text-[12.5px] font-semibold text-white whitespace-nowrap">
                                     {s.busiest_month.label} <span className="text-white/30">· {hhmm(s.busiest_month.minutes)}</span>
                                 </span>
                             </span>
-                        </span>
+                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Sessions Steam already noticed, above the button that asks you
-                to type one in. Nodding beats writing. */}
-            {journal.is_owner && view === "diary" && <SessionSuggestions onLogged={mutate} />}
-
-            {journal.is_owner && !showComposer && (
-                <button
-                    onClick={() => setComposing(true)}
-                    className="inline-flex items-center gap-2 h-10 px-5 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[11px] font-bold uppercase tracking-[0.1em] transition-[filter]"
+            {/* The year, first. It is the one object here that shows a habit
+                rather than an entry, and it was buried under the session list
+                where you only found it by scrolling past everything it
+                summarises. Full width because fifty-three weeks of cells want
+                it, and the column it used to sit in was cutting them off. */}
+            {view === "diary" && (
+                <Panel
+                    title="Gaming Calendar"
+                    material="lit"
+                    meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Last 12 months</span>}
                 >
-                    <Plus className="w-4 h-4" /> Log a session
-                </button>
+                    {journal.calendar.length === 0 ? (
+                        <EmptyState variant="compact" title="Nothing logged yet" />
+                    ) : (
+                        <>
+                            <CalendarHeat calendar={journal.calendar} />
+                            <p className="mt-4 flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/25">
+                                Less
+                                {[0.1, 0.35, 0.6, 0.85, 1].map((v) => (
+                                    <span key={v} className="block w-[11px] h-[11px] rounded-[2px]" style={{ background: `color-mix(in srgb, var(--accent) ${18 + v * 82}%, var(--surface-2))` }} />
+                                ))}
+                                More
+                            </p>
+                        </>
+                    )}
+                </Panel>
             )}
+
+            {/* Sessions Steam already noticed, above the form that asks you to
+                type one in. Nodding beats writing. */}
+            {journal.is_owner && view === "diary" && <SessionSuggestions onLogged={mutate} />}
 
             {showComposer && (
                 <SessionComposer
@@ -685,122 +836,87 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
                 <div className="xl:col-span-8 min-w-0 space-y-4">
                     {view === "diary" && (
-                        journal.sessions.length === 0 ? (
-                            <EmptyState
-                                icon={<BookOpen className="w-[18px] h-[18px]" />}
-                                title={journal.is_owner ? "Your journal is empty" : "No sessions logged"}
-                                body={journal.is_owner ? "Log what you played and this becomes a history you'll actually want to read back." : undefined}
-                            />
-                        ) : (
-                            <div className="space-y-2.5">
-                                {journal.sessions.map((session) => (
-                                    <SessionRow
-                                        key={session.id}
-                                        session={session}
-                                        onEdit={() => { setEditing(session); setComposing(false); }}
-                                        onDelete={() => remove(session)}
-                                    />
-                                ))}
-                                {journal.total_sessions > journal.sessions.length && (
-                                    <p className="pt-1 text-center font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/25">
-                                        Showing {journal.sessions.length} of {journal.total_sessions}
-                                    </p>
-                                )}
-                            </div>
-                        )
-                    )}
-
-                    {view === "diary" && (
                         <Panel
-                            title="Gaming Calendar"
-                            material="lit"
-                            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Last 12 months</span>}
+                            title="Sessions"
+                            meta={journal.total_sessions > 0
+                                ? <span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/30">
+                                    {journal.sessions.length} of {journal.total_sessions}
+                                </span>
+                                : undefined}
+                            action={journal.is_owner && !showComposer
+                                ? { label: "Log a session", onClick: () => setComposing(true) }
+                                : undefined}
+                            bodyClassName="p-4"
                         >
-                            {journal.calendar.length === 0 ? (
-                                <EmptyState variant="compact" title="Nothing logged yet" />
+                            {journal.sessions.length === 0 ? (
+                                <EmptyState
+                                    icon={<BookOpen className="w-[18px] h-[18px]" />}
+                                    title={journal.is_owner ? "Your journal is empty" : "No sessions logged"}
+                                    body={journal.is_owner ? "Log what you played and this becomes a history you'll actually want to read back." : undefined}
+                                />
                             ) : (
-                                <>
-                                    <CalendarHeat calendar={journal.calendar} />
-                                    <p className="mt-4 flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/25">
-                                        Less
-                                        {[0.1, 0.35, 0.6, 0.85, 1].map((v) => (
-                                            <span key={v} className="block w-[11px] h-[11px] rounded-[2px]" style={{ background: `color-mix(in srgb, var(--accent) ${18 + v * 82}%, var(--surface-2))` }} />
-                                        ))}
-                                        More
-                                    </p>
-                                </>
-                            )}
-                        </Panel>
-                    )}
-
-                    {view === "timeline" && (
-                        <Panel title="Completed Timeline">
-                            {journal.completed_timeline.length === 0 ? (
-                                <EmptyState variant="compact" title="Nothing finished yet" body="Mark a game completed in your collection and it lands here." />
-                            ) : (
-                                <div className="relative pl-5">
-                                    <span aria-hidden className="absolute left-[5px] top-2 bottom-2 w-px bg-white/[0.09]" />
-                                    <div className="space-y-3">
-                                        {journal.completed_timeline.map((g) => (
-                                            <Link key={g.slug + g.completed_at} href={`/games/${g.slug}`} className="group relative flex items-center gap-3">
-                                                <span aria-hidden className="absolute -left-5 top-1/2 -translate-y-1/2 w-[11px] h-[11px] rounded-full bg-emerald-400 border-2 border-[var(--surface-2)]" />
-                                                <span className="w-[78px] h-[44px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.04]">
-                                                    {g.cover_url && (
-                                                        // eslint-disable-next-line @next/next/no-img-element
-                                                        <img src={g.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
-                                                    )}
+                                /* By the month, because that is how a diary is
+                                   read back. An unbroken column of dated cards
+                                   makes you compute where you are in the year
+                                   from the number on each tile. */
+                                <div className="space-y-5">
+                                    {groupRuns(journal.sessions, (s) => monthOf(s.played_on)).map(({ key, rows }) => (
+                                        <section key={key}>
+                                            <h4 className="flex items-center gap-3 mb-2.5">
+                                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/35 whitespace-nowrap">
+                                                    {monthLabel(key)}
                                                 </span>
-                                                <span className="min-w-0 flex-1">
-                                                    <span className="block text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">{g.name}</span>
-                                                    <span className="block font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">
-                                                        {g.completed_at}
-                                                        {g.hours > 0 && ` · ${g.hours}h`}
-                                                    </span>
+                                                <span aria-hidden className="flex-1 h-px bg-white/[0.06]" />
+                                                <span className="font-display text-[9.5px] font-bold tabular-nums text-white/20">
+                                                    {hhmm(rows.reduce((a, r) => a + r.minutes, 0))}
                                                 </span>
-                                                {g.from_backlog && (
-                                                    <span className="shrink-0 inline-flex items-center gap-1 h-[19px] px-2 rounded-[4px] bg-blue-500/15 font-display text-[8px] font-black uppercase tracking-[0.1em] text-blue-400">
-                                                        <Layers className="w-2.5 h-2.5" /> From backlog
-                                                    </span>
-                                                )}
-                                            </Link>
-                                        ))}
-                                    </div>
+                                            </h4>
+                                            <div className="space-y-2.5">
+                                                {rows.map((session) => (
+                                                    <SessionRow
+                                                        key={session.id}
+                                                        session={session}
+                                                        onEdit={() => { setEditing(session); setComposing(false); }}
+                                                        onDelete={() => remove(session)}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </section>
+                                    ))}
                                 </div>
                             )}
                         </Panel>
                     )}
 
                     {view === "timeline" && (
-                        <Panel title="Reviews">
-                            {journal.reviews.length === 0 ? (
-                                <EmptyState variant="compact" title="No reviews yet" body="Rate a game with a few words and it shows up here." />
+                        <Panel
+                            title="Finished"
+                            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Games, and your verdict on them</span>}
+                            bodyClassName="p-4"
+                        >
+                            {finished.length === 0 ? (
+                                <EmptyState
+                                    icon={<Star className="w-[18px] h-[18px]" />}
+                                    title="Nothing finished yet"
+                                    body="Mark a game completed in your collection, or rate one, and it lands here."
+                                />
                             ) : (
-                                <div className="space-y-3">
-                                    {journal.reviews.map((r) => (
-                                        <div key={r.id} className="flex gap-3 p-3 rounded-[10px] border border-white/[0.07] bg-white/[0.02]">
-                                            <Link href={`/games/${r.game.slug}`} className="w-[86px] h-[50px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.04]">
-                                                {r.game.cover_url && (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img src={r.game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
-                                                )}
-                                            </Link>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="flex items-center gap-2.5">
-                                                    <Link href={`/games/${r.game.slug}`} className="text-[13px] font-bold text-white truncate hover:text-[var(--accent)] transition-colors">
-                                                        {r.game.name}
-                                                    </Link>
-                                                    <span className="shrink-0 inline-flex items-center gap-1 font-display text-[11px] font-black tabular-nums text-amber-400">
-                                                        <Star className="w-3 h-3 fill-current" /> {r.rating.toFixed(1)}
-                                                    </span>
-                                                    {r.created_at && (
-                                                        <span className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
-                                                            {timeAgo(r.created_at)}
-                                                        </span>
-                                                    )}
-                                                </p>
-                                                {r.review && <p className="mt-1.5 text-[12.5px] text-white/55 leading-snug line-clamp-3">{r.review}</p>}
+                                <div className="space-y-5">
+                                    {groupRuns(finished, (e) => e.at?.slice(0, 4) ?? "—").map(({ key, rows }) => (
+                                        <section key={key}>
+                                            <h4 className="flex items-center gap-3 mb-2.5">
+                                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] tabular-nums text-white/35">
+                                                    {key === "—" ? "Undated" : key}
+                                                </span>
+                                                <span aria-hidden className="flex-1 h-px bg-white/[0.06]" />
+                                                <span className="font-display text-[9.5px] font-bold tabular-nums text-white/20">
+                                                    {rows.length} {rows.length === 1 ? "game" : "games"}
+                                                </span>
+                                            </h4>
+                                            <div className="space-y-2.5">
+                                                {rows.map((e) => <FinishedRow key={`${e.slug}-${e.at}`} entry={e} />)}
                                             </div>
-                                        </div>
+                                        </section>
                                     ))}
                                 </div>
                             )}

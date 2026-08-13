@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { LayoutGrid, BookOpen, History } from "lucide-react";
+import Segmented from "@/components/ui/Segmented";
 import CollectionGrid from "./CollectionGrid";
 import JournalTab, { type JournalView } from "./JournalTab";
 
@@ -46,38 +47,15 @@ export default function LibraryTab({ username, isOwnProfile }: Props) {
 
     return (
         <div className="space-y-5">
-            {/* One switch, not three loose buttons.
-                These pick a lens on the same set of games — a thing with one
-                setting at a time — and three separated pills say "three
-                filters, choose any" instead. Housed together in a single track
-                the control reads as what it is, and it stops competing with
-                the status chips further down the page, which really are loose
-                pills because they really are a filter. */}
-            <nav
-                className="inline-flex items-center p-1 rounded-[10px] border"
-                style={{ background: "var(--surface-2)", borderColor: "var(--line-strong)" }}
-                aria-label="Library views"
-            >
-                {VIEWS.map(({ id, label, icon: Icon, hint }) => {
-                    const on = view === id;
-
-                    return (
-                        <button
-                            key={id}
-                            onClick={() => setView(id)}
-                            aria-pressed={on}
-                            title={hint}
-                            className={`inline-flex items-center gap-2 h-8 px-3.5 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.12em] transition-colors duration-300 ${
-                                on
-                                    ? "bg-[var(--accent)] text-white shadow-[0_2px_10px_color-mix(in_srgb,var(--accent)_35%,transparent)]"
-                                    : "text-white/40 hover:text-white hover:bg-white/[0.05]"
-                            }`}
-                        >
-                            <Icon className="w-3.5 h-3.5" /> {label}
-                        </button>
-                    );
-                })}
-            </nav>
+            {/* One switch, not three loose buttons — and the same switch the
+                status filters below are drawn with, so the two bars on this
+                page read as one instrument rather than two conventions. */}
+            <Segmented
+                ariaLabel="Library views"
+                value={view}
+                onChange={(id) => setView(id as LibraryView)}
+                items={VIEWS.map(({ id, label, icon, hint }) => ({ id, label, icon, title: hint }))}
+            />
 
             {view === "shelf" ? (
                 <CollectionGrid
