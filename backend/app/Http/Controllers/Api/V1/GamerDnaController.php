@@ -28,8 +28,13 @@ class GamerDnaController extends Controller
             return $this->error('This profile is private.', 403);
         }
 
+        // The version in the key is the payload's shape, not the endpoint's.
+        // It stayed at v1 through a shape change once, and every reader with a
+        // warm cache got a fifteen-minute window of an object missing the
+        // fields the page had just been rebuilt around. Bump it whenever
+        // GamerDnaService::build gains or loses a key.
         $payload = Cache::remember(
-            "gamer-dna.{$user->id}.v1",
+            "gamer-dna.{$user->id}.v2",
             900,
             fn () => $dna->build($user)
         );

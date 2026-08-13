@@ -546,6 +546,15 @@ export default function GamerDnaPanel({ username }: { username: string }) {
         return <EmptyState icon={<Dna className="w-[18px] h-[18px]" />} title="No DNA yet" body="Add games to your collection and this page fills in." />;
     }
 
+    // This payload is cached server-side for fifteen minutes, so for a quarter
+    // of an hour after any deploy the page can be handed an object written by
+    // the build before it. Reading .length off a key that did not exist yet
+    // takes the whole tab down — a missing section is a far cheaper failure,
+    // so every field added after the first release is read defensively.
+    const signature = dna.signature ?? [];
+    const series = dna.series ?? [];
+    const rhythm = dna.rhythm ?? { sessions: 0, minutes: 0, average: 0, longest: 0, best_day: null, moods: [] };
+
     return (
         <div className="space-y-4">
             {/* ── page head ── */}
@@ -582,10 +591,10 @@ export default function GamerDnaPanel({ username }: { username: string }) {
             <IdentityCard data={dna} />
 
             {/* ── what the hours went into ── */}
-            <SignatureStrip games={dna.signature} />
+            <SignatureStrip games={signature} />
 
             {/* ── how you play ── */}
-            <RhythmPanel rhythm={dna.rhythm} />
+            <RhythmPanel rhythm={rhythm} />
 
             {/* ── what you play ── */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
@@ -688,7 +697,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
 
                 <div className="xl:col-span-4 min-w-0">
                     <Panel title="Worlds you return to" material="instrument" className="h-full" bodyClassName="flex-1 flex flex-col">
-                        {dna.series.length === 0 ? (
+                        {series.length === 0 ? (
                             <EmptyState
                                 variant="compact"
                                 icon={<Layers className="w-[18px] h-[18px]" />}
@@ -697,7 +706,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                             />
                         ) : (
                             <div className="space-y-2.5">
-                                {dna.series.map((s, i) => (
+                                {series.map((s, i) => (
                                     <div
                                         key={s.name}
                                         className="flex items-center gap-3 rounded-[10px] border border-white/[0.07] bg-white/[0.02] px-3 py-2.5"
