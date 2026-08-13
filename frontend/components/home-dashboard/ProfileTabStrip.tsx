@@ -27,10 +27,13 @@ export default function ProfileTabStrip({
     username,
     activeTab = "overview",
     isOwnProfile = true,
+    bounty = null,
 }: {
     username: string;
     activeTab?: string;
     isOwnProfile?: boolean;
+    /** The wallet, parked at the end of the bar. Owner only. */
+    bounty?: number | null;
 }) {
     const tabs = PROFILE_TABS.filter((t) => !t.ownOnly || isOwnProfile);
     const base = `/profile/${username}`;
@@ -46,7 +49,8 @@ export default function ProfileTabStrip({
             }}
             aria-label="Profile sections"
         >
-            <div className="flex items-stretch overflow-x-auto scrollbar-none divide-x divide-white/[0.04]">
+            <div className="flex items-stretch overflow-x-auto scrollbar-none">
+                <span className="flex items-stretch divide-x divide-white/[0.04]">
                 {tabs.map(({ id, label, icon: Icon }) => {
                     const active = id === activeTab;
 
@@ -100,6 +104,34 @@ export default function ProfileTabStrip({
                         <Link key={id} href={href(id)} scroll={false} className={shell}>{inner}</Link>
                     );
                 })}
+                </span>
+
+                {/* The wallet rides the bar's dead right-hand end, which is
+                    where a game puts its currency: always in view, never in
+                    the way, one press from the place it is spent. Owner only —
+                    a balance is nobody else's business, and the API does not
+                    send one for anybody else. */}
+                {isOwnProfile && bounty !== null && (
+                    <Link
+                        href={`${base}?tab=progression`}
+                        scroll={false}
+                        className="group/wallet ml-auto shrink-0 hidden sm:flex items-center gap-2.5 pl-5 pr-5 border-l border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                    >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="/images/profile/v2-bounty.webp"
+                            alt=""
+                            aria-hidden
+                            className="w-[26px] h-[26px] shrink-0 object-contain transition-transform duration-300 group-hover/wallet:scale-110"
+                        />
+                        <span className="font-display text-[15px] font-black tabular-nums leading-none text-amber-400">
+                            {bounty.toLocaleString("en-US")}
+                        </span>
+                        <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">
+                            Bounty
+                        </span>
+                    </Link>
+                )}
             </div>
         </nav>
     );

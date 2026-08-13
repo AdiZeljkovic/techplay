@@ -43,6 +43,12 @@ export interface HeroModel {
     backdrop_fallback: string | null;
     /** Drives the owner's primary CTA; visitors get a friend action instead. */
     continue_playing: { slug: string; name: string } | null;
+    /**
+     * The wallet, for the section bar's readout. Null for anyone but the
+     * owner — the API strips it from a visitor's payload, and a balance is
+     * nobody else's business.
+     */
+    bounty: number | null;
     /** What they said they are playing right now. Null when nothing is set. */
     playing_label: string | null;
     /** The game page, when the picker matched one in the catalogue. */
@@ -95,6 +101,7 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
             achievements: stats.achievements_count,
             hours: stats.hours_played,
         },
+        bounty: data.stats.bounty_balance ?? null,
         backdrop_fallback: firstPlaying?.cover_url ?? data.favorites[0]?.cover_url ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,
     };
@@ -141,6 +148,7 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
             achievements: stats.achievements_count,
             hours: stats.hours_played ?? 0,
         },
+        bounty: stats.bounty_balance ?? null,
         backdrop_fallback: firstPlaying?.cover_url ?? profile.showcase?.[0]?.cover_url ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,
     };

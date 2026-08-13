@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
 import type { DashboardGameCover } from "@/lib/types/dashboard";
 import Panel from "@/components/ui/Panel";
 import AddFavoriteInline from "./AddFavoriteInline";

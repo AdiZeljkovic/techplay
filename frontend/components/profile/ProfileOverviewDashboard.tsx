@@ -126,7 +126,7 @@ export default function ProfileOverviewDashboard({
                     lg-only; SWR dedupes the requests, so the double mount is cheap) */}
                 {isOwnProfile && (
                     <div className="lg:hidden">
-                        <DailyHub bounty={stats.bounty_balance ?? 0} username={userData.username} onOpenTab={onOpenTab} />
+                        <DailyHub username={userData.username} onOpenTab={onOpenTab} />
                     </div>
                 )}
 
@@ -178,7 +178,7 @@ export default function ProfileOverviewDashboard({
                 {/* Daily Hub — owner's engagement centre (mobile copy is above) */}
                 {isOwnProfile && (
                     <div className="hidden lg:block">
-                        <DailyHub bounty={stats.bounty_balance ?? 0} username={userData.username} onOpenTab={onOpenTab} />
+                        <DailyHub username={userData.username} onOpenTab={onOpenTab} />
                     </div>
                 )}
 

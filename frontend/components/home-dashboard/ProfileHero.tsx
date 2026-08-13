@@ -609,7 +609,12 @@ export default function ProfileHero({
             </section>
 
             {/* ── sections ── */}
-            <ProfileTabStrip username={hero.username} activeTab={activeTab} isOwnProfile={isOwnProfile} />
+            <ProfileTabStrip
+                username={hero.username}
+                activeTab={activeTab}
+                isOwnProfile={isOwnProfile}
+                bounty={hero.bounty}
+            />
 
             {/* The card the OG route has been drawing for months, finally
                 somewhere a person can see it. */}

@@ -77,7 +77,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start tp-fade-up tp-d2">
                     <div className="lg:col-span-5 min-w-0">
                         <DailyHub
-                            bounty={data.stats.bounty_balance ?? 0}
                             username={data.user.username}
                             onOpenTab={(tab) => router.push(`/profile/${data.user.username}?tab=${tab}`)}
                         />
