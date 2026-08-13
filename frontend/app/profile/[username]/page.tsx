@@ -18,6 +18,7 @@ import DashboardHome from "@/components/home-dashboard/DashboardHome";
 import LibraryTab from "@/components/profile/LibraryTab";
 import ListsTab from "@/components/profile/ListsTab";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
+import TasteMatch from "@/components/profile/TasteMatch";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
 import { PROFILE_TABS, LEGACY_TABS, type ProfileTab } from "@/lib/profileTabs";
 import { heroFromProfile } from "@/lib/hero";
@@ -241,7 +242,13 @@ function ProfilePageInner() {
                     )}
 
                     {activeTab === "stats" && (
-                        <GamerDnaPanel username={userData.username} />
+                        <div className="space-y-4">
+                            {/* The only part of a stranger's analytics that
+                                answers the question they arrived with. Draws
+                                nothing on your own page. */}
+                            <TasteMatch username={userData.username} displayName={userData.display_name || userData.username} />
+                            <GamerDnaPanel username={userData.username} />
+                        </div>
                     )}
                 </div>
             </div>

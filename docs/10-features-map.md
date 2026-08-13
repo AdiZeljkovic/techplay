@@ -237,6 +237,48 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Taste Match i kartica za dijeljenje, 13.08.2026
+
+Dvije stvari iz prve verzije plana koje su ispale kad je redoslijed presložen.
+
+**Taste Match** — `GET /users/{username}/taste-match`, na mjestu gdje je od
+ranije stajao komentar `// Profile comparison` s praznim tijelom. Sve ostalo na
+tuđem profilu opisuje jednu osobu; ovo odgovara na jedino pitanje s kojim
+stranac dolazi — *kako se to odnosi na mene*.
+
+Tri signala s **izrečenim težinama**, jer postotak koji niko ne može objasniti
+je horoskop:
+
+| Signal | Težina | Zašto |
+|---|---|---|
+| Žanrovi (kosinusna sličnost) | 50% | Dvoje ljudi bez ijedne zajedničke igre mogu oboje živjeti na CRPG-ovima |
+| Biblioteka (Jaccard) | 30% | Direktno ali tupo — velike biblioteke se preklapaju slučajno |
+| Platforme | 20% | Slabo samo, ali razdvaja iste ljubitelje pucačina na PC-u i Switchu |
+
+Odluke koje nose poštenje:
+- **Ispod 3 igre nema procenta.** Dvoje koji imaju po dvije igre i dijele jednu
+  nisu „50% usklađeni" ni u kojem smislu vrijednom štampanja. Odgovor kaže i
+  **koja strana je kratka**, pa stranica kaže korisnu stvar umjesto slijeganja.
+- **Wishlist se ne broji.** Tuđi wishlist je ko bi želio biti; polica je ko jeste.
+- **Kosinus, ne prosto preklapanje** — poredi *oblik* ukusa, pa neko sa 40 RPG-ova
+  i neko sa 4 nisu stranci.
+- Panel crta i **šta samo oni vole** — neslaganje je zanimljivije od slaganja i
+  na njega ljudi zapravo odgovaraju.
+
+Privatnost ide kroz isti `ProfilePrivacy` trait; anonimni dobija 401 jer za
+poređenje treba druga polica.
+
+**`ShareCard`** — OG slike postoje mjesecima i lijepo izgledaju, a jedini način
+da ih vidiš bio je zalijepiti link negdje drugdje i čekati da ta stranica
+razmota. „Share DNA" je kopirao URL i pisao „Copied" — to je operacija s
+clipboardom, ne trenutak.
+
+Sada dugme **otvara karticu**, pa nudi tri izlaza: sistemski share sheet gdje
+postoji (telefoni, gdje se dijeljenje i dešava), preuzimanje slike i običan
+link. Spojeno na hero meni (`Share card`) i na Gamer DNA.
+
+---
+
 ### Vizuelni sistem profila — M1–M6, 13.08.2026
 
 Tokeni su bili dobri; primjena nije. Postoje **četiri tokena za površine, a

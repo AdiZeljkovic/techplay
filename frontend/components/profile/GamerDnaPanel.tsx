@@ -3,9 +3,10 @@
 import { useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Dna, Share2, Check, Clock3, Gamepad2, Trophy, Sparkles, BookOpen, Swords, Moon, Compass, Feather, HelpCircle, type LucideIcon } from "lucide-react";
+import { Dna, Clock3, Gamepad2, Trophy, Sparkles, BookOpen, Swords, Moon, Compass, Feather, HelpCircle, type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
+import ShareCard from "./ShareCard";
 import { useCountUp } from "@/hooks/useCountUp";
 import type { DistributionStat, DnaArchetype, DnaAxis, GamerDnaPayload } from "@/lib/types/profile";
 
@@ -308,16 +309,8 @@ export default function GamerDnaPanel({ username }: { username: string }) {
         fetcher,
         { revalidateOnFocus: false }
     );
-    const [copied, setCopied] = useState(false);
 
     const dna = data?.data;
-
-    const share = () => {
-        navigator.clipboard?.writeText(`${window.location.origin}/profile/${username}?tab=stats`).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
-    };
 
     if (isLoading) {
         return (
@@ -359,13 +352,16 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                         <Clock3 className="w-3.5 h-3.5" />
                         Updated {new Date(dna.updated_at).toLocaleDateString("en-GB")}
                     </span>
-                    <button
-                        onClick={share}
-                        className="inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.1em] transition-colors"
-                    >
-                        {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
-                        {copied ? "Copied" : "Share DNA"}
-                    </button>
+                    {/* The card is the thing being shared, so the button
+                        opens the card. "Copied" was a clipboard operation
+                        wearing the word Share. */}
+                    <ShareCard
+                        imageUrl={`/og/profile?username=${encodeURIComponent(username)}`}
+                        pageUrl={`${typeof window !== "undefined" ? window.location.origin : "https://techplay.gg"}/profile/${username}?tab=stats`}
+                        title={`${username} on TechPlay`}
+                        fileName={`${username}-gamer-dna`}
+                        label="Share DNA"
+                    />
                 </div>
             </div>
 

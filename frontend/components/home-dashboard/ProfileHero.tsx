@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
     User as UserIcon, MapPin, CalendarDays, Pencil, ExternalLink, Check, BadgeCheck, MoreHorizontal,
-    Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare } from "lucide-react";
+    Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare, Share2 } from "lucide-react";
 import type { HeroModel } from "@/lib/hero";
 import type { FriendStatus } from "@/lib/types/profile";
 import { rankTier } from "@/lib/ranks";
 import { useCountUp } from "@/hooks/useCountUp";
 import ProfileTabStrip from "./ProfileTabStrip";
+import ShareCard from "@/components/profile/ShareCard";
 import { RankInsigniaMark, XpRail } from "./RankInsignia";
 import { xpForLevel } from "@/lib/level";
 
@@ -262,6 +263,7 @@ export default function ProfileHero({
     viewerSignedIn = false,
     viewerUsername }: Props) {
     const [copied, setCopied] = useState(false);
+    const [sharing, setSharing] = useState(false);
 
     const backdrop = hero.cover_image ?? hero.backdrop_fallback;
     const base = `/profile/${hero.username}`;
@@ -483,6 +485,9 @@ export default function ProfileHero({
                                             View public profile <ExternalLink className="w-3.5 h-3.5" />
                                         </Link>
                                         <MoreMenu>
+                                            <button onClick={() => setSharing(true)} className={MENU_ITEM}>
+                                                <Share2 className="w-3.5 h-3.5" /> Share card
+                                            </button>
                                             <button onClick={share} className={MENU_ITEM}>
                                                 <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
                                             </button>
@@ -509,6 +514,9 @@ export default function ProfileHero({
                                             <MessageSquare className="w-4 h-4" /> Message
                                         </button>
                                         <MoreMenu>
+                                            <button onClick={() => setSharing(true)} className={MENU_ITEM}>
+                                                <Share2 className="w-3.5 h-3.5" /> Share card
+                                            </button>
                                             <button onClick={share} className={MENU_ITEM}>
                                                 <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
                                             </button>
@@ -556,6 +564,17 @@ export default function ProfileHero({
 
             {/* ── sections ── */}
             <ProfileTabStrip username={hero.username} activeTab={activeTab} isOwnProfile={isOwnProfile} />
+
+            {/* The card the OG route has been drawing for months, finally
+                somewhere a person can see it. */}
+            <ShareCard
+                open={sharing}
+                onClose={() => setSharing(false)}
+                imageUrl={`/og/profile?username=${encodeURIComponent(hero.username)}`}
+                pageUrl={`${typeof window !== "undefined" ? window.location.origin : "https://techplay.gg"}/profile/${hero.username}`}
+                title={`${hero.display_name} on TechPlay`}
+                fileName={`${hero.username}-techplay`}
+            />
         </div>
     );
 }

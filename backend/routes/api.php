@@ -74,6 +74,7 @@ use App\Http\Controllers\Api\V1\SteamAchievementController;
 use App\Http\Controllers\Api\V1\StreakController;
 use App\Http\Controllers\Api\V1\SupportController;
 use App\Http\Controllers\Api\V1\SystemController;
+use App\Http\Controllers\Api\V1\TasteMatchController;
 use App\Http\Controllers\Api\V1\TechController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\TrophyCaseController;
@@ -474,7 +475,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/seasons', [SeasonController::class, 'index']);
         Route::get('/seasons/active', [SeasonController::class, 'active']);
 
-        // Profile comparison
+        // Profile comparison — how much two libraries overlap. Signed-in
+        // only: a comparison needs two shelves and an anonymous reader has
+        // not brought one.
+        Route::get('/users/{username}/taste-match', [TasteMatchController::class, 'show']);
 
         // Public Profile
         Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);
