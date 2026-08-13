@@ -10,9 +10,8 @@ import EmptyState from "@/components/ui/EmptyState";
 import Segmented from "@/components/ui/Segmented";
 import { useCountUp } from "@/hooks/useCountUp";
 import { getStorageUrl } from "@/lib/imageUrl";
-import { timeAgo } from "@/lib/timeAgo";
 import type {
-    BountyWallet, RewardRedemption, StoreCatalog, StoreItem, StoreRarity } from "@/lib/types/profile";
+    BountyWallet, StoreCatalog, StoreItem, StoreRarity } from "@/lib/types/profile";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -452,15 +451,11 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
     const { data: walletRes, mutate: mutateWallet } = useSWR<{ data: BountyWallet }>(
         isOwnProfile ? "/bounty" : null, fetcher
     );
-    const { data: redemptionsRes } = useSWR<{ data: RewardRedemption[] }>(
-        isOwnProfile ? "/rewards/redemptions" : null, fetcher
-    );
 
     const [busy, setBusy] = useState<string | null>(null);
     const [category, setCategory] = useState<string>("all");
     const [sort, setSort] = useState<SortId>("featured");
     const [showHelp, setShowHelp] = useState(false);
-    const [showHistory, setShowHistory] = useState(false);
 
     const catalog = catalogRes?.data;
     const wallet = walletRes?.data;
@@ -621,110 +616,6 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
         ) : (
             <StoreComingSoon />
         )}
-
-        {/* ── history ──
-
-            Folded away by default. A ledger of every bounty movement
-            is a record you consult, not something you read on the way
-            to buying a frame — and open, it added a six-column table
-            to the bottom of a page that already carried a wallet, a
-            catalogue and an inventory. The rail's Recently Redeemed is
-            the glance; this is the audit. */}
-        <Panel
-            title="Bounty ledger"
-            padding="none"
-            meta={
-                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
-            {showHistory && wallet.transactions.length > 25
-                ? `Latest 25 of ${wallet.transactions.length}`
-                : `${wallet.transactions.length} ${wallet.transactions.length === 1 ? "entry" : "entries"}`}
-                </span>
-            }
-            action={wallet.transactions.length > 0
-                ? { label: showHistory ? "Hide" : "Show", onClick: () => setShowHistory((v) => !v) }
-                : undefined}
-        >
-            {!showHistory && wallet.transactions.length > 0 ? (
-                /* Folded, it still shows the last few things you
-                   actually bought — that was a Recently Redeemed panel
-                   in the rail, which is the same list read from the
-                   other end. */
-                <div className="px-5 py-4">
-                    {(redemptionsRes?.data ?? []).length === 0 ? (
-                        <p className="text-[12px] text-white/30">Everything you earn and spend is logged here.</p>
-                    ) : (
-                        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                            {(redemptionsRes?.data ?? []).slice(0, 4).map((r) => (
-                                <span key={r.id} className="flex items-center gap-2.5 min-w-0">
-                                    <span className="w-8 h-8 shrink-0 rounded-[7px] bg-white/[0.04] flex items-center justify-center overflow-hidden">
-                                        {r.reward_item?.image ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img src={getStorageUrl(r.reward_item.image)} alt="" aria-hidden className="w-full h-full object-cover" />
-                                        ) : (
-                                            <Sparkles className="w-3.5 h-3.5 text-white/25" />
-                                        )}
-                                    </span>
-                                    <span className="min-w-0">
-                                        <span className="block text-[12px] font-bold text-white truncate max-w-[160px]">
-                                            {r.reward_item?.name ?? "Reward"}
-                                        </span>
-                                        <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/25">
-                                            {timeAgo(r.created_at)} · <span className="text-red-400/70">-{r.cost.toLocaleString("en-US")}</span>
-                                        </span>
-                                    </span>
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            ) : wallet.transactions.length === 0 ? (
-                <div className="p-5">
-                    <EmptyState variant="compact" title="No bounty movement yet" body="Everything you earn and spend is logged here." />
-                </div>
-            ) : (
-                <div className="overflow-x-auto">
-                    <table className="w-full min-w-[620px] text-left">
-                        <thead>
-                            <tr className="border-b border-white/[0.07]">
-                                {["Type", "Description", "Amount", "Date", "Balance"].map((h, i) => (
-                                    <th
-                                        key={h}
-                                        className={`px-5 py-2.5 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35 ${i > 1 ? "text-right" : ""}`}
-                                    >
-                                        {h}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {wallet.transactions.slice(0, 25).map((t) => {
-                                const earned = t.amount > 0;
-                                return (
-                                    <tr key={t.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.015] transition-colors">
-                                        <td className="px-5 py-2.5">
-                                            <span className={`inline-flex items-center gap-1.5 font-display text-[10.5px] font-bold ${earned ? "text-emerald-400" : "text-red-400"}`}>
-                                                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                                {earned ? "Earned" : "Redeemed"}
-                                            </span>
-                                        </td>
-                                        <td className="px-5 py-2.5 text-[12px] text-white/60 max-w-[280px] truncate">{t.reason ?? "—"}</td>
-                                        <td className={`px-5 py-2.5 text-right font-display text-[12px] font-black tabular-nums ${earned ? "text-emerald-400" : "text-red-400"}`}>
-                                            {earned ? "+" : ""}{t.amount.toLocaleString("en-US")}
-                                        </td>
-                                        <td className="px-5 py-2.5 text-right text-[11.5px] tabular-nums text-white/35 whitespace-nowrap">
-                                            {timeAgo(t.created_at)}
-                                        </td>
-                                        <td className="px-5 py-2.5 text-right font-display text-[12px] font-bold tabular-nums text-white/70">
-                                            {t.balance_after.toLocaleString("en-US")}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </Panel>
         </div>
     );
 }
