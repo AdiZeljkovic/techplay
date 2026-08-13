@@ -48,9 +48,13 @@ function Row({ article, index }: { article: FeedItem; index: number }) {
     return (
         <Link
             href={article.url}
-            className={`group flex gap-3 p-2.5 rounded-[var(--radius-card)] hover:bg-white/[0.03] transition-colors duration-300 tp-fade-up tp-d${Math.min(6, index + 1)}`}
+            className={`group flex items-stretch gap-3 h-full p-2.5 rounded-[var(--radius-card)] hover:bg-white/[0.03] transition-colors duration-300 tp-fade-up tp-d${Math.min(6, index + 1)}`}
         >
-            <span className="relative w-[96px] h-[64px] shrink-0 rounded-[var(--radius-card)] overflow-hidden border border-white/[0.06] bg-black/40">
+            {/* The art matches the column beside it rather than sitting at a
+                fixed 64px while a two-line headline and a date grew past it.
+                Fixed width, stretched height: the row decides how tall it is,
+                and the picture agrees with it. */}
+            <span className="relative w-[104px] shrink-0 self-stretch min-h-[72px] rounded-[var(--radius-card)] overflow-hidden border border-white/[0.06] bg-black/40">
                 {article.featured_image_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -63,7 +67,7 @@ function Row({ article, index }: { article: FeedItem; index: number }) {
                 )}
             </span>
 
-            <span className="flex flex-col justify-center min-w-0 flex-1">
+            <span className="flex flex-col min-w-0 flex-1 py-0.5">
                 <span className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-[var(--accent)] leading-none truncate">
                     {article.category?.name || "News"}
                 </span>
@@ -71,7 +75,7 @@ function Row({ article, index }: { article: FeedItem; index: number }) {
                     {article.title}
                 </span>
                 {article.published_at && (
-                    <span className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
+                    <span className="mt-auto pt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
                         {publishedLabel(article.published_at)}
                     </span>
                 )}
@@ -124,7 +128,7 @@ export default function LatestArticlesFeed() {
             </div>
 
             {isLoading && !articles ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1 pt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1 pt-3 items-stretch">
                     {Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className="h-[89px] rounded-[var(--radius-card)] bg-white/[0.04] animate-pulse" />
                     ))}
@@ -139,7 +143,7 @@ export default function LatestArticlesFeed() {
                     />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1 pt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1 pt-3 items-stretch">
                     {articles.slice(0, 6).map((a, i) => (
                         <Row key={a.id} article={a} index={i} />
                     ))}
