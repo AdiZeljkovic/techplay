@@ -118,6 +118,80 @@ function ItemArt({ item }: { item: StoreItem }) {
     );
 }
 
+/* ── the shelf, while it is empty ─────────────────────────────────────── */
+
+/**
+ * The catalogue is live and buyable, and the artwork for it is not finished —
+ * every cosmetic is currently a generated placeholder standing in for a thing
+ * that has not been drawn. Selling those would spend real bounty on art that
+ * is about to change underneath the people who bought it.
+ *
+ * So the shelf is closed and says so. The wallet above it and the ledger below
+ * stay open, because the point of closing the shelf rather than hiding the tab
+ * is that bounty keeps accruing while it is shut — a page that says "come back
+ * with a balance" is worth more than one that is not there.
+ *
+ * Reopening is this constant. When the art lands, flip it; nothing else about
+ * the store was removed.
+ */
+const STORE_OPEN = false;
+
+function StoreComingSoon() {
+    const soon: { type: string; label: string; blurb: string }[] = [
+        { type: "frame", label: "Frames", blurb: "Rings for your portrait" },
+        { type: "theme", label: "Themes", blurb: "Repaint your profile" },
+        { type: "badge", label: "Badges", blurb: "Worn beside your name" },
+        { type: "perk", label: "Perks", blurb: "Things the site does for you" },
+        { type: "discount", label: "Discounts", blurb: "Codes for the shop" },
+    ];
+
+    return (
+        <section
+            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-8 md:p-10"
+            style={{ background: "var(--surface-2)", borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)" }}
+        >
+            <span
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: "radial-gradient(60% 110% at 50% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 62%)" }}
+            />
+
+            <div className="relative text-center max-w-[560px] mx-auto">
+                <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)]">
+                    <ShoppingBag className="w-7 h-7" strokeWidth={1.5} />
+                </span>
+
+                <h2 className="mt-5 font-display text-[24px] md:text-[28px] font-black uppercase tracking-tight text-white leading-none">
+                    The store opens soon
+                </h2>
+                <p className="mt-3 text-[13px] text-white/45 leading-relaxed">
+                    We are drawing the rewards properly before putting a price on them. Keep earning — your bounty is
+                    banked, it does not expire, and your tier climbs on what you earn whether or not there is anything
+                    to spend it on yet.
+                </p>
+            </div>
+
+            {/* What is coming, as the shape it will arrive in. */}
+            <div className="relative mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                {soon.map(({ type, label, blurb }) => {
+                    const Icon = TYPE_ICONS[type] ?? Sparkles;
+
+                    return (
+                        <div
+                            key={type}
+                            className="flex flex-col items-center gap-2 rounded-[12px] border border-dashed border-white/[0.1] bg-white/[0.015] px-3 py-5 text-center"
+                        >
+                            <Icon className="w-[26px] h-[26px] text-white/25" strokeWidth={1.5} />
+                            <span className="font-display text-[10.5px] font-black uppercase tracking-[0.14em] text-white/45">{label}</span>
+                            <span className="text-[10.5px] text-white/25 leading-snug">{blurb}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        </section>
+    );
+}
+
 /* ── one store card ───────────────────────────────────────────────────── */
 
 function StoreCard({
@@ -492,7 +566,7 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                     </p>
                     <p>
                         <span className="block font-display text-[10px] font-black uppercase tracking-[0.12em] text-white mb-1.5">Spending</span>
-                        Everything on this page costs Bounty and nothing else. Cosmetics are yours permanently;
+                        Everything in the store will cost Bounty and nothing else. Cosmetics are yours permanently;
                         coupons and perks are consumed when used.
                     </p>
                     <p>
@@ -504,47 +578,53 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
             </Panel>
         )}
 
-        {/* ── filters ── */}
-        <div className="flex items-center gap-2">
-            <Segmented
-                ariaLabel="Filter the store"
-                value={category}
-                onChange={setCategory}
-                className="flex-1 min-w-0"
-                items={[
-                    { id: "all", label: "All", count: items.length },
-                    ...catalog.categories.map((c) => ({ id: c.id, label: c.label, count: c.count })),
-                    { id: "owned", label: "Owned", count: items.filter((i) => i.owned).length, dot: "#34d399" },
-                ]}
-            />
-
-            <div className="relative shrink-0">
-                <select
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value as SortId)}
-                    className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
-                >
-                    {SORTS.map((s) => <option key={s.id} value={s.id}>Sort: {s.label}</option>)}
-                </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-            </div>
-        </div>
-
-        {/* ── grid ── */}
-        {visible.length === 0 ? (
-            <EmptyState variant="compact" title="Nothing on this shelf" body="Try another category." />
-        ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
-                {visible.map((item) => (
-                    <StoreCard
-                        key={item.key}
-                        item={item}
-                        busy={busy === item.key}
-                        onBuy={() => buy(item)}
-                        onEquip={() => equip(item)}
+        {STORE_OPEN ? (
+            <>
+                {/* ── filters ── */}
+                <div className="flex items-center gap-2">
+                    <Segmented
+                        ariaLabel="Filter the store"
+                        value={category}
+                        onChange={setCategory}
+                        className="flex-1 min-w-0"
+                        items={[
+                            { id: "all", label: "All", count: items.length },
+                            ...catalog.categories.map((c) => ({ id: c.id, label: c.label, count: c.count })),
+                            { id: "owned", label: "Owned", count: items.filter((i) => i.owned).length, dot: "#34d399" },
+                        ]}
                     />
-                ))}
-            </div>
+
+                    <div className="relative shrink-0">
+                        <select
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value as SortId)}
+                            className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
+                        >
+                            {SORTS.map((s) => <option key={s.id} value={s.id}>Sort: {s.label}</option>)}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+                    </div>
+                </div>
+
+                {/* ── grid ── */}
+                {visible.length === 0 ? (
+                    <EmptyState variant="compact" title="Nothing on this shelf" body="Try another category." />
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                        {visible.map((item) => (
+                            <StoreCard
+                                key={item.key}
+                                item={item}
+                                busy={busy === item.key}
+                                onBuy={() => buy(item)}
+                                onEquip={() => equip(item)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </>
+        ) : (
+            <StoreComingSoon />
         )}
 
         {/* ── history ──
