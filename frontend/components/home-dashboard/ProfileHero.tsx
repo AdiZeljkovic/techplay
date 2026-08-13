@@ -161,32 +161,60 @@ interface StripCell {
     href?: string;
 }
 
-/** Label above, figure below — one cell of the strip under the banner. */
-function StatCell({ cell }: { cell: StripCell }) {
+/**
+ * One bay of the record panel.
+ *
+ * The figures used to sit on the page with hairlines between them, which was
+ * fine while the icons were flat. They are not flat any more, and a rendered
+ * object floating on a background reads as a sticker — it needs a face to sit
+ * on and a recess to sit in.
+ *
+ * The bay lights from its floor on hover: a seam of accent along the bottom
+ * edge, the way a lit control does. Dimming the cell would fight the icon,
+ * which rises and catches light on the same gesture.
+ */
+function StatBay({ cell, lit = false }: { cell: StripCell; lit?: boolean }) {
     const body = (
-        <span className="flex items-center gap-3 min-w-0">
-            {cell.icon}
-            <span className="min-w-0">
-                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40 group-hover/cell:text-white/70 transition-colors duration-300 whitespace-nowrap">
-                    {cell.label}
-                </span>
-                <span className="block mt-1.5 font-display text-[19px] font-black tabular-nums leading-none text-white truncate">
-                    {cell.value}
+        <>
+            {/* the recess the icon sits in */}
+            <span
+                aria-hidden
+                className="absolute inset-0 opacity-0 group-hover/cell:opacity-100 transition-opacity duration-300"
+                style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.035) 0%, transparent 70%)" }}
+            />
+            {/* the floor seam — off until you approach, then it is the only lit
+                thing in the bay */}
+            <span
+                aria-hidden
+                className="absolute inset-x-3 bottom-0 h-[2px] scale-x-0 group-hover/cell:scale-x-100 origin-center transition-transform duration-[380ms] ease-[var(--ease-hud)]"
+                style={{ background: "linear-gradient(90deg, transparent, var(--accent), transparent)" }}
+            />
+
+            <span className="relative flex items-center gap-3.5 min-w-0">
+                {cell.icon}
+                <span className="min-w-0">
+                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/35 group-hover/cell:text-white/60 transition-colors duration-300 whitespace-nowrap">
+                        {cell.label}
+                    </span>
+                    <span className="block mt-1.5 font-display text-[22px] font-black tabular-nums leading-none text-white truncate">
+                        {cell.value}
+                    </span>
                 </span>
             </span>
-        </span>
+        </>
     );
 
-    return cell.href ? (
-        // Dimming the whole cell on hover used to fight the icon, which lifts
-        // and catches light on the same gesture — one said "come closer" while
-        // the other said "fading out". The label brightens instead.
-        <Link href={cell.href} className="group/cell flex items-center min-w-0">
-            {body}
-        </Link>
-    ) : (
-        <span className="flex items-center min-w-0">{body}</span>
-    );
+    // The lit bay carries a longer line — "209 XP to go" against a bare
+    // count — so it gets more of the row. Equal widths truncated the one
+    // sentence on the strip that is trying to pull you somewhere.
+    const shell = [
+        "group/cell relative flex items-center min-w-max md:min-w-0 px-4 lg:px-5 py-4 transition-colors duration-300",
+        lit ? "md:flex-[1.5] bg-[color-mix(in_srgb,var(--accent)_7%,transparent)]" : "md:flex-1",
+    ].join(" ");
+
+    return cell.href
+        ? <Link href={cell.href} className={shell}>{body}</Link>
+        : <span className={shell}>{body}</span>;
 }
 
 /**
@@ -524,20 +552,29 @@ export default function ProfileHero({
                 </div>
             </section>
 
-            {/* ── the record strip: no card of its own — the figures sit on the
-                page, and the live XP gauge runs the strip's full width beneath
-                them, ending exactly under the loot cell it's charging toward ── */}
-            <section className="px-1">
-                <div className="flex items-center gap-5 md:gap-0 md:justify-between min-w-max md:min-w-0 overflow-x-auto scrollbar-none">
+            {/* ── the record panel ──
+
+                One instrument face, six bays, and the gauge running along its
+                floor. The gauge used to float below the figures with a gap
+                between them, which left the thing being charged and the thing
+                charging it looking unrelated — inside the panel it is the
+                floor the bays stand on, and it still ends under the loot cell
+                it is filling toward. ── */}
+            <section
+                className="relative rounded-[var(--radius-panel)] border overflow-hidden"
+                style={{
+                    background: "var(--surface-2)",
+                    borderColor: "var(--line-strong)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+                }}
+            >
+                <div className="flex items-stretch min-w-max md:min-w-0 overflow-x-auto scrollbar-none divide-x divide-white/[0.05]">
                     {cells.map((cell, i) => (
-                        <span key={cell.label} className="flex items-center gap-5 md:gap-6 min-w-0">
-                            {i > 0 && <span aria-hidden className="hidden md:block w-px h-9 bg-white/[0.08]" />}
-                            <StatCell cell={cell} />
-                        </span>
+                        <StatBay key={cell.label} cell={cell} lit={i === cells.length - 1} />
                     ))}
                 </div>
 
-                <div className="mt-4 flex items-center gap-3">
+                <div className="flex items-center gap-3 px-4 lg:px-5 py-3 border-t border-white/[0.06] bg-black/25">
                     <XpRail percent={fillShown} className="flex-1" />
                     <span className="shrink-0 font-display text-[12px] font-black tabular-nums text-[var(--xp-bright)]">
                         {fillShown}%
