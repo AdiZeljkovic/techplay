@@ -35,11 +35,47 @@ const LAYERS: {
     icon: typeof Compass;
     tint: string;
 }[] = [
-    { type: "permanent", label: "First steps", blurb: "One lap of the site — done once", icon: Compass, tint: "#34d399" },
+    // Ordered by how soon it expires. First steps last: it is the one chain
+    // with no clock on it, so putting it at the top pushed the thing that
+    // resets tonight below the fold.
     { type: "daily", label: "Today", blurb: "Resets at midnight", icon: Flame, tint: "#f97316" },
     { type: "weekly", label: "This week", blurb: "Resets on Monday", icon: CalendarDays, tint: "#60a5fa" },
     { type: "monthly", label: "This season", blurb: "The long arcs", icon: CalendarRange, tint: "var(--accent-ink)" },
+    { type: "permanent", label: "First steps", blurb: "One lap of the site — done once", icon: Compass, tint: "#34d399" },
 ];
+
+/**
+ * Which board a quest belongs on.
+ *
+ * A quest pinned to a season is not permanent — it ends when the season does.
+ * Three of them were sitting under "First steps" wearing a SEASON badge to
+ * explain why they did not belong there, which is a label apologising for a
+ * grouping rather than describing one.
+ */
+const layerOf = (q: Quest): Quest["type"] =>
+    q.is_seasonal && q.type === "permanent" ? "monthly" : q.type;
+
+/**
+ * Closest to done first, finished last.
+ *
+ * The board arrived in catalogue order, so a quest at 7/100 could sit above
+ * one at 5/10 and the thing you were one action away from finishing was
+ * wherever it happened to land. Sorting by how near it is puts the next move
+ * at the top of every board.
+ */
+const byNearest = (a: Quest, b: Quest) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+
+    const share = (q: Quest) => (q.criteria_value > 0 ? Math.min(1, q.progress / q.criteria_value) : 0);
+    const diff = share(b) - share(a);
+    if (Math.abs(diff) > 0.001) return diff;
+
+    // Same fraction of the way: the shorter one is the nearer one.
+    return a.criteria_value - b.criteria_value;
+};
+
+/** How many objectives a board shows before it asks. */
+const CAP = 5;
 
 /**
  * How long this layer has left, ticking.
@@ -94,7 +130,7 @@ function useResetIn(type: Quest["type"]): string | null {
  * with a tick the moment it closes — and it is what makes a column of these
  * read as a board of work rather than a stack of notifications.
  */
-function QuestRow({ quest, tint }: { quest: Quest; tint: string }) {
+function QuestRow({ quest, tint, showSeason }: { quest: Quest; tint: string; showSeason: boolean }) {
     const done = quest.completed;
     const partial = !done && quest.criteria_value > 1 && quest.progress > 0;
 
@@ -126,7 +162,9 @@ function QuestRow({ quest, tint }: { quest: Quest; tint: string }) {
                     <span className={`text-[13px] font-semibold truncate transition-colors ${done ? "text-emerald-200/85" : "text-white"}`}>
                         {quest.name}
                     </span>
-                    {quest.is_seasonal && (
+                    {/* Not on the season board itself — a badge that repeats
+                        the heading above it is noise. */}
+                    {quest.is_seasonal && showSeason && (
                         <span className="shrink-0 inline-flex items-center h-[15px] px-1.5 rounded-[3px] bg-[var(--accent)]/15 font-display text-[7.5px] font-black uppercase tracking-[0.12em] text-[var(--accent-ink)]">
                             Season
                         </span>
@@ -172,13 +210,19 @@ function QuestRow({ quest, tint }: { quest: Quest; tint: string }) {
 function Layer({ layer, quests }: { layer: (typeof LAYERS)[number]; quests: Quest[] }) {
     const { label, blurb, icon: Icon, tint, type } = layer;
     const resetIn = useResetIn(type);
+    const [expanded, setExpanded] = useState(false);
 
     const done = quests.filter((q) => q.completed).length;
     const cleared = done === quests.length;
 
+    // Five objectives, then it asks. One board with nine rows and another with
+    // three is what turned a two-column grid into a column and a hole.
+    const shown = expanded ? quests : quests.slice(0, CAP);
+    const hidden = quests.length - shown.length;
+
     return (
         <section
-            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-4 transition-colors duration-500"
+            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-4 mb-4 break-inside-avoid transition-colors duration-500"
             style={{
                 background: "var(--surface-2)",
                 borderColor: cleared ? `color-mix(in srgb, ${tint} 40%, transparent)` : "var(--line-strong)",
@@ -235,8 +279,19 @@ function Layer({ layer, quests }: { layer: (typeof LAYERS)[number]; quests: Ques
             </header>
 
             <div className="space-y-2">
-                {quests.map((q) => <QuestRow key={q.id} quest={q} tint={tint} />)}
+                {shown.map((q) => (
+                    <QuestRow key={q.id} quest={q} tint={tint} showSeason={type !== "monthly"} />
+                ))}
             </div>
+
+            {(hidden > 0 || expanded) && (
+                <button
+                    onClick={() => setExpanded((v) => !v)}
+                    className="mt-2.5 w-full h-8 rounded-[7px] border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-white transition-colors"
+                >
+                    {expanded ? "Show fewer" : `${hidden} more`}
+                </button>
+            )}
         </section>
     );
 }
@@ -260,9 +315,14 @@ export default function QuestBoard() {
     if (!quests?.length) return null;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        // Columns rather than a grid. Four boards of three, three, five and
+        // nine rows in a two-by-two grid gives every row the height of its
+        // tallest member, so the short ones sat in the top corner of a tall
+        // empty cell and the page ended in a hole the size of a board. Columns
+        // balance on total height instead.
+        <div className="columns-1 md:columns-2 gap-4">
             {LAYERS.map((layer) => {
-                const group = quests.filter((q) => q.type === layer.type);
+                const group = quests.filter((q) => layerOf(q) === layer.type).sort(byNearest);
 
                 if (group.length === 0) return null;
 
