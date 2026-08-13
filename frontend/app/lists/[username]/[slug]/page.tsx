@@ -9,6 +9,8 @@ import type { GameListDetail } from "@/lib/types/profile";
 
 type Props = { params: Promise<{ username: string; slug: string }> };
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://techplay.gg";
+
 const TYPE_LABEL: Record<string, string> = {
     top10: "Top 10",
     top25: "Top 25",
@@ -29,19 +31,31 @@ async function fetchList(username: string, slug: string): Promise<GameListDetail
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { username, slug } = await params;
     const list = await fetchList(username, slug);
-    if (!list) return { title: "Game List" };
+    if (!list) return { title: "Game List", robots: { index: false, follow: false } };
 
     const owner = list.user?.display_name || list.user?.username || username;
     const description = list.description
         || `${list.items_count} games hand-picked by ${owner} on TechPlay.`;
 
+    // A card that shows the arrangement and signs it. This used to hand the
+    // network the list's first cover — a game's key art, with nothing on it to
+    // say whose list it was or what it argued for.
+    const ogImage = `${APP_URL}/og/list?username=${encodeURIComponent(username)}&slug=${encodeURIComponent(slug)}`;
+
     return {
         title: `${list.name} — a game list by ${owner} | TechPlay`,
         description,
+        alternates: { canonical: `${APP_URL}/lists/${username}/${slug}` },
         openGraph: {
             title: `${list.name} — game list by ${owner}`,
             description,
-            images: list.covers?.[0] ? [{ url: list.covers[0] }] : undefined,
+            images: [{ url: ogImage, width: 1200, height: 630, alt: `${list.name}, a game list by ${owner}` }],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: `${list.name} — game list by ${owner}`,
+            description,
+            images: [ogImage],
         },
     };
 }

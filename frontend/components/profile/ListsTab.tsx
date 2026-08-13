@@ -27,6 +27,24 @@ interface Props {
     isOwnProfile: boolean;
 }
 
+/**
+ * What a new list starts as.
+ *
+ * "Untitled list" was the single biggest thing standing between somebody and
+ * a list: an empty name field is a question with no hint of an answer, and the
+ * blank ones sitting on profiles are all the evidence needed. A starter names
+ * the list and picks its shape, and the name is still the first thing you can
+ * edit.
+ */
+const STARTERS: { key: string; name: string; type: ListType; blurb: string }[] = [
+    { key: "top10", name: "My Top 10", type: "top10", blurb: "The ten you would defend" },
+    { key: "year", name: `Best of ${new Date().getFullYear()}`, type: "top10", blurb: "This year, ranked" },
+    { key: "comfort", name: "Comfort Games", type: "custom", blurb: "The ones you go back to" },
+    { key: "shame", name: "Hall of Shame", type: "custom", blurb: "Bought, never finished" },
+    { key: "hidden", name: "Hidden Gems", type: "custom", blurb: "What nobody else played" },
+    { key: "blank", name: "Untitled list", type: "custom", blurb: "Start from nothing" },
+];
+
 /* ── one list card ────────────────────────────────────────────────────── */
 
 function ListCard({
@@ -159,20 +177,26 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
     const lists = data?.data ?? [];
 
     const [editingId, setEditingId] = useState<number | null>(null);
-    const [creating, setCreating] = useState(false);
+    const [creating, setCreating] = useState<string | null>(null);
+    const [picking, setPicking] = useState(false);
 
-    const create = async () => {
-        setCreating(true);
+    const create = async (starter: (typeof STARTERS)[number]) => {
+        setCreating(starter.key);
         try {
             // A new list starts as a draft so the editor has something real to
             // write into — publishing is the deliberate second step.
-            const res = await axios.post("/game-lists", { name: "Untitled list", is_draft: true });
+            const res = await axios.post("/game-lists", {
+                name: starter.name,
+                list_type: starter.type,
+                is_draft: true,
+            });
             mutate();
+            setPicking(false);
             setEditingId(res.data?.data?.id ?? null);
         } catch {
             toast.error("Couldn't start a new list.");
         } finally {
-            setCreating(false);
+            setCreating(null);
         }
     };
 
@@ -200,8 +224,8 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
     }
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
-            <div className="xl:col-span-9 min-w-0">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+            <div className="xl:col-span-12 min-w-0">
                 <div className="flex items-center justify-between gap-3 mb-5">
                     <h2 className="flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.15em] text-white/55">
                         <span className="w-1 h-3.5 rounded-full bg-[var(--accent)]" />
@@ -212,15 +236,39 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
 
                     {isOwnProfile && (
                         <button
-                            onClick={create}
-                            disabled={creating}
-                            className="inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-[filter] disabled:opacity-60"
+                            onClick={() => setPicking((v) => !v)}
+                            className="inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-[filter]"
                         >
-                            {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-                            New list
+                            <Plus className="w-3.5 h-3.5" /> New list
                         </button>
                     )}
                 </div>
+
+                {picking && isOwnProfile && (
+                    <div className="mb-5 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] p-4">
+                        <p className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/40 mb-3">
+                            Start with
+                        </p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {STARTERS.map((s) => (
+                                <button
+                                    key={s.key}
+                                    onClick={() => create(s)}
+                                    disabled={creating !== null}
+                                    className="group/starter flex items-center gap-3 p-3 rounded-[8px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-[var(--accent-soft)] text-left transition-colors disabled:opacity-50"
+                                >
+                                    <span className="w-8 h-8 shrink-0 rounded-[7px] bg-white/[0.05] flex items-center justify-center text-white/35 group-hover/starter:text-[var(--accent)] transition-colors">
+                                        {creating === s.key ? <Loader2 className="w-4 h-4 animate-spin" /> : <ListIcon className="w-4 h-4" />}
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block text-[12.5px] font-semibold text-white truncate">{s.name}</span>
+                                        <span className="block text-[10.5px] text-white/35 truncate">{s.blurb}</span>
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {isLoading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -249,9 +297,11 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
                 )}
             </div>
 
-            <aside className="xl:col-span-3 min-w-0">
-                <CommunityInspiration />
-            </aside>
+            {/* Other people's lists are a reason to stay, not a footnote in a
+                sidebar. They run under your own, at the same width. */}
+            <div className="xl:col-span-12 min-w-0">
+                <CommunityInspiration variant="row" />
+            </div>
         </div>
     );
 }

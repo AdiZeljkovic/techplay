@@ -603,16 +603,30 @@ function GameSearch({ onAdd, disabled, limitLabel }: { onAdd: (slug: string) => 
 
 /* ── community inspiration ────────────────────────────────────────────── */
 
-export function CommunityInspiration() {
-    const { data } = useSWR<{ data: GameListPreview[] }>("/game-lists/discover?limit=5", fetcher, {
+/**
+ * What other people ranked.
+ *
+ * Two shapes for two places: a narrow rail beside the editor, where it is a
+ * reference while you work, and a wide row under your own lists, where it is
+ * the reason to keep reading rather than a footnote in a sidebar.
+ */
+export function CommunityInspiration({ variant = "rail" }: { variant?: "rail" | "row" }) {
+    const limit = variant === "row" ? 4 : 5;
+    const { data } = useSWR<{ data: GameListPreview[] }>(`/game-lists/discover?limit=${limit}`, fetcher, {
         revalidateOnFocus: false });
     const lists = data?.data ?? [];
 
     if (!lists.length) return null;
 
     return (
-        <Panel title="Community Inspiration" action={{ label: "View all", href: "/lists" }} bodyClassName="p-3">
-            <div className="flex flex-col gap-0.5">
+        <Panel
+            title={variant === "row" ? "What others ranked" : "Community Inspiration"}
+            action={{ label: "View all", href: "/lists" }}
+            bodyClassName="p-3"
+        >
+            <div className={variant === "row"
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2"
+                : "flex flex-col gap-0.5"}>
                 {lists.map((l) => (
                     <Link
                         key={l.id}

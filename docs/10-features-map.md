@@ -237,6 +237,41 @@ je mašina i kako se zoveš na kojoj platformi je identitet, ne analiza.
 
 ---
 
+### Redizajn profila — Faza 6: liste dobijaju težinu, 13.08.2026
+
+Liste su bile funkcionalno kompletne — stavke, redoslijed, lajkovi, komentari,
+javni slug, draft stanje — ali su izgledale kao pomoćna funkcija umjesto kao
+razlog da neko otvori tuđi profil.
+
+**Predlošci umjesto praznog polja.** „New list" je odmah pravio *Untitled list*
+i bacao te u editor. Prazno polje za ime je pitanje bez ijedne naznake odgovora,
+a prazne liste po profilima su bile sav potreban dokaz. Sada bira između šest
+polazišta — *My Top 10*, *Best of 2026*, *Comfort Games*, *Hall of Shame*,
+*Hidden Gems* i praznog — koja postavljaju i ime i `list_type`.
+
+**Kartica za dijeljenje.** Nova ruta `/og/list` crta pravu karticu: prve četiri
+korice u rangiranom redoslijedu s brojevima preko njih, ime liste, autor.
+Stranica liste je dotad predavala mrežama **prvu koricu iz liste** — ključnu
+grafiku igre, bez ičega što govori čija je lista i šta tvrdi. Nepostojeća lista
+vraća 404 umjesto lijepog okvira oko pogađanja, a stranica joj je dobila i
+`canonical` i `noindex` kad ne postoji.
+
+**Tuđe liste su traka, ne fusnota.** `CommunityInspiration` je dobio dva oblika:
+uski `rail` uz editor (referenca dok radiš) i široki `row` ispod tvojih lista,
+pune širine. Sidebar je ukinut — liste sad koriste cijelu širinu.
+
+**„Add to list" sa stranice igre.** Nova `AddToListButton` uz `TrackGameButton`
+u sidebaru igre. Liste su dosad bile dostupne samo iz profila, pa je pravljenje
+liste značilo zapamtiti igru dovoljno dugo da je poslije opet nađeš — a misao
+„ovo ide na moj top 10" dešava se **na stranici igre**. Meni se ne dohvaća dok
+se ne otvori, nudi i „New list with this game", i ne prikazuje se odjavljenima
+(stranica već ima dugme za prijavu).
+
+**Nije trebalo raditi** (već je bilo tu): lajkovi i komentari na prednjoj strani
+kartice, značka tipa liste, tagovi, i brojevi ranga na javnoj stranici liste.
+
+---
+
 ### Redizajn profila — Faza 5: predložene sesije, 13.08.2026
 
 **Dnevnikov pravi problem nikad nije bio dizajn — nego to što traži da sjedneš

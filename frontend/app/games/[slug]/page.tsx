@@ -12,6 +12,7 @@ import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox"
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
 import GameRating from "@/components/games/GameRating";
 import TrackGameButton from "@/components/games/TrackGameButton";
+import AddToListButton from "@/components/games/AddToListButton";
 import GameForumThreads from "@/components/games/GameForumThreads";
 import BoxArtGallery, { type BoxArt } from "@/components/games/BoxArtGallery";
 import TrailerPlayer from "@/components/games/TrailerPlayer";
@@ -603,7 +604,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 {/* ── sidebar ── */}
                 <div className="xl:col-span-4 min-w-0 space-y-5">
                     <Panel title="Your collection">
-                        <TrackGameButton slug={slug} gameName={game.name} variant="full" />
+                        <div className="space-y-2.5">
+                            <TrackGameButton slug={slug} gameName={game.name} variant="full" />
+                            {/* "This belongs on my top ten" is a thought that
+                                happens here, on the game's page — not later, in
+                                a tab, once you have remembered which game it
+                                was. */}
+                            <AddToListButton slug={slug} gameName={game.name} />
+                        </div>
                     </Panel>
 
                     <Panel title="Facts">
