@@ -22,9 +22,16 @@ interface HomeClientProps {
 }
 
 /**
- * Public (guest) homepage — app-style landing per the 2026 redesign:
- * hero + quick links + game discovery + editorial + releases/community + profile CTA.
- * Logged-in users never see this page (HomeGate swaps them to DashboardHome).
+ * The homepage — app-style landing per the 2026 redesign: hero + quick links
+ * + game discovery + editorial + releases/community + profile CTA.
+ *
+ * Everybody sees it, signed in or not. It used to swap to the profile
+ * dashboard the moment a token was found, which meant the site's front page
+ * was somebody's own profile rather than the site — and paid for it twice: the
+ * swap could only happen after hydration, so a signed-in reader got a skeleton
+ * on top of an ISR page that had already been rendered and thrown away. The
+ * dashboard has not moved; it is the Overview of your own profile, which is
+ * where it was always also reachable.
  */
 export default function HomeClient({ initialData }: HomeClientProps) {
     // The server already fetched all of this and passes it down. The hook

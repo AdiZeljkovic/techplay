@@ -16,7 +16,7 @@ function Block({ h, className = "" }: { h: number; className?: string }) {
  * the page has not drawn in some time — so the placeholder was reserving
  * space in a shape nothing ever filled.
  *
- * Also shown by HomeGate while auth resolves — keep it deterministic.
+ * Drawn while /me/dashboard resolves — keep it deterministic.
  */
 export default function DashboardSkeleton() {
     return (

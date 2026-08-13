@@ -16,7 +16,8 @@ const STATS = [
 /**
  * Public homepage hero. Left: value prop + search + CTAs + stat row.
  * Right: featured-stories slider behind a signature diagonal seam.
- * Guests only — logged-in users get the dashboard via HomeGate.
+ * Shown to everybody. It was guests-only while the homepage swapped signed-in
+ * readers to their own dashboard, which it no longer does.
  */
 export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) {
     const router = useRouter();

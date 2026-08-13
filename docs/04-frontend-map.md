@@ -17,7 +17,7 @@ Sve stranice su u `frontend/app/`. Svaki folder = ruta.
 
 | Ruta | Stranica | Opis |
 |------|----------|------|
-| `/` | `app/page.tsx` | Homepage — ISR gost verzija; `app/HomeGate.tsx` client-side swapa logovane korisnike na dashboard (`components/home-dashboard/DashboardHome`, podaci iz `GET /me/dashboard` + self-fetching widgeti). Gate koristi `hooks/useAuth`, ne AuthContext |
+| `/` | `app/page.tsx` | Homepage — ISR za **sve**, logovan ili ne. `HomeGate` je uklonjen 14.08.2026: naslovnica sajta je bila nečiji profil, a swap se mogao desiti tek nakon hydration pa je logovan čitalac dobijao skeleton preko već renderovane ISR stranice. Dashboard nije nigdje otišao — on je Overview tvog profila |
 | `/news` | `app/news/` | News listing + `[slug]` detalj |
 | `/reviews` | `app/reviews/` | Reviews listing + `[slug]` detalj |
 | `/guides` | `app/guides/` | Guides listing + `[slug]` detalj — dijeli `components/editorial/SectionHub` |
@@ -169,7 +169,7 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 Jedna komponenta servira svaki profil. Nema više odvojenog "dashboarda" i "profila".
 
 - **`/profile/{username}`** je jedina stranica. Sekcije su `?tab=` query parametri (`collection`, `lists`, `achievements`, `activity`, `stats`, `rewards`) — nisu zasebne rute, nema reloada.
-- **Tvoj Overview** renderuje `DashboardHome` — isti sadržaj koji `HomeGate` prikazuje na `/` kad si logovan. Isti komponent, dva URL-a.
+- **Tvoj Overview** renderuje `DashboardHome` — jedino mjesto gdje dashboard sada živi. Naslovnica ga više ne preuzima.
 - **Svaki drugi tab** (tvoj ili tuđi) renderuje `ProfileHero` + sadržaj taba. Hero je isti za sve; razlikuju se samo akcije (Continue Playing / Edit vs Add Friend / Message) i to da `Rewards` tab postoji samo na tvom profilu.
 - **`lib/hero.ts`** normalizuje dva različita payloada (`/me/dashboard` i `/users/{username}`) u jedan `HeroModel` — hero ne zna odakle podaci dolaze.
 - **`lib/profileTabs.ts`** je jedini izvor tab seta (`PROFILE_TABS`).
