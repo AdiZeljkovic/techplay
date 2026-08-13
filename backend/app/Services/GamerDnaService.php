@@ -10,6 +10,7 @@ use App\Models\UserGame;
 use App\Services\Chronicle\TasteProfileService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Gamer DNA — everything the profile can say about a player's taste, read
@@ -88,7 +89,7 @@ class GamerDnaService
     public function build(User $user): array
     {
         $entries = UserGame::where('user_id', $user->id)
-            ->with(['game:id,name,slug,released,genres,tags,cover_url'])
+            ->with(['game:id,name,slug,released,genres,tags,cover_url,series_name'])
             ->get();
 
         $games = $entries->pluck('game')->filter();
@@ -135,8 +136,113 @@ class GamerDnaService
             'badges' => $this->badges($user),
             'setup' => $this->setup($user),
             'archetypes' => $this->archetypes($user, $entries, $games, $counts, $achievementsOwned, $reviews, $genres),
+            // What the collection cannot say on its own: which games actually
+            // took the hours, when the hours happen, and which worlds the
+            // player keeps going back to.
+            'signature' => $this->signature($entries),
+            'rhythm' => $this->rhythm($user),
+            'series' => $this->series($games),
             'updated_at' => now()->toIso8601String(),
         ];
+    }
+
+    /**
+     * The three games that define the shelf.
+     *
+     * Hours first, because a genre chart says "you like RPGs" and this says
+     * which RPG you gave four hundred hours to — the difference between a
+     * summary of a library and a portrait of a player. Where nothing is
+     * tracked, a favourite is the next best statement of intent, and a
+     * finished game after that: both are choices, unlike ownership.
+     */
+    private function signature(Collection $entries): array
+    {
+        $rank = fn (UserGame $e): array => [
+            (int) ($e->hours_played ?? 0),
+            $e->is_favorite ? 1 : 0,
+            $e->status === 'completed' ? 1 : 0,
+        ];
+
+        return $entries
+            ->filter(fn (UserGame $e) => $e->game !== null)
+            ->filter(fn (UserGame $e) => ($e->hours_played ?? 0) > 0 || $e->is_favorite || $e->status === 'completed')
+            ->sortByDesc($rank)
+            ->take(3)
+            ->map(fn (UserGame $e) => [
+                'slug' => $e->game->slug,
+                'name' => $e->game->name,
+                'cover_url' => $e->game->cover_url,
+                'hours' => (int) ($e->hours_played ?? 0),
+                'status' => $e->status,
+                'is_favorite' => (bool) $e->is_favorite,
+                // Why this one is here, so the panel never has to guess.
+                'basis' => ($e->hours_played ?? 0) > 0 ? 'hours' : ($e->is_favorite ? 'favorite' : 'completed'),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * When the playing happens, and what it feels like.
+     *
+     * Read off the journal rather than the shelf — a collection says what you
+     * own, sessions say what you did. The weekday is computed in PHP rather
+     * than with EXTRACT(DOW): one player's journal is a few hundred rows, and
+     * date-part SQL is the fastest way to write a query that works on
+     * PostgreSQL and dies in the SQLite the tests run on.
+     */
+    private function rhythm(User $user): array
+    {
+        $sessions = DB::table('play_sessions')
+            ->where('user_id', $user->id)
+            ->select('played_on', 'minutes', 'mood')
+            ->get();
+
+        if ($sessions->isEmpty()) {
+            return ['sessions' => 0, 'minutes' => 0, 'average' => 0, 'longest' => 0, 'best_day' => null, 'moods' => []];
+        }
+
+        $byDay = [];
+        foreach ($sessions as $s) {
+            $day = Carbon::parse($s->played_on)->format('l');
+            $byDay[$day] = ($byDay[$day] ?? 0) + (int) $s->minutes;
+        }
+        arsort($byDay);
+
+        $moodTally = collect($sessions)->pluck('mood')->filter()->countBy()->sortDesc();
+        $moodTotal = $moodTally->sum();
+
+        return [
+            'sessions' => $sessions->count(),
+            'minutes' => (int) $sessions->sum('minutes'),
+            'average' => (int) round($sessions->avg('minutes')),
+            'longest' => (int) $sessions->max('minutes'),
+            'best_day' => ['name' => array_key_first($byDay), 'minutes' => reset($byDay)],
+            'moods' => $moodTally->take(4)
+                ->map(fn ($count, $name) => [
+                    'name' => $name,
+                    'count' => $count,
+                    'percent' => $moodTotal > 0 ? (int) round($count / $moodTotal * 100) : 0,
+                ])->values()->all(),
+        ];
+    }
+
+    /**
+     * Worlds the player keeps going back to.
+     *
+     * A series with one entry is not loyalty, it is a game — so two is the
+     * floor. `series_name` comes off the aggregator, so this fills in without
+     * anybody tagging anything.
+     */
+    private function series(Collection $games): array
+    {
+        $tally = $games->pluck('series_name')->filter()->countBy()
+            ->filter(fn ($count) => $count >= 2)
+            ->sortDesc();
+
+        return $tally->take(4)
+            ->map(fn ($count, $name) => ['name' => $name, 'count' => $count])
+            ->values()->all();
     }
 
     /* ── taste ─────────────────────────────────────────────────────────── */

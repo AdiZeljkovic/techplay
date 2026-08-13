@@ -131,6 +131,20 @@ export interface GamerDnaPayload {
         gamertags: Record<string, string>;
     };
     archetypes: DnaArchetype[];
+    /** The three games that took the hours — or, failing hours, the choices. */
+    signature: {
+        slug: string; name: string; cover_url: string | null;
+        hours: number; status: string; is_favorite: boolean;
+        basis: "hours" | "favorite" | "completed";
+    }[];
+    /** Read off the journal: a shelf says what you own, sessions say what you did. */
+    rhythm: {
+        sessions: number; minutes: number; average: number; longest: number;
+        best_day: { name: string; minutes: number } | null;
+        moods: DistributionStat[];
+    };
+    /** Worlds gone back to — two entries is the floor, one is just a game. */
+    series: { name: string; count: number }[];
     updated_at: string;
 }
 
