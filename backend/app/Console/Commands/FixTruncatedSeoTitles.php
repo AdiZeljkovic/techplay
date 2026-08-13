@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Filament\Components\SeoFields;
 use App\Models\Article;
+use App\Services\RevalidationService;
 use Illuminate\Console\Command;
 
 /**
@@ -18,18 +19,31 @@ use Illuminate\Console\Command;
  */
 class FixTruncatedSeoTitles extends Command
 {
-    protected $signature = 'seo:fix-truncated-titles {--apply : Write the changes}';
+    protected $signature = 'seo:fix-truncated-titles
+        {--apply : Write the changes}
+        {--revalidate-recent= : Skip the rewrite and only purge the ISR cache for articles touched in the last N hours}';
 
     protected $description = 'Rewrite meta titles that end in an ellipsis so they break on a word';
 
-    public function handle(): int
+    public function handle(RevalidationService $revalidation): int
     {
+        // Recovery path for a run that wrote titles before this command knew to
+        // purge them. Rewritten rows no longer end in an ellipsis, so the
+        // search below can never find them a second time — the only handle left
+        // on them is when they were touched.
+        $hours = (int) $this->option('revalidate-recent');
+
+        if ($hours > 0) {
+            return $this->revalidateRecent($revalidation, $hours);
+        }
+
         $apply = (bool) $this->option('apply');
 
         $suspects = Article::query()
+            ->with('category')
             ->whereNotNull('meta_title')
             ->where(fn ($q) => $q->where('meta_title', 'like', '%...')->orWhere('meta_title', 'like', '%…'))
-            ->get(['id', 'title', 'meta_title']);
+            ->get();
 
         if ($suspects->isEmpty()) {
             $this->info('No truncated meta titles found.');
@@ -57,7 +71,16 @@ class FixTruncatedSeoTitles extends Command
 
             if ($apply) {
                 $article->meta_title = $fixed;
+
+                // Quietly on purpose: the observer's saved() hook fans out to
+                // IndexNow, Discord and the homepage, and none of that belongs
+                // to a copy-editing pass over eighty-five old articles.
                 $article->saveQuietly();
+
+                // But the <title> a reader sees lives in the ISR cache, so a
+                // database that is right and a cache that is stale means
+                // nothing changed for anybody. One path purged, nothing else.
+                $this->purge($revalidation, $article);
             }
         }
 
@@ -69,5 +92,53 @@ class FixTruncatedSeoTitles extends Command
             : "{$changed} of {$suspects->count()} would be rewritten. Re-run with --apply.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Purge the ISR cache for every article updated in the last N hours.
+     */
+    private function revalidateRecent(RevalidationService $revalidation, int $hours): int
+    {
+        $touched = Article::with('category')
+            ->where('updated_at', '>=', now()->subHours($hours))
+            ->get();
+
+        $this->info("Purging {$touched->count()} article(s) updated in the last {$hours}h…");
+
+        $done = 0;
+
+        foreach ($touched as $article) {
+            if ($this->purge($revalidation, $article)) {
+                $done++;
+            }
+        }
+
+        $this->info("Purged {$done}. ✓");
+
+        return self::SUCCESS;
+    }
+
+    /** One article's page, and nothing around it. */
+    private function purge(RevalidationService $revalidation, Article $article): bool
+    {
+        $path = match ($article->category?->type) {
+            'news' => 'news',
+            'review', 'reviews' => 'reviews',
+            'tech', 'hardware' => 'hardware',
+            'guide', 'guides' => 'guides',
+            default => null,
+        };
+
+        if (! $path) {
+            return false;
+        }
+
+        try {
+            return $revalidation->revalidateArticle($article->slug, $path);
+        } catch (\Throwable $e) {
+            $this->warn("  ! {$article->slug}: {$e->getMessage()}");
+
+            return false;
+        }
     }
 }

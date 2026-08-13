@@ -109,13 +109,18 @@ export async function GET(req: NextRequest) {
                             </div>
                         ))
                         : (
-                            <div style={{ display: "flex", width: "100%", height: 300, borderRadius: 12, border: "2px dashed rgba(255,255,255,0.12)" }} />
+                            <div style={{ display: "flex", width: "100%", height: 300, borderRadius: 12, border: "2px solid rgba(255,255,255,0.12)" }} />
                         )}
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
+                    {/* Every child here is an element. Satori — the renderer
+                        behind ImageResponse — cannot lay out a bare text node
+                        sitting beside element siblings in a flex row, and it
+                        fails by throwing mid-stream, which reaches the reader
+                        as a 502 rather than a broken image. */}
                     <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 20, letterSpacing: 4, color: ACCENT, fontWeight: 700 }}>
-                        GAME LIST
+                        <div style={{ display: "flex" }}>GAME LIST</div>
                         <div style={{ display: "flex", width: 6, height: 6, borderRadius: 3, background: ACCENT }} />
                         <div style={{ display: "flex", color: "rgba(255,255,255,0.45)", letterSpacing: 2 }}>{count} GAMES</div>
                     </div>
@@ -134,7 +139,7 @@ export async function GET(req: NextRequest) {
                     </div>
 
                     <div style={{ display: "flex", marginTop: 16, fontSize: 26, color: "rgba(255,255,255,0.5)" }}>
-                        by {owner} · techplay.gg
+                        {`by ${owner} · techplay.gg`}
                     </div>
                 </div>
             </div>
