@@ -8,6 +8,13 @@ import RingMeter from "@/components/ui/RingMeter";
 import { useCountUp } from "@/hooks/useCountUp";
 import type { BacklogSuggestion, DashboardStats } from "@/lib/types/dashboard";
 
+/** One shelf state: the dot's colour is the same one it owns in the bar. */
+const SHELF = [
+    { label: "Playing", tone: "#34d399", key: "playing_count" },
+    { label: "Backlog", tone: "#60a5fa", key: "backlog_count" },
+    { label: "Completed", tone: "#22c55e", key: "completed_count" },
+] as const;
+
 export default function BacklogProgressCard({
     stats,
     suggestion,
@@ -27,7 +34,6 @@ export default function BacklogProgressCard({
 
     // the ring draws and the counters climb together
     const ringValue = useCountUp(percent, 1100);
-    const backlogCount = useCountUp(stats.backlog_count, 900);
     const monthCount = useCountUp(stats.completed_this_month, 900);
 
     // A backlog of zero has nothing to chart and the advisor rejects it (422),
@@ -56,23 +62,27 @@ export default function BacklogProgressCard({
             className="h-full flex flex-col"
             bodyClassName="p-5 flex-1 flex flex-col"
         >
-            {/* Counters + completion ring */}
-            <div className="flex items-center gap-4 rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-4">
-                <div className="flex-1 grid grid-cols-2 gap-4">
-                    <div>
-                        <p className="font-display text-[28px] font-black text-white leading-none tabular-nums">{backlogCount}</p>
-                        <p className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">In Backlog</p>
-                    </div>
-                    <div>
-                        <p className="font-display text-[28px] font-black text-[var(--accent)] leading-none tabular-nums">{monthCount}</p>
-                        <p className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">Done this month</p>
-                    </div>
-                </div>
-
-                <RingMeter value={ringValue} size={100} strokeWidth={8} glow>
-                    <span className="font-display text-[20px] font-black text-[var(--accent)] tabular-nums leading-none">{ringValue}%</span>
+            {/* The reading and its breakdown, side by side.
+                Before, two of the three shelf figures were printed as huge
+                counters at the top and then all three again as a legend under
+                the bar — the same numbers twice, in two type sizes, saying
+                different things about which mattered. One table now, keyed to
+                the bar by colour. */}
+            <div className="flex items-center gap-5 rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-4">
+                <RingMeter value={ringValue} size={104} strokeWidth={8} glow>
+                    <span className="font-display text-[22px] font-black text-[var(--accent)] tabular-nums leading-none">{ringValue}%</span>
                     <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/40">Cleared</span>
                 </RingMeter>
+
+                <dl className="flex-1 min-w-0 divide-y divide-white/[0.05]">
+                    {SHELF.map(({ label, tone, key }) => (
+                        <div key={label} className="flex items-center gap-2.5 py-[7px] first:pt-0 last:pb-0">
+                            <span aria-hidden className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: tone }} />
+                            <dt className="flex-1 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/40">{label}</dt>
+                            <dd className="font-display text-[17px] font-black tabular-nums leading-none text-white">{stats[key]}</dd>
+                        </div>
+                    ))}
+                </dl>
             </div>
 
             {/* Where the library stands, which is the one thing this panel
@@ -80,45 +90,36 @@ export default function BacklogProgressCard({
                 waiting got a row of counters and then empty panel down to the
                 button. */}
             <div className="mt-4">
-                <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2.5">
-                    Where the shelf stands
-                </p>
                 <div className="flex h-[10px] rounded-full overflow-hidden bg-[var(--track)]">
-                    {([
-                        ["Playing", stats.playing_count, "#34d399"],
-                        ["Backlog", stats.backlog_count, "#60a5fa"],
-                        ["Completed", stats.completed_count, "#22c55e"],
-                    ] as const).map(([label, count, tone]) =>
-                        count > 0 ? (
+                    {SHELF.map(({ label, tone, key }) =>
+                        stats[key] > 0 ? (
                             <span
                                 key={label}
-                                title={`${label}: ${count}`}
-                                style={{ width: `${(count / Math.max(1, total)) * 100}%`, background: tone }}
+                                title={`${label}: ${stats[key]}`}
+                                className="transition-[width] duration-700 ease-[var(--ease-hud)]"
+                                style={{ width: `${(stats[key] / Math.max(1, total)) * 100}%`, background: tone }}
                             />
                         ) : null
                     )}
                 </div>
-                <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                    {([
-                        ["Playing", stats.playing_count, "#34d399"],
-                        ["Backlog", stats.backlog_count, "#60a5fa"],
-                        ["Completed", stats.completed_count, "#22c55e"],
-                    ] as const).map(([label, count, tone]) => (
-                        <span key={label} className="inline-flex items-center gap-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
-                            <span aria-hidden className="w-1.5 h-1.5 rounded-full" style={{ background: tone }} />
-                            {label}
-                            <span className="tabular-nums text-white/60">{count}</span>
-                        </span>
-                    ))}
-                </div>
+
+                {/* The pace line — the only figure here that is about the month
+                    rather than the pile, so it gets its own sentence instead of
+                    a counter competing with the shelf. */}
+                <p className="mt-2.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+                    <span className="tabular-nums text-[var(--accent)]">{monthCount}</span>{" "}
+                    {stats.completed_this_month === 1 ? "game" : "games"} finished this month
+                </p>
             </div>
 
-            {/* Suggested next from the backlog */}
+            {/* Suggested next — from the shelf, not the catalog. The panel next
+                to this one recommends games you do not own; this one is the
+                pile you already committed to, so the label says which. */}
             {suggestion && (
                 <div className="mt-4">
                     <p className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">
                         <span aria-hidden className="w-1 h-3 rounded-full bg-[var(--accent)]" />
-                        Suggested Next
+                        Start next from your backlog
                     </p>
                     <Link
                         href={`/games/${suggestion.slug}`}
@@ -126,7 +127,7 @@ export default function BacklogProgressCard({
                         className="group relative flex items-center gap-3.5 rounded-[12px] border border-white/[0.07] p-3 overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                     >
                         {/* the pick's own art, faint, as the row's backdrop */}
-                        {suggestion.cover_url && (
+                        {suggestion.cover_url ? (
                             <>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
@@ -135,13 +136,24 @@ export default function BacklogProgressCard({
                                     aria-hidden
                                     className="absolute inset-0 w-full h-full object-cover opacity-[0.14] group-hover:opacity-[0.22] transition-opacity duration-500"
                                 />
-                                {/* scrim in the console's own face colour, not --surface-1 */}
-                                <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] via-[var(--surface-1)e0] to-[var(--surface-1)a6]" />
+                                {/* Scrim in the console's own face colour. This used to
+                                    append a hex alpha onto a var() — `var(--surface-1)e0`,
+                                    which is not a colour, so the middle and right stops
+                                    dropped and the art ran unscrimmed under the title. */}
+                                <span
+                                    aria-hidden
+                                    className="absolute inset-0"
+                                    style={{
+                                        background:
+                                            "linear-gradient(90deg, var(--surface-1) 0%, color-mix(in srgb, var(--surface-1) 88%, transparent) 55%, color-mix(in srgb, var(--surface-1) 62%, transparent) 100%)",
+                                    }}
+                                />
                             </>
+                        ) : (
+                            <span aria-hidden className="absolute inset-0 bg-white/[0.02]" />
                         )}
-                        {!suggestion.cover_url && <span aria-hidden className="absolute inset-0 bg-white/[0.02]" />}
 
-                        <span className="relative w-[96px] h-[58px] rounded-[var(--radius-inner)] overflow-hidden shrink-0 bg-[var(--fill-1)] border border-[var(--line)]">
+                        <span className="relative w-[96px] h-[58px] rounded-[9px] overflow-hidden shrink-0 bg-[var(--fill-1)] border border-white/[0.07]">
                             {suggestion.cover_url ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
@@ -156,21 +168,23 @@ export default function BacklogProgressCard({
                         </span>
 
                         <span className="relative min-w-0 flex-1">
-                            <span className="block font-display text-[14px] font-bold text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors duration-300">
+                            <span className="block font-display text-[14px] font-black text-white line-clamp-1 group-hover:text-[var(--accent)] transition-colors duration-300">
                                 {suggestion.name}
                             </span>
-                            {suggestion.genres.length > 0 && (
-                                <span className="block mt-0.5 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 line-clamp-1">
-                                    {suggestion.genres.join(" · ")}
+                            {(suggestion.genres.length > 0 || suggestion.match_percent !== null) && (
+                                <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                                    {suggestion.genres.slice(0, 2).map((g) => (
+                                        <span key={g} className="inline-flex items-center h-[19px] px-1.5 rounded-[5px] bg-white/[0.05] border border-white/[0.07] text-[9.5px] font-semibold text-white/50">
+                                            {g}
+                                        </span>
+                                    ))}
+                                    {/* taste-match is progression data — it wears violet */}
+                                    {suggestion.match_percent !== null && (
+                                        <span className="inline-flex items-center h-[19px] px-2 rounded-[5px] bg-[color-mix(in_srgb,var(--xp)_14%,transparent)] border border-[color-mix(in_srgb,var(--xp)_32%,transparent)] font-display text-[9.5px] font-black tabular-nums text-[var(--xp-bright)]">
+                                            {suggestion.match_percent}% match
+                                        </span>
+                                    )}
                                 </span>
-                            )}
-                            {/* taste-match is progression data — it wears violet */}
-                            {suggestion.match_percent !== null ? (
-                                <span className="mt-1.5 inline-flex items-center gap-1.5 h-[20px] px-2 rounded-full bg-[color-mix(in_srgb,var(--xp)_14%,transparent)] border border-[color-mix(in_srgb,var(--xp)_32%,transparent)] font-display text-[10px] font-black tabular-nums text-[var(--xp-bright)]">
-                                    {suggestion.match_percent}% match
-                                </span>
-                            ) : (
-                                <span className="block mt-1.5 text-[11px] text-[var(--ink-low)]">Next up in your backlog</span>
                             )}
                         </span>
 

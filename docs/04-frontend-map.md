@@ -151,7 +151,7 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 | `components/layout/` | Header, Footer, Sidebar, Navigation |
 | `components/news/` | NewsCard, NewsList, ArticleBody |
 | `components/reviews/` | ReviewCard, ReviewBody |
-| `components/games/` | GameCard, GameFilter, GameGrid |
+| `components/games/` | GameCard, GameFilter, GameGrid, **ReleaseCard** (dijeljena kartica neizašle igre — kalendar i "Upcoming For You" na profilu crtaju isti objekt; izvozi i `platformMarks()` / `PlatformMarks`) |
 | `components/forum/` | ThreadCard, ThreadList, PostCard |
 | `components/profile/` | CollectionGrid, ListsTab, ActivityFeed, StatsPanel, AchievementGrid, LockedProfile |
 | `components/home-dashboard/` | ProfileHero, ProfileTabStrip, RankInsignia, DailyMissions, DashboardHome — identitet i sekcije profila/logovane naslovnice |

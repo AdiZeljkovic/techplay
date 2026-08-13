@@ -338,6 +338,14 @@ class DashboardController extends Controller
                         'genres' => array_slice((array) $g->genres, 0, 2),
                         'platforms' => array_slice((array) $g->platforms, 0, 4),
                         'reason' => isset($wishlisted[$g->id]) ? 'wishlist' : ($fit > 0.3 ? 'taste' : null),
+                        // The same four figures the calendar sends, so the two
+                        // pages can draw the same card. `added` is how big a
+                        // release is across every store we read — not a
+                        // tracker count, which nobody publishes.
+                        'added' => (int) $g->hype_score,
+                        'wishlists' => 0,
+                        'wishlisted' => isset($wishlisted[$g->id]),
+                        'reminder' => false,
                         '_sort' => (isset($wishlisted[$g->id]) ? 100 : 0) + $fit * 10 + min(5, ((int) $g->hype_score) / 200),
                     ];
                 })
@@ -347,6 +355,36 @@ class DashboardController extends Controller
                 ->values()
                 ->all();
         });
+
+        // Wishlist tallies and the reader's own reminders are per-request, not
+        // per-cache: the list of games is worth holding for half an hour, but
+        // whether this person has already pressed the bell is not.
+        $slugs = array_column($items, 'slug');
+
+        if ($slugs !== []) {
+            $tally = DB::table('user_games')
+                ->join('games', 'games.id', '=', 'user_games.game_id')
+                ->whereIn('games.slug', $slugs)
+                ->where('user_games.status', 'wishlist')
+                ->selectRaw('games.slug, COUNT(*) as tally')
+                ->groupBy('games.slug')
+                ->pluck('tally', 'games.slug');
+
+            $reminders = DB::table('user_games')
+                ->join('games', 'games.id', '=', 'user_games.game_id')
+                ->where('user_games.user_id', $user->id)
+                ->whereIn('games.slug', $slugs)
+                ->where('user_games.notify_on_release', true)
+                ->pluck('games.slug')
+                ->flip();
+
+            $items = array_map(function (array $row) use ($tally, $reminders) {
+                $row['wishlists'] = (int) ($tally[$row['slug']] ?? 0);
+                $row['reminder'] = isset($reminders[$row['slug']]);
+
+                return $row;
+            }, $items);
+        }
 
         return $this->success($items);
     }

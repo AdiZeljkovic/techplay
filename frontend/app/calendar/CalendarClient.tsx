@@ -9,6 +9,7 @@ import { CalendarDays, Flame, Heart, Bell, BellRing, ChevronLeft, ChevronRight, 
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
+import ReleaseCard from "@/components/games/ReleaseCard";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data);
 
@@ -486,41 +487,12 @@ export default function CalendarClient() {
                         <Panel title={`Biggest in ${label}`}>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
                                 {data!.most_anticipated.map((game) => (
-                                    <div key={game.slug} className="group flex flex-col">
-                                        {/* The date used to sit on the art in accent red, over
-                                            whatever the publisher happened to put there — on
-                                            half these covers it was unreadable. Nothing but the
-                                            art is on the art now; the facts sit under it. */}
-                                        <Link
-                                            href={`/calendar/${game.slug}`}
-                                            className="relative block aspect-[3/4] rounded-[12px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
-                                        >
-                                            {game.cover_url ? (
-                                                // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={game.cover_url} alt={game.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-500" />
-                                            ) : (
-                                                <span className="w-full h-full flex items-center justify-center bg-white/[0.03] text-white/15"><Gamepad2 className="w-7 h-7" /></span>
-                                            )}
-                                        </Link>
-
-                                        <p className="mt-2.5 min-h-[30px] font-display text-[12px] font-black text-white leading-[15px] line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
-                                            {game.name}
-                                        </p>
-
-                                        <div className="mt-1.5 mb-2.5 flex items-center justify-between gap-2">
-                                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/45">
-                                                {game.released
-                                                    ? new Date(game.released).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
-                                                    : "TBA"}
-                                            </span>
-                                            <PlatformMarks platforms={game.platforms} className="w-3.5 h-3.5" />
-                                        </div>
-
-                                        <div className="mt-auto pt-2.5 border-t border-white/[0.06] flex items-center justify-between gap-2">
-                                            <HypeRow game={game} />
-                                            <ReleaseActions game={game} compactMode onChanged={() => mutate()} />
-                                        </div>
-                                    </div>
+                                    <ReleaseCard
+                                        key={game.slug}
+                                        game={game}
+                                        href={`/calendar/${game.slug}`}
+                                        onChanged={() => mutate()}
+                                    />
                                 ))}
                             </div>
                         </Panel>
