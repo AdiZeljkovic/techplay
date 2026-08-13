@@ -7,6 +7,7 @@ import { Trophy, Lock, Search, X, Sparkles, Award, ChevronDown, Star } from "luc
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
 import Panel from "@/components/ui/Panel";
+import Segmented from "@/components/ui/Segmented";
 import { useCountUp } from "@/hooks/useCountUp";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { timeAgo } from "@/lib/timeAgo";
@@ -490,27 +491,24 @@ export default function AchievementsTab({ username }: { username: string }) {
             <div className="xl:col-span-9 min-w-0">
                 <ScoreStrip data={payload} />
 
-                {/* ── controls ── */}
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        {FILTERS.map((f) => (
-                            <button
-                                key={f.id}
-                                onClick={() => setFilter(f.id)}
-                                className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors duration-200 ${
-                                    filter === f.id
-                                        ? "bg-[var(--accent)] text-white"
-                                        : "bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]"
-                                }`}
-                            >
-                                {f.label}
-                                <span className={`tabular-nums ${filter === f.id ? "text-white/70" : "text-white/25"}`}>{f.count}</span>
-                            </button>
-                        ))}
-                    </div>
+                {/* ── controls ──
 
-                    <div className="flex-1" />
+                    Two tiers, the same shape the shelf and the lists use: the
+                    states on their own housed bar, the three controls that
+                    narrow them underneath. All eight in one flex-wrap row meant
+                    that at most widths the search box landed under the chips at
+                    the left margin with the two selects beside it, which reads
+                    as a layout that gave up rather than one that wrapped. */}
+                <div className="mb-4 space-y-3">
+                    <Segmented
+                        ariaLabel="Filter achievements"
+                        value={filter}
+                        onChange={(id) => setFilter(id as FilterId)}
+                        className="w-full"
+                        items={FILTERS.map((f) => ({ id: f.id, label: f.label, count: f.count }))}
+                    />
 
+                    <div className="flex flex-wrap items-center gap-2">
                     <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/25 pointer-events-none" />
                         <input
@@ -550,6 +548,7 @@ export default function AchievementsTab({ username }: { username: string }) {
                             {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                         </select>
                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+                    </div>
                     </div>
                 </div>
 

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, ChevronRight, ChevronDown, TrendingUp, TrendingDown, ShoppingBag , type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
+import Segmented from "@/components/ui/Segmented";
 import { useCountUp } from "@/hooks/useCountUp";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { timeAgo } from "@/lib/timeAgo";
@@ -421,6 +422,7 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
     const [sort, setSort] = useState<SortId>("featured");
     const [showTiers, setShowTiers] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
 
     const catalog = catalogRes?.data;
     const wallet = walletRes?.data;
@@ -527,32 +529,19 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                 )}
 
                 {/* ── filters ── */}
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        <button
-                            onClick={() => setCategory("all")}
-                            className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
-                                category === "all" ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]"
-                            }`}
-                        >
-                            All <span className={category === "all" ? "text-white/70" : "text-white/25"}>{items.length}</span>
-                        </button>
-                        {catalog.categories.map((c) => (
-                            <button
-                                key={c.id}
-                                onClick={() => setCategory(c.id)}
-                                className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
-                                    category === c.id ? "bg-[var(--accent)] text-white" : "bg-white/[0.04] text-white/50 hover:text-white hover:bg-white/[0.08]"
-                                }`}
-                            >
-                                {c.label} <span className={category === c.id ? "text-white/70" : "text-white/25"}>{c.count}</span>
-                            </button>
-                        ))}
-                    </div>
+                <div className="flex items-center gap-2">
+                    <Segmented
+                        ariaLabel="Filter the store"
+                        value={category}
+                        onChange={setCategory}
+                        className="flex-1 min-w-0"
+                        items={[
+                            { id: "all", label: "All", count: items.length },
+                            ...catalog.categories.map((c) => ({ id: c.id, label: c.label, count: c.count })),
+                        ]}
+                    />
 
-                    <div className="flex-1" />
-
-                    <div className="relative">
+                    <div className="relative shrink-0">
                         <select
                             value={sort}
                             onChange={(e) => setSort(e.target.value as SortId)}
@@ -581,9 +570,33 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                     </div>
                 )}
 
-                {/* ── history ── */}
-                <Panel title="Bounty History" padding="none">
-                    {wallet.transactions.length === 0 ? (
+                {/* ── history ──
+
+                    Folded away by default. A ledger of every bounty movement
+                    is a record you consult, not something you read on the way
+                    to buying a frame — and open, it added a six-column table
+                    to the bottom of a page that already carried a wallet, a
+                    catalogue and an inventory. The rail's Recently Redeemed is
+                    the glance; this is the audit. */}
+                <Panel
+                    title="Bounty History"
+                    padding="none"
+                    meta={
+                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                            {wallet.transactions.length} {wallet.transactions.length === 1 ? "entry" : "entries"}
+                        </span>
+                    }
+                    action={wallet.transactions.length > 0
+                        ? { label: showHistory ? "Hide" : "Show", onClick: () => setShowHistory((v) => !v) }
+                        : undefined}
+                >
+                    {!showHistory && wallet.transactions.length > 0 ? (
+                        <div className="px-5 py-4">
+                            <p className="text-[12px] text-white/30">
+                                Everything you have earned and spent, in order.
+                            </p>
+                        </div>
+                    ) : wallet.transactions.length === 0 ? (
                         <div className="p-5">
                             <EmptyState variant="compact" title="No bounty movement yet" body="Everything you earn and spend is logged here." />
                         </div>
