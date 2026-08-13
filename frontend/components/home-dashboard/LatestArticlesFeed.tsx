@@ -24,43 +24,57 @@ type FilterId = (typeof FILTERS)[number]["id"];
 const fetcher = (url: string) =>
     axios.get(url).then((r) => (r.data?.data?.items ?? []) as FeedItem[]);
 
+/**
+ * The portal's date format for a compact card: "13 Aug 2026". The feed used
+ * to print "Aug 13" while every other list on the site printed the long form,
+ * which is the kind of difference nobody names and everybody feels.
+ */
 function publishedLabel(iso?: string | null): string {
     if (!iso) return "";
-    return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** One article: art left, category kicker, headline. */
+/**
+ * One article, drawn exactly as RecommendedNews draws one.
+ *
+ * This row had its own thumbnail size, its own title weight and its own date
+ * format — close enough to the portal's compact card to look like a mistake
+ * rather than a variant. The measurements below are that card's, not new ones:
+ * a 96×64 frame at the site's card radius, an accent kicker over a black
+ * headline, and the date underneath rather than beside the category.
+ */
 function Row({ article, index }: { article: FeedItem; index: number }) {
     return (
         <Link
             href={article.url}
-            className={`group flex gap-3.5 p-2 rounded-[10px] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_30%,transparent)] hover:bg-[var(--fill-1)] transition-colors duration-300 tp-fade-up tp-d${Math.min(6, index + 1)}`}
+            className={`group flex gap-3 p-2.5 rounded-[var(--radius-card)] hover:bg-white/[0.03] transition-colors duration-300 tp-fade-up tp-d${Math.min(6, index + 1)}`}
         >
-            <span className="relative w-[108px] h-[64px] shrink-0 rounded-[8px] overflow-hidden bg-[var(--fill-1)] border border-white/[0.07]">
+            <span className="relative w-[96px] h-[64px] shrink-0 rounded-[var(--radius-card)] overflow-hidden border border-white/[0.06] bg-black/40">
                 {article.featured_image_url && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                         src={article.featured_image_url}
-                        alt={article.title}
+                        alt=""
+                        aria-hidden
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700 ease-[var(--ease-hud)]"
+                        className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-500"
                     />
                 )}
             </span>
 
-            <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.14em]">
-                    {article.category?.name && <span className="text-[var(--accent)] truncate">{article.category.name}</span>}
-                    {article.published_at && (
-                        <>
-                            <span aria-hidden className="text-white/20">·</span>
-                            <span className="text-white/30 shrink-0">{publishedLabel(article.published_at)}</span>
-                        </>
-                    )}
+            <span className="flex flex-col justify-center min-w-0 flex-1">
+                <span className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-[var(--accent)] leading-none truncate">
+                    {article.category?.name || "News"}
                 </span>
-                <span className="mt-1.5 block font-display text-[13px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-200">
+                <span className="mt-1.5 block font-display text-[13px] font-black text-white leading-[1.25] line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-200">
                     {article.title}
                 </span>
+                {article.published_at && (
+                    <span className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
+                        {publishedLabel(article.published_at)}
+                    </span>
+                )}
             </span>
         </Link>
     );
@@ -110,9 +124,9 @@ export default function LatestArticlesFeed() {
             </div>
 
             {isLoading && !articles ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 pt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1 pt-3">
                     {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="h-[80px] rounded-[10px] bg-white/[0.04] animate-pulse" />
+                        <div key={i} className="h-[89px] rounded-[var(--radius-card)] bg-white/[0.04] animate-pulse" />
                     ))}
                 </div>
             ) : !articles?.length ? (
@@ -125,7 +139,7 @@ export default function LatestArticlesFeed() {
                     />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 pt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-1 pt-3">
                     {articles.slice(0, 6).map((a, i) => (
                         <Row key={a.id} article={a} index={i} />
                     ))}
