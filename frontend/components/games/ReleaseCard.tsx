@@ -78,12 +78,14 @@ function compact(n: number): string {
  * of them it was unreadable. The facts sit underneath.
  */
 export default function ReleaseCard({
-    game, href, onChanged,
+    game, href, onChanged, className = "",
 }: {
     game: ReleaseCardGame;
     /** Where the poster leads — the calendar entry or the game page. */
     href: string;
     onChanged?: () => void;
+    /** For the caller's grid — responsive visibility, mostly. */
+    className?: string;
 }) {
     const { user } = useAuth();
     const [busy, setBusy] = useState<"wishlist" | "reminder" | null>(null);
@@ -109,7 +111,7 @@ export default function ReleaseCard({
     };
 
     return (
-        <div className="group flex flex-col">
+        <div className={`group flex flex-col ${className}`}>
             <Link
                 href={href}
                 className="relative block aspect-[3/4] rounded-[12px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"

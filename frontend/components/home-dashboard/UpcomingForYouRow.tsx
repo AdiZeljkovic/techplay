@@ -18,6 +18,24 @@ const fetcher = () =>
     axios.get("/me/upcoming").then((r) => (r.data?.data ?? []) as UpcomingGame[]);
 
 /**
+ * More columns as the screen widens, which is the same thing as smaller
+ * posters: five across a 1900px panel gave each card 340px and a 450px-tall
+ * cover, so a strip of what's coming took up half a screen.
+ */
+const GRID = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 2xl:grid-cols-8 gap-3.5";
+
+/**
+ * Card count has to follow column count or the last row comes out short. The
+ * endpoint sends eight; these keep the visible run a whole number of rows at
+ * every width — four at the narrowest, six in the middle, all eight when there
+ * is a column for each.
+ */
+// sm:flex rather than sm:block — the card's own root is a flex column, and
+// unhiding it with `block` would drop the layout that puts its footer on the
+// floor of the card.
+const VISIBILITY = (i: number) => (i < 4 ? "" : i < 6 ? "hidden sm:flex" : "hidden 2xl:flex");
+
+/**
  * What is coming that this reader would care about.
  *
  * The cards are the calendar's, not a second interpretation of them — the two
@@ -35,9 +53,9 @@ export default function UpcomingForYouRow() {
     return (
         <Panel title="Upcoming For You" action={{ label: "Full calendar", href: "/calendar" }}>
             {isLoading && !games ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-                    {[...Array(5)].map((_, i) => (
-                        <div key={i} className="aspect-[3/4] rounded-[12px] bg-white/[0.04] animate-pulse" />
+                <div className={GRID}>
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className={`aspect-[3/4] rounded-[12px] bg-white/[0.04] animate-pulse ${VISIBILITY(i)}`} />
                     ))}
                 </div>
             ) : !games?.length ? (
@@ -48,10 +66,11 @@ export default function UpcomingForYouRow() {
                     action={{ label: "Open the calendar", href: "/calendar" }}
                 />
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-                    {games.slice(0, 5).map((game) => (
+                <div className={GRID}>
+                    {games.slice(0, 8).map((game, i) => (
                         <ReleaseCard
                             key={game.slug}
+                            className={VISIBILITY(i)}
                             href={`/calendar/${game.slug}`}
                             onChanged={() => mutate()}
                             game={{
