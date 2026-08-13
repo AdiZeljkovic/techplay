@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Play, Gamepad2 } from "lucide-react";
+import { Gamepad2, ArrowRight } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import type { PlayingNowGame } from "@/lib/types/profile";
@@ -70,7 +70,12 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                             prefetch={false}
                             className="shrink-0 inline-flex items-center gap-2 h-10 px-4 rounded-[8px] bg-[var(--accent)] text-white font-display text-[11.5px] font-bold uppercase tracking-[0.08em] hover:brightness-110 transition-[filter] duration-200"
                         >
-                            <Play className="w-3.5 h-3.5 fill-current" /> Resume game
+                            {/* The link opens the game's page on this site. It
+                                never resumed anything, and a button that
+                                promises to launch a game and delivers a
+                                database entry is a small lie the reader
+                                notices the first time they press it. */}
+                            <ArrowRight className="w-3.5 h-3.5" /> Learn more
                         </Link>
                     </div>
                 </>

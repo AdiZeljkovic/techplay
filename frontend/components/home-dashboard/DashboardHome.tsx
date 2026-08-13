@@ -6,7 +6,6 @@ import DashboardSkeleton from "./DashboardSkeleton";
 import ProfileHero from "./ProfileHero";
 import FavoriteGamesRail from "./FavoriteGamesRail";
 import ContinuePlayingCard from "./ContinuePlayingCard";
-import DailyChallengeCard from "./DailyChallengeCard";
 import LatestArticlesFeed from "./LatestArticlesFeed";
 import RecentAchievementsRail from "./RecentAchievementsRail";
 import FriendsOnlineWidget from "./FriendsOnlineWidget";
@@ -51,21 +50,22 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                     <ProfileHero hero={heroFromDashboard(data)} />
                 </div>
 
-                {/* ── the three pillars: what you're playing, what you love,
-                    what today pays ── */}
+                {/* ── two pillars: what you're playing, and what you love ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch tp-fade-up tp-d2">
-                    <div className="lg:col-span-4 min-w-0">
+                    <div className="lg:col-span-5 min-w-0">
                         <ContinuePlayingCard games={data.playing_now} />
                     </div>
-                    <div className="lg:col-span-5 min-w-0">
+                    {/* Daily Challenge stood here and showed a quest, while
+                        the Daily Hub below shows the quest list — one of them
+                        was always the other's first row. The hub keeps it,
+                        because that is where the streak, the season and the
+                        wallet the quest pays into already are. */}
+                    <div className="lg:col-span-7 min-w-0">
                         <FavoriteGamesRail
                             favorites={data.favorites}
                             username={data.user.username}
                             total={data.stats.favorites_count}
                         />
-                    </div>
-                    <div className="lg:col-span-3 min-w-0">
-                        <DailyChallengeCard />
                     </div>
                 </div>
 

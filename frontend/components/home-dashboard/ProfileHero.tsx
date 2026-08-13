@@ -32,19 +32,43 @@ function AvatarRing({
     frame: string | null;
     online: boolean;
 }) {
+    // An equipped cosmetic frame is a colour the reader paid for, so it wins.
+    // With nothing equipped the house frame is drawn instead — the armoured
+    // ring with the crest, rather than a flat crimson circle.
+    const cosmetic = !!frame;
+
     return (
         <div className="relative w-[124px] h-[124px] md:w-[150px] md:h-[150px] shrink-0">
-            <span
-                aria-hidden
-                className="absolute inset-0 rounded-full"
-                style={{
-                    background: frame || "var(--accent)",
-                    boxShadow: "0 0 24px -4px color-mix(in srgb, var(--accent) 55%, transparent)" }}
-            />
-            {/* the gap that keeps the ring reading as a ring, not a border */}
-            <span aria-hidden className="absolute inset-[2.5px] rounded-full bg-[var(--surface-0)]" />
+            {cosmetic ? (
+                <>
+                    <span
+                        aria-hidden
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                            background: frame!,
+                            boxShadow: "0 0 24px -4px color-mix(in srgb, var(--accent) 55%, transparent)" }}
+                    />
+                    {/* the gap that keeps the ring reading as a ring, not a border */}
+                    <span aria-hidden className="absolute inset-[2.5px] rounded-full bg-[var(--surface-0)]" />
+                </>
+            ) : (
+                <span
+                    aria-hidden
+                    className="absolute inset-0 z-20 pointer-events-none"
+                    style={{
+                        // Drawn over the portrait, not behind it: the ring has a
+                        // crest that oversails its own circle at top and bottom,
+                        // and behind the image those would be clipped away.
+                        backgroundImage: "url(/images/profile/avatar-frame.webp)",
+                        backgroundSize: "contain",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                        filter: "drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 45%, transparent))",
+                    }}
+                />
+            )}
 
-            <span className="absolute inset-[7px] rounded-full overflow-hidden bg-[var(--surface-2)]">
+            <span className={`absolute rounded-full overflow-hidden bg-[var(--surface-2)] ${cosmetic ? "inset-[7px]" : "inset-[11.5%]"}`}>
                 {src ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -60,7 +84,9 @@ function AvatarRing({
             </span>
 
             {online && (
-                <span className="absolute bottom-[6%] left-[13%] w-[18px] h-[18px]" title="Online now">
+                // Clear of the crest that sits at the bottom of the house
+                // frame — the old position put the dot straight through it.
+                <span className={`absolute z-30 w-[18px] h-[18px] ${cosmetic ? "bottom-[6%] left-[13%]" : "bottom-[13%] left-[6%]"}`} title="Online now">
                     <span aria-hidden className="tp-pulse-ring absolute inset-0 rounded-full bg-emerald-400" />
                     <span
                         className="relative block w-full h-full rounded-full ring-[3px] ring-[var(--surface-0)]"

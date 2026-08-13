@@ -5,7 +5,7 @@ import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { Coins, Target, ChevronRight, Radio, X, Loader2, Gem, Rocket } from "lucide-react";
+import { Target, ChevronRight, Radio, X, Loader2, Gem, Rocket } from "lucide-react";
 import SeasonBanner from "@/components/ui/SeasonBanner";
 import Readout from "@/components/ui/Readout";
 import StatIcon from "@/components/home-dashboard/StatIcon";
@@ -120,8 +120,18 @@ function NowPlayingPicker() {
 }
 
 /**
- * The owner's daily engagement hub: bounty wallet, active season,
- * daily streak claim and quests — one card instead of four.
+ * The owner's daily loop, in the order the day happens.
+ *
+ * It used to be six boxes with gaps between them and the wallet on top, which
+ * put a balance — a state, not an action — above everything with a deadline.
+ * The season frames the day, the streak expires tonight, the quests are the
+ * work, and the wallet is what the work paid. That is the order now, with
+ * seams instead of gaps so it reads as one instrument rather than a stack of
+ * unrelated cards.
+ *
+ * The Daily Challenge card used to sit elsewhere on the page showing the most
+ * urgent quest. That quest is the first row of the list below, so it was
+ * always drawn twice; it is only here now.
  */
 export default function DailyHub({ bounty, username, onOpenTab }: Props) {
     return (
@@ -133,45 +143,64 @@ export default function DailyHub({ bounty, username, onOpenTab }: Props) {
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
             }}
         >
-            {/* The wallet reads as a gauge now. It was a sentence with an icon
-                beside it — the largest number a member owns, styled like a
-                caption. */}
+            <header className="flex items-center gap-2.5 px-5 py-3.5 border-b border-white/[0.07]">
+                <Target className="w-4 h-4 text-[var(--accent)]" />
+                <h3 className="font-display text-[11px] font-black uppercase tracking-[0.15em] text-white">Today</h3>
+            </header>
+
+            {/* The frame the day sits in. */}
+            <div className="px-4 pt-4">
+                <SeasonBanner />
+            </div>
+
+            {/* The one thing that expires tonight. */}
+            <div className="px-4 pt-3">
+                <DailyStreakWidget />
+            </div>
+
+            {/* The work, most urgent first. */}
+            <div className="px-4 pt-4">
+                <h4 className="flex items-center justify-between gap-2 mb-2.5">
+                    <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/40">
+                        Active quests
+                    </span>
+                    <button
+                        onClick={() => onOpenTab("progression")}
+                        className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/30 hover:text-[var(--accent-ink)] transition-colors"
+                    >
+                        All quests
+                    </button>
+                </h4>
+                <QuestPanel isOwnProfile compact />
+            </div>
+
+            {/* What the work paid, and the door to spending it. A balance is a
+                state rather than a thing to do, so it sits under the doing. */}
             <button
                 onClick={() => onOpenTab("progression")}
-                className="group w-full flex items-end justify-between gap-4 px-5 py-4 border-b border-white/[0.07] hover:bg-white/[0.02] transition-colors text-left"
+                className="group mt-4 w-full flex items-end justify-between gap-4 px-5 py-4 border-y border-white/[0.07] bg-black/25 hover:bg-black/10 transition-colors text-left"
             >
                 <span className="flex items-center gap-3.5 min-w-0">
-                    {/* The struck token, not a line glyph. It is the only gold
-                        object in the set and the only one that is not crimson,
-                        because currency should not read like every other
-                        number on the page. */}
-                    <StatIcon src="/images/profile/v2-bounty.webp" size={46} />
-                    <Readout label="Bounty" value={bounty} unit="B" size="lg" animate tone="#fbbf24" />
+                    {/* The struck token, the only gold object in the set —
+                        currency should not read like every other number. */}
+                    <StatIcon src="/images/profile/v2-bounty.webp" size={44} />
+                    <Readout label="Bounty earned" value={bounty} unit="B" size="lg" animate tone="#fbbf24" />
                 </span>
                 <span className="flex items-center gap-1 pb-1.5 shrink-0 font-display text-[10px] font-bold uppercase tracking-widest text-white/35 group-hover:text-[var(--accent-ink)] transition-colors">
-                    Rewards <ChevronRight className="w-3.5 h-3.5" />
+                    Spend it <ChevronRight className="w-3.5 h-3.5" />
                 </span>
             </button>
 
-            <div className="p-4 space-y-4">
-                <SeasonBanner />
-                <DailyStreakWidget />
+            <div className="p-4 space-y-3">
                 <NowPlayingPicker />
-                <div>
-                    <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.14em] text-white/40 mb-3">
-                        <Target className="w-3.5 h-3.5 text-[var(--accent)]" /> Active Quests
-                    </h4>
-                    <QuestPanel isOwnProfile compact />
-                </div>
 
-                {/* Discovery shortcuts — the profile's hidden gems */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="grid grid-cols-2 gap-2">
                     <Link href={username ? `/wrapped/${username}` : "/wrapped"}
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line)] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors text-[11px] font-bold text-white/70 hover:text-white">
                         <Gem className="w-3.5 h-3.5 text-[var(--accent)]" /> Wrapped
                     </Link>
                     <Link href="/backlog-advisor"
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line)] bg-white/[0.02] hover:border-[var(--accent)]/30 transition-all text-[11px] font-bold text-white/70 hover:text-white">
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-[var(--radius-card)] border border-[var(--line)] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors text-[11px] font-bold text-white/70 hover:text-white">
                         <Rocket className="w-3.5 h-3.5 text-[var(--accent)]" /> Backlog AI
                     </Link>
                 </div>

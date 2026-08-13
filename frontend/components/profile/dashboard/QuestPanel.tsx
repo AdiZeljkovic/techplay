@@ -76,15 +76,19 @@ function QuestRow({ quest, compact }: { quest: Quest; compact?: boolean }) {
           />
         </div>
 
+        {/* The pay, as two chips rather than two numbers floating in a
+            corner. Blue XP against amber bounty was also the only place on
+            the profile where XP was not the house crimson. */}
         <div className="flex flex-col items-end gap-1 shrink-0">
-          {quest.bounty_reward > 0 && (
-            <span className="text-[10px] font-bold tabular-nums text-amber-400">
-              +{quest.bounty_reward} <span className="text-[var(--ink-faint)]">B</span>
+          {quest.xp_reward > 0 && (
+            <span className="inline-flex items-center gap-1 h-[19px] px-1.5 rounded-[4px] font-display text-[10px] font-black tabular-nums"
+              style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent-ink)" }}>
+              +{quest.xp_reward}<span className="text-white/30">XP</span>
             </span>
           )}
-          {quest.xp_reward > 0 && (
-            <span className="text-[10px] font-bold tabular-nums text-blue-400">
-              +{quest.xp_reward} <span className="text-[var(--ink-faint)]">XP</span>
+          {quest.bounty_reward > 0 && (
+            <span className="inline-flex items-center gap-1 h-[19px] px-1.5 rounded-[4px] bg-amber-400/12 font-display text-[10px] font-black tabular-nums text-amber-400">
+              +{quest.bounty_reward}<span className="text-white/30">B</span>
             </span>
           )}
         </div>
@@ -104,7 +108,14 @@ export default function QuestPanel({ isOwnProfile, compact = false }: { isOwnPro
 
   if (!isOwnProfile || !quests?.length) return null;
 
-  const active = quests.filter((q) => !q.completed);
+  // Nearest deadline first, undated ones last. This is what the separate
+  // Daily Challenge card used to pick out and show above the list — it is the
+  // same quest, so it leads the list instead of being drawn twice.
+  const active = [...quests.filter((q) => !q.completed)].sort((a, b) => {
+    if (!a.expires_at) return 1;
+    if (!b.expires_at) return -1;
+    return new Date(a.expires_at).getTime() - new Date(b.expires_at).getTime();
+  });
   const done = quests.filter((q) => q.completed);
   const shown = compact ? active.slice(0, 3) : [...active, ...done.slice(0, 2)];
 
