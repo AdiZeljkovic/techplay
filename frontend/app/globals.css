@@ -681,13 +681,16 @@ body.tp-navigating .tp-page {
 }
 
 .tp-stat-spec {
-  opacity: var(--spec-o);
+  /* Half what it was. The icons carry their own baked highlights now, and a
+     strong sweep on top of them washes the art out instead of lighting it —
+     this is a suggestion that a light moved, not a second light. */
+  opacity: calc(var(--spec-o) * 0.55);
   transition: opacity 220ms var(--ease-hud);
   background: radial-gradient(
     circle at var(--spec-x) var(--spec-y),
-    rgba(255, 255, 255, 0.55) 0%,
-    color-mix(in srgb, var(--accent) 40%, transparent) 26%,
-    transparent 62%
+    rgba(255, 255, 255, 0.34) 0%,
+    color-mix(in srgb, var(--accent) 26%, transparent) 30%,
+    transparent 64%
   );
   -webkit-mask-size: contain;
   mask-size: contain;

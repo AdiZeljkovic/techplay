@@ -1,48 +1,69 @@
-# Icon rig
+# Profile icons
 
-`icon-rig.blend` is the camera, lighting and palette the nine profile icons in
-`frontend/public/images/profile/v2-*.webp` were rendered from. Open it and the
-next icon lands in the same set without any of it being guessed at again.
+The nine icons in `frontend/public/images/profile/v2-*.webp` are **hand-made**,
+supplied as transparent PNGs. They are not the Blender renders that briefly
+lived at these filenames — those were replaced because they did not hold up.
 
-## What is in it
+## Where they are used
 
-| | |
-|---|---|
-| **Camera** | Orthographic, three-quarter, locked to an empty at the origin. Ortho on purpose — these are read at 60px in a row, and perspective would make the wide objects look bigger than the tall ones. |
-| **Key** | Broad area light on the camera's side, so the faces we see are the lit ones. |
-| **Rim** | Crimson from behind-right. This is the brand doing the lighting, and it is most of why nine separate models read as one family. |
-| **Fill** | Cold and dim, so the shadow side is not a hole. |
+| File | Drawn at | Where |
+|---|---|---|
+| `v2-games`, `v2-completed`, `v2-reviews`, `v2-achievements`, `v2-streak`, `v2-loot` | 60px | the hero stat strip |
+| `v2-bounty` | 46px · 62px | the wallet readout · a bounty-paying challenge |
+| `v2-streak` | 46px | the streak widget |
+| `v2-season` | 64px | the season panel |
+| `v2-xp` | 62px | an XP-paying challenge |
 
-## Materials
+## How a new one is prepared
 
-- `M_Body` — near-black anodised shell. **Metallic 0.15, not 1.0**: a fully metallic body in an empty world has nothing to mirror and renders as a silhouette.
-- `M_Trim` — machined chamfers and rings.
-- `M_Core` — the site's `#DC143C`, converted to linear, as deep lacquer with a little emission underneath. Lacquer rather than a lamp, because a fully emissive face has no shading and a five-point star turns into a flat sticker.
-- `M_Lamp` — genuinely emissive, for thin seams where there is no surface to shade.
-- `M_Hot` — the flame's inner core.
-- `M_Gold` — bounty. The only non-crimson accent in the set.
+Source art comes in at whatever size and padding the tool exported. Two steps
+make it behave on the strip:
 
-## Two settings that are not optional
+1. **Trim to the alpha bounding box.** Two thirds of some source files is empty
+   padding, and padding is what decides how large an icon looks beside its
+   neighbours — so it has to be ours rather than the exporter's.
+2. **Fit the long edge to 90% of a 320×320 square, centred.** Scaling each icon
+   to fill its own square would make a tall one tower over a wide one; matching
+   the long edge gives them the same visual weight.
 
-**View transform is `Standard`, not AgX.** AgX is built to roll saturated colour
-off toward white for photographic renders, and on a brand accent that is exactly
-wrong — crimson desaturates to pink on the way through. Every early render came
-out pink because of this one setting.
-
-**Emission strength stays at or under 1.0.** Driving a saturated red past 1.0
-clips the red channel while green and blue keep climbing, which is the other
-half of how red becomes pink.
-
-## Rendering another one
-
-Build in the `ICON` collection, keep the object roughly within a 1.4-unit cube
-around the origin, then:
+320px is five times the largest place any of them is drawn, which covers 3×
+displays with room to spare, and lands each file around 15–25 KB as WebP.
 
 ```python
-bpy.context.scene.render.filepath = ".../frontend/public/images/profile/v2-<name>.webp"
-bpy.ops.render.render(write_still=True)
+im = Image.open(src).convert("RGBA")
+im = im.crop(im.getchannel("A").getbbox())
+w, h = im.size
+s = (320 * 0.90) / max(w, h)
+im = im.resize((round(w * s), round(h * s)), Image.LANCZOS)
+out = Image.new("RGBA", (320, 320), (0, 0, 0, 0))
+out.alpha_composite(im, ((320 - im.size[0]) // 2, (320 - im.size[1]) // 2))
+out.save(dst, "WEBP", quality=92, method=6)
 ```
 
-512×512, RGBA, transparent film. The frontend scales them down to 46–64px, and
-`components/home-dashboard/StatIcon.tsx` adds the tilt, the specular sweep and
-the lift.
+Judge the result on a contact sheet at **60px against `#0B0E14`**, never at full
+size. An icon that looks right at 512px and turns to mush on the strip is the
+mistake that produced the set these replaced.
+
+## `components/home-dashboard/StatIcon.tsx`
+
+Adds the behaviour: the icon turns toward the pointer, lifts on approach, and
+carries a faint specular sweep masked to its own silhouette. The sweep is
+deliberately quiet — this art has its own baked highlights, and a strong one on
+top washes it out instead of lighting it.
+
+`active={false}` renders an icon cold and grey (a dead streak), and
+`idle="flicker" | "pulse"` gives the two objects with a reason to move a slow
+idle. The rest hold still; six animating icons at once is a screensaver.
+
+## `icon-rig.blend`
+
+The Blender rig from the earlier attempt — orthographic three-quarter camera,
+crimson rim light, a small material palette. Kept because it is a working setup
+for any 3D asset that needs to match the site, not because the shipped icons
+came from it.
+
+Two settings in it are worth remembering anywhere else renders for this brand:
+the view transform must be **Standard**, since AgX rolls saturated colour toward
+white and turns crimson into pink; and **emission stays at or under 1.0**,
+because driving a saturated red past it clips the red channel while green and
+blue keep climbing, which does the same thing from the other direction.
