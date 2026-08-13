@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, ChevronRight, ChevronDown, TrendingUp, TrendingDown, ShoppingBag , type LucideIcon } from "lucide-react";
+import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, ChevronDown, TrendingUp, TrendingDown, ShoppingBag , type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import Segmented from "@/components/ui/Segmented";
@@ -222,60 +222,84 @@ function StoreCard({
     );
 }
 
-/* ── wallet hero ──────────────────────────────────────────────────────── */
+/* ── the wallet ───────────────────────────────────────────────────────── */
 
-function WalletHero({ wallet, onOpenTiers }: { wallet: BountyWallet; onOpenTiers: () => void }) {
+/**
+ * Balance, what it came from, and where you stand on the ladder — one banner.
+ *
+ * These were three things in three places: a hero across the top, a Wallet
+ * Breakdown panel in the rail repeating the balance under a different
+ * heading, and a Reward Tiers panel behind a toggle that opened a grid of
+ * eight cards. Between them the balance was stated three times on one page,
+ * four counting the tab strip above it.
+ *
+ * The ladder is a rail rather than a grid of cards. A ladder is a line you
+ * are somewhere on; drawn as eight tiles it became a table of thresholds you
+ * had to read to work out which one was yours. Rungs behind you are full, the
+ * one ahead fills as you earn toward it, and the tier you are on stands
+ * taller and lit.
+ */
+function WalletBanner({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () => void }) {
     const balance = useCountUp(wallet.balance, 1200);
     const tier = wallet.tier;
+    const here = wallet.ladder.findIndex((r) => r.name === tier.name);
 
     return (
-        <div className="relative overflow-hidden rounded-[var(--radius-panel)] border border-amber-500/[0.18] bg-[var(--surface-2)]">
+        <div className="relative overflow-hidden rounded-[var(--radius-panel)] border border-amber-500/[0.18]">
             <span
                 aria-hidden
-                className="absolute inset-0"
-                style={{ background: "radial-gradient(120% 140% at 10% 0%, rgba(240,180,41,0.10), transparent 55%)" }}
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: "radial-gradient(70% 130% at 8% 0%, rgba(240,180,41,0.12), transparent 60%)" }}
             />
+            <span aria-hidden className="absolute inset-x-0 top-0 h-[2px]" style={{ background: "linear-gradient(90deg, #f0b429, rgba(240,180,41,0.18) 60%, transparent)" }} />
 
-            <div className="relative grid grid-cols-1 lg:grid-cols-2">
-                <div className="flex items-center gap-5 p-6">
-                    <span className="relative w-[92px] h-[92px] shrink-0">
+            <div className="relative grid grid-cols-1 lg:grid-cols-[minmax(0,340px)_1fr] gap-px" style={{ background: "var(--line)" }}>
+                {/* what you can spend */}
+                <div className="flex items-center gap-5 p-6" style={{ background: "var(--surface-2)" }}>
+                    <span className="relative w-[84px] h-[84px] shrink-0">
                         <span aria-hidden className="absolute inset-0 rounded-full border-2 border-amber-500/30" />
                         <span aria-hidden className="absolute inset-[7px] rounded-full border border-amber-400/20" />
                         <span
                             aria-hidden
-                            className="absolute inset-[14px] rounded-full"
+                            className="absolute inset-[13px] rounded-full"
                             style={{ background: "radial-gradient(circle, rgba(240,180,41,0.22), transparent 70%)" }}
                         />
-                        <span className="absolute inset-0 flex items-center justify-center">
-                            <Coins className="w-9 h-9 text-amber-400" />
-                        </span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src="/images/profile/v2-bounty.webp"
+                            alt=""
+                            aria-hidden
+                            className="absolute inset-0 m-auto w-[46px] h-[46px] object-contain"
+                        />
                     </span>
 
                     <div className="min-w-0">
                         <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-amber-400/70">
-                            Bounty Wallet
+                            Spendable
                         </p>
-                        <p className="mt-1 flex items-baseline gap-2.5">
-                            <span className="font-display text-[38px] font-black tabular-nums leading-none text-amber-400">
-                                {balance.toLocaleString("en-US")}
-                            </span>
-                            <span className="font-display text-[13px] font-black uppercase tracking-[0.14em] text-white/45">
-                                Bounty
-                            </span>
+                        <p className="mt-1.5 font-display text-[38px] font-black tabular-nums leading-none text-amber-400">
+                            {balance.toLocaleString("en-US")}
                         </p>
-                        <p className="mt-2 text-[12px] text-white/40 leading-snug">
-                            Earn Bounty by being active across TechPlay — reading, playing, posting and finishing quests.
+
+                        <p className="mt-3 flex items-center gap-4 font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums">
+                            <span className="inline-flex items-center gap-1.5 text-emerald-400/80">
+                                <TrendingUp className="w-3.5 h-3.5" /> {wallet.earned_lifetime.toLocaleString("en-US")}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 text-red-400/70">
+                                <TrendingDown className="w-3.5 h-3.5" /> {wallet.spent_lifetime.toLocaleString("en-US")}
+                            </span>
                         </p>
                     </div>
                 </div>
 
-                <div className="relative flex items-center gap-5 p-6 border-t lg:border-t-0 lg:border-l border-white/[0.06]">
+                {/* where you stand */}
+                <div className="flex items-center gap-5 p-6" style={{ background: "var(--surface-2)" }}>
                     <span
-                        className="relative w-[62px] h-[70px] shrink-0 flex items-center justify-center"
+                        className="relative w-[58px] h-[66px] shrink-0 flex items-center justify-center"
                         style={{ background: tier.color, clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
                     >
                         <span
-                            className="w-[52px] h-[60px] flex items-center justify-center bg-[var(--surface-2)]"
+                            className="w-[48px] h-[56px] flex items-center justify-center bg-[var(--surface-2)]"
                             style={{ clipPath: "polygon(50% 0%, 100% 22%, 100% 70%, 50% 100%, 0% 70%, 0% 22%)" }}
                         >
                             <span className="font-display text-[15px] font-black" style={{ color: tier.color }}>
@@ -285,117 +309,63 @@ function WalletHero({ wallet, onOpenTiers }: { wallet: BountyWallet; onOpenTiers
                     </span>
 
                     <div className="min-w-0 flex-1">
-                        <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/40">Reward Tier</p>
-                        <p className="mt-0.5 flex items-baseline justify-between gap-3">
-                            <span className="font-display text-[21px] font-black uppercase tracking-[0.02em] leading-none" style={{ color: tier.color }}>
-                                {tier.name}
-                            </span>
-                            {tier.next && (
-                                <span className="font-display text-[11px] font-bold tabular-nums text-white/40 whitespace-nowrap">
-                                    {wallet.earned_lifetime.toLocaleString("en-US")} / {tier.next.at.toLocaleString("en-US")}
-                                </span>
-                            )}
+                        <p className="flex items-baseline justify-between gap-3">
+                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/40">Reward tier</span>
+                            <button
+                                onClick={onHelp}
+                                className="shrink-0 inline-flex items-center gap-1 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/30 hover:text-white transition-colors"
+                            >
+                                <HelpCircle className="w-3 h-3" /> How bounty works
+                            </button>
+                        </p>
+                        <p className="mt-1 font-display text-[21px] font-black uppercase tracking-[0.02em] leading-none" style={{ color: tier.color }}>
+                            {tier.name}
                         </p>
 
-                        <span className="block mt-2.5 h-[7px] rounded-full bg-[var(--track)] overflow-hidden">
-                            <span
-                                className="block h-full rounded-full transition-[width] duration-700 ease-[var(--ease-hud)]"
-                                style={{ width: `${tier.progress}%`, background: `linear-gradient(90deg, ${tier.color}90, ${tier.color})` }}
-                            />
-                        </span>
+                        {/* the ladder */}
+                        <div className="mt-3 flex items-end gap-[3px]" aria-hidden>
+                            {wallet.ladder.map((rung, i) => {
+                                const passed = i <= here;
+                                const next = i === here + 1;
+                                const current = i === here;
 
-                        <p className="mt-2.5 flex items-center justify-between gap-3">
-                            <span className="text-[11.5px] text-white/45">
+                                return (
+                                    <span
+                                        key={rung.name}
+                                        title={`${rung.name} · ${rung.at.toLocaleString("en-US")} earned`}
+                                        className="flex-1 rounded-[2px] overflow-hidden transition-[height] duration-500"
+                                        style={{
+                                            height: current ? 15 : 9,
+                                            background: passed ? rung.color : "rgba(255,255,255,0.07)",
+                                            boxShadow: current ? `0 0 14px color-mix(in srgb, ${rung.color} 65%, transparent)` : undefined,
+                                        }}
+                                    >
+                                        {/* the rung ahead fills as you earn toward it */}
+                                        {next && (
+                                            <span
+                                                className="block h-full transition-[width] duration-700"
+                                                style={{ width: `${tier.progress}%`, background: rung.color, opacity: 0.55 }}
+                                            />
+                                        )}
+                                    </span>
+                                );
+                            })}
+                        </div>
+
+                        <p className="mt-2.5 flex items-baseline justify-between gap-3 font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums">
+                            <span className="text-white/30">{wallet.earned_lifetime.toLocaleString("en-US")} earned</span>
+                            <span className="text-white/45">
                                 {tier.next ? (
-                                    <>Earn <span className="font-bold text-white">{tier.remaining.toLocaleString("en-US")}</span> more to reach {tier.next.name}</>
+                                    <><span className="text-white">{tier.remaining.toLocaleString("en-US")}</span> to {tier.next.name}</>
                                 ) : (
-                                    "Top of the ladder — nothing left to climb."
+                                    "Top of the ladder"
                                 )}
                             </span>
-                            <button
-                                onClick={onOpenTiers}
-                                className="shrink-0 inline-flex items-center gap-1 h-[26px] px-2.5 rounded-[6px] bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.09] font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/70 transition-colors"
-                            >
-                                View tiers <ChevronRight className="w-3 h-3" />
-                            </button>
                         </p>
                     </div>
                 </div>
             </div>
         </div>
-    );
-}
-
-function TierLadder({ wallet, onClose }: { wallet: BountyWallet; onClose: () => void }) {
-    return (
-        <Panel title="Reward tiers" action={{ label: "Close", onClick: onClose }}>
-            <p className="mb-4 text-[12px] text-white/40 leading-snug">
-                Tiers climb on Bounty <span className="text-white font-semibold">earned</span>, never on Bounty held — spending
-                in the store can never cost you a tier.
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                {wallet.ladder.map((rung) => {
-                    const reached = wallet.earned_lifetime >= rung.at;
-                    const current = rung.name === wallet.tier.name;
-                    return (
-                        <div
-                            key={rung.name}
-                            className="flex items-center gap-2.5 p-2.5 rounded-[9px] border"
-                            style={{
-                                borderColor: current ? rung.color : "rgba(255,255,255,0.07)",
-                                background: reached ? `color-mix(in srgb, ${rung.color} 9%, transparent)` : "rgba(255,255,255,0.015)" }}
-                        >
-                            <span className="w-2 h-8 rounded-full shrink-0" style={{ background: reached ? rung.color : "rgba(255,255,255,0.1)" }} />
-                            <span className="min-w-0">
-                                <span className="block font-display text-[11.5px] font-bold" style={{ color: reached ? rung.color : "rgba(255,255,255,0.45)" }}>
-                                    {rung.name}
-                                </span>
-                                <span className="block font-display text-[10px] font-bold tabular-nums text-white/30">
-                                    {rung.at.toLocaleString("en-US")} earned
-                                </span>
-                            </span>
-                        </div>
-                    );
-                })}
-            </div>
-        </Panel>
-    );
-}
-
-/* ── sidebar pieces ───────────────────────────────────────────────────── */
-
-function WalletBreakdown({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () => void }) {
-    const row = (label: string, value: number, tint: string, icon: React.ReactNode) => (
-        <div className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2 text-[12px] text-white/50">{icon}{label}</span>
-            <span className="font-display text-[12.5px] font-black tabular-nums" style={{ color: tint }}>
-                {value.toLocaleString("en-US")}
-            </span>
-        </div>
-    );
-
-    return (
-        <Panel title="Wallet Breakdown" material="instrument">
-            <div className="space-y-2.5">
-                <div className="flex items-center justify-between gap-3 pb-2.5 border-b border-white/[0.07]">
-                    <span className="flex items-center gap-2 text-[12.5px] font-semibold text-white">
-                        <Coins className="w-3.5 h-3.5 text-amber-400" /> Total Bounty
-                    </span>
-                    <span className="font-display text-[15px] font-black tabular-nums text-amber-400">
-                        {wallet.balance.toLocaleString("en-US")}
-                    </span>
-                </div>
-                {row("Earned (lifetime)", wallet.earned_lifetime, "#34d399", <TrendingUp className="w-3.5 h-3.5 text-emerald-400/60" />)}
-                {row("Spent (lifetime)", wallet.spent_lifetime, "#f87171", <TrendingDown className="w-3.5 h-3.5 text-red-400/60" />)}
-            </div>
-
-            <button
-                onClick={onHelp}
-                className="mt-4 w-full inline-flex items-center justify-center gap-2 h-9 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/60 transition-colors"
-            >
-                <HelpCircle className="w-3.5 h-3.5" /> How bounty works
-            </button>
-        </Panel>
     );
 }
 
@@ -420,7 +390,6 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
     const [busy, setBusy] = useState<string | null>(null);
     const [category, setCategory] = useState<string>("all");
     const [sort, setSort] = useState<SortId>("featured");
-    const [showTiers, setShowTiers] = useState(false);
     const [showHelp, setShowHelp] = useState(false);
     const [showHistory, setShowHistory] = useState(false);
 
@@ -429,8 +398,14 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
     const items = useMemo(() => catalog?.items ?? [], [catalog]);
 
     const visible = useMemo(() => {
+        // "Owned" is a shelf of the same bar rather than a panel of its own.
+        // An Owned Cosmetics panel in the rail listed exactly the items whose
+        // cards already say Owned and Equipped, three feet to the left.
         const filtered = items.filter((i) =>
-            category === "all" ? true : category === "Limited" ? i.limited : i.category === category
+            category === "all" ? true
+                : category === "owned" ? i.owned
+                : category === "Limited" ? i.limited
+                : i.category === category
         );
 
         return [...filtered].sort((a, b) => {
@@ -446,8 +421,6 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
             }
         });
     }, [items, category, sort]);
-
-    const ownedCosmetics = useMemo(() => items.filter((i) => i.owned && i.source === "cosmetic"), [items]);
 
     const refresh = () => {
         mutateCatalog();
@@ -488,229 +461,195 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
     if (!catalog || !wallet) {
         return (
             <div className="space-y-4">
-                <div className="h-[168px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-                    {[...Array(10)].map((_, i) => <div key={i} className="h-[262px] rounded-[12px] bg-white/[0.04] animate-pulse" />)}
-                </div>
-            </div>
-        );
+        <div className="h-[168px] rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
+        <div className="h-9 w-[420px] max-w-full rounded-[10px] bg-white/[0.04] animate-pulse" />
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+            {[...Array(12)].map((_, i) => <div key={i} className="h-[262px] rounded-[12px] bg-white/[0.04] animate-pulse" />)}
+        </div>
+    </div>
+);
     }
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-            <div className="xl:col-span-9 min-w-0 space-y-4">
-                <WalletHero wallet={wallet} onOpenTiers={() => setShowTiers((v) => !v)} />
+// One column. The store had a nine-and-three split whose rail carried
+// a second copy of the balance, a list of the redemptions already in
+// the ledger below, and an inventory of the items whose own cards say
+// Owned — three panels of restatement taking a quarter of the width
+// off the only thing on the page you can act on.
+<div className="space-y-4">
+        <WalletBanner wallet={wallet} onHelp={() => setShowHelp((v) => !v)} />
 
-                {showTiers && <TierLadder wallet={wallet} onClose={() => setShowTiers(false)} />}
-
-                {showHelp && (
-                    <Panel
-                        title="How bounty works"
-                        action={{ label: "Close", onClick: () => setShowHelp(false) }}
-                    >
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[12.5px] text-white/50 leading-relaxed">
-                            <p>
-                                <span className="block font-display text-[10px] font-black uppercase tracking-[0.12em] text-white mb-1.5">Earning</span>
-                                Bounty lands alongside XP — reading articles, commenting, posting on the forum, adding and
-                                finishing games, and completing daily missions.
-                            </p>
-                            <p>
-                                <span className="block font-display text-[10px] font-black uppercase tracking-[0.12em] text-white mb-1.5">Spending</span>
-                                Everything on this page costs Bounty and nothing else. Cosmetics are yours permanently;
-                                coupons and perks are consumed when used.
-                            </p>
-                            <p>
-                                <span className="block font-display text-[10px] font-black uppercase tracking-[0.12em] text-white mb-1.5">Tiers</span>
-                                Your reward tier climbs on Bounty earned over your whole time here, so spending never sets
-                                you back. Bounty does not expire.
-                            </p>
-                        </div>
-                    </Panel>
-                )}
-
-                {/* ── filters ── */}
-                <div className="flex items-center gap-2">
-                    <Segmented
-                        ariaLabel="Filter the store"
-                        value={category}
-                        onChange={setCategory}
-                        className="flex-1 min-w-0"
-                        items={[
-                            { id: "all", label: "All", count: items.length },
-                            ...catalog.categories.map((c) => ({ id: c.id, label: c.label, count: c.count })),
-                        ]}
-                    />
-
-                    <div className="relative shrink-0">
-                        <select
-                            value={sort}
-                            onChange={(e) => setSort(e.target.value as SortId)}
-                            className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
-                        >
-                            {SORTS.map((s) => <option key={s.id} value={s.id}>Sort: {s.label}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-                    </div>
+        {showHelp && (
+            <Panel
+                title="How bounty works"
+                action={{ label: "Close", onClick: () => setShowHelp(false) }}
+            >
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[12.5px] text-white/50 leading-relaxed">
+                    <p>
+                        <span className="block font-display text-[10px] font-black uppercase tracking-[0.12em] text-white mb-1.5">Earning</span>
+                        Bounty lands alongside XP — reading articles, commenting, posting on the forum, adding and
+                        finishing games, and completing daily missions.
+                    </p>
+                    <p>
+                        <span className="block font-display text-[10px] font-black uppercase tracking-[0.12em] text-white mb-1.5">Spending</span>
+                        Everything on this page costs Bounty and nothing else. Cosmetics are yours permanently;
+                        coupons and perks are consumed when used.
+                    </p>
+                    <p>
+                        <span className="block font-display text-[10px] font-black uppercase tracking-[0.12em] text-white mb-1.5">Tiers</span>
+                        Your reward tier climbs on Bounty earned over your whole time here, so spending never sets
+                        you back. Bounty does not expire.
+                    </p>
                 </div>
+            </Panel>
+        )}
 
-                {/* ── grid ── */}
-                {visible.length === 0 ? (
-                    <EmptyState variant="compact" title="Nothing on this shelf" body="Try another category." />
-                ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-                        {visible.map((item) => (
-                            <StoreCard
-                                key={item.key}
-                                item={item}
-                                busy={busy === item.key}
-                                onBuy={() => buy(item)}
-                                onEquip={() => equip(item)}
-                            />
-                        ))}
-                    </div>
-                )}
+        {/* ── filters ── */}
+        <div className="flex items-center gap-2">
+            <Segmented
+                ariaLabel="Filter the store"
+                value={category}
+                onChange={setCategory}
+                className="flex-1 min-w-0"
+                items={[
+                    { id: "all", label: "All", count: items.length },
+                    ...catalog.categories.map((c) => ({ id: c.id, label: c.label, count: c.count })),
+                    { id: "owned", label: "Owned", count: items.filter((i) => i.owned).length, dot: "#34d399" },
+                ]}
+            />
 
-                {/* ── history ──
-
-                    Folded away by default. A ledger of every bounty movement
-                    is a record you consult, not something you read on the way
-                    to buying a frame — and open, it added a six-column table
-                    to the bottom of a page that already carried a wallet, a
-                    catalogue and an inventory. The rail's Recently Redeemed is
-                    the glance; this is the audit. */}
-                <Panel
-                    title="Bounty History"
-                    padding="none"
-                    meta={
-                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
-                            {wallet.transactions.length} {wallet.transactions.length === 1 ? "entry" : "entries"}
-                        </span>
-                    }
-                    action={wallet.transactions.length > 0
-                        ? { label: showHistory ? "Hide" : "Show", onClick: () => setShowHistory((v) => !v) }
-                        : undefined}
+            <div className="relative shrink-0">
+                <select
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value as SortId)}
+                    className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
                 >
-                    {!showHistory && wallet.transactions.length > 0 ? (
-                        <div className="px-5 py-4">
-                            <p className="text-[12px] text-white/30">
-                                Everything you have earned and spent, in order.
-                            </p>
-                        </div>
-                    ) : wallet.transactions.length === 0 ? (
-                        <div className="p-5">
-                            <EmptyState variant="compact" title="No bounty movement yet" body="Everything you earn and spend is logged here." />
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full min-w-[620px] text-left">
-                                <thead>
-                                    <tr className="border-b border-white/[0.07]">
-                                        {["Type", "Description", "Amount", "Date", "Balance"].map((h, i) => (
-                                            <th
-                                                key={h}
-                                                className={`px-5 py-2.5 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35 ${i > 1 ? "text-right" : ""}`}
-                                            >
-                                                {h}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {wallet.transactions.slice(0, 8).map((t) => {
-                                        const earned = t.amount > 0;
-                                        return (
-                                            <tr key={t.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.015] transition-colors">
-                                                <td className="px-5 py-2.5">
-                                                    <span className={`inline-flex items-center gap-1.5 font-display text-[10.5px] font-bold ${earned ? "text-emerald-400" : "text-red-400"}`}>
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                                        {earned ? "Earned" : "Redeemed"}
-                                                    </span>
-                                                </td>
-                                                <td className="px-5 py-2.5 text-[12px] text-white/60 max-w-[280px] truncate">{t.reason ?? "—"}</td>
-                                                <td className={`px-5 py-2.5 text-right font-display text-[12px] font-black tabular-nums ${earned ? "text-emerald-400" : "text-red-400"}`}>
-                                                    {earned ? "+" : ""}{t.amount.toLocaleString("en-US")}
-                                                </td>
-                                                <td className="px-5 py-2.5 text-right text-[11.5px] tabular-nums text-white/35 whitespace-nowrap">
-                                                    {timeAgo(t.created_at)}
-                                                </td>
-                                                <td className="px-5 py-2.5 text-right font-display text-[12px] font-bold tabular-nums text-white/70">
-                                                    {t.balance_after.toLocaleString("en-US")}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </Panel>
+                    {SORTS.map((s) => <option key={s.id} value={s.id}>Sort: {s.label}</option>)}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
             </div>
+        </div>
 
-            {/* ── sidebar ── */}
-            <aside className="xl:col-span-3 min-w-0 space-y-4">
-                <WalletBreakdown wallet={wallet} onHelp={() => setShowHelp((v) => !v)} />
+        {/* ── grid ── */}
+        {visible.length === 0 ? (
+            <EmptyState variant="compact" title="Nothing on this shelf" body="Try another category." />
+        ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+                {visible.map((item) => (
+                    <StoreCard
+                        key={item.key}
+                        item={item}
+                        busy={busy === item.key}
+                        onBuy={() => buy(item)}
+                        onEquip={() => equip(item)}
+                    />
+                ))}
+            </div>
+        )}
 
-                <Panel title="Recently Redeemed">
+        {/* ── history ──
+
+            Folded away by default. A ledger of every bounty movement
+            is a record you consult, not something you read on the way
+            to buying a frame — and open, it added a six-column table
+            to the bottom of a page that already carried a wallet, a
+            catalogue and an inventory. The rail's Recently Redeemed is
+            the glance; this is the audit. */}
+        <Panel
+            title="Bounty ledger"
+            padding="none"
+            meta={
+                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+            {showHistory && wallet.transactions.length > 25
+                ? `Latest 25 of ${wallet.transactions.length}`
+                : `${wallet.transactions.length} ${wallet.transactions.length === 1 ? "entry" : "entries"}`}
+                </span>
+            }
+            action={wallet.transactions.length > 0
+                ? { label: showHistory ? "Hide" : "Show", onClick: () => setShowHistory((v) => !v) }
+                : undefined}
+        >
+            {!showHistory && wallet.transactions.length > 0 ? (
+                /* Folded, it still shows the last few things you
+                   actually bought — that was a Recently Redeemed panel
+                   in the rail, which is the same list read from the
+                   other end. */
+                <div className="px-5 py-4">
                     {(redemptionsRes?.data ?? []).length === 0 ? (
-                        <EmptyState variant="compact" title="Nothing redeemed yet" />
+                        <p className="text-[12px] text-white/30">Everything you earn and spend is logged here.</p>
                     ) : (
-                        <div className="space-y-3">
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                             {(redemptionsRes?.data ?? []).slice(0, 4).map((r) => (
-                                <div key={r.id} className="flex items-center gap-3">
-                                    <span className="w-9 h-9 shrink-0 rounded-[8px] bg-white/[0.04] flex items-center justify-center overflow-hidden">
+                                <span key={r.id} className="flex items-center gap-2.5 min-w-0">
+                                    <span className="w-8 h-8 shrink-0 rounded-[7px] bg-white/[0.04] flex items-center justify-center overflow-hidden">
                                         {r.reward_item?.image ? (
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img src={getStorageUrl(r.reward_item.image)} alt="" aria-hidden className="w-full h-full object-cover" />
                                         ) : (
-                                            <Sparkles className="w-4 h-4 text-white/25" />
+                                            <Sparkles className="w-3.5 h-3.5 text-white/25" />
                                         )}
                                     </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block text-[12.5px] font-bold text-white truncate">
+                                    <span className="min-w-0">
+                                        <span className="block text-[12px] font-bold text-white truncate max-w-[160px]">
                                             {r.reward_item?.name ?? "Reward"}
                                         </span>
-                                        <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/30">
-                                            {timeAgo(r.created_at)}
+                                        <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/25">
+                                            {timeAgo(r.created_at)} · <span className="text-red-400/70">-{r.cost.toLocaleString("en-US")}</span>
                                         </span>
                                     </span>
-                                    <span className="shrink-0 font-display text-[11.5px] font-black tabular-nums text-red-400">
-                                        -{r.cost.toLocaleString("en-US")}
-                                    </span>
-                                </div>
+                                </span>
                             ))}
                         </div>
                     )}
-                </Panel>
-
-                <Panel
-                    title="Owned Cosmetics"
-                    meta={<span className="font-display text-[11px] font-black tabular-nums text-white/35">{ownedCosmetics.length}</span>}
-                >
-                    {ownedCosmetics.length === 0 ? (
-                        <EmptyState variant="compact" title="No cosmetics yet" body="Redeem a frame or theme to start your inventory." />
-                    ) : (
-                        <div className="flex flex-wrap gap-2">
-                            {ownedCosmetics.slice(0, 7).map((c) => (
-                                <span
-                                    key={c.key}
-                                    title={`${c.name}${c.equipped ? " · equipped" : ""}`}
-                                    className="relative w-[42px] h-[42px] rounded-[9px] border flex items-center justify-center overflow-hidden"
-                                    style={{
-                                        borderColor: c.equipped ? "#34d399" : `color-mix(in srgb, ${RARITY[c.rarity]?.color ?? "#9ca3af"} 40%, transparent)`,
-                                        background: "var(--surface-1)" }}
-                                >
-                                    <span className="w-[26px] h-[26px] rounded-full" style={{ background: c.value ?? RARITY[c.rarity]?.color }} />
-                                </span>
-                            ))}
-                            {ownedCosmetics.length > 7 && (
-                                <span className="w-[42px] h-[42px] rounded-[9px] border border-white/[0.08] flex items-center justify-center font-display text-[11px] font-black text-white/40">
-                                    +{ownedCosmetics.length - 7}
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </Panel>
-            </aside>
+                </div>
+            ) : wallet.transactions.length === 0 ? (
+                <div className="p-5">
+                    <EmptyState variant="compact" title="No bounty movement yet" body="Everything you earn and spend is logged here." />
+                </div>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[620px] text-left">
+                        <thead>
+                            <tr className="border-b border-white/[0.07]">
+                                {["Type", "Description", "Amount", "Date", "Balance"].map((h, i) => (
+                                    <th
+                                        key={h}
+                                        className={`px-5 py-2.5 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35 ${i > 1 ? "text-right" : ""}`}
+                                    >
+                                        {h}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {wallet.transactions.slice(0, 25).map((t) => {
+                                const earned = t.amount > 0;
+                                return (
+                                    <tr key={t.id} className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.015] transition-colors">
+                                        <td className="px-5 py-2.5">
+                                            <span className={`inline-flex items-center gap-1.5 font-display text-[10.5px] font-bold ${earned ? "text-emerald-400" : "text-red-400"}`}>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                                {earned ? "Earned" : "Redeemed"}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-2.5 text-[12px] text-white/60 max-w-[280px] truncate">{t.reason ?? "—"}</td>
+                                        <td className={`px-5 py-2.5 text-right font-display text-[12px] font-black tabular-nums ${earned ? "text-emerald-400" : "text-red-400"}`}>
+                                            {earned ? "+" : ""}{t.amount.toLocaleString("en-US")}
+                                        </td>
+                                        <td className="px-5 py-2.5 text-right text-[11.5px] tabular-nums text-white/35 whitespace-nowrap">
+                                            {timeAgo(t.created_at)}
+                                        </td>
+                                        <td className="px-5 py-2.5 text-right font-display text-[12px] font-bold tabular-nums text-white/70">
+                                            {t.balance_after.toLocaleString("en-US")}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </Panel>
         </div>
     );
 }
