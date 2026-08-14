@@ -68,17 +68,26 @@ function Shelf({ shelf, active, onPick }: { shelf: typeof SHELVES[number]; activ
                     : "border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)]"
             }`}
         >
-            {/* The neon art IS the icon — no box, no tint; the PNGs carry their own glow. */}
+            {/* The neon art IS the icon — no box, no tint; the art carries its
+                own glow, exactly as the homepage's quick links do.
+
+                Square, and drawn to a square. It used to be h-9 w-auto over
+                four canvases of four different shapes — 211x280 next to
+                280x231 — so each icon came out a different size and the row
+                read as four drawings that had wandered in separately. The
+                files are trimmed to their own art and centred on a 256 square
+                at the same fill the quick links use, so the two rows are one
+                family. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={shelf.art}
                 alt=""
                 aria-hidden
-                className={`h-9 w-auto select-none pointer-events-none transition-transform duration-200 ${
+                className={`w-14 h-14 object-contain select-none pointer-events-none transition-transform duration-200 ${
                     active ? "scale-110" : "group-hover:scale-105"
                 }`}
             />
-            <p className="mt-2 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
+            <p className="mt-3 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
             <p className="mt-1 text-[11.5px] leading-snug text-white/40">{shelf.line}</p>
 
             {/* Which way in you took is not obvious from a grid that only ever
