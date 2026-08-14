@@ -72,6 +72,28 @@ export function getStorageUrl(path: string | undefined | null): string {
 }
 
 /**
+ * Whether an image is ours to optimise.
+ *
+ * Avatars arrive from two worlds. Our own uploads are stored raw — a profile
+ * picture can be a 162 KB JPEG and it gets drawn into a 20px circle, so it
+ * belongs in the optimiser. Everyone else's (Discord, Gravatar, Google) are
+ * already small, already on a CDN, and only some of their hosts are declared
+ * in `remotePatterns` — an undeclared host does not degrade, it throws a 400
+ * and the avatar breaks.
+ *
+ * So the test is ownership, not a list of foreign hostnames: optimise what we
+ * host, pass everything else through untouched.
+ */
+export function isOwnUpload(url?: string | null): boolean {
+    if (!url) return false;
+    // Same-origin assets out of public/ — rank emblems, placeholders.
+    if (url.startsWith('/')) return true;
+
+    const storage = process.env.NEXT_PUBLIC_STORAGE_URL;
+    return !!storage && url.startsWith(storage);
+}
+
+/**
  * Combined helper - gets storage URL with variant
  */
 export function getOptimizedImageUrl(

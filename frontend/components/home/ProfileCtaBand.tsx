@@ -23,7 +23,9 @@ export default function ProfileCtaBand() {
                 alt=""
                 aria-hidden
                 fill
-                sizes="(max-width: 1280px) 100vw, 1280px"
+                // 1200, not 1280: the declared widths jump 1200 -> 1920, so asking for
+                // 1280 fetches a 1920 variant of a decorative object-cover backdrop.
+                sizes="(max-width: 1200px) 100vw, 1200px"
                 className="object-cover object-[72%_center]"
                 priority={false}
             />

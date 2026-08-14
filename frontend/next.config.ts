@@ -76,6 +76,22 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Artwork in public/ is served with Next's four-hour default, so the
+      // quicklink tiles, rank badges and page heroes are re-fetched several
+      // times a day for files that never change. They are versioned by name:
+      // replacing the art means a new filename, so a month is safe.
+      ...[
+        '/quicklinks/:file*', '/images/:file*', '/ranks/:file*', '/gta6/:file*', '/frames/:file*', '/rewards/:file*',
+        // Brand marks sit at the root and are on every page.
+        '/techplay-logo.png', '/techplay-mark.png', '/logo.png',
+        '/favicon.ico', '/favicon-16x16.png', '/favicon-32x32.png', '/apple-touch-icon.png',
+        '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png',
+      ].map(
+        (source) => ({
+          source,
+          headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=604800' }],
+        })
+      ),
     ];
   },
 

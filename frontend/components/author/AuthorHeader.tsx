@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Calendar, Crown, PenLine, Shield, Globe, Twitter, Linkedin, Youtube, Instagram } from "lucide-react";
 import type { AuthorProfile, AuthorStats } from "@/types";
+import { isOwnUpload } from "@/lib/imageUrl";
 
 interface AuthorHeaderProps {
     author: AuthorProfile;
@@ -50,7 +51,7 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
                                     width={144}
                                     height={144}
                                     className="object-cover w-full h-full"
-                                    unoptimized={author.avatar_url.includes('discord') || author.avatar_url.includes('gravatar')}
+                                    unoptimized={!isOwnUpload(author.avatar_url)}
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-[var(--accent)]">

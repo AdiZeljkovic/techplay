@@ -22,6 +22,7 @@ import { decodeHtml } from "@/lib/decode";
 import NotificationPanel from "./NotificationPanel";
 import { mobileBar } from "@/lib/mobileBar";
 import { MoreMark } from "./TabMarks";
+import { isOwnUpload } from "@/lib/imageUrl";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -875,7 +876,7 @@ function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
                 height={size}
                 style={{ width: size, height: size }}
                 className="rounded-full object-cover"
-                unoptimized={user.avatar_url.includes("discord") || user.avatar_url.includes("gravatar")}
+                unoptimized={!isOwnUpload(user.avatar_url)}
             />
         ) : (
             <span
@@ -1355,7 +1356,7 @@ export default function Header() {
                                                     {user.avatar_url ? (
                                                         <Image src={user.avatar_url} alt={user.username || ''} width={52} height={52}
                                                             className="w-[52px] h-[52px] rounded-full object-cover ring-2 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
-                                                            unoptimized={user.avatar_url.includes('discord') || user.avatar_url.includes('gravatar')} />
+                                                            unoptimized={!isOwnUpload(user.avatar_url)} />
                                                     ) : (
                                                         <span className="w-[52px] h-[52px] rounded-full bg-[var(--accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)] flex items-center justify-center">
                                                             <User className="w-6 h-6 text-[var(--accent)]" />

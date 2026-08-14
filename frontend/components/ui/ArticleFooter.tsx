@@ -6,6 +6,7 @@ import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import SocialShare from "@/components/share/SocialShare";
 import CommentsSection from "@/components/comments/CommentsSection";
+import { isOwnUpload } from "@/lib/imageUrl";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -92,7 +93,7 @@ export default function ArticleFooter({
                                         width={48}
                                         height={48}
                                         className="w-12 h-12 rounded-full object-cover border-2 border-[var(--accent)]/30 hover:border-[var(--accent)] transition-colors"
-                                        unoptimized={!!author.avatar_url && (author.avatar_url.includes('discord') || author.avatar_url.includes('gravatar'))}
+                                        unoptimized={!isOwnUpload(author.avatar_url)}
                                     />
                                 ) : (
                                     <div className="w-12 h-12 rounded-full bg-[var(--accent)]/10 border-2 border-[var(--accent)]/20 flex items-center justify-center text-[var(--accent)] font-bold text-[18px]">

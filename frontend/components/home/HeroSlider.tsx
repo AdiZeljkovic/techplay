@@ -99,7 +99,9 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
             {/* Caption */}
             {/* lg left padding clears the hero's diagonal seam */}
             <div className="absolute inset-x-0 bottom-0 p-5 md:p-6 lg:pl-12">
-                <AnimatePresence mode="wait">
+                {/* initial={false}: the first caption is the page's LCP element, so it must
+                    render opaque server-side. Later slides still cross-fade. */}
+                <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 12 }}

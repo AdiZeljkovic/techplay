@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { HomeMark, FeedMark, GamesMark, ForumMark, ProfileMark } from "./TabMarks";
+import { isOwnUpload } from "@/lib/imageUrl";
 
 /**
  * The bottom tab bar — the phone's navigation.
@@ -211,7 +212,7 @@ export default function MobileTabBar() {
                                         width={52}
                                         height={52}
                                         className="w-full h-full object-cover"
-                                        unoptimized={user.avatar_url.includes("discord") || user.avatar_url.includes("gravatar")}
+                                        unoptimized={!isOwnUpload(user.avatar_url)}
                                     />
                                 ) : (
                                     <ProfileMark className="h-[25px] w-[25px] text-white/75" />

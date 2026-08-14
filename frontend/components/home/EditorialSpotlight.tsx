@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ChevronRight, Clock, User as UserIcon } from "lucide-react";
 import { Article } from "@/types";
 import { articleHref } from "@/lib/articleHref";
+import { isOwnUpload } from "@/lib/imageUrl";
 
 /** What each vertical is called. The name carries it; an icon beside it only repeated the word. */
 const TYPE_LABEL: Record<string, string> = {
@@ -42,7 +43,7 @@ function Meta({ article, withAuthor = false }: { article: Article; withAuthor?: 
                 <>
                     <span className="flex items-center gap-1.5 text-[var(--ink-mid)] font-semibold">
                         {article.author?.avatar_url ? (
-                            <Image src={article.author.avatar_url} alt={author} width={20} height={20} className="w-5 h-5 rounded-full object-cover" unoptimized />
+                            <Image src={article.author.avatar_url} alt={author} width={20} height={20} className="w-5 h-5 rounded-full object-cover" unoptimized={!isOwnUpload(article.author.avatar_url)} />
                         ) : (
                             <span className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center"><UserIcon className="w-2.5 h-2.5 text-white/40" /></span>
                         )}
