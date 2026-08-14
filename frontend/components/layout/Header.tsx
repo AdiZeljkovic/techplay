@@ -1009,6 +1009,15 @@ export default function Header() {
      * returned on a phone. It moves by transform, so nothing below it reflows.
      */
     const [barHidden, setBarHidden] = useState(false);
+
+    // Anything sticky under the header reads this to stay glued to it. Without
+    // it a sticky filter row hangs 56px down the screen the moment the header
+    // slides away, with the page scrolling through the gap.
+    useEffect(() => {
+        const shift = barHidden && !isMobileMenuOpen && !mobileSearchOpen ? "-56px" : "0px";
+        document.documentElement.style.setProperty("--header-shift", shift);
+    }, [barHidden, isMobileMenuOpen, mobileSearchOpen]);
+
     useEffect(() => {
         let last = window.scrollY;
         const onScroll = () => {

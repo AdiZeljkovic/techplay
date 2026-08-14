@@ -338,6 +338,20 @@ body {
   .above-tabbar { bottom: 0; }
 }
 
+/* A filter or tab row that stays put while the list under it scrolls — the
+   phone answer to a sidebar. It tracks --header-shift so it stays welded to
+   the header when the header slides away, and stops being sticky at md, where
+   the desktop layouts already place these rows deliberately. */
+.under-bar {
+  position: sticky;
+  top: calc(56px + var(--header-shift, 0px));
+  z-index: 30;
+  transition: top 300ms var(--ease-hud);
+}
+@media (min-width: 768px) {
+  .under-bar { position: static; }
+}
+
 /* react-hot-toast positions its container with inline styles, so a class is
    the only way to move it off the tab bar. Phones only — on a desktop there
    is no bar and the toast belongs in the corner. */

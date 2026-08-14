@@ -292,21 +292,21 @@ export default function CalendarClient() {
                     </>
                 )}
 
-                <div className="relative z-10 container-page py-10 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
+                <div className="relative z-10 container-page py-5 md:py-10 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-5 md:gap-8 items-start">
                     <div>
                         <p className="inline-flex items-center gap-2 font-display text-[9.5px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
                             <CalendarDays className="w-3.5 h-3.5" /> Release calendar
                         </p>
-                        <h1 className="mt-3 font-display font-black text-white tracking-tight leading-[0.88] text-[46px] md:text-[64px] uppercase">
+                        <h1 className="mt-2 md:mt-3 font-display font-black text-white tracking-tight leading-[0.88] text-[30px] md:text-[64px] uppercase">
                             {label || "—"}
                             <span className="block text-[var(--accent)]">{year}</span>
                         </h1>
-                        <p className="mt-3.5 text-[13px] text-white/45 max-w-[420px] leading-relaxed">
+                        <p className="hidden md:block mt-3.5 text-[13px] text-white/45 max-w-[420px] leading-relaxed">
                             Track upcoming game releases, launch dates and platforms, and wishlist the games you care
                             about. Never miss a launch.
                         </p>
 
-                        <div className="mt-6 flex items-center gap-7">
+                        <div className="mt-4 md:mt-6 flex items-center gap-5 md:gap-7">
                             <span className="flex items-center gap-2.5">
                                 <Flame className="w-5 h-5 text-[var(--accent)]" />
                                 <span>

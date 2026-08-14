@@ -45,7 +45,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)] font-sans text-[var(--ink-mid)]">
-            <div className="container-page py-6 md:py-8 space-y-10 md:space-y-14">
+            <div className="container-page py-3 md:py-8 space-y-7 md:space-y-14">
                 {/* Hero + quick links enter as one band; the choreography then
                     walks the full page — no section appears without its cue */}
                 <div className="tp-fade-up tp-d1 space-y-6">

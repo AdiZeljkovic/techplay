@@ -300,8 +300,8 @@ export default function GameDatabaseHub({
                 <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page py-12 text-center">
-                    <h1 className="font-display font-black tracking-tight text-[42px] md:text-[58px] leading-none">
+                <div className="relative z-10 container-page py-5 md:py-12 text-center">
+                    <h1 className="font-display font-black tracking-tight text-[28px] md:text-[58px] leading-none">
                         {heading ? (
                             <span className="text-white">{heading}</span>
                         ) : (
@@ -311,14 +311,14 @@ export default function GameDatabaseHub({
                             </>
                         )}
                     </h1>
-                    <p className="mt-3 max-w-[720px] mx-auto text-[13px] text-white/45">
+                    <p className="hidden md:block mt-3 max-w-[720px] mx-auto text-[13px] text-white/45">
                         {intro ??
                             (typeof stats?.games === "number"
                                 ? `Discover, explore and track ${stats.games.toLocaleString()} games across every generation.`
                                 : "Discover, explore and track games across every generation.")}
                     </p>
 
-                    <div className="mt-6 max-w-[640px] mx-auto relative group">
+                    <div className="mt-4 md:mt-6 max-w-[640px] mx-auto relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--ink-faint)] group-focus-within:text-[var(--accent)] transition-colors" />
                         <input
                             value={typed}
@@ -338,7 +338,7 @@ export default function GameDatabaseHub({
                     </div>
 
                     {/* quick ways in, for the 86% of the catalogue that has no rating */}
-                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+                    <div className="mt-4 md:mt-6 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 md:gap-2.5 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide snap-x">
                         {facets?.platforms.slice(0, 4).map((p) => {
                             const on = platform === p.label;
                             // The mark wears its brand colour at rest. On the
@@ -351,7 +351,7 @@ export default function GameDatabaseHub({
                                 <button
                                     key={p.key}
                                     onClick={() => change(() => setPlatform(on ? "" : p.label))}
-                                    className={`inline-flex items-center gap-2 h-11 px-5 rounded-full border font-display text-[12px] font-bold uppercase tracking-[0.08em] transition-colors ${
+                                    className={`shrink-0 snap-start inline-flex items-center gap-2 h-11 px-5 rounded-full border font-display text-[12px] font-bold uppercase tracking-[0.08em] transition-colors ${
                                         on
                                             ? "border-[var(--accent)] bg-[var(--accent)] text-white"
                                             : "border-white/[0.09] bg-white/[0.03] text-white/55 hover:text-white"
@@ -368,7 +368,7 @@ export default function GameDatabaseHub({
                         <button
                             onClick={roll}
                             disabled={rolling}
-                            className="inline-flex items-center gap-2 h-11 px-5 rounded-full bg-[var(--accent)] hover:brightness-110 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-white transition-[filter]"
+                            className="shrink-0 snap-start inline-flex items-center gap-2 h-11 px-5 rounded-full bg-[var(--accent)] hover:brightness-110 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-white transition-[filter]"
                         >
                             {rolling ? <Loader2 className="w-[18px] h-[18px] animate-spin" /> : <Shuffle className="w-[18px] h-[18px]" />}
                             Random game
@@ -378,7 +378,7 @@ export default function GameDatabaseHub({
             </section>
 
             {/* ── four ways in ── */}
-            <section className="container-page py-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <section className="container-page py-4 md:py-5 grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {SHELVES.map((shelf) => (
                     <Shelf
                         key={shelf.key}

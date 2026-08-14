@@ -48,23 +48,23 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
 
             <div className="relative grid grid-cols-1 lg:grid-cols-2">
                 {/* ── Copy + search + CTAs ── */}
-                <div className="relative z-10 p-6 py-10 md:p-12 flex flex-col justify-center">
-                    <p className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] mb-4">
+                <div className="relative z-10 p-5 py-6 md:p-12 flex flex-col justify-center">
+                    <p className="flex items-center gap-2.5 font-display text-[10px] md:text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] mb-2.5 md:mb-4">
                         <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
                         The Gamer Platform
                     </p>
 
-                    <h1 className="font-display text-[38px] md:text-[50px] font-black leading-[1.02] text-[var(--ink-hi)]">
+                    <h1 className="font-display text-[30px] md:text-[50px] font-black leading-[1.02] text-[var(--ink-hi)]">
                         Your gaming world.
                         <br />
                         <span className="text-[var(--accent)]">All in one place.</span>
                     </h1>
 
-                    <p className="mt-5 text-[15px] text-[var(--ink-mid)] leading-relaxed max-w-[420px]">
+                    <p className="hidden md:block mt-5 text-[15px] text-[var(--ink-mid)] leading-relaxed max-w-[420px]">
                         Discover games, track releases, read trusted reviews, and connect with a community that plays.
                     </p>
 
-                    <form onSubmit={submitSearch} className="mt-7 max-w-[440px]">
+                    <form onSubmit={submitSearch} className="mt-4 md:mt-7 max-w-[440px]">
                         <div className="flex items-center gap-2 h-[52px] pl-4 pr-1.5 rounded-[var(--radius-card)] bg-[var(--surface-0)]/70 backdrop-blur-sm border border-[var(--line-strong)] focus-within:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] focus-within:shadow-[var(--glow-accent)] transition-all duration-300">
                             <Search className="w-4 h-4 text-[var(--ink-faint)] shrink-0" />
                             <input
@@ -87,7 +87,7 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
                     {/* Same 440px as the search field above, split in two — the
                         pair reads as one block with it rather than a shorter
                         row starting under it. */}
-                    <div className="mt-6 max-w-[440px] flex flex-wrap sm:flex-nowrap items-center gap-3">
+                    <div className="mt-3 md:mt-6 max-w-[440px] flex flex-wrap sm:flex-nowrap items-center gap-2.5 md:gap-3">
                         <Link
                             href="/register"
                             className="btn-command flex-1 inline-flex items-center justify-center gap-2 px-5 h-12 bg-[var(--accent)] text-white font-display text-[13px] font-bold uppercase tracking-wider whitespace-nowrap hover:bg-[var(--accent-hover)] transition-colors duration-300"
@@ -103,7 +103,7 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
                     </div>
 
                     {/* Stat row — Command Numerals over hairline dividers */}
-                    <div className="mt-9 pt-6 border-t border-[var(--line)] grid grid-cols-3 max-w-[440px]">
+                    <div className="hidden md:grid mt-9 pt-6 border-t border-[var(--line)] grid-cols-3 max-w-[440px]">
                         {STATS.map((stat, i) => (
                             <div key={stat.label} className={i > 0 ? "pl-5 border-l border-[var(--line)]" : ""}>
                                 <p className="font-display text-[20px] font-bold tabular-nums text-[var(--ink-hi)] leading-none">
@@ -118,7 +118,7 @@ export default function HomeHero({ heroArticles }: { heroArticles: Article[] }) 
                 </div>
 
                 {/* ── Featured stories slider behind the diagonal seam ── */}
-                <div className="relative min-h-[340px] sm:min-h-[400px] lg:min-h-0">
+                <div className="relative min-h-[190px] sm:min-h-[400px] lg:min-h-0">
                     {/* accent sliver along the diagonal cut */}
                     <div
                         aria-hidden

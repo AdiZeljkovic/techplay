@@ -78,7 +78,7 @@ export default function PageHero({
     const tail = words[words.length - 1];
 
     return (
-        <section className="relative w-full mb-10 overflow-hidden border-b border-white/[0.07] bg-[var(--surface-0)]">
+        <section className="relative w-full mb-5 md:mb-10 overflow-hidden border-b border-white/[0.07] bg-[var(--surface-0)]">
             {backgroundImage ? (
                 <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -98,36 +98,43 @@ export default function PageHero({
             )}
             <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-            <div className="relative z-10 container-page pt-12 pb-9 flex flex-col items-center text-center">
+            <div className="relative z-10 container-page pt-5 pb-4 md:pt-12 md:pb-9 flex flex-col items-center text-center">
                 {(MainIcon || iconNode) && (
-                    <span className="w-12 h-12 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center mb-4">
+                    <span className="hidden md:flex w-12 h-12 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] items-center justify-center mb-4">
                         {MainIcon
                             ? <MainIcon className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />
                             : iconNode}
                     </span>
                 )}
 
-                <h1 className="font-display text-3xl md:text-5xl font-black uppercase leading-none tracking-tight">
+                <h1 className="font-display text-[26px] md:text-5xl font-black uppercase leading-none tracking-tight">
                     {lead && <span className="text-white">{lead} </span>}
                     <span className="text-[var(--accent)]">{tail}</span>
                 </h1>
 
                 {description && (
-                    <p className="mt-3 max-w-2xl text-[13.5px] md:text-[14.5px] text-white/45 leading-relaxed">
+                    <p className="hidden md:block mt-3 max-w-2xl text-[13.5px] md:text-[14.5px] text-white/45 leading-relaxed">
                         {description}
                     </p>
                 )}
 
                 {categories && categories.length > 0 && (
-                    <div className={cn("max-w-full flex flex-wrap justify-center overflow-x-auto scrollbar-hide", categorySize === "lg" ? "mt-8 gap-2.5" : "mt-7 gap-1.5")}>
+                    <div
+                        className={cn(
+                            "max-w-full flex overflow-x-auto scrollbar-hide",
+                            "flex-nowrap justify-start -mx-4 px-4 snap-x",
+                            "md:flex-wrap md:justify-center md:mx-0 md:px-0",
+                            categorySize === "lg" ? "mt-4 gap-2 md:mt-8 md:gap-2.5" : "mt-3.5 gap-1.5 md:mt-7"
+                        )}
+                    >
                         {categories.map((cat) => {
                             const isSelected = selectedCategory === cat.id;
                             const big = categorySize === "lg";
                             const pill = cn(
-                                "inline-flex items-center border font-display font-black uppercase transition-colors whitespace-nowrap shrink-0",
+                                "inline-flex items-center border font-display font-black uppercase transition-colors whitespace-nowrap shrink-0 snap-start",
                                 big
-                                    ? "gap-2.5 h-11 px-6 rounded-[10px] text-[12px] tracking-[0.12em]"
-                                    : "gap-1.5 h-8 px-3.5 rounded-[8px] text-[9.5px] tracking-[0.1em]",
+                                    ? "gap-2 md:gap-2.5 h-11 px-5 md:px-6 rounded-[10px] text-[11.5px] md:text-[12px] tracking-[0.1em] md:tracking-[0.12em]"
+                                    : "gap-1.5 h-11 md:h-8 px-4 md:px-3.5 rounded-[8px] text-[10.5px] md:text-[9.5px] tracking-[0.1em]",
                                 isSelected
                                     ? "bg-[var(--accent)] border-transparent text-white"
                                     : "bg-white/[0.04] border-white/[0.1] text-white/55 hover:text-white hover:border-white/25"

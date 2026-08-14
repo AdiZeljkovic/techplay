@@ -220,7 +220,7 @@ export default function SectionHub({
             {/* ── the ticker: what has landed lately ── */}
             {hub?.trending.length ? (
                 <div className="border-b border-white/[0.07] bg-white/[0.02]">
-                    <div className="container-page h-11 flex items-center gap-4">
+                    <div className="container-page h-9 md:h-11 flex items-center gap-4">
                         <span className="shrink-0 inline-flex items-center h-[24px] px-2.5 rounded-[6px] bg-[var(--accent)] font-display text-[9px] font-black uppercase tracking-[0.14em] text-white">
                             New:
                         </span>
@@ -253,10 +253,10 @@ export default function SectionHub({
                 </div>
             ) : null}
 
-            <div className="container-page py-8 grid grid-cols-1 xl:grid-cols-[1fr_324px] gap-6 items-start">
+            <div className="container-page py-4 md:py-8 grid grid-cols-1 xl:grid-cols-[1fr_324px] gap-6 items-start">
                 <div className="min-w-0">
                     {/* ── header: says what the page is, then gets out of the way ── */}
-                    <header className="relative pl-4 mb-6">
+                    <header className="relative pl-4 mb-4 md:mb-6">
                         <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded bg-[var(--accent)]" />
 
                         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
@@ -335,7 +335,8 @@ export default function SectionHub({
                     {/* ── tab row, with real counts ── */}
                     {/* Same switcher the leaderboard uses: one enclosure, the
                         active choice filled rather than a row of loose chips. */}
-                    <div className="mt-7 flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                    <div className="under-bar mt-4 md:mt-7 -mx-4 px-4 py-2 md:mx-0 md:px-0 md:py-0 bg-[var(--surface-0)] md:bg-transparent">
+                    <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 overflow-x-auto scrollbar-hide snap-x rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         <Tab
                             label="Everything"
                             count={hub?.stats.articles}
@@ -359,9 +360,10 @@ export default function SectionHub({
                             );
                         })}
                     </div>
+                    </div>
 
                     {/* ── the list ── */}
-                    <div className="mt-7 flex items-center justify-between gap-4">
+                    <div className="mt-5 md:mt-7 flex items-center justify-between gap-4">
                         <p className="flex items-center gap-2.5">
                             <span aria-hidden className="w-[3px] h-[15px] rounded bg-[var(--accent)]" />
                             <span className="font-display text-[13px] font-black uppercase tracking-[0.14em] text-white">
@@ -529,7 +531,9 @@ export default function SectionHub({
 function Tab({
     label, count, active = false, onClick, href,
 }: { label: string; count?: number; active?: boolean; onClick?: () => void; href?: string }) {
-    const className = `flex-1 min-w-[112px] inline-flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] whitespace-nowrap font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+    // In a scrolling rail a tab sizes to its own words; `flex-1` is what made
+    // them wrap into rows. It comes back at md, where the enclosure is a row.
+    const className = `shrink-0 snap-start md:flex-1 md:min-w-[112px] inline-flex items-center justify-center gap-2 h-11 md:h-10 px-4 md:px-3 rounded-[8px] whitespace-nowrap font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
         active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
     }`;
 

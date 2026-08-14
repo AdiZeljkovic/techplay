@@ -168,19 +168,25 @@ export default function FeedClient() {
                 onSelectCategory={(id) => reset(() => setTab(id as "latest" | "you"))}
             />
 
-            <div className="container-page py-8">
+            <div className="container-page pt-0 pb-6 md:py-8">
                 {tab === "latest" && (
-                    <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
-                        {SECTIONS.map((s) => (
-                            <SwitchTab
-                                key={s.id}
-                                icon={s.icon}
-                                active={section === s.id}
-                                onClick={() => reset(() => setSection(s.id))}
-                            >
-                                {s.label}
-                            </SwitchTab>
-                        ))}
+                    // Five sections wrapped into three centred rows on a phone
+                    // and cost 290px to ask one question. One row that scrolls
+                    // costs 60px, stays put while the feed moves under it, and
+                    // says "there is more this way" with its cut-off edge.
+                    <div className="under-bar -mx-4 px-4 py-2 md:mx-0 md:px-0 md:py-0 bg-[var(--surface-0)] md:bg-transparent">
+                        <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 overflow-x-auto scrollbar-hide snap-x rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                            {SECTIONS.map((s) => (
+                                <SwitchTab
+                                    key={s.id}
+                                    icon={s.icon}
+                                    active={section === s.id}
+                                    onClick={() => reset(() => setSection(s.id))}
+                                >
+                                    {s.label}
+                                </SwitchTab>
+                            ))}
+                        </div>
                     </div>
                 )}
 
@@ -278,7 +284,9 @@ function SwitchTab({
         <button
             onClick={onClick}
             aria-pressed={active}
-            className={`flex-1 min-w-[112px] inline-flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] whitespace-nowrap font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+            // `flex-1` is what made these wrap into rows: in a scrolling row
+            // they size to their words instead, and reach the 44px floor.
+            className={`shrink-0 snap-start md:flex-1 md:min-w-[112px] inline-flex items-center justify-center gap-2 h-11 md:h-10 px-4 md:px-3 rounded-[8px] whitespace-nowrap font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
                 active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
             }`}
         >

@@ -47,17 +47,29 @@ const PAGES = [
 function measure() {
     const VIEWPORT = 844;
 
-    // Where the reader first meets something they came for. A hero, a filter
-    // bar and a section title are all chrome; a card, a list row or a
-    // paragraph of an article is not.
-    const CONTENT = "article, main li a, .prose p, main p";
+    // Where the reader first meets something they came for.
+    //
+    // The first cut of this asked for `main p` among others and duly reported
+    // the hero's own description as content — so compacting the hero appeared
+    // to make the number worse. A card is the honest target: a link or article
+    // tall enough to be one, carrying a picture or a headline of its own.
     let firstContentY = null;
-    for (const el of document.querySelectorAll(CONTENT)) {
+    for (const el of document.querySelectorAll("main a, main article, main li")) {
         const r = el.getBoundingClientRect();
-        if (r.height > 40 && r.width > 120) {
-            firstContentY = Math.round(r.top + window.scrollY);
-            break;
-        }
+        if (r.height < 64 || r.width < 180) continue;
+        // A card carries a picture, a heading, or a sentence of its own — a
+        // nav row carries a word. Requiring a heading alone missed the forum
+        // boards and the database shelves, which label themselves in spans.
+        const words = (el.textContent || "").trim();
+        if (!el.querySelector("img") && !el.querySelector("h2, h3, h4") && words.length < 24) continue;
+        if (el.closest("header, nav")) continue;
+        firstContentY = Math.round(r.top + window.scrollY);
+        break;
+    }
+    // An article page has no cards; its content is the prose.
+    if (firstContentY === null) {
+        const p = document.querySelector(".prose p, article p");
+        if (p) firstContentY = Math.round(p.getBoundingClientRect().top + window.scrollY);
     }
 
     // Apple asks for 44pt, Google for 48dp. Anything under is aimed at.

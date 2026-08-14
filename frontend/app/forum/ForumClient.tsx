@@ -218,17 +218,17 @@ export default function ForumPage() {
                 <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page py-11 text-center">
-                    <h1 className="font-display font-black text-white tracking-tight leading-[0.9] text-[42px] md:text-[60px] uppercase">
+                <div className="relative z-10 container-page py-5 md:py-11 text-center">
+                    <h1 className="font-display font-black text-white tracking-tight leading-[0.9] text-[28px] md:text-[60px] uppercase">
                         <span className="text-white">Community </span>
                         <span className="text-[var(--accent)]">Forum</span>
                     </h1>
 
-                    <p className="mt-3 max-w-[720px] mx-auto text-[13px] text-white/45">
+                    <p className="hidden md:block mt-3 max-w-[720px] mx-auto text-[13px] text-white/45">
                         Ask, argue, help and show off — {fmtStat(stats?.total_threads ?? 0)} threads across every board we run.
                     </p>
 
-                    <div className="mt-6 max-w-[640px] mx-auto relative group">
+                    <div className="mt-4 md:mt-6 max-w-[640px] mx-auto relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--ink-faint)] group-focus-within:text-[var(--accent)] transition-colors" />
                         <input
                             type="text"
@@ -244,7 +244,7 @@ export default function ForumPage() {
                         />
                     </div>
 
-                    <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                    <div className="mt-4 md:mt-5 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide">
                         {[
                             { icon: Users2, value: stats?.online_users ?? 0, label: "Online" },
                             { icon: MessageSquare, value: stats?.total_threads ?? 0, label: "Threads" },
@@ -253,7 +253,7 @@ export default function ForumPage() {
                         ].map(({ icon: Icon, value, label }) => (
                             <span
                                 key={label}
-                                className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
+                                className="shrink-0 inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
                             >
                                 <Icon className="w-3.5 h-3.5 text-[var(--accent)]" />
                                 <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">
@@ -269,7 +269,7 @@ export default function ForumPage() {
             </section>
 
             {/* ── main ── */}
-            <div className="container-page py-7">
+            <div className="container-page py-4 md:py-7">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                     <div className="lg:col-span-3 min-w-0">
                         <div className="flex flex-wrap items-center gap-3 mb-5">

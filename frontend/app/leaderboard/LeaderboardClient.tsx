@@ -269,23 +269,23 @@ export default function LeaderboardClient() {
                 />
                 <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
-                <div className="relative z-10 container-page py-12 md:py-16 text-center">
-                    <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] mb-4">
+                <div className="relative z-10 container-page py-5 md:py-16 text-center">
+                    <span className="hidden md:inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] mb-4">
                         <Trophy className="w-7 h-7 text-[var(--accent)]" />
                     </span>
-                    <h1 className="font-display text-3xl md:text-5xl font-black text-white tracking-tight">Leaderboard</h1>
-                    <p className="mt-2 text-[14px] text-white/45">Compete. Climb. Be the legend.</p>
-                    <p className="mt-3 inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/30">
+                    <h1 className="font-display text-[28px] md:text-5xl font-black text-white tracking-tight">Leaderboard</h1>
+                    <p className="hidden md:block mt-2 text-[14px] text-white/45">Compete. Climb. Be the legend.</p>
+                    <p className="mt-2 md:mt-3 inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/30">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         Rankings refresh every 5 minutes
                     </p>
                 </div>
             </div>
 
-            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            <div className="container-page py-4 md:py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 <div className="xl:col-span-9 min-w-0 space-y-4">
                     {/* ── board switcher ── */}
-                    <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                    <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 overflow-x-auto scrollbar-hide snap-x rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         {BOARDS.map((b) => {
                             const Icon = b.icon;
                             const active = board === b.id;
@@ -293,7 +293,7 @@ export default function LeaderboardClient() {
                                 <button
                                     key={b.id}
                                     onClick={() => setBoard(b.id)}
-                                    className={`flex-1 min-w-[130px] inline-flex items-center justify-center gap-2 h-10 px-3 rounded-[8px] font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+                                    className={`shrink-0 snap-start md:flex-1 md:min-w-[130px] inline-flex items-center justify-center gap-2 h-11 md:h-10 px-4 md:px-3 rounded-[8px] font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
                                         active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
                                     }`}
                                 >
@@ -464,7 +464,67 @@ export default function LeaderboardClient() {
                                 />
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <>
+                            {/* A seven-column table on a 390px screen is a
+                                sideways scroll through numbers — the ranking
+                                the page exists for, delivered as a spreadsheet
+                                nobody can read without dragging. Same data,
+                                same order, stacked. */}
+                            <ul className="md:hidden divide-y divide-white/[0.05]">
+                                {rows.map((e) => {
+                                    const metal = METAL[e.position];
+                                    const Icon = metal?.icon;
+
+                                    return (
+                                        <li key={e.username}>
+                                            <Link
+                                                href={`/profile/${e.username}`}
+                                                className="flex items-center gap-3 px-4 py-3 active:bg-white/[0.03] transition-colors"
+                                                style={metal ? { background: `color-mix(in srgb, ${metal.color} 5%, transparent)` } : undefined}
+                                            >
+                                                <span className="w-7 shrink-0 inline-flex items-center gap-1">
+                                                    {Icon && <Icon className="w-3.5 h-3.5" style={{ color: metal.color }} />}
+                                                    <span
+                                                        className="font-display text-[13px] font-black tabular-nums"
+                                                        style={{ color: metal?.color ?? "rgba(255,255,255,0.3)" }}
+                                                    >
+                                                        {e.position}
+                                                    </span>
+                                                </span>
+
+                                                <Avatar src={e.avatar_url} alt={e.username} size="sm" />
+
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="flex items-center gap-1.5 min-w-0">
+                                                        <span className="text-[13.5px] font-bold text-white truncate">{e.name}</span>
+                                                        {e.verified && <BadgeCheck className="w-3.5 h-3.5 shrink-0 text-[var(--accent)]" />}
+                                                    </span>
+                                                    {/* Rank and the two figures the table put in
+                                                        columns four and six, on one line — the
+                                                        rest of the columns are a desktop luxury. */}
+                                                    <span className="mt-0.5 flex items-center gap-2 font-display text-[10.5px] font-bold uppercase tracking-[0.08em]">
+                                                        {e.rank_title && (
+                                                            <span style={{ color: e.rank_color ?? "rgba(255,255,255,0.45)" }} className="truncate">
+                                                                {e.rank_title}
+                                                            </span>
+                                                        )}
+                                                        <span className="text-white/25 tabular-nums">{e.games} games</span>
+                                                    </span>
+                                                </span>
+
+                                                <span className="shrink-0 text-right">
+                                                    <span className="block font-display text-[14px] font-black tabular-nums text-[var(--accent)] leading-none">
+                                                        {e.value.toLocaleString("en-US")}
+                                                    </span>
+                                                    <span className="mt-1 block"><Trend value={e.trend} /></span>
+                                                </span>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+
+                            <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full min-w-[760px] text-left">
                                     <thead>
                                         <tr className="border-b border-white/[0.07]">
@@ -551,6 +611,7 @@ export default function LeaderboardClient() {
                                     </tbody>
                                 </table>
                             </div>
+                            </>
                         )}
                     </Panel>
                 </div>
