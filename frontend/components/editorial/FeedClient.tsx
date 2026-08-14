@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useSWRInfinite from "swr/infinite";
 import axios from "@/lib/axios";
-import { Clock, User, Star, Sparkles, Info, Rss, Loader2, Newspaper, Gamepad2, Cpu, BookOpen, Layers, type LucideIcon } from "lucide-react";
+import { Clock, User, Star, Sparkles, Info, Loader2, Newspaper, Gamepad2, Cpu, BookOpen, Layers, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getStorageUrl } from "@/lib/imageUrl";
 import PageHero from "@/components/ui/PageHero";
@@ -161,8 +161,9 @@ export default function FeedClient() {
             <PageHero
                 title="The Feed"
                 description="Everything we publish, in one place — news, reviews, tech and guides as they land."
-                iconNode={<Rss className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />}
+                backgroundImage="/images/feed-hero.webp"
                 categories={VIEWS}
+                categorySize="lg"
                 selectedCategory={tab}
                 onSelectCategory={(id) => reset(() => setTab(id as "latest" | "you"))}
             />

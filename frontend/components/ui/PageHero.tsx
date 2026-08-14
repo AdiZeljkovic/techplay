@@ -27,6 +27,12 @@ interface PageHeroProps {
     /** Full-bleed backdrop, treated like the Leaderboard and Games heroes. */
     backgroundImage?: string;
     categories?: CategoryItem[];
+    /**
+     * How big the category row is drawn. Most heroes use it as a filter strip
+     * and want it quiet; the feed uses it to ask which feed you are reading,
+     * which is the page's first question and deserves the size of one.
+     */
+    categorySize?: "sm" | "lg";
     selectedCategory?: string; // The ID currently selected
     onSelectCategory?: (id: string) => void;
     basePath?: string; // If provided, uses Links instead of buttons
@@ -45,6 +51,7 @@ export default function PageHero({
     iconNode,
     backgroundImage,
     categories,
+    categorySize = "sm",
     selectedCategory,
     onSelectCategory,
     basePath,
@@ -98,17 +105,23 @@ export default function PageHero({
                 )}
 
                 {categories && categories.length > 0 && (
-                    <div className="mt-7 max-w-full flex flex-wrap justify-center gap-1.5 overflow-x-auto scrollbar-hide">
+                    <div className={cn("max-w-full flex flex-wrap justify-center overflow-x-auto scrollbar-hide", categorySize === "lg" ? "mt-8 gap-2.5" : "mt-7 gap-1.5")}>
                         {categories.map((cat) => {
                             const isSelected = selectedCategory === cat.id;
+                            const big = categorySize === "lg";
                             const pill = cn(
-                                "inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[8px] border font-display text-[9.5px] font-black uppercase tracking-[0.1em] transition-colors whitespace-nowrap shrink-0",
+                                "inline-flex items-center border font-display font-black uppercase transition-colors whitespace-nowrap shrink-0",
+                                big
+                                    ? "gap-2.5 h-11 px-6 rounded-[10px] text-[12px] tracking-[0.12em]"
+                                    : "gap-1.5 h-8 px-3.5 rounded-[8px] text-[9.5px] tracking-[0.1em]",
                                 isSelected
                                     ? "bg-[var(--accent)] border-transparent text-white"
-                                    : "bg-white/[0.03] border-white/[0.07] text-white/45 hover:text-white hover:border-white/[0.16]"
+                                    : "bg-white/[0.04] border-white/[0.1] text-white/55 hover:text-white hover:border-white/25"
                             );
                             const glyph = (
-                                <cat.icon className={cn("w-3.5 h-3.5", isSelected ? "text-white" : "text-[var(--accent)]")} />
+                                <cat.icon
+                                    className={cn(big ? "w-[17px] h-[17px]" : "w-3.5 h-3.5", isSelected ? "text-white" : "text-[var(--accent)]")}
+                                />
                             );
 
                             if (basePath) {
