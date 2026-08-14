@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import useSWRInfinite from "swr/infinite";
 import axios from "@/lib/axios";
@@ -8,6 +8,7 @@ import { Clock, User, Star, Sparkles, Info, Loader2, Newspaper, Gamepad2, Cpu, B
 import { useAuth } from "@/context/AuthContext";
 import { getStorageUrl } from "@/lib/imageUrl";
 import PageHero from "@/components/ui/PageHero";
+import { InFeedAd } from "@/components/ads/AdSense";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -224,7 +225,17 @@ export default function FeedClient() {
                 ) : (
                     <>
                         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {items.map((item) => <Card key={`${item.kind}-${item.id}`} item={item} />)}
+                            {items.map((item, i) => (
+                                <Fragment key={`${item.kind}-${item.id}`}>
+                                    {/* One card in twelve, from the third row
+                                        down. The feed loads forever, so the
+                                        spacing is what keeps the ratio steady
+                                        however far somebody scrolls — a fixed
+                                        count would thin out to nothing. */}
+                                    {i > 0 && (i + 4) % 12 === 0 && <InFeedAd />}
+                                    <Card item={item} />
+                                </Fragment>
+                            ))}
                         </div>
 
                         {/* The observer drives this. The button is here because a

@@ -17,6 +17,7 @@ import GameForumThreads from "@/components/games/GameForumThreads";
 import BoxArtGallery, { type BoxArt } from "@/components/games/BoxArtGallery";
 import TrailerPlayer from "@/components/games/TrailerPlayer";
 import Panel from "@/components/ui/Panel";
+import { DisplayAd } from "@/components/ads/AdSense";
 
 /* ─── Rendering: SSR on every request, Cloudflare caches at edge ─────────────
    ISR disabled — game slugs create millions of files and exhaust disk/inodes.
@@ -713,6 +714,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </div>
                     </section>
                 )}
+
+                {/* Below the game itself and its two recommendation rows,
+                    above the forum threads: past everything the reader came
+                    for, still on the page rather than under its footer. */}
+                <DisplayAd minHeight={110} />
 
                 <GameForumThreads gameSlug={slug} />
             </div>

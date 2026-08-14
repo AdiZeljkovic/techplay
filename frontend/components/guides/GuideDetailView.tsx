@@ -7,7 +7,8 @@ import Image from "next/image";
 import { format } from "date-fns";
 import Script from "next/script";
 import { processContent } from "@/lib/content";
-import { ARTICLE_PROSE } from "@/lib/prose";
+import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
+import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
@@ -83,6 +84,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
         advanced: 'text-red-400 border-red-400 bg-red-400/10' };
 
     const { content: processedContent } = useMemo(() => processContent(guide.content), [guide.content]);
+    const [bodyBefore, bodyAfter] = useMemo(() => splitForAd(processedContent), [processedContent]);
 
     const imageUrl = guide.featured_image_url?.startsWith('http')
         ? guide.featured_image_url
@@ -270,11 +272,25 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                         </div>
                                     )}
 
-                                    {/* Main prose content */}
+                                    {/* The body, cut once so an ad can sit between
+                                        paragraphs rather than after the piece.
+                                        Short articles come back in one part and
+                                        get no ad at all — a news item of four
+                                        paragraphs with a unit halfway down is an
+                                        ad with an article around it. */}
                                     <div
                                         className={ARTICLE_PROSE}
-                                        dangerouslySetInnerHTML={{ __html: processedContent }}
+                                        dangerouslySetInnerHTML={{ __html: bodyBefore }}
                                     />
+                                    {bodyAfter !== null && (
+                                        <>
+                                            <InArticleAd />
+                                            <div
+                                                className={ARTICLE_PROSE}
+                                                dangerouslySetInnerHTML={{ __html: bodyAfter }}
+                                            />
+                                        </>
+                                    )}
 
                                     {/* Mid-Article Ad */}
                                     <div className="my-12 xl:hidden">
@@ -305,6 +321,11 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                         {/* Right Sidebar */}
                         <aside className="hidden xl:flex flex-col gap-5 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
+
+                            {/* Under any house campaign, above the editorial
+                                panels: the rail's first screen, which is the
+                                only part of a sticky column anybody sees. */}
+                            <DisplayAd />
 
                             {game && <GameInfoCard game={game} />}
 

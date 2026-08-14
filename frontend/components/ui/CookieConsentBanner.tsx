@@ -56,6 +56,12 @@ export default function CookieConsentBanner() {
         setPreferences(newPreferences);
         setIsVisible(false);
 
+        // Writing localStorage fires no storage event in the tab that did the
+        // writing, so anything already on screen that depends on consent —
+        // the ad slots — would keep the answer it read on mount until a
+        // reload. This is how they hear about it.
+        window.dispatchEvent(new CustomEvent("techplay:consent", { detail: newPreferences }));
+
         // 2. Sync to Backend if logged in
         if (isAuthenticated) {
             try {

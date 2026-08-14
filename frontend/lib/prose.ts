@@ -56,3 +56,35 @@ export const ARTICLE_PROSE = `prose prose-invert max-w-none break-words
     [&_.twitter-tweet]:mx-auto [&_.twitter-tweet]:my-8
     [&_.instagram-media]:mx-auto [&_.instagram-media]:my-8
     [&_.fb-post]:mx-auto [&_.fb-post]:my-8`;
+
+/**
+ * Cut an article body in two so an ad can sit between the halves.
+ *
+ * AdSense's in-article unit is only allowed between paragraphs of running
+ * text, and the only way to get there when the body arrives as one HTML blob
+ * is to split the blob. The cut lands on a `</p>` boundary, never inside a
+ * heading, a list or a table — anywhere else and the ad would appear mid
+ * sentence or, worse, inside an element it would break.
+ *
+ * Short pieces come back untouched. A news item of four paragraphs with an ad
+ * halfway through is an ad with an article around it, which is both a bad read
+ * and the thing AdSense's own policy on content-to-ad balance is about.
+ *
+ * @returns `[before, after]` — `after` is null when the body is too short.
+ */
+export function splitForAd(html: string, minParagraphs = 6): [string, string | null] {
+    if (!html) return [html, null];
+
+    const ends: number[] = [];
+    const close = /<\/p>/gi;
+    let match: RegExpExecArray | null;
+    while ((match = close.exec(html)) !== null) ends.push(match.index + match[0].length);
+
+    if (ends.length < minParagraphs) return [html, null];
+
+    // Halfway, but never before the third paragraph: an ad above the point
+    // where the piece has said anything is an ad in front of the article.
+    const at = ends[Math.max(2, Math.floor(ends.length / 2) - 1)];
+
+    return [html.slice(0, at), html.slice(at)];
+}

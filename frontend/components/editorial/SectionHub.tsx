@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, Fragment } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
@@ -8,6 +8,7 @@ import { ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2, Star } fro
 import toast from "react-hot-toast";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { SECTIONS, SectionKey } from "./sections";
+import { InFeedAd, DisplayAd } from "@/components/ads/AdSense";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -384,8 +385,16 @@ export default function SectionHub({
                     ) : (
                         <>
                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {articles.map((a) => (
-                                    <ArticleCard key={a.id} article={a} path={config.path} showScore={config.showScore} />
+                                {articles.map((a, i) => (
+                                    <Fragment key={a.id}>
+                                        {/* One in-feed unit, in a card's place,
+                                            at the top of the third row. Never
+                                            first: an ad before the reader has
+                                            seen a single headline is a page
+                                            that opened with an ad. */}
+                                        {i === 6 && articles.length > 8 && <InFeedAd />}
+                                        <ArticleCard article={a} path={config.path} showScore={config.showScore} />
+                                    </Fragment>
                                 ))}
                             </div>
 
@@ -433,6 +442,11 @@ export default function SectionHub({
                             <p className="text-[11.5px] text-white/30">Not enough reading yet to rank anything.</p>
                         )}
                     </Panel>
+
+                    {/* High in the rail rather than at its foot: the aside is
+                        sticky, so anything below the fold down here is below
+                        the fold for the whole scroll. */}
+                    <DisplayAd />
 
                     {/* The release calendar is ours now, so this rail can lean on
                         it without anybody else's API being up. */}

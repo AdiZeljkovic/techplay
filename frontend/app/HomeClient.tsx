@@ -9,6 +9,7 @@ import ReviewWall from "@/components/home/ReviewWall";
 import HiddenGems from "@/components/home/HiddenGems";
 import OnThisDay from "@/components/home/OnThisDay";
 import ProfileCtaBand from "@/components/home/ProfileCtaBand";
+import { DisplayAd } from "@/components/ads/AdSense";
 
 interface HomeClientProps {
     initialData?: {
@@ -53,6 +54,11 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                 </div>
                 <div className="tp-fade-up tp-d2"><DiscoverGames /></div>
                 <div className="tp-fade-up tp-d3"><EditorialSpotlight news={news} reviews={reviews} tech={tech} /></div>
+                {/* One unit on the front page, between the editorial block
+                    and the review wall — a section break the reader was going
+                    to cross anyway, rather than a slot cut into a grid. */}
+                <DisplayAd className="tp-fade-up tp-d4" minHeight={110} />
+
                 <div className="tp-fade-up tp-d4"><ReviewWall reviews={reviews} /></div>
 
                 {/* Database discovery — content only a 200K-title catalog can produce */}

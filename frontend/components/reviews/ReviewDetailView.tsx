@@ -16,7 +16,8 @@ import DiscordWidget from "@/components/home/DiscordWidget";
 import { Article } from "@/types";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { processContent } from "@/lib/content";
-import { ARTICLE_PROSE } from "@/lib/prose";
+import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
+import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import ArticleFooter from "@/components/ui/ArticleFooter";
 import SocialShare from "@/components/share/SocialShare";
@@ -82,6 +83,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     };
 
     const { content: processedContent } = useMemo(() => processContent(review?.content || ''), [review?.content]);
+    const [bodyBefore, bodyAfter] = useMemo(() => splitForAd(processedContent), [processedContent]);
 
     // Every hook has run by here.
     if (!review) return null;
@@ -267,12 +269,28 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         </div>
                                     )}
 
-                                    {/* Main prose content */}
+                                    {/* The body, cut once so an ad can sit between
+                                        paragraphs rather than after the piece.
+                                        Short articles come back in one part and
+                                        get no ad at all — a news item of four
+                                        paragraphs with a unit halfway down is an
+                                        ad with an article around it. */}
                                     {processedContent ? (
-                                        <div
-                                            className={ARTICLE_PROSE}
-                                            dangerouslySetInnerHTML={{ __html: processedContent }}
-                                        />
+                                        <>
+                                            <div
+                                                className={ARTICLE_PROSE}
+                                                dangerouslySetInnerHTML={{ __html: bodyBefore }}
+                                            />
+                                            {bodyAfter !== null && (
+                                                <>
+                                                    <InArticleAd />
+                                                    <div
+                                                        className={ARTICLE_PROSE}
+                                                        dangerouslySetInnerHTML={{ __html: bodyAfter }}
+                                                    />
+                                                </>
+                                            )}
+                                        </>
                                     ) : (
                                         <div className="py-20 text-center text-white/45">
                                             <p className="italic">No written review content available.</p>
@@ -337,6 +355,11 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                         {/* Right Sidebar */}
                         <aside className="hidden xl:flex flex-col gap-5 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
+
+                            {/* Under any house campaign, above the editorial
+                                panels: the rail's first screen, which is the
+                                only part of a sticky column anybody sees. */}
+                            <DisplayAd />
 
                             {review.game && <GameInfoCard game={review.game} />}
 

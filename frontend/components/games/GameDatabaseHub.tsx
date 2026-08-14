@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
+import { DisplayAd } from "@/components/ads/AdSense";
 import {
     Search, Star, Shuffle, SlidersHorizontal, Flame, Heart, Clock,
     ChevronDown, Gamepad2, Loader2, X, CalendarDays,
@@ -585,6 +586,12 @@ export default function GameDatabaseHub({
                     </RailPanel>
 
                     <RecentlyViewed />
+
+                    {/* The rail, not the grid. The covers run five across at
+                        roughly 150px a cell — narrower than any ad Google
+                        serves, and a unit cut into that row would be a hole in
+                        a wall of box art. */}
+                    <DisplayAd />
                 </aside>
             </div>
 

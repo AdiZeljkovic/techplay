@@ -7,7 +7,8 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
-import { ARTICLE_PROSE } from "@/lib/prose";
+import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
+import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
@@ -89,6 +90,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
     }, [article.content]);
 
     const { content: processedContent } = useMemo(() => processContent(article.content), [article.content]);
+    const [bodyBefore, bodyAfter] = useMemo(() => splitForAd(processedContent), [processedContent]);
 
     // Every hook has run by here. The guard used to sit above the memo, which
     // is a hook-order mismatch the first time a caller passes a falsy article.
@@ -285,11 +287,25 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         </div>
                                     )}
 
-                                    {/* Main prose content */}
+                                    {/* The body, cut once so an ad can sit between
+                                        paragraphs rather than after the piece.
+                                        Short articles come back in one part and
+                                        get no ad at all — a news item of four
+                                        paragraphs with a unit halfway down is an
+                                        ad with an article around it. */}
                                     <div
                                         className={ARTICLE_PROSE}
-                                        dangerouslySetInnerHTML={{ __html: safeContent }}
+                                        dangerouslySetInnerHTML={{ __html: bodyBefore }}
                                     />
+                                    {bodyAfter !== null && (
+                                        <>
+                                            <InArticleAd />
+                                            <div
+                                                className={ARTICLE_PROSE}
+                                                dangerouslySetInnerHTML={{ __html: bodyAfter }}
+                                            />
+                                        </>
+                                    )}
 
                                     {/* Mid-Article Ad */}
                                     <div className="my-12 xl:hidden">
@@ -315,6 +331,11 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         {/* Right Sidebar */}
                         <aside className="hidden xl:flex flex-col gap-5 w-[340px] shrink-0">
                             <AdUnit position="sidebar_top" />
+
+                            {/* Under any house campaign, above the editorial
+                                panels: the rail's first screen, which is the
+                                only part of a sticky column anybody sees. */}
+                            <DisplayAd />
 
                             {article.game && <GameInfoCard game={article.game} />}
 

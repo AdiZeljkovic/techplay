@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import ForumSidebar from "@/components/forum/ForumSidebar";
+import { DisplayAd } from "@/components/ads/AdSense";
 import { getCategoryColor, getAvatarSrc } from "@/lib/forum";
 import { useRealTimeThreadReplies } from "@/hooks";
 
@@ -1090,8 +1091,13 @@ export default function ThreadPage() {
                     </div>
 
                     {/* Sidebar */}
-                    <div className="lg:col-span-1">
+                    <div className="lg:col-span-1 space-y-6">
                         <ForumSidebar />
+
+                        {/* The rail. Threads are reader-written, so nothing
+                            goes between the posts — an ad dropped into a
+                            conversation reads as one of the replies. */}
+                        <DisplayAd />
                     </div>
                 </div>
             </div>
