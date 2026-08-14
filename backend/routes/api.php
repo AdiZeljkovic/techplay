@@ -159,6 +159,10 @@ Route::prefix('v1')->group(function () {
         Route::put('/user/preferences', [AuthController::class, 'updatePreferences']);
         Route::put('/user/password', [AuthController::class, 'changePassword']);
         Route::get('/user/export-data', [AuthController::class, 'exportData']);
+        // Was this guide any use. The handler has existed since guides
+        // shipped and was never routed, so every guide printed "0 found
+        // helpful" beside a counter nothing could reach.
+        Route::middleware('throttle:30,1')->post('/guides/{slug}/vote', [GuideController::class, 'vote']);
         Route::get('/last-disc/export', [LastDiscController::class, 'export']);
         Route::delete('/user/account', [AuthController::class, 'deleteAccount']);
         Route::get('/user/notifications/counts', [NotificationController::class, 'counts']);

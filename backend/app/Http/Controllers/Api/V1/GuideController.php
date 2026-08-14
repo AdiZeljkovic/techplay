@@ -7,6 +7,7 @@ use App\Models\Guide;
 use App\Models\GuideVote;
 use App\Services\CacheService;
 use App\Services\ContentGameLinker;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Redis;
 
 class GuideController extends Controller
 {
+    use ApiResponse;
+
     public function index(Request $request)
     {
         $page = $request->get('page', 1);
@@ -76,6 +79,9 @@ class GuideController extends Controller
                     'votes as helpful_count' => function ($query) {
                         $query->where('is_helpful', true);
                     },
+                    'votes as unhelpful_count' => function ($query) {
+                        $query->where('is_helpful', false);
+                    },
                 ])
                 ->firstOrFail();
         });
@@ -89,16 +95,6 @@ class GuideController extends Controller
             $userVote = $vote ? $vote->is_helpful : null;
         }
 
-        // GuideDetailView passes guide.related_articles to RelatedArticles and
-        // nothing ever set it, so "Slični članci" was null on every guide.
-        $guide->setAttribute('related_articles', Guide::query()
-            ->where('id', '!=', $guide->id)
-            ->where('status', 'published')
-            ->latest('published_at')
-            ->limit(4)
-            ->get(['id', 'title', 'slug', 'featured_image_url'])
-            ->all());
-
         return response()->json([
             'guide' => $guide,
             'game' => ContentGameLinker::gamePayload($guide->game),
@@ -106,20 +102,46 @@ class GuideController extends Controller
         ], 200, ['Cache-Control' => 'no-cache, no-store, must-revalidate']);
     }
 
+    /**
+     * Was this guide any use.
+     *
+     * The method has existed since guides shipped and was never routed, so
+     * every guide on the site has been printing "0 found helpful" beside a
+     * counter nothing could reach. Pressing the same answer twice withdraws
+     * it — a vote you cannot take back is a vote people stop casting.
+     *
+     * The count lives inside the cached guide payload, so the cache has to go
+     * with the vote; otherwise the number the voter just moved keeps reading
+     * its old value for the rest of the TTL.
+     */
     public function vote(Request $request, $slug)
     {
-        $request->validate([
+        $validated = $request->validate([
             'is_helpful' => 'required|boolean',
         ]);
 
         $guide = Guide::where('slug', $slug)->firstOrFail();
-        $user = Auth::user();
+        $userId = Auth::id();
 
-        $vote = GuideVote::updateOrCreate(
-            ['guide_id' => $guide->id, 'user_id' => $user->id],
-            ['is_helpful' => $request->is_helpful]
-        );
+        $existing = GuideVote::where('guide_id', $guide->id)->where('user_id', $userId)->first();
 
-        return response()->json(['message' => 'Vote recorded.', 'vote' => $vote]);
+        if ($existing && (bool) $existing->is_helpful === (bool) $validated['is_helpful']) {
+            $existing->delete();
+            $userVote = null;
+        } else {
+            GuideVote::updateOrCreate(
+                ['guide_id' => $guide->id, 'user_id' => $userId],
+                ['is_helpful' => $validated['is_helpful']]
+            );
+            $userVote = (bool) $validated['is_helpful'];
+        }
+
+        Cache::forget("guide.show.v3.{$slug}");
+
+        return $this->success([
+            'user_vote' => $userVote,
+            'helpful_count' => GuideVote::where('guide_id', $guide->id)->where('is_helpful', true)->count(),
+            'unhelpful_count' => GuideVote::where('guide_id', $guide->id)->where('is_helpful', false)->count(),
+        ], 'Thanks — that helps us write better ones.');
     }
 }

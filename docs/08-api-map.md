@@ -64,7 +64,8 @@
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
 | GET | `/guides` | GuideController::index | - | Lista guideova |
-| GET | `/guides/{slug}` | GuideController::show | - | Detalj guidea |
+| GET | `/guides/{slug}` | GuideController::show | - | Detalj guidea. Vraća `helpful_count`, `unhelpful_count`, `user_vote` |
+| POST | `/guides/{slug}/vote` | GuideController::vote | auth:sanctum, throttle:30,1 | `is_helpful` bool. Isti odgovor drugi put povlači glas. Briše `guide.show.v3.{slug}` keš |
 
 ## Content — Tech/Hardware
 

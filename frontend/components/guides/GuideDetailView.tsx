@@ -17,9 +17,9 @@ import DiscordWidget from "@/components/home/DiscordWidget";
 import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import ArticleFooter from "@/components/ui/ArticleFooter";
+import GuideHelpful from "./GuideHelpful";
 import SocialShare from "@/components/share/SocialShare";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
-import RelatedArticles from "@/components/seo/RelatedArticles";
 import { decodeHtml } from "@/lib/decode";
 import { Dialog } from "@/components/ui/Dialog";
 
@@ -44,6 +44,7 @@ export interface Guide {
         bio?: string;
     };
     helpful_count: number;
+    unhelpful_count?: number;
     views?: number;
 }
 
@@ -55,6 +56,11 @@ interface GuideDetailViewProps {
 
 export default function GuideDetailView({ guide, game, userVote: initialVote }: GuideDetailViewProps) {
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    // The chip under the hero and the control at the foot of the guide read
+    // the same tally, so a vote has to move both — otherwise the header still
+    // says nought found it helpful while the reader is looking at their own
+    // yes.
+    const [helpfulCount, setHelpfulCount] = useState(guide.helpful_count ?? 0);
     const { user } = useAuth();
     useEmbedScripts();
 
@@ -236,7 +242,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                         <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">HELPFUL:</span>
                                         <span className="inline-flex items-center gap-2 h-[26px] px-3 rounded-full border border-white/10 text-white text-[10.5px] font-bold uppercase tracking-wider">
                                             <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                                            {guide.helpful_count} FOUND HELPFUL
+                                            {helpfulCount} FOUND HELPFUL
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2.5 flex-wrap">
@@ -275,6 +281,14 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                         <AdUnit position="article_mid" />
                                     </div>
 
+                                    <GuideHelpful
+                                        slug={guide.slug}
+                                        helpful={helpfulCount}
+                                        unhelpful={guide.unhelpful_count ?? 0}
+                                        initialVote={initialVote}
+                                        onChange={setHelpfulCount}
+                                    />
+
                                     <ArticleFooter
                                         author={guide.author}
                                         tags={guide.difficulty ? [guide.difficulty] : []}
@@ -283,14 +297,6 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                         shareDescription={decodeHtml(guide.excerpt) || ''}
                                         commentableId={guide.id}
                                         commentableType="guide"
-                                    />
-
-                                    {/* Related Guides */}
-                                    <RelatedArticles
-                                        articles={(guide as any).related_articles || []}
-                                        title="Slični vodiči"
-                                        viewAllHref="/guides"
-                                        articleBasePath="/guides"
                                     />
                                 </div>
                             </div>

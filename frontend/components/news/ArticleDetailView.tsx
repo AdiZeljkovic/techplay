@@ -17,7 +17,6 @@ import ReadingTracker from "@/components/news/ReadingTracker";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
-import RelatedArticles from "@/components/seo/RelatedArticles";
 import ArticleFooter from "@/components/ui/ArticleFooter";
 import GoogleNewsFollow from "@/components/ui/GoogleNewsFollow";
 import { decodeHtml } from "@/lib/decode";
@@ -308,11 +307,6 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         commentableId={article.id}
                                         commentableType="article"
                                         initialComments={initialComments}
-                                    />
-
-                                    <RelatedArticles
-                                        articles={(article as any).related_articles || []}
-                                        title="Slični članci"
                                     />
                                 </div>
                             </div>
