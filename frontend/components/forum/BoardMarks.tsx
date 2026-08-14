@@ -16,9 +16,15 @@ import { useId } from "react";
  * here is a speech bubble: the same construction, saying the thing this
  * section actually is. Every board is "this subject, discussed".
  *
- * Nothing is a painted file. They take `currentColor`, so the per-board tint
- * in lib/forum keeps working — the colour is the board's, the hand is the
- * house's.
+ * They are deliberately thin on detail. A megaphone had a handle, a lifebuoy
+ * had four spokes, a pad had two face buttons and a tower had vents — true of
+ * the objects and invisible at thirty-eight pixels, where every extra stroke
+ * only crowds the two shapes that carry the meaning. Two ideas per mark, and
+ * the bubble is one of them.
+ *
+ * Nothing is a painted file. They take `currentColor`, and every board draws
+ * them in the house accent: seven colours made a list of boards read as a
+ * paint chart rather than a set.
  */
 
 interface MarkProps {
@@ -60,7 +66,7 @@ function Mark({ className, strokeWidth = 1.7, children }: MarkProps & { children
             <g mask={`url(#${id})`}>{children}</g>
 
             <path d={BUBBLE} />
-            <path d="M16.4 15.55h3.4M16.4 17.6h2" />
+            <path d="M16.4 16.45h3.4" />
         </svg>
     );
 }
@@ -69,12 +75,11 @@ function Mark({ className, strokeWidth = 1.7, children }: MarkProps & { children
 export function MegaphoneMark(props: MarkProps) {
     return (
         <Mark {...props}>
-            <path d="M2.7 7.5h2.5l6.9-3.25a.78.78 0 0 1 1.1.7v9.6a.78.78 0 0 1-1.1.7L5.2 11.95H2.7A1.3 1.3 0 0 1 1.4 10.65V8.8A1.3 1.3 0 0 1 2.7 7.5Z" />
-            <path d="M5.2 11.95v2.75a1.6 1.6 0 0 0 1.6 1.6h.3a1.6 1.6 0 0 0 1.6-1.6v-1.4" />
+            <path d="M2.6 7.6h2.6l7.1-3.4a.8.8 0 0 1 1.15.72v9.96a.8.8 0 0 1-1.15.72L5.2 12.2H2.6A1.4 1.4 0 0 1 1.2 10.8V9A1.4 1.4 0 0 1 2.6 7.6Z" />
             {/* The shout sits above the bubble rather than beside it — at the
                 old height the knockout ate the arc and left the horn shouting
                 at nothing. */}
-            <path d="M15.2 4.9a2.7 2.7 0 0 1 0 3.9" />
+            <path d="M15.4 5.2a2.6 2.6 0 0 1 0 3.7" />
         </Mark>
     );
 }
@@ -83,9 +88,8 @@ export function MegaphoneMark(props: MarkProps) {
 export function SupportMark(props: MarkProps) {
     return (
         <Mark {...props}>
-            <circle cx="10.1" cy="10.1" r="7.6" />
-            <circle cx="10.1" cy="10.1" r="3.3" />
-            <path d="M4.72 4.72 7.76 7.76M15.48 4.72 12.44 7.76M4.72 15.48 7.76 12.44M15.48 15.48 12.44 12.44" />
+            <circle cx="9.9" cy="9.9" r="7.7" />
+            <circle cx="9.9" cy="9.9" r="3.4" />
         </Mark>
     );
 }
@@ -94,10 +98,9 @@ export function SupportMark(props: MarkProps) {
 export function LoungeMark(props: MarkProps) {
     return (
         <Mark {...props}>
-            <path d="M2.2 7.9h10.6v5.3a4.2 4.2 0 0 1-4.2 4.2H6.4a4.2 4.2 0 0 1-4.2-4.2V7.9Z" />
-            <path d="M12.8 9.2h1.7a2.55 2.55 0 0 1 0 5.1h-1.7" />
-            <path d="M5.6 5.1c0-1 1-1.3 1-2.3" />
-            <path d="M9.2 5.1c0-1 1-1.3 1-2.3" />
+            <path d="M2 7.7h10.9v5.5a4.3 4.3 0 0 1-4.3 4.3H6.3A4.3 4.3 0 0 1 2 13.2V7.7Z" />
+            <path d="M12.9 9.1h1.8a2.6 2.6 0 0 1 0 5.2h-1.8" />
+            <path d="M7.3 5.1c0-1.1 1.1-1.4 1.1-2.5" />
         </Mark>
     );
 }
@@ -106,9 +109,8 @@ export function LoungeMark(props: MarkProps) {
 export function PadMark(props: MarkProps) {
     return (
         <Mark {...props}>
-            <path d="M6.9 5.3h6.1a4.8 4.8 0 0 1 4.73 3.97l.42 2.4a2.2 2.2 0 0 1-3.97 1.66L13.05 11.6H6.85l-1.13 1.73a2.2 2.2 0 0 1-3.97-1.66l.42-2.4A4.8 4.8 0 0 1 6.9 5.3Z" />
-            <path d="M5.65 8.35v2.1M4.6 9.4h2.1" />
-            <path d="M13.9 8.6h.01M15.5 10.1h.01" />
+            <path d="M6.8 5h6.3a4.9 4.9 0 0 1 4.83 4.05l.43 2.45a2.25 2.25 0 0 1-4.06 1.7L13.15 11.5H6.75L5.6 13.2a2.25 2.25 0 0 1-4.06-1.7l.43-2.45A4.9 4.9 0 0 1 6.8 5Z" />
+            <path d="M5.5 7.9v2.3M4.35 9.05h2.3" />
         </Mark>
     );
 }
@@ -127,10 +129,9 @@ export function VerdictMark(props: MarkProps) {
 export function TowerMark(props: MarkProps) {
     return (
         <Mark {...props}>
-            <rect x="3.6" y="1.9" width="10.6" height="16.4" rx="2" />
-            <circle cx="8.9" cy="11.5" r="2.9" />
-            <path d="M8.9 11.5h.01" />
-            <path d="M6.3 4.7h5.2M6.3 6.8h5.2" />
+            <rect x="3.4" y="1.8" width="11" height="16.6" rx="2.1" />
+            <circle cx="8.9" cy="11.3" r="3" />
+            <path d="M6.5 5.4h4.8" />
         </Mark>
     );
 }
@@ -139,12 +140,10 @@ export function TowerMark(props: MarkProps) {
 export function ConsoleMark(props: MarkProps) {
     return (
         <Mark {...props}>
-            <rect x="1.7" y="4.1" width="16.6" height="4.9" rx="1.7" />
-            <path d="M4.7 5.9v1.3" />
-            <path d="M15.6 6.55h.01" />
-            <rect x="1.7" y="10.9" width="16.6" height="4.9" rx="1.7" />
-            <path d="M7 13.35h5" />
-            <path d="M15.6 13.35h.01" />
+            <rect x="1.6" y="3.9" width="16.8" height="5" rx="1.8" />
+            <path d="M15.7 6.4h.01" />
+            <rect x="1.6" y="10.9" width="16.8" height="5" rx="1.8" />
+            <path d="M15.7 13.4h.01" />
         </Mark>
     );
 }
@@ -153,8 +152,8 @@ export function ConsoleMark(props: MarkProps) {
 export function BoardMark(props: MarkProps) {
     return (
         <Mark {...props}>
-            <path d="M3.4 2.6h11.2a2 2 0 0 1 2 2v8.6a2 2 0 0 1-2 2H3.4a2 2 0 0 1-2-2V4.6a2 2 0 0 1 2-2Z" />
-            <path d="M4.6 6.2h8.8M4.6 9.2h5.6M4.6 12h7" />
+            <path d="M3.3 2.5h11.4a2.1 2.1 0 0 1 2.1 2.1v8.8a2.1 2.1 0 0 1-2.1 2.1H3.3a2.1 2.1 0 0 1-2.1-2.1V4.6a2.1 2.1 0 0 1 2.1-2.1Z" />
+            <path d="M4.7 6.6h8.6M4.7 10.2h5.4" />
         </Mark>
     );
 }

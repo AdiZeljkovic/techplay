@@ -14,7 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 import { decodeHtml } from "@/lib/decode";
-import { fmtStat, getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
+import { fmtStat, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -63,7 +63,6 @@ const TABS = [
 
 function BoardRow({ category }: { category: ForumCategory }) {
     const Icon = getCategoryIcon(category.slug);
-    const color = getCategoryColor(category.slug);
     const latest = category.latest_thread;
 
     return (
@@ -74,7 +73,7 @@ function BoardRow({ category }: { category: ForumCategory }) {
             {/* The mark IS the icon — it arrives with its own colour and its
                 own edge, and a tinted rounded box around it only made every
                 board look like the same grey square. */}
-            <span className="w-[52px] h-[52px] shrink-0 flex items-center justify-center" style={{ color }}>
+            <span className="w-[52px] h-[52px] shrink-0 flex items-center justify-center text-[var(--accent-ink)]">
                 <Icon className="w-[38px] h-[38px] group-hover:scale-110 transition-transform duration-300" />
             </span>
 
