@@ -74,7 +74,7 @@ function BoardRow({ category }: { category: ForumCategory }) {
                 own edge, and a tinted rounded box around it only made every
                 board look like the same grey square. */}
             <span className="w-[52px] h-[52px] shrink-0 flex items-center justify-center text-[var(--accent-ink)]">
-                <Icon className="w-[38px] h-[38px] group-hover:scale-110 transition-transform duration-300" />
+                <Icon className="w-[34px] h-[34px] group-hover:scale-110 transition-transform duration-300" />
             </span>
 
             <span className="min-w-0 flex-1">

@@ -129,7 +129,7 @@ function CategoryThreadsPageInner() {
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div className="flex items-center gap-5">
                             <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center text-[var(--accent-ink)]">
-                                <Icon className="w-[46px] h-[46px]" />
+                                <Icon className="w-[42px] h-[42px]" />
                             </div>
                             <div>
                                 <h1 className="font-display text-[26px] md:text-[32px] font-black text-white tracking-tight leading-none">{category.name}</h1>

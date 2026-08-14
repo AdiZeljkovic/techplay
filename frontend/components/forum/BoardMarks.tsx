@@ -1,30 +1,24 @@
-"use client";
-
-import { useId } from "react";
-
 /**
  * The marks for the boards we run.
  *
- * Drawn the way the homepage's quick links are drawn: a subject in the upper
- * left, a second object overlapping it from the lower right, and the subject
- * knocked out behind that object so it reads as in front rather than welded
- * on. That composite is the house idiom — it is what makes a database and a
- * calendar look like they came from one hand.
+ * Drawn the way the Community and Tools menus draw theirs: one subject, line
+ * art at a light stroke, no plate under it, and large enough to be a mark
+ * rather than a decoration beside a word.
  *
- * The quick links use a controller as the second object, because the site is
- * about games. A forum board is about people arguing, so the second object
- * here is a speech bubble: the same construction, saying the thing this
- * section actually is. Every board is "this subject, discussed".
+ * They were painted emoji first — a red megaphone, a blue question balloon, a
+ * green mug, a gold star and two purple controllers, seven pictures from four
+ * drawing traditions with two of them the same controller. A composite pass
+ * followed, each subject carrying a speech bubble the way the homepage's
+ * quick links carry a controller; it matched that construction and read as
+ * busy against a menu of single glyphs. The menu is the closer neighbour, so
+ * the menu wins.
  *
- * They are deliberately thin on detail. A megaphone had a handle, a lifebuoy
- * had four spokes, a pad had two face buttons and a tower had vents — true of
- * the objects and invisible at thirty-eight pixels, where every extra stroke
- * only crowds the two shapes that carry the meaning. Two ideas per mark, and
- * the bubble is one of them.
+ * Consoles gets a console rather than a second controller, because General
+ * Gaming already owns the pad — two boards wearing one mark is what the
+ * painted set did.
  *
- * Nothing is a painted file. They take `currentColor`, and every board draws
- * them in the house accent: seven colours made a list of boards read as a
- * paint chart rather than a set.
+ * They take `currentColor`, and every board draws them in the house accent:
+ * seven tints made a list of boards read as a paint chart rather than a set.
  */
 
 interface MarkProps {
@@ -32,20 +26,7 @@ interface MarkProps {
     strokeWidth?: number;
 }
 
-/** The bubble that marks every board, and the hole it punches. */
-const BUBBLE = "M14.15 12.6h6.35a1.7 1.7 0 0 1 1.7 1.7v4.3a1.7 1.7 0 0 1-1.7 1.7h-2.6l-2.9 2.25V20.3h-.85a1.7 1.7 0 0 1-1.7-1.7v-4.3a1.7 1.7 0 0 1 1.7-1.7Z";
-
-/**
- * One mark: the subject behind, the bubble in front, and a gap between them.
- *
- * The knockout is a mask rather than a filled shape, because these are drawn
- * on four different surfaces — a board row, a category header, the sidebar
- * and the hero — and a bubble filled with one page's colour is a bubble with
- * the wrong background on the other three.
- */
-function Mark({ className, strokeWidth = 1.7, children }: MarkProps & { children: React.ReactNode }) {
-    const id = useId();
-
+function Svg({ className, strokeWidth = 1.5, children }: MarkProps & { children: React.ReactNode }) {
     return (
         <svg
             viewBox="0 0 24 24"
@@ -57,16 +38,7 @@ function Mark({ className, strokeWidth = 1.7, children }: MarkProps & { children
             aria-hidden
             className={className}
         >
-            <mask id={id} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
-                <rect x="0" y="0" width="24" height="24" fill="#fff" />
-                {/* the bubble, fattened — this is the gap you can see around it */}
-                <path d={BUBBLE} fill="#000" stroke="#000" strokeWidth={strokeWidth * 2.4} strokeLinejoin="round" />
-            </mask>
-
-            <g mask={`url(#${id})`}>{children}</g>
-
-            <path d={BUBBLE} />
-            <path d="M16.4 16.45h3.4" />
+            {children}
         </svg>
     );
 }
@@ -74,86 +46,104 @@ function Mark({ className, strokeWidth = 1.7, children }: MarkProps & { children
 /** News & Announcements — a megaphone, mid-shout. */
 export function MegaphoneMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <path d="M2.6 7.6h2.6l7.1-3.4a.8.8 0 0 1 1.15.72v9.96a.8.8 0 0 1-1.15.72L5.2 12.2H2.6A1.4 1.4 0 0 1 1.2 10.8V9A1.4 1.4 0 0 1 2.6 7.6Z" />
-            {/* The shout sits above the bubble rather than beside it — at the
-                old height the knockout ate the arc and left the horn shouting
-                at nothing. */}
-            <path d="M15.4 5.2a2.6 2.6 0 0 1 0 3.7" />
-        </Mark>
+        <Svg {...props}>
+            <path d="M3.4 9.5h3.1l9-4.2a.85.85 0 0 1 1.2.77v11.86a.85.85 0 0 1-1.2.77l-9-4.2H3.4A1.4 1.4 0 0 1 2 13.07v-2.14A1.4 1.4 0 0 1 3.4 9.5Z" />
+            <path d="M6.9 14.5v3.2a1.8 1.8 0 0 0 1.8 1.8h.4a1.8 1.8 0 0 0 1.8-1.8v-1.7" />
+            <path d="M19.9 9.4a3.6 3.6 0 0 1 0 5.2" />
+        </Svg>
     );
 }
 
-/** Feedback & Support — the ring you throw to somebody. */
+/** Feedback & Support — the question actually gets asked. */
 export function SupportMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <circle cx="9.9" cy="9.9" r="7.7" />
-            <circle cx="9.9" cy="9.9" r="3.4" />
-        </Mark>
+        <Svg {...props}>
+            <path d="M4 4.6h16a1.7 1.7 0 0 1 1.7 1.7v8.2a1.7 1.7 0 0 1-1.7 1.7h-7.7L8.6 19.9v-3.7H4a1.7 1.7 0 0 1-1.7-1.7V6.3A1.7 1.7 0 0 1 4 4.6Z" />
+            <path d="M9.85 9.1a2.2 2.2 0 1 1 2.9 2.1c-.62.22-.95.7-.95 1.33v.36" />
+            <path d="M11.8 15.05h.01" />
+        </Svg>
     );
 }
 
 /** The Lounge — off topic, and a cup of something. */
 export function LoungeMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <path d="M2 7.7h10.9v5.5a4.3 4.3 0 0 1-4.3 4.3H6.3A4.3 4.3 0 0 1 2 13.2V7.7Z" />
-            <path d="M12.9 9.1h1.8a2.6 2.6 0 0 1 0 5.2h-1.8" />
-            <path d="M7.3 5.1c0-1.1 1.1-1.4 1.1-2.5" />
-        </Mark>
+        <Svg {...props}>
+            <path d="M4 9.1h11.4v5.6a4.4 4.4 0 0 1-4.4 4.4H8.4A4.4 4.4 0 0 1 4 14.7V9.1Z" />
+            <path d="M15.4 10.5h1.9a2.7 2.7 0 0 1 0 5.4h-1.9" />
+            <path d="M7.4 6.2c0-1 1-1.3 1-2.3" />
+            <path d="M11 6.2c0-1 1-1.3 1-2.3" />
+        </Svg>
     );
 }
 
 /** General Gaming — the pad itself. */
 export function PadMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <path d="M6.8 5h6.3a4.9 4.9 0 0 1 4.83 4.05l.43 2.45a2.25 2.25 0 0 1-4.06 1.7L13.15 11.5H6.75L5.6 13.2a2.25 2.25 0 0 1-4.06-1.7l.43-2.45A4.9 4.9 0 0 1 6.8 5Z" />
-            <path d="M5.5 7.9v2.3M4.35 9.05h2.3" />
-        </Mark>
+        <Svg {...props}>
+            <path d="M8.4 7.9h7.2a5.5 5.5 0 0 1 5.42 4.55l.5 2.85a2.55 2.55 0 0 1-4.6 1.93L15.6 15.2H8.4l-1.32 2.03a2.55 2.55 0 0 1-4.6-1.93l.5-2.85A5.5 5.5 0 0 1 8.4 7.9Z" />
+            <path d="M6.9 11.4v2.3M5.75 12.55h2.3" />
+            <path d="M16.35 11.7h.01M18.15 13.3h.01" />
+        </Svg>
     );
 }
 
-/** Game Reviews — the verdict, framed. */
+/**
+ * Game Reviews — a verdict, framed.
+ *
+ * A bare star with two dashes under it was the first try; the dashes read as
+ * an underline rather than as the rest of a rating, and at forty pixels an
+ * ambiguous mark is a wrong one. The card contains it and says "a thing that
+ * has been rated" without asking anybody to interpret two lines.
+ */
 export function VerdictMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <rect x="1.9" y="2.4" width="15.4" height="14.2" rx="2.2" />
-            <path d="M9.6 5.6 10.72 8.55 13.87 8.7 11.41 10.68 12.24 13.73 9.6 12.04 6.96 13.73 7.79 10.68 5.33 8.7 8.48 8.55Z" />
-        </Mark>
+        <Svg {...props}>
+            <rect x="3.2" y="4.2" width="17.6" height="15.6" rx="2.3" />
+            <path d="M12 7.3 13.147 10.322 16.375 10.478 13.855 12.503 14.705 15.622 12 13.85 9.295 15.622 10.145 12.503 7.624 10.478 10.853 10.322Z" />
+        </Svg>
     );
 }
 
 /** PC Builds & Upgrades — the tower, fan and all. */
 export function TowerMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <rect x="3.4" y="1.8" width="11" height="16.6" rx="2.1" />
-            <circle cx="8.9" cy="11.3" r="3" />
-            <path d="M6.5 5.4h4.8" />
-        </Mark>
+        <Svg {...props}>
+            <rect x="6.2" y="2.9" width="11.6" height="18.2" rx="2" />
+            <circle cx="12" cy="13.9" r="3.2" />
+            <path d="M12 13.9h.01" />
+            <path d="M9.1 6.2h5.8M9.1 8.4h5.8" />
+        </Svg>
     );
 }
 
-/** Consoles & Peripherals — the box, not another pad. */
+/**
+ * Consoles & Peripherals — the box, not another pad.
+ *
+ * General Gaming already owns the controller, so this cannot be one; two
+ * boards wearing the same mark is what the painted set did. A console on its
+ * dock reads as hardware at forty pixels, which a box with a cable curling
+ * out of it did not — that came out looking like a speech bubble.
+ */
 export function ConsoleMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <rect x="1.6" y="3.9" width="16.8" height="5" rx="1.8" />
-            <path d="M15.7 6.4h.01" />
-            <rect x="1.6" y="10.9" width="16.8" height="5" rx="1.8" />
-            <path d="M15.7 13.4h.01" />
-        </Mark>
+        <Svg {...props}>
+            <rect x="2.6" y="5.4" width="18.8" height="5.2" rx="1.8" />
+            <path d="M5.9 7.4v1.2" />
+            <path d="M18.1 8h.01" />
+            <rect x="2.6" y="12.6" width="18.8" height="5.2" rx="1.8" />
+            <path d="M9 15.2h6" />
+            <path d="M18.1 15.2h.01" />
+        </Svg>
     );
 }
 
 /** Anything added in the admin panel tomorrow. */
 export function BoardMark(props: MarkProps) {
     return (
-        <Mark {...props}>
-            <path d="M3.3 2.5h11.4a2.1 2.1 0 0 1 2.1 2.1v8.8a2.1 2.1 0 0 1-2.1 2.1H3.3a2.1 2.1 0 0 1-2.1-2.1V4.6a2.1 2.1 0 0 1 2.1-2.1Z" />
-            <path d="M4.7 6.6h8.6M4.7 10.2h5.4" />
-        </Mark>
+        <Svg {...props}>
+            <path d="M4 4.6h16a1.7 1.7 0 0 1 1.7 1.7v8.2a1.7 1.7 0 0 1-1.7 1.7h-7.7L8.6 19.9v-3.7H4a1.7 1.7 0 0 1-1.7-1.7V6.3A1.7 1.7 0 0 1 4 4.6Z" />
+            <path d="M7 9.4h10M7 12.4h6.4" />
+        </Svg>
     );
 }

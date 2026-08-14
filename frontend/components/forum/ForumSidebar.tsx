@@ -218,7 +218,7 @@ export default function ForumSidebar() {
                             return (
                                 <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="group flex items-start gap-3 py-2.5">
                                     <span className="w-8 h-8 shrink-0 flex items-center justify-center mt-0.5 text-[var(--accent-ink)]">
-                                        <Icon className="w-[22px] h-[22px]" />
+                                        <Icon className="w-[21px] h-[21px]" />
                                     </span>
                                     <div className="flex-1 min-w-0">
                                         <p className="font-display text-[12px] font-black text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
