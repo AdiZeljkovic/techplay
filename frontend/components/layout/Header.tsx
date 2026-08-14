@@ -1183,7 +1183,7 @@ export default function Header() {
                     </nav>
 
                     {/* Actions (Right) */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-0.5 xl:gap-3">
                         {/* Inline search (desktop) */}
                         <div className="hidden xl:block w-[260px] 2xl:w-[300px]">
                             <SearchDropdown hotkey placeholder="Search games, news, guides..." />
@@ -1235,25 +1235,42 @@ export default function Header() {
                             </div>
                         )}
 
-                        {/* Mobile: search + hamburger */}
+                        {/* Mobile: search, bell, more. Three 44px targets and
+                            a logo is what fits at 390px — the bell earns its
+                            place because a notification nobody can see is a
+                            notification that did not happen. */}
                         <button
                             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                            className="xl:hidden h-11 w-11 inline-flex items-center justify-center text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-2)] rounded-[var(--radius-card)] transition-colors"
+                            className="xl:hidden h-11 w-11 inline-flex items-center justify-center text-white/70 active:text-white active:bg-[var(--fill-2)] rounded-[var(--radius-card)] transition-colors"
                             aria-label="Search"
                         >
-                            <Search className="w-6 h-6" />
+                            <Search className="w-[22px] h-[22px]" />
                         </button>
+
+                        {user && (
+                            <span className="xl:hidden">
+                                <NotificationPanel
+                                    variant="sheet"
+                                    unreadCount={notifications.unread_notifications}
+                                    onCountRefresh={refreshNotifCounts}
+                                />
+                            </span>
+                        )}
                         <button
-                            className="xl:hidden h-11 w-11 inline-flex items-center justify-center text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-3)] rounded-[var(--radius-card)] transition-colors"
+                            className="xl:hidden h-11 w-11 inline-flex items-center justify-center text-white/70 active:text-white active:bg-[var(--fill-3)] rounded-[var(--radius-card)] transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
                             {isMobileMenuOpen ? (
-                                <X className="w-7 h-7" />
+                                <X className="w-[22px] h-[22px]" />
                             ) : (
                                 <>
-                                    <MoreMark className="md:hidden w-7 h-7" />
-                                    <Menu className="hidden md:block w-7 h-7" />
+                                    {/* Dots below md, where the tab bar is the
+                                        navigation and this is the overflow;
+                                        a hamburger from md up, where it still
+                                        is the navigation. */}
+                                    <MoreMark className="md:hidden w-[22px] h-[22px]" />
+                                    <Menu className="hidden md:block w-6 h-6" />
                                 </>
                             )}
                         </button>
