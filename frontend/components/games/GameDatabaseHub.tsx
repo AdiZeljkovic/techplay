@@ -328,7 +328,7 @@ export default function GameDatabaseHub({
                     </div>
 
                     {/* quick ways in, for the 86% of the catalogue that has no rating */}
-                    <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
                         {facets?.platforms.slice(0, 4).map((p) => {
                             const on = platform === p.label;
                             // The mark wears its brand colour at rest. On the
@@ -341,14 +341,14 @@ export default function GameDatabaseHub({
                                 <button
                                     key={p.key}
                                     onClick={() => change(() => setPlatform(on ? "" : p.label))}
-                                    className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full border font-display text-[10.5px] font-bold uppercase tracking-[0.06em] transition-colors ${
+                                    className={`inline-flex items-center gap-2 h-11 px-5 rounded-full border font-display text-[12px] font-bold uppercase tracking-[0.08em] transition-colors ${
                                         on
                                             ? "border-[var(--accent)] bg-[var(--accent)] text-white"
                                             : "border-white/[0.09] bg-white/[0.03] text-white/55 hover:text-white"
                                     }`}
                                 >
                                     <span style={brand ? { color: brand } : undefined}>
-                                        <PlatformIcon label={p.label} className="w-3.5 h-3.5" />
+                                        <PlatformIcon label={p.label} className="w-[18px] h-[18px]" />
                                     </span>
                                     {p.label}
                                 </button>
@@ -358,9 +358,9 @@ export default function GameDatabaseHub({
                         <button
                             onClick={roll}
                             disabled={rolling}
-                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-[var(--accent)] hover:brightness-110 font-display text-[10.5px] font-bold uppercase tracking-[0.06em] text-white transition-all"
+                            className="inline-flex items-center gap-2 h-11 px-5 rounded-full bg-[var(--accent)] hover:brightness-110 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-white transition-[filter]"
                         >
-                            {rolling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shuffle className="w-3.5 h-3.5" />}
+                            {rolling ? <Loader2 className="w-[18px] h-[18px] animate-spin" /> : <Shuffle className="w-[18px] h-[18px]" />}
                             Random game
                         </button>
                     </div>
