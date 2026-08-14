@@ -3,13 +3,19 @@ import type { Gta6Entity } from "@/types";
 import { resolveGta6Image } from "@/lib/gta6";
 
 interface Props {
+    /**
+     * How the art sits in the card. `cover` fills it, which is right for
+     * photographs; `contain` shows the whole thing, which is the only way a
+     * cut-out strip — a 713x58 baseball bat — reads as what it is.
+     */
+    fit?: "cover" | "contain";
     entity: Gta6Entity;
     basePath: string;     // e.g. /gta6/characters
     subtitle?: string | null;
     linkable?: boolean;   // false = plain showcase card without a detail page link
 }
 
-export default function Gta6EntityCard({ entity, basePath, subtitle, linkable = true }: Props) {
+export default function Gta6EntityCard({ entity, basePath, subtitle, linkable = true, fit = "cover" }: Props) {
     const img = resolveGta6Image(entity.image);
 
     const Wrapper = linkable ? Link : "div";
@@ -30,7 +36,9 @@ export default function Gta6EntityCard({ entity, basePath, subtitle, linkable = 
                         src={img}
                         alt={entity.name}
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className={`w-full h-full group-hover:scale-105 transition-transform duration-500 ${
+                            fit === "contain" ? "object-contain p-3" : "object-cover"
+                        }`}
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--gta-pink)]/15 to-[var(--surface-2)]">

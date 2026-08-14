@@ -97,6 +97,10 @@ export default async function Gta6WeaponsPage() {
                     </p>
                     <Gta6EntityGrid
                         section="weapons"
+                        // Weapon art is cut-out, and some of it is a strip; a
+                        // 4:3 card covering a 713x58 bat shows a length of wood
+                        // with neither end.
+                        fit="contain"
                         basePath="/gta6/weapons"
                         apiPath="/gta6/weapons"
                         filterParam="type"

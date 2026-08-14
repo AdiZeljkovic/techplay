@@ -2,6 +2,7 @@
 
 import { useMemo, useState, Fragment } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2, Star } from "lucide-react";
@@ -290,12 +291,18 @@ export default function SectionHub({
                                 className="group relative block rounded-[14px] overflow-hidden border border-white/[0.07] min-h-[300px] lg:min-h-[380px]"
                             >
                                 {spotlight.featured_image_url && (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
+                                    // The section's biggest picture, and the one
+                                    // most worth not shipping at 4K: priority so
+                                    // it is the LCP it already was, sized so it
+                                    // arrives at the width it is drawn at.
+                                    <Image
                                         src={getStorageUrl(spotlight.featured_image_url)}
                                         alt=""
                                         aria-hidden
-                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
+                                        fill
+                                        priority
+                                        sizes="(max-width: 1024px) 100vw, 66vw"
+                                        className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
                                     />
                                 )}
                                 <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
@@ -425,7 +432,7 @@ export default function SectionHub({
                                             <span className="w-[52px] h-[36px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
                                                 {a.featured_image_url && (
                                                     // eslint-disable-next-line @next/next/no-img-element
-                                                    <img src={getStorageUrl(a.featured_image_url)} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                    <Image src={getStorageUrl(a.featured_image_url)} alt="" aria-hidden fill sizes="52px" className="object-cover" />
                                                 )}
                                             </span>
                                             <span className="min-w-0 flex-1">
@@ -467,7 +474,7 @@ export default function SectionHub({
                                         <span className="w-[46px] h-[31px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
                                             {g.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
-                                                <img src={getStorageUrl(g.cover_url)} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
+                                                <Image src={getStorageUrl(g.cover_url)} alt="" aria-hidden fill sizes="46px" unoptimized className="object-cover" />
                                             )}
                                         </span>
                                         <span className="min-w-0 flex-1">
@@ -598,12 +605,12 @@ function ArticleCard({
         >
             <span className="relative block h-[150px] bg-white/[0.04]">
                 {article.featured_image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                         src={getStorageUrl(article.featured_image_url)}
                         alt={article.title}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                        fill
+                        sizes={"(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+                        className="object-cover group-hover:scale-[1.04] transition-transform duration-500"
                     />
                 )}
                 {label && (

@@ -347,6 +347,22 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
         height: typeof s === "string" ? 720  : (s.height ?? 480),
     })).filter((s) => !!s.image);
 
+    /**
+     * What stands behind the title.
+     *
+     * This was the cover, and the cover is portrait box art — roughly 310x440.
+     * Stretched across a 1440x242 strip with object-cover it is upscaled four
+     * and a half times and cropped to a band, so Red Dead Redemption's hero was
+     * the barrel of a gun at 4.6x, unrecognisable and blocky. A screenshot is
+     * landscape and larger, which is the shape this slot actually wants.
+     *
+     * The cover stays as the fallback for the games that have no screenshot,
+     * and there it gets a blur: an upscale that is obviously deliberate reads
+     * as a backdrop, while a sharp one reads as a mistake.
+     */
+    const heroArt = screenshots[0]?.image ?? game.cover_url;
+    const heroIsCover = !screenshots[0]?.image;
+
     const series     = (seriesRes?.results ?? []).filter((g) => g.slug !== slug);
     const suggested  = suggestedRes?.results ?? [];
     const isUpcoming = game.released ? new Date(game.released) > new Date() : false;
@@ -401,11 +417,13 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
             {/* ── hero — the calendar page's matte treatment, one language across the site ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                {game.cover_url && (
+                {heroArt && (
                     <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={game.cover_url} alt="" aria-hidden
-                            className="absolute inset-0 w-full h-full object-cover opacity-[0.3]" />
+                        <img src={heroArt} alt="" aria-hidden
+                            className={`absolute inset-0 w-full h-full object-cover opacity-[0.3] ${
+                                heroIsCover ? "blur-[3px] scale-[1.04]" : ""
+                            }`} />
                         <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/85 to-transparent" />
                         <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
                     </>

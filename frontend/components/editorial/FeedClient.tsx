@@ -2,6 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import useSWRInfinite from "swr/infinite";
 import axios from "@/lib/axios";
 import { Clock, User, Star, Sparkles, Info, Loader2, Newspaper, Gamepad2, Cpu, BookOpen, Layers, type LucideIcon } from "lucide-react";
@@ -312,12 +313,14 @@ function Card({ item }: { item: FeedItem }) {
         >
             <span className="relative block h-[150px] bg-white/[0.04]">
                 {item.featured_image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    // A 150px-tall card was downloading the 4K original. `sizes`
+                    // is what tells the optimiser which width to actually serve.
+                    <Image
                         src={getStorageUrl(item.featured_image_url)}
                         alt={item.title}
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+                        fill
+                        sizes={"(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"}
+                        className="object-cover group-hover:scale-[1.04] transition-transform duration-500"
                     />
                 )}
 

@@ -22,6 +22,8 @@ function subtitleFor(section: string, e: Gta6Entity): string | null {
 }
 
 interface Props {
+    /** Passed straight to the card; see Gta6EntityCard. */
+    fit?: "cover" | "contain";
     section: "characters" | "vehicles" | "weapons";
     basePath: string;         // /gta6/characters
     apiPath: string;          // /gta6/characters
@@ -35,7 +37,7 @@ interface Props {
 }
 
 export default function Gta6EntityGrid({
-    section, basePath, apiPath, filterParam, filterLabel, filterOptions = [], emptyTitle, emptyHint, linkable = true, initialItems,
+    section, basePath, apiPath, filterParam, filterLabel, filterOptions = [], emptyTitle, emptyHint, linkable = true, initialItems, fit,
 }: Props) {
     const [search, setSearch]             = useState("");
     const [debounced, setDebounced]       = useState("");
@@ -127,7 +129,7 @@ export default function Gta6EntityGrid({
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {items.map(e => (
-                        <Gta6EntityCard key={e.id} entity={e} basePath={basePath} subtitle={subtitleFor(section, e)} linkable={linkable} />
+                        <Gta6EntityCard key={e.id} entity={e} basePath={basePath} subtitle={subtitleFor(section, e)} linkable={linkable} fit={fit} />
                     ))}
                 </div>
             )}
