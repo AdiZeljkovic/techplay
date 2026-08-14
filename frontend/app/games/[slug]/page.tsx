@@ -489,6 +489,12 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             <GameCountdownTimer targetDate={game.released} />
                         </div>
                     )}
+
+                    {/* The actions, where a phone can reach them. */}
+                    <div className="xl:hidden mt-5 space-y-2.5">
+                        <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
+                        <AddToListButton slug={slug} gameName={game.name} />
+                    </div>
                 </div>
             </div>
 
@@ -604,9 +610,9 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
                 {/* ── sidebar ── */}
                 <div className="xl:col-span-4 min-w-0 space-y-5">
-                    <Panel title="Your collection">
+                    <Panel title="Your collection" className="hidden xl:block">
                         <div className="space-y-2.5">
-                            <TrackGameButton slug={slug} gameName={game.name} variant="full" />
+                            <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
                             {/* "This belongs on my top ten" is a thought that
                                 happens here, on the game's page — not later, in
                                 a tab, once you have remembered which game it

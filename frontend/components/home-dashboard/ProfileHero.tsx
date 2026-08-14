@@ -439,7 +439,7 @@ export default function ProfileHero({
 
                 <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
                     {/* portrait + identity */}
-                    <div className="flex items-start gap-5 md:gap-7 flex-1 min-w-0">
+                    <div className="flex items-start gap-4 md:gap-7 flex-1 min-w-0">
                         <Link href={base} className="group/av block shrink-0">
                             <AvatarRing src={hero.avatar_url} alt={hero.display_name} frame={hero.frame_value} online={online} />
                         </Link>
@@ -450,11 +450,11 @@ export default function ProfileHero({
                                 Level {hero.level}
                             </span>
 
-                            <h1 className="mt-2.5 flex items-center gap-2.5 font-display text-[30px] md:text-[40px] font-black text-white leading-none min-w-0">
+                            <h1 className="mt-2.5 flex items-center gap-2 md:gap-2.5 font-display text-[23px] md:text-[40px] font-black text-white leading-none min-w-0">
                                 <span className="truncate">{hero.display_name}</span>
                                 {hero.verified && (
                                     <BadgeCheck
-                                        className="w-6 h-6 md:w-7 md:h-7 shrink-0 text-[var(--accent)]"
+                                        className="w-5 h-5 md:w-7 md:h-7 shrink-0 text-[var(--accent)]"
                                         style={{ filter: "drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 55%, transparent))" }}
                                         aria-label="Verified TechPlay staff"
                                     />
