@@ -285,7 +285,7 @@ export default function LeaderboardClient() {
             <div className="container-page py-4 md:py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 <div className="xl:col-span-9 min-w-0 space-y-4">
                     {/* ── board switcher ── */}
-                    <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 overflow-x-auto scrollbar-hide snap-x rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                    <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 overflow-x-auto scrollbar-hide snap-x scroll-pl-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         {BOARDS.map((b) => {
                             const Icon = b.icon;
                             const active = board === b.id;

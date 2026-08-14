@@ -122,7 +122,7 @@ export default function PageHero({
                     <div
                         className={cn(
                             "max-w-full flex overflow-x-auto scrollbar-hide",
-                            "flex-nowrap justify-start -mx-4 px-4 snap-x",
+                            "flex-nowrap justify-start -mx-4 px-4 snap-x scroll-pl-4 md:scroll-pl-0",
                             "md:flex-wrap md:justify-center md:mx-0 md:px-0",
                             categorySize === "lg" ? "mt-4 gap-2 md:mt-8 md:gap-2.5" : "mt-3.5 gap-1.5 md:mt-7"
                         )}

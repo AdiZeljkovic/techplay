@@ -175,7 +175,7 @@ export default function FeedClient() {
                     // costs 60px, stays put while the feed moves under it, and
                     // says "there is more this way" with its cut-off edge.
                     <div className="under-bar -mx-4 px-4 py-2 md:mx-0 md:px-0 md:py-0 bg-[var(--surface-0)] md:bg-transparent">
-                        <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 overflow-x-auto scrollbar-hide snap-x rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+                        <div className="flex flex-nowrap md:flex-wrap gap-1.5 p-1.5 overflow-x-auto scrollbar-hide snap-x scroll-pl-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                             {SECTIONS.map((s) => (
                                 <SwitchTab
                                     key={s.id}

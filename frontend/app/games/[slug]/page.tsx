@@ -280,7 +280,10 @@ function MiniGameCard({ game }: { game: GameListItem }) {
         <Link
             href={`/games/${game.slug}`}
             prefetch={false}
-            className="group block rounded-[8px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
+            // Fixed width in the phone's rail, auto in the desktop grid: a
+            // flex child with no width collapses to its content, and a cover
+            // with no intrinsic width collapses to nothing.
+            className="group block w-[168px] shrink-0 snap-start sm:w-auto sm:shrink rounded-[8px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
         >
             <div className="relative aspect-video bg-black/40 overflow-hidden">
                 {game.cover_url ? (
@@ -704,7 +707,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-black uppercase tracking-[0.08em] text-white">
                             <Layers className="w-[18px] h-[18px] text-[var(--accent)]" /> More in the series
                         </h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
+                        <div className="flex sm:grid gap-3.5 overflow-x-auto scrollbar-hide snap-x scroll-pl-4 sm:scroll-pl-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                             {series.slice(0, 6).map((g) => <MiniGameCard key={g.id} game={g} />)}
                         </div>
                     </section>
@@ -715,7 +718,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-black uppercase tracking-[0.08em] text-white">
                             <Gamepad2 className="w-[18px] h-[18px] text-[var(--accent)]" /> You might also like
                         </h2>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5">
+                        <div className="flex sm:grid gap-3.5 overflow-x-auto scrollbar-hide snap-x scroll-pl-4 sm:scroll-pl-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                             {suggested.slice(0, 6).map((g) => <MiniGameCard key={g.id} game={g} />)}
                         </div>
                     </section>

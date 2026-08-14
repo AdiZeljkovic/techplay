@@ -250,9 +250,21 @@ export default function CommentsSection({ commentableId, commentableType, initia
 
             {/* Comment list */}
             {isLoading ? (
-                <div className="text-center py-10">
-                    <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    <p className="text-white/35 text-[13px]">Loading discussion…</p>
+                // The shape of what is coming, not a spinner over an empty
+                // box. A spinner says "wait"; this says "three comments, and
+                // they will land here" — and because it occupies the space the
+                // real rows will take, nothing under it jumps when they do.
+                <div className="space-y-6" aria-busy="true" aria-label="Loading discussion">
+                    {[0, 1, 2].map((i) => (
+                        <div key={i} className="flex gap-3">
+                            <span className="w-9 h-9 shrink-0 rounded-full bg-white/[0.05] animate-pulse" />
+                            <div className="min-w-0 flex-1 space-y-2">
+                                <span className="block h-3 w-28 rounded bg-white/[0.05] animate-pulse" />
+                                <span className="block h-3 w-full rounded bg-white/[0.035] animate-pulse" />
+                                <span className={`block h-3 rounded bg-white/[0.035] animate-pulse ${i === 1 ? "w-2/3" : "w-5/6"}`} />
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : comments.length > 0 ? (
                 <div className="space-y-6">

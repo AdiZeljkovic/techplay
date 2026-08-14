@@ -425,7 +425,7 @@ export default function GameDatabaseHub({
                     </div>
 
                     {/* quick ways in, for the 86% of the catalogue that has no rating */}
-                    <div className="mt-4 md:mt-6 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 md:gap-2.5 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide snap-x">
+                    <div className="mt-4 md:mt-6 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 md:gap-2.5 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide snap-x scroll-pl-4 md:scroll-pl-0">
                         {facets?.platforms.slice(0, 4).map((p) => {
                             const on = platform === p.label;
                             // The mark wears its brand colour at rest. On the
