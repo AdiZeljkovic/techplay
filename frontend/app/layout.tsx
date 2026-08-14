@@ -33,7 +33,6 @@ import GlobalSeo from "@/components/seo/GlobalSeo";
 import ConsentAwareAnalytics from "@/components/analytics/ConsentAwareAnalytics";
 import { Toaster } from "react-hot-toast";
 import RewardFeed from "@/components/ui/RewardFeed";
-import QuickAdd from "@/components/ui/QuickAdd";
 
 
 async function getSiteSettings() {
@@ -231,10 +230,6 @@ export default async function RootLayout({
                       corner, and the middle of the screen for the rare
                       things worth stopping for. */}
                   <RewardFeed />
-                  {/* Add a game, log a session, start a list — from wherever
-                      the thought arrived, rather than from the tab that owns
-                      the feature. */}
-                  <QuickAdd />
                 </AuthProvider>
               </CartProvider>
             </MobileMenuProvider>
