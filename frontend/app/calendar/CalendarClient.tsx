@@ -547,7 +547,7 @@ export default function CalendarClient() {
                                             <div className="min-w-0 flex-1 space-y-2.5">
                                                 {shown.map((game) => (
                                                     <div key={game.slug} className="group flex items-center gap-2.5 sm:gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors p-2.5">
-                                                        <Link href={`/calendar/${game.slug}`} className="w-[56px] h-[36px] sm:w-[64px] sm:h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05]">
+                                                        <Link href={`/calendar/${game.slug}`} className="w-[56px] h-[36px] sm:w-[64px] sm:h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05] py-1 -my-1 box-content sm:py-0 sm:my-0">
                                                             {game.cover_url ? (
                                                                 // eslint-disable-next-line @next/next/no-img-element
                                                                 <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
@@ -557,7 +557,7 @@ export default function CalendarClient() {
                                                         </Link>
 
                                                         <span className="min-w-0 flex-1 basis-0">
-                                                            <Link href={`/calendar/${game.slug}`} className="block text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
+                                                            <Link href={`/calendar/${game.slug}`} className="block text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors py-3 -my-3 sm:py-0 sm:my-0">
                                                                 {game.name}
                                                             </Link>
                                                             <span className="flex items-center gap-2 mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/30 truncate">
@@ -584,7 +584,7 @@ export default function CalendarClient() {
                                                     <button
                                                         onClick={() => openDay(day.date)}
                                                         disabled={openingDay === day.date}
-                                                        className="w-full h-9 rounded-[9px] border border-dashed border-white/[0.11] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-white/[0.03] inline-flex items-center justify-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/40 hover:text-white transition-colors disabled:opacity-50"
+                                                        className="w-full h-11 md:h-9 rounded-[9px] border border-dashed border-white/[0.11] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-white/[0.03] inline-flex items-center justify-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/40 hover:text-white transition-colors disabled:opacity-50"
                                                     >
                                                         {openingDay === day.date
                                                             ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading</>

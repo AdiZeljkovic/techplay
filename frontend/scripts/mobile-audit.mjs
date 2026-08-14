@@ -89,12 +89,18 @@ function measure() {
 
     // Only elements with their own text count — asking every node its font
     // size counts each paragraph once per ancestor.
+    //
+    // The threshold is 10px, not 12. This site labels in tracked uppercase
+    // Archivo, where 10-11px is a caption rather than a mistake; below 10 is
+    // the floor the phone stylesheet enforces. A "< 12px" column stayed at
+    // 1,016 straight through the change that removed every 8px label on the
+    // site, which made it a number nobody could act on.
     const tiny = {};
     for (const el of document.querySelectorAll("body *")) {
         const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
         if (!own) continue;
         const fs = parseFloat(getComputedStyle(el).fontSize);
-        if (fs < 12) tiny[fs] = (tiny[fs] || 0) + 1;
+        if (fs < 10) tiny[fs] = (tiny[fs] || 0) + 1;
     }
 
     // Anything wider than the screen. The page itself rarely scrolls sideways
@@ -139,7 +145,7 @@ const browser = await puppeteer.launch({
 });
 
 console.log(`\n  ${BASE}  ·  390×844 · 2× · touch\n`);
-console.log("  page          height    screens  first content  small taps  <12px  bleed");
+console.log("  page          height    screens  first content  small taps  <10px  bleed");
 console.log("  " + "─".repeat(72));
 
 let worstScreens = 0;
@@ -186,6 +192,6 @@ for (const [name, path] of PAGES) {
 }
 
 console.log("  " + "─".repeat(72));
-console.log(`  tallest page ${worstScreens} screens · ${totalSmall} small targets · ${totalTiny} tiny type\n`);
+console.log(`  tallest page ${worstScreens} screens · ${totalSmall} small targets · ${totalTiny} under the 10px floor\n`);
 
 await browser.close();

@@ -1238,13 +1238,13 @@ export default function Header() {
                         {/* Mobile: search + hamburger */}
                         <button
                             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                            className="xl:hidden p-2 text-[var(--ink-mid)] hover:text-white transition-colors"
+                            className="xl:hidden h-11 w-11 inline-flex items-center justify-center text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-2)] rounded-[var(--radius-card)] transition-colors"
                             aria-label="Search"
                         >
                             <Search className="w-6 h-6" />
                         </button>
                         <button
-                            className="xl:hidden p-2 text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-3)] rounded-[var(--radius-card)] transition-colors"
+                            className="xl:hidden h-11 w-11 inline-flex items-center justify-center text-[var(--ink-mid)] hover:text-white active:bg-[var(--fill-3)] rounded-[var(--radius-card)] transition-colors"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >

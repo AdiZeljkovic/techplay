@@ -317,6 +317,13 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         <AdUnit position="article_mid" />
                                     </div>
 
+                                    {/* The rail carries a display unit and the
+                                        rail is desktop-only, so a phone was
+                                        reading the same article with one ad
+                                        fewer than a desktop. This is that unit,
+                                        after the piece rather than beside it. */}
+                                    <DisplayAd className="xl:hidden mb-10" minHeight={250} />
+
                                     <GoogleNewsFollow />
 
                                     <ArticleFooter

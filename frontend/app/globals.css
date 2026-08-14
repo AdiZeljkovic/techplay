@@ -321,6 +321,29 @@ body {
   }
 }
 
+/* ── The phone's type floor ──────────────────────────────────────────────
+   Measured across seven pages at 390px: 32 elements at 8px, 134 at 8.5, 156
+   at 9 and 142 at 9.5 — 464 pieces of text below anything a person reads at
+   arm's length on a phone. Almost all of them are tracked uppercase labels,
+   which is why they were set that small: at a desk, 8.5px of letter-spaced
+   Archivo is a caption. On a phone held at arm's length it is a texture.
+
+   Raised by class rather than by hand in a thousand call sites, and only
+   below md, so the desktop design keeps every size it was drawn with. The
+   floor is 10px — enough to read, small enough that a chip built around a
+   9px label does not burst.
+
+   Unlayered, so it outranks Tailwind's utilities layer the way .font-display
+   above already does. Everything from 10px up is left alone.
+   ───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .text-\[8px\],
+  .text-\[8\.5px\] { font-size: 10px; }
+
+  .text-\[9px\],
+  .text-\[9\.5px\] { font-size: 10.5px; }
+}
+
 /* Anything sized to the viewport uses the dynamic height: on mobile Safari
    `100vh` is the height with the address bar *hidden*, so a full-screen panel
    sized in vh is always taller than the screen it is on. */

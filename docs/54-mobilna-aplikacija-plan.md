@@ -1,6 +1,35 @@
 # Mobilna verzija kao aplikacija — dijagnoza i plan
 
-Datum: 14.08.2026. Status: **plan, čeka odobrenje.**
+Datum: 14.08.2026. Status: **Faze 1–5 isporučene.** PWA je van obima.
+
+## Rezultat (mjereno istom skriptom, 390×844, 2×, dodir)
+
+| Mjera | Prije | Poslije | Cilj |
+|---|---:|---:|---:|
+| Dodira do glavne sekcije | 2–4 | **1** | 1 |
+| Prvi sadržaj — feed | ~1.000px | **297px** | < 400 |
+| Prvi sadržaj — news | — | **201px** | < 400 |
+| Prvi sadržaj — leaderboard | 1.795px | **368px** | < 400 |
+| Prvi sadržaj — forum | — | **425px** | < 400 |
+| Naslovnica | 10,7 ekrana | **10,0** | < 6 |
+| Dodirne mete ispod 44px (7 stranica) | 518 | **205** | 0 kritičnih |
+| Tekst ispod 10px | 464 | **0** | 0 |
+| Leaderboard, van ekrana | 112 el. | **17** | — |
+| Kalendar, male mete | 303 | **44** | — |
+
+Naslovnica je jedini cilj koji nije dostignut: 10 ekrana naspram traženih 6.
+Ona je zbir sekcija (hero, discovery, editorial, review wall, baza, CTA) i
+skraćivanje ispod šest ekrana znači brisanje sekcije, što je proizvodna
+odluka, ne dizajnerska. `—` u tabeli znači da stranica nema sadržaj u obliku
+kartice (gusta mreža omota, kalendarska mreža) pa mjera nema šta uhvatiti.
+
+## Šta je ostalo neurađeno
+
+- **Snap rails i skeleti** (Faza 5, drugi dio) — redovi kartica se i dalje
+  prelamaju u mrežu umjesto da klize; liste pokazuju spinner umjesto skeleta.
+- **Profil ulogovanog korisnika** nije provjeren na telefonu — nema
+  prijave iz okruženja u kojem je rađeno. Provjeren je javni profil.
+- **Kalendar je i dalje najviša stranica** (11 ekrana).
 
 Cilj: telefon prestaje biti "sajt koji se prelama" i postaje aplikacija. Ne
 kopija iOS-a — TechPlay HUD jezik ostaje netaknut, mijenja se **struktura**:

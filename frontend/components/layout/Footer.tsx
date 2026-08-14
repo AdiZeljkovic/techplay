@@ -149,7 +149,7 @@ export default function Footer() {
                                         rel="noopener noreferrer"
                                         aria-label={s.label}
                                         title={s.label}
-                                        className="h-[42px] rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent)] hover:border-transparent transition-colors duration-300"
+                                        className="h-11 rounded-[var(--radius-inner)] bg-[var(--fill-2)] border border-[var(--line-strong)] flex items-center justify-center text-[var(--ink-low)] hover:text-white hover:bg-[var(--accent)] hover:border-transparent transition-colors duration-300"
                                     >
                                         <s.Icon className="w-[17px] h-[17px]" />
                                     </Link>
@@ -171,7 +171,7 @@ export default function Footer() {
                                 )}
                                 <Link
                                     href={item.href}
-                                    className="font-display text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150"
+                                    className="inline-block py-3 -my-3 sm:py-0 sm:my-0 font-display text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150"
                                 >
                                     {item.name}
                                 </Link>
