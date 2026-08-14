@@ -83,10 +83,26 @@ export default function GuideHelpful({
                                     onClick={() => cast(value)}
                                     disabled={busy !== null}
                                     aria-pressed={on}
-                                    className="inline-flex items-center gap-2 h-10 px-4 rounded-[9px] border font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors duration-300 disabled:opacity-60"
+                                    // Both answers wear their own colour before
+                                    // either is pressed. Two grey outlines made
+                                    // the reader work out which way round they
+                                    // were from the words, when yes is green
+                                    // and no is red everywhere else on the site.
+                                    // Pressing one fills it; the other stays an
+                                    // outline, so the choice still reads.
+                                    className="inline-flex items-center gap-2 h-10 px-4 rounded-[9px] border font-display text-[11px] font-black uppercase tracking-[0.1em] transition-[background,border-color,box-shadow] duration-300 disabled:opacity-60"
                                     style={on
-                                        ? { borderColor: tint, background: `color-mix(in srgb, ${tint} 14%, transparent)`, color: tint }
-                                        : { borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.55)" }}
+                                        ? {
+                                            borderColor: tint,
+                                            background: `color-mix(in srgb, ${tint} 16%, transparent)`,
+                                            color: tint,
+                                            boxShadow: `0 0 18px -6px ${tint}`,
+                                        }
+                                        : {
+                                            borderColor: `color-mix(in srgb, ${tint} 30%, transparent)`,
+                                            background: `color-mix(in srgb, ${tint} 6%, transparent)`,
+                                            color: `color-mix(in srgb, ${tint} 85%, #fff)`,
+                                        }}
                                 >
                                     {busy === value
                                         ? <Loader2 className="w-4 h-4 animate-spin" />
