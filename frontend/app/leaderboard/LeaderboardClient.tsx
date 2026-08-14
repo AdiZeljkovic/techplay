@@ -257,16 +257,17 @@ export default function LeaderboardClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                {/* The arena: trophy on the left, banners and podium on the
-                    right, dark centre carrying the title — already painted
-                    near-black, so it needs only a soft seam into the page. */}
+                {/* The house backdrop, like every other hero on the site. The
+                    bespoke arena art was the only thing making this page look
+                    like it belonged to a different product. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                    src="/images/leaderboard-hero.webp"
+                    src="/images/page-hero.webp"
                     alt=""
                     aria-hidden
                     className="absolute inset-0 w-full h-full object-cover object-center"
                 />
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
                 <div className="relative z-10 container-page py-12 md:py-16 text-center">
                     <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] mb-4">

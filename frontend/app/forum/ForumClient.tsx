@@ -227,8 +227,8 @@ export default function ForumPage() {
         <div className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero, built like the games database's ── */}
             <section className="relative overflow-hidden border-b border-white/[0.07]">
-                <Image src="/forum-hero.png" alt="" fill priority unoptimized className="object-cover object-center" />
-                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_40%,rgba(5,7,10,0.88),rgba(5,7,10,0.55)_72%)]" />
+                <Image src="/images/page-hero.webp" alt="" fill priority unoptimized className="object-cover object-center" />
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
                 <div className="relative z-10 container-page py-11 text-center">

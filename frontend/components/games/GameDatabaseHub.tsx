@@ -279,17 +279,16 @@ export default function GameDatabaseHub({
         <main className="min-h-screen bg-[var(--surface-0)]">
             {/* ── hero ── */}
             <section className="relative overflow-hidden border-b border-white/[0.07]">
-                {/* The worlds-collide panorama: knight on the left, race pit on
-                    the right, the dark valley in the middle carrying the title. */}
+                {/* The house backdrop, like every other hero on the site. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                    src="/images/games/games-hero.webp"
+                    src="/images/page-hero.webp"
                     alt=""
                     aria-hidden
                     className="absolute inset-0 w-full h-full object-cover object-center"
                 />
-                <span aria-hidden className="absolute inset-0 bg-gradient-to-b from-[var(--surface-0)]/55 via-transparent to-[var(--surface-0)]" />
-                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(70%_90%_at_50%_45%,rgba(0,0,0,0.45),transparent_75%)]" />
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
                 <div className="relative z-10 container-page py-12 text-center">
                     <h1 className="font-display font-black tracking-tight text-[42px] md:text-[58px] leading-none">
