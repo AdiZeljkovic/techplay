@@ -389,7 +389,7 @@ body {
 /* The bottom tab bar's footprint, for anything that anchors itself to the
    bottom of a phone screen and must sit above it. */
 :root {
-  --tabbar-h: 62px;
+  --tabbar-h: 64px;
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 .above-tabbar { bottom: calc(var(--tabbar-h) + var(--safe-b)); }

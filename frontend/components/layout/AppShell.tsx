@@ -23,7 +23,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 Bottom: the tab bar, plus whatever the home indicator claims.
                 Without the bottom pad the last row of every list sits under
                 the bar and cannot be tapped. */}
-            <main className="flex-grow pt-[56px] md:pt-[72px] pb-[calc(62px+env(safe-area-inset-bottom,0px))] md:pb-0">
+            <main className="flex-grow pt-[56px] md:pt-[72px] pb-[calc(64px+env(safe-area-inset-bottom,0px))] md:pb-0">
                 {children}
             </main>
             <Footer />

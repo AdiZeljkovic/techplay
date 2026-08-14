@@ -19,14 +19,22 @@ import { HomeMark, FeedMark, GamesMark, ForumMark, ProfileMark } from "./TabMark
  * giveaways, leaderboard, guides, the WoW analyzer — lives behind More in the
  * top bar, which is what a hamburger is actually for.
  *
- * Two things carry the design:
+ * The look is built to a mockup of the site's own, and it is a better idea
+ * than either of the two bars that came before it. Those were a flat crimson
+ * slab and then a crimson slab with a dark plate on it; both spent the brand
+ * on the whole bar and then had nowhere left to say "you are here".
  *
- * The bar is the house red rather than another near-black. It is the one piece
- * of chrome on screen at all times, so it is also the one place the brand can
- * live without competing with anything; every surface above it is a shade of
- * black, and a black bar on a black page is a hairline pretending to be
- * navigation. It is mixed from `--accent`, so a profile theme recolours it
- * along with everything else.
+ * This one keeps the ground dark, so it belongs to the same near-blacks as
+ * every surface above it, and spends the red on three things instead:
+ *
+ *   the frame      a crimson hairline around the console, with the glow
+ *                  pooling at the two ends where it meets the screen edge
+ *   the switch     a crimson tile under the icon of the tab you are on,
+ *                  under a white cap rule sitting on the console's top edge
+ *   the portrait   a crimson ring around you, in the middle
+ *
+ * Everything is mixed from `--accent`, so a profile theme recolours the frame,
+ * the tile and the ring together.
  *
  * You sit in the middle, raised out of the bar with your own portrait in it.
  * Centre is the thumb's easiest reach and the position a bar's most-used
@@ -96,25 +104,37 @@ export default function MobileTabBar() {
                 <Link
                     href={t.href}
                     aria-current={active ? "page" : undefined}
-                    className={`group relative flex h-[62px] flex-col items-center justify-end gap-[5px] pb-[9px] transition-colors ${
-                        active ? "text-white" : "text-white/[0.74] active:text-white"
+                    className={`group relative flex h-[64px] flex-col items-center justify-end gap-[6px] pb-[10px] transition-colors ${
+                        active ? "text-white" : "text-white/70 active:text-white"
                     }`}
                 >
-                    {/* The switch, thrown. A thin rule and a dimmed row read
-                        as four broken tabs and one underlined one; a plate
-                        reads as a choice. */}
+                    {/* The cap: a short white rule on the console's top edge,
+                        over the tab you are on. */}
                     <span
                         aria-hidden
-                        className={`tab-plate absolute inset-y-[5px] inset-x-[6px] transition-opacity duration-200 ${
+                        className={`absolute top-0 h-[3px] w-[38px] rounded-b-full bg-white transition-opacity duration-200 ${
                             active ? "opacity-100" : "opacity-0"
                         }`}
-                        style={{
-                            background: "rgba(4,6,9,0.86)",
-                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.16)",
-                        }}
                     />
-                    <t.Mark active={active} className="relative z-10 h-[23px] w-[23px]" />
-                    <span className="relative z-10 font-display text-[9px] font-black uppercase tracking-[0.11em] leading-none">
+
+                    {/* The tile. Only the icon sits on it, not the label —
+                        a tile the height of both reads as a button somebody
+                        pressed rather than as the state of a tab. */}
+                    <span className="relative flex h-[34px] w-[34px] items-center justify-center">
+                        <span
+                            aria-hidden
+                            className={`absolute inset-0 rounded-[10px] transition-opacity duration-200 ${
+                                active ? "opacity-100" : "opacity-0"
+                            }`}
+                            style={{
+                                background: "linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 72%, #000) 100%)",
+                                boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 45%, transparent)",
+                            }}
+                        />
+                        <t.Mark active={false} className="relative z-10 h-[22px] w-[22px]" />
+                    </span>
+
+                    <span className="font-display text-[9px] font-black uppercase tracking-[0.11em] leading-none">
                         {t.label}
                     </span>
                 </Link>
@@ -125,31 +145,33 @@ export default function MobileTabBar() {
     return (
         <nav
             aria-label="Main"
-            className="md:hidden fixed inset-x-0 bottom-0 z-[55]"
+            className="md:hidden fixed inset-x-0 bottom-0 z-[55] rounded-t-[20px] border-t border-x"
             style={{
-                // Written out rather than as a Tailwind opacity modifier: those
-                // do not survive a var() colour, and what they leave behind is
-                // no background at all — the first cut of this bar had the
-                // article scrolling straight through it.
-                //
-                // A gradient rather than a flat fill. Flat crimson under a
-                // near-black page is a slab; lit at the top and deepened at
-                // the bottom it reads as a surface, and white sits on it at a
-                // steady weight instead of vibrating.
-                background: "linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 66%, #000) 100%)",
+                // Written out rather than as a Tailwind opacity modifier:
+                // those do not survive a var() colour, and what they leave
+                // behind is no background at all — the first cut of this bar
+                // had the article scrolling straight through it.
+                background: "linear-gradient(180deg, color-mix(in srgb, var(--surface-1) 96%, var(--accent)) 0%, var(--surface-0) 100%)",
+                borderColor: "color-mix(in srgb, var(--accent) 55%, transparent)",
                 // The home indicator sits over the bottom 34px of a modern
                 // phone. Without this the labels are under it.
                 paddingBottom: "env(safe-area-inset-bottom, 0px)",
-                // A shadow that separates the bar from the page, not a red
-                // bloom around it — the bloom was the first cut and it made
-                // the bar look like it was leaking.
-                boxShadow: "0 -8px 22px rgba(0,0,0,0.55)",
-                // The knockout inside the games mark is punched in the active
-                // plate's colour, not the bar's.
-                ["--tab-ground" as string]: "#0b0d12",
+                // Dark separation downward, a crimson breath upward: the
+                // console reads as lit rather than as a panel dropped on the
+                // page.
+                boxShadow: "0 -10px 26px rgba(0,0,0,0.6), 0 -1px 18px color-mix(in srgb, var(--accent) 26%, transparent)",
             }}
         >
-            <span aria-hidden className="absolute inset-x-0 top-0 h-[1.5px] bg-white/40" />
+            {/* The glow pools at the two ends, where the console meets the
+                edge of the screen, and clears the middle so the portrait is
+                read against dark rather than against red. */}
+            <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-t-[20px]"
+                style={{
+                    background: "linear-gradient(90deg, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 26%, transparent 74%, color-mix(in srgb, var(--accent) 30%, transparent) 100%)",
+                }}
+            />
 
             <ul className="relative flex items-stretch">
                 {LEFT.map(tab)}
@@ -160,24 +182,26 @@ export default function MobileTabBar() {
                         href={profileHref}
                         aria-current={onProfile ? "page" : undefined}
                         aria-label={user ? "Your profile" : "Sign in"}
-                        className={`group relative flex h-[62px] flex-col items-center justify-end pb-[9px] transition-colors ${
-                            onProfile ? "text-white" : "text-white/[0.74] active:text-white"
+                        className={`group relative flex h-[64px] flex-col items-center justify-end pb-[10px] transition-colors ${
+                            onProfile ? "text-white" : "text-white/70 active:text-white"
                         }`}
                     >
-                        {/* A cradle, not a floating button. The white ring is
-                            opaque and interrupts the bar's top rule, so the
-                            portrait reads as seated in the bar rather than
-                            stuck on it — a crimson ring was the first try and
-                            it dissolved into the bar behind it. */}
+                        {/* The ring is crimson and reads against the dark
+                            console behind it. On the crimson bar this replaced
+                            it had to be white, because a red ring on red
+                            dissolved — which is the clearest argument for the
+                            dark ground this bar now has. */}
                         <span
-                            className="absolute -top-[20px] w-[58px] h-[58px] rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-95"
+                            className="absolute -top-[22px] w-[58px] h-[58px] rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-95"
                             style={{
-                                background: onProfile ? "#ffffff" : "rgba(255,255,255,0.9)",
-                                boxShadow: "0 8px 18px rgba(0,0,0,0.5)",
+                                background: "var(--surface-0)",
+                                boxShadow: onProfile
+                                    ? "0 0 0 2.5px var(--accent), 0 0 20px color-mix(in srgb, var(--accent) 60%, transparent), 0 8px 18px rgba(0,0,0,0.55)"
+                                    : "0 0 0 2px color-mix(in srgb, var(--accent) 80%, transparent), 0 8px 18px rgba(0,0,0,0.55)",
                             }}
                         >
                             <span
-                                className="w-[52px] h-[52px] rounded-full overflow-hidden flex items-center justify-center"
+                                className="w-[50px] h-[50px] rounded-full overflow-hidden flex items-center justify-center"
                                 style={{ background: "var(--surface-2)" }}
                             >
                                 {user?.avatar_url ? (
