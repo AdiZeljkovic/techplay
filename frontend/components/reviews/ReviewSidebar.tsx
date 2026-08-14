@@ -1,39 +1,129 @@
 "use client";
 
 import { Article } from "@/types";
-import dynamic from 'next/dynamic';
-import { Gamepad2, Trophy, Building2, Calendar, Clock, ShoppingCart, ThumbsUp, ThumbsDown, Zap, Meh, Medal } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-
-// Lazy load recharts for better performance (reduces initial bundle by ~200KB)
-const ResponsiveContainer = dynamic(
-    () => import('recharts').then(mod => mod.ResponsiveContainer),
-    { ssr: false }
-);
-const RadarChart = dynamic(
-    () => import('recharts').then(mod => mod.RadarChart),
-    { ssr: false }
-);
-const PolarGrid = dynamic(
-    () => import('recharts').then(mod => mod.PolarGrid),
-    { ssr: false }
-);
-const PolarAngleAxis = dynamic(
-    () => import('recharts').then(mod => mod.PolarAngleAxis),
-    { ssr: false }
-);
-const PolarRadiusAxis = dynamic(
-    () => import('recharts').then(mod => mod.PolarRadiusAxis),
-    { ssr: false }
-);
-const Radar = dynamic(
-    () => import('recharts').then(mod => mod.Radar),
-    { ssr: false }
-);
+import { Building2, Calendar, Clock, ShoppingCart, ThumbsUp, ThumbsDown, Zap, Meh, Medal, Trophy, Play, type LucideIcon } from "lucide-react";
+import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
+import { platformMarks } from "@/components/games/ReleaseCard";
 
 interface ReviewSidebarProps {
     article: Article;
+}
+
+/** The five axes, in the order they are drawn from the top clockwise. */
+const AXES: { key: string; label: string }[] = [
+    { key: "gameplay", label: "Gameplay" },
+    { key: "visuals", label: "Visuals" },
+    { key: "audio", label: "Audio" },
+    { key: "narrative", label: "Narrative" },
+    { key: "replayability", label: "Replay" },
+];
+
+const TIERS: { min: number; label: string; color: string; icon: LucideIcon }[] = [
+    { min: 10, label: "Masterpiece", color: "#22d3ee", icon: Trophy },
+    { min: 9, label: "Amazing", color: "#34d399", icon: Medal },
+    { min: 8, label: "Great", color: "#4ade80", icon: ThumbsUp },
+    { min: 7, label: "Good", color: "#fbbf24", icon: Zap },
+    { min: 5, label: "Average", color: "#fb923c", icon: Meh },
+    { min: 0, label: "Poor", color: "#f87171", icon: ThumbsDown },
+];
+
+const VERDICTS: Record<string, { label: string; color: string }> = {
+    must_play: { label: "Must play", color: "#22d3ee" },
+    recommended: { label: "Recommended", color: "#34d399" },
+    wait_sale: { label: "Wait for a sale", color: "#fbbf24" },
+    skip: { label: "Skip", color: "#f87171" },
+};
+
+/**
+ * The five scores, drawn.
+ *
+ * This was a recharts RadarChart: six lazy-loaded modules and about two
+ * hundred kilobytes of charting library to plot five numbers on a pentagon,
+ * on a page whose whole job is to be read quickly. It is trigonometry —
+ * five angles and a radius — so it is drawn here.
+ *
+ * The rebuild also fixes what the chart could not say. Its shape told you
+ * Gameplay beat Audio and nothing else: no scale, no ring you could count
+ * against, and the actual marks left in a form nobody could read off the
+ * plot. Every axis now carries its own figure, and the rings are labelled at
+ * the top so the shape has something to be big *against*.
+ */
+function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: string }) {
+    const size = 260;
+    const cx = size / 2;
+    const cy = 118;
+    const R = 74;
+
+    const point = (i: number, ratio: number) => {
+        const angle = (-90 + i * 72) * (Math.PI / 180);
+
+        return [cx + R * ratio * Math.cos(angle), cy + R * ratio * Math.sin(angle)] as const;
+    };
+
+    const ring = (ratio: number) => AXES.map((_, i) => point(i, ratio).join(",")).join(" ");
+
+    const values = AXES.map((a) => Math.max(0, Math.min(10, Number(ratings[a.key] ?? 0))));
+    const shape = values.map((v, i) => point(i, v / 10).join(",")).join(" ");
+
+    return (
+        <svg viewBox={`0 0 ${size} 218`} className="w-full h-auto" role="img" aria-label="Score breakdown by category">
+            {/* the rings you count against */}
+            {[0.2, 0.4, 0.6, 0.8, 1].map((r) => (
+                <polygon
+                    key={r}
+                    points={ring(r)}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.075)"
+                    strokeWidth={1}
+                />
+            ))}
+            {AXES.map((_, i) => {
+                const [x, y] = point(i, 1);
+
+                return <line key={i} x1={cx} y1={cy} x2={x} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth={1} />;
+            })}
+
+            {/* the shape */}
+            <polygon points={shape} fill={tint} fillOpacity={0.16} stroke={tint} strokeWidth={2} strokeLinejoin="round" />
+            {values.map((v, i) => {
+                const [x, y] = point(i, v / 10);
+
+                return <circle key={i} cx={x} cy={y} r={3} fill={tint} />;
+            })}
+
+            {/* the labels, each carrying its own mark */}
+            {AXES.map((a, i) => {
+                const [x, y] = point(i, 1);
+                const dx = x - cx;
+                const anchor = dx > 6 ? "start" : dx < -6 ? "end" : "middle";
+                const ox = dx > 6 ? 10 : dx < -6 ? -10 : 0;
+                const oy = y < cy ? -10 : 18;
+
+                return (
+                    <g key={a.key}>
+                        <text
+                            x={x + ox}
+                            y={y + oy}
+                            textAnchor={anchor}
+                            className="fill-white/40 font-display"
+                            style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}
+                        >
+                            {a.label}
+                        </text>
+                        <text
+                            x={x + ox}
+                            y={y + oy + 14}
+                            textAnchor={anchor}
+                            className="font-display"
+                            style={{ fontSize: 13, fontWeight: 900, fill: values[i] > 0 ? "#fff" : "rgba(255,255,255,0.2)" }}
+                        >
+                            {values[i].toFixed(1)}
+                        </text>
+                    </g>
+                );
+            })}
+        </svg>
+    );
 }
 
 export default function ReviewSidebar({ article }: ReviewSidebarProps) {
@@ -41,177 +131,198 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
 
     if (!review_data) return null;
 
-    // Transform ratings for Radar Chart
-    const ratings = review_data.ratings || {};
-    const chartData = [
-        { subject: 'Gameplay', A: ratings.gameplay || 0, fullMark: 10 },
-        { subject: 'Visuals', A: ratings.visuals || 0, fullMark: 10 },
-        { subject: 'Audio', A: ratings.audio || 0, fullMark: 10 },
-        { subject: 'Narrative', A: ratings.narrative || 0, fullMark: 10 },
-        { subject: 'Replayability', A: ratings.replayability || 0, fullMark: 10 },
-    ].map(i => ({ ...i, A: i.A || 0 })); // Ensure A is never undefined for chart
+    const ratings = (review_data.ratings || {}) as Record<string, number>;
+    const score = Number(review_score || 0);
+    const tier = TIERS.find((t) => score >= t.min) ?? TIERS[TIERS.length - 1];
+    const TierIcon = tier.icon;
+    const verdict = review_data.cta ? VERDICTS[review_data.cta] : undefined;
 
-    const getScoreDetails = (score: number) => {
-        if (score === 10) return { label: 'Masterpiece', color: 'text-cyan-400', gradient: 'from-cyan-400 to-blue-600', icon: Trophy };
-        if (score >= 9) return { label: 'Amazing', color: 'text-emerald-400', gradient: 'from-emerald-400 to-green-600', icon: Medal };
-        if (score >= 8) return { label: 'Great', color: 'text-green-400', gradient: 'from-green-400 to-emerald-600', icon: ThumbsUp };
-        if (score >= 7) return { label: 'Good', color: 'text-yellow-400', gradient: 'from-yellow-400 to-orange-500', icon: Zap };
-        if (score >= 5) return { label: 'Average', color: 'text-orange-400', gradient: 'from-orange-400 to-red-500', icon: Meh };
-        return { label: 'Poor', color: 'text-red-500', gradient: 'from-red-500 to-pink-600', icon: ThumbsDown };
-    };
-
-    const scoreDetails = getScoreDetails(Number(review_score || 0));
-    const ScoreIcon = scoreDetails.icon;
+    // Blank entries are why a bullet with no sentence after it was appearing
+    // under The Bad — an empty row in the admin repeater renders as a dot.
+    const pros = (review_data.pros ?? []).filter((p) => p?.trim());
+    const cons = (review_data.cons ?? []).filter((c) => c?.trim());
 
     const formattedDate = review_data.release_date
-        ? new Date(review_data.release_date).toLocaleDateString('en-GB')
-        : 'TBA';
+        ? new Date(review_data.release_date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+        : "TBA";
 
-    // Helper to ensure valid URL
     const getStoreUrl = (url: string) => {
-        if (!url) return '#';
-        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        if (!url) return "#";
+        if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
         return `https://${url}`;
     };
 
-    const getVerdictBadge = (cta: string) => {
-        switch (cta) {
-            case 'must_play':
-                return <span className="px-3 py-1 rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 text-xs font-black uppercase tracking-wider animate-pulse">Must Play</span>;
-            case 'recommended':
-                return <span className="px-3 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 text-xs font-black uppercase tracking-wider">Recommended</span>;
-            case 'wait_sale':
-                return <span className="px-3 py-1 rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 text-xs font-black uppercase tracking-wider">Wait for Sale</span>;
-            case 'skip':
-                return <span className="px-3 py-1 rounded bg-red-500/20 text-red-400 border border-red-500/50 text-xs font-black uppercase tracking-wider">Skip</span>;
-            default:
-                return null;
-        }
-    };
-
     return (
-        <div className="space-y-6">
-            {/* Main Review Card - Wide Layout */}
-            <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] overflow-hidden shadow-2xl relative group">
-                {/* Glow Effect */}
-                <div className="absolute -inset-1 bg-gradient-to-b from-[var(--accent)]/10 to-transparent opacity-20 blur-xl px-1" />
+        <div className="space-y-5">
+            <div
+                className="relative overflow-hidden rounded-[var(--radius-panel)] border"
+                style={{
+                    background: "var(--surface-1)",
+                    borderColor: `color-mix(in srgb, ${tier.color} 28%, transparent)`,
+                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 20px 50px -26px ${tier.color}`,
+                }}
+            >
+                {/* The verdict's own colour along the top edge — the card is
+                    about one number, so the frame says which way it went before
+                    a word is read. */}
+                <span
+                    aria-hidden
+                    className="absolute inset-x-0 top-0 h-[2px] z-10"
+                    style={{ background: `linear-gradient(90deg, ${tier.color}, color-mix(in srgb, ${tier.color} 18%, transparent) 62%, transparent)` }}
+                />
 
-                <div className="relative md:grid md:grid-cols-12 bg-[var(--surface-1)] backdrop-blur-sm">
-
-                    {/* LEFT COLUMN: Radar & Visuals (5/12) */}
-                    <div className="md:col-span-5 bg-black/20 border-b md:border-b-0 md:border-r border-[var(--line)] flex flex-col">
-                        {/* Radar Chart Section */}
-                        <div className="p-6 h-72 relative flex-1">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                                    <PolarGrid stroke="var(--line)" strokeOpacity={0.5} />
-                                    <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--text-secondary)', fontSize: 11, fontWeight: 'bold' }} />
-                                    <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
-                                    <Radar
-                                        name="Score"
-                                        dataKey="A"
-                                        stroke="var(--accent)"
-                                        strokeWidth={3}
-                                        fill="var(--accent)"
-                                        fillOpacity={0.2}
-                                    />
-                                </RadarChart>
-                            </ResponsiveContainer>
+                <div className="md:grid md:grid-cols-12">
+                    {/* ── the scores ── */}
+                    <div className="md:col-span-5 flex flex-col border-b md:border-b-0 md:border-r border-white/[0.07]" style={{ background: "var(--surface-2)" }}>
+                        <div className="p-5 pb-2 flex-1">
+                            <ScoreRadar ratings={ratings} tint={tier.color} />
                         </div>
 
-                        {/* Score Footer in Left Col */}
-                        <div className="p-6 border-t border-[var(--line)] bg-gradient-to-br from-black/40 to-transparent flex items-center justify-between">
-                            <div className="text-left">
-                                <span className="block text-xs font-bold text-white/35 uppercase tracking-wider mb-1">Total Score</span>
-                                <div className={`text-4xl font-black ${scoreDetails.color} flex items-center gap-3`}>
-                                    {Number(review_score || 0).toFixed(1)}
-                                    <div className={`w-12 h-12 rounded-[var(--radius-card)] flex items-center justify-center bg-gradient-to-br ${scoreDetails.gradient} text-white shadow-lg`}>
-                                        <ScoreIcon className="w-6 h-6" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <span className={`block text-sm font-bold uppercase tracking-wider ${scoreDetails.color}`}>{scoreDetails.label}</span>
-                                {review_data.cta && getVerdictBadge(review_data.cta)}
-                            </div>
+                        {/* The total, housed. It used to be a 4xl numeral beside
+                            a gradient tile, floating in a gradient of its own —
+                            two decorations competing over the one figure the
+                            whole card exists to deliver. */}
+                        <div className="flex items-center gap-4 p-5 border-t border-white/[0.07]">
+                            <span
+                                className="shrink-0 w-12 h-12 rounded-[11px] flex items-center justify-center"
+                                style={{ background: `color-mix(in srgb, ${tier.color} 16%, transparent)`, color: tier.color }}
+                            >
+                                <TierIcon className="w-6 h-6" strokeWidth={1.6} />
+                            </span>
+
+                            <span className="min-w-0 flex-1">
+                                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.18em] text-white/35">
+                                    Total score
+                                </span>
+                                <span className="flex items-baseline gap-2 mt-1">
+                                    <span className="font-display text-[34px] font-black tabular-nums leading-none" style={{ color: tier.color }}>
+                                        {score.toFixed(1)}
+                                    </span>
+                                    <span className="font-display text-[12px] font-bold tabular-nums text-white/25">/ 10</span>
+                                </span>
+                                <span className="block mt-1.5 font-display text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: tier.color }}>
+                                    {tier.label}
+                                </span>
+                            </span>
                         </div>
+
+                        {verdict && (
+                            <div className="px-5 pb-5">
+                                <span
+                                    className="flex items-center justify-center h-9 rounded-[8px] font-display text-[10.5px] font-black uppercase tracking-[0.16em]"
+                                    style={{
+                                        background: `color-mix(in srgb, ${verdict.color} 14%, transparent)`,
+                                        color: verdict.color,
+                                        boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${verdict.color} 38%, transparent)`,
+                                    }}
+                                >
+                                    {verdict.label}
+                                </span>
+                            </div>
+                        )}
                     </div>
 
-                    {/* RIGHT COLUMN: info & Verdict (7/12) */}
+                    {/* ── what it is, and the case for and against ── */}
                     <div className="md:col-span-7 flex flex-col">
-
-                        {/* Header Info */}
-                        <div className="p-6 border-b border-[var(--line)]">
-                            <h3 className="text-2xl font-bold text-white leading-tight mb-2">{review_data.game_title}</h3>
-                            <div className="flex flex-wrap gap-4 text-xs font-medium text-white/55">
+                        <div className="p-5 md:p-6 border-b border-white/[0.07]">
+                            <h3 className="font-display text-[22px] md:text-[26px] font-black text-white leading-[1.1] tracking-tight">
+                                {review_data.game_title}
+                            </h3>
+                            <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/35">
                                 {review_data.developer && (
-                                    <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-[var(--accent)]" /> {review_data.developer}</span>
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <Building2 className="w-3.5 h-3.5 text-[var(--accent-ink)]" strokeWidth={1.6} /> {review_data.developer}
+                                    </span>
                                 )}
-                                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-[var(--accent)]" /> {formattedDate}</span>
-                                {review_data.play_time && (
-                                    <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-[var(--accent)]" /> {review_data.play_time}</span>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Platforms & Tested On */}
-                        <div className="px-6 py-4 bg-[var(--surface-2)]/30 border-b border-[var(--line)] flex flex-wrap gap-3 items-center">
-                            <span className="text-xs font-bold text-white/35 uppercase">Available On:</span>
-                            {review_data.platforms && review_data.platforms.map(p => (
-                                <span key={p} className="px-2 py-0.5 rounded bg-[var(--surface-1)] border border-[var(--line)] text-xs font-bold text-white flex items-center gap-1">
-                                    <Gamepad2 className="w-3 h-3 text-white/55" /> {p}
+                                <span className="inline-flex items-center gap-1.5 tabular-nums">
+                                    <Calendar className="w-3.5 h-3.5 text-[var(--accent-ink)]" strokeWidth={1.6} /> {formattedDate}
                                 </span>
+                                {review_data.play_time && (
+                                    <span className="inline-flex items-center gap-1.5">
+                                        <Clock className="w-3.5 h-3.5 text-[var(--accent-ink)]" strokeWidth={1.6} /> {review_data.play_time}
+                                    </span>
+                                )}
+                            </p>
+                        </div>
+
+                        {(review_data.platforms?.length || review_data.tested_on) && (
+                            <div className="px-5 md:px-6 py-3.5 border-b border-white/[0.07] flex flex-wrap items-center gap-2">
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mr-1">Available on</span>
+
+                                {/* The platform's own mark, in its own colour —
+                                    the same one release cards use. Every chip
+                                    carried the identical grey controller before,
+                                    which made a list of three platforms read as
+                                    three of the same thing. */}
+                                {review_data.platforms?.map((p) => {
+                                    const mark = platformMarks([p])[0];
+
+                                    return (
+                                        <span
+                                            key={p}
+                                            className="inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-[7px] bg-white/[0.04] border border-white/[0.08] font-display text-[10.5px] font-bold text-white"
+                                        >
+                                            {mark && (
+                                                <span style={{ color: platformBrandColor(mark) ?? undefined }}>
+                                                    <PlatformIcon label={mark} className="w-[14px] h-[14px]" />
+                                                </span>
+                                            )}
+                                            {p}
+                                        </span>
+                                    );
+                                })}
+
+                                {review_data.tested_on && (
+                                    <span className="ml-auto font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/30">
+                                        Tested on <span className="text-white/70">{review_data.tested_on}</span>
+                                    </span>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Two columns, one hairline. The tinted green and red
+                            panels behind them were doing the colour's job twice
+                            and muddying the text they sat under. */}
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/[0.07]">
+                            {([
+                                ["The good", pros, "#34d399", ThumbsUp],
+                                ["The bad", cons, "#f87171", ThumbsDown],
+                            ] as const).map(([title, items, color, Icon]) => (
+                                <div key={title} className="p-5 md:p-6">
+                                    <h4 className="flex items-center gap-2 mb-3 font-display text-[10px] font-black uppercase tracking-[0.16em]" style={{ color }}>
+                                        <Icon className="w-4 h-4" strokeWidth={1.8} /> {title}
+                                    </h4>
+                                    {items.length === 0 ? (
+                                        <p className="text-[12px] text-white/25">Nothing worth listing.</p>
+                                    ) : (
+                                        <ul className="space-y-2.5">
+                                            {items.map((item, i) => (
+                                                <li key={i} className="flex items-start gap-2.5 text-[12.5px] text-white/60 leading-snug">
+                                                    <span
+                                                        aria-hidden
+                                                        className="mt-[6px] w-[5px] h-[5px] rounded-full shrink-0"
+                                                        style={{ background: color }}
+                                                    />
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
                             ))}
-                            {review_data.tested_on && (
-                                <>
-                                    <span className="w-px h-4 bg-[var(--line)] mx-1" />
-                                    <span className="text-xs text-white/55">Tested on: <span className="text-white font-bold">{review_data.tested_on}</span></span>
-                                </>
-                            )}
                         </div>
 
-                        {/* Pros & Cons Grid */}
-                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[var(--line)]">
-                            {/* Good */}
-                            <div className="p-5 bg-emerald-950/10">
-                                <h4 className="flex items-center gap-2 font-bold text-emerald-400 mb-3 text-xs uppercase tracking-wider">
-                                    <ThumbsUp className="w-4 h-4" /> The Good
-                                </h4>
-                                <ul className="space-y-2">
-                                    {review_data.pros?.map((item, i) => (
-                                        <li key={i} className="flex items-start gap-2 text-xs text-emerald-100/80 leading-relaxed">
-                                            <span className="text-emerald-500 mt-1">●</span> {item}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-
-                            {/* Bad */}
-                            <div className="p-5 bg-red-950/10">
-                                <h4 className="flex items-center gap-2 font-bold text-red-400 mb-3 text-xs uppercase tracking-wider">
-                                    <ThumbsDown className="w-4 h-4" /> The Bad
-                                </h4>
-                                <ul className="space-y-2">
-                                    {review_data.cons?.map((item, i) => (
-                                        <li key={i} className="flex items-start gap-2 text-xs text-red-100/80 leading-relaxed">
-                                            <span className="text-red-500 mt-1">●</span> {item}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-
-                        {/* CTA Footer */}
                         {review_data.store_link && (
-                            <div className="p-4 border-t border-[var(--line)] bg-[var(--surface-2)]/50">
+                            <div className="p-4 md:p-5 border-t border-white/[0.07]">
                                 <a
                                     href={getStoreUrl(review_data.store_link)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-2 w-full py-3 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold uppercase tracking-wider rounded-[var(--radius-card)] transition-all shadow-lg hover:shadow-[var(--accent)]/40 hover:-translate-y-0.5"
+                                    className="flex items-center justify-center gap-2 w-full h-11 rounded-[9px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[11px] font-black uppercase tracking-[0.12em] transition-[filter]"
                                 >
                                     <ShoppingCart className="w-4 h-4" />
-                                    {review_data.price ? `Buy Now - ${review_data.price}` : 'Buy Now'}
+                                    {review_data.price ? `Buy now — ${review_data.price}` : "Buy now"}
                                 </a>
                             </div>
                         )}
@@ -219,16 +330,18 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                 </div>
             </div>
 
-            {/* Trailer Embed */}
             {review_data.trailer_url && (
-                <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] p-4 shadow-lg">
-                    <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                        <div className="w-1 h-4 bg-red-500 rounded-full" />
-                        Video Review / Trailer
-                    </h4>
-                    <div className="relative aspect-video rounded-[var(--radius-card)] overflow-hidden bg-black">
+                <div
+                    className="rounded-[var(--radius-panel)] border overflow-hidden"
+                    style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
+                >
+                    <header className="flex items-center gap-2.5 px-5 py-3.5 border-b border-white/[0.07]">
+                        <Play className="w-4 h-4 text-[var(--accent-ink)]" strokeWidth={1.8} />
+                        <h4 className="font-display text-[11px] font-black uppercase tracking-[0.15em] text-white">Video review</h4>
+                    </header>
+                    <div className="relative aspect-video bg-black">
                         <iframe
-                            src={review_data.trailer_url.replace('watch?v=', 'embed/')}
+                            src={review_data.trailer_url.replace("watch?v=", "embed/")}
                             title="Trailer"
                             className="absolute inset-0 w-full h-full"
                             allowFullScreen
