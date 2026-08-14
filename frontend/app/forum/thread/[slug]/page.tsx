@@ -685,9 +685,9 @@ export default function ThreadPage() {
                         <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden">
                             <div className="flex flex-col md:flex-row">
                                 {/* Author Sidebar */}
-                                <div className="md:w-48 bg-white/[0.02] p-6 flex flex-col items-center text-center border-b md:border-b-0 md:border-r border-white/[0.07]">
+                                <div className="md:w-48 bg-white/[0.02] p-3 md:p-6 flex flex-row md:flex-col items-center gap-3 md:gap-0 text-left md:text-center border-b md:border-b-0 md:border-r border-white/[0.07]">
                                     <Link href={`/profile/${thread.author?.username}`} className="group">
-                                        <div className={`w-20 h-20 rounded-full overflow-hidden bg-[var(--surface-1)] mb-3 ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07] group-hover:ring-[var(--accent)]'}`}>
+                                        <div className={`w-10 h-10 md:w-20 md:h-20 rounded-full overflow-hidden bg-[var(--surface-1)] mb-0 md:mb-3 ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07] group-hover:ring-[var(--accent)]'}`}>
                                             {threadAuthorAvatar ? (
                                                 <Image src={threadAuthorAvatar} alt={thread.author?.username || ""} width={80} height={80} className="object-cover w-full h-full" />
                                             ) : (
@@ -697,9 +697,10 @@ export default function ThreadPage() {
                                             )}
                                         </div>
                                     </Link>
+                                    <div className="min-w-0 flex-1 md:flex-none md:contents">
                                     <Link
                                         href={`/profile/${thread.author?.username}`}
-                                        className={`font-bold text-sm mb-1 hover:underline ${threadAuthorStaff ? 'text-[var(--accent)]' : !thread.author?.post_color ? 'text-white' : ''}`}
+                                        className={`block font-bold text-sm mb-0 md:mb-1 hover:underline ${threadAuthorStaff ? 'text-[var(--accent)]' : !thread.author?.post_color ? 'text-white' : ''}`}
                                         style={!threadAuthorStaff && thread.author?.post_color ? { color: thread.author.post_color } : undefined}
                                     >
                                         {thread.author?.username || 'Unknown'}
@@ -710,7 +711,7 @@ export default function ThreadPage() {
                                         const role = getDisplayRole(thread.author);
                                         if (role) {
                                             return (
-                                                <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-2">
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mr-1.5 md:mr-0 mb-0 md:mb-2">
                                                     <Shield className="w-3 h-3" /> {role}
                                                 </span>
                                             );
@@ -720,23 +721,28 @@ export default function ThreadPage() {
 
                                     {thread.author?.rank && (
                                         <span
-                                            className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full mb-2"
+                                            className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded-full mb-0 md:mb-2"
                                             style={{ backgroundColor: `${thread.author.rank.color}20`, color: thread.author.rank.color }}
                                         >
                                             {thread.author.rank.name}
                                         </span>
                                     )}
 
-                                    <div className="text-xs text-white/35 mt-2 flex flex-col items-center gap-1">
+                                    {/* Post count and join date are the rail's
+                                        small print; on a phone they are two
+                                        lines of stranger's paperwork above the
+                                        thing you opened the thread to read. */}
+                                    <div className="hidden md:flex text-xs text-white/35 mt-2 flex-col items-center gap-1">
                                         <span>{thread.author?.posts_count || 0} posts</span>
                                         {thread.author?.created_at && (
                                             <span>Joined {format(new Date(thread.author.created_at), 'MMM yyyy')}</span>
                                         )}
                                     </div>
+                                    </div>
                                 </div>
 
                                 {/* Post Content */}
-                                <div className="flex-1 p-6">
+                                <div className="flex-1 p-4 md:p-6">
                                     {editingThread ? (
                                         <div>
                                             <RichTextEditor content={threadBodyDraft} onChange={setThreadBodyDraft} minHeight="180px" />

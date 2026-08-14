@@ -9,6 +9,7 @@ import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
+import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
@@ -112,9 +113,10 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
     return (
         <article className="min-h-screen pb-20">
+            <ReadingProgress />
 
             {/* ── MAIN LAYOUT: Left social bar + content + right sidebar ── */}
-            <div className="w-full container-page pt-4 pb-8 flex gap-8">
+            <div className="w-full container-page pt-3 md:pt-4 pb-8 flex gap-8">
 
                 {/* Left Sticky Bar (back) */}
                 <aside className="hidden lg:flex flex-col gap-6 sticky top-[140px] shrink-0 h-[max-content]">
@@ -129,8 +131,9 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                 {/* Content Wrapper */}
                 <div className="flex-1 flex flex-col min-w-0">
 
-                    {/* Breadcrumbs */}
-                    <div className="mb-6 mt-1">
+                    {/* Breadcrumbs — the phone's top bar already carries
+                        the section and the way back. */}
+                    <div className="hidden md:block mb-6 mt-1">
                         <Breadcrumbs
                             items={[
                                 { label: 'News', href: '/news' },
@@ -145,7 +148,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                         <div className="flex-1 min-w-0 flex flex-col">
 
                             {/* Hero Banner */}
-                            <div className="relative w-full rounded-[var(--radius-panel)] flex flex-col overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] h-[580px]">
+                            <div className="relative w-full rounded-[var(--radius-panel)] flex flex-col overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] h-[390px] md:h-[580px]">
                                 <div className="relative w-full flex-1 flex flex-col justify-end min-h-0">
 
                                     {/* Background layer — hidden when video is playing */}
@@ -182,16 +185,16 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
 
 
                                     {/* Left content panel — slides down and fades out when playing */}
-                                    <div className={`relative z-10 flex flex-col p-8 md:p-12 w-full md:w-[75%] transition-all duration-500 ${isVideoPlaying ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
+                                    <div className={`relative z-10 flex flex-col p-5 md:p-12 w-full md:w-[75%] transition-all duration-500 ${isVideoPlaying ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
                                         {/* Category badge */}
-                                        <div className="bg-[var(--accent)] text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded inline-flex w-max mb-5 leading-none shadow-sm shadow-[var(--accent)]/20">
+                                        <div className="bg-[var(--accent)] text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded inline-flex w-max mb-3 md:mb-5 leading-none shadow-sm shadow-[var(--accent)]/20">
                                             {decodeHtml(article.category?.name) || "News"}
                                         </div>
 
                                         {/* Title with 4px orange leftline */}
-                                        <div className="flex gap-4 mb-4 items-start">
+                                        <div className="flex gap-3 md:gap-4 mb-3 md:mb-4 items-start">
                                             <div className="w-[4px] bg-[var(--accent)] shrink-0 mt-2 self-stretch rounded-sm" />
-                                            <h1 className="font-display text-[32px] md:text-[48px] font-bold text-white leading-[1.1] drop-shadow-lg">
+                                            <h1 className="font-display text-[25px] md:text-[48px] font-bold text-white leading-[1.12] drop-shadow-lg">
                                                 {decodeHtml(article.title)}
                                             </h1>
                                         </div>
@@ -248,9 +251,9 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 </div>
 
                                 {/* Info bar beneath hero */}
-                                <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-8 md:px-12 py-2.5 gap-3">
+                                <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-4 md:px-12 py-2.5 gap-2.5 md:gap-3">
                                     <div className="flex items-center flex-wrap gap-3">
-                                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">CATEGORY:</span>
+                                        <span className="hidden md:inline text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">CATEGORY:</span>
                                         <span className="inline-flex items-center h-[26px] px-3 rounded-full border border-white/10 text-white text-[10.5px] font-bold uppercase tracking-wider">
                                             {decodeHtml(article.category?.name) || "News"}
                                         </span>
@@ -260,7 +263,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         a reader is looking for moved depending on
                                         which kind of article they had opened. */}
                                     <div className="flex items-center gap-2.5 flex-nowrap">
-                                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
+                                        <span className="hidden md:inline text-white/35 text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
                                         <SocialShare
                                             url={`/news/${article.slug}`}
                                             title={decodeHtml(article.title)}
@@ -273,15 +276,15 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                             </div>
 
                             {/* Article prose */}
-                            <div className="flex flex-col lg:flex-row gap-12 mt-10">
+                            <div className="flex flex-col lg:flex-row gap-12 mt-6 md:mt-10">
 
                                 {/* Article Prose */}
                                 <div className="flex-1 min-w-0">
 
                                     {/* Intro quote */}
                                     {article.excerpt && (
-                                        <div className="bg-[var(--surface-1)] border border-white/[0.07] border-l-[4px] border-l-[var(--accent)] p-6 md:p-8 rounded-r-[16px] rounded-l-[4px] mb-10 shadow-lg">
-                                            <p className="text-[22px] md:text-[26px] font-display italic font-medium text-white leading-snug">
+                                        <div className="bg-[var(--surface-1)] border border-white/[0.07] border-l-[4px] border-l-[var(--accent)] p-4 md:p-8 rounded-r-[16px] rounded-l-[4px] mb-6 md:mb-10 shadow-lg">
+                                            <p className="text-[17px] md:text-[26px] font-display italic font-medium text-white leading-snug">
                                                 &ldquo;{decodeHtml(article.excerpt)}&rdquo;
                                             </p>
                                         </div>
@@ -293,6 +296,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         get no ad at all — a news item of four
                                         paragraphs with a unit halfway down is an
                                         ad with an article around it. */}
+                                    <div id="article-body">
                                     <div
                                         className={ARTICLE_PROSE}
                                         dangerouslySetInnerHTML={{ __html: bodyBefore }}
@@ -306,6 +310,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                             />
                                         </>
                                     )}
+                                    </div>
 
                                     {/* Mid-Article Ad */}
                                     <div className="my-12 xl:hidden">

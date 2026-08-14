@@ -18,6 +18,7 @@ import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
+import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import ArticleFooter from "@/components/ui/ArticleFooter";
 import SocialShare from "@/components/share/SocialShare";
@@ -101,6 +102,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
 
     return (
         <article className="min-h-screen pb-20">
+            <ReadingProgress />
             <Script
                 id="review-schema"
                 type="application/ld+json"
@@ -277,6 +279,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         ad with an article around it. */}
                                     {processedContent ? (
                                         <>
+                                            <div id="article-body">
                                             <div
                                                 className={ARTICLE_PROSE}
                                                 dangerouslySetInnerHTML={{ __html: bodyBefore }}
@@ -290,6 +293,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                                     />
                                                 </>
                                             )}
+                                            </div>
                                         </>
                                     ) : (
                                         <div className="py-20 text-center text-white/45">

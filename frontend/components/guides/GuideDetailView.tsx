@@ -9,6 +9,7 @@ import Script from "next/script";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
+import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
@@ -112,6 +113,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
     return (
         <>
         <article className="min-h-screen pb-20">
+            <ReadingProgress />
             <Script
                 id="guide-schema"
                 type="application/ld+json"
@@ -278,6 +280,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                         get no ad at all — a news item of four
                                         paragraphs with a unit halfway down is an
                                         ad with an article around it. */}
+                                    <div id="article-body">
                                     <div
                                         className={ARTICLE_PROSE}
                                         dangerouslySetInnerHTML={{ __html: bodyBefore }}
@@ -291,6 +294,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                             />
                                         </>
                                     )}
+                                    </div>
 
                                     {/* Mid-Article Ad */}
                                     <div className="my-12 xl:hidden">
