@@ -7,8 +7,9 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 import { DisplayAd } from "@/components/ads/AdSense";
+import Sheet from "@/components/ui/Sheet";
 import {
-    Search, Star, Shuffle, SlidersHorizontal, Flame, Heart, Clock,
+    Search, Star, Shuffle, SlidersHorizontal, ArrowDownWideNarrow, Check, Flame, Heart, Clock,
     ChevronDown, Gamepad2, Loader2, X, CalendarDays,
 } from "lucide-react";
 
@@ -199,6 +200,7 @@ export default function GameDatabaseHub({
     const [page, setPage] = useState(1);
     const [rows, setRows] = useState<Game[]>([]);
     const [railOpen, setRailOpen] = useState(false);
+    const [sortOpen, setSortOpen] = useState(false);
     // One group open at a time — the rail is a list of settings, not a wall.
     const [openGroup, setOpenGroup] = useState<string | null>(null);
     const toggleGroup = (name: string) => setOpenGroup((g) => (g === name ? null : name));
@@ -284,6 +286,91 @@ export default function GameDatabaseHub({
     };
 
     const active = Boolean(search || genre || platform || era || status !== "all");
+    // How many are on, for the badge on the phone's Filters button. The sheet
+    // hides the controls, so without a count the reader cannot tell a filtered
+    // grid from an empty catalogue.
+    const activeCount = [genre, platform, era, status !== "all" ? status : ""].filter(Boolean).length;
+
+    // One set of filter controls, rendered either in the desktop rail or
+    // in the phone's sheet. Declared as an element rather than a component:
+    // a component defined during render is a new type on every render and
+    // React throws the whole subtree away each time — which here would shut
+    // whichever group the reader had just opened.
+    const filterGroups = (
+        <>
+    
+                <FilterGroup title="Genre" open={openGroup === "Genre"} onToggle={() => toggleGroup("Genre")} icon={<Flame className="w-3 h-3" />} value={genre || "All"}>
+                    <div className="space-y-0.5">
+                        <Choice label="All" count={stats?.games} active={!genre} onClick={() => change(() => setGenre(""))} />
+                        {facets?.genres.map((g) => (
+                            <Choice
+                                key={g.name}
+                                label={g.name}
+                                count={g.count}
+                                active={genre === g.name}
+                                onClick={() => change(() => setGenre(genre === g.name ? "" : g.name))}
+                            />
+                        ))}
+                    </div>
+                </FilterGroup>
+    
+                <FilterGroup title="Platform" open={openGroup === "Platform"} onToggle={() => toggleGroup("Platform")} icon={<Gamepad2 className="w-3 h-3" />} value={platform || "All"}>
+                    <div className="space-y-0.5">
+                        <Choice label="All" count={stats?.games} active={!platform} onClick={() => change(() => setPlatform(""))} />
+                        {facets?.platforms.map((p) => (
+                            <Choice
+                                key={p.key}
+                                label={p.label}
+                                count={p.count}
+                                active={platform === p.label}
+                                onClick={() => change(() => setPlatform(platform === p.label ? "" : p.label))}
+                            />
+                        ))}
+                    </div>
+                </FilterGroup>
+    
+                <FilterGroup
+                    title="Era"
+                    open={openGroup === "Era"}
+                    onToggle={() => toggleGroup("Era")}
+                    icon={<Clock className="w-3 h-3" />}
+                    value={facets?.eras.find((e) => e.key === era)?.label ?? "All time"}
+                >
+                    <div className="space-y-0.5">
+                        <Choice label="All time" count={stats?.games} active={!era} onClick={() => change(() => setEra(""))} />
+                        {facets?.eras.map((e) => (
+                            <Choice
+                                key={e.key}
+                                label={e.label}
+                                count={e.count}
+                                active={era === e.key}
+                                onClick={() => change(() => setEra(era === e.key ? "" : e.key))}
+                            />
+                        ))}
+                    </div>
+                </FilterGroup>
+    
+                <FilterGroup
+                    title="Release status"
+                    open={openGroup === "Release status"}
+                    onToggle={() => toggleGroup("Release status")}
+                    icon={<CalendarDays className="w-3 h-3" />}
+                    value={facets?.status.find((s) => s.key === status)?.label ?? "All"}
+                >
+                    <div className="space-y-0.5">
+                        {facets?.status.map((s) => (
+                            <Choice
+                                key={s.key}
+                                label={s.label}
+                                count={s.count}
+                                active={status === s.key}
+                                onClick={() => change(() => setStatus(s.key))}
+                            />
+                        ))}
+                    </div>
+                </FilterGroup>
+        </>
+    );
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
@@ -399,7 +486,8 @@ export default function GameDatabaseHub({
 
             <div className="container-page pb-12 grid grid-cols-1 xl:grid-cols-[248px_1fr_296px] gap-5 items-start">
                 {/* ── filters ── */}
-                <aside className={`${railOpen ? "block" : "hidden"} xl:block rounded-[14px] border border-white/[0.07] bg-white/[0.02] p-4 xl:sticky xl:top-[96px] xl:max-h-[calc(100vh-112px)] xl:overflow-y-auto`}>
+                {/* ── filters: the rail on a desktop, a sheet on a phone ── */}
+                <aside className="hidden xl:block rounded-[14px] border border-white/[0.07] bg-white/[0.02] p-4 xl:sticky xl:top-[96px] xl:max-h-[calc(100vh-112px)] xl:overflow-y-auto">
                     <div className="flex items-center justify-between mb-3">
                         <p className="flex items-center gap-2 font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">
                             <SlidersHorizontal className="w-3.5 h-3.5 text-[var(--accent)]" /> Filters
@@ -411,76 +499,7 @@ export default function GameDatabaseHub({
                         )}
                     </div>
 
-                    <FilterGroup title="Genre" open={openGroup === "Genre"} onToggle={() => toggleGroup("Genre")} icon={<Flame className="w-3 h-3" />} value={genre || "All"}>
-                        <div className="space-y-0.5">
-                            <Choice label="All" count={stats?.games} active={!genre} onClick={() => change(() => setGenre(""))} />
-                            {facets?.genres.map((g) => (
-                                <Choice
-                                    key={g.name}
-                                    label={g.name}
-                                    count={g.count}
-                                    active={genre === g.name}
-                                    onClick={() => change(() => setGenre(genre === g.name ? "" : g.name))}
-                                />
-                            ))}
-                        </div>
-                    </FilterGroup>
-
-                    <FilterGroup title="Platform" open={openGroup === "Platform"} onToggle={() => toggleGroup("Platform")} icon={<Gamepad2 className="w-3 h-3" />} value={platform || "All"}>
-                        <div className="space-y-0.5">
-                            <Choice label="All" count={stats?.games} active={!platform} onClick={() => change(() => setPlatform(""))} />
-                            {facets?.platforms.map((p) => (
-                                <Choice
-                                    key={p.key}
-                                    label={p.label}
-                                    count={p.count}
-                                    active={platform === p.label}
-                                    onClick={() => change(() => setPlatform(platform === p.label ? "" : p.label))}
-                                />
-                            ))}
-                        </div>
-                    </FilterGroup>
-
-                    <FilterGroup
-                        title="Era"
-                        open={openGroup === "Era"}
-                        onToggle={() => toggleGroup("Era")}
-                        icon={<Clock className="w-3 h-3" />}
-                        value={facets?.eras.find((e) => e.key === era)?.label ?? "All time"}
-                    >
-                        <div className="space-y-0.5">
-                            <Choice label="All time" count={stats?.games} active={!era} onClick={() => change(() => setEra(""))} />
-                            {facets?.eras.map((e) => (
-                                <Choice
-                                    key={e.key}
-                                    label={e.label}
-                                    count={e.count}
-                                    active={era === e.key}
-                                    onClick={() => change(() => setEra(era === e.key ? "" : e.key))}
-                                />
-                            ))}
-                        </div>
-                    </FilterGroup>
-
-                    <FilterGroup
-                        title="Release status"
-                        open={openGroup === "Release status"}
-                        onToggle={() => toggleGroup("Release status")}
-                        icon={<CalendarDays className="w-3 h-3" />}
-                        value={facets?.status.find((s) => s.key === status)?.label ?? "All"}
-                    >
-                        <div className="space-y-0.5">
-                            {facets?.status.map((s) => (
-                                <Choice
-                                    key={s.key}
-                                    label={s.label}
-                                    count={s.count}
-                                    active={status === s.key}
-                                    onClick={() => change(() => setStatus(s.key))}
-                                />
-                            ))}
-                        </div>
-                    </FilterGroup>
+                    {filterGroups}
                 </aside>
 
                 {/* ── the grid ── */}
@@ -499,15 +518,33 @@ export default function GameDatabaseHub({
 
                         <div className="flex items-center gap-2 shrink-0">
                             <button
-                                onClick={() => setRailOpen((v) => !v)}
-                                className="xl:hidden inline-flex items-center gap-1.5 h-8 px-3 rounded-[7px] bg-white/[0.05] font-display text-[10px] font-black uppercase tracking-[0.08em] text-white/60"
+                                onClick={() => setRailOpen(true)}
+                                className="xl:hidden inline-flex items-center gap-1.5 h-10 px-3.5 rounded-[8px] bg-white/[0.05] border border-white/[0.08] font-display text-[10.5px] font-black uppercase tracking-[0.08em] text-white/70 active:bg-white/[0.1] transition-colors"
                             >
-                                <SlidersHorizontal className="w-3.5 h-3.5" /> Filters
+                                <SlidersHorizontal className="w-3.5 h-3.5" />
+                                Filters
+                                {activeCount > 0 && (
+                                    <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--accent)] text-[9.5px] tabular-nums text-white">
+                                        {activeCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Sort: a sheet on a phone, the native control on
+                                a desktop where it is a two-pixel dropdown next
+                                to a mouse rather than a wheel over the page. */}
+                            <button
+                                onClick={() => setSortOpen(true)}
+                                className="md:hidden inline-flex items-center gap-1.5 h-10 px-3.5 rounded-[8px] bg-white/[0.05] border border-white/[0.08] font-display text-[10.5px] font-black uppercase tracking-[0.08em] text-white/70 active:bg-white/[0.1] transition-colors"
+                            >
+                                <ArrowDownWideNarrow className="w-3.5 h-3.5" />
+                                {SORTS.find((s) => s.value === sort)?.label ?? "Sort"}
                             </button>
                             <select
                                 value={sort}
                                 onChange={(e) => change(() => setSort(e.target.value))}
-                                className="h-8 px-2.5 rounded-[7px] bg-white/[0.05] border border-white/[0.08] text-[11.5px] text-white/70 outline-none"
+                                aria-label="Sort games"
+                                className="hidden md:block h-8 px-2.5 rounded-[7px] bg-white/[0.05] border border-white/[0.08] text-[11.5px] text-white/70 outline-none"
                             >
                                 {SORTS.map((s) => (
                                     <option key={s.value} value={s.value} className="bg-[var(--surface-0)]">{s.label}</option>
@@ -594,6 +631,53 @@ export default function GameDatabaseHub({
                     <DisplayAd />
                 </aside>
             </div>
+
+            {/* ── the phone's two questions ── */}
+            <Sheet
+                open={railOpen}
+                onClose={() => setRailOpen(false)}
+                title="Filters"
+                footer={
+                    <div className="flex items-center gap-2">
+                        {activeCount > 0 && (
+                            <button
+                                onClick={() => { reset(); setRailOpen(false); }}
+                                className="h-12 px-4 rounded-[10px] border border-white/[0.1] bg-white/[0.04] font-display text-[11px] font-black uppercase tracking-[0.1em] text-white/60 active:bg-white/[0.08] transition-colors"
+                            >
+                                Clear
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setRailOpen(false)}
+                            className="flex-1 h-12 rounded-[10px] bg-[var(--accent)] font-display text-[11px] font-black uppercase tracking-[0.1em] text-white active:brightness-110 transition-[filter]"
+                        >
+                            {typeof data?.count === "number" ? `Show ${data.count.toLocaleString()} games` : "Show games"}
+                        </button>
+                    </div>
+                }
+            >
+                {filterGroups}
+            </Sheet>
+
+            <Sheet open={sortOpen} onClose={() => setSortOpen(false)} title="Sort by">
+                <div className="pb-2">
+                    {SORTS.map((s) => {
+                        const on = sort === s.value;
+                        return (
+                            <button
+                                key={s.value}
+                                onClick={() => { change(() => setSort(s.value)); setSortOpen(false); }}
+                                className={`w-full flex items-center justify-between gap-3 h-13 py-3.5 px-1 border-b border-white/[0.05] last:border-0 text-left transition-colors ${
+                                    on ? "text-[var(--accent)]" : "text-white/70 active:text-white"
+                                }`}
+                            >
+                                <span className="font-display text-[13px] font-bold">{s.label}</span>
+                                {on && <Check className="w-4 h-4 shrink-0" />}
+                            </button>
+                        );
+                    })}
+                </div>
+            </Sheet>
 
         </main>
     );

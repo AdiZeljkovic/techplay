@@ -162,7 +162,7 @@ function ReleaseActions({
                 onClick={() => act("wishlist")}
                 disabled={busy !== null || game.wishlisted}
                 title={game.wishlisted ? "Already on your wishlist" : "Add to wishlist"}
-                className={`inline-flex items-center gap-1.5 h-8 rounded-[7px] font-display text-[9px] font-black uppercase tracking-[0.1em] transition-colors ${compactMode ? "w-8 justify-center" : "px-3"} ${
+                className={`inline-flex items-center justify-center gap-1.5 h-11 sm:h-8 rounded-[7px] font-display text-[9.5px] font-black uppercase tracking-[0.1em] transition-colors ${compactMode ? "w-11 sm:w-8" : "w-11 sm:w-auto sm:px-3"} ${
                     game.wishlisted
                         ? "bg-[var(--accent)]/15 border border-[var(--accent)]/40 text-[var(--accent)]"
                         : "bg-[var(--accent)] hover:brightness-110 text-white"
@@ -171,14 +171,16 @@ function ReleaseActions({
                 {busy === "wishlist" ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     : game.wishlisted ? <Check className="w-3.5 h-3.5" />
                     : <Heart className="w-3.5 h-3.5" />}
-                {!compactMode && (game.wishlisted ? "Wishlisted" : "Wishlist")}
+                {!compactMode && (
+                    <span className="hidden sm:inline">{game.wishlisted ? "Wishlisted" : "Wishlist"}</span>
+                )}
             </button>
 
             <button
                 onClick={() => act("reminder")}
                 disabled={busy !== null}
                 title={game.reminder ? "We'll tell you when it lands" : "Remind me on release day"}
-                className={`w-8 h-8 rounded-[7px] border flex items-center justify-center transition-colors ${
+                className={`w-11 h-11 sm:w-8 sm:h-8 shrink-0 rounded-[7px] border flex items-center justify-center transition-colors ${
                     game.reminder
                         ? "border-[var(--accent)]/40 bg-[var(--accent)]/12 text-[var(--accent)]"
                         : "border-white/[0.09] bg-white/[0.04] text-white/35 hover:text-white"
@@ -408,9 +410,9 @@ export default function CalendarClient() {
             {/* ── filter bar ── */}
             {/* top-0 put this behind the fixed header, which is 72px tall —
                 the bar was sliding under it on every scroll. */}
-            <div className="sticky top-[72px] z-20 border-b border-white/[0.07] bg-[var(--surface-0)]/92 backdrop-blur-md">
-                <div className="container-page py-3 flex flex-wrap items-center gap-3">
-                    <div className="flex flex-wrap gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
+            <div className="under-bar md:sticky md:top-[72px] z-20 border-b border-white/[0.07] bg-[var(--surface-0)]/92 backdrop-blur-md">
+                <div className="container-page py-2.5 md:py-3 flex flex-nowrap md:flex-wrap items-center gap-2 md:gap-3 overflow-x-auto scrollbar-hide">
+                    <div className="flex shrink-0 gap-1.5 p-1.5 rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)]">
                         {PLATFORM_FILTERS.map((p) => {
                             const active = platform === p.id;
 
@@ -419,7 +421,7 @@ export default function CalendarClient() {
                                     key={p.id}
                                     onClick={() => setPlatform(p.id)}
                                     aria-pressed={active}
-                                    className={`inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[8px] font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
+                                    className={`shrink-0 whitespace-nowrap inline-flex items-center justify-center gap-2 h-11 md:h-10 px-4 rounded-[8px] font-display text-[11px] font-bold uppercase tracking-[0.06em] transition-colors duration-200 ${
                                         active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white hover:bg-white/[0.05]"
                                     }`}
                                 >
@@ -433,7 +435,7 @@ export default function CalendarClient() {
                     </div>
 
                     {(data?.genres.length ?? 0) > 0 && (
-                        <div className="flex flex-wrap gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)]">
+                        <div className="flex shrink-0 gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)]">
                             {data!.genres.slice(0, 4).map((g) => {
                                 const active = genre === g.name;
 
@@ -442,7 +444,7 @@ export default function CalendarClient() {
                                         key={g.name}
                                         onClick={() => setGenre(active ? "" : g.name)}
                                         aria-pressed={active}
-                                        className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
+                                        className={`shrink-0 inline-flex items-center gap-1.5 h-10 md:h-8 px-4 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
                                             active ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white"
                                         }`}
                                     >
@@ -454,14 +456,14 @@ export default function CalendarClient() {
                         </div>
                     )}
 
-                    <span className="flex-1" />
+                    <span className="hidden md:block flex-1" />
 
-                    <div className="flex gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)]">
+                    <div className="flex shrink-0 gap-1 p-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)]">
                         <button
                             onClick={() => setSort(sort === "date" ? "anticipated" : "date")}
                             aria-pressed={sort === "anticipated"}
                             title="Order the days by their biggest release instead of by date"
-                            className={`inline-flex items-center gap-1.5 h-8 px-4 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
+                            className={`shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 h-10 md:h-8 px-4 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors ${
                                 sort === "anticipated" ? "bg-[var(--accent)] text-white" : "text-white/45 hover:text-white"
                             }`}
                         >
@@ -530,10 +532,10 @@ export default function CalendarClient() {
                                     const hidden = day.total - shown.length;
 
                                     return (
-                                        <div key={day.date} className="flex gap-4 p-4">
-                                            <span className="shrink-0 w-[52px] text-center pt-1">
+                                        <div key={day.date} className="flex gap-3 md:gap-4 p-3 md:p-4">
+                                            <span className="shrink-0 w-[42px] md:w-[52px] text-center pt-1">
                                                 <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-white/30">{day.month}</span>
-                                                <span className="block font-display text-[26px] font-black tabular-nums leading-none text-white">{day.day}</span>
+                                                <span className="block font-display text-[22px] md:text-[26px] font-black tabular-nums leading-none text-white">{day.day}</span>
                                                 <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">{day.weekday}</span>
                                                 {day.total > 1 && (
                                                     <span className="block mt-1.5 font-display text-[8.5px] font-bold tabular-nums text-white/20">
@@ -544,8 +546,8 @@ export default function CalendarClient() {
 
                                             <div className="min-w-0 flex-1 space-y-2.5">
                                                 {shown.map((game) => (
-                                                    <div key={game.slug} className="group flex items-center gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors p-2.5">
-                                                        <Link href={`/calendar/${game.slug}`} className="w-[64px] h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05]">
+                                                    <div key={game.slug} className="group flex items-center gap-2.5 sm:gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors p-2.5">
+                                                        <Link href={`/calendar/${game.slug}`} className="w-[56px] h-[36px] sm:w-[64px] sm:h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05]">
                                                             {game.cover_url ? (
                                                                 // eslint-disable-next-line @next/next/no-img-element
                                                                 <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />
@@ -554,7 +556,7 @@ export default function CalendarClient() {
                                                             )}
                                                         </Link>
 
-                                                        <span className="min-w-0 flex-1">
+                                                        <span className="min-w-0 flex-1 basis-0">
                                                             <Link href={`/calendar/${game.slug}`} className="block text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                                                 {game.name}
                                                             </Link>
