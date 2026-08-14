@@ -55,9 +55,10 @@ Svaka provjerena pojedinačno protiv frontenda, bota i backenda.
 
 | Ruta | Šta znači |
 |---|---|
-| `GET /friends/pending`, `/friends/search`, `/friends/activity` | Social Hub uzima sve iz jednog `/social` endpointa; ove su ostale iza |
+| ~~`GET /friends/pending`, `/friends/search`~~ | **uklonjeni** — `ChatController::hub()` ima vlastiti `pendingRequests()` čiji komentar kaže da vraća isto; bili su drugi način da se pita isto pitanje |
+| `GET /friends/activity` | zasebna funkcija, nespojena — ostavljena |
 | `GET /seo/orphan-pages`, `POST /seo/suggest-links`, `GET /seo/articles/{id}/inbound-links` | **SEO alat bez ijednog dugmeta** — tri gotova endpointa, nula UI-ja |
-| `DELETE /journal/moments/{id}` | moment iz dnevnika se **ne može obrisati** iz aplikacije |
+| ~~`DELETE /journal/moments/{id}`~~ | **spojeno** — moment sad ima dugme za brisanje, vidljivo samo vlasniku dnevnika |
 | `GET /last-disc/export` | izvoz bez dugmeta |
 | `GET /me/reading` | istorija čitanja koju ništa ne prikazuje |
 | `GET /support/mine` | "moje podrške" bez ekrana |
@@ -79,11 +80,14 @@ ulaz**. Za svaku je izbor: spojiti je, ili je ukloniti.
 
 Devetnaest ukupno; dva su vrijedna pažnje:
 
-- **`Message.deleted_by_sender` / `deleted_by_receiver`** — kolone postoje,
-  castovane su, skrivene su iz odgovora, i **niko ih ne piše ni ne čita**.
-  `ChatService::deleteMessage()` radi tvrdo `$message->delete()`, pa brisanje
-  poruke briše je **objema stranama**. Namjera je očito bila "obriši samo
-  kod mene" i nikad nije dovršena.
+- **`Message.deleted_by_sender` / `deleted_by_receiver`** — **ispravka ranije
+  tvrdnje.** Prvo sam ovo zapisao kao kvar: brisanje briše objema stranama.
+  Čitanje koda pokazuje suprotno — `ChatController::destroyMessage` je
+  dokumentovan kao **unsend**, i brisanje za sve je namjera, ne greška. Kolone
+  su ostatak ranijeg "obriši samo kod mene" dizajna koji nikad nije isporučen;
+  ništa ih ne piše ni ne čita. Uklonjene su iz `$fillable`, `$casts` i
+  `$hidden` jer su govorile da model ima per-stranu soft delete, a nema.
+  Kolone u tabeli ostaju.
 - **`SeoMeta.is_nofollow`, `schema_data`** — dio obrisanog drugog SEO modela.
 
 Ostalo: `Game.is_editorial`, `Redirect.hits`, `GiveawayEntry.streak_bonus_points`,
@@ -99,14 +103,25 @@ Nema komande koja bi trebala biti zakazana a nije.
 
 ---
 
-## 4. Šta nisam mogao provjeriti
+## 4. Testovi — riješeno
 
-**Testovi ne prolaze u ovom okruženju.** `php artisan test` pada s
-`Allowed memory size of 134217728 bytes exhausted` u `FileinfoMimeTypeGuesser`.
-Podizanje `memory_limit` preko `php -d` ne pomaže jer `artisan test` pokreće
-PHPUnit kao podproces s vlastitim limitom. Rješenje je `memory_limit` u
-`phpunit.xml` ili direktan poziv PHPUnita — nije urađeno, pa **stanje 50
-testova ostaje nepoznato**.
+`php artisan test` je padao s `Allowed memory size of 134217728 bytes
+exhausted` u `FileinfoMimeTypeGuesser`. Podizanje preko `php -d memory_limit`
+ne pomaže jer `artisan test` pokreće PHPUnit kao **podproces s vlastitim
+limitom**; `<ini name="memory_limit" value="1024M"/>` u `phpunit.xml` je
+jedino mjesto koje čitaju oba ulaza.
 
-**React upozorenje o ključu na stranici igre** (iz ranijeg pregleda) i dalje
-nije locirano. Dev-only, produkcija ga ne prikazuje.
+Poslije toga, pušteno fajl po fajl s ograničenjem po fajlu:
+
+**50 od 50 test fajlova prolazi. Nula padova, nula visenja.**
+
+Suite nije visio — bio je samo spor: `SocialHubTest` 58s, `DashboardTest`
+30s, `CollectionRewardsTest` 44s, `ReadingTest` 37s. Ukupno oko 8–10 minuta.
+
+## 5. Šta ostaje neriješeno
+
+**React upozorenje o ključu na `/games/[slug]`.** Locirano do RSC rendera te
+rute i do React-ove `warnForMissingKey`, ali dalje ne ide: serverski log ne
+nosi stack, a `captureOwnerStack()` vraća prazno jer Flight renderer ne vodi
+owner lanac. Provjereni su svi `.map()` u stranici i u svakoj njenoj
+komponenti — svi imaju ključ. Dev-only; produkcijski build ga ne emituje.

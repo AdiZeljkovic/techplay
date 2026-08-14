@@ -40,25 +40,6 @@ class FriendController extends Controller
         return response()->json($friends);
     }
 
-    // List pending requests (received) - return only safe fields
-    public function pendingRequests()
-    {
-        $requests = Friendship::where('receiver_id', Auth::id())
-            ->where('status', 'pending')
-            ->with('sender:id,username,display_name,avatar_url')
-            ->get()
-            ->map(function ($friendship) {
-                return [
-                    'id' => $friendship->sender->id,
-                    'username' => $friendship->sender->username,
-                    'display_name' => $friendship->sender->display_name,
-                    'avatar_url' => $friendship->sender->avatar_url,
-                ];
-            });
-
-        return response()->json($requests);
-    }
-
     // Send a friend request
     public function sendRequest(Request $request)
     {
@@ -207,46 +188,4 @@ class FriendController extends Controller
         return response()->json(['message' => 'Friend request declined']);
     }
 
-    // Search users for adding friends
-    public function search(Request $request)
-    {
-        $query = $request->input('query');
-        if (! $query || strlen($query) < 2) {
-            return response()->json([]);
-        }
-
-        $userId = Auth::id();
-
-        $users = User::where(function ($q) use ($query) {
-            $q->where('username', 'LIKE', "%{$query}%")
-                ->orWhere('display_name', 'LIKE', "%{$query}%");
-        })
-            ->where('id', '!=', $userId)
-            ->take(10)
-            ->get(['id', 'username', 'display_name', 'avatar_url']);
-
-        // Check friendship status for each result
-        $result = $users->map(function ($user) use ($userId) {
-            $friendship = Friendship::where(function ($q) use ($userId, $user) {
-                $q->where('sender_id', $userId)->where('receiver_id', $user->id);
-            })->orWhere(function ($q) use ($userId, $user) {
-                $q->where('sender_id', $user->id)->where('receiver_id', $userId);
-            })->first();
-
-            $status = 'none';
-            if ($friendship) {
-                if ($friendship->status === 'accepted') {
-                    $status = 'friend';
-                } elseif ($friendship->status === 'pending') {
-                    $status = $friendship->sender_id === $userId ? 'sent' : 'received';
-                }
-            }
-
-            $user->friendship_status = $status;
-
-            return $user;
-        });
-
-        return response()->json($result);
-    }
 }

@@ -419,8 +419,32 @@ function SessionComposer({
 
 /* ── one session ──────────────────────────────────────────────────────── */
 
-function MomentTile({ moment }: { moment: JournalPayload["sessions"][number]["moments"][number] }) {
+function MomentTile({
+    moment, canEdit, onRemoved,
+}: {
+    moment: JournalPayload["sessions"][number]["moments"][number];
+    /** Only the journal's owner is offered the remove. */
+    canEdit?: boolean;
+    onRemoved?: () => void;
+}) {
     const [revealed, setRevealed] = useState(false);
+    const [removing, setRemoving] = useState(false);
+
+    const remove = async (e: React.MouseEvent) => {
+        // The tile itself is a link to the clip; the X must not follow it.
+        e.preventDefault();
+        e.stopPropagation();
+        if (!window.confirm("Remove this moment?")) return;
+        setRemoving(true);
+        try {
+            await axios.delete(`/journal/moments/${moment.id}`);
+            toast.success("Moment removed");
+            onRemoved?.();
+        } catch {
+            toast.error("Couldn't remove that moment.");
+            setRemoving(false);
+        }
+    };
     const src = moment.type === "screenshot" && moment.image_url
         ? moment.image_url
         : moment.thumbnail_url;
@@ -446,6 +470,18 @@ function MomentTile({ moment }: { moment: JournalPayload["sessions"][number]["mo
                     Spoiler
                 </span>
             )}
+
+            {canEdit && (
+                <button
+                    onClick={remove}
+                    disabled={removing}
+                    aria-label="Remove this moment"
+                    title="Remove this moment"
+                    className="absolute top-1 right-1 w-[22px] h-[22px] rounded-full bg-black/70 border border-white/20 inline-flex items-center justify-center text-white/70 hover:text-white hover:bg-[var(--accent)] hover:border-transparent transition-colors disabled:opacity-50"
+                >
+                    <X className="w-3 h-3" />
+                </button>
+            )}
         </span>
     );
 
@@ -460,7 +496,7 @@ function MomentTile({ moment }: { moment: JournalPayload["sessions"][number]["mo
     );
 }
 
-function SessionRow({ session, onEdit, onDelete }: { session: PlaySession; onEdit: () => void; onDelete: () => void }) {
+function SessionRow({ session, onEdit, onDelete, onChanged }: { session: PlaySession; onEdit: () => void; onDelete: () => void; onChanged: () => void }) {
     const [revealed, setRevealed] = useState(false);
     const mood = session.mood ? MOODS[session.mood] : null;
     const noteHidden = session.has_spoilers && !revealed;
@@ -542,7 +578,9 @@ function SessionRow({ session, onEdit, onDelete }: { session: PlaySession; onEdi
 
                 {session.moments.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
-                        {session.moments.map((m) => <MomentTile key={m.id} moment={m} />)}
+                        {session.moments.map((m) => (
+                            <MomentTile key={m.id} moment={m} canEdit={session.can_edit} onRemoved={onChanged} />
+                        ))}
                     </div>
                 )}
             </div>
@@ -878,6 +916,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                                                         session={session}
                                                         onEdit={() => { setEditing(session); setComposing(false); }}
                                                         onDelete={() => remove(session)}
+                                                        onChanged={() => mutate()}
                                                     />
                                                 ))}
                                             </div>
@@ -962,7 +1001,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                                 />
                             ) : (
                                 <div className="flex flex-wrap gap-2">
-                                    {moments.map((m) => <MomentTile key={m.id} moment={m} />)}
+                                    {moments.map((m) => <MomentTile key={m.id} moment={m} canEdit={journal.sessions.some((s) => s.can_edit)} onRemoved={() => mutate()} />)}
                                 </div>
                             );
                         })()}

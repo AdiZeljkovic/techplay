@@ -18,6 +18,11 @@
         </include>
     </source>
     <php>
+        <!-- The suite runs out of PHP's default 128M and dies inside the mime
+             guesser, and `php -d memory_limit=...` cannot rescue it because
+             `artisan test` spawns PHPUnit as a child process with its own
+             limit. Setting it here is the only place both entry points read. -->
+        <ini name="memory_limit" value="1024M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
