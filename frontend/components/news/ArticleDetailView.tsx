@@ -247,15 +247,18 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 </div>
 
                                 {/* Info bar beneath hero */}
-                                <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-8 md:px-12 py-4 gap-4">
+                                <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-8 md:px-12 py-2.5 gap-3">
                                     <div className="flex items-center flex-wrap gap-3">
                                         <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">CATEGORY:</span>
-                                        <span className="bg-transparent border border-white/10 px-4 py-1.5 rounded-full text-white text-[11px] font-bold uppercase tracking-wider">
+                                        <span className="inline-flex items-center h-[26px] px-3 rounded-full border border-white/10 text-white text-[10.5px] font-bold uppercase tracking-wider">
                                             {decodeHtml(article.category?.name) || "News"}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-3 flex-nowrap">
-                                        <ReadingTracker slug={article.slug} />
+                                    {/* Save sits last on every template. It led on
+                                        news and trailed on reviews, so the one control
+                                        a reader is looking for moved depending on
+                                        which kind of article they had opened. */}
+                                    <div className="flex items-center gap-2.5 flex-nowrap">
                                         <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
                                         <SocialShare
                                             url={`/news/${article.slug}`}
@@ -263,6 +266,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                             description={decodeHtml(article.excerpt) || ''}
                                             vertical={false}
                                         />
+                                        <ReadingTracker slug={article.slug} />
                                     </div>
                                 </div>
                             </div>

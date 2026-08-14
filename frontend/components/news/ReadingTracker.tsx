@@ -69,10 +69,10 @@ export default function ReadingTracker({ slug }: { slug: string }) {
             onClick={toggle}
             disabled={busy}
             title={saved ? "Remove from reading list" : "Save for later"}
-            className={`inline-flex items-center gap-2 h-9 px-4 rounded-lg border text-[12px] font-bold transition-colors ${
+            className={`inline-flex items-center gap-1.5 h-8 px-3.5 rounded-[8px] font-display text-[10.5px] font-black uppercase tracking-[0.1em] transition-[filter,background] ${
                 saved
-                    ? "border-[var(--accent)]/40 bg-[var(--accent)]/10 text-[var(--accent)]"
-                    : "border-white/10 bg-white/[0.03] text-white/70 hover:border-[var(--accent)]/40 hover:text-white"
+                    ? "bg-[var(--accent)]/12 text-[var(--accent-ink)] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--accent)_40%,transparent)]"
+                    : "bg-[var(--accent)] text-white hover:brightness-110"
             }`}
         >
             {busy ? (

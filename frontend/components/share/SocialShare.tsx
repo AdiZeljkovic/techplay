@@ -71,7 +71,9 @@ export default function SocialShare({
         }
     };
 
-    const buttonClass = "w-9 h-9 rounded-full bg-[var(--bg-card)] border border-[var(--border)] text-[var(--text-secondary)] flex items-center justify-center transition-all hover:scale-110 shadow-lg shrink-0";
+    // The row sits inside a bar, not on its own — a 36px button with a drop
+    // shadow under it was furniture. 32px, flat, and the hover does the work.
+    const buttonClass = "w-8 h-8 rounded-full bg-white/[0.03] border border-white/[0.09] text-white/45 flex items-center justify-center transition-colors hover:text-white hover:border-white/25 shrink-0";
 
     const shareButtons = [
         {
@@ -111,7 +113,7 @@ export default function SocialShare({
                         title={`Share on ${btn.name}`}
                         aria-label={`Share on ${btn.name}`}
                     >
-                        <btn.icon className="w-5 h-5" />
+                        <btn.icon className="w-[15px] h-[15px]" />
                     </button>
                 ))}
 
@@ -123,7 +125,7 @@ export default function SocialShare({
                     title="Copy link"
                     aria-label="Copy link"
                 >
-                    {copied ? <Check className="w-5 h-5" /> : <LinkIcon className="w-5 h-5" />}
+                    {copied ? <Check className="w-[15px] h-[15px]" /> : <LinkIcon className="w-[15px] h-[15px]" />}
                 </button>
 
                 <button
@@ -132,7 +134,7 @@ export default function SocialShare({
                     title="Share"
                     aria-label="Share"
                 >
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-[15px] h-[15px]" />
                 </button>
             </div>
         );
@@ -149,7 +151,7 @@ export default function SocialShare({
                     title={`Share on ${btn.name}`}
                     aria-label={`Share on ${btn.name}`}
                 >
-                    <btn.icon className="w-5 h-5" />
+                    <btn.icon className="w-[15px] h-[15px]" />
                 </button>
             ))}
 
@@ -159,7 +161,7 @@ export default function SocialShare({
                 title="Copy link"
                 aria-label="Copy link"
             >
-                {copied ? <Check className="w-5 h-5" /> : <LinkIcon className="w-5 h-5" />}
+                {copied ? <Check className="w-[15px] h-[15px]" /> : <LinkIcon className="w-[15px] h-[15px]" />}
             </button>
 
             <button
@@ -168,7 +170,7 @@ export default function SocialShare({
                 title="Share"
                 aria-label="Share"
             >
-                <Share2 className="w-5 h-5" />
+                <Share2 className="w-[15px] h-[15px]" />
             </button>
         </div>
     );

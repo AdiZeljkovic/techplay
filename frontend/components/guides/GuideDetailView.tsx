@@ -231,15 +231,15 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                 </div>
 
                                 {/* Info bar beneath hero */}
-                                <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-8 md:px-12 py-4 gap-4">
+                                <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-8 md:px-12 py-2.5 gap-3">
                                     <div className="flex items-center flex-wrap gap-3">
                                         <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">HELPFUL:</span>
-                                        <span className="bg-transparent border border-white/10 px-4 py-1.5 rounded-full text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-2">
+                                        <span className="inline-flex items-center gap-2 h-[26px] px-3 rounded-full border border-white/10 text-white text-[10.5px] font-bold uppercase tracking-wider">
                                             <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
                                             {guide.helpful_count} FOUND HELPFUL
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2 flex-wrap">
+                                    <div className="flex items-center gap-2.5 flex-wrap">
                                         <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest">SHARE:</span>
                                         <SocialShare
                                             url={`/guides/${guide.slug}`}
