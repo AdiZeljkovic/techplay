@@ -321,6 +321,42 @@ body {
   }
 }
 
+/* ── The bottom bar's selected tab ───────────────────────────────────────
+   A dark plate on the red bar, cut with the same 45° notch the command
+   buttons use and carrying the same hazard hatch in the corner the cut goes
+   through. The bar is the one control on screen at all times, so it is worth
+   its own house detail rather than a generic rounded pill.
+
+   The first cut of this bar marked the active tab with a thin white line and
+   dimmed the rest to 60% white on red, which read as four broken tabs and one
+   underlined one. A plate reads as a switch that has been thrown.
+   ───────────────────────────────────────────────────────────────────────── */
+.tab-plate {
+  clip-path: polygon(
+    9px 0,
+    100% 0,
+    100% calc(100% - 9px),
+    calc(100% - 9px) 100%,
+    0 100%,
+    0 9px
+  );
+}
+.tab-plate::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 42px;
+  height: 12px;
+  opacity: 0.55;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--accent) 92%, transparent) 0 3px,
+    transparent 3px 7px
+  );
+}
+
 /* ── The phone's type floor ──────────────────────────────────────────────
    Measured across seven pages at 390px: 32 elements at 8px, 134 at 8.5, 156
    at 9 and 142 at 9.5 — 464 pieces of text below anything a person reads at
@@ -353,7 +389,7 @@ body {
 /* The bottom tab bar's footprint, for anything that anchors itself to the
    bottom of a phone screen and must sit above it. */
 :root {
-  --tabbar-h: 58px;
+  --tabbar-h: 62px;
   --safe-b: env(safe-area-inset-bottom, 0px);
 }
 .above-tabbar { bottom: calc(var(--tabbar-h) + var(--safe-b)); }

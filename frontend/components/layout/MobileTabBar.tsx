@@ -96,22 +96,25 @@ export default function MobileTabBar() {
                 <Link
                     href={t.href}
                     aria-current={active ? "page" : undefined}
-                    className="group relative flex h-[58px] flex-col items-center justify-center gap-[3px] active:bg-black/15 transition-colors"
+                    className={`group relative flex h-[62px] flex-col items-center justify-end gap-[5px] pb-[9px] transition-colors ${
+                        active ? "text-white" : "text-white/[0.74] active:text-white"
+                    }`}
                 >
-                    {/* The active rule sits on the bar's top edge rather than
-                        under the label, so a tab reads as attached to the edge
-                        the way a tab should. */}
+                    {/* The switch, thrown. A thin rule and a dimmed row read
+                        as four broken tabs and one underlined one; a plate
+                        reads as a choice. */}
                     <span
                         aria-hidden
-                        className={`absolute inset-x-4 top-0 h-[2.5px] bg-white transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`}
+                        className={`tab-plate absolute inset-y-[5px] inset-x-[6px] transition-opacity duration-200 ${
+                            active ? "opacity-100" : "opacity-0"
+                        }`}
+                        style={{
+                            background: "rgba(4,6,9,0.86)",
+                            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.16)",
+                        }}
                     />
-                    <t.Mark
-                        active={active}
-                        className={`h-[23px] w-[23px] transition-colors ${active ? "text-white" : "text-white/60 group-active:text-white/85"}`}
-                    />
-                    <span
-                        className={`font-display text-[9.5px] font-black uppercase tracking-[0.07em] leading-none transition-colors ${active ? "text-white" : "text-white/60 group-active:text-white/85"}`}
-                    >
+                    <t.Mark active={active} className="relative z-10 h-[23px] w-[23px]" />
+                    <span className="relative z-10 font-display text-[9px] font-black uppercase tracking-[0.11em] leading-none">
                         {t.label}
                     </span>
                 </Link>
@@ -128,17 +131,25 @@ export default function MobileTabBar() {
                 // do not survive a var() colour, and what they leave behind is
                 // no background at all — the first cut of this bar had the
                 // article scrolling straight through it.
-                background: "linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 74%, #000) 100%)",
+                //
+                // A gradient rather than a flat fill. Flat crimson under a
+                // near-black page is a slab; lit at the top and deepened at
+                // the bottom it reads as a surface, and white sits on it at a
+                // steady weight instead of vibrating.
+                background: "linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 66%, #000) 100%)",
                 // The home indicator sits over the bottom 34px of a modern
                 // phone. Without this the labels are under it.
                 paddingBottom: "env(safe-area-inset-bottom, 0px)",
-                boxShadow: "0 -10px 30px color-mix(in srgb, var(--accent) 22%, transparent)",
-                // The knockout inside the games mark is punched in the bar's
-                // own colour, so it follows a themed accent.
-                ["--tab-ground" as string]: "color-mix(in srgb, var(--accent) 82%, #000)",
+                // A shadow that separates the bar from the page, not a red
+                // bloom around it — the bloom was the first cut and it made
+                // the bar look like it was leaking.
+                boxShadow: "0 -8px 22px rgba(0,0,0,0.55)",
+                // The knockout inside the games mark is punched in the active
+                // plate's colour, not the bar's.
+                ["--tab-ground" as string]: "#0b0d12",
             }}
         >
-            <span aria-hidden className="absolute inset-x-0 top-0 h-px bg-white/25" />
+            <span aria-hidden className="absolute inset-x-0 top-0 h-[1.5px] bg-white/40" />
 
             <ul className="relative flex items-stretch">
                 {LEFT.map(tab)}
@@ -149,34 +160,44 @@ export default function MobileTabBar() {
                         href={profileHref}
                         aria-current={onProfile ? "page" : undefined}
                         aria-label={user ? "Your profile" : "Sign in"}
-                        className="group relative flex h-[58px] flex-col items-center justify-end gap-[3px] pb-[9px]"
+                        className={`group relative flex h-[62px] flex-col items-center justify-end pb-[9px] transition-colors ${
+                            onProfile ? "text-white" : "text-white/[0.74] active:text-white"
+                        }`}
                     >
+                        {/* A cradle, not a floating button. The white ring is
+                            opaque and interrupts the bar's top rule, so the
+                            portrait reads as seated in the bar rather than
+                            stuck on it — a crimson ring was the first try and
+                            it dissolved into the bar behind it. */}
                         <span
-                            className={`absolute -top-[19px] w-[52px] h-[52px] rounded-full overflow-hidden flex items-center justify-center transition-transform duration-200 group-active:scale-95 ${
-                                onProfile ? "ring-[3px] ring-white" : "ring-2 ring-white/70"
-                            }`}
+                            className="absolute -top-[20px] w-[58px] h-[58px] rounded-full flex items-center justify-center transition-transform duration-200 group-active:scale-95"
                             style={{
-                                background: "var(--surface-1)",
-                                boxShadow: "0 8px 20px rgba(0,0,0,0.45)",
+                                background: onProfile ? "#ffffff" : "rgba(255,255,255,0.9)",
+                                boxShadow: "0 8px 18px rgba(0,0,0,0.5)",
                             }}
                         >
-                            {user?.avatar_url ? (
-                                <Image
-                                    src={user.avatar_url}
-                                    alt=""
-                                    width={52}
-                                    height={52}
-                                    className="w-full h-full object-cover"
-                                    unoptimized={user.avatar_url.includes("discord") || user.avatar_url.includes("gravatar")}
-                                />
-                            ) : (
-                                <ProfileMark className="h-[26px] w-[26px] text-white/70" />
-                            )}
+                            <span
+                                className="w-[52px] h-[52px] rounded-full overflow-hidden flex items-center justify-center"
+                                style={{ background: "var(--surface-2)" }}
+                            >
+                                {user?.avatar_url ? (
+                                    <Image
+                                        src={user.avatar_url}
+                                        alt=""
+                                        width={52}
+                                        height={52}
+                                        className="w-full h-full object-cover"
+                                        unoptimized={user.avatar_url.includes("discord") || user.avatar_url.includes("gravatar")}
+                                    />
+                                ) : (
+                                    <ProfileMark className="h-[25px] w-[25px] text-white/75" />
+                                )}
+                            </span>
                         </span>
 
-                        <span
-                            className={`font-display text-[9.5px] font-black uppercase tracking-[0.07em] leading-none transition-colors ${onProfile ? "text-white" : "text-white/60"}`}
-                        >
+                        {/* On the same baseline as the other four labels; the
+                            portrait is out of the flow above it. */}
+                        <span className="font-display text-[9px] font-black uppercase tracking-[0.11em] leading-none">
                             {user ? "You" : "Sign in"}
                         </span>
                     </Link>
