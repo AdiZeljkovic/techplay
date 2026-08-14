@@ -252,7 +252,7 @@ function CreateThreadForm() {
                                                         : "border-white/[0.08] bg-white/[0.02] hover:border-white/25"
                                                 }`}
                                             >
-                                                <Mark className={`w-[26px] h-[26px] shrink-0 ${on ? "text-[var(--accent-ink)]" : "text-white/30"}`} />
+                                                <Mark className={`w-[28px] h-[28px] shrink-0 transition-opacity duration-200 ${on ? "opacity-100" : "opacity-45"}`} />
                                                 <span className={`min-w-0 font-display text-[11.5px] font-bold leading-tight ${on ? "text-white" : "text-white/60"}`}>
                                                     {cat.name}
                                                 </span>

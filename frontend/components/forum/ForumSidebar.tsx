@@ -217,7 +217,7 @@ export default function ForumSidebar() {
                             const Icon = getCategoryIcon(catSlug);
                             return (
                                 <Link key={thread.id} href={`/forum/thread/${thread.slug}`} className="group flex items-start gap-3 py-2.5">
-                                    <span className="w-8 h-8 shrink-0 flex items-center justify-center mt-0.5 text-[var(--accent-ink)]">
+                                    <span className="w-8 h-8 shrink-0 flex items-center justify-center mt-0.5">
                                         <Icon className="w-[21px] h-[21px]" />
                                     </span>
                                     <div className="flex-1 min-w-0">

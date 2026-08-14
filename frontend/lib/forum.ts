@@ -34,7 +34,7 @@ export function getCategoryColor(slug: string): string {
     return categoryColors[slug] ?? "#9ca3af";
 }
 
-type BoardMarkComponent = React.ComponentType<{ className?: string; strokeWidth?: number }>;
+type BoardMarkComponent = React.ComponentType<{ className?: string }>;
 
 /**
  * One mark per board, in the house hand.
