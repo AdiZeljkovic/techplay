@@ -5,6 +5,16 @@ import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
+/**
+ * The backdrop every page on this hero gets unless it asks for another.
+ *
+ * It arrived as the feed's own art and there was no reason for it to stay
+ * there: fifteen pages share this component, and fourteen of them were
+ * opening on a flat accent wash while one had a picture. A shared hero that
+ * looks different per page is not a shared hero.
+ */
+const HOUSE_BACKDROP = "/images/page-hero.webp";
+
 interface CategoryItem {
     id: string; // The backend ID/Slug used for filtering
     label: string;
@@ -24,7 +34,11 @@ interface PageHeroProps {
      * Ignored when `icon` is given.
      */
     iconNode?: React.ReactNode;
-    /** Full-bleed backdrop, treated like the Leaderboard and Games heroes. */
+    /**
+     * Full-bleed backdrop. Defaults to the house hero art so every page on
+     * this component opens the same way; pass a different path to override it,
+     * or an empty string for the plain accent wash.
+     */
     backgroundImage?: string;
     categories?: CategoryItem[];
     /**
@@ -49,7 +63,7 @@ export default function PageHero({
     description = "",
     icon: MainIcon,
     iconNode,
-    backgroundImage,
+    backgroundImage = HOUSE_BACKDROP,
     categories,
     categorySize = "sm",
     selectedCategory,

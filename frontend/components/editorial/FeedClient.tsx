@@ -161,7 +161,6 @@ export default function FeedClient() {
             <PageHero
                 title="The Feed"
                 description="Everything we publish, in one place — news, reviews, tech and guides as they land."
-                backgroundImage="/images/feed-hero.webp"
                 categories={VIEWS}
                 categorySize="lg"
                 selectedCategory={tab}
