@@ -8,11 +8,14 @@ use App\Models\Game;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Rank;
+use App\Models\Redirect;
 use App\Models\RewardItem;
 use App\Models\SiteSetting;
+use App\Models\Task;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -124,6 +127,33 @@ class AdminPanelAccessTest extends TestCase
         $this->assertTrue($editor->can('update', $game));
         $this->assertFalse($editor->can('delete', $game));
         $this->assertTrue($admin->can('delete', $game));
+    }
+
+    /**
+     * The ladder must not be climbable from its own bottom rung.
+     *
+     * RoleResource edits Spatie roles, permission checkboxes included, and it
+     * had no policy — so a Moderator could tick `manage users` onto the role
+     * they already hold and walk into everything the tiers above deny them.
+     * Redirect and Task were open the same way, for the same reason: added
+     * after the tiering, never mapped.
+     */
+    public function test_the_three_resources_added_after_the_tiering_are_not_open(): void
+    {
+        $moderator = $this->withRole('Moderator');
+        $editor = $this->withRole('Editor');
+        $admin = $this->withRole('Super Admin');
+
+        // Granting permissions is not a moderation or an editorial act.
+        $this->assertFalse($moderator->can('viewAny', Role::class), 'roles carry the permission checkboxes');
+        $this->assertFalse($editor->can('viewAny', Role::class));
+        $this->assertTrue($admin->can('viewAny', Role::class));
+
+        // These two the editorial team does need — a renamed slug needs a
+        // redirect the same day, and tasks are their own workflow.
+        $this->assertTrue($editor->can('viewAny', Redirect::class));
+        $this->assertTrue($editor->can('viewAny', Task::class));
+        $this->assertFalse($moderator->can('viewAny', Redirect::class), 'routing is not moderation');
     }
 
     public function test_nobody_who_had_power_through_the_old_column_loses_it(): void

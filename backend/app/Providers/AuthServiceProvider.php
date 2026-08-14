@@ -25,11 +25,13 @@ use App\Models\PageSeo;
 use App\Models\Post;
 use App\Models\Product;
 use App\Models\Rank;
+use App\Models\Redirect;
 use App\Models\Report;
 use App\Models\Review;
 use App\Models\RewardItem;
 use App\Models\SiteSetting;
 use App\Models\SupportTier;
+use App\Models\Task;
 use App\Models\Thread;
 use App\Models\User;
 use App\Models\UserGame;
@@ -42,6 +44,7 @@ use App\Policies\NewsPolicy;
 use App\Policies\ReviewPolicy;
 use App\Policies\UserManagementPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Spatie\Permission\Models\Role;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -98,6 +101,21 @@ class AuthServiceProvider extends ServiceProvider
         // `manage users` — Editor-in-Chief holds this by design.
         User::class => UserManagementPolicy::class,
         UserSupport::class => AdminOnlyPolicy::class,
+
+        // Three resources that were added after the tiering above and never
+        // joined it. Filament allows everything for an unmapped model, so
+        // until now a Moderator — whose only granted power is moderating the
+        // forum — could open Roles and tick `manage users` onto their own
+        // role. That is the whole ladder climbed from its bottom rung.
+        Role::class => AdminOnlyPolicy::class,
+
+        // Redirects rewrite routing for the entire site, but editors need them
+        // the moment an article slug changes, so they sit with the rest of the
+        // editorial SEO surface. PanelPolicy still keeps bulk delete to admins.
+        Redirect::class => ContentPolicy::class,
+
+        // Editorial tasks — the group they live in is called Editorial Tools.
+        Task::class => ContentPolicy::class,
     ];
 
     /**

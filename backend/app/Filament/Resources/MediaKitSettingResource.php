@@ -24,7 +24,9 @@ class MediaKitSettingResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-chart-bar';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Marketing & Branding';
+    // 'Marketing & Branding' was a group of one, undeclared in the panel, and
+    // sitting next to a declared 'SEO & Marketing' that means the same thing.
+    protected static \UnitEnum|string|null $navigationGroup = 'SEO & Marketing';
 
     protected static ?int $navigationSort = 10;
 

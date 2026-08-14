@@ -65,10 +65,14 @@ HTML)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([])
+            // Undeclared groups still render, but they queue up after every
+            // declared one — so 'GTA 6' was landing below System, at the very
+            // bottom, no matter what navigationSort its resources carried.
             ->navigationGroups([
                 'Editorial Tools',
                 'Content Studio',
                 'Game Database',
+                'GTA 6',
                 'Community',
                 'Shop & Monetization',
                 'SEO & Marketing',
