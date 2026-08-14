@@ -105,7 +105,7 @@ export default function MobileTabBar() {
                     href={t.href}
                     aria-current={active ? "page" : undefined}
                     className={`group relative flex h-[64px] flex-col items-center justify-end gap-[6px] pb-[10px] transition-colors ${
-                        active ? "text-white" : "text-white/70 active:text-white"
+                        active ? "text-white" : "text-white/85 active:text-white"
                     }`}
                 >
                     {/* The cap: a short white rule on the console's top edge,
@@ -183,7 +183,7 @@ export default function MobileTabBar() {
                         aria-current={onProfile ? "page" : undefined}
                         aria-label={user ? "Your profile" : "Sign in"}
                         className={`group relative flex h-[64px] flex-col items-center justify-end pb-[10px] transition-colors ${
-                            onProfile ? "text-white" : "text-white/70 active:text-white"
+                            onProfile ? "text-white" : "text-white/85 active:text-white"
                         }`}
                     >
                         {/* The ring is crimson and reads against the dark

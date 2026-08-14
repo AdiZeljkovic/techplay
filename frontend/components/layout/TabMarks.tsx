@@ -20,9 +20,9 @@
  * do. Each was checked on a contact sheet at 22, 24 and 26px against the bar's
  * own red, both states.
  *
- * House language: angular, flat-ended strokes, no curve where a cut will do.
- * A 24 viewBox with 1.8 stroke lands on the pixel grid at 1× and stays sharp
- * at 2× and 3×.
+ * House language: angular, flat-ended strokes, no curve where a cut will do,
+ * on a 24 viewBox that lands on the pixel grid at 1× and stays sharp at 2×
+ * and 3×.
  */
 
 interface MarkProps {
@@ -34,7 +34,11 @@ interface MarkProps {
 const S = {
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 1.8,
+    // 2.2, not the 1.8 these were first drawn at. The labels beside them are
+    // font-black Archivo, and a 1.8 stroke next to that reads as a faded icon
+    // beside its own caption rather than as a pair — the tabs looked switched
+    // off. Compared at 1.8/2.0/2.2 on the bar's own ground before choosing.
+    strokeWidth: 2.2,
     strokeLinecap: "square" as const,
     strokeLinejoin: "miter" as const,
 };
