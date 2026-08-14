@@ -106,7 +106,7 @@ export default function CookieConsentBanner() {
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}
-                    className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 flex justify-center pointer-events-none"
+                    className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pb-[calc(1rem+var(--tabbar-h)+var(--safe-b))] md:pb-6 flex justify-center pointer-events-none"
                 >
                     <div className="bg-[var(--surface-2)]/90 backdrop-blur-xl border border-[var(--line)] rounded-[var(--radius-panel)] shadow-2xl w-full max-w-4xl overflow-hidden pointer-events-auto ring-1 ring-white/10">
                         <div className="p-6 md:p-8">

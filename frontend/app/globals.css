@@ -227,8 +227,11 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 104px; /* 72px fixed header + breathing room */
+  scroll-padding-top: 88px; /* 56px fixed header on a phone + breathing room */
   background-color: var(--surface-0);
+  /* iOS inflates font sizes in landscape unless told not to. A type scale
+     that has been tuned to the pixel is not a suggestion. */
+  -webkit-text-size-adjust: 100%;
   /* clip (not hidden) — prevents horizontal scroll from overflowing content
      without creating a scroll container that would break position: sticky */
   overflow-x: clip;
@@ -270,6 +273,78 @@ body {
 }
 @media (min-width: 1280px) {
   .container-page { padding-inline: 1.5rem; }
+}
+
+/* ========================================
+   TOUCH — the phone is a different instrument
+   ======================================== */
+
+/* Desktop restores its own 104px below; a phone's bar is 56px. */
+@media (min-width: 768px) {
+  html { scroll-padding-top: 104px; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  /* The grey flash iOS paints over every tapped element is a browser's idea
+     of feedback, and it fires on things that are not buttons. Ours is the
+     :active state each control defines for itself. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* No 300ms wait for a double-tap that will never come. Applied to controls
+     rather than everything, so pinch-zoom on an image still works. */
+  a, button, [role="button"], input, select, textarea, label, summary {
+    touch-action: manipulation;
+  }
+
+  /* A control smaller than a fingertip is a control you aim at. 44px is
+     Apple's floor and 48dp is Google's; this reaches the floor without
+     changing any layout, because the padding grows outside the box. */
+  .tap-44 {
+    position: relative;
+  }
+  .tap-44::after {
+    content: "";
+    position: absolute;
+    inset: 50% 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+
+  /* A drawer, sheet or dropdown that reaches its end must not start dragging
+     the page behind it — the "scroll chaining" that makes a web overlay feel
+     like a web page. */
+  [data-overlay], [role="dialog"] {
+    overscroll-behavior: contain;
+  }
+}
+
+/* Anything sized to the viewport uses the dynamic height: on mobile Safari
+   `100vh` is the height with the address bar *hidden*, so a full-screen panel
+   sized in vh is always taller than the screen it is on. */
+.h-screen-dvh { height: 100dvh; }
+.min-h-screen-dvh { min-height: 100dvh; }
+
+/* The bottom tab bar's footprint, for anything that anchors itself to the
+   bottom of a phone screen and must sit above it. */
+:root {
+  --tabbar-h: 58px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+.above-tabbar { bottom: calc(var(--tabbar-h) + var(--safe-b)); }
+@media (min-width: 768px) {
+  .above-tabbar { bottom: 0; }
+}
+
+/* react-hot-toast positions its container with inline styles, so a class is
+   the only way to move it off the tab bar. Phones only — on a desktop there
+   is no bar and the toast belongs in the corner. */
+@media (max-width: 767px) {
+  .tp-toasts {
+    bottom: calc(var(--tabbar-h) + var(--safe-b) + 10px) !important;
+  }
 }
 
 /* Custom Scrollbar */

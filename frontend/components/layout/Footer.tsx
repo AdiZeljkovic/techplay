@@ -96,8 +96,8 @@ export default function Footer() {
             />
 
             {/* ── Band: the brand on the left, the community door on the right ── */}
-            <div className="relative container-page pt-14 pb-10">
-                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
+            <div className="relative container-page pt-8 md:pt-14 pb-7 md:pb-10">
+                <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-10">
                     <div className="max-w-[440px]">
                         <Link href="/" className="group inline-block" aria-label="TechPlay — home">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -106,11 +106,11 @@ export default function Footer() {
                                 alt="TechPlay"
                                 width={252}
                                 height={42}
-                                className="h-[42px] w-auto group-hover:brightness-110 transition-[filter]"
+                                className="h-[34px] md:h-[42px] w-auto group-hover:brightness-110 transition-[filter]"
                             />
                         </Link>
 
-                        <p className="mt-5 text-[14px] text-[var(--ink-low)] leading-relaxed">
+                        <p className="mt-4 md:mt-5 text-[13px] md:text-[14px] text-[var(--ink-low)] leading-relaxed">
                             Your home for gaming news, honest reviews, release dates, and a
                             community that actually cares about games.
                         </p>
@@ -162,12 +162,12 @@ export default function Footer() {
 
             {/* ── Rail: one line of links instead of a grid of columns ── */}
             <div className="relative border-t border-[var(--line)]">
-                <nav aria-label="About TechPlay" className="container-page py-5">
-                    <ul className="flex flex-wrap items-center gap-x-1 gap-y-2">
+                <nav aria-label="About TechPlay" className="container-page py-4 md:py-5">
+                    <ul className="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:flex sm:flex-wrap sm:items-center sm:gap-x-1 sm:gap-y-2">
                         {ABOUT.map((item, i) => (
                             <li key={item.name} className="flex items-center">
                                 {i > 0 && (
-                                    <span aria-hidden className="w-1 h-1 mx-3 rounded-full bg-[var(--line-strong)]" />
+                                    <span aria-hidden className="hidden sm:block w-1 h-1 mx-3 rounded-full bg-[var(--line-strong)]" />
                                 )}
                                 <Link
                                     href={item.href}

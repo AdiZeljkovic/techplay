@@ -225,7 +225,7 @@ export default async function RootLayout({
                   <CookieConsentBanner />
 
                   <GlobalSeo />
-                  <Toaster position="bottom-right" />
+                  <Toaster position="bottom-right" containerClassName="tp-toasts" />
                   {/* What the last action earned — small numbers in the
                       corner, and the middle of the screen for the rare
                       things worth stopping for. */}

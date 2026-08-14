@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 import PageTransition from './PageTransition';
+import MobileTabBar from './MobileTabBar';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -18,9 +19,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <>
             <PageTransition />
             <Header />
-            {/* pt accounts for the fixed single-bar header (72px) */}
-            <main className="flex-grow pt-[72px]">{children}</main>
+            {/* Top: the fixed header — 56px on a phone, 72px from md up.
+                Bottom: the tab bar, plus whatever the home indicator claims.
+                Without the bottom pad the last row of every list sits under
+                the bar and cannot be tapped. */}
+            <main className="flex-grow pt-[56px] md:pt-[72px] pb-[calc(58px+env(safe-area-inset-bottom,0px))] md:pb-0">
+                {children}
+            </main>
             <Footer />
+            <MobileTabBar />
         </>
     );
 }

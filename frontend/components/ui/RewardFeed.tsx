@@ -81,7 +81,7 @@ export default function RewardFeed() {
             {/* ── the nod ── */}
             <div
                 aria-live="polite"
-                className="fixed bottom-6 right-6 z-[70] flex flex-col-reverse items-end gap-2 pointer-events-none"
+                className="fixed bottom-[calc(1.5rem+var(--tabbar-h)+var(--safe-b))] md:bottom-6 right-6 z-[70] flex flex-col-reverse items-end gap-2 pointer-events-none"
             >
                 {chips.map((chip) => (
                     <span

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,7 +12,7 @@ import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
 import {
-    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Gamepad2, Newspaper, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, Sparkles, MapPinned, Disc3,
+    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Gamepad2, Newspaper, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, Sparkles, MapPinned, Disc3, ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -20,6 +20,8 @@ import { levelForXp, xpForLevel } from "@/lib/level";
 import SearchDropdown from "./SearchDropdown";
 import { decodeHtml } from "@/lib/decode";
 import NotificationPanel from "./NotificationPanel";
+import { mobileBar } from "@/lib/mobileBar";
+import { MoreMark } from "./TabMarks";
 
 const DiscordIcon = ({ className }: { className?: string }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -987,6 +989,39 @@ export default function Header() {
         if (!user) return;
         axios.get('/user/notifications/counts').then((r) => setNotifications(r.data)).catch(() => {});
     };
+    const router = useRouter();
+    const bar = mobileBar(pathname);
+
+    /**
+     * Back, with somewhere to land.
+     *
+     * `router.back()` on a page opened cold — a shared link, a search result —
+     * walks out of the site entirely. The fallback keeps the reader inside it.
+     */
+    const goBack = () => {
+        if (typeof window !== "undefined" && window.history.length > 1) router.back();
+        else router.push(bar.fallback);
+    };
+
+    /**
+     * The bar gets out of the way when you read down and comes back the moment
+     * you reach up — the behaviour every reading app has, and 56px of screen
+     * returned on a phone. It moves by transform, so nothing below it reflows.
+     */
+    const [barHidden, setBarHidden] = useState(false);
+    useEffect(() => {
+        let last = window.scrollY;
+        const onScroll = () => {
+            if (window.innerWidth >= 768) { setBarHidden(false); return; }
+            const y = window.scrollY;
+            // Ignore the jitter of a finger resting on the glass.
+            if (Math.abs(y - last) < 8) return;
+            setBarHidden(y > last && y > 140);
+            last = y;
+        };
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
 
 
 
@@ -1085,7 +1120,13 @@ export default function Header() {
     useEffect(() => { setIsMobileMenuOpen(false); setMobileSearchOpen(false); }, [pathname]);
 
     return (
-        <div className="w-full font-sans fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl">
+        <div
+            className="w-full font-sans fixed top-0 left-0 right-0 z-50 flex flex-col shadow-2xl transition-transform duration-300 ease-[var(--ease-hud)]"
+            // An open menu or search panel pins the bar down: sliding the
+            // thing you just opened off the top of the screen is a bug even
+            // when the animation is smooth.
+            style={{ transform: barHidden && !isMobileMenuOpen && !mobileSearchOpen ? "translateY(-100%)" : "none" }}
+        >
             {/* MAIN HEADER — single app-style bar */}
             <header className="w-full bg-[var(--surface-0)]/95 backdrop-blur-md border-b border-[var(--line)] relative">
                 {/* The Crown (S2) — the header's single accent line */}
@@ -1093,9 +1134,29 @@ export default function Header() {
                     aria-hidden
                     className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--accent)_60%,transparent)] to-transparent"
                 />
-                <div className="container-page h-[72px] flex items-center justify-between">
-                    {/* Logo (Left) */}
-                    <BrandLogo />
+                <div className="container-page h-[56px] md:h-[72px] flex items-center justify-between gap-2">
+                    {/* Left: the logo on a tab root, back + where-you-are
+                        anywhere else. Only phones get the swap — from md up
+                        there is a full nav and the logo is the anchor. */}
+                    {bar.mode === "back" ? (
+                        <>
+                            <div className="md:hidden flex items-center min-w-0 flex-1">
+                                <button
+                                    onClick={goBack}
+                                    aria-label="Back"
+                                    className="-ml-2 shrink-0 h-11 w-11 inline-flex items-center justify-center text-white active:bg-[var(--fill-2)] rounded-[var(--radius-card)] transition-colors"
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </button>
+                                <span className="min-w-0 truncate font-display text-[14px] font-black uppercase tracking-[0.08em] text-white">
+                                    {bar.title}
+                                </span>
+                            </div>
+                            <div className="hidden md:block"><BrandLogo /></div>
+                        </>
+                    ) : (
+                        <BrandLogo />
+                    )}
 
                     {/* Desktop Nav (Center) */}
                     <nav className="hidden xl:flex items-center gap-4 h-full">
@@ -1178,7 +1239,14 @@ export default function Header() {
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
-                            {isMobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+                            {isMobileMenuOpen ? (
+                                <X className="w-7 h-7" />
+                            ) : (
+                                <>
+                                    <MoreMark className="md:hidden w-7 h-7" />
+                                    <Menu className="hidden md:block w-7 h-7" />
+                                </>
+                            )}
                         </button>
 
                     </div>
@@ -1234,7 +1302,10 @@ export default function Header() {
                             style={{ boxShadow: "-20px 0 60px rgba(0,0,0,0.7)" }}
                         >
                             {/* ── header ── */}
-                            <div className="flex items-center justify-between px-4 h-[58px] border-b border-white/[0.07] shrink-0">
+                            <div
+                                className="flex items-center justify-between px-4 h-[58px] border-b border-white/[0.07] shrink-0"
+                                style={{ marginTop: "env(safe-area-inset-top, 0px)" }}
+                            >
                                 <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center" aria-label="TechPlay — home">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img src="/techplay-logo.png" alt="TechPlay" width={144} height={24} className="h-[24px] w-auto" />
@@ -1520,7 +1591,10 @@ export default function Header() {
                             </div>
 
                             {/* ── footer ── */}
-                            <div className="shrink-0 border-t border-white/[0.07] bg-[var(--surface-1)] px-4 py-3.5 flex items-center gap-3">
+                            <div
+                                className="shrink-0 border-t border-white/[0.07] bg-[var(--surface-1)] px-4 py-3.5 flex items-center gap-3"
+                                style={{ paddingBottom: "calc(0.875rem + env(safe-area-inset-bottom, 0px))" }}
+                            >
                                 {socialLinks.length > 0 && (
                                     <div className="flex items-center gap-1.5">
                                         {socialLinks.map((social, idx) => (
