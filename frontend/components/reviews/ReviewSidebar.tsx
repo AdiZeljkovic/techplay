@@ -49,10 +49,10 @@ const VERDICTS: Record<string, { label: string; color: string }> = {
  * the top so the shape has something to be big *against*.
  */
 function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: string }) {
-    const size = 260;
+    const size = 240;
     const cx = size / 2;
-    const cy = 118;
-    const R = 74;
+    const cy = 100;
+    const R = 62;
 
     const point = (i: number, ratio: number) => {
         const angle = (-90 + i * 72) * (Math.PI / 180);
@@ -66,7 +66,7 @@ function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: 
     const shape = values.map((v, i) => point(i, v / 10).join(",")).join(" ");
 
     return (
-        <svg viewBox={`0 0 ${size} 218`} className="w-full h-auto" role="img" aria-label="Score breakdown by category">
+        <svg viewBox={`0 0 ${size} 186`} className="w-full h-auto" role="img" aria-label="Score breakdown by category">
             {/* the rings you count against */}
             {[0.2, 0.4, 0.6, 0.8, 1].map((r) => (
                 <polygon
@@ -97,7 +97,7 @@ function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: 
                 const dx = x - cx;
                 const anchor = dx > 6 ? "start" : dx < -6 ? "end" : "middle";
                 const ox = dx > 6 ? 10 : dx < -6 ? -10 : 0;
-                const oy = y < cy ? -10 : 18;
+                const oy = y < cy ? -9 : 16;
 
                 return (
                     <g key={a.key}>
@@ -106,16 +106,16 @@ function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: 
                             y={y + oy}
                             textAnchor={anchor}
                             className="fill-white/40 font-display"
-                            style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}
+                            style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}
                         >
                             {a.label}
                         </text>
                         <text
                             x={x + ox}
-                            y={y + oy + 14}
+                            y={y + oy + 13}
                             textAnchor={anchor}
                             className="font-display"
-                            style={{ fontSize: 13, fontWeight: 900, fill: values[i] > 0 ? "#fff" : "rgba(255,255,255,0.2)" }}
+                            style={{ fontSize: 12, fontWeight: 900, fill: values[i] > 0 ? "#fff" : "rgba(255,255,255,0.2)" }}
                         >
                             {values[i].toFixed(1)}
                         </text>
@@ -160,7 +160,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                 style={{
                     background: "var(--surface-1)",
                     borderColor: `color-mix(in srgb, ${tier.color} 28%, transparent)`,
-                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 20px 50px -26px ${tier.color}`,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
                 }}
             >
                 {/* The verdict's own colour along the top edge — the card is
@@ -175,42 +175,40 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                 <div className="md:grid md:grid-cols-12">
                     {/* ── the scores ── */}
                     <div className="md:col-span-5 flex flex-col border-b md:border-b-0 md:border-r border-white/[0.07]" style={{ background: "var(--surface-2)" }}>
-                        <div className="p-5 pb-2 flex-1">
+                        <div className="px-5 pt-5 pb-1 flex-1">
                             <ScoreRadar ratings={ratings} tint={tier.color} />
                         </div>
 
-                        {/* The total, housed. It used to be a 4xl numeral beside
-                            a gradient tile, floating in a gradient of its own —
-                            two decorations competing over the one figure the
-                            whole card exists to deliver. */}
-                        <div className="flex items-center gap-4 p-5 border-t border-white/[0.07]">
+                        {/* The total and the verdict on one line.
+                            They were a bay and then a full-width button under
+                            it, which put a hundred and forty pixels under a
+                            radar that was already the tallest thing in the
+                            card — and every one of them showed as empty space
+                            beside the pros and cons, which need a third of
+                            that. */}
+                        <div className="flex items-center gap-4 px-5 py-4 border-t border-white/[0.07]">
                             <span
-                                className="shrink-0 w-12 h-12 rounded-[11px] flex items-center justify-center"
+                                className="shrink-0 w-11 h-11 rounded-[10px] flex items-center justify-center"
                                 style={{ background: `color-mix(in srgb, ${tier.color} 16%, transparent)`, color: tier.color }}
                             >
-                                <TierIcon className="w-6 h-6" strokeWidth={1.6} />
+                                <TierIcon className="w-[22px] h-[22px]" strokeWidth={1.6} />
                             </span>
 
-                            <span className="min-w-0 flex-1">
-                                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.18em] text-white/35">
-                                    Total score
-                                </span>
-                                <span className="flex items-baseline gap-2 mt-1">
-                                    <span className="font-display text-[34px] font-black tabular-nums leading-none" style={{ color: tier.color }}>
+                            <span className="min-w-0">
+                                <span className="flex items-baseline gap-1.5">
+                                    <span className="font-display text-[30px] font-black tabular-nums leading-none" style={{ color: tier.color }}>
                                         {score.toFixed(1)}
                                     </span>
-                                    <span className="font-display text-[12px] font-bold tabular-nums text-white/25">/ 10</span>
+                                    <span className="font-display text-[11px] font-bold tabular-nums text-white/25">/ 10</span>
                                 </span>
-                                <span className="block mt-1.5 font-display text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: tier.color }}>
+                                <span className="block mt-1 font-display text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: tier.color }}>
                                     {tier.label}
                                 </span>
                             </span>
-                        </div>
 
-                        {verdict && (
-                            <div className="px-5 pb-5">
+                            {verdict && (
                                 <span
-                                    className="flex items-center justify-center h-9 rounded-[8px] font-display text-[10.5px] font-black uppercase tracking-[0.16em]"
+                                    className="ml-auto shrink-0 inline-flex items-center h-8 px-3 rounded-[7px] font-display text-[9.5px] font-black uppercase tracking-[0.14em] text-center"
                                     style={{
                                         background: `color-mix(in srgb, ${verdict.color} 14%, transparent)`,
                                         color: verdict.color,
@@ -219,13 +217,13 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                                 >
                                     {verdict.label}
                                 </span>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {/* ── what it is, and the case for and against ── */}
                     <div className="md:col-span-7 flex flex-col">
-                        <div className="p-5 md:p-6 border-b border-white/[0.07]">
+                        <div className="p-5 border-b border-white/[0.07]">
                             <h3 className="font-display text-[22px] md:text-[26px] font-black text-white leading-[1.1] tracking-tight">
                                 {review_data.game_title}
                             </h3>
@@ -247,7 +245,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                         </div>
 
                         {(review_data.platforms?.length || review_data.tested_on) && (
-                            <div className="px-5 md:px-6 py-3.5 border-b border-white/[0.07] flex flex-wrap items-center gap-2">
+                            <div className="px-5 py-3 border-b border-white/[0.07] flex flex-wrap items-center gap-2">
                                 <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mr-1">Available on</span>
 
                                 {/* The platform's own mark, in its own colour —
@@ -289,7 +287,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                                 ["The good", pros, "#34d399", ThumbsUp],
                                 ["The bad", cons, "#f87171", ThumbsDown],
                             ] as const).map(([title, items, color, Icon]) => (
-                                <div key={title} className="p-5 md:p-6">
+                                <div key={title} className="p-5">
                                     <h4 className="flex items-center gap-2 mb-3 font-display text-[10px] font-black uppercase tracking-[0.16em]" style={{ color }}>
                                         <Icon className="w-4 h-4" strokeWidth={1.8} /> {title}
                                     </h4>
@@ -314,7 +312,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                         </div>
 
                         {review_data.store_link && (
-                            <div className="p-4 md:p-5 border-t border-white/[0.07]">
+                            <div className="p-5 border-t border-white/[0.07]">
                                 <a
                                     href={getStoreUrl(review_data.store_link)}
                                     target="_blank"

@@ -15,7 +15,6 @@ import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
 import { Article } from "@/types";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
-import RelatedArticles from "@/components/seo/RelatedArticles";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE } from "@/lib/prose";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
@@ -330,14 +329,6 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         shareDescription={decodeHtml(review.excerpt) || ''}
                                         commentableId={review.id}
                                         commentableType="review"
-                                    />
-
-                                    {/* Related Reviews */}
-                                    <RelatedArticles
-                                        articles={(review as any).related_articles || []}
-                                        title="Slične recenzije"
-                                        viewAllHref="/reviews"
-                                        articleBasePath="/reviews"
                                     />
                                 </div>
                             </div>
