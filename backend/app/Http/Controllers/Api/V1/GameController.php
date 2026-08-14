@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SitemapController;
 use App\Models\Article;
 use App\Models\Game;
+use App\Services\SanitizationService;
 use App\Services\Chronicle\TasteProfileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -179,7 +180,13 @@ class GameController extends Controller
             'id' => $game->id,
             'name' => $game->name,
             'slug' => $game->slug,
-            'description' => $game->description,
+            // Third-party HTML — the catalogue's, not ours — going straight
+            // into dangerouslySetInnerHTML on every game page. Purified on the
+            // way out rather than at ingest so the 140k rows already in the
+            // table are covered too, not just the next import.
+            'description' => $game->description
+                ? app(SanitizationService::class)->sanitizeRichContent($game->description)
+                : null,
             'released' => $game->released?->format('Y-m-d'),
             'release_precision' => $game->release_precision,
             'cover_url' => $game->cover_url,

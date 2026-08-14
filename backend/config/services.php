@@ -3,6 +3,15 @@
 return [
 
     /*
+     * The GIF picker in the editorial chat. A Giphy web key is meant to be
+     * seen by the browser, but a literal in a Blade view is also a literal in
+     * git history and cannot be rotated without a deploy.
+     */
+    'giphy' => [
+        'key' => env('GIPHY_API_KEY'),
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Internal server-to-server auth
     |--------------------------------------------------------------------------
