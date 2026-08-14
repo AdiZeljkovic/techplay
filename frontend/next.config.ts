@@ -6,6 +6,8 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 const nextConfig: NextConfig = {
     // Debug logging is for development; production keeps only errors.
     compiler: {
@@ -46,8 +48,15 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              // Next.js hydration + JSON-LD dangerouslySetInnerHTML require unsafe-inline
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.facebook.com https://accounts.google.com https://wow.zamimg.com https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://challenges.cloudflare.com https://*.adtrafficquality.google https://static.cloudflareinsights.com",
+              // 'unsafe-inline' stays: Next's hydration bootstrap and the JSON-LD
+              // blocks are inline scripts, and there is no nonce pipeline here.
+              //
+              // 'unsafe-eval' is development only. React Refresh needs it; a
+              // production bundle does not, and leaving it on hands any XSS the
+              // ability to build code out of strings. Verified against a real
+              // production build — pages, ads and the Turnstile widget included
+              // — before it was taken away.
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.facebook.com https://accounts.google.com https://wow.zamimg.com https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://challenges.cloudflare.com https://*.adtrafficquality.google https://static.cloudflareinsights.com`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://wow.zamimg.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               // Permissive img-src to allow all CDNs (avatars, banners, game covers, ads)
@@ -213,11 +222,66 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  /**
+   * Editor-managed redirects, applied.
+   *
+   * There are 21 of them in the admin and they have never done anything: the
+   * endpoint that serves them says it is "for caching in frontend middleware"
+   * and no middleware was ever built — the file that used to exist was
+   * removed with maintenance mode. Verified live before wiring this: an old
+   * slug answered 200 instead of 301, which is duplicate content on a site
+   * whose whole point is search reach.
+   *
+   * Read at build rather than per request, so there is no runtime cost and no
+   * middleware to reintroduce. The trade is that a redirect added in the admin
+   * takes effect on the next deploy, not immediately.
+   */
+  async redirects() {
+    const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/$/, '');
+    try {
+      const res = await fetch(`${backendBase}/redirects`, {
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) return [];
+      const rows: Array<{ source_url?: string; target_url?: string; status_code?: number }> = await res.json();
+
+      const seen = new Set<string>();
+      return rows.flatMap((r) => {
+        const source = (r.source_url || '').trim();
+        const destination = (r.target_url || '').trim();
+        // Next throws on a duplicate source, and a rule pointing at itself is
+        // a redirect loop the moment it is applied.
+        if (!source.startsWith('/') || !destination || source === destination) return [];
+        if (seen.has(source)) return [];
+        seen.add(source);
+        // The editor picks 301 or 302 in the admin; `permanent: true` would
+        // silently turn every one of them into a 308.
+        return [{ source, destination, statusCode: r.status_code || 301 }];
+      });
+    } catch {
+      // A build must not fail because the API was briefly unreachable.
+      return [];
+    }
+  },
+
   async rewrites() {
     const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/api\/v1\/?$/, '');
     return [
       { source: '/feed', destination: `${backendBase}/feed` },
       { source: '/rss',  destination: `${backendBase}/feed` },
+
+      // IndexNow's ownership proof. The protocol wants the key file on the
+      // same host as the URLs being submitted, and the URLs are ours while
+      // the key lives in the backend's settings — so the frontend serves it
+      // by proxy rather than by keeping a second copy that can drift.
+      //
+      // Scoped to the key's own shape (tp + hex) so this cannot shadow
+      // robots.txt, sitemap.xml or anything else ending in .txt.
+      {
+        source: '/:key(tp[a-f0-9]{24,48}).txt',
+        destination: `${backendBase}/:key.txt`,
+      },
     ];
   },
 };

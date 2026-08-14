@@ -28,7 +28,12 @@ class IndexNowService
             $response = Http::get('https://api.indexnow.org/indexnow', [
                 'url' => $url,
                 'key' => $key,
-                'keyLocation' => config('app.url')."/{$key}.txt",
+                // IndexNow requires the key file to sit on the SAME host as the
+                // submitted URLs. This pointed at app.url — the API domain —
+                // while `host` below is the frontend, so every ping since this
+                // shipped was rejected. Verified live: the file answered 200 on
+                // api-beta and 404 on techplay.gg.
+                'keyLocation' => rtrim((string) config('app.frontend_url'), '/')."/{$key}.txt",
             ]);
 
             if ($response->successful() || $response->status() === 202) {
@@ -68,7 +73,12 @@ class IndexNowService
             $response = Http::post('https://api.indexnow.org/indexnow', [
                 'host' => parse_url(config('app.frontend_url'), PHP_URL_HOST),
                 'key' => $key,
-                'keyLocation' => config('app.url')."/{$key}.txt",
+                // IndexNow requires the key file to sit on the SAME host as the
+                // submitted URLs. This pointed at app.url — the API domain —
+                // while `host` below is the frontend, so every ping since this
+                // shipped was rejected. Verified live: the file answered 200 on
+                // api-beta and 404 on techplay.gg.
+                'keyLocation' => rtrim((string) config('app.frontend_url'), '/')."/{$key}.txt",
                 'urlList' => array_slice($urls, 0, 10000), // Max 10k URLs
             ]);
 

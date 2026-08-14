@@ -63,6 +63,46 @@ Giphy web ključ je po prirodi klijentski, pa je ovo niži prioritet od 1.1 i
 
 ---
 
+### 2.3 `unsafe-eval` van produkcijskog CSP-a
+
+Produkcijski Next bundle ga ne treba — treba ga samo React Refresh u
+developmentu. Dok je stajao, svaki XSS koji bi prošao mogao je graditi kod iz
+stringova.
+
+Provjereno na **pravom produkcijskom buildu**, ne na pretpostavci: devet
+stranica (naslovnica, feed, baza, stranica igre, članak s reklamama, forum,
+login s Turnstileom, leaderboard, kalendar) — **nula CSP prekršaja**, a
+`window.adsbygoogle` se učitao kao objekat, što znači da se AdSense loader
+izvršio. Reklamni kreativi žive u cross-origin iframeovima sa svojim CSP-om,
+pa na njih naš i ne utiče.
+
+Povratak je jedna riječ u `next.config.ts` ako se ikad pokaže problem.
+
+### 2.4 Preusmjerenja iz admina konačno rade
+
+Nije sigurnosno, ali nađeno istim prolazom. **Dvadeset jedno preusmjerenje**
+podešeno u Filamentu nije radilo ništa: endpoint koji ih servira kaže da je
+"for caching in frontend middleware", a middleware nikad nije napravljen —
+fajl koji je postojao uklonjen je zajedno s maintenance modom (`bee11879`).
+Živi test prije popravke: stari slug je vraćao **200 umjesto 301**, što je
+duplikat sadržaja na sajtu koji živi od pretrage.
+
+Sad se čitaju u `next.config.ts` na buildu — bez middleware-a koji je namjerno
+uklonjen i bez troška po zahtjevu. Poštuje se status koji je urednik izabrao
+(301 ili 302; `permanent: true` bi svaki pretvorio u 308). Provjereno uživo:
+`301 -> /news/…-faster`. Cijena: novo preusmjerenje počne raditi na sljedećem
+deployu, ne odmah.
+
+### 2.5 IndexNow
+
+`keyLocation` je pokazivao na `app.url` (API domen) dok se `host` šalje kao
+frontend — protokol traži isti host, pa je svaki ping bio odbijan. Sad
+pokazuje na frontend, a `next.config.ts` proksira `/{key}.txt` s backenda da
+ta putanja stvarno postoji. Rewrite je opsegom vezan za oblik ključa
+(`tp` + hex), da ne može zasjeniti `robots.txt` ni `sitemap.xml`.
+
+---
+
 ## 3. Šta je zdravo (provjereno, ne pretpostavljeno)
 
 - **Privatnost profila drži.** Svih 13 javnih `/users/{username}/*` ruta
@@ -96,14 +136,23 @@ Giphy web ključ je po prirodi klijentski, pa je ovo niži prioritet od 1.1 i
 
 | Rizik | Zašto stoji |
 |---|---|
-| **CSP dozvoljava `unsafe-inline` i `unsafe-eval`** | Next.js ih traži bez nonce-a. Posljedica: ako XSS ikad prođe, CSP ga neće zaustaviti. Nonce-based CSP je zaseban posao. |
+| **CSP i dalje dozvoljava `unsafe-inline`** | Nextov hidracijski bootstrap i JSON-LD blokovi su inline skripte, a nonce pipeline ne postoji. `unsafe-eval` je **uklonjen iz produkcije** (ostaje samo u developmentu, gdje ga traži React Refresh). |
 | **Token u `localStorage`** | Arhitekturna odluka (client-side auth). U kombinaciji s gornjim, XSS = krađa sesije. Alternativa su httpOnly kolačići, što je promjena auth modela. |
 | **`AdUnit` renderuje `ad.code_block` sirovo** | Namjerno — "code" reklame su HTML/JS koji admin unosi. Znači: kompromitovan admin nalog = proizvoljan JS na svakoj stranici. |
-| **`GET /redirects` je javan** | Izlaže cijelu mapu preusmjerenja. Same putanje su ionako javne; otkriva stare/povučene slugove. |
+| **`GET /redirects` je javan** | Izlaže mapu preusmjerenja. Same putanje su ionako javne. Ostaje javan jer ga sad **koristi** frontend build (v. 2.3). |
 
 ---
 
-## 5. Nije sigurnosno, ali nađeno usput: IndexNow ne radi
+## 5. Ostaje samo tvoja akcija
+
+- **Promijeniti lozinku baze** (u istoriji od `b948e880`).
+- **Poništiti Google/Gemini ključ** u konzoli (fajl obrisan, ključ je u
+  istoriji od `b62c622d`).
+
+Nijedno se ne može riješiti iz koda: brisanje iz radnog stabla ne briše iz
+istorije.
+
+## 6. Raniji nalaz, sada riješen: IndexNow
 
 `IndexNowService` šalje `host` = **techplay.gg**, a `keyLocation` =
 `config('app.url')` = **api-beta.techplay.gg**. Provjereno uživo:
