@@ -28,7 +28,7 @@ class CustomizationResource extends Resource
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 13;
 
     public static function form(Schema $schema): Schema
     {

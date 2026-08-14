@@ -59,7 +59,7 @@ class UltimateSeo extends Page implements HasForms
 
     public static function getNavigationSort(): ?int
     {
-        return 1;
+        return 2;
     }
 
     public function mount(): void

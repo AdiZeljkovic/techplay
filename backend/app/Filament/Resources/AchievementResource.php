@@ -25,7 +25,7 @@ class AchievementResource extends Resource
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 8;
 
     public static function form(Schema $schema): Schema
     {

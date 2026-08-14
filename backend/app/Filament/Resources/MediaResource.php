@@ -33,7 +33,7 @@ class MediaResource extends Resource
         return 'Content Studio';
     }
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 5;
 
     public static function getNavigationLabel(): string
     {

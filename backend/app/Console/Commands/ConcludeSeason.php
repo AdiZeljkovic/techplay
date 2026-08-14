@@ -9,6 +9,7 @@ use App\Models\Season;
 use App\Models\UserCustomization;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -88,6 +89,20 @@ class ConcludeSeason extends Command
         Cache::forget('season.active_id.v1');
 
         $this->info("Season '{$season->name}' concluded. ✓");
+
+        // Concluding is half the job. Nothing here starts the next season, and
+        // for a long while nothing anywhere could — so the site would simply
+        // stop having one: no seasonal quests, multipliers back to 1.0, and no
+        // error to notice. Seasons are editable in the admin panel now, but the
+        // gap still has to announce itself.
+        $successor = Season::where('start_date', '>', $season->end_date)->exists();
+
+        if (! $successor) {
+            $message = "No season follows '{$season->name}'. Seasonal quests and XP/bounty multipliers are inactive until one is created in the admin panel.";
+
+            $this->warn($message);
+            Log::warning("season:conclude — {$message}");
+        }
 
         return self::SUCCESS;
     }

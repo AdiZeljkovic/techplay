@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Achievement;
 use App\Models\AdCampaign;
 use App\Models\Article;
+use App\Models\BountyTransaction;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Customization;
@@ -24,11 +25,13 @@ use App\Models\Order;
 use App\Models\PageSeo;
 use App\Models\Post;
 use App\Models\Product;
+use App\Models\Quest;
 use App\Models\Rank;
 use App\Models\Redirect;
 use App\Models\Report;
 use App\Models\Review;
 use App\Models\RewardItem;
+use App\Models\Season;
 use App\Models\SiteSetting;
 use App\Models\SupportTier;
 use App\Models\Task;
@@ -116,6 +119,11 @@ class AuthServiceProvider extends ServiceProvider
 
         // Editorial tasks — the group they live in is called Editorial Tools.
         Task::class => ContentPolicy::class,
+
+        // The XP/bounty economy, which had no admin surface until now.
+        Season::class => AdminOnlyPolicy::class,
+        Quest::class => AdminOnlyPolicy::class,
+        BountyTransaction::class => AdminOnlyPolicy::class,
     ];
 
     /**

@@ -105,11 +105,80 @@ gdje to i treba — sve definišu `canAccess()`.
 
 ---
 
-## 5. Otvoreno, za odluku
+## 5. Ekonomija (sezone, misije, ledger) nije imala nijedan ekran
+
+> **Ispravka usput.** Prvo sam ovo prijavio kao rok: jedna sezona, ističe
+> 21.09.2026, niko je ne može naslijediti. **Netačno.** Migracija
+> `2026_08_13_120000_lay_out_two_clean_seasons` slaže kalendar unaprijed —
+> Ignition 22.09.–21.12., Overdrive 22.12.–21.03.2027 — i objašnjava zašto oba
+> idu na množiocu 1.00. Nema roka za pet sedmica; horizont je **mart 2027.**
+> Našao sam to tek kad je test pao jer je komanda zaključila sezonu koju ja
+> nisam napravio.
+
+Ono što ostaje tačno: sezone i misije se **autorizuju migracijama**. Poslije
+21.03.2027. nova sezona traži novu migraciju, a nijedna se ne može ni
+pogledati, ni ispraviti datum, ni ugasiti iz panela.
+
+**Napravljeno**: `SeasonResource` i `QuestResource`, oba pod
+`AdminOnlyPolicy` jer je to ekonomija, ne uređivanje.
+
+Dvije stvari u njima nisu ukras:
+
+1. **Kolona "Standing"** u listi sezona — i ispala je korisnija nego što sam
+   mislio. Na produkciji su **sve tri sezone `is_active = true` istovremeno**;
+   to je namjerno, datumi razrješavaju ko je na redu. Ali admin koji gleda samo
+   tu zastavicu vidi tri aktivne sezone. Kolona kaže koju `Season::active()`
+   **stvarno** vraća: *Live now* / *Flagged, not live* / *Closed*.
+   (Da to nije akademski, potvrđuje ista migracija: Ignition je šest sedmica
+   bio nevidljiv ispod Summera jer su se preklapali.)
+2. **Kriteriji misije su padajuća lista, ne slobodan tekst.** Spisak nije
+   izmišljen — to je svaki string koji aplikacija zaista prosljeđuje u
+   `QuestService::progress()`. Misija s kriterijem van tog spiska može se
+   napraviti, prikazati, i nikad se neće pomjeriti ni za jedan korak.
+
+Uz njih ide i **`BountyTransactionResource`** — ledger sa `balance_after` i
+idempotentnim `reference` ključem, jedino mjesto gdje se sporan saldo može
+razriješiti, a do sada se nije mogao pogledati bez konzole. Namjerno je
+**read-only**: ledger koji se može mijenjati ne odgovara ni na šta, jer odgovara
+onim što je zadnje u njega upisano.
+
+Uz to je `season:conclude` dobio jednu rečenicu koja mu je falila: kad zaključi
+sezonu **iza koje ništa ne dolazi**, sada to kaže i upiše u log, umjesto da
+sajt tiho ostane bez sezone. Danas ne javlja ništa, jer kalendar ide do 2027.
+
+**Provjereno**: `EconomyAdminTest` otvara sve tri stranice onako kako ih otvara
+browser (`loadTable()`) i vrti komandu u oba slučaja, plus `AdminPanelAccessTest`
+provjerava da su admin-only. **15 testova, 92 tvrdnje.**
+
+Dvije greške koje je taj test uhvatio prije nego su otišle u produkciju:
+`quests.description` je `NOT NULL` a forma ga nije tražila (panel bi pukao na
+snimanju), i lista misija nije imala podrazumijevani sort, pa je novonapravljena
+misija otvarala **treću stranicu** iza dvadeset četiri zasijane.
+
+---
+
+## 6. Ostalo popravljeno u istom prolazu
+
+- **`FaqItem` obrisan.** Model plus `HasFaq` trait sa `morphMany` i
+  `toSchemaOrg()` — a trait nije koristio **nijedan** model, nijedan kontroler
+  ga ne izlaže, nijedna ruta ne postoji i nijedan red se nikad nije upisao.
+  Tabela `faq_items` ostaje; brisanje tabele je migracija nad živom bazom i
+  nije vrijedno rizika za mrtvu funkciju.
+- **`navigationSort` popravljen po grupama.** Content Studio je išao 1,2,3,5,6;
+  Community 1,2,3,4,6,7,8,9,10; a Giveaways, Comments i Reports nisu imali sort
+  pa su padali na dno svoje grupe — moderacija je stajala ispod
+  Customizations. Sada su sve grupe neprekinute i moderacija je na okupu.
+  > Usput: četiri resursa deklarišu sort **metodom** `getNavigationSort()`, koja
+  > nadjačava svojstvo. Postavljanje svojstva na njima nije radilo ništa dok se
+  > ne izmjeri — što je i uhvaćeno tek kad je panel podignut u testu i
+  > ispisan redoslijed.
+
+---
+
+## 7. I dalje otvoreno, za odluku
 
 | Nalaz | Napomena |
 |---|---|
-| **`FaqItem` je mrtav model** | Nema kontroler, nema rutu, nema admin površinu. Tabela postoji. Brisanje modela nisam radio bez naloga. |
-| **Tri SEO površine** | `PageSeoResource`, `SeoManagerResource` (nad Article) i stranica `UltimateSeo`. Kandidat za spajanje; vezuje se za 13 nepozvanih backend ruta iz `55-pregled-koda.md`. |
-| **Rupe u `navigationSort`** | Content Studio ide 1,2,3,5,6; Community 1,2,3,4,6,7,8,9,10. Ostaci uklonjenih resursa. Stavke bez `sort` (Giveaways, Comments, Reports) padaju na kraj grupe. |
-| **Modeli bez admin površine** | `Tag` (uređuje se inline preko `TagsInput`, ali se ne može globalno preimenovati ni spojiti), `GameCompany`, `Quest`, `Season`, `GtaLocation`, `BountyTransaction` (ekonomija se ne može revidirati iz panela). |
+| **Tri SEO površine — provjereno, nisu duplikati** | Prvo sam ih zapisao kao kandidat za spajanje. Pogrešno: `UltimateSeo` drži globalne postavke (separator naslova, podrazumijevani opis, tip organizacije), `PageSeoResource` je override po statičkoj stranici, a `SeoManagerResource` je revizija meta polja **po članku** s dužinama i statusom. Tri sloja, ne tri kopije. Ostaje samo pitanje imenovanja — iz sidebara se ne vidi koji je koji. |
+| **Modeli bez admin površine** | `Tag` (uređuje se inline preko `TagsInput`, ali se ne može globalno preimenovati ni spojiti), `GameCompany`, `GtaLocation`. |
+| **Tabela `faq_items`** | Prazna ljuska bez koda. Briše se migracijom kad se bude dirala baza iz drugog razloga. |

@@ -3,13 +3,16 @@
 namespace Tests\Feature;
 
 use App\Models\Achievement;
+use App\Models\BountyTransaction;
 use App\Models\Comment;
 use App\Models\Game;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Quest;
 use App\Models\Rank;
 use App\Models\Redirect;
 use App\Models\RewardItem;
+use App\Models\Season;
 use App\Models\SiteSetting;
 use App\Models\Task;
 use App\Models\User;
@@ -154,6 +157,22 @@ class AdminPanelAccessTest extends TestCase
         $this->assertTrue($editor->can('viewAny', Redirect::class));
         $this->assertTrue($editor->can('viewAny', Task::class));
         $this->assertFalse($moderator->can('viewAny', Redirect::class), 'routing is not moderation');
+    }
+
+    /**
+     * The XP/bounty economy got its first admin surface with Seasons, Quests
+     * and the bounty ledger. AdminOnlyPolicy already covers "the XP/bounty
+     * economy" in words; these three are what those words now point at.
+     */
+    public function test_the_economy_surfaces_are_admin_only(): void
+    {
+        $editor = $this->withRole('Editor-in-Chief');
+        $admin = $this->withRole('Super Admin');
+
+        foreach ([Season::class, Quest::class, BountyTransaction::class] as $model) {
+            $this->assertFalse($editor->can('viewAny', $model), $model.' is economy, not editorial');
+            $this->assertTrue($admin->can('viewAny', $model));
+        }
     }
 
     public function test_nobody_who_had_power_through_the_old_column_loses_it(): void

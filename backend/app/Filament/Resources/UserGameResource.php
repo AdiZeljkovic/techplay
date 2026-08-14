@@ -27,7 +27,7 @@ class UserGameResource extends Resource
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 11;
 
     public static function form(Schema $schema): Schema
     {

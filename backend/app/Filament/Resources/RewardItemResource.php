@@ -28,7 +28,7 @@ class RewardItemResource extends Resource
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 12;
 
     public static function form(Schema $schema): Schema
     {

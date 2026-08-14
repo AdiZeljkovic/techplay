@@ -28,7 +28,7 @@ class MediaKitSettingResource extends Resource
     // sitting next to a declared 'SEO & Marketing' that means the same thing.
     protected static \UnitEnum|string|null $navigationGroup = 'SEO & Marketing';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 6;
 
     protected static ?string $navigationLabel = 'Media Kit Settings';
 
