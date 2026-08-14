@@ -1,7 +1,6 @@
 import {
-    MessageCircle, Megaphone, Gamepad2, Star, Coffee, Monitor,
-    HelpCircle, Trophy, ShoppingBag, Users2,
-} from "lucide-react";
+    MegaphoneMark, SupportMark, LoungeMark, PadMark, VerdictMark, TowerMark, ConsoleMark, BoardMark,
+} from "@/components/forum/BoardMarks";
 import { getImageUrl } from "@/lib/imageUrl";
 
 export function fmtStat(n: number): string {
@@ -35,56 +34,42 @@ export function getCategoryColor(slug: string): string {
     return categoryColors[slug] ?? "#9ca3af";
 }
 
-const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-    // Parent categories
-    community: Users2,
-    gaming: Gamepad2,
-    hardware: Monitor,
-    // Child categories
-    "news-announcements": Megaphone,
-    "feedback-support": HelpCircle,
-    "general-gaming": Gamepad2,
-    "game-reviews": Star,
-    "user-reviews": Star,
-    esports: Trophy,
-    "pc-builds": Monitor,
-    "pc-builds-upgrades": Monitor,
-    consoles: Gamepad2,
-    "consoles-peripherals": Gamepad2,
-    "the-lounge": Coffee,
-    marketplace: ShoppingBag,
-    "game-guides": Star,
-    "hardware-tech": Monitor,
-    "tech-gear-talk": ShoppingBag,
-};
+type BoardMarkComponent = React.ComponentType<{ className?: string; strokeWidth?: number }>;
 
 /**
- * Painted art for the boards that have it.
+ * One mark per board, in the house hand.
  *
- * A lucide glyph in a tinted square told you a board existed; it did not tell
- * you which one. These are the marks for the seven boards we actually run —
- * anything else still falls back to the glyph, so a board added in the admin
- * panel tomorrow does not render a broken image.
+ * This was two maps: painted emoji for the seven boards we run and lucide
+ * glyphs as a fallback for everything else — so a board added in the admin
+ * panel rendered in a different drawing language from its neighbours, and two
+ * of the painted ones were the same purple controller. One map now, one hand,
+ * and the fallback is a board rather than a generic bubble.
  */
-const categoryArt: Record<string, string> = {
-    "news-announcements": "/images/forum/news-announcements.webp",
-    "feedback-support": "/images/forum/feedback-support.webp",
-    "the-lounge": "/images/forum/the-lounge.webp",
-    "general-gaming": "/images/forum/general-gaming.webp",
-    "user-reviews": "/images/forum/user-reviews.webp",
-    "game-reviews": "/images/forum/user-reviews.webp",
-    "pc-builds": "/images/forum/pc-builds.webp",
-    "pc-builds-upgrades": "/images/forum/pc-builds.webp",
-    consoles: "/images/forum/consoles.webp",
-    "consoles-peripherals": "/images/forum/consoles.webp",
+const categoryMarks: Record<string, BoardMarkComponent> = {
+    // Parents
+    community: SupportMark,
+    gaming: PadMark,
+    hardware: TowerMark,
+    // Boards
+    "news-announcements": MegaphoneMark,
+    "feedback-support": SupportMark,
+    "the-lounge": LoungeMark,
+    "general-gaming": PadMark,
+    "game-reviews": VerdictMark,
+    "user-reviews": VerdictMark,
+    esports: VerdictMark,
+    "game-guides": VerdictMark,
+    "pc-builds": TowerMark,
+    "pc-builds-upgrades": TowerMark,
+    "hardware-tech": TowerMark,
+    consoles: ConsoleMark,
+    "consoles-peripherals": ConsoleMark,
+    "tech-gear-talk": ConsoleMark,
+    marketplace: BoardMark,
 };
 
-export function getCategoryArt(slug: string): string | null {
-    return categoryArt[slug] ?? null;
-}
-
-export function getCategoryIcon(slug: string): React.ComponentType<{ className?: string }> {
-    return categoryIcons[slug] ?? MessageCircle;
+export function getCategoryIcon(slug: string): BoardMarkComponent {
+    return categoryMarks[slug] ?? BoardMark;
 }
 
 export function getAvatarSrc(avatarUrl?: string): string | null {

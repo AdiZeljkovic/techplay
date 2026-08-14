@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import ForumSidebar from "@/components/forum/ForumSidebar";
 import ListingPagination from "@/components/ui/ListingPagination";
 import { useRealTimeForum } from "@/hooks";
-import { fmtStat, getCategoryArt, getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
+import { fmtStat, getCategoryColor, getCategoryIcon, getAvatarSrc } from "@/lib/forum";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -56,7 +56,6 @@ function CategoryThreadsPageInner() {
     const { user } = useAuth();
     const color = getCategoryColor(categorySlug);
     const Icon = getCategoryIcon(categorySlug);
-    const art = getCategoryArt(categorySlug);
     const [page, setPage] = useState(1);
     const [activeTag, setActiveTag] = useState<string | null>(searchParams.get("tag"));
     const [showRules, setShowRules] = useState(false);
@@ -131,12 +130,7 @@ function CategoryThreadsPageInner() {
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                         <div className="flex items-center gap-5">
                             <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center" style={{ color }}>
-                                {art ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={art} alt="" aria-hidden className="max-w-[52px] max-h-[52px] w-auto h-auto" />
-                                ) : (
-                                    <Icon className="w-8 h-8" />
-                                )}
+                                <Icon className="w-[46px] h-[46px]" />
                             </div>
                             <div>
                                 <h1 className="font-display text-[26px] md:text-[32px] font-black text-white tracking-tight leading-none">{category.name}</h1>
