@@ -88,3 +88,24 @@ export function splitForAd(html: string, minParagraphs = 6): [string, string | n
 
     return [html.slice(0, at), html.slice(at)];
 }
+
+/**
+ * An excerpt, ended like a sentence rather than mid-word.
+ *
+ * The API serves excerpts cut to exactly 200 characters, so the last word is
+ * usually half a word — and the article templates set the excerpt inside
+ * quotation marks, which turned every pull quote into `…that dictated t”`.
+ *
+ * Only touched when it looks cut: an excerpt that ends in real punctuation is
+ * somebody's finished sentence and gets left alone.
+ */
+export function tidyExcerpt(text: string | null | undefined): string {
+    const s = (text ?? "").trim();
+    if (!s) return "";
+    if (/[.!?…"'”’)]$/.test(s)) return s;
+
+    // Back up to the last word boundary; if there isn't one, the whole thing
+    // is a single long token and there is nothing sensible to trim to.
+    const cut = s.replace(/\s+\S*$/, "");
+    return (cut.length > 40 ? cut : s).replace(/[,;:\-–—]$/, "") + "…";
+}

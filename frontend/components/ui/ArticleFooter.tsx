@@ -84,7 +84,7 @@ export default function ArticleFooter({
                 {author && (
                     <div className="flex items-start sm:items-center justify-between gap-4 px-5 py-5 border-t border-white/[0.07]">
                         <div className="flex items-center gap-4 min-w-0 flex-1">
-                            <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="shrink-0">
+                            <Link href={`/author/${author.author_slug || author.username || 'me'}`} aria-label={`${author.display_name || author.username || 'Author'} profile`} className="shrink-0">
                                 {author.avatar_url ? (
                                     <Image
                                         src={author.avatar_url}

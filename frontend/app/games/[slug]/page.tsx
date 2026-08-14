@@ -612,7 +612,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 </div>
 
                 {/* ── sidebar ── */}
-                <div className="xl:col-span-4 min-w-0 space-y-5">
+                <div className="xl:col-span-4 min-w-0 space-y-5 xl:sticky xl:top-[92px]">
                     <Panel title="Your collection" className="hidden xl:block">
                         <div className="space-y-2.5">
                             <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />

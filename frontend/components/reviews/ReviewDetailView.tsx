@@ -197,6 +197,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         <div className="flex items-center gap-3">
                                             <Link
                                                 href={`/author/${review.author?.author_slug || review.author?.username || 'me'}`}
+                                                aria-label="Author profile"
                                                 className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
                                             >
                                                 {review.author?.avatar_url ? (

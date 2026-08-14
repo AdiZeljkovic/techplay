@@ -440,7 +440,7 @@ export default function ProfileHero({
                 <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
                     {/* portrait + identity */}
                     <div className="flex items-start gap-4 md:gap-7 flex-1 min-w-0">
-                        <Link href={base} className="group/av block shrink-0">
+                        <Link href={base} aria-label={`${hero.display_name} profile picture`} className="group/av block shrink-0">
                             <AvatarRing src={hero.avatar_url} alt={hero.display_name} frame={hero.frame_value} online={online} />
                         </Link>
 

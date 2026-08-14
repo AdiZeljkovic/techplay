@@ -686,7 +686,7 @@ export default function ThreadPage() {
                             <div className="flex flex-col md:flex-row">
                                 {/* Author Sidebar */}
                                 <div className="md:w-48 bg-white/[0.02] p-3 md:p-6 flex flex-row md:flex-col items-center gap-3 md:gap-0 text-left md:text-center border-b md:border-b-0 md:border-r border-white/[0.07]">
-                                    <Link href={`/profile/${thread.author?.username}`} className="group">
+                                    <Link href={`/profile/${thread.author?.username}`} aria-label={`${thread.author?.username || "Author"} profile`} className="group">
                                         <div className={`w-10 h-10 md:w-20 md:h-20 rounded-full overflow-hidden bg-[var(--surface-1)] mb-0 md:mb-3 ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07] group-hover:ring-[var(--accent)]'}`}>
                                             {threadAuthorAvatar ? (
                                                 <Image src={threadAuthorAvatar} alt={thread.author?.username || ""} width={80} height={80} className="object-cover w-full h-full" />

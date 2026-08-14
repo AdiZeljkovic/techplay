@@ -191,6 +191,7 @@ export default function GameRating({ slug }: Props) {
                                 onMouseEnter={() => setHovered(s)}
                                 onMouseLeave={() => setHovered(0)}
                                 onClick={() => { setMyRating(s); setShowForm(true); }}
+                                aria-label={`Rate ${s} out of 10`}
                                 className="p-1 transition-transform hover:scale-110">
                                 <Star className={`w-7 h-7 transition-colors ${
                                     s <= (hovered || myRating) ? "text-yellow-400 fill-yellow-400" : "text-white/20"
@@ -272,6 +273,7 @@ export default function GameRating({ slug }: Props) {
                                 onMouseEnter={() => setHovered(s)}
                                 onMouseLeave={() => setHovered(0)}
                                 onClick={() => setShowLoginModal(true)}
+                                aria-label={`Rate ${s} out of 10`}
                                 className="p-1 transition-transform hover:scale-110">
                                 <Star className={`w-7 h-7 transition-colors ${s <= hovered ? "text-yellow-400 fill-yellow-400" : "text-white/20"}`} />
                             </button>

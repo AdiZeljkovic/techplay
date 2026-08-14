@@ -69,6 +69,7 @@ export default function GameScreenshotsLightbox({ screenshots, wrapperClassName 
                 <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                     {screenshots.map((s, i) => (
                         <button key={s.id} onClick={() => setLightboxIdx(i)}
+                            aria-label={`Open screenshot ${i + 1} of ${screenshots.length}`}
                             className="relative shrink-0 w-48 h-28 rounded-[8px] overflow-hidden border border-white/[0.07] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors group">
                             <Image src={s.image} alt={`Screenshot ${i + 1}`} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors flex items-center justify-center">

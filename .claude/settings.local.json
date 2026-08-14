@@ -199,7 +199,10 @@
       "Bash(curl -sL -A \"Mozilla/5.0\" \"https://techplay.gg/gta6/vehicles\" --max-time 20)",
       "Bash(curl -sL -A \"Mozilla/5.0\" \"https://techplay.gg/gta6/characters\" --max-time 20)",
       "Bash(curl -sL -A \"Mozilla/5.0\" \"https://techplay.gg/gta6/everything-we-know\" --max-time 20)",
-      "PowerShell(node \"C:\\\\Users\\\\adize\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-adize-Documents-Projekti-TechPlay\\\\ef47628f-b100-445e-8f5f-db14ecc224a7\\\\scratchpad\\\\convert-gta6-webp.js\")"
+      "PowerShell(node \"C:\\\\Users\\\\adize\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-adize-Documents-Projekti-TechPlay\\\\ef47628f-b100-445e-8f5f-db14ecc224a7\\\\scratchpad\\\\convert-gta6-webp.js\")",
+      "Bash(python -)",
+      "Bash(node deepaudit.js)",
+      "Bash(PYTHONIOENCODING=utf-8 python -)"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\Documents\\Projekti\\TechPlay\\frontend\\app\\calendar",

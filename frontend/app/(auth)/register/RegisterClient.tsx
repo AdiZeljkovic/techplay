@@ -38,6 +38,10 @@ export default function RegisterClient() {
     const [errors, setErrors] = useState<string[]>([]);
     const [success, setSuccess] = useState(false);
     const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+    // The check can fail on a blocker, a proxy or a flaky network, and
+    // when it does the button below simply stops working. This is what
+    // tells the reader why.
+    const [captchaFailed, setCaptchaFailed] = useState(false);
 
     const { register: registerAuth } = useAuth({
         middleware: 'guest',
@@ -66,6 +70,7 @@ export default function RegisterClient() {
 
     const handleTurnstileError = useCallback(() => {
         setTurnstileToken(null);
+        setCaptchaFailed(true);
         setErrors(["Security verification failed. Please refresh the page."]);
     }, []);
 
@@ -282,6 +287,21 @@ export default function RegisterClient() {
                             onVerify={handleTurnstileVerify}
                             onError={handleTurnstileError}
                         />
+
+                        {captchaFailed && (
+                            <p className="text-[12.5px] text-[var(--danger)] leading-snug">
+                                The security check could not load, so we cannot let you
+                                register yet. Reload the page, and if it keeps happening try
+                                turning off a blocker for this site.{" "}
+                                <button
+                                    type="button"
+                                    onClick={() => window.location.reload()}
+                                    className="font-bold underline underline-offset-2 hover:brightness-110"
+                                >
+                                    Reload
+                                </button>
+                            </p>
+                        )}
 
                         <button
                             type="submit"

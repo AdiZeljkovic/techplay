@@ -7,7 +7,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import Script from "next/script";
 import { processContent } from "@/lib/content";
-import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
+import { ARTICLE_PROSE, splitForAd, tidyExcerpt } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
@@ -204,6 +204,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                         <div className="flex items-center gap-3">
                                             <Link
                                                 href={`/author/${guide.author?.author_slug || guide.author?.username || 'me'}`}
+                                                aria-label="Author profile"
                                                 className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
                                             >
                                                 {guide.author?.avatar_url ? (
@@ -269,7 +270,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                     {guide.excerpt && (
                                         <div className="bg-[var(--surface-1)] border border-white/[0.07] border-l-[4px] border-l-[var(--accent)] p-6 md:p-8 rounded-r-[16px] rounded-l-[4px] mb-10 shadow-lg">
                                             <p className="text-[22px] md:text-[26px] font-display italic font-medium text-white leading-snug">
-                                                &ldquo;{decodeHtml(guide.excerpt)}&rdquo;
+                                                &ldquo;{tidyExcerpt(decodeHtml(guide.excerpt))}&rdquo;
                                             </p>
                                         </div>
                                     )}

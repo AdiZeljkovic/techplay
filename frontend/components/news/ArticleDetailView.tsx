@@ -7,7 +7,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
-import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
+import { ARTICLE_PROSE, splitForAd, tidyExcerpt } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
@@ -122,6 +122,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                 <aside className="hidden lg:flex flex-col gap-6 sticky top-[140px] shrink-0 h-[max-content]">
                     <Link
                         href="/news"
+                        aria-label="Back to news"
                         className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white/45 hover:text-[var(--accent)] hover:bg-white/5 transition-colors"
                     >
                         <ArrowLeft className="w-5 h-5" />
@@ -214,6 +215,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         <div className="flex items-center gap-3">
                                             <Link
                                                 href={`/author/${article.author?.author_slug || article.author?.username || 'me'}`}
+                                                aria-label="Author profile"
                                                 className="w-[46px] h-[46px] rounded-full overflow-hidden border border-white/10 shrink-0 shadow-sm hover:border-[var(--accent)]/50 transition-colors"
                                             >
                                                 {article.author?.avatar_url ? (
@@ -285,7 +287,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                     {article.excerpt && (
                                         <div className="bg-[var(--surface-1)] border border-white/[0.07] border-l-[4px] border-l-[var(--accent)] p-4 md:p-8 rounded-r-[16px] rounded-l-[4px] mb-6 md:mb-10 shadow-lg">
                                             <p className="text-[17px] md:text-[26px] font-display italic font-medium text-white leading-snug">
-                                                &ldquo;{decodeHtml(article.excerpt)}&rdquo;
+                                                &ldquo;{tidyExcerpt(decodeHtml(article.excerpt))}&rdquo;
                                             </p>
                                         </div>
                                     )}

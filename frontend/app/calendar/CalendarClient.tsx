@@ -547,7 +547,7 @@ export default function CalendarClient() {
                                             <div className="min-w-0 flex-1 space-y-2.5">
                                                 {shown.map((game) => (
                                                     <div key={game.slug} className="group flex items-center gap-2.5 sm:gap-3 rounded-[10px] border border-white/[0.06] bg-white/[0.015] hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] transition-colors p-2.5">
-                                                        <Link href={`/calendar/${game.slug}`} className="w-[56px] h-[36px] sm:w-[64px] sm:h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05] py-1 -my-1 box-content sm:py-0 sm:my-0">
+                                                        <Link href={`/calendar/${game.slug}`} aria-label={game.name} className="w-[56px] h-[36px] sm:w-[64px] sm:h-[40px] shrink-0 rounded-[7px] overflow-hidden bg-white/[0.05] py-1 -my-1 box-content sm:py-0 sm:my-0">
                                                             {game.cover_url ? (
                                                                 // eslint-disable-next-line @next/next/no-img-element
                                                                 <img src={game.cover_url} alt="" aria-hidden loading="lazy" className="w-full h-full object-cover" />

@@ -103,6 +103,7 @@ function AdSlot({
     const host = useRef<HTMLDivElement>(null);
     const pushed = useRef(false);
     const consent = useMarketingConsent();
+    const [filled, setFilled] = useState(false);
 
     useEffect(() => {
         pushed.current = false;
@@ -135,12 +136,29 @@ function AdSlot({
         );
         io.observe(el);
 
-        return () => io.disconnect();
+        // AdSense stamps data-ad-status="filled" or "unfilled" on the element
+        // once it has decided. Watching the attribute is the only way to know;
+        // there is no callback.
+        const ins = el.querySelector("ins");
+        const mo = ins
+            ? new MutationObserver(() => setFilled(ins.getAttribute("data-ad-status") === "filled"))
+            : null;
+        mo?.observe(ins!, { attributes: true, attributeFilter: ["data-ad-status"] });
+
+        return () => { io.disconnect(); mo?.disconnect(); };
     }, [pathname, consent]);
+
+    // A new route means a new element and an undecided slot.
+    useEffect(() => { setFilled(false); }, [pathname]);
 
     return (
         <div ref={host} className={className} key={pathname}>
-            {label && (
+            {/* The label appears only once an ad actually arrives. AdSense
+                leaves the slot empty when it has nothing to serve, and a word
+                reading "Advertisement" over 250px of nothing is worse than no
+                label — it tells the reader something is broken. `filled` is
+                set from the data-ad-status AdSense writes on the element. */}
+            {label && filled && (
                 <p className="mb-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.18em] text-white/20">
                     Advertisement
                 </p>
