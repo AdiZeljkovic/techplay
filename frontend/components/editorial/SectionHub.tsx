@@ -429,9 +429,14 @@ export default function SectionHub({
                                             <span className="font-display text-[15px] font-black tabular-nums text-[var(--accent)] w-4 shrink-0 leading-none pt-0.5">
                                                 {i + 1}
                                             </span>
-                                            <span className="w-[52px] h-[36px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
+                                            {/* `relative` is load-bearing: next/image with `fill`
+                                                is position:absolute, and absolute resolves against
+                                                the nearest *positioned* ancestor. Without it the
+                                                thumbnail skipped this 52×36 box entirely and sized
+                                                itself to the rail — 324×1121, one per row, stacked.
+                                                That is what "the widgets look broken" was. */}
+                                            <span className="relative block w-[52px] h-[36px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
                                                 {a.featured_image_url && (
-                                                    // eslint-disable-next-line @next/next/no-img-element
                                                     <Image src={getStorageUrl(a.featured_image_url)} alt="" aria-hidden fill sizes="52px" className="object-cover" />
                                                 )}
                                             </span>
@@ -471,9 +476,8 @@ export default function SectionHub({
                             <div className="space-y-3">
                                 {hub.upcoming_releases.map((g) => (
                                     <Link key={g.slug} href={`/calendar/${g.slug}`} className="flex items-center gap-3 group">
-                                        <span className="w-[46px] h-[31px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
+                                        <span className="relative block w-[46px] h-[31px] shrink-0 rounded-[6px] overflow-hidden bg-white/[0.05]">
                                             {g.cover_url && (
-                                                // eslint-disable-next-line @next/next/no-img-element
                                                 <Image src={getStorageUrl(g.cover_url)} alt="" aria-hidden fill sizes="46px" unoptimized className="object-cover" />
                                             )}
                                         </span>
