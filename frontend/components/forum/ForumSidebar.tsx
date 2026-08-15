@@ -9,6 +9,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import Panel from "@/components/ui/Panel";
 import { getCategoryIcon, getAvatarSrc } from "@/lib/forum";
+import { decodeHtml } from "@/lib/decode";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
@@ -222,7 +223,7 @@ export default function ForumSidebar() {
                                     </span>
                                     <div className="flex-1 min-w-0">
                                         <p className="font-display text-[12px] font-black text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
-                                            {thread.title}
+                                            {decodeHtml(thread.title)}
                                         </p>
                                         <p className="mt-0.5 text-[10.5px] text-white/25">
                                             {thread.category?.name ?? "Forum"}

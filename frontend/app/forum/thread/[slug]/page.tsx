@@ -25,6 +25,7 @@ const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
     ssr: false
 });
 import DOMPurify from "isomorphic-dompurify";
+import { decodeHtml } from "@/lib/decode";
 import { isOwnUpload } from "@/lib/imageUrl";
 
 const fetcher = (url: string) => axios.get(url).then((res) => res.data);
@@ -355,7 +356,7 @@ export default function ThreadPage() {
     };
 
     const startThreadEdit = () => {
-        setThreadTitleDraft(thread?.title ?? "");
+        setThreadTitleDraft(decodeHtml(thread?.title ?? ""));
         setThreadBodyDraft(thread?.content ?? "");
         setEditingThread(true);
     };
@@ -628,7 +629,7 @@ export default function ThreadPage() {
                                 />
                             ) : (
                                 <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-3">
-                                    {thread.title}
+                                    {decodeHtml(thread.title)}
                                 </h1>
                             )}
                             {thread.tags && thread.tags.length > 0 && (
