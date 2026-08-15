@@ -32,12 +32,12 @@ fi
 
 # 3a. Make every one of them readable by whoever serves them.
 #
-# A restored chunk arrives owned by whoever ran this script. If that is not the
-# user pm2 runs as, Next cannot open the file and answers 500 with a body of
-# "Internal Server Error" and a Content-Type of text/plain — at which point the
-# browser refuses it for its MIME type and the page dies with a ChunkLoadError.
-# Freshly built files were fine and restored ones were not, which is what made
-# it look like only some assets were broken.
+# Precaution, not a diagnosis. A restored chunk arrives owned by whoever ran
+# this script, and if that is not the user pm2 runs as, the file cannot be
+# opened by the process that has to serve it. That was offered once as the
+# explanation for chunks answering 500 and it was wrong — `ls` showed the files
+# simply absent. The line stays because it costs nothing and closes a real hole;
+# it is not evidence of anything.
 #
 # The directory's own owner is the reference, so this needs no configuration.
 OWNER=$(stat -c '%U:%G' "$FRONT" 2>/dev/null || echo "")
@@ -53,6 +53,32 @@ find "$ARCHIVE" -type d -empty -delete 2>/dev/null || true
 # 5. Serve it.
 pm2 restart techplay-frontend
 
+PROBE_BASE="${PROBE_BASE:-http://127.0.0.1:3000}"
+
+# 5a. Wait for it to actually be listening.
+#
+# The check below used to run the instant pm2 returned, which is several
+# seconds before Next accepts a connection — so it reported every page as
+# unreachable and failed a deploy that had in fact worked. A failing check that
+# cries wolf is worse than no check: the next real failure gets ignored.
+echo -n "Cekam da se digne"
+ready=0
+for _ in $(seq 1 60); do
+    if curl -fsS -o /dev/null --max-time 3 "$PROBE_BASE/" 2>/dev/null; then
+        ready=1
+        break
+    fi
+    echo -n "."
+    sleep 1
+done
+echo
+
+if [ "$ready" -ne 1 ]; then
+    echo "NEUSPJEH: server se nije digao za 60s."
+    echo "  pm2 logs techplay-frontend --lines 40 --nostream"
+    exit 1
+fi
+
 # 6. Ask the running server what it thinks it needs, then check it is there.
 #
 # The archive above protects HTML already in the wild. It does not protect
@@ -66,7 +92,6 @@ pm2 restart techplay-frontend
 echo
 echo "Provjera: prati sve sto stranice traze."
 
-PROBE_BASE="${PROBE_BASE:-http://127.0.0.1:3000}"
 PROBE_PATHS=(/ /latest /news /reviews /games /forum /calendar /leaderboard)
 
 # One real thread and one real article — the routes with their own chunks, and
@@ -104,9 +129,11 @@ if [ "$missing" -gt 0 ]; then
     echo
     echo "NEUSPJEH: $missing resursa koje stranice traze se ne posluzuje."
     echo "Stranica ce pasti na ChunkLoadError. Redom:"
-    echo "  1. prava:  chown -R \$(stat -c '%U:%G' $FRONT) $FRONT/.next/static"
-    echo "  2. ponovi: bash \$0"
-    echo "  3. iz cista: rm -rf $FRONT/.next $ARCHIVE && bash \$0"
+    echo "  1. cist build:  rm -rf $FRONT/.next && bash \$0"
+    echo "  2. ako i dalje: pm2 logs techplay-frontend --lines 40 --nostream"
+    echo
+    echo "NE brisi $ARCHIVE osim ako ti drugo ne uspije — to je jedino sto"
+    echo "cuva stare chunkove za ljude koji bas sada imaju otvorenu stranicu."
     exit 1
 fi
 
