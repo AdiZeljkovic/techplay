@@ -410,7 +410,9 @@ export default function GameDatabaseHub({
                         <input
                             value={typed}
                             onChange={(e) => change(() => setTyped(e.target.value))}
-                            placeholder="Search for games, genres, platforms, themes…"
+                            // Short enough to survive the 16px phone floor, which
+                            // was cutting the old placeholder mid-word.
+                            placeholder="Search games, genres, platforms…"
                             className="w-full h-12 pl-11 pr-10 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] text-[13.5px] text-white placeholder:text-[var(--ink-faint)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all"
                         />
                         {typed && (

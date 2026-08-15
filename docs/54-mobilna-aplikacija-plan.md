@@ -209,6 +209,41 @@ polja, povratak nazad gestom.
 
 ---
 
+## Dopuna 15.08.2026. — "zumiranje razbija raspored"
+
+Prijavljeno kao zoom bug: na iPhoneu se rezolucija pomjeri i sve stoji ukoso —
+naslov panela odsječen s lijeve strane, logo napola.
+
+**Izmjereno prije nego dirano.** Stranica se **ne** prelijeva bočno:
+`document.documentElement.scrollWidth` je tačno **390** na `/`, `/latest`,
+`/games`, `/forum`, `/login` i `/search`. Elementi širi od ekrana postoje
+(dekorativni sjaj `-left-32 w-[520px]`, vodoravne trake sa `snap-start`), ali
+su svi unutar `overflow-hidden` — što `scrollWidth` i dokazuje.
+
+Uzrok je drugi: **iOS sam zumira stranicu kad se fokusira polje čiji je tekst
+manji od 16px**, i **ne vrati zoom nazad** kad se polje napusti. Sve poslije
+toga se gleda kroz pomjeren viewport, a sve što je `position: fixed` — header,
+tab bar, sheet s notifikacijama — raspoređeno je prema stranici, pa ispadne
+napola izvan ekrana. Počinje dodirom na pretragu.
+
+Nađeno na svakoj mjerenoj stranici: pretraga u headeru **14px**, pretraga igara
+**13,5px**, forum **13,5px**, email i lozinka na prijavi **14px**.
+
+**Gašenje zooma nije bilo rješenje.** Safari ignoriše `user-scalable=no` od
+iOS 10, pa `maximumScale: 5, userScalable: true` ostaje kako jeste — oduzeti
+pinch-zoom ljudima kojima treba je loša mijena za bug koji ima uzrok.
+
+Popravka je jedno pravilo u `globals.css`, unutar postojećeg
+`@media (hover: none) and (pointer: coarse)` sloja: polja za unos idu na 16px.
+`!important` je namjeran — mora nadjačati utility klasu koja je i postavila
+manju veličinu. Polja bez teksta (checkbox, radio, range, color) su izuzeta.
+
+**Provjereno poslije**: 0 polja ispod 16px na šest stranica, `scrollWidth` i
+dalje 390. Usput je skraćen placeholder u pretrazi igara, jer se na 16px
+prelamao usred riječi.
+
+---
+
 ## Izvori
 
 - [Mobile Navigation UX Best Practices, Patterns & Examples (2026)](https://www.designstudiouiux.com/blog/mobile-navigation-ux/)

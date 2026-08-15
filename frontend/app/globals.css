@@ -298,6 +298,26 @@ body {
     touch-action: manipulation;
   }
 
+  /* iOS zooms the page in when a focused field's text is smaller than 16px —
+     and it does not zoom back out when the field is done with. Every tap after
+     that lands on a panned viewport, where anything `position: fixed` (the
+     header, the tab bar, the notifications sheet) is laid out against the page
+     and therefore renders half off-screen. It reads as a broken layout, and it
+     starts with tapping the search box.
+
+     Disabling zoom is not the fix: Safari has ignored user-scalable=no since
+     iOS 10, and taking pinch-zoom away from people who need it is a poor trade
+     for a bug that has a cause.
+
+     `!important` is deliberate. It has to beat the utility class that set the
+     smaller size, which is the whole reason the zoom fires. Controls with no
+     text to type are left alone. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
   /* A control smaller than a fingertip is a control you aim at. 44px is
      Apple's floor and 48dp is Google's; this reaches the floor without
      changing any layout, because the padding grows outside the box. */
