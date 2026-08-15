@@ -244,6 +244,30 @@ prelamao usred riječi.
 
 ---
 
+## Dopuna 15.08.2026. — ikone trake su sada menijeve ikone
+
+Prigovor: ikone u donjoj traci su "debele, previse kompleksne". Ranije sam ih,
+na prijavu da su izblijedjele, **podebljao s 1,8 na 2,2** — to je bio pogresan
+odgovor na tacan osjecaj. Problem nije bila debljina nego kolicina.
+
+Bile su rucno crtane u uglastom jeziku (`square` zavrseci, `miter` spojevi) i
+svaka je nosila tri do cetiri elementa: kuca s ognjistem, kartica s blokom i
+dva reda, pad s drskama i tipkama, dvije preklopljene ploce. Crtaju se na
+**22px**. Tri poteza unutrasnjeg detalja u jedanaest piksela ne citaju se kao
+znacenje nego kao tezina, a debljanje je tu kasu samo pojacalo.
+
+Odgovor je vec postojao u projektu: sekcije **Community** i **Tools** u meniju
+crtaju lucide na **22px, `strokeWidth={1.4}`**, sa zaobljenim zavrsecima i
+spojevima. Traka sada koristi iste marke i istu tezinu — `House`, `Layers`,
+`Gamepad2`, `MessageSquare`, `User` — pa su traka i meni jedan set, a ne dva.
+
+Header nije diran: njegove ikone su na debljini 2 i medjusobno su usklađene.
+
+Pet marki koje su ostale bez upotrebe je obrisano iz `TabMarks.tsx`; ostali su
+`MoreMark` i `BellMark`, koje header i dalje koristi.
+
+---
+
 ## Izvori
 
 - [Mobile Navigation UX Best Practices, Patterns & Examples (2026)](https://www.designstudiouiux.com/blog/mobile-navigation-ux/)

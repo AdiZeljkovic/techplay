@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { HomeMark, FeedMark, GamesMark, ForumMark, ProfileMark } from "./TabMarks";
+import { Gamepad2, House, Layers, MessageSquare, User } from "lucide-react";
 import { isOwnUpload } from "@/lib/imageUrl";
 
 /**
@@ -46,23 +46,41 @@ import { isOwnUpload } from "@/lib/imageUrl";
  * is a phone control on a desk.
  */
 
+/**
+ * The marks are the menu's marks.
+ *
+ * They used to be drawn by hand for this bar — angular strokes, square caps,
+ * miter joins, and enough interior detail to name each one on its own: a
+ * hearth inside the house, grips and keys on the pad, two boards overlapping.
+ * At the 22px they are actually drawn at, that detail is three strokes inside
+ * eleven pixels, and it reads as weight rather than as meaning. Thickening
+ * them, which is what the first complaint asked for, only made the mush
+ * heavier.
+ *
+ * The site already had an answer: the Community and Tools sections of the menu
+ * draw lucide at 22px and `strokeWidth={1.4}`, round caps and joins. Same
+ * marks, same weight, same size — so the bar and the menu now agree, and the
+ * icons stop competing with their own labels.
+ */
+const STROKE = 1.4;
+
 interface Tab {
     href: string;
     label: string;
-    Mark: (p: { className?: string; active?: boolean }) => React.ReactElement;
+    Mark: React.ComponentType<{ className?: string; strokeWidth?: number }>;
     /** Extra paths that should light this tab up. */
     also?: string[];
 }
 
-/** Two either side of the portrait. */
+/** Two either side of the portrait. Each mark is the one the menu already uses. */
 const LEFT: Tab[] = [
-    { href: "/", label: "Home", Mark: HomeMark },
-    { href: "/latest", label: "Feed", Mark: FeedMark, also: ["/news", "/reviews", "/hardware", "/guides"] },
+    { href: "/", label: "Home", Mark: House },
+    { href: "/latest", label: "Feed", Mark: Layers, also: ["/news", "/reviews", "/hardware", "/guides"] },
 ];
 
 const RIGHT: Tab[] = [
-    { href: "/games", label: "Games", Mark: GamesMark, also: ["/calendar"] },
-    { href: "/forum", label: "Forum", Mark: ForumMark },
+    { href: "/games", label: "Games", Mark: Gamepad2, also: ["/calendar"] },
+    { href: "/forum", label: "Forum", Mark: MessageSquare },
 ];
 
 const PROFILE_PATHS = ["/profile", "/settings", "/friends", "/messages", "/login", "/register"];
@@ -132,7 +150,7 @@ export default function MobileTabBar() {
                                 boxShadow: "0 4px 12px color-mix(in srgb, var(--accent) 45%, transparent)",
                             }}
                         />
-                        <t.Mark active={false} className="relative z-10 h-[22px] w-[22px]" />
+                        <t.Mark strokeWidth={STROKE} className="relative z-10 h-[22px] w-[22px]" />
                     </span>
 
                     <span className="font-display text-[9px] font-black uppercase tracking-[0.11em] leading-none">
@@ -215,7 +233,7 @@ export default function MobileTabBar() {
                                         unoptimized={!isOwnUpload(user.avatar_url)}
                                     />
                                 ) : (
-                                    <ProfileMark className="h-[25px] w-[25px] text-white/75" />
+                                    <User strokeWidth={STROKE} className="h-[25px] w-[25px] text-white/75" />
                                 )}
                             </span>
                         </span>
