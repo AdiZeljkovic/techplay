@@ -30,6 +30,22 @@ if [ -d "$ARCHIVE" ]; then
     cp -rn "$ARCHIVE/." .next/static/ 2>/dev/null || true
 fi
 
+# 3a. Make every one of them readable by whoever serves them.
+#
+# A restored chunk arrives owned by whoever ran this script. If that is not the
+# user pm2 runs as, Next cannot open the file and answers 500 with a body of
+# "Internal Server Error" and a Content-Type of text/plain — at which point the
+# browser refuses it for its MIME type and the page dies with a ChunkLoadError.
+# Freshly built files were fine and restored ones were not, which is what made
+# it look like only some assets were broken.
+#
+# The directory's own owner is the reference, so this needs no configuration.
+OWNER=$(stat -c '%U:%G' "$FRONT" 2>/dev/null || echo "")
+if [ -n "$OWNER" ]; then
+    chown -R "$OWNER" .next/static 2>/dev/null || true
+fi
+chmod -R u+rwX,go+rX .next/static 2>/dev/null || true
+
 # 4. Old chunks earn retirement after a week — nobody's tab lives longer.
 find "$ARCHIVE" -type f -mtime +7 -delete 2>/dev/null || true
 find "$ARCHIVE" -type d -empty -delete 2>/dev/null || true
@@ -67,18 +83,30 @@ for path in "${PROBE_PATHS[@]}"; do
 
     for asset in $(printf '%s' "$html" | grep -o '/_next/static/[a-zA-Z0-9._/-]*\.\(css\|js\)' | sort -u); do
         code=$(curl -s -o /dev/null -w '%{http_code}' "$PROBE_BASE$asset")
-        if [ "$code" != "200" ]; then
-            echo "  !! $path trazi $asset -> $code"
-            missing=$((missing + 1))
+        [ "$code" = "200" ] && continue
+
+        missing=$((missing + 1))
+        file="$FRONT/.next/${asset#/_next/}"
+
+        # 404 and 500 are different faults and want different answers, so say
+        # which one this is rather than leaving it to be guessed.
+        if [ ! -f "$file" ]; then
+            echo "  !! $path trazi $asset -> $code (fajla nema na disku)"
+        elif [ ! -r "$file" ]; then
+            echo "  !! $path trazi $asset -> $code (fajl postoji ali se ne moze citati: $(stat -c '%U:%G %a' "$file"))"
+        else
+            echo "  !! $path trazi $asset -> $code (fajl je citljiv — pogledaj pm2 logs techplay-frontend)"
         fi
     done
 done
 
 if [ "$missing" -gt 0 ]; then
     echo
-    echo "NEUSPJEH: $missing resursa koje stranice traze ne postoji."
-    echo "Stranice ce se crtati bez dijela stilova. Pokreni deploy ponovo;"
-    echo "ako se ponovi, obrisi .next i .static-archive pa gradi iz cista."
+    echo "NEUSPJEH: $missing resursa koje stranice traze se ne posluzuje."
+    echo "Stranica ce pasti na ChunkLoadError. Redom:"
+    echo "  1. prava:  chown -R \$(stat -c '%U:%G' $FRONT) $FRONT/.next/static"
+    echo "  2. ponovi: bash \$0"
+    echo "  3. iz cista: rm -rf $FRONT/.next $ARCHIVE && bash \$0"
     exit 1
 fi
 
