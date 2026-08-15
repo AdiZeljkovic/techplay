@@ -9,6 +9,7 @@ use App\Notifications\GameReleaseNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Everyone who asked to hear about a game hears about it on the day it
@@ -18,6 +19,18 @@ use Illuminate\Support\Facades\Log;
 class SendReleaseReminders implements ShouldQueue
 {
     use Queueable;
+
+    /** Mail. Worth one more attempt, not five. */
+    public int $tries = 2;
+
+    /** Seconds between attempts. */
+    public array $backoff = [60, 300];
+
+    /** A queue job that dies quietly is a job nobody knows stopped. */
+    public function failed(Throwable $e): void
+    {
+        Log::error('SendReleaseReminders failed', ['error' => $e->getMessage()]);
+    }
 
     public function handle(): void
     {
@@ -37,7 +50,7 @@ class SendReleaseReminders implements ShouldQueue
             foreach (User::whereIn('id', $watchers)->get() as $user) {
                 try {
                     $user->notify(new GameReleaseNotification($game));
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Log::warning("Release reminder failed: {$e->getMessage()}", [
                         'user_id' => $user->id, 'game_id' => $game->id,
                     ]);

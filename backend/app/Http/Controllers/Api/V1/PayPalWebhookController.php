@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\UserSupport;
 use App\Services\AchievementService;
 use App\Services\PayPalService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -48,6 +51,26 @@ class PayPalWebhookController extends Controller
         $eventType = $request->input('event_type');
         $resource = $request->input('resource');
 
+        // 2a. Once only.
+        //
+        // PayPal redelivers an event until it gets a 2xx, and this handler
+        // answers 500 on any exception — so retries are the normal path, not an
+        // edge case. Most of what follows is idempotent by luck rather than by
+        // design, and the subscription branch was not: each redelivery moved the
+        // paid-through date again. `Cache::add` is atomic, so two workers racing
+        // the same redelivery cannot both win it. A day covers PayPal's retry
+        // window several times over.
+        $eventId = $request->input('id');
+
+        if ($eventId && ! Cache::add("paypal:event:{$eventId}", true, now()->addDay())) {
+            Log::info('PayPal webhook already handled, skipping', [
+                'event_id' => $eventId,
+                'event_type' => $eventType,
+            ]);
+
+            return response()->json(['status' => 'duplicate'], 200);
+        }
+
         Log::info('PayPal webhook received', [
             'event_type' => $eventType,
             'resource_id' => $resource['id'] ?? null,
@@ -69,6 +92,13 @@ class PayPalWebhookController extends Controller
             return response()->json(['status' => 'success'], 200);
 
         } catch (\Exception $e) {
+            // Hand the claim back. A 500 asks PayPal to redeliver, and a
+            // redelivery that finds the event already marked handled would be
+            // dropped — the failure would be permanent and silent.
+            if ($eventId) {
+                Cache::forget("paypal:event:{$eventId}");
+            }
+
             Log::error('PayPal webhook processing error', [
                 'event_type' => $eventType,
                 'error' => $e->getMessage(),
@@ -192,6 +222,19 @@ class PayPalWebhookController extends Controller
         $paypalTransactionId = $resource['id'] ?? null;
 
         if (! $orderId) {
+            // A subscription renewal arrives as PAYMENT.SALE.COMPLETED too, and
+            // carries no custom_id — it points at the agreement instead. This
+            // branch used to log a warning and stop, which meant the very event
+            // that says "they paid again" was the one that extended nothing:
+            // subscription_ends_at was written once at activation and never
+            // moved, so a paying subscriber's access lapsed after a month while
+            // PayPal kept charging.
+            if ($agreementId = $resource['billing_agreement_id'] ?? null) {
+                $this->extendSubscription($agreementId, $resource, 'renewal');
+
+                return;
+            }
+
             Log::warning('Payment completed but no custom_id found', ['resource' => $resource]);
 
             return;
@@ -245,22 +288,80 @@ class PayPalWebhookController extends Controller
 
     private function handleSubscriptionActivated(array $resource): void
     {
-        $subscriptionId = $resource['id'] ?? null;
+        $this->extendSubscription($resource['id'] ?? null, $resource, 'activation');
+    }
+
+    /**
+     * Move a subscriber's paid-through date forward.
+     *
+     * The date comes from PayPal (`billing_info.next_billing_time`) rather than
+     * from `now()->addMonth()`, which is what stood here under a comment saying
+     * it should be parsed from the resource. A yearly plan was being granted a
+     * month, and every redelivery of the same event re-stamped the date — PayPal
+     * retries on any non-2xx, so that was not hypothetical.
+     *
+     * Never shortens: two events can arrive out of order, and the later-dated
+     * one is the one the subscriber paid for.
+     */
+    private function extendSubscription(?string $subscriptionId, array $resource, string $reason): void
+    {
+        if (! $subscriptionId) {
+            return;
+        }
 
         $user = User::where('paypal_subscription_id', $subscriptionId)->first();
         if (! $user) {
-            Log::error('User not found for subscription activation', ['subscription_id' => $subscriptionId]);
+            Log::error('User not found for subscription event', [
+                'subscription_id' => $subscriptionId,
+                'reason' => $reason,
+            ]);
 
             return;
         }
 
-        $user->update([
-            'subscription_ends_at' => now()->addMonth(), // Should parse from resource
-        ]);
+        $paidThrough = $this->nextBillingTime($resource) ?? now()->addMonth();
 
-        Log::info('Subscription activated via webhook', ['user_id' => $user->id]);
+        if ($user->subscription_ends_at && $user->subscription_ends_at->greaterThan($paidThrough)) {
+            $paidThrough = $user->subscription_ends_at;
+        }
+
+        $user->update(['subscription_ends_at' => $paidThrough]);
+
+        UserSupport::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->update(['expires_at' => $paidThrough]);
+
+        Log::info('Subscription period extended', [
+            'user_id' => $user->id,
+            'reason' => $reason,
+            'paid_through' => $paidThrough->toIso8601String(),
+        ]);
     }
 
+    /** PayPal's own next charge date, when it sends one. */
+    private function nextBillingTime(array $resource): ?Carbon
+    {
+        $raw = $resource['billing_info']['next_billing_time'] ?? null;
+
+        if (! $raw) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($raw);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Cancelled means "will not renew" — not "is over now".
+     *
+     * This used to null both the agreement id and the paid-through date, which
+     * took away the rest of a period the subscriber had already paid for, and
+     * left the later EXPIRED event with no user to find. Now the date stands
+     * and runs out on its own; only the renewal is stopped.
+     */
     private function handleSubscriptionCancelled(array $resource): void
     {
         $subscriptionId = $resource['id'] ?? null;
@@ -272,17 +373,36 @@ class PayPalWebhookController extends Controller
             return;
         }
 
+        UserSupport::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->update(['is_recurring' => false]);
+
+        Log::info('Subscription will not renew', [
+            'user_id' => $user->id,
+            'runs_until' => $user->subscription_ends_at?->toIso8601String(),
+        ]);
+    }
+
+    /** Expired is the one that actually ends it: the paid term is over. */
+    private function handleSubscriptionExpired(array $resource): void
+    {
+        $subscriptionId = $resource['id'] ?? null;
+
+        $user = User::where('paypal_subscription_id', $subscriptionId)->first();
+        if (! $user) {
+            return;
+        }
+
         $user->update([
             'paypal_subscription_id' => null,
             'subscription_ends_at' => null,
         ]);
 
-        Log::info('Subscription cancelled via webhook', ['user_id' => $user->id]);
-    }
+        UserSupport::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->update(['status' => 'expired', 'is_recurring' => false]);
 
-    private function handleSubscriptionExpired(array $resource): void
-    {
-        $this->handleSubscriptionCancelled($resource); // Same logic
+        Log::info('Subscription expired', ['user_id' => $user->id]);
     }
 
     private function handleSubscriptionSuspended(array $resource): void

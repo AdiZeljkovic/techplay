@@ -10,10 +10,24 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SendChatReminder implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /** Mail. */
+    public int $tries = 2;
+
+    /** Seconds between attempts. */
+    public array $backoff = [60, 300];
+
+    /** A queue job that dies quietly is a job nobody knows stopped. */
+    public function failed(Throwable $e): void
+    {
+        Log::error('SendChatReminder failed', ['error' => $e->getMessage()]);
+    }
 
     public function __construct(
         protected int $userId,

@@ -1000,3 +1000,21 @@ body.tp-navigating .tp-page {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+/* Hero slider progress fill.
+   Driven by CSS rather than by framer-motion: framer animates on the main
+   thread with requestAnimationFrame, and while it is running Chrome does not
+   nominate the page's largest image as an LCP candidate. The homepage bar runs
+   for six seconds, and LCP was landing at 6.3s — the moment it finished. A
+   keyframed transform is handed to the compositor and the main thread is free
+   the whole time. */
+@keyframes tp-slide-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.slide-progress {
+  transform-origin: left;
+  animation: tp-slide-progress var(--slide-ms, 6000ms) linear forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide-progress { animation: none; transform: scaleX(1); }
+}

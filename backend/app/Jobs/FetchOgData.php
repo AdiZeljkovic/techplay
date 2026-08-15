@@ -53,15 +53,34 @@ class FetchOgData implements ShouldQueue
 
     protected function fetchUrl(string $url): ?string
     {
+        // Only what a link preview needs to reach. Set apart from the array
+        // below because the string form of these two arrived in libcurl 7.85 —
+        // referencing an undefined constant is a fatal, and this runs on a
+        // server whose libcurl this file cannot check.
+        $protocolLimits = [];
+
+        if (defined('CURLOPT_PROTOCOLS_STR')) {
+            $protocolLimits[CURLOPT_PROTOCOLS_STR] = 'http,https';
+            $protocolLimits[CURLOPT_REDIR_PROTOCOLS_STR] = 'http,https';
+        } elseif (defined('CURLPROTO_HTTP')) {
+            $protocolLimits[CURLOPT_PROTOCOLS] = CURLPROTO_HTTP | CURLPROTO_HTTPS;
+            $protocolLimits[CURLOPT_REDIR_PROTOCOLS] = CURLPROTO_HTTP | CURLPROTO_HTTPS;
+        }
+
         $ch = curl_init();
-        curl_setopt_array($ch, [
+        curl_setopt_array($ch, $protocolLimits + [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 5,
             CURLOPT_TIMEOUT => 8,
             CURLOPT_CONNECTTIMEOUT => 4,
-            CURLOPT_SSL_VERIFYPEER => false,
+            // Verified. This was off, which meant every link preview the
+            // newsroom pasted was fetched over a connection nobody checked —
+            // and the answer is parsed and stored. Turning it off buys nothing
+            // here: a site with a broken certificate simply gets no preview.
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_HTTPHEADER => [
                 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 'Accept-Language: hr,en-US;q=0.9,en;q=0.8',

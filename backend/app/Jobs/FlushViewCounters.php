@@ -8,7 +8,9 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Throwable;
 
 /**
  * Flush view counters from Redis to database.
@@ -17,6 +19,15 @@ use Illuminate\Support\Facades\Redis;
 class FlushViewCounters implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /** Runs again in five minutes and the counters wait in Redis until a pass succeeds, so retrying a stuck flush would only stack workers. */
+    public int $tries = 1;
+
+    /** A queue job that dies quietly is a job nobody knows stopped. */
+    public function failed(Throwable $e): void
+    {
+        Log::error('FlushViewCounters failed', ['error' => $e->getMessage()]);
+    }
 
     public function handle(): void
     {
@@ -59,7 +70,7 @@ class FlushViewCounters implements ShouldQueue
 
                 try {
                     DB::table($table)->where('id', $id)->increment($column, $count);
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // Put it back rather than lose it.
                     Redis::incrby($key, $count);
                     throw $e;

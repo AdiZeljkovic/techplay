@@ -10,10 +10,23 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class SubmitIndexNow implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    /** Same endpoint, batch form. */
+    public int $tries = 3;
+
+    /** Seconds between attempts. */
+    public array $backoff = [30, 120, 600];
+
+    /** A queue job that dies quietly is a job nobody knows stopped. */
+    public function failed(Throwable $e): void
+    {
+        Log::error('SubmitIndexNow failed', ['error' => $e->getMessage()]);
+    }
 
     protected $urls;
 

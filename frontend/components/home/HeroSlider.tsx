@@ -12,8 +12,8 @@ const SLIDE_MS = 6000;
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
- * Featured-article slider for the homepage hero: crossfade + Ken Burns,
- * autoplay with hover/focus pause, arrows, swipe, and progress-pill dots.
+ * Featured-article slider for the homepage hero: crossfade, autoplay with
+ * hover/focus pause, arrows, swipe, and progress-pill dots.
  */
 export default function HeroSlider({ articles }: { articles: Article[] }) {
     const slides = articles.filter((a) => a.featured_image_url).slice(0, 5);
@@ -67,19 +67,31 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
             <AnimatePresence initial={false}>
                 <motion.div
                     key={index}
-                    initial={{ opacity: 0 }}
+                    // The first slide is never faded in. AnimatePresence's own
+                    // initial={false} ought to cover this, but the element it
+                    // wraps is the page's LCP candidate, and an image whose
+                    // first paint happens at opacity 0 is not nominated — nor
+                    // re-nominated once it becomes visible.
+                    initial={index === 0 ? false : { opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.7, ease: EASE }}
                     className="absolute inset-0"
                 >
-                    {/* Ken Burns drift */}
-                    <motion.div
-                        initial={reduceMotion ? undefined : { scale: 1.02 }}
-                        animate={reduceMotion ? undefined : { scale: 1.12 }}
-                        transition={{ duration: SLIDE_MS / 1000 + 2, ease: "linear" }}
-                        className="absolute inset-0"
-                    >
+                    {/* The Ken Burns drift used to live here — a scale from 1.02
+                        to 1.12 across the slide. It cost the homepage six
+                        seconds of measured LCP.
+
+                        Measured, not guessed. With the drift running, Chrome
+                        registers no LCP candidate for this image at all: the
+                        candidates were the logo at 540ms, then the *next*
+                        slide's caption at 6588ms and its image at 6636ms, so
+                        LCP landed at 6.64s. Rebuilt with the drift removed and
+                        autoplay untouched, the same image is a candidate at
+                        220ms. The picture was on screen at ~550ms either way —
+                        but Google measures it the way Chrome reports it, and
+                        every other page on the site is under 1.1s. */}
+                    <div className="absolute inset-0">
                         <Image
                             src={current.featured_image_url!}
                             alt={current.title}
@@ -88,7 +100,7 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                             sizes="(max-width: 1024px) 100vw, 45vw"
                             className="object-cover"
                         />
-                    </motion.div>
+                    </div>
 
                     {/* Readability scrims: bottom for the caption, left to blend into the card */}
                     {/* bottom scrim only — the diagonal seam replaces the old side blend */}
@@ -156,12 +168,25 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                                 }`}
                             >
                                 {i === index && (
-                                    <motion.span
+                                    // CSS, not framer, and a transform rather
+                                    // than a width.
+                                    //
+                                    // Measured: while framer drives an
+                                    // animation on the main thread, Chrome does
+                                    // not nominate the page's largest image as
+                                    // an LCP candidate. This bar ran for six
+                                    // seconds and the homepage's LCP landed at
+                                    // 6.3s — the moment it finished. The same
+                                    // page with animation suppressed reported
+                                    // 0.12s. A keyframed transform is the
+                                    // compositor's problem, not the thread's.
+                                    <span
                                         key={`fill-${index}-${paused}`}
-                                        className="block h-full bg-[var(--accent)]"
-                                        initial={{ width: reduceMotion || paused ? "100%" : "0%" }}
-                                        animate={{ width: "100%" }}
-                                        transition={{ duration: reduceMotion || paused ? 0 : SLIDE_MS / 1000, ease: "linear" }}
+                                        className="slide-progress block h-full w-full bg-[var(--accent)]"
+                                        style={{
+                                            ["--slide-ms" as string]: `${SLIDE_MS}ms`,
+                                            ...(paused ? { animationPlayState: "paused" } : null),
+                                        }}
                                     />
                                 )}
                             </button>
