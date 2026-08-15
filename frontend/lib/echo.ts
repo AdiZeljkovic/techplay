@@ -37,8 +37,26 @@ export function getEcho(): Echo<'reverb'> | null {
     if (!echoInstance) {
         const key = process.env.NEXT_PUBLIC_REVERB_APP_KEY;
         const host = process.env.NEXT_PUBLIC_REVERB_HOST;
-        const port = process.env.NEXT_PUBLIC_REVERB_PORT;
         const scheme = process.env.NEXT_PUBLIC_REVERB_SCHEME || 'https';
+
+        // Over TLS the port is 443 and nothing else.
+        //
+        // Production pointed this at 8080 and every socket failed with a
+        // connection error. Cloudflare proxies 8080 as plaintext HTTP — its
+        // HTTPS ports are 443, 2053, 2083, 2087, 2096 and 8443 — so a wss://
+        // handshake there can never complete, whatever Reverb is doing behind
+        // it. nginx now carries /app and /apps to Reverb on 443 with the rest
+        // of the site, so the port variable only has a say when the connection
+        // is plaintext, which in practice means a developer's own machine.
+        const rawPort = process.env.NEXT_PUBLIC_REVERB_PORT;
+        const port = scheme === 'https' ? '443' : rawPort;
+
+        if (scheme === 'https' && rawPort && rawPort !== '443') {
+            console.warn(
+                `[echo] NEXT_PUBLIC_REVERB_PORT=${rawPort} ignored: wss runs on 443. ` +
+                'Reverb is proxied at /app by nginx.'
+            );
+        }
 
         if (!key || !host) {
             return null;

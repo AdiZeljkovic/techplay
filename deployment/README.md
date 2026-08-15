@@ -176,3 +176,27 @@ If you have a local database dump you want to import:
     ```bash
     certbot --nginx -d beta.techplay.gg -d api-beta.techplay.gg
     ```
+
+3.  **Reverb (WebSocket)**:
+    The socket runs behind nginx on 443, not on its own public port —
+    Cloudflare serves 8080 as plaintext HTTP, so `wss://host:8080` can never
+    complete a handshake. The `location ~ ^/(app|apps)(/|$)` block in
+    `nginx.conf` carries it; Reverb itself binds to localhost.
+    ```bash
+    cp /var/www/techplay/deployment/supervisor-reverb.conf /etc/supervisor/conf.d/techplay-reverb.conf
+    supervisorctl reread && supervisorctl update
+    supervisorctl start techplay-reverb:*
+
+    # The frontend must agree — in frontend/.env:
+    #   NEXT_PUBLIC_REVERB_HOST=api-beta.techplay.gg
+    #   NEXT_PUBLIC_REVERB_PORT=443
+    #   NEXT_PUBLIC_REVERB_SCHEME=https
+    ```
+    Check it end to end (a 101 is the upgrade; anything else means it is not
+    reaching Reverb):
+    ```bash
+    curl -sI -o /dev/null -w '%{http_code}\n' \
+      -H 'Connection: Upgrade' -H 'Upgrade: websocket' \
+      -H 'Sec-WebSocket-Version: 13' -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
+      'https://api-beta.techplay.gg/app/techplay-reverb-key?protocol=7&client=js&version=8.4.0'
+    ```
