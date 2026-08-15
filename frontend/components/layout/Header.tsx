@@ -8,11 +8,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import useSWR from "swr";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
-import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
 import {
-    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Facebook, Twitter, Instagram, Youtube, Mail, Users, Tag, Gamepad2, Newspaper, ArrowRight, MessageSquare, Rocket, Bookmark, Settings, Layers, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, Sparkles, MapPinned, Disc3, ChevronLeft,
+    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Mail, Users, Tag, ArrowRight, Bookmark, Settings, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, Sparkles, MapPinned, Disc3, ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -22,30 +21,8 @@ import { decodeHtml } from "@/lib/decode";
 import NotificationPanel from "./NotificationPanel";
 import { mobileBar } from "@/lib/mobileBar";
 import { MoreMark } from "./TabMarks";
+import MoreSheet from "./MoreSheet";
 import { isOwnUpload } from "@/lib/imageUrl";
-
-const DiscordIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057c.002.022.015.043.033.055A19.9 19.9 0 0 0 6.131 21.3a.077.077 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/>
-    </svg>
-);
-
-// Social Icon Mapping with names for accessibility
-const SOCIAL_ICON_MAP: Record<string, { icon: any; name: string }> = {
-    twitter_url: { icon: Twitter, name: 'Twitter' },
-    facebook_url: { icon: Facebook, name: 'Facebook' },
-    instagram_url: { icon: Instagram, name: 'Instagram' },
-    youtube_url: { icon: Youtube, name: 'YouTube' },
-    discord_url: { icon: DiscordIcon, name: 'Discord' } };
-
-// Utility Links (Top Bar)
-const UTILITY_LINKS = [
-    { name: "ABOUT US", href: "/about" },
-    { name: "IMPRESSUM", href: "/impressum" },
-    { name: "MARKETING", href: "/marketing", highlight: true },
-    { name: "CONTACT", href: "/contact" },
-    { name: "OUR RATING SYSTEM", href: "/rating-system" },
-];
 
 // Types for Navigation
 interface NavSubCategory {
@@ -562,26 +539,6 @@ function GamesNavItem() {
         </div>
     );
 }
-
-const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-    Feed:      Layers,
-    Discover:  Newspaper,
-    Games:     Gamepad2,
-    Community: MessageSquare,
-    Tools:     Rocket,
-    Shop:      ShoppingCart };
-
-/**
- * The four places a phone actually goes, given the art we already own. They
- * open the drawer instead of a wall of collapsed accordions.
- */
-const MOBILE_QUICK_TILES = [
-    { name: "Forum",       href: "/forum",       art: "/images/menu/menu-forum.webp" },
-    { name: "Leaderboard", href: "/leaderboard", art: "/images/menu/menu-leaderboard.webp" },
-    { name: "Giveaways",   href: "/giveaways",   art: "/images/menu/menu-giveaways.webp" },
-    { name: "Frontiers",   href: "/frontiers",   art: "/images/menu/menu-frontiers.webp" },
-];
-
 // App-style grouped navigation. DISCOVER's column items are populated with
 // live categories from GET /navigation/tree (news/reviews/tech keys).
 const INITIAL_NAV_ITEMS: NavItemType[] = [
@@ -979,10 +936,8 @@ function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
 export default function Header() {
     const { isOpen: isMobileMenuOpen, setIsOpen: setIsMobileMenuOpen } = useMobileMenu();
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-    const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
     const { user, logout } = useAuth();
     const { itemCount } = useCart();
-    const { settings } = useSiteSettings();
     const pathname = usePathname();
     const [navItems, setNavItems] = useState<NavItemType[]>(INITIAL_NAV_ITEMS);
     const [notifications, setNotifications] = useState({ unread_messages: 0, pending_requests: 0, forum_replies: 0, unread_notifications: 0 });
@@ -1032,17 +987,6 @@ export default function Header() {
         window.addEventListener("scroll", onScroll, { passive: true });
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
-
-
-
-    // Build dynamic social links from settings
-    const socialLinks = Object.keys(SOCIAL_ICON_MAP)
-        .filter(key => settings[key])
-        .map(key => ({
-            icon: SOCIAL_ICON_MAP[key].icon,
-            name: SOCIAL_ICON_MAP[key].name,
-            href: settings[key] || '#'
-        }));
 
     // Fetch Categories from Backend
     useEffect(() => {
@@ -1303,351 +1247,18 @@ export default function Header() {
                 )}
             </AnimatePresence>
 
-            {/* MOBILE MENU — right-side drawer */}
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            key="backdrop"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="xl:hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[45]"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        />
+            {/* MOBILE MENU — the More sheet.
+                What used to be here was the site's navigation from before the
+                tab bar existed, and it never handed the job over: 31 links
+                with every accordion open, 22 of them already one tap away at
+                the bottom of the screen. MoreSheet carries what is left. */}
+            <MoreSheet
+                open={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+                user={user}
+                onSignOut={logout}
+            />
 
-                        {/* Drawer */}
-                        <motion.div
-                            key="drawer"
-                            initial={{ x: "100%" }}
-                            animate={{ x: 0 }}
-                            exit={{ x: "100%" }}
-                            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="xl:hidden fixed inset-0 bg-[var(--surface-0)] z-[60] flex flex-col"
-                            style={{ boxShadow: "-20px 0 60px rgba(0,0,0,0.7)" }}
-                        >
-                            {/* ── header ── */}
-                            <div
-                                className="flex items-center justify-between px-4 h-[58px] border-b border-white/[0.07] shrink-0"
-                                style={{ marginTop: "env(safe-area-inset-top, 0px)" }}
-                            >
-                                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center" aria-label="TechPlay — home">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src="/techplay-logo.png" alt="TechPlay" width={144} height={24} className="h-[24px] w-auto" />
-                                </Link>
-                                <button
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                    aria-label="Close menu"
-                                    className="w-9 h-9 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-white/55 hover:text-white transition-colors"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto overscroll-contain">
-                                {/* ── who you are ── */}
-                                {user ? (
-                                    <div className="px-4 pt-4">
-                                        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-4">
-                                            <Link href={`/profile/${user.username || 'me'}`} onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3.5">
-                                                <span className="relative shrink-0">
-                                                    {user.avatar_url ? (
-                                                        <Image src={user.avatar_url} alt={user.username || ''} width={52} height={52}
-                                                            className="w-[52px] h-[52px] rounded-full object-cover ring-2 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
-                                                            unoptimized={!isOwnUpload(user.avatar_url)} />
-                                                    ) : (
-                                                        <span className="w-[52px] h-[52px] rounded-full bg-[var(--accent-soft)] ring-2 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)] flex items-center justify-center">
-                                                            <User className="w-6 h-6 text-[var(--accent)]" />
-                                                        </span>
-                                                    )}
-                                                    <span className="absolute -bottom-1 -right-1 min-w-[22px] h-[22px] px-1 rounded-full bg-[var(--accent)] border-2 border-[var(--surface-1)] flex items-center justify-center font-display text-[10px] font-black tabular-nums text-white">
-                                                        {levelForXp(user.xp)}
-                                                    </span>
-                                                </span>
-
-                                                <span className="min-w-0 flex-1">
-                                                    <span className="block font-display text-[15px] font-black text-white truncate leading-tight">
-                                                        {decodeHtml(user.display_name || user.username)}
-                                                    </span>
-                                                    {user.rank?.name && (
-                                                        <span className="mt-1 flex items-center gap-1.5">
-                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                            <img
-                                                                src={`/images/ranks/${(user.rank.name || '').toLowerCase().replace(/[^a-z]/g, '')}.webp`}
-                                                                alt=""
-                                                                aria-hidden
-                                                                className="w-[22px] h-[22px] object-contain select-none"
-                                                            />
-                                                            <span className="font-display text-[10px] font-black uppercase tracking-[0.14em] truncate"
-                                                                style={{ color: user.rank.color || "var(--accent)" }}>
-                                                                {user.rank.name}
-                                                            </span>
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </Link>
-
-                                            {/* the climb, in one line */}
-                                            <div className="mt-3.5 flex items-center justify-between">
-                                                <span className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30">
-                                                    Level {levelForXp(user.xp)}
-                                                </span>
-                                                <span className="font-display text-[10px] font-black tabular-nums text-white/45">
-                                                    {(user.xp || 0) - xpForLevel(levelForXp(user.xp))} / {Math.max(1, xpForLevel(levelForXp(user.xp) + 1) - xpForLevel(levelForXp(user.xp)))} XP
-                                                </span>
-                                            </div>
-                                            <div className="mt-1.5 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
-                                                <div className="h-full rounded-full bg-gradient-to-r from-[var(--xp)] to-[var(--xp-bright)]"
-                                                    style={{ width: `${Math.min(100, Math.round((((user.xp || 0) - xpForLevel(levelForXp(user.xp))) / Math.max(1, xpForLevel(levelForXp(user.xp) + 1) - xpForLevel(levelForXp(user.xp)))) * 100))}%` }} />
-                                            </div>
-
-                                            <div className="mt-3.5 flex gap-2">
-                                                <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="btn-command btn-command-quiet relative flex-1 flex items-center justify-center gap-1.5 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors">
-                                                    <Mail className="w-3.5 h-3.5" /> Messages
-                                                    {notifications.unread_messages > 0 && (
-                                                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--accent)] flex items-center justify-center font-display text-[9px] font-black tabular-nums text-white">
-                                                            {notifications.unread_messages}
-                                                        </span>
-                                                    )}
-                                                </Link>
-                                                <Link href="/social" onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="btn-command btn-command-quiet relative flex-1 flex items-center justify-center gap-1.5 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors">
-                                                    <Users className="w-3.5 h-3.5" /> Friends
-                                                    {notifications.pending_requests > 0 && (
-                                                        <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--accent)] flex items-center justify-center font-display text-[9px] font-black tabular-nums text-white">
-                                                            {notifications.pending_requests}
-                                                        </span>
-                                                    )}
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="px-4 pt-4">
-                                        <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-4 text-center">
-                                            <p className="font-display text-[14px] font-black text-white">Join TechPlay</p>
-                                            <p className="mt-1 text-[12px] text-white/35 leading-relaxed">
-                                                Track your collection, earn XP, and climb the ranks.
-                                            </p>
-                                            <div className="mt-3.5 flex gap-2">
-                                                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="btn-command flex-1 flex items-center justify-center h-9 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter]">
-                                                    Sign in
-                                                </Link>
-                                                <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}
-                                                    className="btn-command btn-command-quiet flex-1 flex items-center justify-center h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors">
-                                                    Register
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ── the four places a phone actually goes ── */}
-                                <div className="px-4 pt-4">
-                                    <p className="font-display text-[8.5px] font-black uppercase tracking-[0.18em] text-white/25 mb-2.5">
-                                        Jump to
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {MOBILE_QUICK_TILES.map((tile) => (
-                                            <Link
-                                                key={tile.name}
-                                                href={tile.href}
-                                                onClick={() => setIsMobileMenuOpen(false)}
-                                                className="group flex flex-col items-center gap-2 rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] px-3 py-3.5 active:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
-                                            >
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img
-                                                    src={tile.art}
-                                                    alt=""
-                                                    aria-hidden
-                                                    className="w-11 h-11 object-contain select-none transition-transform duration-300 group-active:scale-[1.08]"
-                                                />
-                                                <span className="font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/70">
-                                                    {tile.name}
-                                                </span>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* ── everything else ── */}
-                                <nav className="px-4 pt-5 pb-2">
-                                    <p className="font-display text-[8.5px] font-black uppercase tracking-[0.18em] text-white/25 mb-2.5">
-                                        Browse
-                                    </p>
-                                    <div className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] overflow-hidden divide-y divide-white/[0.05]">
-                                        {navItems.map((item) => {
-                                            const Icon = NAV_ICONS[item.name];
-                                            const hasExpandable = !!(item.hasDropdown && (item.children?.length || item.columns?.length));
-                                            const expanded = expandedMobileItem === item.name;
-
-                                            const glyph = Icon && (
-                                                <span className={cn(
-                                                    "w-9 h-9 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center transition-colors",
-                                                    expanded ? "bg-[var(--accent-soft)] text-[var(--accent)]" : "bg-white/[0.04] text-white/45"
-                                                )}>
-                                                    <Icon className="w-[17px] h-[17px]" />
-                                                </span>
-                                            );
-
-                                            return (
-                                                <div key={item.name}>
-                                                    {hasExpandable ? (
-                                                        <>
-                                                            <button
-                                                                onClick={() => setExpandedMobileItem(expanded ? null : item.name)}
-                                                                aria-expanded={expanded}
-                                                                className="w-full flex items-center gap-3 px-3.5 py-3 text-left"
-                                                            >
-                                                                {glyph}
-                                                                <span className={cn(
-                                                                    "flex-1 font-display text-[12.5px] font-black uppercase tracking-[0.1em] transition-colors",
-                                                                    expanded ? "text-white" : "text-white/70"
-                                                                )}>
-                                                                    {item.name}
-                                                                </span>
-                                                                <ChevronDown className={cn(
-                                                                    "w-4 h-4 shrink-0 transition-transform duration-200",
-                                                                    expanded ? "rotate-180 text-[var(--accent)]" : "text-white/25"
-                                                                )} />
-                                                            </button>
-
-                                                            <AnimatePresence initial={false}>
-                                                                {expanded && (
-                                                                    <motion.div
-                                                                        initial={{ height: 0, opacity: 0 }}
-                                                                        animate={{ height: "auto", opacity: 1 }}
-                                                                        exit={{ height: 0, opacity: 0 }}
-                                                                        transition={{ duration: 0.18 }}
-                                                                        className="overflow-hidden"
-                                                                    >
-                                                                        <div className="px-3.5 pb-3.5">
-                                                                            {item.columns ? (
-                                                                                /* Discover flattens its columns into titled groups */
-                                                                                <div className="space-y-3">
-                                                                                    {item.columns.map((col) => (
-                                                                                        <div key={col.title}>
-                                                                                            <Link href={col.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                                className="block font-display text-[9px] font-black uppercase tracking-[0.16em] text-[var(--accent)] mb-1.5">
-                                                                                                {col.title}
-                                                                                            </Link>
-                                                                                            <div className="flex flex-wrap gap-1.5">
-                                                                                                {col.items.slice(0, 6).map((child, idx) => (
-                                                                                                    <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                                        className="inline-flex items-center h-8 px-3 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.06] text-[12px] text-white/60 active:text-white transition-colors">
-                                                                                                        {child.name}
-                                                                                                    </Link>
-                                                                                                ))}
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            ) : item.children?.[0]?.icon || item.children?.[0]?.art ? (
-                                                                                /* Community and Tools, marked the same way they are on the desktop panel */
-                                                                                <div className="flex flex-col gap-1">
-                                                                                    {item.children.map((child, idx) => (
-                                                                                        <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                            className="flex items-center gap-3 py-2 rounded-[var(--radius-card)] active:bg-white/[0.03] transition-colors">
-                                                                                            {child.icon ? (
-                                                                                                <child.icon className="w-[22px] h-[22px] shrink-0 text-[var(--accent)]" strokeWidth={1.4} />
-                                                                                            ) : (
-                                                                                                // eslint-disable-next-line @next/next/no-img-element
-                                                                                                <img src={child.art} alt="" aria-hidden className="w-7 h-7 shrink-0 object-contain select-none" />
-                                                                                            )}
-                                                                                            <span className="min-w-0">
-                                                                                                <span className="block font-display text-[12.5px] font-black text-white leading-tight">{child.name}</span>
-                                                                                                {child.description && (
-                                                                                                    <span className="block mt-0.5 text-[11px] text-white/30 truncate">{child.description}</span>
-                                                                                                )}
-                                                                                            </span>
-                                                                                        </Link>
-                                                                                    ))}
-                                                                                </div>
-                                                                            ) : (
-                                                                                /* Games: many short labels, so they wrap as chips */
-                                                                                <div className="flex flex-wrap gap-1.5">
-                                                                                    <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                        className="inline-flex items-center h-8 px-3 rounded-[var(--radius-card)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-[var(--accent)]">
-                                                                                        All {item.name}
-                                                                                    </Link>
-                                                                                    {item.children?.map((child, idx) => (
-                                                                                        <Link key={idx} href={child.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                                                            className="inline-flex items-center h-8 px-3 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.06] text-[12px] text-white/60 active:text-white transition-colors">
-                                                                                            {child.name}
-                                                                                        </Link>
-                                                                                    ))}
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </motion.div>
-                                                                )}
-                                                            </AnimatePresence>
-                                                        </>
-                                                    ) : (
-                                                        <Link href={item.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                            className="flex items-center gap-3 px-3.5 py-3">
-                                                            {glyph}
-                                                            <span className="flex-1 font-display text-[12.5px] font-black uppercase tracking-[0.1em] text-white/70">{item.name}</span>
-                                                            <ArrowRight className="w-4 h-4 shrink-0 text-white/20" />
-                                                        </Link>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </nav>
-
-                                {/* ── the small print ── */}
-                                <div className="px-4 pb-5">
-                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-3 border-t border-white/[0.06]">
-                                        {UTILITY_LINKS.map((link) => (
-                                            <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)}
-                                                className={cn(
-                                                    "py-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] transition-colors",
-                                                    link.highlight ? "text-[var(--accent)]" : "text-white/30 active:text-white/70"
-                                                )}>
-                                                {link.name}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* ── footer ── */}
-                            <div
-                                className="shrink-0 border-t border-white/[0.07] bg-[var(--surface-1)] px-4 py-3.5 flex items-center gap-3"
-                                style={{ paddingBottom: "calc(0.875rem + env(safe-area-inset-bottom, 0px))" }}
-                            >
-                                {socialLinks.length > 0 && (
-                                    <div className="flex items-center gap-1.5">
-                                        {socialLinks.map((social, idx) => (
-                                            <Link key={idx} href={social.href} target="_blank" rel="noopener noreferrer"
-                                                className="w-9 h-9 rounded-[var(--radius-card)] bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-white/45 active:text-white transition-colors">
-                                                <social.icon className="w-[15px] h-[15px]" />
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
-                                {user ? (
-                                    <button onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                                        className="btn-command btn-command-quiet flex-1 flex items-center justify-center gap-2 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 active:text-white transition-colors">
-                                        <LogOut className="w-3.5 h-3.5" /> Sign out
-                                    </button>
-                                ) : (
-                                    <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}
-                                        className="btn-command flex-1 flex items-center justify-center h-9 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">
-                                        Sign in
-                                    </Link>
-                                )}
-                            </div>
-                        </motion.div>
-                    </>
-                )}
-            </AnimatePresence>
         </div>
     );
 }

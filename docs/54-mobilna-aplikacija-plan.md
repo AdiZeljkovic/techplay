@@ -268,6 +268,48 @@ Pet marki koje su ostale bez upotrebe je obrisano iz `TabMarks.tsx`; ostali su
 
 ---
 
+## Dopuna 15.08.2026. — hamburger je postao "More" list
+
+Prigovor: meni je pun stvari koje traka vec nosi.
+
+**Izbrojano u browseru, sa svim akordeonima otvorenim: 31 link, od kojih 22
+traka vec nosi.** Discover je ponavljao Feed tab, Games akordeon je ponavljao
+Games tab, Forum se pojavljivao **tri puta** (brza plocica, red u Community,
+i vlastiti tab), `/login` i `/games` po dva puta. Povrh toga kartica identiteta
+s avatarom, nivoom i XP trakom — dok je sredina trake korisnikov portret koji
+vodi na isto mjesto.
+
+Ladica preko cijelog ekrana zamijenjena je **listom odozdo** (`Sheet`
+primitiv), koji drzi cetiri stvari:
+
+1. **Sections** — News, Reviews, Tech, Guides. Ovo **nije** Feed tab u drugom
+   izdanju: `/latest` je mijesani tok, a te cetiri su vlastite stranice. Cipovi
+   na feedu su klijentski filteri, ne linkovi, pa bi bez ovog reda `/reviews`,
+   `/hardware` i `/guides` ostali **bez ijednog ulaza s telefona**.
+2. **Community** — bez foruma, koji ima tab.
+3. **Tools** — nikad nisu ni imali drugo mjesto.
+4. **Shop**.
+
+Izbaceno namjerno: about, contact, impressum, marketing, privacy, terms i
+drustveni nalozi. Sve to je u footeru sajta, koji je na telefonu vidljiv —
+izmjereno, 19 linkova.
+
+**Jedno mjesto gdje pravilo savija:** traka je `md:hidden`, a desktop
+navigacija pocinje na `xl`. Izmedju **768 i 1280px traka ne postoji** i list je
+jedina navigacija — pa u tom pojasu, i samo tamo, pokazuje i cetiri glavna
+odredista. Link koji zamjenjuje traku nije duplikat trake koje nema na ekranu.
+
+**Izmjereno poslije**: 16 vidljivih linkova na telefonu (20 na tabletu),
+**nijedan se ne ponavlja**. `Header.tsx` je s 1653 pao na ~1000 linija; uz to
+su otisli `UTILITY_LINKS`, `NAV_ICONS`, `MOBILE_QUICK_TILES`, stanje akordeona
+i mapa drustvenih ikona, koje vise niko nije koristio.
+
+Ostaje jedno svjesno preklapanje: **Sign in** u podnozju lista vodi tamo gdje i
+sredina trake kad nisi prijavljen. Razdvojiti ih znacilo bi ostaviti Register
+bez vrata.
+
+---
+
 ## Izvori
 
 - [Mobile Navigation UX Best Practices, Patterns & Examples (2026)](https://www.designstudiouiux.com/blog/mobile-navigation-ux/)
