@@ -113,7 +113,48 @@ reduced-motion — kandidat je `tp-page-in` ulazna animacija stranice.
 
 ---
 
-## 6. Zdravo (izmjereno)
+## 7. Komentari: pola odgovora niko nije citao (15.08.2026.)
+
+Prijavljeno: komentari na clancima vracaju vise nego sto treba. Tacno.
+
+`CommentResource` je za autora slao **opsti `UserResource`** — dvadeset polja:
+cover slika, bio, tagline, lokacija, author slug, drustveni linkovi, boja posta,
+forum reputacija, broj postova, level, XP, uloge, datum registracije. Nit
+komentara crta ime, sliku i znacku ranga. **Pet polja od dvadeset.**
+
+I to nije jednom po stranici: endpoint ucitava do **100 odgovora po komentaru**
+(pa jos 50 i 25 na dubljim nivoima), deset komentara po stranici. Svaki od njih
+nosi svoj pun profil autora.
+
+Uz to tri polja koja **nijedno mjesto na frontu ne cita**:
+
+- `created_at_human` — klijent sam formatira vrijeme kroz date-fns
+- `likes_count` — bio je doslovno `$this->score`, isti broj pod drugim imenom
+- `is_liked_by_user` — `user_vote === 'up'`, sto klijent vidi sam, i sto ne
+  moze izraziti minus
+
+**Izmjereno na stvarnom odgovoru s produkcije** (clanak
+`games-you-must-play-if-you-like-christopher-nolans-odyssey`):
+**2.591 B → 1.406 B, ustedа 46%**, oko **592 B po autoru**.
+
+### Usput nadjene dvije greske, ne samo visak
+
+1. **Znacka „Staff" u komentarima nikad se nije pojavila.** Front je citao
+   `comment.user.role`, a API polje `role` **nikad nije slao** — autorizacija je
+   odavno na Spatie ulogama. Uvijek `false`.
+2. **`is_staff` u `UserResource` je bio neupotrebljiv.** Racunao se kao
+   `hasRole(['admin', 'editor'])` — malim slovima — dok seeder pravi `Editor`,
+   `Editor-in-Chief`, `Super Admin`. Spatie poredi imena tacno, pa je i za
+   glavnog urednika vracao `false`. Sad koristi `isEditorialStaff()`, helper
+   koji model vec ima.
+
+Novi `CommentAuthorResource` salje `username`, `name`, `avatar_url`,
+`rank{name,color}` i `is_staff`. `CommentPayloadTest` (4 testa) je ograda: pada
+ako neko vrati pun `UserResource` ili doda polje iz navike.
+
+---
+
+## 8. Zdravo (izmjereno)
 
 - LCP: `/forum` 0,35 s, `/leaderboard` 0,37 s, `/games` 0,66 s, `/calendar`
   0,72 s, `/latest` 0,75 s. CLS **0,000** svuda. (`/latest` je prije prolaza sa

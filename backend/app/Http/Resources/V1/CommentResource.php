@@ -8,28 +8,32 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class CommentResource extends JsonResource
 {
     /**
-     * Transform the resource into an array.
+     * A comment as the thread draws it.
      *
-     * @return array<string, mixed>
+     * Three fields left here because nothing read them:
+     *
+     * - `created_at_human` — the client formats the timestamp itself, with
+     *   date-fns, so it never looked at the server's version. Two renderings of
+     *   one moment, and the server's one goes stale the second it is cached.
+     * - `likes_count` — was assigned `$this->score`. The same number twice.
+     * - `is_liked_by_user` — was `$this->user_vote === 'up'`, which the client
+     *   can see for itself from `user_vote`, and which cannot express a
+     *   downvote at all.
+     *
+     * The author now comes through CommentAuthorResource rather than the full
+     * UserResource; see the note there.
      */
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'content' => $this->content, // Will be sanitized on storage or frontend, but here raw text
+            'content' => $this->content,
             'created_at' => $this->created_at,
-            'created_at_human' => $this->created_at->diffForHumans(),
-            'user' => new UserResource($this->whenLoaded('user')),
+            'user' => new CommentAuthorResource($this->whenLoaded('user')),
             'parent_id' => $this->parent_id,
             'replies' => CommentResource::collection($this->whenLoaded('replies')),
-            // 'likes_count' => $this->likes_count ?? 0, // Ensure updated model has this
-            // 'is_liked_by_user' => $this->is_liked_by_user ?? false,
-
-            // Using logic from controller transformation if attributes exist
             'score' => (int) ($this->score ?? 0),
             'user_vote' => $this->user_vote,
-            'likes_count' => (int) ($this->score ?? 0),
-            'is_liked_by_user' => $this->user_vote === 'up',
         ];
     }
 }

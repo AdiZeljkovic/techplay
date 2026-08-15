@@ -180,15 +180,25 @@ export interface Review {
     tags?: string[];
 }
 
+/**
+ * The author of a comment — what /comments actually sends, which is far less
+ * than a User. A thread renders a name, a picture and a rank badge.
+ */
+export interface CommentAuthor {
+    username: string;
+    name?: string | null;
+    avatar_url?: string | null;
+    rank?: { name: string; color?: string } | null;
+    is_staff?: boolean;
+}
+
 export interface Comment {
     id: number;
     content: string;
     created_at: string;
-    user: User;
-    likes_count: number;
+    user: CommentAuthor;
     score?: number;
     user_vote?: 'up' | 'down' | null;
-    is_liked_by_user?: boolean;
     replies?: Comment[];
     commentable_type?: string;
     commentable_id?: number;

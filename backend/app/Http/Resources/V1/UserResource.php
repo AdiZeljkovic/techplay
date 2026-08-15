@@ -56,7 +56,13 @@ class UserResource extends JsonResource
                     'icon' => $this->rank->icon,
                 ];
             }),
-            'is_staff' => $this->hasRole(['admin', 'editor']),
+            // isEditorialStaff(), not a lowercase list. This read
+            // hasRole(['admin', 'editor']) while every role the seeder creates
+            // is capitalised — Editor, Editor-in-Chief, Super Admin — and
+            // Spatie matches names exactly, so it answered false for everyone,
+            // including the editor-in-chief. The model already knows who staff
+            // are; ask it.
+            'is_staff' => $this->isEditorialStaff(),
             'next_rank' => $this->when(isset($this->next_rank), $this->next_rank),
             'forum_reputation' => $this->forum_reputation ?? 0,
             'post_color' => $this->post_color,

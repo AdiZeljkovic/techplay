@@ -323,7 +323,10 @@ const CommentItem = memo(function CommentItem({
     isSubmitting
 }: CommentItemProps) {
     const displayName = decodeHtml(comment.user.name || comment.user.username);
-    const isStaff = comment.user.role === 'admin' || comment.user.role === 'editor';
+    // `role` was never a field the API sent — authorization moved to Spatie
+    // roles long ago — so this was always false and no staff comment has ever
+    // shown its ring or its badge. The server answers the question directly.
+    const isStaff = !!comment.user.is_staff;
 
     return (
         <div className={`group animate-fade-in-up ${depth > 0 ? 'mt-4' : ''}`}>
