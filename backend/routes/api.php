@@ -58,6 +58,8 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PasswordResetController;
 use App\Http\Controllers\Api\V1\PayPalController;
 use App\Http\Controllers\Api\V1\PayPalWebhookController;
+use App\Http\Controllers\Api\V1\PollController;
+use App\Http\Controllers\Api\V1\PostReactionController;
 use App\Http\Controllers\Api\V1\PresenceController;
 use App\Http\Controllers\Api\V1\QuestController;
 use App\Http\Controllers\Api\V1\ReadingController;
@@ -229,6 +231,7 @@ Route::prefix('v1')->group(function () {
         Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}', [ForumController::class, 'updateThread']);
         Route::delete('/forum/threads/{slug}', [ForumController::class, 'deleteThread']);
         Route::post('/forum/threads/{slug}/restore', [ForumController::class, 'restoreThread']);
+        Route::post('/forum/threads/{slug}/merge', [ForumController::class, 'mergeThread']);
         Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
         Route::middleware(['throttle:20,1', 'ban.check'])->delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);
         Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/posts/{postId}/solution', [ForumController::class, 'markSolution']);
@@ -244,6 +247,14 @@ Route::prefix('v1')->group(function () {
         // Screenshots. Ten a minute is generous for writing one post and mean
         // for a script filling the disk.
         Route::middleware('throttle:10,1')->post('/forum/uploads', [ForumUploadController::class, 'store']);
+
+        // Reacting to one reply rather than to the whole thread.
+        Route::middleware('throttle:40,1')
+            ->post('/forum/threads/{slug}/posts/{postId}/reactions', [PostReactionController::class, 'toggle']);
+
+        // One poll per thread, added by its author or by staff.
+        Route::middleware('throttle:5,1')->post('/forum/threads/{slug}/poll', [PollController::class, 'store']);
+        Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/poll/vote', [PollController::class, 'vote']);
 
         // Game Ratings (Auth)
         Route::get('/games/{slug}/ratings/my', [GameRatingController::class, 'my']);

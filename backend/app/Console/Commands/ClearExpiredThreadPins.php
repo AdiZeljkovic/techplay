@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Thread;
+use App\Support\ForumCache;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 
@@ -42,8 +43,7 @@ class ClearExpiredThreadPins extends Command
             }
         }
 
-        Cache::forget('forum.categories');
-        Cache::forget('forum.active_threads');
+        ForumCache::forgetShared();
 
         $this->info("Unpinned {$expired->count()} expired thread(s).");
 

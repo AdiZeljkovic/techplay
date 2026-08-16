@@ -7,6 +7,7 @@ use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -27,9 +28,41 @@ class ForumReplyNotification extends Notification implements ShouldQueue
         protected User $replier,
     ) {}
 
+    /**
+     * In-app always; email only if the member asked for it.
+     *
+     * A reply to your own thread is the one forum event worth an email — it is
+     * the answer you were waiting for, and you are not on the site to see the
+     * bell. Everything else stays in-app, because a forum that emails on every
+     * event is a forum people mute.
+     */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        $channels = ['database'];
+
+        if (($notifiable->email_notifications ?? false) && $notifiable->hasVerifiedEmail()) {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $who = $this->replier->display_name ?? $this->replier->username;
+        $base = rtrim((string) config('app.frontend_url'), '/');
+        $url = $base."/forum/thread/{$this->thread->slug}?post={$this->post->id}#post-{$this->post->id}";
+
+        return (new MailMessage)
+            ->subject($who.' replied to "'.$this->thread->title.'"')
+            ->greeting('Someone answered.')
+            ->line($who.' replied to your thread "'.$this->thread->title.'".')
+            // Plain text, and short: the mail is a pointer to the thread rather
+            // than a copy of it, and pasting somebody's markup into an email is
+            // how an image in a post becomes a tracking pixel in an inbox.
+            ->line(substr(strip_tags($this->post->content ?? ''), 0, 300))
+            ->action('Read the reply', $url)
+            ->line('You can turn these off in your profile settings.');
     }
 
     public function toDatabase(object $notifiable): array

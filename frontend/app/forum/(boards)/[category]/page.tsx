@@ -1,229 +1,91 @@
-"use client";
+import type { Metadata } from "next";
+import { getApiUrl, serverHeaders } from "@/lib/api";
+import CategoryClient, { type CategoryData } from "./CategoryClient";
 
-import { Suspense, useState } from "react";
-import useSWR from "swr";
-import axios from "@/lib/axios";
-import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
-import { MessageSquare, Plus, ScrollText, X } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import ForumShell from "@/components/forum/ForumShell";
-import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
-import ListingPagination from "@/components/ui/ListingPagination";
-import { useRealTimeForum } from "@/hooks";
-import { useForumReads } from "@/hooks/useForumReads";
-import { decodeHtml } from "@/lib/decode";
-import { fmtStat, getCategoryIcon } from "@/lib/forum";
+/**
+ * A board, rendered on the server before the browser gets involved.
+ *
+ * Measured against production before this existed: the HTML for a board page
+ * was 66 KB and contained the title of not one thread. Everything arrived after
+ * the JavaScript ran, so a crawler saw an empty shell — and since every page
+ * under /forum inherited one generic title, the whole forum looked to a search
+ * engine like a single page called "Community Forums".
+ *
+ * So the board is fetched here and handed to the client half as its starting
+ * data. The rows are in the HTML, the page has its own title and description,
+ * and the interactive parts — paging, tag filters, live threads, unread marks —
+ * carry on exactly as they were.
+ */
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+/* Threads move constantly and there are few enough boards to render each time.
+   ISR is deliberately not used: this site disabled it for large listings after
+   filling its disk, and Cloudflare caches the response at the edge anyway. */
+export const dynamic = "force-dynamic";
 
-interface Thread extends ThreadRowData {
-    tags?: { name: string; slug: string }[];
+async function loadBoard(slug: string): Promise<CategoryData | null> {
+    try {
+        const res = await fetch(`${getApiUrl()}/forum/categories/${slug}`, {
+            // serverHeaders, not a bare Accept: the API meters `api` at sixty
+            // requests a minute keyed on the caller's IP, and every server
+            // render leaves this process from one address — so without the
+            // shared secret the whole forum renders out of one visitor's
+            // budget, and a crawler walking it exhausts that in seconds.
+            headers: serverHeaders(),
+            cache: "no-store",
+        });
+
+        // A private board answers 404 to this unauthenticated request, which is
+        // the right answer — it should not be in anybody's HTML. The client
+        // then fetches it with the reader's own token.
+        if (!res.ok) return null;
+
+        return (await res.json()) as CategoryData;
+    } catch {
+        // The board still renders; it just starts empty and fills in.
+        return null;
+    }
 }
 
-interface CategoryData {
-    category: {
-        id: number;
-        name: string;
-        slug: string;
-        description?: string;
-        rules?: string;
-        threads_count?: number;
-        posts_count?: number;
-        views_total?: number;
-    };
-    threads: {
-        data: Thread[];
-        current_page: number;
-        last_page: number;
-        total?: number;
-    };
-}
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ category: string }>;
+}): Promise<Metadata> {
+    const { category } = await params;
+    const data = await loadBoard(category);
 
-function CategoryThreadsPageInner() {
-    const params = useParams();
-    const searchParams = useSearchParams();
-    const categorySlug = params.category as string;
-    const { user } = useAuth();
-    const Icon = getCategoryIcon(categorySlug);
-    const [page, setPage] = useState(1);
-    const [activeTag, setActiveTag] = useState<string | null>(searchParams.get("tag"));
-    const [showRules, setShowRules] = useState(false);
-
-    const { data, isLoading } = useSWR<CategoryData>(
-        categorySlug ? `/forum/categories/${categorySlug}?page=${page}${activeTag ? `&tag=${activeTag}` : ""}` : null,
-        fetcher
-    );
-
-    // Real-time forum hook — only surface newly-created threads on page 1
-    const { threads: realtimeThreads } = useRealTimeForum([]);
-    const { isUnread } = useForumReads();
-
-    const fetchedThreads = data?.threads?.data || [];
-    const categoryRealtimeThreads = page === 1
-        ? realtimeThreads.filter((rt) =>
-            rt.category?.slug === categorySlug && !fetchedThreads.some((f) => f.id === rt.id)
-        )
-        : [];
-    const allThreads = [...categoryRealtimeThreads, ...fetchedThreads] as Thread[];
-
-    if (isLoading) {
-        return (
-            <ForumShell crumbs={[{ label: "Forum", href: "/forum" }]} title="Loading board…">
-                <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] divide-y divide-[var(--line)]">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                        <div key={i} className="flex items-center gap-3 px-3.5 py-3.5 animate-pulse">
-                            <span className="h-8 w-8 shrink-0 rounded-[var(--radius-inner)] bg-white/[0.05]" />
-                            <span className="flex-1 space-y-2">
-                                <span className="block h-3 w-2/5 rounded bg-white/[0.05]" />
-                                <span className="block h-2.5 w-1/4 rounded bg-white/[0.035]" />
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            </ForumShell>
-        );
+    if (!data?.category) {
+        return { title: "Board" };
     }
 
-    if (!data) {
-        return (
-            <ForumShell crumbs={[{ label: "Forum", href: "/forum" }]} title="Board not found">
-                <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] px-5 py-10 text-center">
-                    <MessageSquare aria-hidden className="mx-auto h-8 w-8 text-white/12" />
-                    <p className="mt-3 text-[13px] text-[var(--ink-low)]">
-                        This board does not exist, or it was renamed.
-                    </p>
-                    <Link
-                        href="/forum"
-                        className="btn-command mt-4 inline-flex h-9 items-center px-4 bg-[var(--accent)] font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white"
-                    >
-                        All boards
-                    </Link>
-                </div>
-            </ForumShell>
-        );
-    }
+    const name = data.category.name;
+    const threads = data.category.threads_count ?? 0;
+    const description =
+        data.category.description?.trim()
+        || `${threads} ${threads === 1 ? "thread" : "threads"} in ${name} on the TechPlay community forum.`;
 
-    const { category, threads } = data;
-
-    const sorted = allThreads
-        .slice()
-        .sort((a, b) => (b.is_pinned ? 1 : 0) - (a.is_pinned ? 1 : 0));
-
-    return (
-        <ForumShell
-            crumbs={[{ label: "Forum", href: "/forum" }, { label: decodeHtml(category.name) }]}
-            title={decodeHtml(category.name)}
-            description={category.description ? decodeHtml(category.description) : undefined}
-            mark={Icon}
-            /* These used to be summed from the twenty rows on screen, so a
-               board of a hundred threads said it had twenty, and its replies
-               and views changed as you paged. They are the board's own totals
-               now, counted by the API. */
-            stats={[
-                { label: "Threads", value: fmtStat(category.threads_count ?? 0) },
-                { label: "Replies", value: fmtStat(category.posts_count ?? 0) },
-                { label: "Views", value: fmtStat(category.views_total ?? 0) },
-            ]}
-            action={
-                user ? (
-                    <Link
-                        href={`/forum/create?category=${category.slug}`}
-                        className="btn-command inline-flex h-9 items-center gap-2 px-4 bg-[var(--accent)] font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white"
-                    >
-                        <Plus className="h-3.5 w-3.5" strokeWidth={2} /> New thread
-                    </Link>
-                ) : null
-            }
-        >
-            {category.rules && (
-                <div className="mb-4">
-                    <button
-                        onClick={() => setShowRules((v) => !v)}
-                        aria-expanded={showRules}
-                        className="inline-flex items-center gap-2 text-[11.5px] font-medium text-[var(--ink-low)] hover:text-[var(--accent-ink)] transition-colors"
-                    >
-                        <ScrollText className="h-3.5 w-3.5" strokeWidth={1.6} />
-                        Board rules
-                    </button>
-                    {showRules && (
-                        <p className="mt-2 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-3.5 py-3 text-[12.5px] leading-relaxed text-[var(--ink-mid)]">
-                            {decodeHtml(category.rules)}
-                        </p>
-                    )}
-                </div>
-            )}
-
-            {activeTag && (
-                <div className="mb-3 flex items-center gap-2 text-[11.5px] text-[var(--ink-faint)]">
-                    Filtered by
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--accent-soft)] px-2.5 py-0.5 text-[11px] font-bold text-[var(--accent-ink)]">
-                        {activeTag}
-                        <button onClick={() => { setActiveTag(null); setPage(1); }} aria-label="Clear tag filter">
-                            <X className="h-3 w-3" />
-                        </button>
-                    </span>
-                </div>
-            )}
-
-            {sorted.length > 0 ? (
-                <>
-                    <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden">
-                        <ThreadRowHeader />
-                        <div className="divide-y divide-[var(--line)]">
-                            {sorted.map((thread) => (
-                                <ThreadRow
-                                    key={thread.id}
-                                    thread={thread}
-                                    unread={isUnread(thread.id, thread.last_activity_at || thread.created_at)}
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    {threads.last_page > 1 && (
-                        <div className="mt-5">
-                            <ListingPagination
-                                page={threads.current_page}
-                                lastPage={threads.last_page}
-                                onPrev={() => setPage((p) => Math.max(1, p - 1))}
-                                onNext={() => setPage((p) => Math.min(threads.last_page, p + 1))}
-                                prevDisabled={threads.current_page <= 1}
-                                nextDisabled={threads.current_page >= threads.last_page}
-                            />
-                        </div>
-                    )}
-                </>
-            ) : (
-                /* An empty board used to be seven hundred pixels of nothing beside
-                   a full sidebar. If there is nothing here, the page should say so
-                   and offer the one thing that fixes it. */
-                <div className="rounded-[var(--radius-panel)] border border-dashed border-[var(--line-strong)] bg-[var(--surface-1)] px-5 py-10 text-center">
-                    <MessageSquare aria-hidden className="mx-auto h-7 w-7 text-white/12" strokeWidth={1.4} />
-                    <p className="mt-3 font-display text-[14px] font-bold text-white">
-                        {activeTag ? "Nothing under that tag yet" : "No threads here yet"}
-                    </p>
-                    <p className="mt-1 text-[12.5px] text-[var(--ink-faint)]">
-                        {activeTag ? "Try clearing the filter." : "Be the first to start one."}
-                    </p>
-                    {user && !activeTag && (
-                        <Link
-                            href={`/forum/create?category=${category.slug}`}
-                            className="btn-command mt-4 inline-flex h-9 items-center gap-2 px-4 bg-[var(--accent)] font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white"
-                        >
-                            <Plus className="h-3.5 w-3.5" strokeWidth={2} /> Start a thread
-                        </Link>
-                    )}
-                </div>
-            )}
-        </ForumShell>
-    );
+    return {
+        title: name,
+        description,
+        // Each board is its own page now. Everything under /forum used to
+        // declare /forum as its canonical, which tells Google to drop these
+        // URLs from the index entirely.
+        alternates: { canonical: `/forum/${category}` },
+        openGraph: {
+            title: `${name} — TechPlay Forum`,
+            description,
+            type: "website",
+        },
+    };
 }
 
-export default function CategoryThreadsPage() {
-    return (
-        <Suspense fallback={null}>
-            <CategoryThreadsPageInner />
-        </Suspense>
-    );
+export default async function CategoryPage({
+    params,
+}: {
+    params: Promise<{ category: string }>;
+}) {
+    const { category } = await params;
+    const initial = await loadBoard(category);
+
+    return <CategoryClient initial={initial} />;
 }

@@ -49,13 +49,25 @@ final class ForumCache
         }
     }
 
+    /**
+     * Audiences a cached listing can have been built for.
+     *
+     * Board listings are cached per audience since private boards arrived, so
+     * forgetting one key by name would leave the other two serving. Named here
+     * rather than inferred so adding a fourth is one edit.
+     */
+    private const AUDIENCES = ['guest', 'members', 'staff'];
+
     /** The lists and counters that any write to any thread can move. */
     public static function forgetShared(): void
     {
         Cache::forget('forum.stats');
-        Cache::forget('forum.categories');
-        Cache::forget('forum.active_threads');
-        Cache::forget('forum.unanswered_threads');
+
+        foreach (self::AUDIENCES as $audience) {
+            Cache::forget("forum.categories.{$audience}");
+            Cache::forget("forum.active_threads.{$audience}");
+            Cache::forget("forum.unanswered_threads.{$audience}");
+        }
     }
 
     public static function forgetThread(string $threadSlug): void

@@ -76,17 +76,27 @@ class ForumImageTest extends TestCase
      * installation has no image extension at all — which is itself why the
      * upload endpoint decodes headers rather than re-encoding pixels.
      */
-    private function jpeg(string $name = 'screenshot.jpg'): UploadedFile
+    /** The bytes themselves, so no test has to read a file back to get them. */
+    private function jpegBytes(): string
     {
-        $path = sys_get_temp_dir().'/'.uniqid('shot_').'.jpg';
-
-        file_put_contents($path, base64_decode(
+        return base64_decode(
             '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0a'
             .'HBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAA'
             .'AAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q=='
-        ));
+        );
+    }
+
+    private function upload(string $bytes, string $name = 'screenshot.jpg'): UploadedFile
+    {
+        $path = sys_get_temp_dir().'/'.uniqid('shot_').'.jpg';
+        file_put_contents($path, $bytes);
 
         return new UploadedFile($path, $name, 'image/jpeg', null, true);
+    }
+
+    private function jpeg(string $name = 'screenshot.jpg'): UploadedFile
+    {
+        return $this->upload($this->jpegBytes(), $name);
     }
 
     public function test_uploading_a_screenshot_returns_a_url_on_our_own_storage(): void
@@ -145,17 +155,19 @@ class ForumImageTest extends TestCase
 
         // A JPEG with an APP1 segment carrying an EXIF marker spliced in after
         // the SOI, the way a camera writes one.
-        $original = file_get_contents((new \ReflectionMethod($this, 'jpeg'))->invoke($this)->getPathname());
+        //
+        // Built from the bytes rather than by reading back a file this test
+        // just wrote: doing that failed in a full suite run — the temp file was
+        // no longer there and file_get_contents returned false — while passing
+        // whenever the test ran alone.
+        $original = $this->jpegBytes();
         $exifPayload = 'Exif'.chr(0).chr(0).str_repeat('GPS-SECRET', 8);
         $app1 = chr(0xFF).chr(0xE1).pack('n', strlen($exifPayload) + 2).$exifPayload;
         $withExif = substr($original, 0, 2).$app1.substr($original, 2);
 
-        $path = sys_get_temp_dir().'/'.uniqid('exif_').'.jpg';
-        file_put_contents($path, $withExif);
-
         $response = $this->actingAs($user)
             ->postJson('/api/v1/forum/uploads', [
-                'image' => new UploadedFile($path, 'photo.jpg', 'image/jpeg', null, true),
+                'image' => $this->upload($withExif, 'photo.jpg'),
             ]);
 
         $response->assertStatus(201);

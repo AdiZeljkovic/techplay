@@ -8,6 +8,7 @@ use App\Http\Resources\V1\ForumThreadCardResource;
 use App\Http\Resources\V1\PostResource;
 use App\Http\Resources\V1\ThreadResource;
 use App\Models\Category;
+use App\Models\Poll;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\Thread;
@@ -31,6 +32,20 @@ class ForumController extends Controller
 {
     /** Bounty cost to self-pin your own thread for 24 hours. */
     private const SELF_PIN_COST = 100;
+
+    /**
+     * Who is reading, on an endpoint that does not require anybody to be.
+     *
+     * The public forum routes carry no `auth:sanctum` middleware, so the
+     * default guard is never resolved on them and only asking sanctum directly
+     * finds a bearer token. Asking the default guard afterwards costs nothing
+     * and keeps this correct on the authenticated routes too, where the
+     * middleware has already made sanctum the default.
+     */
+    private function viewer(): ?User
+    {
+        return Auth::guard('sanctum')->user() ?? Auth::user();
+    }
 
     /** Kept as a name the call sites already use; the rules live in ForumCache. */
     private function clearCategoryPageCache(string $categorySlug): void
@@ -73,19 +88,33 @@ class ForumController extends Controller
             ];
         });
 
-        // Online users computed fresh on each request (cheap Redis op)
-        Redis::zremrangebyscore('forum:users:online', '-inf', now()->subMinutes(5)->timestamp);
-        $stats['online_users'] = (int) Redis::zcard('forum:users:online');
+        // Online users computed fresh on each request (cheap Redis op), and
+        // for the same reason as above it is allowed to fail: the forum's
+        // headline counts should survive a cache outage, reporting nobody
+        // online rather than nothing at all.
+        try {
+            Redis::zremrangebyscore('forum:users:online', '-inf', now()->subMinutes(5)->timestamp);
+            $stats['online_users'] = (int) Redis::zcard('forum:users:online');
+        } catch (\Throwable $e) {
+            $stats['online_users'] = 0;
+        }
 
         return response()->json($stats)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
 
     public function categories()
     {
-        // PERFORMANCE: Cache for 60 seconds
-        $categories = Cache::flexible('forum.categories', [60, 600], function () {
+        // Cached per audience, not once for everybody. A single shared entry
+        // would hand a moderator's view of the index — private boards and all
+        // — to whoever asked next, which is the exact failure the visibility
+        // column exists to prevent.
+        $viewer = $this->viewer();
+        $audience = Category::audienceFor($viewer);
+
+        $categories = Cache::flexible("forum.categories.{$audience}", [60, 600], function () use ($viewer) {
             // Get all forum categories with thread and post counts
             $allForumCategories = Category::where('type', 'forum')
+                ->visibleTo($viewer)
                 ->withCount(['threads', 'posts'])
                 ->orderBy('id')
                 ->get();
@@ -132,6 +161,17 @@ class ForumController extends Controller
     {
         $page = request()->get('page', 1);
         $tagSlug = request()->get('tag');
+
+        // Checked before anything is read or cached. A board nobody is allowed
+        // to see answers 404 rather than 403: a refusal confirms the board is
+        // there, and for a private room that is itself the leak.
+        $viewer = $this->viewer();
+        $board = Category::where('slug', $slug)->where('type', 'forum')->first();
+
+        if (! $board || ! $board->isVisibleTo($viewer)) {
+            abort(404, 'Category not found');
+        }
+
         $cacheKey = ForumCache::categoryKey($slug, $page, $tagSlug);
 
         // Reduced cache time to 30 seconds for faster updates
@@ -208,11 +248,27 @@ class ForumController extends Controller
             ->withCount(['posts', 'upvotes']) // Add upvotes count
             ->firstOrFail();
 
-        // PERFORMANCE: Use Redis atomic increment instead of sync DB write
-        // Views are flushed to DB every 5 minutes by FlushViewCounters job
-        Redis::incr("views:thread:{$thread->id}");
+        // A thread is exactly as visible as the board holding it. Without this
+        // a private board leaks through any link to a thread inside it, which
+        // is how most of them get found.
+        if ($thread->category && ! $thread->category->isVisibleTo($this->viewer())) {
+            abort(404, 'Thread not found');
+        }
 
-        $authUserId = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->id() : null;
+        // Views are counted in Redis and flushed to the database every five
+        // minutes by FlushViewCounters.
+        //
+        // Guarded, because it was not: with Redis unreachable this line threw
+        // and the thread page answered 500. A view counter must never be able
+        // to take down the page it is counting — losing a count is nothing,
+        // losing the thread is the whole point of the page.
+        try {
+            Redis::incr("views:thread:{$thread->id}");
+        } catch (\Throwable $e) {
+            Log::warning('View counter unavailable', ['thread' => $thread->id, 'exception' => $e]);
+        }
+
+        $authUserId = $this->viewer()?->id;
 
         $thread->is_upvoted = $authUserId
             ? DB::table('thread_upvotes')->where('user_id', $authUserId)->where('thread_id', $thread->id)->exists()
@@ -226,6 +282,35 @@ class ForumController extends Controller
             ? DB::table('thread_bookmarks')->where('user_id', $authUserId)->where('thread_id', $thread->id)->exists()
             : false;
 
+        $perPage = 15;
+
+        /**
+         * A link to one reply has to land on it.
+         *
+         * Search results and notifications point at `#post-123`, and replies
+         * are paginated fifteen at a time — so anything past the first page
+         * opened the thread at the top with the quoted reply nowhere on screen.
+         * Given `?post=`, the page holding it is worked out here rather than
+         * guessed by the client, which cannot see the ordering.
+         */
+        $page = null;
+
+        if ($postId = request()->integer('post')) {
+            // Existence first. Counting rows at or below the id without it
+            // meant an invented number counted the whole thread and landed on
+            // the last page — and old links outlive the posts they point at,
+            // so this is the ordinary case, not the exotic one.
+            $belongsHere = $thread->posts()->withTrashed()->whereKey($postId)->exists();
+
+            if ($belongsHere) {
+                $position = $thread->posts()->withTrashed()
+                    ->where('id', '<=', $postId)
+                    ->count();
+
+                $page = (int) ceil($position / $perPage);
+            }
+        }
+
         $posts = $thread->posts()
             ->withTrashed()
             ->with([
@@ -233,11 +318,59 @@ class ForumController extends Controller
                     $q->with(['rank', 'roles'])->withCount(['posts', 'threads']);
                 },
             ])
-            ->paginate(15);
+            ->paginate($perPage, ['*'], 'page', $page);
 
+        // Reactions for the fifteen replies on screen, in two queries rather
+        // than two per reply. Attached to the models so PostResource can read
+        // them without knowing where they came from.
+        $postIds = collect($posts->items())->pluck('id');
+
+        $counts = DB::table('post_reactions')
+            ->whereIn('post_id', $postIds)
+            ->groupBy('post_id', 'reaction')
+            ->selectRaw('post_id, reaction, count(*) as total')
+            ->get()
+            ->groupBy('post_id')
+            ->map(fn ($rows) => $rows->pluck('total', 'reaction')->map(fn ($n) => (int) $n)->all());
+
+        $mine = $authUserId
+            ? DB::table('post_reactions')
+                ->whereIn('post_id', $postIds)
+                ->where('user_id', $authUserId)
+                ->pluck('reaction', 'post_id')
+            : collect();
+
+        foreach ($posts as $post) {
+            $post->reaction_counts = $counts->get($post->id, []);
+            $post->my_reaction = $mine->get($post->id);
+        }
+
+        /**
+         * The page numbers, stated.
+         *
+         * `PostResource::collection($paginator)` nested inside a plain array
+         * serialises to the items and nothing else — the meta a paginator
+         * carries is dropped on the way out. So this endpoint had been
+         * answering with a bare list of fifteen, the client's `last_page` was
+         * always one, and the pager it draws never appeared: every thread
+         * stopped dead at reply fifteen with no way to the rest. Measured, not
+         * assumed — the response had two keys and `posts` was a list.
+         *
+         * Same shape as the board listing uses, so both paginate alike.
+         */
         return response()->json([
             'thread' => new ThreadResource($thread),
-            'posts' => PostResource::collection($posts),
+            'poll' => PollController::present(
+                Poll::with('options')->where('thread_id', $thread->id)->first(),
+                $authUserId
+            ),
+            'posts' => [
+                'data' => PostResource::collection($posts)->resolve(),
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total(),
+            ],
         ]);
     }
 
@@ -256,6 +389,12 @@ class ForumController extends Controller
         }
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
+
+        // Same rule as reading: a board you cannot see is a board you cannot
+        // post into.
+        if ($thread->category && ! $thread->category->isVisibleTo(Auth::user())) {
+            abort(404, 'Thread not found');
+        }
 
         // Restrict replies in "News & Announcements"
         $category = $thread->category;
@@ -292,7 +431,7 @@ class ForumController extends Controller
 
             // Cache invalidation AFTER successful transaction commit
             Cache::forget("forum.thread.{$slug}");
-            Cache::forget('forum.unanswered_threads');
+            ForumCache::forgetShared();
 
             Log::info('createPost: Post created', ['id' => $post->id]);
 
@@ -360,6 +499,13 @@ class ForumController extends Controller
                 return response()->json(['message' => 'That category does not accept threads.'], 422);
             }
 
+            // Reading and writing are the same permission here. Without this a
+            // private board is writable by anyone who guesses its id, which is
+            // a stranger way in than simply reading it.
+            if (! $category->isVisibleTo(Auth::user())) {
+                return response()->json(['message' => 'That category does not accept threads.'], 422);
+            }
+
             // check restriction for "News & Announcements"
             if ($category->slug === 'news-announcements' || $category->name === 'News & Announcements') {
                 $user = Auth::user();
@@ -420,9 +566,7 @@ class ForumController extends Controller
             Log::info('Thread created successfully', ['id' => $thread->id]);
 
             // Cache invalidation AFTER successful transaction commit
-            Cache::forget('forum.categories');
-            Cache::forget('forum.active_threads');
-            Cache::forget('forum.unanswered_threads');
+            ForumCache::forgetShared();
 
             // Clear category-specific cache
             $category = Category::find($request->category_id);
@@ -454,6 +598,7 @@ class ForumController extends Controller
         // Thread models carry the whole author record, email included.
         $threads = Cache::remember("forum.game_threads.{$gameSlug}", 60, function () use ($gameSlug) {
             $rows = Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
+                ->whereHas('category', fn ($q) => $q->visibleTo($this->viewer()))
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('is_pinned')
@@ -470,8 +615,12 @@ class ForumController extends Controller
     public function activeThreads()
     {
         // Cache for 60 seconds
-        $threads = Cache::remember('forum.active_threads', 60, function () {
+        $viewer = $this->viewer();
+        $audience = Category::audienceFor($viewer);
+
+        $threads = Cache::remember("forum.active_threads.{$audience}", 60, function () use ($viewer) {
             return Thread::query()
+                ->whereHas('category', fn ($q) => $q->visibleTo($viewer))
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('updated_at')
@@ -508,8 +657,12 @@ class ForumController extends Controller
     public function unansweredThreads()
     {
         // Cache for 60 seconds
-        $threads = Cache::remember('forum.unanswered_threads', 60, function () {
+        $viewer = $this->viewer();
+        $audience = Category::audienceFor($viewer);
+
+        $threads = Cache::remember("forum.unanswered_threads.{$audience}", 60, function () use ($viewer) {
             return Thread::query()
+                ->whereHas('category', fn ($q) => $q->visibleTo($viewer))
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->whereDoesntHave('posts')
@@ -633,8 +786,7 @@ class ForumController extends Controller
 
         // Invalidate caches so pinned order/state refreshes everywhere it's shown
         $this->clearCategoryPageCache($thread->category->slug);
-        Cache::forget('forum.categories');
-        Cache::forget('forum.active_threads');
+        ForumCache::forgetShared();
 
         return response()->json([
             'is_pinned' => $thread->is_pinned,
@@ -671,8 +823,7 @@ class ForumController extends Controller
 
         Cache::forget("forum.thread.{$slug}");
         $this->clearCategoryPageCache($thread->category->slug);
-        Cache::forget('forum.categories');
-        Cache::forget('forum.active_threads');
+        ForumCache::forgetShared();
 
         return response()->json([
             'is_pinned' => true,
@@ -696,7 +847,7 @@ class ForumController extends Controller
 
         Cache::forget("forum.thread.{$slug}");
         $this->clearCategoryPageCache($thread->category->slug);
-        Cache::forget('forum.categories');
+        ForumCache::forgetShared();
 
         return response()->json([
             'is_locked' => $thread->is_locked,
@@ -799,6 +950,80 @@ class ForumController extends Controller
         $this->clearCategoryPageCache($thread->category->slug);
 
         return response()->json(['message' => 'Thread restored.']);
+    }
+
+    /**
+     * POST /forum/threads/{slug}/merge — fold this thread into another.
+     *
+     * The same question gets asked three times a week, and until now a
+     * moderator's only options were to delete the duplicate (losing whatever
+     * had been answered in it) or to leave two half-conversations side by side.
+     *
+     * The source thread's opening post becomes a reply on the target, so
+     * nothing written is lost, and the source is soft-deleted rather than
+     * destroyed — a merge decided wrongly can be undone through restore.
+     */
+    public function mergeThread(Request $request, string $slug)
+    {
+        $request->validate(['into' => 'required|string|max:255']);
+
+        $user = Auth::user();
+
+        if (! $user->isForumModerator()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $source = Thread::where('slug', $slug)->with('category')->firstOrFail();
+        $target = Thread::where('slug', $request->input('into'))->with('category')->firstOrFail();
+
+        if ($source->id === $target->id) {
+            return response()->json(['message' => 'A thread cannot be merged into itself.'], 422);
+        }
+
+        DB::transaction(function () use ($source, $target) {
+            // The opening post is content too; without this step a merge
+            // silently drops the question everybody was answering.
+            Post::create([
+                'thread_id' => $target->id,
+                'author_id' => $source->author_id,
+                'content' => '<p><em>Merged from "'.e($source->title).'"</em></p>'.$source->content,
+                'created_at' => $source->created_at,
+                'updated_at' => $source->created_at,
+            ]);
+
+            Post::withTrashed()->where('thread_id', $source->id)->update(['thread_id' => $target->id]);
+
+            // Watchers and bookmarks follow the conversation they were
+            // following. Ignored on conflict: somebody watching both threads
+            // should end up watching one, not fail the merge.
+            foreach (['thread_watchers', 'thread_bookmarks'] as $table) {
+                $rows = DB::table($table)->where('thread_id', $source->id)->pluck('user_id');
+
+                foreach ($rows as $userId) {
+                    DB::table($table)->insertOrIgnore([
+                        'thread_id' => $target->id,
+                        'user_id' => $userId,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                DB::table($table)->where('thread_id', $source->id)->delete();
+            }
+
+            $source->delete();
+            $target->touch();
+        });
+
+        $this->clearCategoryPageCache($source->category->slug);
+        $this->clearCategoryPageCache($target->category->slug);
+        ForumCache::forgetThread($source->slug);
+        ForumCache::forgetThread($target->slug);
+
+        return response()->json([
+            'message' => 'Thread merged.',
+            'into' => $target->slug,
+        ]);
     }
 
     public function markSolution(Request $request, string $slug, int $postId)
@@ -914,10 +1139,7 @@ class ForumController extends Controller
         // Post counts feed category cards, global stats, and the unanswered-threads
         // list, so all of those need to be invalidated alongside the thread itself.
         Cache::forget("forum.thread.{$slug}");
-        Cache::forget('forum.categories');
-        Cache::forget('forum.stats');
-        Cache::forget('forum.active_threads');
-        Cache::forget('forum.unanswered_threads');
+        ForumCache::forgetShared();
         $post->loadMissing('thread.category');
         if ($post->thread?->category) {
             $this->clearCategoryPageCache($post->thread->category->slug);
@@ -926,15 +1148,74 @@ class ForumController extends Controller
         return response()->json(['message' => 'Post deleted.']);
     }
 
+    /**
+     * Full-text search across threads and replies.
+     *
+     * Every value reaching SQL below is bound, never concatenated — the raw
+     * fragments are here because `to_tsvector`/`plainto_tsquery` have no query
+     * builder equivalent, not because the input is trusted.
+     *
+     * Filters were added 2026-08-16. Without them the only way to narrow a
+     * search was to think of a rarer word, which is not searching, it is
+     * guessing. Note the coupling this makes explicit: these two functions are
+     * PostgreSQL-only, so this endpoint returns a 500 on any other driver — it
+     * is the one forum endpoint the SQLite test suite cannot cover.
+     */
     public function search(Request $request)
     {
-        $request->validate(['q' => 'required|string|min:3|max:100']);
+        $request->validate([
+            'q' => 'required|string|min:3|max:100',
+            'category' => 'nullable|string|max:120',
+            'author' => 'nullable|string|max:60',
+            'since' => 'nullable|in:day,week,month,year',
+        ]);
+
         $query = $request->get('q');
+        $categorySlug = $request->get('category');
+        $authorName = $request->get('author');
+
+        $since = match ($request->get('since')) {
+            'day' => now()->subDay(),
+            'week' => now()->subWeek(),
+            'month' => now()->subMonth(),
+            'year' => now()->subYear(),
+            default => null,
+        };
+
+        $authorId = $authorName
+            ? User::where('username', $authorName)->value('id')
+            : null;
+
+        // Named so the filter reads the same on both queries below.
+        $narrow = function ($builder, string $dateColumn) use ($categorySlug, $authorId, $authorName, $since) {
+            if ($categorySlug) {
+                $builder->whereHas('thread.category', fn ($q) => $q->where('slug', $categorySlug));
+            }
+
+            // An author who does not exist should return nothing, rather than
+            // silently widening back to everybody.
+            if ($authorName) {
+                $builder->where('author_id', $authorId ?? 0);
+            }
+
+            if ($since) {
+                $builder->where($dateColumn, '>=', $since);
+            }
+
+            return $builder;
+        };
+
+        $viewer = $this->viewer();
 
         $threads = Thread::whereRaw(
             "to_tsvector('english', title || ' ' || coalesce(content, '')) @@ plainto_tsquery('english', ?)",
             [$query]
         )
+            // Search is the other door into a private board.
+            ->whereHas('category', fn ($q) => $q->visibleTo($viewer))
+            ->when($categorySlug, fn ($q) => $q->whereHas('category', fn ($c) => $c->where('slug', $categorySlug)))
+            ->when($authorName, fn ($q) => $q->where('author_id', $authorId ?? 0))
+            ->when($since, fn ($q) => $q->where('created_at', '>=', $since))
             ->with(['author:id,username,avatar_url', 'category:id,name,slug'])
             ->withCount('posts')
             ->orderByRaw(
@@ -944,11 +1225,14 @@ class ForumController extends Controller
             ->limit(20)
             ->get();
 
-        $posts = Post::whereRaw(
-            "to_tsvector('english', coalesce(content, '')) @@ plainto_tsquery('english', ?)",
-            [$query]
+        $posts = $narrow(
+            Post::whereRaw(
+                "to_tsvector('english', coalesce(content, '')) @@ plainto_tsquery('english', ?)",
+                [$query]
+            )->whereNull('deleted_at')
+                ->whereHas('thread.category', fn ($q) => $q->visibleTo($viewer)),
+            'created_at'
         )
-            ->whereNull('deleted_at')
             ->with(['author:id,username,avatar_url', 'thread:id,title,slug'])
             ->orderByRaw(
                 "ts_rank(to_tsvector('english', coalesce(content, '')), plainto_tsquery('english', ?)) DESC",
@@ -961,6 +1245,11 @@ class ForumController extends Controller
             'threads' => $threads,
             'posts' => $posts,
             'query' => $query,
+            'filters' => [
+                'category' => $categorySlug,
+                'author' => $authorName,
+                'since' => $request->get('since'),
+            ],
         ]);
     }
 }

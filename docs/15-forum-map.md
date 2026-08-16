@@ -324,3 +324,151 @@ Editor: dugme sada otvara birač fajlova, i **lijepljenje radi** — Print Scree
 ### Usput nađen živi bug u admin panelu
 
 `MediaObserver` je hvatao `\Exception`, a servis koji poziva gradi Intervention driver kojeg **nema instaliranog** — to baca `\Error`, koji taj catch ne hvata. Znači: **svaki upload slike koja nije WebP kroz `Media` model padao je fatalno.** Dokazano izvršenim PHP-om, ne pretpostavkom. Sada hvata `\Throwable`, a `ImageOptimizationService::available()` javlja da biblioteke nema umjesto da eksplodira.
+
+### Trajne poveznice, citiranje i filteri pretrage (2026-08-16, treći dio)
+
+**Trajne poveznice.** `showThread` prima `?post=`, provjeri da post pripada toj temi, i vrati
+**stranu koja ga sadrži** — klijent to ne može izračunati jer ne vidi redoslijed. Frontend
+prihvati tu stranu, skoči na sidro `#post-N`. Pretraga i citati sada linkaju s `?post=`.
+
+**Citiranje.** Dugme „Quote" na svakom odgovoru ubaci atribuciju i citat u polje za pisanje.
+Tekst se svede na čisti tekst na ulazu — tuđi markup (i slike) u vlastitom postu je način na
+koji lanac citata postane zid.
+
+**Filteri pretrage:** `category`, `author`, `since` (day/week/month/year). Autor koji ne
+postoji vraća prazno umjesto da se tiho proširi na sve.
+
+### Dva živa buga nađena testovima ovog seta
+
+1. **Brojač pregleda rušio je stranicu koju broji.** `Redis::incr` u `showThread` nije bio
+   zaštićen, pa je tema vraćala **500 kad god Redis nije dostupan**. Isto na `/forum/stats`.
+   Sada oba padaju tiho — izgubljen broj je ništa, izgubljena tema je cijela stranica.
+2. **Navigacija po stranama teme nikad se nije pojavljivala.** `PostResource::collection($paginator)`
+   ugniježđen u običan niz serijalizuje **samo stavke** — meta paginacije se izgubi. Zato je
+   na frontendu `pageInfo` uvijek bio `null`, `lastPage` uvijek 1, i **svaka tema je stajala na
+   15. odgovoru bez ikakvog puta dalje.** Izmjereno (odgovor je imao dva ključa, `posts` je bio
+   lista), nije pretpostavljeno. Endpoint sada šalje `data/current_page/last_page/per_page/total`.
+
+Uz to: moja prva verzija računanja strane nije provjeravala da post postoji, pa je izmišljen
+id vodio na zadnju stranu — uhvatio vlastiti test.
+
+### Reakcije na pojedinačni odgovor (2026-08-16, četvrti dio)
+
+Nova tabela `post_reactions` (post_id, user_id, reaction, unique par). Fiksni rječnik od pet:
+`helpful`, `agree`, `insightful`, `funny`, `disagree`.
+
+Zašto fiksni a ne slobodni emoji: pet imenovanih reakcija ostaje čitljivo niz dugu temu, a
+kolona proizvoljnih sličica ne. I zašto uopšte: jedini signal na forumu je bio upvote **na
+temu**, pa je jedini način da nekome kažeš da mu je odgovor pomogao bio — napisati još jedan
+odgovor koji to kaže. Tako se korisna tema napuni s „this", „same" i „hvala" kroz koje svi
+poslije moraju skrolati.
+
+`POST /forum/threads/{slug}/posts/{postId}/reactions` — ista reakcija je skida, druga je
+mijenja (nikad dvije od iste osobe), vezano za temu iz URL-a kao i sve ostale akcije nad
+postom. `showThread` prikači brojače u **dva grupna upita**, ne dva po odgovoru.
+
+Na frontendu: brojači s nulom se ne crtaju uopšte, a birač se pojavi tek na hover/fokus — red
+praznih tallya ispod svakog odgovora je šum.
+
+### Ankete, spajanje tema i email notifikacije (2026-08-16, peti dio)
+
+**Ankete.** Tri tabele: `polls` (jedna po temi, `unique` na `thread_id`), `poll_options`
+(s `position`, jer anketa presložena po id-u ili po rezultatu čita se kao drugo pitanje svaki
+put), `poll_votes` (`unique` na par opcija+korisnik).
+
+- `POST /forum/threads/{slug}/poll` — autor teme ili staff, jedna po temi.
+- `POST /forum/threads/{slug}/poll/vote` — šalje se **cijeli izbor**, ne opcija po opcija, pa
+  je promjena mišljenja jedan zahtjev a pravilo „jedan odgovor" ima šta da provodi.
+- Opcije se provjeravaju protiv **te** ankete — inače bi se glas mogao ubaciti u tuđu.
+- Skriveni rezultat **nije u payloadu** dok ne glasaš, ne samo neiscrtan: sve što se pošalje
+  je čitljivo bez obzira šta interfejs radi.
+- Procenti su od **glasača**, ne od glasova — u anketi s više izbora troje ljudi koji biraju
+  po dvije stvari daju šest glasova, a „60% glasova" je broj koji niko ne želi čitati.
+
+Na frontendu: trake iza teksta a ne brojevi pored njega, jer je poenta vidjeti oblik odgovora
+odjednom. U formi za novu temu anketa je sklopljena po defaultu.
+
+**Spajanje tema.** `POST /forum/threads/{slug}/merge` (staff). Isto pitanje se postavi tri puta
+sedmično, a moderator je do sada mogao samo obrisati duplikat — i izgubiti sve što je u njemu
+odgovoreno. Sada: prvi post izvorne teme postaje odgovor u ciljnoj (ništa napisano se ne gubi),
+odgovori se premjeste, pratioci i bookmarci prate razgovor (`insertOrIgnore`, jer ko prati obje
+treba završiti prateći jednu, a ne srušiti spajanje), a izvorna tema se **soft-deletuje** — pa
+se pogrešno spajanje može vratiti.
+
+**Email notifikacije.** `ForumReplyNotification` sada ima `mail` kanal, ali samo ako je član to
+tražio **i** ako mu je adresa verifikovana — neverifikovana adresa pripada onome ko ju je
+ukucao, ne nužno onome ko je posjeduje. Mail je pokazivač na temu, ne kopija: tekst je očišćen
+od markupa, jer slika u postu tako postaje tracking piksel u inboxu. Odgovor na **tvoju** temu
+je jedini forum događaj vrijedan emaila; ostalo ostaje u aplikaciji, jer forum koji šalje mail
+na svaki događaj je forum koji ljudi utišaju.
+
+### Privatne ploče (2026-08-16, šesti dio)
+
+`categories.visibility`: `public` | `members` | `staff`. Tri nivoa a ne boolean, jer „nije
+javno" su dvije različite stvari — a spojiti ih znači da moderatorske bilješke žive u istoj
+sobi s općim čavrljanjem. Podrazumijevano `public`: kolona stiže na tabelu punu ploča koje su
+danas javne, i migracija koja bi ih tiho sakrila bila bi gori bug od onog koji rješava.
+
+**Privatna ploča je privatna samo ako je privatna na svim vratima.** Zato je zatvoreno svih
+sedam, i svaka su zasebno testirana:
+
+| Vrata | Kako |
+|---|---|
+| Indeks ploča | `scopeVisibleTo`, keš **po publici** (`guest`/`members`/`staff`) |
+| Stranica ploče | provjera prije čitanja, **404 a ne 403** |
+| Direktan link na temu | tema je vidljiva tačno koliko i ploča koja je drži |
+| „New posts" i „Unanswered" | `whereHas('category', visibleTo)`, keš po publici |
+| Pretraga | oba dijela (teme i odgovori) |
+| Lista tema uz igru | isto |
+| Pisanje | i nova tema i odgovor — čitanje i pisanje su ista dozvola |
+
+404 a ne 403 jer odbijanje potvrđuje da ploča postoji, a za privatnu sobu je ta potvrda ono
+što se krije. Iz istog razloga se privatna ploča **ne prikazuje zaključana** u indeksu — katanac
+je i sam informacija.
+
+**Popravljeno usput:** raštrkani `Cache::forget('forum.categories')` pozivi po kontroleru i u
+`ClearExpiredThreadPins` sada ne bi brisali ništa (ključevi su dobili sufiks publike). Svi su
+prebačeni na `ForumCache::forgetShared()` — isti obrazac duplikacije koji je ranije ostavljao
+tag varijante zastarjelim.
+
+**Zamka u testovima, zapisana da se ne ponovi:** javne forum rute nemaju `auth:sanctum`
+middleware, pa se podrazumijevani guard na njima nikad ne razriješi i korisnika nalazi samo
+sanctum guard. Kad taj guard jednom razriješi korisnika unutar jednog testa, sljedeći
+`actingAs` ga **ne mijenja** — pa tri publike u jednoj test metodi tiho tri puta izmjere prvu.
+Zato je `ForumVisibilityTest` napisan jedna publika po testu.
+
+### Server render i SEO (2026-08-16, sedmi dio)
+
+Izmjereno protiv produkcije prije izmjene: HTML ploče je bio 66 KB i **nije sadržavao naslov
+nijedne teme**; HTML teme 65 KB bez ijedne riječi razgovora. Sve je stizalo tek kad se izvrši
+JavaScript, pa je pretraživač vidio praznu ljusku — a kako je svaka stranica pod `/forum`
+nasljeđivala isti generički naslov, cijeli forum je Googleu izgledao kao **jedna** stranica.
+
+`[category]/page.tsx` i `thread/[slug]/page.tsx` su sada server komponente koje dohvate podatke
+i proslijede ih klijentskoj polovini kao `fallbackData`. Interaktivni dio — odgovaranje,
+reakcije, anketa, moderacija, uživo ažuriranje, oznake pročitanog — je nepromijenjen.
+
+| | prije | poslije |
+|---|---|---|
+| naslov teme u HTML-u ploče | 0 | **1** |
+| tekst posta u HTML-u teme | 0 | **2** |
+| `DiscussionForumPosting` JSON-LD | 0 | **1** |
+| `<title>` ploče | „Community Forums - Gaming Discussions & Help" | „Consoles & Peripherals \| TechPlay Forum" |
+| `<title>` teme | isto to | vlastiti naslov teme |
+| canonical ploče/teme | *(bio `/forum` za sve, uklonjen ranije)* | vlastiti URL |
+
+**Privatne ploče ne SSR-uju.** Server dohvat je neautentifikovan i na privatnoj ploči dobije
+404 — što je tačno ono što treba: te stranice ne smiju biti ni u čijem HTML-u. Klijent ih onda
+dohvati s tokenom čitaoca.
+
+**Tri stvari uhvaćene mjerenjem, ne predviđanjem:**
+
+1. Zaboravio sam `serverHeaders()` i stavio goli `Accept`. API mjeri `api` na 60 zahtjeva u
+   minuti po IP-u, a svaki server render izlazi s jedne adrese — bez dijeljene tajne cijeli
+   forum se renderuje iz budžeta jednog posjetioca.
+2. Forum layout je imao `title` kao običan string, što je djeci oduzelo predložak — ploča je
+   izlazila kao „Consoles & Peripherals" bez sufiksa. Sada `{ default, template }`.
+3. Naslov indeksa se udvostručio („… | Global Gaming & Hardware Discussions | TechPlay Forum"),
+   jer naslov iz admin panela već nosi svoje brendiranje. Indeks sada koristi `absolute`.
+
+`/forum/rules` je dobio tanki server omotač da bi imao vlastiti naslov i canonical.

@@ -74,6 +74,21 @@ class ForumCategoryResource extends Resource
                                     ->preload()
                                     ->nullable(),
 
+                                Forms\Components\Select::make('visibility')
+                                    ->label('Who can see this board')
+                                    ->options([
+                                        Category::VISIBILITY_PUBLIC => 'Everyone, including search engines',
+                                        Category::VISIBILITY_MEMBERS => 'Signed-in members only',
+                                        Category::VISIBILITY_STAFF => 'Forum staff only',
+                                    ])
+                                    ->default(Category::VISIBILITY_PUBLIC)
+                                    ->required()
+                                    // Worth stating plainly on the form: a
+                                    // private board is filtered out of the
+                                    // index rather than shown locked, because a
+                                    // lock is itself information.
+                                    ->helperText('A non-public board is hidden entirely from anyone without access — it does not appear in the board list, in search, or through a direct link.'),
+
                                 Forms\Components\TextInput::make('icon')
                                     ->placeholder('heroicon-o-chat-bubble-left')
                                     ->maxLength(255),

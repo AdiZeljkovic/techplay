@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import { Send, AlertCircle, Tag as TagIcon, X, Gamepad2, Loader2, Check } from "lucide-react";
+import { Send, AlertCircle, Tag as TagIcon, X, Gamepad2, Loader2, Check, BarChart3 } from "lucide-react";
 import ForumShell from "@/components/forum/ForumShell";
 import { decodeHtml } from "@/lib/decode";
 import { getAvatarSrc, getCategoryIcon } from "@/lib/forum";
@@ -47,6 +47,15 @@ function CreateThreadForm() {
     const [error, setError] = useState<string | null>(null);
     const [gameSearch, setGameSearch] = useState("");
     const [selectedGame, setSelectedGame] = useState<{ id: number; name: string } | null>(null);
+
+    /* An optional poll, posted after the thread exists — the API attaches one
+       to a thread rather than accepting it inline, and a thread that fails to
+       save should not leave a poll behind. */
+    const [pollOpen, setPollOpen] = useState(false);
+    const [pollQuestion, setPollQuestion] = useState("");
+    const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
+    const [pollMultiple, setPollMultiple] = useState(false);
+    const [pollHideResults, setPollHideResults] = useState(false);
 
     const { data: gameResults, isLoading: gameSearchLoading } = useSWR(
         gameSearch.trim().length >= 2 ? `/games?search=${encodeURIComponent(gameSearch.trim())}&page_size=8` : null,
@@ -113,7 +122,26 @@ function CreateThreadForm() {
                 game_id: selectedGame?.id,
             });
 
-            router.push(`/forum/thread/${response.data.slug}`);
+            const slug = response.data.slug;
+
+            // Attached after the fact, and never allowed to block the thread:
+            // if the poll is refused the thread still exists and can have one
+            // added, which is better than losing what was written.
+            const options = pollOptions.map((o) => o.trim()).filter(Boolean);
+            if (pollOpen && pollQuestion.trim().length >= 5 && options.length >= 2) {
+                try {
+                    await axios.post(`/forum/threads/${slug}/poll`, {
+                        question: pollQuestion.trim(),
+                        options,
+                        allows_multiple: pollMultiple,
+                        hide_results_until_voted: pollHideResults,
+                    });
+                } catch {
+                    // Reported on the thread page, where the poll can be retried.
+                }
+            }
+
+            router.push(`/forum/thread/${slug}`);
         } catch (err: unknown) {
             const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
             setError(message || "Failed to create thread. Please try again.");
@@ -459,6 +487,94 @@ function CreateThreadForm() {
                                     </div>
                                 )}
                             </div>
+                        </fieldset>
+
+                        {/* ── the poll ──
+
+                            Folded away by default. A question that wants a count
+                            is a minority of threads, and four empty fields at the
+                            bottom of every new post read as work to be done. */}
+                        <fieldset className="p-5 border-t border-white/[0.07]">
+                            <button
+                                type="button"
+                                onClick={() => setPollOpen((v) => !v)}
+                                aria-expanded={pollOpen}
+                                className="inline-flex items-center gap-2 text-[11.5px] font-medium text-[var(--ink-low)] hover:text-[var(--accent-ink)] transition-colors"
+                            >
+                                <BarChart3 className="h-3.5 w-3.5" strokeWidth={1.7} />
+                                {pollOpen ? "Remove the poll" : "Add a poll"}
+                            </button>
+
+                            {pollOpen && (
+                                <div className="mt-3 space-y-3">
+                                    <input
+                                        type="text"
+                                        value={pollQuestion}
+                                        onChange={(e) => setPollQuestion(e.target.value)}
+                                        placeholder="The question people are voting on"
+                                        maxLength={255}
+                                        className={`${field} h-11 px-4 text-[13.5px]`}
+                                    />
+
+                                    <div className="space-y-2">
+                                        {pollOptions.map((option, i) => (
+                                            <div key={i} className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={option}
+                                                    onChange={(e) => setPollOptions((cur) =>
+                                                        cur.map((o, j) => (j === i ? e.target.value : o))
+                                                    )}
+                                                    placeholder={`Option ${i + 1}`}
+                                                    maxLength={120}
+                                                    className={`${field} h-10 px-3 text-[13px]`}
+                                                />
+                                                {pollOptions.length > 2 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPollOptions((cur) => cur.filter((_, j) => j !== i))}
+                                                        aria-label={`Remove option ${i + 1}`}
+                                                        className="shrink-0 text-white/30 hover:text-white"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {pollOptions.length < 10 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setPollOptions((cur) => [...cur, ""])}
+                                            className="text-[11.5px] font-medium text-[var(--ink-low)] hover:text-[var(--accent-ink)] transition-colors"
+                                        >
+                                            + Another option
+                                        </button>
+                                    )}
+
+                                    <div className="flex flex-wrap gap-4 pt-1">
+                                        <label className="flex items-center gap-2 text-[12px] text-[var(--ink-low)]">
+                                            <input
+                                                type="checkbox"
+                                                checked={pollMultiple}
+                                                onChange={(e) => setPollMultiple(e.target.checked)}
+                                                className="accent-[var(--accent)]"
+                                            />
+                                            Allow several answers
+                                        </label>
+                                        <label className="flex items-center gap-2 text-[12px] text-[var(--ink-low)]">
+                                            <input
+                                                type="checkbox"
+                                                checked={pollHideResults}
+                                                onChange={(e) => setPollHideResults(e.target.checked)}
+                                                className="accent-[var(--accent)]"
+                                            />
+                                            Hide the tally until people vote
+                                        </label>
+                                    </div>
+                                </div>
+                            )}
                         </fieldset>
 
                         {/* ── the action ── */}

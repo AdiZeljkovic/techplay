@@ -15,7 +15,19 @@ import { Metadata } from "next";
  * one — but the wrong claim stops being made today.
  */
 export const metadata: Metadata = {
-    title: "Community Forums - Gaming Discussions & Help",
+    /**
+     * A default *and* a template.
+     *
+     * This was a plain string, which gave the forum its own title and left
+     * every page beneath it without the site suffix — measured: a board came
+     * out as "Consoles & Peripherals" where every other page on the site ends
+     * "| TechPlay". A string here names this page; the template names the ones
+     * below it.
+     */
+    title: {
+        default: 'Community Forums - Gaming Discussions & Help',
+        template: '%s | TechPlay Forum',
+    },
     description: "Join the TechPlay community forums. Discuss games, share PC builds, get technical help, trade in the marketplace, and connect with fellow gamers. Active community since 2024.",
     keywords: ["gaming forum", "PC gaming community", "gaming discussions", "PC build help", "gaming marketplace", "esports community"],
     openGraph: {

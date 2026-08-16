@@ -20,7 +20,12 @@ class PostResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'author' => new UserResource($this->whenLoaded('author')),
-            // Add other fields if needed, e.g. upvotes
+
+            // Attached by showThread in two grouped queries, not loaded per
+            // row. Absent elsewhere, which is why they default rather than
+            // assume: this resource also answers a freshly created reply.
+            'reactions' => $this->reaction_counts ?? [],
+            'my_reaction' => $this->my_reaction ?? null,
         ];
     }
 }

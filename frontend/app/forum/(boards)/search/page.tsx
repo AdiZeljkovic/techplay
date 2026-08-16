@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import useSWR from "swr";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "@/lib/axios";
-import { AlertTriangle, MessageSquare, Search } from "lucide-react";
+import { AlertTriangle, MessageSquare, Search, X } from "lucide-react";
 import ForumShell from "@/components/forum/ForumShell";
 import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
 import { decodeHtml } from "@/lib/decode";
@@ -52,12 +53,27 @@ function ForumSearchResults() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const q = searchParams.get("q") || "";
+    const board = searchParams.get("category") || "";
+    const author = searchParams.get("author") || "";
+    const since = searchParams.get("since") || "";
+
     const [typed, setTyped] = useState(q);
+    const [boardDraft, setBoardDraft] = useState(board);
+    const [authorDraft, setAuthorDraft] = useState(author);
+    const [sinceDraft, setSinceDraft] = useState(since);
+
+    // The boards, so narrowing by one is a list rather than a slug to remember.
+    const { data: boards } = useSWR<{ slug: string; name: string; children?: { slug: string; name: string }[] }[]>(
+        "/forum/categories",
+        (url: string) => axios.get(url).then((r) => r.data)
+    );
+    const boardOptions = (boards ?? []).flatMap((b) => (b.children?.length ? b.children : [b]));
     const [results, setResults] = useState<SearchResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
 
     useEffect(() => { setTyped(q); }, [q]);
+    useEffect(() => { setBoardDraft(board); setAuthorDraft(author); setSinceDraft(since); }, [board, author, since]);
 
     useEffect(() => {
         if (!q || q.length < 3) {
@@ -69,11 +85,33 @@ function ForumSearchResults() {
         }
         setIsLoading(true);
         setHasError(false);
-        fetcher(`/forum/search?q=${encodeURIComponent(q)}`)
+        const params = new URLSearchParams({ q });
+        if (board) params.set("category", board);
+        if (author) params.set("author", author);
+        if (since) params.set("since", since);
+
+        fetcher(`/forum/search?${params.toString()}`)
             .then((res) => setResults(res.data))
             .catch(() => setHasError(true))
             .finally(() => setIsLoading(false));
-    }, [q]);
+    }, [q, board, author, since]);
+
+    /** One place that builds the URL, so every control agrees on its shape. */
+    const go = (next: { q?: string; category?: string; author?: string; since?: string }) => {
+        const params = new URLSearchParams();
+        const query = (next.q ?? typed).trim();
+        if (query.length < 3) return;
+
+        params.set("q", query);
+        const cat = next.category ?? boardDraft;
+        const who = next.author ?? authorDraft;
+        const when = next.since ?? sinceDraft;
+        if (cat) params.set("category", cat);
+        if (who.trim()) params.set("author", who.trim());
+        if (when) params.set("since", when);
+
+        router.push(`/forum/search?${params.toString()}`);
+    };
 
     const threads = results?.threads ?? [];
     const posts = results?.posts ?? [];
@@ -93,12 +131,8 @@ function ForumSearchResults() {
                 back to wherever you came from and typing it again. */}
             <form
                 role="search"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    const next = typed.trim();
-                    if (next.length >= 3) router.push(`/forum/search?q=${encodeURIComponent(next)}`);
-                }}
-                className="mb-5 flex gap-2"
+                onSubmit={(e) => { e.preventDefault(); go({}); }}
+                className="mb-4 flex gap-2"
             >
                 <label htmlFor="forum-search" className="sr-only">Search the forum</label>
                 <span className="relative flex-1">
@@ -119,6 +153,55 @@ function ForumSearchResults() {
                     Search
                 </button>
             </form>
+
+            {/* Without these the only way to narrow a search was to think of a
+                rarer word, which is guessing rather than searching. */}
+            <div className="mb-5 flex flex-wrap items-center gap-2">
+                <select
+                    aria-label="Board"
+                    value={boardDraft}
+                    onChange={(e) => { setBoardDraft(e.target.value); go({ category: e.target.value }); }}
+                    className="h-9 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-3 text-[12.5px] text-white outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
+                >
+                    <option value="">Every board</option>
+                    {boardOptions.map((b) => (
+                        <option key={b.slug} value={b.slug}>{b.name}</option>
+                    ))}
+                </select>
+
+                <select
+                    aria-label="Posted within"
+                    value={sinceDraft}
+                    onChange={(e) => { setSinceDraft(e.target.value); go({ since: e.target.value }); }}
+                    className="h-9 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-3 text-[12.5px] text-white outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
+                >
+                    <option value="">Any time</option>
+                    <option value="day">Past day</option>
+                    <option value="week">Past week</option>
+                    <option value="month">Past month</option>
+                    <option value="year">Past year</option>
+                </select>
+
+                <input
+                    aria-label="Posted by"
+                    value={authorDraft}
+                    onChange={(e) => setAuthorDraft(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") go({ author: authorDraft }); }}
+                    onBlur={() => { if (authorDraft !== author) go({ author: authorDraft }); }}
+                    placeholder="Posted by…"
+                    className="h-9 w-[150px] rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-3 text-[12.5px] text-white placeholder:text-[var(--ink-faint)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
+                />
+
+                {(board || author || since) && (
+                    <button
+                        type="button"
+                        onClick={() => { setBoardDraft(""); setAuthorDraft(""); setSinceDraft(""); go({ category: "", author: "", since: "" }); }}
+                        className="inline-flex items-center gap-1 text-[11.5px] text-[var(--ink-faint)] transition-colors hover:text-[var(--accent-ink)]"
+                    >
+                        <X className="h-3 w-3" /> Clear filters
+                    </button>
+                )}
+            </div>
 
             {q && q.length < 3 && (
                 <p className="text-[12.5px] text-[var(--ink-faint)]">Type at least three characters.</p>
@@ -180,7 +263,7 @@ function ForumSearchResults() {
                             return (
                                 <Link
                                     key={p.id}
-                                    href={`/forum/thread/${p.thread.slug}#post-${p.id}`}
+                                    href={`/forum/thread/${p.thread.slug}?post=${p.id}#post-${p.id}`}
                                     className="block px-3.5 py-3 hover:bg-white/[0.025] transition-colors"
                                 >
                                     <span className="block truncate font-display text-[13px] font-bold text-white">

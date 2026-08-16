@@ -1,1179 +1,141 @@
-"use client";
-
-import useSWR from "swr";
-import axios from "@/lib/axios";
-import { isAxiosError } from "axios";
-import Link from "next/link";
-import Image from "next/image";
-import dynamic from "next/dynamic";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { formatDistanceToNow, format } from "date-fns";
-import { MessageSquare, Share2, Flag, Lock, Unlock, Shield, ArrowLeft, Eye, Clock, ChevronUp, Reply, Pin, Award, Send, Trash2, Bell, BellOff, Bookmark, Pencil} from "lucide-react";
-import { toast } from "react-hot-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/Button";
-import { getCategoryColor, getAvatarSrc } from "@/lib/forum";
-import { useRealTimeThreadReplies } from "@/hooks";
-import { useForumReads } from "@/hooks/useForumReads";
-
-// PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
-const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
-    loading: () => <div className="h-32 bg-white/[0.03] rounded-[var(--radius-card)] animate-pulse" />,
-    ssr: false
-});
-import DOMPurify from "isomorphic-dompurify";
+import type { Metadata } from "next";
+import { getApiUrl, serverHeaders } from "@/lib/api";
 import { decodeHtml } from "@/lib/decode";
-import { isOwnUpload } from "@/lib/imageUrl";
+import ThreadClient, { type ThreadData } from "./ThreadClient";
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+/**
+ * A thread, rendered on the server.
+ *
+ * This is the page the forum exists to produce, and until now it shipped none
+ * of itself: 65 KB of HTML with not one word of the conversation in it, under a
+ * title shared with every other page on the forum. A search engine had nothing
+ * to index and no reason to keep the URL.
+ *
+ * Now the opening post and the first fifteen replies are in the document, the
+ * page carries the thread's own title and an excerpt of what was actually
+ * asked, and a DiscussionForumPosting record describes it in the terms a search
+ * engine already understands. Everything interactive — replying, reactions,
+ * the poll, moderation, live updates — is unchanged in the client half.
+ */
 
-interface User {
-    id: number;
-    username: string;
-    avatar_url?: string;
-    role?: string; // Legacy
-    roles?: string[]; // New Spatie roles
-    rank?: {
-        name: string;
-        color: string;
-        icon?: string;
+export const dynamic = "force-dynamic";
+
+async function loadThread(slug: string): Promise<ThreadData | null> {
+    try {
+        const res = await fetch(`${getApiUrl()}/forum/threads/${slug}`, {
+            // serverHeaders, not a bare Accept: the API meters `api` at sixty
+            // requests a minute keyed on the caller's IP, and every server
+            // render leaves this process from one address — so without the
+            // shared secret the whole forum renders out of one visitor's
+            // budget, and a crawler walking it exhausts that in seconds.
+            headers: serverHeaders(),
+            cache: "no-store",
+        });
+
+        // A thread in a private board answers 404 to this unauthenticated
+        // request, which is the point: it should not reach anyone's HTML. The
+        // client half then fetches it with the reader's own token.
+        if (!res.ok) return null;
+
+        return (await res.json()) as ThreadData;
+    } catch {
+        return null;
+    }
+}
+
+/** Plain text, collapsed, trimmed at a word — for meta tags and JSON-LD. */
+function excerpt(html: string | null | undefined, limit = 160): string {
+    const text = decodeHtml((html ?? "").replace(/<[^>]*>/g, " "))
+        .replace(/\s+/g, " ")
+        .trim();
+
+    if (text.length <= limit) return text;
+
+    const cut = text.slice(0, limit);
+    const lastSpace = cut.lastIndexOf(" ");
+
+    return (lastSpace > 60 ? cut.slice(0, lastSpace) : cut).trimEnd() + "…";
+}
+
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+    const { slug } = await params;
+    const data = await loadThread(slug);
+
+    if (!data?.thread) {
+        return { title: "Thread" };
+    }
+
+    const title = decodeHtml(data.thread.title);
+    const board = data.thread.category?.name ? decodeHtml(data.thread.category.name) : "the forum";
+    const description = excerpt(data.thread.content) || `A discussion in ${board} on the TechPlay community forum.`;
+
+    return {
+        title,
+        description,
+        alternates: { canonical: `/forum/thread/${slug}` },
+        openGraph: {
+            title,
+            description,
+            type: "article",
+            publishedTime: data.thread.created_at,
+        },
     };
-    xp?: number;
-    forum_reputation?: number;
-    posts_count?: number;
-    created_at?: string;
-    post_color?: string | null;
 }
 
-interface Post {
-    id: number;
-    content: string | null;
-    created_at: string;
-    edited_at?: string;
-    is_solution: boolean;
-    is_deleted?: boolean;
-    author: User;
-}
-
-interface Thread {
-    id: number;
-    slug: string;
-    title: string;
-    content: string;
-    is_locked: boolean;
-    is_pinned: boolean;
-    created_at: string;
-    author: User;
-    category: {
-        name: string;
-        slug: string;
-    };
-    view_count: number;
-    posts_count: number;
-    upvotes_count: number;
-    is_upvoted: boolean;
-    is_watching: boolean;
-    is_bookmarked: boolean;
-    tags?: { name: string; slug: string }[];
-}
-
-interface ThreadData {
-    thread: Thread;
-    posts: Post[] | {
-        data: Post[];
-        links: any[];
-        current_page?: number;
-        last_page?: number;
-        total?: number;
-    };
-}
-
-const getDisplayRole = (user: User | undefined) => {
-    if (!user) return null;
-    const staffRoles = ['Super Admin', 'Admin', 'Editor', 'Editor-in-Chief', 'Journalist', 'Moderator'];
-
-    // Combine explicit roles and legacy role
-    const userRoles = [...(user.roles || [])];
-    if (user.role) userRoles.push(user.role);
-
-    // Find matching staff role (case insensitive normalization)
-    return staffRoles.find(sr => {
-        const nsr = sr.toLowerCase().replace(/[^a-z0-9]/g, '');
-        return userRoles.some(ur => ur.toLowerCase().replace(/[^a-z0-9]/g, '') === nsr);
-    });
-};
-
-export default function ThreadPage() {
-    const params = useParams();
-    const router = useRouter();
-    const slug = params.slug as string;
-    const { user } = useAuth();
-    const [replyContent, setReplyContent] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isUpvoting, setIsUpvoting] = useState(false);
-    const [isReporting, setIsReporting] = useState(false);
-    const [reportDialogOpen, setReportDialogOpen] = useState(false);
-    const [hasReported, setHasReported] = useState(false);
-    const [reportReason, setReportReason] = useState("");
-    const [isPinning, setIsPinning] = useState(false);
-    const [isLocking, setIsLocking] = useState(false);
-    const [deleteThreadDialogOpen, setDeleteThreadDialogOpen] = useState(false);
-    const [isDeletingThread, setIsDeletingThread] = useState(false);
-    const [editingPostId, setEditingPostId] = useState<number | null>(null);
-    const [editContent, setEditContent] = useState("");
-    const [deletingPostId, setDeletingPostId] = useState<number | null>(null);
-    const [markingSolutionId, setMarkingSolutionId] = useState<number | null>(null);
-    const [isTogglingWatch, setIsTogglingWatch] = useState(false);
-    const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
-    const [isSelfPinning, setIsSelfPinning] = useState(false);
-
-    // Editing the thread itself. Every reply could be edited; the opening
-    // post could not, because the API had no route for it.
-    const [editingThread, setEditingThread] = useState(false);
-    const [threadTitleDraft, setThreadTitleDraft] = useState("");
-    const [threadBodyDraft, setThreadBodyDraft] = useState("");
-    const [savingThread, setSavingThread] = useState(false);
-
-    // Replies are paginated fifteen at a time. The page used to ask for the
-    // first page only and offer no way to the rest, so every thread stopped
-    // dead at reply fifteen — and a new reply that landed on page two
-    // appeared, then vanished on the next revalidation.
-    const [page, setPage] = useState(1);
-    const { data, isLoading, mutate } = useSWR<ThreadData>(
-        slug ? `/forum/threads/${slug}?page=${page}` : null,
-        fetcher,
-        { keepPreviousData: true }
-    );
-    const pageInfo = data?.posts && !Array.isArray(data.posts) ? data.posts : null;
-    const lastPage = pageInfo?.last_page ?? 1;
-    const { replies: liveReplies } = useRealTimeThreadReplies(data?.thread?.id ?? 0);
+export default async function ThreadPage({
+    params,
+}: {
+    params: Promise<{ slug: string }>;
+}) {
+    const { slug } = await params;
+    const initial = await loadThread(slug);
 
     /**
-     * Opening the thread is what marks it read.
+     * Described in the vocabulary search engines already have for this.
      *
-     * It is a POST rather than something folded into the GET above: that
-     * endpoint answers guests too, and a read should not be the thing that
-     * writes. Keyed on the thread id so paging through replies does not keep
-     * re-marking, and so a live reply arriving does not either.
+     * DiscussionForumPosting is the schema.org type for exactly this page, and
+     * it is what earns a forum thread its own treatment in results rather than
+     * being read as a generic article. Emitted only when the server actually
+     * has the thread — a private one produces nothing, which is correct.
      */
-    const { markThreadRead } = useForumReads();
-    const threadId = data?.thread?.id;
-    useEffect(() => {
-        if (threadId && slug) markThreadRead(slug, threadId);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [threadId, slug]);
-
-    // Helper to normalize posts
-    const getPosts = (data: ThreadData | undefined): Post[] => {
-        if (!data?.posts) return [];
-        if (Array.isArray(data.posts)) return data.posts;
-        return data.posts.data || [];
-    };
-
-    const handleReply = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!replyContent.trim()) return;
-        setIsSubmitting(true);
-
-        try {
-            const response = await axios.post(`/forum/threads/${slug}/posts`, {
-                content: replyContent
-            });
-
-            const newPost = response.data.data || response.data;
-
-            setReplyContent("");
-
-            // A reply lands at the end of the thread. If we are not on the
-            // last page, go there — appending it to page one only for it to
-            // disappear on the next revalidation is worse than a jump.
-            if (lastPage > page) {
-                setPage(lastPage);
-                toast.success("Reply posted successfully!");
-                setIsSubmitting(false);
-                return;
-            }
-
-            // Manually update cache to show the new post immediately
-            if (data) {
-                const currentPosts = getPosts(data);
-                const updatedPosts = [...currentPosts, newPost];
-
-                // Construct new data preserving structure
-                const newData = { ...data };
-                if (Array.isArray(newData.posts)) {
-                    newData.posts = updatedPosts;
-                } else {
-                    newData.posts = {
-                        ...newData.posts,
-                        data: updatedPosts
-                    };
-                }
-
-                mutate({
-                    ...newData,
-                    thread: { // Also update reply count
-                        ...data.thread,
-                        posts_count: (data.thread.posts_count || currentPosts.length) + 1
-                    }
-                }, false); // false = do not revalidate immediately
-            }
-
-            toast.success("Reply posted successfully!");
-            // Trigger a background revalidation just in case
-            mutate();
-
-        } catch (error: any) {
-            console.error("Failed to reply", error);
-            const errorMessage = error.response?.data?.message || "Failed to post reply.";
-            toast.error(errorMessage);
-        } finally {
-            setIsSubmitting(false);
+    const jsonLd = initial?.thread
+        ? {
+            "@context": "https://schema.org",
+            "@type": "DiscussionForumPosting",
+            headline: decodeHtml(initial.thread.title),
+            text: excerpt(initial.thread.content, 500),
+            datePublished: initial.thread.created_at,
+            author: initial.thread.author?.username
+                ? { "@type": "Person", name: initial.thread.author.username }
+                : undefined,
+            interactionStatistic: [
+                {
+                    "@type": "InteractionCounter",
+                    interactionType: "https://schema.org/CommentAction",
+                    userInteractionCount: initial.thread.posts_count ?? 0,
+                },
+                {
+                    "@type": "InteractionCounter",
+                    interactionType: "https://schema.org/ViewAction",
+                    userInteractionCount: initial.thread.view_count ?? 0,
+                },
+            ],
         }
-    };
+        : null;
 
-    const handleUpvote = async () => {
-        if (!user) {
-            toast.error("You must be logged in to upvote.");
-            return;
-        }
-        if (isUpvoting) return;
-        setIsUpvoting(true);
-        if (!data) { setIsUpvoting(false); return; }
-
-        // Optimistic update
-        if (data) {
-            const newIsUpvoted = !data.thread.is_upvoted;
-            const newCount = data.thread.upvotes_count + (newIsUpvoted ? 1 : -1);
-
-            mutate({
-                ...data,
-                thread: {
-                    ...data.thread,
-                    is_upvoted: newIsUpvoted,
-                    upvotes_count: newCount
-                }
-            }, false);
-
-            try {
-                await axios.post(`/forum/threads/${slug}/upvote`);
-                mutate();
-            } catch (error) {
-                console.error("Failed to upvote", error);
-                mutate();
-                toast.error("Failed to upvote.");
-            } finally {
-                setIsUpvoting(false);
-            }
-        }
-    };
-
-    const handleToggleWatch = async () => {
-        if (!user || isTogglingWatch || !data) return;
-        setIsTogglingWatch(true);
-        try {
-            const res = await axios.post(`/forum/threads/${slug}/watch`);
-            mutate({ ...data, thread: { ...data.thread, is_watching: res.data.watching } }, false);
-            toast.success(res.data.message);
-        } catch {
-            toast.error("Failed to update watch status.");
-        } finally {
-            setIsTogglingWatch(false);
-        }
-    };
-
-    const handleToggleBookmark = async () => {
-        if (!user || isTogglingBookmark || !data) return;
-        setIsTogglingBookmark(true);
-        try {
-            const res = await axios.post(`/forum/threads/${slug}/bookmark`);
-            mutate({ ...data, thread: { ...data.thread, is_bookmarked: res.data.bookmarked } }, false);
-            toast.success(res.data.message);
-        } catch {
-            toast.error("Failed to update bookmark.");
-        } finally {
-            setIsTogglingBookmark(false);
-        }
-    };
-
-    const handleSelfPin = async () => {
-        if (!data || isSelfPinning) return;
-        if (!confirm("Spend 100 Bounty to pin this thread to the top of its category for 24 hours?")) return;
-        setIsSelfPinning(true);
-        try {
-            const res = await axios.post(`/forum/threads/${slug}/self-pin`);
-            mutate({ ...data, thread: { ...data.thread, is_pinned: true } }, false);
-            toast.success(res.data.message);
-        } catch (err) {
-            const message = isAxiosError(err) ? err.response?.data?.message : undefined;
-            toast.error(message || "Failed to self-pin thread.");
-        } finally {
-            setIsSelfPinning(false);
-        }
-    };
-
-    const handleShare = async () => {
-        try {
-            await navigator.clipboard.writeText(window.location.href);
-            toast.success("Link copied to clipboard!");
-        } catch (err) {
-            console.error('Failed to copy', err);
-            toast.error("Failed to copy link.");
-        }
-    };
-
-    const handlePin = async () => {
-        if (!user || isPinning) return;
-        setIsPinning(true);
-        try {
-            const res = await axios.post(`/forum/threads/${slug}/pin`);
-            if (data) {
-                mutate({ ...data, thread: { ...data.thread, is_pinned: res.data.is_pinned } }, false);
-            }
-            toast.success(res.data.message);
-        } catch {
-            toast.error("Failed to update pin status.");
-        } finally {
-            setIsPinning(false);
-        }
-    };
-
-    const handleLockToggle = async () => {
-        if (!user || isLocking) return;
-        setIsLocking(true);
-        try {
-            const res = await axios.post(`/forum/threads/${slug}/lock`);
-            if (data) {
-                mutate({ ...data, thread: { ...data.thread, is_locked: res.data.is_locked } }, false);
-            }
-            toast.success(res.data.message);
-        } catch {
-            toast.error("Failed to update lock status.");
-        } finally {
-            setIsLocking(false);
-        }
-    };
-
-    const handleDeleteThread = async () => {
-        if (!data) return;
-        setIsDeletingThread(true);
-        try {
-            await axios.delete(`/forum/threads/${slug}`);
-            toast.success("Thread deleted.");
-            router.push(`/forum/${data.thread.category?.slug || ""}`);
-        } catch {
-            toast.error("Failed to delete thread.");
-            setIsDeletingThread(false);
-        }
-    };
-
-    const startThreadEdit = () => {
-        setThreadTitleDraft(decodeHtml(thread?.title ?? ""));
-        setThreadBodyDraft(thread?.content ?? "");
-        setEditingThread(true);
-    };
-
-    const saveThreadEdit = async () => {
-        if (!thread) return;
-
-        setSavingThread(true);
-
-        try {
-            await axios.put(`/forum/threads/${thread.slug}`, {
-                title: threadTitleDraft,
-                content: threadBodyDraft,
-            });
-
-            toast.success("Thread updated.");
-            setEditingThread(false);
-            mutate();
-        } catch (e: unknown) {
-            const message = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            toast.error(message ?? "Could not save that.");
-        } finally {
-            setSavingThread(false);
-        }
-    };
-
-    const handleEditPost = (post: Post) => {
-        setEditingPostId(post.id);
-        setEditContent(post.content ?? "");
-    };
-
-    const handleSaveEdit = async (postId: number) => {
-        if (!editContent.trim()) return;
-        try {
-            const res = await axios.put(`/forum/threads/${slug}/posts/${postId}`, { content: editContent });
-            const updatedPost = res.data.data || res.data;
-            if (data) {
-                const currentPosts = getPosts(data);
-                const updatedPosts = currentPosts.map(p => p.id === postId ? { ...p, ...updatedPost } : p);
-                if (Array.isArray(data.posts)) {
-                    mutate({ ...data, posts: updatedPosts }, false);
-                } else {
-                    mutate({ ...data, posts: { ...data.posts, data: updatedPosts } }, false);
-                }
-            }
-            setEditingPostId(null);
-            toast.success("Post updated.");
-        } catch {
-            toast.error("Failed to update post.");
-        }
-    };
-
-    const handleDeletePost = async (postId: number) => {
-        if (!confirm("Are you sure you want to delete this post?")) return;
-        setDeletingPostId(postId);
-        try {
-            await axios.delete(`/forum/threads/${slug}/posts/${postId}`);
-            if (data) {
-                const currentPosts = getPosts(data);
-                const updatedPosts = currentPosts.filter(p => p.id !== postId);
-                if (Array.isArray(data.posts)) {
-                    mutate({ ...data, posts: updatedPosts, thread: { ...data.thread, posts_count: updatedPosts.length } }, false);
-                } else {
-                    mutate({ ...data, posts: { ...data.posts, data: updatedPosts }, thread: { ...data.thread, posts_count: updatedPosts.length } }, false);
-                }
-            }
-            toast.success("Post deleted.");
-        } catch {
-            toast.error("Failed to delete post.");
-        } finally {
-            setDeletingPostId(null);
-        }
-    };
-
-    const handleMarkSolution = async (postId: number) => {
-        if (markingSolutionId) return;
-        setMarkingSolutionId(postId);
-        try {
-            const res = await axios.post(`/forum/threads/${slug}/posts/${postId}/solution`);
-            const nowSolution = res.data.is_solution as boolean;
-            if (data) {
-                const currentPosts = getPosts(data);
-                const updatedPosts = currentPosts.map(p => ({
-                    ...p,
-                    is_solution: p.id === postId ? nowSolution : (nowSolution ? false : p.is_solution),
-                }));
-                if (Array.isArray(data.posts)) {
-                    mutate({ ...data, posts: updatedPosts }, false);
-                } else {
-                    mutate({ ...data, posts: { ...data.posts, data: updatedPosts } }, false);
-                }
-            }
-            toast.success(res.data.message);
-        } catch {
-            toast.error("Failed to update solution status.");
-        } finally {
-            setMarkingSolutionId(null);
-        }
-    };
-
-    const handleReportClick = () => {
-        if (hasReported) {
-            toast("You have already reported this thread.", { icon: 'ℹ️' });
-            return;
-        }
-        setReportDialogOpen(true);
-    };
-
-    const confirmReport = async () => {
-        setIsReporting(true);
-        try {
-            await axios.post('/reports', {
-                reportable_type: 'thread',
-                reportable_id: data?.thread?.id,
-                reason: reportReason,
-            });
-            setHasReported(true);
-            setReportDialogOpen(false);
-            toast.success("Thread reported. Thank you for helping keep the community safe.");
-        } catch (error) {
-            toast.error("Failed to report thread. Please try again.");
-        } finally {
-            setIsReporting(false);
-        }
-    };
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-[var(--surface-0)]">
-                <div className="container-page py-8">
-                    <div className="animate-pulse space-y-6">
-                        <div className="h-8 bg-[var(--surface-1)] rounded-[var(--radius-card)] w-1/3" />
-                        <div className="h-48 bg-[var(--surface-1)] rounded-[var(--radius-panel)]" />
-                        <div className="h-32 bg-[var(--surface-1)] rounded-[var(--radius-panel)]" />
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (!data) {
-        return (
-            <div className="min-h-screen bg-[var(--surface-0)] flex flex-col items-center justify-center gap-4">
-                <MessageSquare className="w-16 h-16 text-white/12" />
-                <h1 className="text-2xl font-bold text-white">Thread Not Found</h1>
-                <Link href="/forum">
-                    <Button>Back to Forums</Button>
-                </Link>
-            </div>
-        );
-    }
-
-    const { thread } = data;
-    const fetchedPosts = getPosts(data);
-    const liveOnlyReplies: Post[] = liveReplies
-        .filter((r) => !fetchedPosts.some((p) => p.id === r.id))
-        .map((r) => ({
-            id: r.id,
-            content: r.content,
-            created_at: r.created_at,
-            is_solution: false,
-            author: {
-                id: r.author.id,
-                username: r.author.username,
-                avatar_url: r.author.avatar ?? undefined,
-            },
-        }));
-    const postsList = [...fetchedPosts, ...liveOnlyReplies];
-    const categoryColor = getCategoryColor(thread.category?.slug || '');
-    const threadAuthorAvatar = getAvatarSrc(thread.author?.avatar_url);
-
-    // Helper to check staff for layout adjustments
-    const isStaff = (u: User) => {
-        const role = getDisplayRole(u);
-        return !!role;
-    };
-    const threadAuthorStaff = isStaff(thread.author);
-    const currentUserIsStaff = user ? isStaff({ ...user, roles: (user as any).roles }) : false;
-    const canModerate = currentUserIsStaff;
-
-    /* The page opens inside the boards layout now: no page-wide wrapper, no
-       container of its own, no sidebar of its own. The layout holds all three
-       and keeps them mounted, so arriving here from a board changes this column
-       and nothing else. */
     return (
         <>
-            {/* Header */}
-            <div className="border-b border-[var(--line)]">
-                <div className="pt-4 pb-3">
-                    {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-[11.5px] text-white/35 mb-2.5">
-                        <Link href="/forum" className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
-                            <ArrowLeft className="w-4 h-4" />
-                            Forum
-                        </Link>
-                        <span>/</span>
-                        {/* The board's colour was the whole link, and for half the
-                            boards that colour is a violet — which on a crimson site
-                            reads as a visited link rather than as an identity. The
-                            colour is a tick beside the name now; the name itself
-                            follows the ink ladder like every other link here. */}
-                        <Link
-                            href={`/forum/${thread.category?.slug}`}
-                            className="flex items-center gap-1.5 text-[var(--ink-low)] hover:text-[var(--accent-ink)] transition-colors"
-                        >
-                            <span aria-hidden className="h-3 w-[3px] rounded-full" style={{ backgroundColor: categoryColor }} />
-                            {decodeHtml(thread.category?.name || 'General')}
-                        </Link>
-                    </div>
-
-                    {/* Thread Title & Meta */}
-                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                        <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-2 mb-2">
-                                {thread.is_pinned && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-[var(--accent)] text-white">
-                                        <Pin className="w-3 h-3" /> Pinned
-                                    </span>
-                                )}
-                                {thread.is_locked && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-red-500/20 text-red-400 border border-red-500/30">
-                                        <Lock className="w-3 h-3" /> Locked
-                                    </span>
-                                )}
-                                {canModerate && (
-                                    <>
-                                        <button
-                                            onClick={handlePin}
-                                            disabled={isPinning}
-                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border transition-all ${thread.is_pinned ? 'bg-[var(--accent)]/10 text-[var(--accent)] border-[var(--accent)]/30 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30' : 'bg-white/5 text-white/45 border-white/10 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] hover:border-[var(--accent)]/30'}`}
-                                        >
-                                            <Pin className="w-3 h-3" />
-                                            {thread.is_pinned ? 'Unpin' : 'Pin'}
-                                        </button>
-                                        <button
-                                            onClick={handleLockToggle}
-                                            disabled={isLocking}
-                                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border transition-all ${thread.is_locked ? 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-white/5 hover:text-white/45 hover:border-white/10' : 'bg-white/5 text-white/45 border-white/10 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30'}`}
-                                        >
-                                            {thread.is_locked ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                                            {thread.is_locked ? 'Unlock' : 'Lock'}
-                                        </button>
-                                        <button
-                                            onClick={() => setDeleteThreadDialogOpen(true)}
-                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-white/10 bg-white/5 text-white/45 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all"
-                                        >
-                                            <Trash2 className="w-3 h-3" />
-                                            Delete
-                                        </button>
-                                    </>
-                                )}
-                                {(canModerate || user?.id === thread.author?.id) && !editingThread && (
-                                    <button
-                                        onClick={startThreadEdit}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-white/10 bg-white/5 text-white/45 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] hover:border-[var(--accent)]/30 transition-all"
-                                    >
-                                        <Pencil className="w-3 h-3" />
-                                        Edit
-                                    </button>
-                                )}
-                                {!canModerate && user?.id === thread.author?.id && !thread.is_pinned && (
-                                    <button
-                                        onClick={handleSelfPin}
-                                        disabled={isSelfPinning}
-                                        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold border border-[var(--accent)]/30 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 transition-all"
-                                    >
-                                        <Pin className="w-3 h-3" />
-                                        Pin for 24h (100 Bounty)
-                                    </button>
-                                )}
-                            </div>
-                            {editingThread ? (
-                                <input
-                                    value={threadTitleDraft}
-                                    onChange={(e) => setThreadTitleDraft(e.target.value)}
-                                    maxLength={255}
-                                    aria-label="Thread title"
-                                    className="w-full mb-3 h-12 px-4 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] font-display text-[20px] font-black text-white outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all"
-                                />
-                            ) : (
-                                <h1 className="font-display text-[22px] md:text-[26px] font-bold text-white leading-tight mb-2">
-                                    {decodeHtml(thread.title)}
-                                </h1>
-                            )}
-                            {thread.tags && thread.tags.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                                    {thread.tags.map((tag) => (
-                                        <Link
-                                            key={tag.slug}
-                                            href={`/forum/${thread.category?.slug}?tag=${tag.slug}`}
-                                            className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/[0.03] text-white/45 hover:bg-[var(--accent)]/10 hover:text-[var(--accent)] transition-colors"
-                                        >
-                                            {tag.name}
-                                        </Link>
-                                    ))}
-                                </div>
-                            )}
-                            <div className="flex flex-wrap items-center gap-4 text-[12px] text-white/40">
-                                <span className="flex items-center gap-1" suppressHydrationWarning>
-                                    <Clock className="w-4 h-4" />
-                                    {formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <Eye className="w-4 h-4" />
-                                    {thread.view_count} views
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <MessageSquare className="w-4 h-4" />
-                                    {thread.posts_count || postsList.length} replies
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="py-5">
-                <div className="space-y-6">
-                        {/* Original Post */}
-                        <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden">
-                            {/* The author was a 192px column down the left of every
-                                post — the phpBB shape, and a fifth of the reading
-                                width spent on a name and a join date. It is a
-                                header strip now: same information, one line, and
-                                the prose gets the room back. */}
-                            <div className="flex flex-col">
-                                {/* Author strip */}
-                                <div className="bg-white/[0.02] px-4 py-2.5 flex flex-row items-center gap-3 text-left border-b border-white/[0.07]">
-                                    <Link href={`/profile/${thread.author?.username}`} aria-label={`${thread.author?.username || "Author"} profile`} className="group">
-                                        <div className={`w-9 h-9 rounded-full overflow-hidden bg-[var(--surface-1)] ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07] group-hover:ring-[var(--accent)]'}`}>
-                                            {threadAuthorAvatar ? (
-                                                <Image src={threadAuthorAvatar} alt={thread.author?.username || ""} width={80} height={80} className="object-cover w-full h-full" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-[var(--accent)]">
-                                                    {thread.author?.username?.charAt(0)?.toUpperCase() || '?'}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </Link>
-                                    <div className="min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                    <Link
-                                        href={`/profile/${thread.author?.username}`}
-                                        className={`font-bold text-sm hover:underline ${threadAuthorStaff ? 'text-[var(--accent)]' : !thread.author?.post_color ? 'text-white' : ''}`}
-                                        style={!threadAuthorStaff && thread.author?.post_color ? { color: thread.author.post_color } : undefined}
-                                    >
-                                        {thread.author?.username || 'Unknown'}
-                                    </Link>
-
-                                    {/* Role Display */}
-                                    {(() => {
-                                        const role = getDisplayRole(thread.author);
-                                        if (role) {
-                                            return (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide">
-                                                    <Shield className="w-3 h-3" /> {role}
-                                                </span>
-                                            );
-                                        }
-                                        return null;
-                                    })()}
-
-                                    {thread.author?.rank && (
-                                        <span
-                                            className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded-full"
-                                            style={{ backgroundColor: `${thread.author.rank.color}20`, color: thread.author.rank.color }}
-                                        >
-                                            {thread.author.rank.name}
-                                        </span>
-                                    )}
-
-                                    {/* Post count and join date are the rail's
-                                        small print; on a phone they are two
-                                        lines of stranger's paperwork above the
-                                        thing you opened the thread to read. */}
-                                    <div className="hidden sm:flex text-[11px] text-white/30 items-center gap-2 ml-auto">
-                                        <span>{thread.author?.posts_count || 0} posts</span>
-                                        {thread.author?.created_at && (
-                                            <span>Joined {format(new Date(thread.author.created_at), 'MMM yyyy')}</span>
-                                        )}
-                                    </div>
-                                    </div>
-                                </div>
-
-                                {/* Post Content */}
-                                <div className="flex-1 p-4 md:p-6">
-                                    {editingThread ? (
-                                        <div>
-                                            <RichTextEditor content={threadBodyDraft} onChange={setThreadBodyDraft} minHeight="180px" />
-                                            <div className="flex items-center gap-2 mt-3">
-                                                <button
-                                                    onClick={saveThreadEdit}
-                                                    disabled={savingThread}
-                                                    className="btn-command inline-flex items-center justify-center h-9 px-5 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter] disabled:opacity-50"
-                                                >
-                                                    {savingThread ? "Saving" : "Save changes"}
-                                                </button>
-                                                <button
-                                                    onClick={() => setEditingThread(false)}
-                                                    disabled={savingThread}
-                                                    className="btn-command btn-command-quiet inline-flex items-center justify-center h-9 px-5 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors"
-                                                >
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="prose prose-invert max-w-none text-white/70 leading-relaxed">
-                                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(thread.content || '<p>No content</p>') }} />
-                                        </div>
-                                    )}
-
-                                    {/* Post Actions */}
-                                    <div className="flex items-center justify-between mt-8 pt-4 border-t border-white/[0.07]">
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={handleUpvote}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${thread.is_upvoted ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-white/45 hover:text-white hover:bg-white/[0.03]'}`}
-                                            >
-                                                <ChevronUp className={`w-4 h-4 ${thread.is_upvoted ? 'stroke-2' : ''}`} />
-                                                <span>Upvote {thread.upvotes_count > 0 && `(${thread.upvotes_count})`}</span>
-                                            </button>
-                                            {user && (
-                                                <button
-                                                    onClick={handleToggleWatch}
-                                                    disabled={isTogglingWatch}
-                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${thread.is_watching ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-white/45 hover:text-white hover:bg-white/[0.03]'}`}
-                                                >
-                                                    {thread.is_watching ? <BellOff className="w-4 h-4" /> : <Bell className="w-4 h-4" />}
-                                                    {thread.is_watching ? 'Watching' : 'Watch'}
-                                                </button>
-                                            )}
-                                            {user && (
-                                                <button
-                                                    onClick={handleToggleBookmark}
-                                                    disabled={isTogglingBookmark}
-                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${thread.is_bookmarked ? 'text-[var(--accent)] bg-[var(--accent)]/10' : 'text-white/45 hover:text-white hover:bg-white/[0.03]'}`}
-                                                >
-                                                    <Bookmark className={`w-4 h-4 ${thread.is_bookmarked ? 'fill-current' : ''}`} />
-                                                    {thread.is_bookmarked ? 'Saved' : 'Save'}
-                                                </button>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={handleShare}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium text-white/45 hover:text-white hover:bg-white/[0.03] transition-all"
-                                            >
-                                                <Share2 className="w-4 h-4" />
-                                                Share
-                                            </button>
-                                            <button
-                                                onClick={handleReportClick}
-                                                disabled={hasReported}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] text-xs font-medium transition-all ${hasReported ? 'text-green-500' : 'text-white/45 hover:text-red-400 hover:bg-red-500/10'}`}
-                                            >
-                                                {hasReported ? <Shield className="w-4 h-4" /> : <Flag className="w-4 h-4" />}
-                                                {hasReported ? 'Reported' : 'Report'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Replies Section */}
-                        {postsList.length > 0 && (
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5 text-[var(--accent)]" />
-                                    Replies ({postsList.length})
-                                </h3>
-
-                                {postsList.map((post, index) => {
-                                    const postAuthorStaff = isStaff(post.author);
-                                    const postAuthorAvatar = getAvatarSrc(post.author?.avatar_url);
-
-                                    if (post.is_deleted) {
-                                        return (
-                                            <div key={post.id} className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-4 flex items-center justify-between">
-                                                <span className="text-sm text-white/30 italic">[This post was deleted]</span>
-                                                <span className="text-xs text-white/30">#{(page - 1) * 15 + index + 2}</span>
-                                            </div>
-                                        );
-                                    }
-
-                                    return (
-                                        /* Search results link to #post-N, and nothing
-                                           on this page answered to that name — the link
-                                           landed on the thread and stopped there. The
-                                           anchor exists now; scroll-mt keeps the header
-                                           off the post it jumps to. Replies past the
-                                           first page still need the API to say which
-                                           page a post is on, which it does not. */
-                                        <div id={`post-${post.id}`} key={post.id} className={`scroll-mt-28 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
-                                            {post.is_solution && (
-                                                <div className="bg-green-500/10 border-b border-green-500/30 px-4 py-2 flex items-center gap-2 text-green-400 text-sm font-bold">
-                                                    <Award className="w-4 h-4" />
-                                                    Marked as Solution
-                                                </div>
-                                            )}
-                                            <div className="flex flex-col">
-                                                {/* Author strip */}
-                                                <div className="bg-white/[0.02] px-4 py-2.5 flex items-center gap-3 border-b border-white/[0.07]">
-                                                    <Link href={`/profile/${post.author?.username}`}>
-                                                        <div className={`w-9 h-9 rounded-full overflow-hidden bg-[var(--surface-1)] ring-2 transition-all ${postAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07]'}`}>
-                                                            {postAuthorAvatar ? (
-                                                                <Image src={postAuthorAvatar} alt={post.author?.username || ""} width={64} height={64} className="object-cover w-full h-full" />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--accent)]">
-                                                                    {post.author?.username?.charAt(0)?.toUpperCase() || '?'}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </Link>
-                                                    <div className="min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-                                                        <Link
-                                                            href={`/profile/${post.author?.username}`}
-                                                            className={`font-bold text-sm hover:underline ${postAuthorStaff ? 'text-[var(--accent)]' : !post.author?.post_color ? 'text-white' : ''}`}
-                                                            style={!postAuthorStaff && post.author?.post_color ? { color: post.author.post_color } : undefined}
-                                                        >
-                                                            {post.author?.username || 'Unknown'}
-                                                        </Link>
-
-                                                        {/* Role Display */}
-                                                        {(() => {
-                                                            const role = getDisplayRole(post.author);
-                                                            if (role) {
-                                                                return (
-                                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide">
-                                                                        <Shield className="w-2.5 h-2.5" /> {role}
-                                                                    </span>
-                                                                );
-                                                            }
-                                                            return null;
-                                                        })()}
-
-                                                        {post.author?.rank && (
-                                                            <span
-                                                                className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full"
-                                                                style={{ backgroundColor: `${post.author.rank.color}20`, color: post.author.rank.color }}
-                                                            >
-                                                                {post.author.rank.name}
-                                                            </span>
-                                                        )}
-
-                                                        <div className="hidden md:block text-[10px] text-white/35 mt-2">
-                                                            <div>{post.author?.posts_count || 0} posts</div>
-                                                            {post.author?.created_at && (
-                                                                <div>Joined {format(new Date(post.author.created_at), 'MMM yyyy')}</div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Reply Content */}
-                                                <div className="flex-1 p-4">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <span className="text-xs text-white/35" suppressHydrationWarning>
-                                                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                                                            {post.edited_at && <span className="ml-2 italic">(edited)</span>}
-                                                        </span>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-white/35">#{(page - 1) * 15 + index + 2}</span>
-                                                            {user && (user.id === thread.author?.id || currentUserIsStaff) && (
-                                                                <button
-                                                                    onClick={() => handleMarkSolution(post.id)}
-                                                                    disabled={markingSolutionId === post.id}
-                                                                    className={`text-xs px-2 py-1 rounded transition-all ${post.is_solution ? 'text-green-400 hover:text-red-400 hover:bg-red-500/10' : 'text-white/45 hover:text-green-400 hover:bg-green-500/10'}`}
-                                                                >
-                                                                    {markingSolutionId === post.id ? '...' : post.is_solution ? 'Unmark Solution' : 'Mark as Solution'}
-                                                                </button>
-                                                            )}
-                                                            {user && (user.id === post.author?.id || currentUserIsStaff) && (
-                                                                <div className="flex items-center gap-1">
-                                                                    <button
-                                                                        onClick={() => handleEditPost(post)}
-                                                                        className="text-xs px-2 py-1 rounded text-white/45 hover:text-[var(--accent)] hover:bg-white/[0.03] transition-all"
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleDeletePost(post.id)}
-                                                                        disabled={deletingPostId === post.id}
-                                                                        className="text-xs px-2 py-1 rounded text-white/45 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                                                                    >
-                                                                        {deletingPostId === post.id ? '...' : 'Delete'}
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                    {editingPostId === post.id ? (
-                                                        <div className="space-y-2">
-                                                            <textarea
-                                                                value={editContent}
-                                                                onChange={(e) => setEditContent(e.target.value)}
-                                                                className="w-full border border-white/[0.07] bg-white/[0.02] rounded-[var(--radius-card)] p-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none min-h-[100px]"
-                                                            />
-                                                            <div className="flex gap-2">
-                                                                <button
-                                                                    onClick={() => handleSaveEdit(post.id)}
-                                                                    className="px-3 py-1.5 bg-[var(--accent)] text-white text-xs font-bold rounded-[var(--radius-card)] hover:brightness-110 transition-colors"
-                                                                >
-                                                                    Save
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => setEditingPostId(null)}
-                                                                    className="px-3 py-1.5 bg-white/[0.03] text-white/45 text-xs font-bold rounded-[var(--radius-card)] hover:bg-white/[0.06] transition-colors"
-                                                                >
-                                                                    Cancel
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="prose prose-sm prose-invert max-w-none text-white/70">
-                                                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content ?? "") }} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-
-                        {/* Pages — a long thread has more than the fifteen replies
-                            the API hands back at a time. */}
-                        {lastPage > 1 && (
-                            <div className="flex flex-wrap items-center justify-center gap-1.5">
-                                <button
-                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                    disabled={page <= 1}
-                                    className="inline-flex items-center h-8 px-3.5 rounded-[8px] border border-white/[0.07] bg-white/[0.03] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/45 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    Previous
-                                </button>
-                                {Array.from({ length: lastPage }, (_, i) => i + 1)
-                                    .filter((n) => n === 1 || n === lastPage || Math.abs(n - page) <= 2)
-                                    .map((n, idx, arr) => (
-                                        <span key={n} className="flex items-center gap-1.5">
-                                            {idx > 0 && arr[idx - 1] !== n - 1 && <span className="text-white/20">…</span>}
-                                            <button
-                                                onClick={() => setPage(n)}
-                                                className={`inline-flex items-center h-8 px-3 rounded-[8px] border font-display text-[9.5px] font-black tabular-nums transition-colors ${
-                                                    n === page
-                                                        ? "bg-[var(--accent)] border-transparent text-white"
-                                                        : "bg-white/[0.03] border-white/[0.07] text-white/45 hover:text-white"
-                                                }`}
-                                            >
-                                                {n}
-                                            </button>
-                                        </span>
-                                    ))}
-                                <button
-                                    onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
-                                    disabled={page >= lastPage}
-                                    className="inline-flex items-center h-8 px-3.5 rounded-[8px] border border-white/[0.07] bg-white/[0.03] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/45 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Reply Form */}
-                        {thread.is_locked ? (
-                            /* A closed thread is a fact, not an event. This was a
-                               230px panel with a 48px lock in the middle of it,
-                               announcing the absence of a reply box more loudly
-                               than the box itself would have spoken. */
-                            <div className="flex items-center gap-2.5 rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] px-4 py-3">
-                                <Lock aria-hidden className="h-4 w-4 shrink-0 text-[var(--ink-faint)]" strokeWidth={1.6} />
-                                <p className="text-[12.5px] text-[var(--ink-low)]">
-                                    <span className="font-bold text-[var(--ink-mid)]">Thread locked.</span>{" "}
-                                    No new replies can be posted.
-                                </p>
-                            </div>
-                        ) : (
-                        <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-6">
-                            {user ? (
-                                <>
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                            <Reply className="w-5 h-5 text-[var(--accent)]" />
-                                            Post a Reply
-                                        </h3>
-                                        <Link href="/forum/rules" className="text-xs text-white/35 hover:text-[var(--accent)] transition-colors flex items-center gap-1">
-                                            <Shield className="w-3 h-3" />
-                                            Community Guidelines
-                                        </Link>
-                                    </div>
-                                    <form onSubmit={handleReply} className="space-y-4">
-                                        <div className="flex gap-4">
-                                            <div className="hidden md:block shrink-0">
-                                                <div className="w-12 h-12 rounded-full overflow-hidden bg-white/[0.03] ring-2 ring-white/[0.07]">
-                                                    {getAvatarSrc(user.avatar_url) ? (
-                                                        <Image unoptimized={!isOwnUpload(getAvatarSrc(user.avatar_url))} src={getAvatarSrc(user.avatar_url)!} alt={user.username} width={48} height={48} className="object-cover w-full h-full" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-lg font-bold text-[var(--accent)]">
-                                                            {user.username?.charAt(0)?.toUpperCase() || '?'}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex-1">
-                                                <RichTextEditor
-                                    uploadPath="/forum/uploads"
-                                                    content={replyContent}
-                                                    onChange={setReplyContent}
-                                                    placeholder="Share your thoughts..."
-                                                    minHeight="120px"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-end">
-                                            <Button
-                                                type="submit"
-                                                disabled={isSubmitting || !replyContent.trim()}
-                                                className=""
-                                            >
-                                                {isSubmitting ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                                                        Posting...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Send className="w-4 h-4 mr-2" />
-                                                        Post Reply
-                                                    </>
-                                                )}
-                                            </Button>
-                                        </div>
-                                    </form>
-                                </>
-                            ) : (
-                                <div className="text-center py-8">
-                                    <MessageSquare className="w-12 h-12 text-white/12 mx-auto mb-4" />
-                                    <h3 className="text-lg font-bold text-white mb-2">Join the Discussion</h3>
-                                    <p className="text-white/45 mb-6">You must be logged in to reply to this thread.</p>
-                                    <div className="flex justify-center gap-4">
-                                        <Link href="/login">
-                                            <Button variant="outline">Log In</Button>
-                                        </Link>
-                                        <Link href="/register">
-                                            <Button>Sign Up</Button>
-                                        </Link>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        )}
-                </div>
-            </div>
-            <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Report Thread</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <p className="text-white/45">
-                            Are you sure you want to report this thread to the moderators?
-                            This action cannot be undone.
-                        </p>
-                        <textarea
-                            className="w-full border border-white/[0.07] bg-white/[0.02] rounded-[var(--radius-inner)] p-3 text-sm text-white placeholder-white/35 focus:outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"
-                            rows={3}
-                            placeholder="Reason for reporting (optional)..."
-                            value={reportReason}
-                            onChange={(e) => setReportReason(e.target.value)}
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setReportDialogOpen(false)} disabled={isReporting}>
-                            Cancel
-                        </Button>
-                        <Button variant="danger" onClick={confirmReport} disabled={isReporting}>
-                            {isReporting ? 'Reporting...' : 'Report Content'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-            <Dialog open={deleteThreadDialogOpen} onOpenChange={setDeleteThreadDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Delete Thread</DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4">
-                        <p className="text-white/45">
-                            This permanently deletes the thread and all of its replies. This action cannot be undone.
-                        </p>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setDeleteThreadDialogOpen(false)} disabled={isDeletingThread}>
-                            Cancel
-                        </Button>
-                        <Button variant="danger" onClick={handleDeleteThread} disabled={isDeletingThread}>
-                            {isDeletingThread ? 'Deleting...' : 'Delete Thread'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            {jsonLd && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+                />
+            )}
+            <ThreadClient initial={initial} />
         </>
     );
 }
