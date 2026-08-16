@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { MessageSquare, Plus, ScrollText, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import ForumSidebar from "@/components/forum/ForumSidebar";
 import ForumShell from "@/components/forum/ForumShell";
 import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
 import ListingPagination from "@/components/ui/ListingPagination";
@@ -128,7 +127,6 @@ function CategoryThreadsPageInner() {
                     </Link>
                 ) : null
             }
-            rail={<ForumSidebar />}
         >
             {category.rules && (
                 <div className="mb-4">

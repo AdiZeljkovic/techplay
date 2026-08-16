@@ -5,18 +5,22 @@ import { ChevronRight } from "lucide-react";
 import type { BoardMarkComponent } from "@/lib/forum";
 
 /**
- * One frame for every forum page.
+ * The opening of one forum page — and only the opening.
  *
- * Each page had built its own opening: the category page a back-link and an
- * icon block, the thread page a breadcrumb and badges, search a marketing hero
- * with a search icon in a box. Four openings, four sets of type sizes, and no
- * two boards that looked like the same site.
+ * Each page used to build its own: the category page a back-link and an icon
+ * block, the thread page a breadcrumb and badges, search a marketing hero with
+ * a search icon in a box. Four openings, four sets of type sizes, and no two
+ * boards that looked like the same site.
  *
- * So the header is a strip, not a stage: crumbs, a title with its action on the
- * same line, one line of description, and the counts as text rather than as
- * boxes. Everything below it is the page. Measured on a phone that moved the
- * first line of a thread from 415px to 324px; on a desktop it buys width rather
- * than height, which is the thing a forum actually spends.
+ * So it is a strip, not a stage: crumbs, a title with its action on the same
+ * line, one line of description, and the counts as text rather than as boxes.
+ * Measured on a phone that moved the first line of a thread from 415px to
+ * 324px; on a desktop it buys width rather than height, which is the thing a
+ * forum actually spends.
+ *
+ * The page container and the sidebar are NOT here. They belong to the boards
+ * layout, which stays mounted while this changes — that is what keeps browsing
+ * inside one window instead of reassembling the frame on every click.
  */
 
 export interface Crumb {
@@ -36,7 +40,6 @@ export default function ForumShell({
     mark: Mark,
     stats,
     action,
-    rail,
     children,
 }: {
     crumbs?: Crumb[];
@@ -45,11 +48,10 @@ export default function ForumShell({
     mark?: BoardMarkComponent;
     stats?: ForumStat[];
     action?: React.ReactNode;
-    rail?: React.ReactNode;
     children: React.ReactNode;
 }) {
     return (
-        <div className="mx-auto w-full max-w-[1280px] px-4 md:px-6">
+        <div className="min-w-0">
             {crumbs && crumbs.length > 0 && (
                 <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 pt-4 pb-2 text-[11.5px]">
                     {crumbs.map((c, i) => (
@@ -110,12 +112,7 @@ export default function ForumShell({
                 </div>
             )}
 
-            {/* The rail is a companion, not a second page: it stops being a column
-                below xl, where it would squeeze the reading width instead. */}
-            <div className={rail ? "grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_324px] gap-6 py-5" : "py-5"}>
-                <div className="min-w-0">{children}</div>
-                {rail && <aside className="min-w-0">{rail}</aside>}
-            </div>
+            <div className="py-5">{children}</div>
         </div>
     );
 }

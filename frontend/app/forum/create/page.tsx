@@ -238,9 +238,17 @@ function CreateThreadForm() {
         </div>
     );
 
+    /* This page sits outside the boards layout on purpose. That layout carries
+       the forum's own sidebar — active threads, popular boards, everything you
+       would browse — and a list of other people's threads beside a half-written
+       one is an invitation to abandon it. So the container is built here, and
+       the rail shows this thread as the board will list it. */
     return (
-        <ForumShell
-            crumbs={[
+        <div className="min-h-screen bg-[var(--surface-0)]">
+          <div className="mx-auto w-full max-w-[1280px] px-4 pb-10 md:px-6">
+            <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_324px]">
+              <ForumShell
+                crumbs={[
                 { label: "Forum", href: "/forum" },
                 ...(selectedCategory ? [{ label: selectedCategory.name, href: `/forum/${selectedCategory.slug}` }] : []),
                 { label: "New thread" },
@@ -265,8 +273,7 @@ function CreateThreadForm() {
                     </span>
                 </span>
             }
-            rail={preview}
-        >
+              >
                 <form onSubmit={handleSubmit}>
                     {/* ── the sheet ──
 
@@ -472,7 +479,12 @@ function CreateThreadForm() {
                     </div>
 
                 </form>
-        </ForumShell>
+              </ForumShell>
+
+              <aside className="min-w-0">{preview}</aside>
+            </div>
+          </div>
+        </div>
     );
 }
 

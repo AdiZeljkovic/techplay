@@ -14,8 +14,6 @@ import { toast } from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import ForumSidebar from "@/components/forum/ForumSidebar";
-import { DisplayAd } from "@/components/ads/AdSense";
 import { getCategoryColor, getAvatarSrc } from "@/lib/forum";
 import { useRealTimeThreadReplies } from "@/hooks";
 
@@ -537,11 +535,15 @@ export default function ThreadPage() {
     const currentUserIsStaff = user ? isStaff({ ...user, roles: (user as any).roles }) : false;
     const canModerate = currentUserIsStaff;
 
+    /* The page opens inside the boards layout now: no page-wide wrapper, no
+       container of its own, no sidebar of its own. The layout holds all three
+       and keeps them mounted, so arriving here from a board changes this column
+       and nothing else. */
     return (
-        <div className="min-h-screen bg-[var(--surface-0)]">
+        <>
             {/* Header */}
-            <div className="bg-[var(--surface-1)] border-b border-white/[0.07]">
-                <div className="container-page py-4">
+            <div className="border-b border-[var(--line)]">
+                <div className="pt-4 pb-3">
                     {/* Breadcrumb */}
                     <div className="flex items-center gap-2 text-[11.5px] text-white/35 mb-2.5">
                         <Link href="/forum" className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
@@ -670,10 +672,8 @@ export default function ThreadPage() {
             </div>
 
             {/* Main Content */}
-            <div className="container-page py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Thread Content & Replies */}
-                    <div className="lg:col-span-3 space-y-6">
+            <div className="py-5">
+                <div className="space-y-6">
                         {/* Original Post */}
                         <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden">
                             {/* The author was a 192px column down the left of every
@@ -1100,17 +1100,6 @@ export default function ThreadPage() {
                             )}
                         </div>
                         )}
-                    </div>
-
-                    {/* Sidebar */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <ForumSidebar />
-
-                        {/* The rail. Threads are reader-written, so nothing
-                            goes between the posts — an ad dropped into a
-                            conversation reads as one of the replies. */}
-                        <DisplayAd />
-                    </div>
                 </div>
             </div>
             <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
@@ -1161,6 +1150,6 @@ export default function ThreadPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+        </>
     );
 }

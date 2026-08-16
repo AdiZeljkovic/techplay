@@ -5,14 +5,9 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import {
-    MessageCircle, LayoutGrid, Sparkles, HelpCircle,
-    Search, Clock, Users2, MessageSquare, FileText, Users, Plus,
-} from "lucide-react";
+import { MessageCircle, LayoutGrid, Sparkles, HelpCircle, Clock, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
-import ForumSidebar from "@/components/forum/ForumSidebar";
 import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
 import { decodeHtml } from "@/lib/decode";
 import { fmtStat, getCategoryIcon, getAvatarSrc, type BoardMarkComponent } from "@/lib/forum";
@@ -33,13 +28,6 @@ interface ForumCategory {
         created_at: string;
         author: { username: string; avatar_url?: string };
     } | null;
-}
-
-interface ForumStats {
-    total_threads: number;
-    total_posts: number;
-    members: number;
-    online_users: number;
 }
 
 interface ActiveThread {
@@ -179,77 +167,18 @@ function asThreadRow(t: ActiveThread): ThreadRowData & { category: { name: strin
 
 export default function ForumPage() {
     const { user } = useAuth();
-    const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>("all");
-    const [searchQuery, setSearchQuery] = useState("");
 
     const { data: categories, isLoading: categoriesLoading } = useSWR<ForumCategory[]>("/forum/categories", fetcher);
-    const { data: stats } = useSWR<ForumStats>("/forum/stats", fetcher);
     const { data: activeThreads } = useSWR<ActiveThread[]>("/forum/active", fetcher);
     const { data: unansweredThreads } = useSWR<ActiveThread[]>("/forum/unanswered", fetcher);
 
+    /* The hero that used to open this page — title, search, four stat chips —
+       is now the boards layout's bar, where it survives a click into a board
+       instead of vanishing. What is left here is only what belongs to the
+       index itself: the view switcher and the boards. */
     return (
-        <div className="min-h-screen bg-[var(--surface-0)]">
-            {/* ── hero, built like the games database's ── */}
-            <section className="relative overflow-hidden border-b border-white/[0.07]">
-                <Image src="/images/page-hero.webp" alt="" fill priority unoptimized className="object-cover object-center" />
-                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
-                <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
-
-                <div className="relative z-10 container-page py-5 md:py-8 text-center">
-                    <h1 className="font-display font-bold text-white tracking-tight leading-[0.95] text-[26px] md:text-[42px] uppercase">
-                        <span className="text-white">Community </span>
-                        <span className="text-[var(--accent)]">Forum</span>
-                    </h1>
-
-                    <p className="hidden md:block mt-2 max-w-[720px] mx-auto text-[13px] text-white/45">
-                        Ask, argue, help and show off — {fmtStat(stats?.total_threads ?? 0)} threads across every board we run.
-                    </p>
-
-                    <div className="mt-4 md:mt-5 max-w-[640px] mx-auto relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--ink-faint)] group-focus-within:text-[var(--accent)] transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Search threads, posts, people…"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === "Enter" && searchQuery.trim()) {
-                                    router.push(`/forum/search?q=${encodeURIComponent(searchQuery.trim())}`);
-                                }
-                            }}
-                            className="w-full h-12 pl-11 pr-4 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] text-[13.5px] text-white placeholder:text-[var(--ink-faint)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all"
-                        />
-                    </div>
-
-                    <div className="mt-4 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide">
-                        {[
-                            { icon: Users2, value: stats?.online_users ?? 0, label: "Online" },
-                            { icon: MessageSquare, value: stats?.total_threads ?? 0, label: "Threads" },
-                            { icon: FileText, value: stats?.total_posts ?? 0, label: "Replies" },
-                            { icon: Users, value: stats?.members ?? 0, label: "Members" },
-                        ].map(({ icon: Icon, value, label }) => (
-                            <span
-                                key={label}
-                                className="shrink-0 inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
-                            >
-                                <Icon className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                <span className="font-numeric text-[12px] text-white leading-none">
-                                    {fmtStat(value)}
-                                </span>
-                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/35">
-                                    {label}
-                                </span>
-                            </span>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── main ── */}
-            <div className="container-page py-4 md:py-7">
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-                    <div className="lg:col-span-3 min-w-0">
+        <div className="py-5">
                         <div className="flex flex-wrap items-center gap-3 mb-5">
                             {/* The leaderboard's switcher, so every hub on the
                                 site picks a view the same way. */}
@@ -387,13 +316,6 @@ export default function ForumPage() {
                                 </div>
                             )
                         )}
-                    </div>
-
-                    <div className="lg:col-span-1 min-w-0">
-                        <ForumSidebar />
-                    </div>
-                </div>
-            </div>
         </div>
     );
 }
