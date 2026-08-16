@@ -549,12 +549,17 @@ export default function ThreadPage() {
                             Forum
                         </Link>
                         <span>/</span>
+                        {/* The board's colour was the whole link, and for half the
+                            boards that colour is a violet — which on a crimson site
+                            reads as a visited link rather than as an identity. The
+                            colour is a tick beside the name now; the name itself
+                            follows the ink ladder like every other link here. */}
                         <Link
                             href={`/forum/${thread.category?.slug}`}
-                            className="hover:text-[var(--accent)] transition-colors"
-                            style={{ color: categoryColor }}
+                            className="flex items-center gap-1.5 text-[var(--ink-low)] hover:text-[var(--accent-ink)] transition-colors"
                         >
-                            {thread.category?.name || 'General'}
+                            <span aria-hidden className="h-3 w-[3px] rounded-full" style={{ backgroundColor: categoryColor }} />
+                            {decodeHtml(thread.category?.name || 'General')}
                         </Link>
                     </div>
 
@@ -685,11 +690,16 @@ export default function ThreadPage() {
                     <div className="lg:col-span-3 space-y-6">
                         {/* Original Post */}
                         <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden">
-                            <div className="flex flex-col md:flex-row">
-                                {/* Author Sidebar */}
-                                <div className="md:w-48 bg-white/[0.02] p-3 md:p-6 flex flex-row md:flex-col items-center gap-3 md:gap-0 text-left md:text-center border-b md:border-b-0 md:border-r border-white/[0.07]">
+                            {/* The author was a 192px column down the left of every
+                                post — the phpBB shape, and a fifth of the reading
+                                width spent on a name and a join date. It is a
+                                header strip now: same information, one line, and
+                                the prose gets the room back. */}
+                            <div className="flex flex-col">
+                                {/* Author strip */}
+                                <div className="bg-white/[0.02] px-4 py-2.5 flex flex-row items-center gap-3 text-left border-b border-white/[0.07]">
                                     <Link href={`/profile/${thread.author?.username}`} aria-label={`${thread.author?.username || "Author"} profile`} className="group">
-                                        <div className={`w-10 h-10 md:w-20 md:h-20 rounded-full overflow-hidden bg-[var(--surface-1)] mb-0 md:mb-3 ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07] group-hover:ring-[var(--accent)]'}`}>
+                                        <div className={`w-9 h-9 rounded-full overflow-hidden bg-[var(--surface-1)] ring-2 transition-all ${threadAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07] group-hover:ring-[var(--accent)]'}`}>
                                             {threadAuthorAvatar ? (
                                                 <Image src={threadAuthorAvatar} alt={thread.author?.username || ""} width={80} height={80} className="object-cover w-full h-full" />
                                             ) : (
@@ -699,10 +709,10 @@ export default function ThreadPage() {
                                             )}
                                         </div>
                                     </Link>
-                                    <div className="min-w-0 flex-1 md:flex-none md:contents">
+                                    <div className="min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                                     <Link
                                         href={`/profile/${thread.author?.username}`}
-                                        className={`block font-bold text-sm mb-0 md:mb-1 hover:underline ${threadAuthorStaff ? 'text-[var(--accent)]' : !thread.author?.post_color ? 'text-white' : ''}`}
+                                        className={`font-bold text-sm hover:underline ${threadAuthorStaff ? 'text-[var(--accent)]' : !thread.author?.post_color ? 'text-white' : ''}`}
                                         style={!threadAuthorStaff && thread.author?.post_color ? { color: thread.author.post_color } : undefined}
                                     >
                                         {thread.author?.username || 'Unknown'}
@@ -713,7 +723,7 @@ export default function ThreadPage() {
                                         const role = getDisplayRole(thread.author);
                                         if (role) {
                                             return (
-                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mr-1.5 md:mr-0 mb-0 md:mb-2">
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide">
                                                     <Shield className="w-3 h-3" /> {role}
                                                 </span>
                                             );
@@ -723,7 +733,7 @@ export default function ThreadPage() {
 
                                     {thread.author?.rank && (
                                         <span
-                                            className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded-full mb-0 md:mb-2"
+                                            className="inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded-full"
                                             style={{ backgroundColor: `${thread.author.rank.color}20`, color: thread.author.rank.color }}
                                         >
                                             {thread.author.rank.name}
@@ -734,7 +744,7 @@ export default function ThreadPage() {
                                         small print; on a phone they are two
                                         lines of stranger's paperwork above the
                                         thing you opened the thread to read. */}
-                                    <div className="hidden md:flex text-xs text-white/35 mt-2 flex-col items-center gap-1">
+                                    <div className="hidden sm:flex text-[11px] text-white/30 items-center gap-2 ml-auto">
                                         <span>{thread.author?.posts_count || 0} posts</span>
                                         {thread.author?.created_at && (
                                             <span>Joined {format(new Date(thread.author.created_at), 'MMM yyyy')}</span>
@@ -853,11 +863,11 @@ export default function ThreadPage() {
                                                     Marked as Solution
                                                 </div>
                                             )}
-                                            <div className="flex flex-col md:flex-row">
-                                                {/* Author Mini Sidebar */}
-                                                <div className="md:w-40 bg-white/[0.02] p-4 flex md:flex-col items-center md:text-center gap-3 md:gap-2 border-b md:border-b-0 md:border-r border-white/[0.07]">
+                                            <div className="flex flex-col">
+                                                {/* Author strip */}
+                                                <div className="bg-white/[0.02] px-4 py-2.5 flex items-center gap-3 border-b border-white/[0.07]">
                                                     <Link href={`/profile/${post.author?.username}`}>
-                                                        <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden bg-[var(--surface-1)] ring-2 transition-all ${postAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07]'}`}>
+                                                        <div className={`w-9 h-9 rounded-full overflow-hidden bg-[var(--surface-1)] ring-2 transition-all ${postAuthorStaff ? 'ring-[var(--accent)]' : 'ring-white/[0.07]'}`}>
                                                             {postAuthorAvatar ? (
                                                                 <Image src={postAuthorAvatar} alt={post.author?.username || ""} width={64} height={64} className="object-cover w-full h-full" />
                                                             ) : (
@@ -867,10 +877,10 @@ export default function ThreadPage() {
                                                             )}
                                                         </div>
                                                     </Link>
-                                                    <div className="md:mt-2">
+                                                    <div className="min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
                                                         <Link
                                                             href={`/profile/${post.author?.username}`}
-                                                            className={`font-bold text-sm hover:underline block ${postAuthorStaff ? 'text-[var(--accent)]' : !post.author?.post_color ? 'text-white' : ''}`}
+                                                            className={`font-bold text-sm hover:underline ${postAuthorStaff ? 'text-[var(--accent)]' : !post.author?.post_color ? 'text-white' : ''}`}
                                                             style={!postAuthorStaff && post.author?.post_color ? { color: post.author.post_color } : undefined}
                                                         >
                                                             {post.author?.username || 'Unknown'}
@@ -881,7 +891,7 @@ export default function ThreadPage() {
                                                             const role = getDisplayRole(post.author);
                                                             if (role) {
                                                                 return (
-                                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide mb-1 mt-1">
+                                                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/20 uppercase tracking-wide">
                                                                         <Shield className="w-2.5 h-2.5" /> {role}
                                                                     </span>
                                                                 );
@@ -891,7 +901,7 @@ export default function ThreadPage() {
 
                                                         {post.author?.rank && (
                                                             <span
-                                                                className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full block w-fit mx-auto mt-1"
+                                                                className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full"
                                                                 style={{ backgroundColor: `${post.author.rank.color}20`, color: post.author.rank.color }}
                                                             >
                                                                 {post.author.rank.name}
@@ -1018,14 +1028,21 @@ export default function ThreadPage() {
                         )}
 
                         {/* Reply Form */}
+                        {thread.is_locked ? (
+                            /* A closed thread is a fact, not an event. This was a
+                               230px panel with a 48px lock in the middle of it,
+                               announcing the absence of a reply box more loudly
+                               than the box itself would have spoken. */
+                            <div className="flex items-center gap-2.5 rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] px-4 py-3">
+                                <Lock aria-hidden className="h-4 w-4 shrink-0 text-[var(--ink-faint)]" strokeWidth={1.6} />
+                                <p className="text-[12.5px] text-[var(--ink-low)]">
+                                    <span className="font-bold text-[var(--ink-mid)]">Thread locked.</span>{" "}
+                                    No new replies can be posted.
+                                </p>
+                            </div>
+                        ) : (
                         <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-6">
-                            {thread.is_locked ? (
-                                <div className="text-center py-8">
-                                    <Lock className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                                    <h3 className="text-lg font-bold text-white mb-2">Thread Locked</h3>
-                                    <p className="text-white/45">This thread has been locked and no new replies can be posted.</p>
-                                </div>
-                            ) : user ? (
+                            {user ? (
                                 <>
                                     <div className="flex items-center justify-between mb-4">
                                         <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -1096,6 +1113,7 @@ export default function ThreadPage() {
                                 </div>
                             )}
                         </div>
+                        )}
                     </div>
 
                     {/* Sidebar */}

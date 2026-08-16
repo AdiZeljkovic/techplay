@@ -1,24 +1,18 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "@/lib/axios";
-import { Search, MessageSquare, ArrowLeft, AlertTriangle } from "lucide-react";
-import PageHero from "@/components/ui/PageHero";
+import { AlertTriangle, MessageSquare, Search } from "lucide-react";
+import ForumShell from "@/components/forum/ForumShell";
+import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
+import { decodeHtml } from "@/lib/decode";
 
 const fetcher = (url: string) => axios.get(url);
 
 interface SearchResult {
-    threads: {
-        id: number;
-        title: string;
-        slug: string;
-        posts_count: number;
-        category: { name: string; slug: string };
-        author: { username: string };
-        created_at: string;
-    }[];
+    threads: (ThreadRowData & { category: { name: string; slug: string } })[];
     posts: {
         id: number;
         content: string;
@@ -29,12 +23,41 @@ interface SearchResult {
     query: string;
 }
 
+/**
+ * A snippet around the match, rather than the first line of the post.
+ *
+ * Results used to be title-only, so nothing on the page explained why a given
+ * thread was an answer to what you typed. Content arrives as HTML from the
+ * editor; it is reduced to text here and only text is rendered.
+ */
+function snippet(html: string, query: string, span = 190): { before: string; hit: string; after: string } {
+    const text = decodeHtml(html.replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+    const at = text.toLowerCase().indexOf(query.toLowerCase());
+
+    if (at < 0 || !query) {
+        return { before: text.slice(0, span) + (text.length > span ? "…" : ""), hit: "", after: "" };
+    }
+
+    const from = Math.max(0, at - Math.floor(span / 3));
+    const to = Math.min(text.length, at + query.length + Math.floor((span * 2) / 3));
+
+    return {
+        before: (from > 0 ? "…" : "") + text.slice(from, at),
+        hit: text.slice(at, at + query.length),
+        after: text.slice(at + query.length, to) + (to < text.length ? "…" : ""),
+    };
+}
+
 function ForumSearchResults() {
+    const router = useRouter();
     const searchParams = useSearchParams();
     const q = searchParams.get("q") || "";
+    const [typed, setTyped] = useState(q);
     const [results, setResults] = useState<SearchResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
+
+    useEffect(() => { setTyped(q); }, [q]);
 
     useEffect(() => {
         if (!q || q.length < 3) {
@@ -47,113 +70,143 @@ function ForumSearchResults() {
         setIsLoading(true);
         setHasError(false);
         fetcher(`/forum/search?q=${encodeURIComponent(q)}`)
-            .then(res => setResults(res.data))
-            .catch(() => {
-                setResults(null);
-                setHasError(true);
-            })
+            .then((res) => setResults(res.data))
+            .catch(() => setHasError(true))
             .finally(() => setIsLoading(false));
     }, [q]);
 
+    const threads = results?.threads ?? [];
+    const posts = results?.posts ?? [];
+    const total = threads.length + posts.length;
+
     return (
-        <div className="min-h-screen bg-[var(--surface-0)]">
-            <PageHero
-                title="Forum Search"
-                description={q ? `Threads and posts matching “${q}”.` : "Search every thread and every reply on the boards."}
-                icon={Search}
-            />
+        <ForumShell
+            crumbs={[{ label: "Forum", href: "/forum" }, { label: "Search" }]}
+            title="Search the boards"
+            description={q ? `Threads and posts matching “${q}”.` : "Find a thread, or a reply inside one."}
+            stats={q && results ? [
+                { label: "Threads", value: threads.length },
+                { label: "Posts", value: posts.length },
+            ] : undefined}
+        >
+            {/* The search page had no search field. Refining a query meant going
+                back to wherever you came from and typing it again. */}
+            <form
+                role="search"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    const next = typed.trim();
+                    if (next.length >= 3) router.push(`/forum/search?q=${encodeURIComponent(next)}`);
+                }}
+                className="mb-5 flex gap-2"
+            >
+                <label htmlFor="forum-search" className="sr-only">Search the forum</label>
+                <span className="relative flex-1">
+                    <Search aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--ink-faint)]" strokeWidth={1.6} />
+                    <input
+                        id="forum-search"
+                        value={typed}
+                        onChange={(e) => setTyped(e.target.value)}
+                        placeholder="Search threads and posts…"
+                        className="h-11 w-full rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--surface-2)] pl-10 pr-3 text-white outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
+                    />
+                </span>
+                <button
+                    type="submit"
+                    disabled={typed.trim().length < 3}
+                    className="btn-command inline-flex h-11 items-center px-5 bg-[var(--accent)] font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white disabled:opacity-40"
+                >
+                    Search
+                </button>
+            </form>
 
-            <div className="container-page py-8">
-                <Link href="/forum" className="inline-flex items-center gap-2 text-sm text-white/35 hover:text-[var(--accent)] mb-6 transition-colors">
-                    <ArrowLeft className="w-4 h-4" aria-hidden="true" /> Back to Forum
-                </Link>
+            {q && q.length < 3 && (
+                <p className="text-[12.5px] text-[var(--ink-faint)]">Type at least three characters.</p>
+            )}
 
-                {isLoading ? (
-                    <div className="space-y-4">
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className="h-20 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] animate-pulse" />
-                        ))}
-                    </div>
-                ) : hasError ? (
-                    <div className="text-center py-16 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)]">
-                        <AlertTriangle className="w-14 h-14 text-red-400 mx-auto mb-4 opacity-70" />
-                        <h3 className="text-xl font-bold text-white mb-2">Search is temporarily unavailable</h3>
-                        <p className="text-white/45">Something went wrong on our end. Please try again in a moment.</p>
-                    </div>
-                ) : !results ? (
-                    <p className="text-white/45 text-center py-12">Enter at least 3 characters to search.</p>
-                ) : (results.threads.length + results.posts.length === 0) ? (
-                    <div className="text-center py-16 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)]">
-                        <Search className="w-14 h-14 text-white/12 mx-auto mb-4" />
-                        <h3 className="text-xl font-bold text-white mb-2">No results found</h3>
-                        <p className="text-white/45">We couldn&apos;t find anything for &quot;{q}&quot;.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-8">
-                        {results.threads.length > 0 && (
-                            <section>
-                                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5 text-[var(--accent)]" aria-hidden="true" />
-                                    Threads ({results.threads.length})
-                                </h2>
-                                <div className="space-y-3">
-                                    {results.threads.map(t => (
-                                        <Link key={t.id} href={`/forum/thread/${t.slug}`} className="block"
-                                        >
-                                            <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-4 hover:border-[var(--accent)]/30 transition-all">
-                                                <h3 className="font-bold text-white mb-1 hover:text-[var(--accent)] transition-colors">{t.title}</h3>
-                                                <div className="text-xs text-white/35 flex gap-3">
-                                                    <span>{t.category?.name}</span>
-                                                    <span>&middot;</span>
-                                                    <span>by {t.author?.username}</span>
-                                                    <span>&middot;</span>
-                                                    <span>{t.posts_count} replies</span>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+            {isLoading && (
+                <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] divide-y divide-[var(--line)]">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="flex items-center gap-3 px-3.5 py-3.5 animate-pulse">
+                            <span className="h-8 w-8 shrink-0 rounded-[var(--radius-inner)] bg-white/[0.05]" />
+                            <span className="flex-1 space-y-2">
+                                <span className="block h-3 w-2/5 rounded bg-white/[0.05]" />
+                                <span className="block h-2.5 w-1/4 rounded bg-white/[0.035]" />
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
 
-                        {results.posts.length > 0 && (
-                            <section>
-                                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5 text-white/35" aria-hidden="true" />
-                                    Posts ({results.posts.length})
-                                </h2>
-                                <div className="space-y-3">
-                                    {results.posts.map(p => (
-                                        <Link key={p.id} href={`/forum/thread/${p.thread?.slug}`} className="block"
-                                        >
-                                            <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-4 hover:border-[var(--accent)]/30 transition-all">
-                                                <div className="text-xs text-[var(--accent)] font-medium mb-1">{p.thread?.title}</div>
-                                                <p className="text-sm text-white/45 line-clamp-2">
-                                                    {p.content.replace(/<[^>]+>/g, "").substring(0, 200)}
-                                                </p>
-                                                <div className="text-xs text-white/35 mt-2">by {p.author?.username}</div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
+            {hasError && (
+                <div className="flex items-center gap-3 rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] px-4 py-4">
+                    <AlertTriangle aria-hidden className="h-5 w-5 shrink-0 text-[var(--accent)]" strokeWidth={1.6} />
+                    <p className="text-[13px] text-[var(--ink-mid)]">Search is not answering right now. Try again in a moment.</p>
+                </div>
+            )}
+
+            {!isLoading && !hasError && q.length >= 3 && total === 0 && (
+                <div className="rounded-[var(--radius-panel)] border border-dashed border-[var(--line-strong)] bg-[var(--surface-1)] px-5 py-10 text-center">
+                    <MessageSquare aria-hidden className="mx-auto h-7 w-7 text-white/12" strokeWidth={1.4} />
+                    <p className="mt-3 font-display text-[14px] font-bold text-white">Nothing matched “{q}”</p>
+                    <p className="mt-1 text-[12.5px] text-[var(--ink-faint)]">Try a shorter phrase, or a different word.</p>
+                </div>
+            )}
+
+            {threads.length > 0 && (
+                <section className="mb-6">
+                    <h2 className="mb-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--ink-faint)]">
+                        Threads
+                    </h2>
+                    <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden">
+                        <ThreadRowHeader showCategory />
+                        <div className="divide-y divide-[var(--line)]">
+                            {threads.map((t) => (
+                                <ThreadRow key={t.id} thread={t} showCategory />
+                            ))}
+                        </div>
                     </div>
-                )}
-            </div>
-        </div>
+                </section>
+            )}
+
+            {posts.length > 0 && (
+                <section>
+                    <h2 className="mb-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--ink-faint)]">
+                        Inside replies
+                    </h2>
+                    <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] divide-y divide-[var(--line)] overflow-hidden">
+                        {posts.map((p) => {
+                            const s = snippet(p.content, q);
+                            return (
+                                <Link
+                                    key={p.id}
+                                    href={`/forum/thread/${p.thread.slug}#post-${p.id}`}
+                                    className="block px-3.5 py-3 hover:bg-white/[0.025] transition-colors"
+                                >
+                                    <span className="block truncate font-display text-[13px] font-bold text-white">
+                                        {decodeHtml(p.thread.title)}
+                                    </span>
+                                    <span className="mt-1 block text-[12.5px] leading-relaxed text-[var(--ink-low)]">
+                                        {s.before}
+                                        {s.hit && <mark className="rounded-[3px] bg-[var(--accent-soft)] px-0.5 text-[var(--accent-ink)]">{s.hit}</mark>}
+                                        {s.after}
+                                    </span>
+                                    <span className="mt-1 block text-[11px] text-[var(--ink-faint)]">
+                                        {p.author?.username}
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
+        </ForumShell>
     );
 }
 
 export default function ForumSearchPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-[var(--surface-0)] container-page py-8 space-y-4">
-                {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-20 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] animate-pulse" />
-                ))}
-            </div>
-        }>
+        <Suspense fallback={null}>
             <ForumSearchResults />
         </Suspense>
     );
