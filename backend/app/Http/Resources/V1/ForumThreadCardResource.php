@@ -17,6 +17,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * /forum/active and /forum/unanswered need no authentication.
  *
  * So: no body, and an author reduced to the four fields a card draws.
+ *
+ * It was written for /forum/active and /forum/unanswered and applied only
+ * there. A board's own page — /forum/categories/{slug}, the busiest read
+ * endpoint the forum has — kept returning the raw paginator, so every author's
+ * email address was still being served to anyone who asked, unauthenticated.
+ * Measured on production before this changed. It covers those lists too now.
  */
 class ForumThreadCardResource extends JsonResource
 {
@@ -33,17 +39,28 @@ class ForumThreadCardResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
+            // The list's Activity column reads this and falls back to
+            // created_at, so without it every row claimed the thread had not
+            // been touched since it was opened.
+            'last_activity_at' => $this->updated_at,
+
             'author' => $this->whenLoaded('author', fn () => [
                 'id' => $this->author->id,
                 'username' => $this->author->username,
                 'display_name' => $this->author->display_name,
                 'avatar_url' => $this->author->avatar_url,
+                'post_color' => $this->author->post_color,
             ]),
 
             'category' => $this->whenLoaded('category', fn () => [
                 'name' => $this->category->name,
                 'slug' => $this->category->slug,
             ]),
+
+            'tags' => $this->whenLoaded('tags', fn () => $this->tags->map(fn ($t) => [
+                'name' => $t->name,
+                'slug' => $t->slug,
+            ])->all()),
         ];
     }
 }

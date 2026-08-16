@@ -20,8 +20,24 @@ class ImageOptimizationService
         'large' => 1920,
     ];
 
+    /**
+     * Intervention Image is referenced throughout this class but is not in
+     * composer.json, so the driver below does not exist in this installation.
+     * Constructing it raised an Error that the one caller caught as Exception
+     * — which is to say, did not catch. Until the package is added (it needs
+     * ext-gd on the server), this class reports its own absence instead.
+     */
+    public static function available(): bool
+    {
+        return class_exists(ImageManager::class) && class_exists(Driver::class);
+    }
+
     public function __construct()
     {
+        if (! self::available()) {
+            throw new \RuntimeException('Image processing is unavailable: intervention/image is not installed.');
+        }
+
         $this->manager = new ImageManager(new Driver);
     }
 

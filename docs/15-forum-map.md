@@ -126,8 +126,23 @@ Forum
    client komponente, pa nema server-side SEO meta. Forum je nevidljiv pretraživačima.
 5. **Discord bot ne najavljuje** nove threadove automatski — `/forum` komanda prikazuje
    trending threadove ručno, `PollingService` forum ne pokriva
-6. **Nema premještanja teme** u drugu kategoriju (moderator mora obrisati i tražiti ponovni post)
-7. **Nema quote-reply** ni reakcija na pojedinačni post (postoji upvote, ali samo na temu)
+6. **Nema quote-reply** ni reakcija na pojedinačni post (postoji upvote, ali samo na temu).
+   Editor ima `blockquote` dugme, ali to je formatiranje — nema akcije „citiraj ovaj post".
+7. **Nema praćenja pročitanog** — ne postoji `thread_reads` tabela niti bilo šta slično.
+   Posjetilac ne vidi šta je novo od zadnje posjete. Za ozbiljan forum ovo je najveći
+   pojedinačni nedostatak.
+8. **Nema slika u postovima** — `config/purifier.php` profil `forum` ne dozvoljava `img`.
+   Na *gaming* forumu to znači: nema screenshotova, nema slika buildova, nema grafova.
+9. **Nema anketa** — nema `polls` tabele.
+10. **Trajne poveznice na odgovor rade samo na prvoj strani** — sidro `#post-N` postoji
+    (dodano 2026-08-16), ali API ne kaže na kojoj je strani post, a strane su po 15.
+11. **Pretraga nema filtere** (ploča, autor, datum) i vezana je za PostgreSQL
+    (`to_tsvector`/`plainto_tsquery`) — na SQLite vraća 500, pa je jedini forum endpoint
+    koji test suite ne može pokriti.
+
+**Ispravka ove liste (2026-08-16):** stavka „nema premještanja teme" je bila netačna —
+`SimpleThreadResource` ima `Select::make('category_id')`, pa moderator temu premješta iz
+admin panela. Spajanje (merge) dvije teme i dalje ne postoji.
 
 **Ispravke stare liste:** @mention **radi** (`SanitizationService::extractMentions` →
 `ForumController::notifyMentions` → `MentionNotification`), i
@@ -203,3 +218,109 @@ moderatora.
 - `/forum/rules` prepisana — bila je jedina stranica na starim tokenima
   (`--bg-card`, `--text-secondary`, `rounded-3xl`, `shadow-2xl`).
 - `/forum/search` i `/forum/create` dobili naslove u jeziku ostatka sajta.
+
+---
+
+## Changelog 2026-08-16 — puni pregled foruma
+
+Traženo: bugovi, sigurnost, propusti, SQL injekcije, nedostajuće funkcije. Sve niže je
+**izmjereno** — ili pokrenutim zahtjevom protiv produkcije, ili čitanjem koda, nikad
+pretpostavkom.
+
+### Nađeno i popravljeno
+
+| | Nalaz | Gdje |
+|---|---|---|
+| **Kritično** | `/forum/categories/{slug}` je javno, bez prijave, vraćao **email adresu svakog autora teme**. Uzrok: vraćao je sirovi paginator, a `User::$hidden` namjerno ne skriva `email` (treba korisniku na postavkama), pa svaka serijalizacija Usera bez Resource-a objavljuje adresu. Potvrđeno živim zahtjevom prije popravke. | `ForumController::showCategory` |
+| **Kritično** | Isti propust na `/games/{slug}/threads`. Nije se dao reprodukovati uživo jer nijedna tema trenutno nije vezana za igru — utvrđeno čitanjem koda. | `ForumController::gameThreads` |
+| Visoko | Neuspio odgovor vraćao je **poruku izuzetka** pozivaocu — imena tabela, kolona i putanje onome ko uspije srušiti upis. Isto u komentarima i u shopu (tamo je najgore: neuspjela narudžba je mjesto koje kupac namjerno čačka). | `ForumController::createPost`, `CommentController`, `ShopController` |
+| Srednje | Brojke na stranici ploče su se sabirale iz 20 redova na ekranu — ploča od 100 tema pisala je „20", a odgovori i pregledi mijenjali su se ovisno o strani. | `showCategory` + `[category]/page.tsx` |
+| Nisko | `latestPost.author` se eager-loadao za kolonu koju lista više ne crta — join i još jedan cijeli User red po temi, ni za šta. | `showCategory` |
+| Nisko | Pretraga linka na `#post-N`, a tema nije renderovala to sidro. | `thread/[slug]/page.tsx` |
+
+Čuva ih `tests/Feature/ForumPrivacyTest.php` — tvrdnje idu nad **cijelim tijelom
+odgovora**, pa preimenovano ili drugdje ugniježđeno polje i dalje pada.
+
+### Provjereno i čisto (da se ne provjerava ponovo)
+
+- **SQL injekcija:** jedini sirovi SQL u forumu je pretraga, i koristi vezane parametre
+  (`?` + `[$query]`). Nema konkatenacije korisničkog unosa u upit nigdje u `ForumController`.
+- **XSS:** dvostruko — HTMLPurifier profil `forum` na ulazu (bez `img`, bez `iframe`,
+  bez `target`, `rel=nofollow`) i DOMPurify na izlazu.
+- **Ovlaštenja:** izmjena i brisanje posta traže vlasnika ili moderatora, vezani su za
+  temu iz URL-a, i zaključana tema odbija izmjene. Pin/lock/delete traže moderatora.
+- **Ban:** `CheckUserBan` je zakačen na **cijelu** `api` grupu (`bootstrap/app.php:62`),
+  pa su i rute bez `ban.check` aliasa pokrivene. Čitanja ostaju otvorena namjerno.
+- **Spam kroz nove naloge:** registracija ima Cloudflare Turnstile i **ne izdaje token**
+  prije verifikacije emaila, a `login()` ga isto odbija. Neverificiran nalog ne može pisati.
+- **Obrisani postovi:** `PostResource` vraća `content: null` za soft-obrisane — nadgrobni
+  kamen bez sadržaja.
+- **@mention:** ograničen na 10 po postu, pa fan-out notifikacija ne može eksplodirati.
+- **Prijave:** `POST /reports` ima allowlist tipova, sprječava duplu prijavu, sanitizira
+  razlog, throttle 5/min.
+- **Notifikacije:** kanal je samo `database` — nema SMTP poziva u zahtjevu.
+- **Upvote:** transakcija s `lockForUpdate`, bez self-farminga.
+
+### Ostaje otvoreno (nije popravljeno)
+
+1. `ForumReplyNotification` i `ThreadWatchNotification` **nisu u redu** (`ShouldQueue`).
+   Odgovor u temi s 50 pratilaca radi 50 upisa sinhrono u zahtjevu.
+2. `clearCategoryPageCache` ne briše ključeve filtrirane tagom (`.tag_{slug}`) — samoliječi
+   se za 30 s, ali je nedosljedno.
+3. Postoje **dva Filament resursa** za `Thread`: `SimpleThreadResource` (radni) i prazni
+   scaffold `ThreadResource` (`$shouldRegisterNavigation = false`, ali rute
+   `/admin/threads*` žive i renderuju praznu formu).
+4. Teme nemaju soft delete — brisanje teme je nepovratno, dok postovi imaju.
+
+---
+
+## Changelog 2026-08-16 (drugi dio) — popravke i nove funkcije
+
+Traženo: „želim sve to da napraviš i da popraviš". Ovo je prvi set.
+
+### Zatvorene otvorene stavke iz pregleda
+
+| Stavka | Kako |
+|---|---|
+| Notifikacije nisu bile u redu | `ForumReplyNotification`, `ThreadWatchNotification` i `MentionNotification` sada `implements ShouldQueue`. Odgovor u temi s 50 pratilaca više ne radi 50 sinhronih upisa u zahtjevu. |
+| Keš nije brisao tag varijante | Nova klasa `App\Support\ForumCache`. Verzija ploče je dio ključa, pa jedno podizanje verzije penzioniše **sve** njene keširane strane i sve tag filtere odjednom. Logika je bila duplirana u kontroleru i u `ThreadObserver` — sad je na jednom mjestu, što je i bio uzrok. |
+| Teme se nisu mogle vratiti | `threads.deleted_at` + `SoftDeletes`. Novi `POST /forum/threads/{slug}/restore` (samo staff). `ThreadObserver::restored()` vraća 3 reputacije koje brisanje oduzme. |
+| Dva Filament resursa za `Thread` | Prazan scaffold `app/Filament/Resources/Threads/` obrisan; ostaje `SimpleThreadResource`. |
+
+**Greška uhvaćena vlastitim testom:** prva verzija verzionisanja keša nije radila. `Cache::increment` na ključu koji ne postoji postavi ga na 1, a moja pretpostavljena vrijednost je isto bila 1 — pa prvo brisanje nije mijenjalo nijedan ključ. Sada polazi od 0.
+
+### Praćenje pročitanog (novo)
+
+Najveći nedostatak s liste. Ograničenje koje je oblikovalo rješenje: **stranice ploča su keširane i dijeljene među korisnicima**, pa u njihov payload ne smije ući ništa lično — jedan čitalac bi dobio tuđe oznake.
+
+Zato je stanje čitanja odvojen, autentifikovan zahtjev:
+
+- `thread_reads` (user_id, thread_id, last_read_at, unique par) — jedan red po temi koju si otvorio.
+- `users.forum_last_read_at` — vodena linija za „označi sve pročitanim". Član s 3.000 nepročitanih tema košta **jedan UPDATE**, ne 3.000 INSERT-a.
+- Tema je nepročitana kad joj je zadnja aktivnost novija **od oba**.
+
+| Ruta | Šta radi |
+|---|---|
+| `GET /forum/reads` | mapa `thread_id → last_read_at` (prozor 90 dana) + vodena linija |
+| `POST /forum/threads/{slug}/read` | označi ovu temu; POST a ne dio GET-a, jer `showThread` odgovara i gostima |
+| `POST /forum/reads/all` | pomjeri vodenu liniju |
+
+Frontend: hook `useForumReads`, oznaka „New" i podebljan naslov u `ThreadRow`, „Mark all read" u traci foruma. Ne blokira — ploča se iscrta odmah, oznake stignu trenutak kasnije, a odjavljen posjetilac ne pita uopšte.
+
+### Slike u postovima (novo)
+
+Purifier profil `forum` sada dozvoljava `img[src|alt|width|height]`, **ali samo s našeg hosta** (`URI.DisableExternalResources` + `URI.Host`). To je cijeli sigurnosni model: `<img>` na tuđi server je tracking piksel koji loguje IP svakog ko otvori temu.
+
+Novi `POST /forum/uploads` (throttle 10/min):
+
+- **Ne koristi biblioteku za slike** — `intervention/image` nije instaliran u ovom projektu, a cijela aplikacija ionako sprema uploade sirovo.
+- `getimagesize()` dekodira zaglavlje; fajl koji nije prava rasterska slika pada bez obzira na ekstenziju i deklarisani MIME.
+- Ekstenzija pod kojom se sprema dolazi **iz bajtova**, nikad iz imena koje je klijent poslao.
+- EXIF se skida s JPEG-a hodanjem po segmentima (čist PHP) — telefon u fotografiju stola upiše GPS.
+- **Poznato ograničenje, navedeno a ne prećutano:** PNG i WebP metapodaci se ne skidaju, jer to traži dekoder.
+
+Editor: dugme sada otvara birač fajlova, i **lijepljenje radi** — Print Screen pa Ctrl+V, što je stvarni način na koji se screenshot dijeli.
+
+### Usput nađen živi bug u admin panelu
+
+`MediaObserver` je hvatao `\Exception`, a servis koji poziva gradi Intervention driver kojeg **nema instaliranog** — to baca `\Error`, koji taj catch ne hvata. Znači: **svaki upload slike koja nije WebP kroz `Media` model padao je fatalno.** Dokazano izvršenim PHP-om, ne pretpostavkom. Sada hvata `\Throwable`, a `ImageOptimizationService::available()` javlja da biblioteke nema umjesto da eksplodira.

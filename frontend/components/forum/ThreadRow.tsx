@@ -49,9 +49,12 @@ function when(value?: string | null): string {
 export default function ThreadRow({
     thread,
     showCategory = false,
+    unread = false,
 }: {
     thread: ThreadRowData;
     showCategory?: boolean;
+    /** Has moved since this reader last opened it, or dismissed everything. */
+    unread?: boolean;
 }) {
     const avatar = getAvatarSrc(thread.author?.avatar_url ?? undefined);
     const replies = thread.posts_count ?? 0;
@@ -62,14 +65,25 @@ export default function ThreadRow({
             href={`/forum/thread/${thread.slug}`}
             className="group flex items-center gap-3 px-3.5 py-3 hover:bg-white/[0.025] transition-colors"
         >
-            {/* State first: pinned and locked change how you read everything else. */}
-            <span className="hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-inner)] border border-[var(--line)] bg-[var(--surface-2)]">
+            {/* State first: pinned and locked change how you read everything else.
+                Unread outranks both — it is the reason you came back. */}
+            <span
+                className={`hidden sm:flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-inner)] border ${
+                    unread
+                        ? "border-[color-mix(in_srgb,var(--accent)_45%,transparent)] bg-[var(--accent-soft)]"
+                        : "border-[var(--line)] bg-[var(--surface-2)]"
+                }`}
+            >
                 {thread.is_pinned ? (
-                    <Pin aria-label="Pinned" className="h-[15px] w-[15px] text-[var(--accent)]" strokeWidth={1.6} />
+                    <Pin aria-label="Pinned" className={`h-[15px] w-[15px] ${unread ? "text-[var(--accent)]" : "text-[var(--accent)]"}`} strokeWidth={1.6} />
                 ) : thread.is_locked ? (
-                    <Lock aria-label="Locked" className="h-[15px] w-[15px] text-[var(--ink-faint)]" strokeWidth={1.6} />
+                    <Lock aria-label="Locked" className={`h-[15px] w-[15px] ${unread ? "text-[var(--accent)]" : "text-[var(--ink-faint)]"}`} strokeWidth={1.6} />
                 ) : (
-                    <MessageSquare aria-hidden className="h-[15px] w-[15px] text-[var(--ink-faint)]" strokeWidth={1.6} />
+                    <MessageSquare
+                        aria-hidden
+                        className={`h-[15px] w-[15px] ${unread ? "text-[var(--accent)]" : "text-[var(--ink-faint)]"}`}
+                        strokeWidth={unread ? 2 : 1.6}
+                    />
                 )}
             </span>
 
@@ -77,9 +91,17 @@ export default function ThreadRow({
                 <span className="flex items-center gap-2">
                     {/* Titles arrive HTML-escaped; printed raw, an ampersand reads
                         as "&amp;" — which it did, on this row and in search. */}
-                    <span className="truncate font-display text-[14px] font-bold text-white group-hover:text-[var(--accent-ink)] transition-colors">
+                    <span className={`truncate font-display text-[14px] transition-colors group-hover:text-[var(--accent-ink)] ${unread ? "font-bold text-white" : "font-medium text-[var(--ink-mid)]"}`}>
                         {decodeHtml(thread.title)}
                     </span>
+                    {unread && (
+                        <span
+                            className="shrink-0 rounded-full bg-[var(--accent)] px-1.5 py-[1px] font-display text-[8.5px] font-bold uppercase tracking-[0.1em] text-white"
+                            title="New since your last visit"
+                        >
+                            New
+                        </span>
+                    )}
                     {thread.is_locked && !thread.is_pinned && (
                         <Lock aria-label="Locked" className="h-3 w-3 shrink-0 text-[var(--ink-faint)]" />
                     )}

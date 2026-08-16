@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ShopController extends Controller
 {
@@ -102,7 +103,12 @@ class ShopController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return response()->json(['message' => 'Order failed: '.$e->getMessage()], 400);
+            // This one is worse than the others: a failed order is a place a
+            // buyer will deliberately poke at, and the message carried whatever
+            // the driver or a payment call said.
+            Log::error('Order failed', ['user' => Auth::id(), 'exception' => $e]);
+
+            return response()->json(['message' => 'We could not place that order. Nothing was charged — please try again.'], 400);
         }
     }
 }

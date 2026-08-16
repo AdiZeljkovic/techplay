@@ -20,13 +20,24 @@ import {
     Redo,
     Heading2,
 } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
+import axios from "@/lib/axios";
+import { toast } from "react-hot-toast";
 
 interface RichTextEditorProps {
     content: string;
     onChange: (html: string) => void;
     placeholder?: string;
     minHeight?: string;
+    /**
+     * Where a picked or pasted image should be sent, e.g. "/forum/uploads".
+     *
+     * Without it the image button falls back to asking for a URL, which is
+     * what it always did — and which is now useless on the forum, because the
+     * sanitiser refuses images hosted anywhere but here. Pasting a link would
+     * appear to work and then vanish on save.
+     */
+    uploadPath?: string;
 }
 
 export default function RichTextEditor({
@@ -34,7 +45,17 @@ export default function RichTextEditor({
     onChange,
     placeholder = "Write something...",
     minHeight = "200px",
+    uploadPath,
 }: RichTextEditorProps) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+
+    // Read inside the paste handler, which the editor builds once — a plain
+    // variable would be captured at first render and go stale.
+    const uploadPathRef = useRef(uploadPath);
+    uploadPathRef.current = uploadPath;
+    const pendingPaste = useRef<((file: File) => void) | null>(null);
+
     const editor = useEditor({
         extensions: [
             StarterKit.configure({
@@ -65,6 +86,24 @@ export default function RichTextEditor({
             attributes: {
                 class: `prose prose-invert max-w-none focus:outline-none min-h-[${minHeight}] p-4`,
             },
+            /**
+             * Print Screen, Ctrl+V. Without this, pasting a screenshot put a
+             * `blob:` URL into the document that only existed in that tab and
+             * was stripped on save — the picture appeared to post and then was
+             * not there.
+             */
+            handlePaste: (_view, event) => {
+                if (!uploadPathRef.current) return false;
+
+                const files = Array.from(event.clipboardData?.files ?? []);
+                const image = files.find((f) => f.type.startsWith("image/"));
+                if (!image) return false;
+
+                event.preventDefault();
+                pendingPaste.current?.(image);
+
+                return true;
+            },
         },
     });
 
@@ -84,15 +123,50 @@ export default function RichTextEditor({
         editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
     }, [editor]);
 
+    /**
+     * Send one file and put the returned URL in the document.
+     *
+     * Shared by the toolbar button and by paste, because on a gaming forum the
+     * common case is Print Screen followed by Ctrl+V — asking someone to save
+     * a screenshot to disk first is asking them not to post it.
+     */
+    const uploadAndInsert = useCallback(async (file: File) => {
+        if (!editor || !uploadPath) return;
+
+        setUploading(true);
+        try {
+            const form = new FormData();
+            form.append("image", file);
+
+            const res = await axios.post(uploadPath, form, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            const url = res.data?.url;
+            if (url) editor.chain().focus().setImage({ src: url }).run();
+        } catch (err) {
+            const message =
+                (err as { response?: { data?: { message?: string } } })?.response?.data?.message
+                ?? "That image could not be uploaded.";
+            toast.error(message);
+        } finally {
+            setUploading(false);
+        }
+    }, [editor, uploadPath]);
+
+    pendingPaste.current = (file: File) => { void uploadAndInsert(file); };
+
     const addImage = useCallback(() => {
         if (!editor) return;
 
-        const url = window.prompt("Enter image URL:");
-
-        if (url) {
-            editor.chain().focus().setImage({ src: url }).run();
+        if (!uploadPath) {
+            const url = window.prompt("Enter image URL:");
+            if (url) editor.chain().focus().setImage({ src: url }).run();
+            return;
         }
-    }, [editor]);
+
+        fileInputRef.current?.click();
+    }, [editor, uploadPath]);
 
     if (!editor) {
         return (
@@ -212,10 +286,26 @@ export default function RichTextEditor({
                 </ToolbarButton>
                 <ToolbarButton
                     onClick={addImage}
-                    title="Add Image"
+                    disabled={uploading}
+                    title={uploadPath ? "Add an image (or just paste one)" : "Add Image"}
                 >
-                    <ImageIcon className="w-4 h-4" />
+                    <ImageIcon className={`w-4 h-4 ${uploading ? "animate-pulse" : ""}`} />
                 </ToolbarButton>
+
+                {uploadPath && (
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        className="hidden"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            // Cleared so picking the same file twice still fires.
+                            e.target.value = "";
+                            if (file) void uploadAndInsert(file);
+                        }}
+                    />
+                )}
 
                 <div className="flex-1" />
 

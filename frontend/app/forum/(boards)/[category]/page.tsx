@@ -11,6 +11,7 @@ import ForumShell from "@/components/forum/ForumShell";
 import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
 import ListingPagination from "@/components/ui/ListingPagination";
 import { useRealTimeForum } from "@/hooks";
+import { useForumReads } from "@/hooks/useForumReads";
 import { decodeHtml } from "@/lib/decode";
 import { fmtStat, getCategoryIcon } from "@/lib/forum";
 
@@ -27,11 +28,15 @@ interface CategoryData {
         slug: string;
         description?: string;
         rules?: string;
+        threads_count?: number;
+        posts_count?: number;
+        views_total?: number;
     };
     threads: {
         data: Thread[];
         current_page: number;
         last_page: number;
+        total?: number;
     };
 }
 
@@ -52,6 +57,7 @@ function CategoryThreadsPageInner() {
 
     // Real-time forum hook — only surface newly-created threads on page 1
     const { threads: realtimeThreads } = useRealTimeForum([]);
+    const { isUnread } = useForumReads();
 
     const fetchedThreads = data?.threads?.data || [];
     const categoryRealtimeThreads = page === 1
@@ -99,8 +105,6 @@ function CategoryThreadsPageInner() {
     }
 
     const { category, threads } = data;
-    const totalReplies = threads.data.reduce((acc, t) => acc + (t.posts_count || 0), 0);
-    const totalViews = threads.data.reduce((acc, t) => acc + (t.view_count || 0), 0);
 
     const sorted = allThreads
         .slice()
@@ -112,10 +116,14 @@ function CategoryThreadsPageInner() {
             title={decodeHtml(category.name)}
             description={category.description ? decodeHtml(category.description) : undefined}
             mark={Icon}
+            /* These used to be summed from the twenty rows on screen, so a
+               board of a hundred threads said it had twenty, and its replies
+               and views changed as you paged. They are the board's own totals
+               now, counted by the API. */
             stats={[
-                { label: "Threads", value: fmtStat(threads.data.length) },
-                { label: "Replies", value: fmtStat(totalReplies) },
-                { label: "Views", value: fmtStat(totalViews) },
+                { label: "Threads", value: fmtStat(category.threads_count ?? 0) },
+                { label: "Replies", value: fmtStat(category.posts_count ?? 0) },
+                { label: "Views", value: fmtStat(category.views_total ?? 0) },
             ]}
             action={
                 user ? (
@@ -164,7 +172,11 @@ function CategoryThreadsPageInner() {
                         <ThreadRowHeader />
                         <div className="divide-y divide-[var(--line)]">
                             {sorted.map((thread) => (
-                                <ThreadRow key={thread.id} thread={thread} />
+                                <ThreadRow
+                                    key={thread.id}
+                                    thread={thread}
+                                    unread={isUnread(thread.id, thread.last_activity_at || thread.created_at)}
+                                />
                             ))}
                         </div>
                     </div>

@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { MessageSquare, Share2, Flag, Lock, Unlock, Shield, ArrowLeft, Eye, Clock, ChevronUp, Reply, Pin, Award, Send, Trash2, Bell, BellOff, Bookmark, Pencil} from "lucide-react";
 import { toast } from "react-hot-toast";
@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { getCategoryColor, getAvatarSrc } from "@/lib/forum";
 import { useRealTimeThreadReplies } from "@/hooks";
+import { useForumReads } from "@/hooks/useForumReads";
 
 // PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
 const RichTextEditor = dynamic(() => import("@/components/ui/RichTextEditor"), {
@@ -148,6 +149,21 @@ export default function ThreadPage() {
     const pageInfo = data?.posts && !Array.isArray(data.posts) ? data.posts : null;
     const lastPage = pageInfo?.last_page ?? 1;
     const { replies: liveReplies } = useRealTimeThreadReplies(data?.thread?.id ?? 0);
+
+    /**
+     * Opening the thread is what marks it read.
+     *
+     * It is a POST rather than something folded into the GET above: that
+     * endpoint answers guests too, and a read should not be the thing that
+     * writes. Keyed on the thread id so paging through replies does not keep
+     * re-marking, and so a live reply arriving does not either.
+     */
+    const { markThreadRead } = useForumReads();
+    const threadId = data?.thread?.id;
+    useEffect(() => {
+        if (threadId && slug) markThreadRead(slug, threadId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [threadId, slug]);
 
     // Helper to normalize posts
     const getPosts = (data: ThreadData | undefined): Post[] => {
@@ -842,7 +858,14 @@ export default function ThreadPage() {
                                     }
 
                                     return (
-                                        <div key={post.id} className={`bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
+                                        /* Search results link to #post-N, and nothing
+                                           on this page answered to that name — the link
+                                           landed on the thread and stopped there. The
+                                           anchor exists now; scroll-mt keeps the header
+                                           off the post it jumps to. Replies past the
+                                           first page still need the API to say which
+                                           page a post is on, which it does not. */
+                                        <div id={`post-${post.id}`} key={post.id} className={`scroll-mt-28 bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] overflow-hidden ${post.is_solution ? 'ring-2 ring-green-500/50' : ''}`}>
                                             {post.is_solution && (
                                                 <div className="bg-green-500/10 border-b border-green-500/30 px-4 py-2 flex items-center gap-2 text-green-400 text-sm font-bold">
                                                     <Award className="w-4 h-4" />
@@ -1055,6 +1078,7 @@ export default function ThreadPage() {
                                             </div>
                                             <div className="flex-1">
                                                 <RichTextEditor
+                                    uploadPath="/forum/uploads"
                                                     content={replyContent}
                                                     onChange={setReplyContent}
                                                     placeholder="Share your thoughts..."

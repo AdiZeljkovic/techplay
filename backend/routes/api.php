@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
 use App\Http\Controllers\Api\V1\FeedController;
 use App\Http\Controllers\Api\V1\ForumController;
+use App\Http\Controllers\Api\V1\ForumReadController;
+use App\Http\Controllers\Api\V1\ForumUploadController;
 use App\Http\Controllers\Api\V1\FriendActivityController;
 use App\Http\Controllers\Api\V1\FriendController;
 use App\Http\Controllers\Api\V1\GameCollectionController;
@@ -226,11 +228,22 @@ Route::prefix('v1')->group(function () {
         Route::post('/forum/threads/{slug}/lock', [ForumController::class, 'lockThread']);
         Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}', [ForumController::class, 'updateThread']);
         Route::delete('/forum/threads/{slug}', [ForumController::class, 'deleteThread']);
+        Route::post('/forum/threads/{slug}/restore', [ForumController::class, 'restoreThread']);
         Route::middleware(['throttle:20,1', 'ban.check'])->put('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'updatePost']);
         Route::middleware(['throttle:20,1', 'ban.check'])->delete('/forum/threads/{slug}/posts/{postId}', [ForumController::class, 'deletePost']);
         Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/posts/{postId}/solution', [ForumController::class, 'markSolution']);
         Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/watch', [ForumController::class, 'watchThread']);
         Route::middleware('throttle:20,1')->post('/forum/threads/{slug}/bookmark', [ForumController::class, 'bookmarkThread']);
+
+        // Read state. Kept out of the board payloads because those are cached
+        // and shared between readers.
+        Route::get('/forum/reads', [ForumReadController::class, 'index']);
+        Route::middleware('throttle:60,1')->post('/forum/threads/{slug}/read', [ForumReadController::class, 'markThread']);
+        Route::middleware('throttle:10,1')->post('/forum/reads/all', [ForumReadController::class, 'markAll']);
+
+        // Screenshots. Ten a minute is generous for writing one post and mean
+        // for a script filling the disk.
+        Route::middleware('throttle:10,1')->post('/forum/uploads', [ForumUploadController::class, 'store']);
 
         // Game Ratings (Auth)
         Route::get('/games/{slug}/ratings/my', [GameRatingController::class, 'my']);

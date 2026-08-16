@@ -291,9 +291,11 @@ class CommentController extends Controller
                 'user_vote' => $userVote,
             ]);
         } catch (\Exception $e) {
-            Log::error('Vote error: '.$e->getMessage());
+            // Driver errors name tables and columns; they go to the log, not
+            // to whoever made the write fail.
+            Log::error('Comment vote failed', ['user' => Auth::id(), 'exception' => $e]);
 
-            return response()->json(['message' => 'Server Error: '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Could not record that vote. Try again in a moment.'], 500);
         }
     }
 

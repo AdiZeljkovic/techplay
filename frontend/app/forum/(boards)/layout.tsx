@@ -6,8 +6,10 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Search, Users2, MessageSquare, FileText, Users } from "lucide-react";
+import { Search, Users2, MessageSquare, FileText, Users, CheckCheck } from "lucide-react";
 import ForumSidebar from "@/components/forum/ForumSidebar";
+import { useAuth } from "@/hooks/useAuth";
+import { useForumReads } from "@/hooks/useForumReads";
 import { DisplayAd } from "@/components/ads/AdSense";
 import { fmtStat } from "@/lib/forum";
 
@@ -41,6 +43,8 @@ interface ForumStats {
 
 export default function BoardsLayout({ children }: { children: ReactNode }) {
     const router = useRouter();
+    const { user } = useAuth();
+    const { markAllRead } = useForumReads();
     const [query, setQuery] = useState("");
 
     // Fetched by the frame rather than by each page, so it is fetched once for
@@ -84,6 +88,20 @@ export default function BoardsLayout({ children }: { children: ReactNode }) {
                             className="h-10 w-full rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[color-mix(in_srgb,var(--surface-2)_82%,transparent)] pl-10 pr-3 text-[13px] text-white placeholder:text-[var(--ink-faint)] outline-none transition-colors focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)]"
                         />
                     </form>
+
+                    {/* Dismissing everything belongs to the frame, not to any
+                        one board: it is what you press on arriving, from
+                        wherever you arrived. */}
+                    {user && (
+                        <button
+                            type="button"
+                            onClick={() => markAllRead()}
+                            className="hidden shrink-0 items-center gap-1.5 text-[11px] font-medium text-[var(--ink-faint)] transition-colors hover:text-[var(--accent-ink)] sm:inline-flex"
+                        >
+                            <CheckCheck aria-hidden className="h-3.5 w-3.5" strokeWidth={1.7} />
+                            Mark all read
+                        </button>
+                    )}
 
                     <div className="flex shrink-0 items-center gap-4 overflow-x-auto scrollbar-hide">
                         {[

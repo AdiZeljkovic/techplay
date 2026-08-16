@@ -5,9 +5,18 @@ namespace App\Notifications;
 use App\Models\Thread;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class MentionNotification extends Notification
+/**
+ * Queued, because the caller sends these in a loop.
+ *
+ * A reply notifies the thread's author and then every watcher, one by one, in
+ * the request that posted it. On a thread with fifty watchers that was fifty
+ * synchronous writes before the poster saw their own reply appear — the busier
+ * a thread got, the slower it became to take part in.
+ */
+class MentionNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 

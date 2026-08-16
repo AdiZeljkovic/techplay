@@ -31,12 +31,26 @@ return [
             'AutoFormat.AutoParagraph' => true,
             'AutoFormat.RemoveEmpty' => true,
         ],
-        // User-generated rich content (forum posts/threads). No iframes, no images,
-        // nofollow on links to deter spam. Mirrors the old strip_tags allowlist.
+        // User-generated rich content (forum posts/threads). No iframes,
+        // nofollow on links to deter spam.
+        //
+        // Images are allowed as of 2026-08-16, and only ours. A gaming forum
+        // without screenshots is a gaming forum nobody posts a build or a
+        // benchmark in — but an <img> pointing anywhere is a tracking pixel and
+        // an IP log for everyone who opens the thread, so external sources are
+        // refused outright. `URI.DisableExternalResources` measures "external"
+        // against `URI.Host`, which is why the host is stated rather than left
+        // to be guessed. Uploads go through ForumUploadController, which
+        // re-encodes what it is given, so the URL that survives here always
+        // points at a file we wrote ourselves.
         'forum' => [
-            'HTML.Allowed' => 'p,br,strong,b,em,i,u,s,a[href|title|rel],ul,ol,li,blockquote,code,pre',
+            'HTML.Allowed' => 'p,br,strong,b,em,i,u,s,a[href|title|rel],ul,ol,li,blockquote,code,pre,img[src|alt|width|height]',
             'AutoFormat.RemoveEmpty' => true,
             'HTML.Nofollow' => true,
+            'URI.Base' => env('APP_URL', 'https://api-beta.techplay.gg'),
+            'URI.Host' => parse_url((string) env('APP_URL', 'https://api-beta.techplay.gg'), PHP_URL_HOST),
+            'URI.DisableExternalResources' => true,
+            'URI.AllowedSchemes' => ['http' => true, 'https' => true],
         ],
         // Staff-authored content (articles, guides, reviews). Allows headings, images,
         // tables and whitelisted video embeds.

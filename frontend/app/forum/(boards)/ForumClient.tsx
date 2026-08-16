@@ -8,6 +8,7 @@ import Image from "next/image";
 import { MessageCircle, LayoutGrid, Sparkles, HelpCircle, Clock, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
+import { useForumReads } from "@/hooks/useForumReads";
 import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
 import { decodeHtml } from "@/lib/decode";
 import { fmtStat, getCategoryIcon, getAvatarSrc, type BoardMarkComponent } from "@/lib/forum";
@@ -167,6 +168,7 @@ function asThreadRow(t: ActiveThread): ThreadRowData & { category: { name: strin
 
 export default function ForumPage() {
     const { user } = useAuth();
+    const { isUnread } = useForumReads();
     const [activeTab, setActiveTab] = useState<TabType>("all");
 
     const { data: categories, isLoading: categoriesLoading } = useSWR<ForumCategory[]>("/forum/categories", fetcher);
@@ -276,7 +278,12 @@ export default function ForumPage() {
                                     <ThreadRowHeader showCategory />
                                     <div className="divide-y divide-[var(--line)]">
                                         {activeThreads.map((thread) => (
-                                            <ThreadRow key={thread.id} thread={asThreadRow(thread)} showCategory />
+                                            <ThreadRow
+                                                key={thread.id}
+                                                thread={asThreadRow(thread)}
+                                                showCategory
+                                                unread={isUnread(thread.id, thread.updated_at)}
+                                            />
                                         ))}
                                     </div>
                                 </div>
@@ -310,7 +317,12 @@ export default function ForumPage() {
                                     <ThreadRowHeader showCategory />
                                     <div className="divide-y divide-[var(--line)]">
                                         {unansweredThreads.map((thread) => (
-                                            <ThreadRow key={thread.id} thread={asThreadRow(thread)} showCategory />
+                                            <ThreadRow
+                                                key={thread.id}
+                                                thread={asThreadRow(thread)}
+                                                showCategory
+                                                unread={isUnread(thread.id, thread.updated_at)}
+                                            />
                                         ))}
                                     </div>
                                 </div>

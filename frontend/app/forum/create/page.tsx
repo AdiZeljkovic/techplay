@@ -368,6 +368,7 @@ function CreateThreadForm() {
                             </legend>
                             <div className="mt-3">
                                 <RichTextEditor
+                                    uploadPath="/forum/uploads"
                                     content={content}
                                     onChange={setContent}
                                     placeholder="What happened, what you tried, and what you are asking."

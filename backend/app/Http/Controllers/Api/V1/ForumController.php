@@ -18,6 +18,7 @@ use App\Notifications\ThreadWatchNotification;
 use App\Services\AchievementService;
 use App\Services\BountyService;
 use App\Services\SanitizationService;
+use App\Support\ForumCache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -28,20 +29,13 @@ use Illuminate\Support\Str;
 
 class ForumController extends Controller
 {
-    /**
-     * Number of paginated category pages to invalidate on write operations.
-     * Wider than the typical thread count per category to avoid stale pages.
-     */
-    private const CATEGORY_CACHE_PAGES = 20;
-
     /** Bounty cost to self-pin your own thread for 24 hours. */
     private const SELF_PIN_COST = 100;
 
+    /** Kept as a name the call sites already use; the rules live in ForumCache. */
     private function clearCategoryPageCache(string $categorySlug): void
     {
-        for ($i = 1; $i <= self::CATEGORY_CACHE_PAGES; $i++) {
-            Cache::forget("forum.category.{$categorySlug}.page_{$i}");
-        }
+        ForumCache::forgetCategory($categorySlug);
     }
 
     /**
@@ -138,18 +132,30 @@ class ForumController extends Controller
     {
         $page = request()->get('page', 1);
         $tagSlug = request()->get('tag');
-        $cacheKey = "forum.category.{$slug}.page_{$page}".($tagSlug ? ".tag_{$tagSlug}" : '');
+        $cacheKey = ForumCache::categoryKey($slug, $page, $tagSlug);
 
         // Reduced cache time to 30 seconds for faster updates
         $data = Cache::remember($cacheKey, 30, function () use ($slug, $tagSlug) {
-            $category = Category::where('slug', $slug)->where('type', 'forum')->first();
+            // The board's totals were being derived on the client by adding up
+            // the twenty rows it had been sent, so a board of a hundred threads
+            // announced twenty of them, and its reply and view counts were
+            // whatever page you happened to be on. They are counted here, over
+            // the whole board, once per cache window.
+            $category = Category::where('slug', $slug)
+                ->where('type', 'forum')
+                ->withCount(['threads', 'posts'])
+                ->withSum('threads as views_total', 'view_count')
+                ->first();
 
             if (! $category) {
                 abort(404, 'Category not found');
             }
 
+            // `latestPost.author` was eager-loaded for a "last reply" column the
+            // board list no longer draws — a join and a second whole User record
+            // per row, for nothing.
             $threads = $category->threads()
-                ->with(['author', 'latestPost.author', 'tags'])
+                ->with(['author', 'tags'])
                 ->withCount('posts')
                 ->when($tagSlug, function ($q) use ($tagSlug) {
                     $q->whereHas('tags', fn ($tq) => $tq->where('slug', $tagSlug));
@@ -158,9 +164,30 @@ class ForumController extends Controller
                 ->latest('updated_at')
                 ->paginate(20);
 
+            // Both halves are shaped here rather than handed over as models.
+            // Returning the paginator meant serializing whole User rows, and
+            // the User model leaves `email` visible on purpose so a signed-in
+            // visitor can read their own — so this endpoint, which needs no
+            // sign-in at all, was publishing the email of every thread author
+            // on the board.
             return [
-                'category' => $category,
-                'threads' => $threads,
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'description' => $category->description,
+                    'rules' => $category->rules,
+                    'threads_count' => (int) $category->threads_count,
+                    'posts_count' => (int) $category->posts_count,
+                    'views_total' => (int) ($category->views_total ?? 0),
+                ],
+                'threads' => [
+                    'data' => ForumThreadCardResource::collection($threads)->resolve(),
+                    'current_page' => $threads->currentPage(),
+                    'last_page' => $threads->lastPage(),
+                    'per_page' => $threads->perPage(),
+                    'total' => $threads->total(),
+                ],
             ];
         });
 
@@ -294,13 +321,17 @@ class ForumController extends Controller
 
             return new PostResource($post);
         } catch (\Throwable $e) {
-            Log::error('Failed to create post: '.$e->getMessage());
-            try {
-                file_put_contents(storage_path('logs/custom_error.log'), $e->getMessage().PHP_EOL.$e->getTraceAsString().PHP_EOL, FILE_APPEND);
-            } catch (\Throwable $t) {
-            }
+            // The exception message used to be returned to the caller. A driver
+            // error names tables and columns, a filesystem error names paths —
+            // handed to anyone who could make the write fail on purpose. It
+            // belongs in the log, which already has it, and nowhere else.
+            Log::error('Failed to create post', [
+                'user' => Auth::id(),
+                'thread' => $thread->id,
+                'exception' => $e,
+            ]);
 
-            return response()->json(['message' => 'Failed to create post: '.$e->getMessage()], 500);
+            return response()->json(['message' => 'Could not post that reply. Try again in a moment.'], 500);
         }
     }
 
@@ -419,14 +450,18 @@ class ForumController extends Controller
      */
     public function gameThreads(string $gameSlug)
     {
+        // Same defect as showCategory had, and public in the same way: raw
+        // Thread models carry the whole author record, email included.
         $threads = Cache::remember("forum.game_threads.{$gameSlug}", 60, function () use ($gameSlug) {
-            return Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
+            $rows = Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('is_pinned')
                 ->orderByDesc('updated_at')
                 ->take(10)
                 ->get();
+
+            return ForumThreadCardResource::collection($rows)->resolve();
         });
 
         return response()->json($threads)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -732,11 +767,38 @@ class ForumController extends Controller
 
         $thread = Thread::where('slug', $slug)->firstOrFail();
         $categorySlug = $thread->category->slug;
-        $thread->delete(); // Cascades to posts via FK constraint; ThreadObserver::deleted() clears shared caches
+
+        // Soft as of 2026-08-16. This used to remove the row, and the foreign
+        // key took every reply with it — so the cheap mistake (deleting one
+        // reply) was reversible and the expensive one was not. The replies stay
+        // where they are; hiding the thread hides them with it.
+        $thread->delete();
 
         $this->clearCategoryPageCache($categorySlug);
 
         return response()->json(['message' => 'Thread deleted.']);
+    }
+
+    /**
+     * Put back a thread a moderator removed.
+     *
+     * The counterpart deletion never had. Only staff, and only within the
+     * window the row still exists — which is forever, since nothing prunes.
+     */
+    public function restoreThread(Request $request, string $slug)
+    {
+        $user = Auth::user();
+
+        if (! $user->isForumModerator()) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $thread = Thread::onlyTrashed()->where('slug', $slug)->firstOrFail();
+        $thread->restore();
+
+        $this->clearCategoryPageCache($thread->category->slug);
+
+        return response()->json(['message' => 'Thread restored.']);
     }
 
     public function markSolution(Request $request, string $slug, int $postId)

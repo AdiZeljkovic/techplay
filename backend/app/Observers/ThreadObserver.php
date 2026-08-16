@@ -7,7 +7,7 @@ use App\Models\Thread;
 use App\Services\AchievementService;
 use App\Services\QuestService;
 use App\Services\XpService;
-use Illuminate\Support\Facades\Cache;
+use App\Support\ForumCache;
 use Illuminate\Support\Facades\Log;
 
 class ThreadObserver
@@ -45,6 +45,28 @@ class ThreadObserver
     }
 
     /**
+     * Threads are soft-deleted as of 2026-08-16, so removal is reversible — and
+     * the three reputation taken back above has to be reversible with it, or
+     * restoring a thread quietly costs its author points they earned.
+     */
+    public function restored(Thread $thread): void
+    {
+        try {
+            if (! $thread->relationLoaded('author')) {
+                $thread->load('author');
+            }
+
+            $thread->author?->increment('forum_reputation', 3);
+        } catch (\Throwable $e) {
+            Log::warning('Thread restore reputation adjustment failed: '.$e->getMessage(), [
+                'thread_id' => $thread->id,
+            ]);
+        }
+
+        $this->invalidateForumCache($thread);
+    }
+
+    /**
      * Award XP/reputation for starting a discussion, mirroring PostObserver's
      * reply rewards so thread creation isn't worth zero engagement points.
      *
@@ -74,31 +96,21 @@ class ThreadObserver
     }
 
     /**
-     * Invalidate forum cache when thread changes
+     * Invalidate forum cache when thread changes.
+     *
+     * This used to be its own copy of the controller's key-forgetting loop, and
+     * carried the same defect: walking page numbers cannot name a key that ends
+     * in `.tag_something`. Both now go through ForumCache, so a fix is a fix in
+     * one place.
      */
     protected function invalidateForumCache(Thread $thread): void
     {
-        // Clear forum statistics
-        Cache::forget('forum.stats');
+        ForumCache::forgetShared();
 
-        // Clear categories list
-        Cache::forget('forum.categories');
-
-        // Clear active threads
-        Cache::forget('forum.active_threads');
-
-        // Clear unanswered threads list (new threads start with zero replies)
-        Cache::forget('forum.unanswered_threads');
-
-        // Clear category-specific cache (wider than typical page count to avoid stale pages)
         if ($thread->category) {
-            $categorySlug = $thread->category->slug;
-            for ($page = 1; $page <= 20; $page++) {
-                Cache::forget("forum.category.{$categorySlug}.page_{$page}");
-            }
+            ForumCache::forgetCategory($thread->category->slug);
         }
 
-        // Clear specific thread cache
-        Cache::forget("forum.thread.{$thread->slug}");
+        ForumCache::forgetThread($thread->slug);
     }
 }
