@@ -1,8 +1,8 @@
 "use client";
 
-import { Shield, CheckCircle, XCircle, Flag, MessageSquare, ArrowLeft } from "lucide-react";
+import { Shield, CheckCircle, XCircle, Flag, MessageSquare } from "lucide-react";
 import Link from "next/link";
-import PageHero from "@/components/ui/PageHero";
+import ForumShell from "@/components/forum/ForumShell";
 
 /**
  * The rules, as rules rather than as a wall.
@@ -72,88 +72,79 @@ const SECTIONS = [
 
 export default function ForumRulesPage() {
     return (
-        <div className="min-h-screen bg-[var(--surface-0)]">
-            <PageHero
-                title="Community Guidelines"
-                description="What keeps the boards worth reading. Every rule here is one a moderator can point at, so they are numbered."
-                icon={Shield}
-            />
+        <ForumShell
+            crumbs={[{ label: "Forum", href: "/forum" }, { label: "Guidelines" }]}
+            title="Community guidelines"
+            description="What keeps the boards worth reading. Every rule here is one a moderator can point at, which is why they carry numbers."
+            mark={Shield}
+        >
+            <div className="max-w-[820px] space-y-4">
+                {SECTIONS.map((section) => {
+                    const Icon = section.icon;
 
-            <div className="container-page pb-14 max-w-[860px]">
-                <Link
-                    href="/forum"
-                    className="inline-flex items-center gap-2 mb-6 font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/35 hover:text-[var(--accent)] transition-colors"
-                >
-                    <ArrowLeft className="w-3.5 h-3.5" /> Back to the forum
-                </Link>
-
-                <div className="space-y-4">
-                    {SECTIONS.map((section) => {
-                        const Icon = section.icon;
-
-                        return (
-                            <section
-                                key={section.title}
-                                className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-5 md:p-6"
-                            >
-                                <h2 className="flex items-center gap-3 pb-4 mb-4 border-b border-white/[0.06] font-display text-[15px] font-black uppercase tracking-[0.1em] text-white">
-                                    <span
-                                        className="w-8 h-8 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center"
-                                        style={{ background: `color-mix(in srgb, ${section.tone} 14%, transparent)`, color: section.tone }}
-                                    >
-                                        <Icon className="w-4 h-4" />
-                                    </span>
-                                    {section.title}
-                                </h2>
-
-                                <ul className="space-y-4">
-                                    {section.rules.map((rule) => (
-                                        <li key={rule.ref} className="flex gap-4">
-                                            <span className="shrink-0 w-[34px] font-display text-[13px] font-black tabular-nums text-[var(--accent)]">
-                                                {rule.ref}
-                                            </span>
-                                            <div className="min-w-0">
-                                                <h3 className="font-display text-[13.5px] font-black text-white">{rule.head}</h3>
-                                                <p className="mt-1 text-[13px] text-white/45 leading-relaxed">{rule.body}</p>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-                        );
-                    })}
-
-                    <section className="rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] bg-[var(--accent-soft)] p-5 md:p-6 flex gap-4">
-                        <Flag className="w-5 h-5 shrink-0 mt-0.5 text-[var(--accent)]" />
-                        <div className="min-w-0">
-                            <h2 className="font-display text-[14px] font-black uppercase tracking-[0.1em] text-white">
-                                How moderation works
+                    return (
+                        <section
+                            key={section.title}
+                            className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden"
+                        >
+                            <h2 className="flex items-center gap-3 border-b border-[var(--line)] px-4 py-3 font-display text-[13.5px] font-bold text-white">
+                                <span
+                                    aria-hidden
+                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[var(--radius-inner)]"
+                                    style={{ background: `color-mix(in srgb, ${section.tone} 14%, transparent)`, color: section.tone }}
+                                >
+                                    <Icon className="h-[15px] w-[15px]" strokeWidth={1.7} />
+                                </span>
+                                {section.title}
                             </h2>
-                            <p className="mt-2 text-[13px] text-white/50 leading-relaxed">
-                                If you see a rule broken, use Report rather than replying to it — a reply gives the thread
-                                the argument it was looking for. Moderators read every report, and their reading of a rule
-                                is the one that stands. Sanctions run from a warning to a permanent ban, depending on what
-                                was done and how often.
-                            </p>
-                            <Link
-                                href="/contact"
-                                className="btn-command btn-command-quiet mt-4 inline-flex items-center justify-center h-9 px-5 bg-white/[0.05] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/60 hover:text-white hover:bg-white/[0.1] transition-colors"
-                            >
-                                Contact staff
-                            </Link>
-                        </div>
-                    </section>
-                </div>
 
-                <div className="mt-8 text-center">
+                            {/* Hairlines between clauses, so a rule is a row you can
+                                point at rather than a paragraph in a stack. */}
+                            <ul className="divide-y divide-[var(--line)]">
+                                {section.rules.map((rule) => (
+                                    <li key={rule.ref} className="flex gap-4 px-4 py-3.5">
+                                        <span className="w-[30px] shrink-0 font-numeric text-[13px] text-[var(--accent)]">
+                                            {rule.ref}
+                                        </span>
+                                        <div className="min-w-0">
+                                            <h3 className="font-display text-[13px] font-bold text-white">{rule.head}</h3>
+                                            <p className="mt-1 text-[12.5px] leading-relaxed text-[var(--ink-low)]">{rule.body}</p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    );
+                })}
+
+                <section className="flex gap-4 rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--accent)_25%,transparent)] bg-[var(--accent-soft)] px-4 py-4">
+                    <Flag aria-hidden className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[var(--accent)]" strokeWidth={1.7} />
+                    <div className="min-w-0">
+                        <h2 className="font-display text-[13px] font-bold text-white">How moderation works</h2>
+                        <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--ink-low)]">
+                            If you see a rule broken, use Report rather than replying to it — a reply gives the thread
+                            the argument it was looking for. Moderators read every report, and their reading of a rule
+                            is the one that stands. Sanctions run from a warning to a permanent ban, depending on what
+                            was done and how often.
+                        </p>
+                        <Link
+                            href="/contact"
+                            className="btn-command btn-command-quiet mt-3.5 inline-flex h-9 items-center justify-center bg-white/[0.05] px-5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--ink-mid)] transition-colors hover:bg-white/[0.1] hover:text-white"
+                        >
+                            Contact staff
+                        </Link>
+                    </div>
+                </section>
+
+                <div className="pt-1">
                     <Link
                         href="/forum"
-                        className="btn-command inline-flex items-center justify-center h-11 px-8 bg-[var(--accent)] font-display text-[11px] font-black uppercase tracking-[0.12em] text-white hover:brightness-110 transition-[filter]"
+                        className="btn-command inline-flex h-10 items-center justify-center bg-[var(--accent)] px-6 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white transition-[filter] hover:brightness-110"
                     >
                         Back to the boards
                     </Link>
                 </div>
             </div>
-        </div>
+        </ForumShell>
     );
 }

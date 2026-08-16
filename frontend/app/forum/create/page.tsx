@@ -8,7 +8,9 @@ import dynamic from "next/dynamic";
 import axios from "@/lib/axios";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, Send, AlertCircle, Tag as TagIcon, X, Gamepad2, Loader2, Check } from "lucide-react";
+import { Send, AlertCircle, Tag as TagIcon, X, Gamepad2, Loader2, Check } from "lucide-react";
+import ForumShell from "@/components/forum/ForumShell";
+import { decodeHtml } from "@/lib/decode";
 import { getAvatarSrc, getCategoryIcon } from "@/lib/forum";
 
 // PERF: Dynamic import for heavy editor (~50KB+ with Tiptap extensions)
@@ -161,45 +163,111 @@ function CreateThreadForm() {
     const field = "w-full rounded-[9px] bg-white/[0.03] border border-white/[0.09] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] transition-colors";
     const legend = "font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/40";
 
-    return (
-        <div className="min-h-screen bg-[var(--surface-0)]">
-            {/* ── header ── */}
-            <div className="border-b border-white/[0.07]" style={{ background: "var(--surface-1)" }}>
-                <div className="container-page py-7">
-                    <Link
-                        href="/forum"
-                        className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-white transition-colors mb-4"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5" /> Back to the forum
-                    </Link>
+    /* The preview sits in the shell's rail rather than inside the form: it is
+       something to look at, not something to fill in. */
+    const preview = (
+        <div className="xl:sticky xl:top-24">
+            <div
+                className="rounded-[var(--radius-panel)] border overflow-hidden"
+                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
+            >
+                <header className="px-4 py-3 border-b border-[var(--line)]">
+                    <h2 className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-[var(--ink-faint)]">
+                        How it will look
+                    </h2>
+                </header>
 
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <h1 className="font-display text-[26px] md:text-[34px] font-black text-white uppercase tracking-tight leading-none">
-                            New <span className="text-[var(--accent)]">thread</span>
-                        </h1>
-
-                        {/* Who is posting belonged in the header, not in a
-                            bordered card of its own above the form. */}
-                        <span className="flex items-center gap-2.5">
-                            <span className="w-8 h-8 rounded-full overflow-hidden ring-1 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)] shrink-0">
-                                {userAvatar ? (
-                                    <Image src={userAvatar} alt="" width={32} height={32} className="object-cover w-full h-full" />
-                                ) : (
-                                    <span className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-bold text-[13px]">
-                                        {user.username?.charAt(0)?.toUpperCase() || "?"}
-                                    </span>
-                                )}
+                <div className="p-4">
+                    <div className="flex items-start gap-3">
+                        <span className="w-9 h-9 rounded-full overflow-hidden bg-white/[0.05] shrink-0">
+                            {userAvatar ? (
+                                <Image src={userAvatar} alt="" width={36} height={36} className="object-cover w-full h-full" />
+                            ) : (
+                                <span className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-bold text-[13px]">
+                                    {user.username?.charAt(0)?.toUpperCase() || "?"}
+                                </span>
+                            )}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                            <span className="block font-display text-[13.5px] font-bold leading-snug line-clamp-3 text-white">
+                                {title.trim() || <span className="text-white/20">Your title lands here</span>}
                             </span>
-                            <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
-                                Posting as <span className="text-white">{user.username}</span>
+                            <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[var(--ink-faint)]">
+                                <span className="font-medium text-[var(--ink-low)]">{user.username}</span>
+                                {selectedCategory && (
+                                    <>
+                                        <span aria-hidden>·</span>
+                                        <span>{selectedCategory.name}</span>
+                                    </>
+                                )}
+                                <span aria-hidden>·</span>
+                                <span>just now</span>
                             </span>
                         </span>
                     </div>
+
+                    {(tags.length > 0 || selectedGame) && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                            {selectedGame && (
+                                <span className="inline-flex items-center gap-1 h-[20px] px-2 rounded-[5px] bg-white/[0.05] border border-[var(--line)] text-[9.5px] font-bold text-[var(--ink-mid)]">
+                                    <Gamepad2 className="w-3 h-3" /> {selectedGame.name}
+                                </span>
+                            )}
+                            {tags.map((t) => (
+                                <span key={t} className="inline-flex items-center h-[20px] px-2 rounded-[5px] bg-white/[0.04] text-[9.5px] font-bold text-[var(--ink-faint)]">
+                                    {t}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="px-4 py-3 border-t border-[var(--line)] space-y-1.5">
+                    {[
+                        "Search first — the answer may already be on the board.",
+                        "Say what you already tried; it saves everybody a reply.",
+                        "One question per thread.",
+                    ].map((tip) => (
+                        <p key={tip} className="flex gap-2 text-[11.5px] text-[var(--ink-faint)] leading-snug">
+                            <span aria-hidden className="mt-[6px] w-1 h-1 rounded-full bg-[var(--accent)] shrink-0" />
+                            {tip}
+                        </p>
+                    ))}
                 </div>
             </div>
+        </div>
+    );
 
-            <div className="container-page py-7">
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-5 items-start">
+    return (
+        <ForumShell
+            crumbs={[
+                { label: "Forum", href: "/forum" },
+                ...(selectedCategory ? [{ label: selectedCategory.name, href: `/forum/${selectedCategory.slug}` }] : []),
+                { label: "New thread" },
+            ]}
+            title="New thread"
+            description={selectedCategory?.description ? decodeHtml(selectedCategory.description) : "Pick a board, give it a title people will search for, and say what you already tried."}
+            action={
+                /* Who is posting belonged in the header, not in a bordered card
+                   of its own above the form. */
+                <span className="flex items-center gap-2.5">
+                    <span className="w-8 h-8 rounded-full overflow-hidden ring-1 ring-[color-mix(in_srgb,var(--accent)_45%,transparent)] shrink-0">
+                        {userAvatar ? (
+                            <Image src={userAvatar} alt="" width={32} height={32} className="object-cover w-full h-full" />
+                        ) : (
+                            <span className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-bold text-[13px]">
+                                {user.username?.charAt(0)?.toUpperCase() || "?"}
+                            </span>
+                        )}
+                    </span>
+                    <span className="text-[11.5px] text-[var(--ink-faint)]">
+                        Posting as <span className="font-medium text-white">{user.username}</span>
+                    </span>
+                </span>
+            }
+            rail={preview}
+        >
+                <form onSubmit={handleSubmit}>
                     {/* ── the sheet ──
 
                         This was six bordered panels stacked — posting as,
@@ -262,9 +330,6 @@ function CreateThreadForm() {
                                 </div>
                             )}
 
-                            {selectedCategory?.description && (
-                                <p className="mt-2.5 text-[12px] text-white/35 leading-snug">{selectedCategory.description}</p>
-                            )}
                         </fieldset>
 
                         {/* ── title ── */}
@@ -406,82 +471,8 @@ function CreateThreadForm() {
                         </div>
                     </div>
 
-                    {/* ── the rail ──
-
-                        The forum's own sidebar used to sit here: active
-                        threads, popular boards, everything you would browse.
-                        Nobody on this page is browsing — they are writing, and
-                        a list of other people's threads beside a half-written
-                        one is an invitation to abandon it.
-
-                        What replaces it is this thread, as the board will list
-                        it, so the title can be judged against the thing it will
-                        actually appear in. */}
-                    <aside className="xl:sticky xl:top-24 min-w-0">
-                        <div
-                            className="rounded-[var(--radius-panel)] border overflow-hidden"
-                            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
-                        >
-                            <header className="px-4 py-3 border-b border-white/[0.07]">
-                                <h2 className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/40">How it will look</h2>
-                            </header>
-
-                            <div className="p-4">
-                                <div className="flex items-start gap-3">
-                                    <span className="w-9 h-9 rounded-full overflow-hidden bg-white/[0.05] shrink-0">
-                                        {userAvatar ? (
-                                            <Image src={userAvatar} alt="" width={36} height={36} className="object-cover w-full h-full" />
-                                        ) : (
-                                            <span className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-bold text-[13px]">
-                                                {user.username?.charAt(0)?.toUpperCase() || "?"}
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block font-display text-[13.5px] font-black leading-snug line-clamp-3 text-white">
-                                            {title.trim() || <span className="text-white/20">Your title lands here</span>}
-                                        </span>
-                                        <span className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
-                                            <span>{user.username}</span>
-                                            {selectedCategory && <span className="text-[var(--accent-ink)]">{selectedCategory.name}</span>}
-                                            <span>just now</span>
-                                        </span>
-                                    </span>
-                                </div>
-
-                                {(tags.length > 0 || selectedGame) && (
-                                    <div className="mt-3 flex flex-wrap gap-1.5">
-                                        {selectedGame && (
-                                            <span className="inline-flex items-center gap-1 h-[20px] px-2 rounded-[5px] bg-white/[0.05] border border-white/[0.08] text-[9.5px] font-bold text-white/55">
-                                                <Gamepad2 className="w-3 h-3" /> {selectedGame.name}
-                                            </span>
-                                        )}
-                                        {tags.map((t) => (
-                                            <span key={t} className="inline-flex items-center h-[20px] px-2 rounded-[5px] bg-white/[0.04] text-[9.5px] font-bold text-white/40">
-                                                {t}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="px-4 py-3 border-t border-white/[0.07] space-y-1.5">
-                                {[
-                                    "Search first — the answer may already be on the board.",
-                                    "Say what you already tried; it saves everybody a reply.",
-                                    "One question per thread.",
-                                ].map((tip) => (
-                                    <p key={tip} className="flex gap-2 text-[11.5px] text-white/30 leading-snug">
-                                        <span aria-hidden className="mt-[6px] w-1 h-1 rounded-full bg-[var(--accent)] shrink-0" />
-                                        {tip}
-                                    </p>
-                                ))}
-                            </div>
-                        </div>
-                    </aside>
                 </form>
-            </div>
-        </div>
+        </ForumShell>
     );
 }
 

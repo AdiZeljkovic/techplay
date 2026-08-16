@@ -541,9 +541,9 @@ export default function ThreadPage() {
         <div className="min-h-screen bg-[var(--surface-0)]">
             {/* Header */}
             <div className="bg-[var(--surface-1)] border-b border-white/[0.07]">
-                <div className="container-page py-6">
+                <div className="container-page py-4">
                     {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-sm text-white/35 mb-4">
+                    <div className="flex items-center gap-2 text-[11.5px] text-white/35 mb-2.5">
                         <Link href="/forum" className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
                             <ArrowLeft className="w-4 h-4" />
                             Forum
@@ -566,7 +566,7 @@ export default function ThreadPage() {
                     {/* Thread Title & Meta */}
                     <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                         <div className="flex-1">
-                            <div className="flex flex-wrap items-center gap-2 mb-3">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
                                 {thread.is_pinned && (
                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-[var(--accent)] text-white">
                                         <Pin className="w-3 h-3" /> Pinned
@@ -633,12 +633,12 @@ export default function ThreadPage() {
                                     className="w-full mb-3 h-12 px-4 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] font-display text-[20px] font-black text-white outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all"
                                 />
                             ) : (
-                                <h1 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-3">
+                                <h1 className="font-display text-[22px] md:text-[26px] font-bold text-white leading-tight mb-2">
                                     {decodeHtml(thread.title)}
                                 </h1>
                             )}
                             {thread.tags && thread.tags.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                                <div className="flex flex-wrap items-center gap-1.5 mb-2">
                                     {thread.tags.map((tag) => (
                                         <Link
                                             key={tag.slug}
@@ -650,21 +650,7 @@ export default function ThreadPage() {
                                     ))}
                                 </div>
                             )}
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-white/45">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full overflow-hidden bg-white/[0.03]">
-                                        {threadAuthorAvatar ? (
-                                            <Image src={threadAuthorAvatar} alt={thread.author?.username || ""} width={24} height={24} className="object-cover w-full h-full" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-[var(--accent)]">
-                                                {thread.author?.username?.charAt(0)?.toUpperCase() || '?'}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <span>
-                                        Started by <Link href={`/profile/${thread.author?.username}`} className="text-[var(--accent)] hover:underline font-medium">{thread.author?.username || 'Unknown'}</Link>
-                                    </span>
-                                </div>
+                            <div className="flex flex-wrap items-center gap-4 text-[12px] text-white/40">
                                 <span className="flex items-center gap-1" suppressHydrationWarning>
                                     <Clock className="w-4 h-4" />
                                     {formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}

@@ -8,14 +8,15 @@ import type { BoardMarkComponent } from "@/lib/forum";
  * One frame for every forum page.
  *
  * Each page had built its own opening: the category page a back-link and an
- * icon block, the thread page a breadcrumb and badges, search a 300px marketing
- * hero with a search icon in a box. Measured on production, the first line of
- * actual content sat at 782px on the thread page and 465px on search — while
- * the rest of the site had already been brought under 400px.
+ * icon block, the thread page a breadcrumb and badges, search a marketing hero
+ * with a search icon in a box. Four openings, four sets of type sizes, and no
+ * two boards that looked like the same site.
  *
  * So the header is a strip, not a stage: crumbs, a title with its action on the
  * same line, one line of description, and the counts as text rather than as
- * boxes. Everything below it is the page.
+ * boxes. Everything below it is the page. Measured on a phone that moved the
+ * first line of a thread from 415px to 324px; on a desktop it buys width rather
+ * than height, which is the thing a forum actually spends.
  */
 
 export interface Crumb {
