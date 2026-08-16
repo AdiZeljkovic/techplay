@@ -35,7 +35,6 @@ class Message extends Model
      * The columns themselves are left in the table; dropping them is a data
      * decision, not a cleanup.
      */
-
     public function sender()
     {
         return $this->belongsTo(User::class, 'sender_id');

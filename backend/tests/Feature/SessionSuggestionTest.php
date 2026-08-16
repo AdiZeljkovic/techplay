@@ -22,7 +22,7 @@ class SessionSuggestionTest extends TestCase
         Cache::flush();
     }
 
-    private function shelf(User $user, int $seen = null): UserGame
+    private function shelf(User $user, ?int $seen = null): UserGame
     {
         $game = Game::create(['slug' => 'hades', 'name' => 'Hades', 'released' => '2020-09-17', 'genres' => ['Action'], 'tags' => []]);
 

@@ -187,5 +187,4 @@ class FriendController extends Controller
 
         return response()->json(['message' => 'Friend request declined']);
     }
-
 }

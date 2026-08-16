@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Game;
 use App\Models\User;
+use App\Services\BountyService;
 use App\Services\RewardLedger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -73,7 +74,7 @@ class RewardFeedbackTest extends TestCase
         $user = User::factory()->create(['bounty_balance' => 1000]);
         $ledger = app(RewardLedger::class);
 
-        app(\App\Services\BountyService::class)->award($user, 500, 'Bought a frame', 'spend');
+        app(BountyService::class)->award($user, 500, 'Bought a frame', 'spend');
 
         // "-500 bounty" flying out of a purchase button is a scolding.
         $this->assertTrue($ledger->isEmpty());
