@@ -7,7 +7,7 @@
 
 @theme inline {
   /* Headings and identity — Archivo (SemiCondensed via font-stretch), loaded in layout.tsx */
-  --font-display: var(--font-display-src), "Archivo", sans-serif;
+  --font-display: var(--font-display-src), "Instrument Sans", sans-serif;
   /* Everything a reader reads — IBM Plex Sans, same place */
   --font-body: var(--font-body-src), "IBM Plex Sans", sans-serif;
   --font-sans: var(--font-body-src), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
@@ -247,13 +247,39 @@ html {
   scrollbar-width: thin;
 }
 
-/* Archivo is a variable font; SemiCondensed is its 87.5% width cut. The
-   utility only sets font-family, so the width is pinned here — unlayered,
-   which outranks the utilities layer. Inter has no width axis, so this
-   touches nothing else. */
+/* The display face, dialled back.
+   ────────────────────────────────
+   Archivo was set at maximum on four counts at once — Black 900,
+   SemiCondensed 87.5%, uppercase, letter-spaced — and the result read as
+   shouting. Instrument Sans is calmer to begin with; the rest is here.
+
+   Unlayered on purpose: these outrank Tailwind's utilities layer, so they can
+   reinterpret font-black and the tracking classes without touching the 995
+   places that use them. */
 .font-display {
-  font-stretch: 87.5%;
+  /* 94%, not 87.5%. Enough narrowness for the layout that was built around a
+     condensed face — tab labels, chips, table headers — without the
+     compression being the first thing you notice. */
+  font-stretch: 94%;
 }
+
+/* Instrument Sans stops at 700. Left alone, every one of the 529 font-black
+   uses would ask for 900 and get a synthesised bold: smeared, uneven, worse
+   than the weight it is imitating. Two rules, and the ladder still has two
+   rungs — it just starts lower. */
+.font-display.font-black { font-weight: 700; }
+.font-display.font-bold  { font-weight: 600; }
+
+/* Tracking, eased off about a third where it was widest. Uppercase does need
+   letter-spacing to breathe, so this loosens the grip rather than removing it;
+   the small caption sizes keep more of theirs than the headings do. */
+.font-display.tracking-widest        { letter-spacing: 0.08em; }
+.font-display.tracking-wider         { letter-spacing: 0.045em; }
+.font-display.tracking-\[0\.18em\] { letter-spacing: 0.12em; }
+.font-display.tracking-\[0\.16em\] { letter-spacing: 0.11em; }
+.font-display.tracking-\[0\.14em\] { letter-spacing: 0.10em; }
+.font-display.tracking-\[0\.12em\] { letter-spacing: 0.09em; }
+.font-display.tracking-\[0\.1em\]  { letter-spacing: 0.075em; }
 
 body {
   font-family: var(--font-body);

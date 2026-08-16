@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Sans } from "next/font/google";
 
 import { getServerApiUrl } from "@/lib/api";
 import "./globals.css";
@@ -15,17 +15,18 @@ import ConsentAwareAnalytics from "@/components/analytics/ConsentAwareAnalytics"
 import { Toaster } from "react-hot-toast";
 import RewardFeed from "@/components/ui/RewardFeed";
 
-// "Archivo SemiCondensed" is not a separate family — it is the variable
-// Archivo at 87.5% width. The wdth axis is loaded here; globals.css pins
-// `font-stretch: 87.5%` on the display utility, which is what actually
-// selects the SemiCondensed cut. Weight runs the full 100–900, so
-// `font-black` renders a true Black again.
-// latin-ext is not optional here: the masthead, the bylines and half the forum
-// are Bosnian. Declared as `latin` only, next/font still *declares* the other
-// subsets but preloads none of them — so the file carrying č, ć, ž, š and đ was
-// fetched on every page anyway, measured at 83 KB, only late. Same bytes,
-// earlier, and no reflow on somebody's surname.
-const archivo = Archivo({
+// Instrument Sans, replacing Archivo.
+//
+// Archivo was not too strong by itself — it was set at maximum on four counts
+// at once: Black 900, SemiCondensed 87.5%, uppercase, and letter-spaced.
+// Counted across the site: 995 places use the display face, 529 of them at
+// font-black, 628 uppercase, 641 letter-spaced. Instrument Sans is quieter by
+// nature and its weight tops out at 700, so globals.css remaps the utilities
+// rather than letting the browser synthesise a Black that does not exist.
+//
+// The wdth axis is loaded because the layout was built around a condensed
+// face; globals.css pins a milder cut than Archivo's.
+const instrument = Instrument_Sans({
   variable: "--font-display-src",
   subsets: ["latin", "latin-ext"],
   display: 'swap',
@@ -193,7 +194,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${archivo.variable} ${plexSans.variable} ${plexMono.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${instrument.variable} ${plexSans.variable} ${plexMono.variable} dark`} suppressHydrationWarning>
       <head>
         {/* Organization + WebSite JSON-LD — server-rendered so SEO crawlers see it in raw HTML */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
