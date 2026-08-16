@@ -137,7 +137,7 @@ function PodiumCard({ entry, place }: { entry: Entry; place: 1 | 2 | 3 }) {
                     border: `1px solid color-mix(in srgb, ${metal.color} 40%, transparent)`,
                 }}
             >
-                <span className="font-display font-black tabular-nums" style={{ color: metal.color, fontSize: first ? 22 : 18 }}>
+                <span className="font-numeric" style={{ color: metal.color, fontSize: first ? 22 : 18 }}>
                     {place}
                 </span>
                 <Icon
@@ -167,7 +167,7 @@ function PodiumCard({ entry, place }: { entry: Entry; place: 1 | 2 | 3 }) {
                         <ShieldCheck className="w-3 h-3" /> {entry.rank_title}
                     </span>
                 )}
-                <span className="mt-1.5 block font-display font-black tabular-nums" style={{ color: metal.color, fontSize: first ? 22 : 18 }}>
+                <span className="mt-1.5 block font-numeric" style={{ color: metal.color, fontSize: first ? 22 : 18 }}>
                     {entry.value.toLocaleString("en-US")} <span className="text-[11px] text-white/35">{entry.label}</span>
                 </span>
             </span>
@@ -188,7 +188,7 @@ function SeasonPanel({ season }: { season: NonNullable<Payload["season"]> }) {
                     <div className="grid grid-cols-4 gap-2 mb-4">
                         {([["Days", left.days], ["Hrs", left.hours], ["Mins", left.minutes], ["Secs", left.seconds]] as const).map(([label, v]) => (
                             <span key={label} className="text-center">
-                                <span className="block font-display text-[20px] font-black tabular-nums leading-none text-white">
+                                <span className="block font-numeric text-[20px] leading-none text-white">
                                     {String(v).padStart(2, "0")}
                                 </span>
                                 <span className="mt-1 block font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/35">{label}</span>
@@ -202,7 +202,7 @@ function SeasonPanel({ season }: { season: NonNullable<Payload["season"]> }) {
                 <div className="pt-3 border-t border-white/[0.07]">
                     <p className="flex items-center justify-between gap-3">
                         <span className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">Your season XP</span>
-                        <span className="font-display text-[13px] font-black tabular-nums text-[var(--xp-bright)]">
+                        <span className="font-numeric text-[13px] text-[var(--xp-bright)]">
                             {season.your_xp.toLocaleString("en-US")}
                         </span>
                     </p>

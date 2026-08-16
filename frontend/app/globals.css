@@ -8,9 +8,9 @@
 @theme inline {
   /* Headings and identity — Archivo (SemiCondensed via font-stretch), loaded in layout.tsx */
   --font-display: var(--font-display-src), "Archivo", sans-serif;
-  /* Everything a reader reads — Inter, same place */
-  --font-body: var(--font-body-src), "Inter", sans-serif;
-  --font-sans: var(--font-body-src), "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Everything a reader reads — IBM Plex Sans, same place */
+  --font-body: var(--font-body-src), "IBM Plex Sans", sans-serif;
+  --font-sans: var(--font-body-src), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme {
@@ -133,6 +133,13 @@
    ======================================== */
 
 :root {
+  /* Numbers that are the content: scores, XP, ranks, standings.
+     Kept out of @theme on purpose. A --font-* token there makes Tailwind
+     generate a utility of the same name that sets font-family and nothing
+     else, and it was winning over the .font-numeric rule further down —
+     which is where the weight and the tabular figures are set. */
+  --font-numeric: var(--font-mono-src), "IBM Plex Mono", ui-monospace, monospace;
+
   /* ── Surfaces: the ONLY four near-blacks in the product ─────── */
   --surface-0: #05070A;   /* page, scrims, header bar */
   --surface-1: #0B0E14;   /* panels, cards */
@@ -1017,4 +1024,21 @@ body.tp-navigating .tp-page {
 }
 @media (prefers-reduced-motion: reduce) {
   .slide-progress { animation: none; transform: scaleX(1); }
+}
+
+/* Numbers that are the content.
+   Scores, XP, leaderboard standings, ranks — figures somebody reads as a
+   value rather than as part of a sentence. Plex Mono at one weight, so a
+   column of them lines up and a 1 takes the room of a 7. Applied by hand
+   where it earns its place; the 259 other uses of tabular-nums are counters
+   inside prose, and a monospace there reads as a receipt. */
+.font-numeric {
+  font-family: var(--font-numeric);
+  /* The one weight loaded. Set here so no caller can ask for a cut that
+     does not exist and get a synthesised one. */
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  /* Plex Mono runs wider than the body face; this pulls a long figure back
+     to roughly the width it had. */
+  letter-spacing: -0.02em;
 }

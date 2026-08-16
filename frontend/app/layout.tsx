@@ -1,26 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Archivo, Inter } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
-// "Archivo SemiCondensed" is not a separate family — it is the variable
-// Archivo at 87.5% width. The wdth axis is loaded here; globals.css pins
-// `font-stretch: 87.5%` on the display utility, which is what actually
-// selects the SemiCondensed cut. Weight runs the full 100–900, so
-// `font-black` renders a true Black again.
-const archivo = Archivo({
-  variable: "--font-display-src",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-  axes: ["wdth"],
-});
-
-const inter = Inter({
-  variable: "--font-body-src",
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-});
 import { getServerApiUrl } from "@/lib/api";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
@@ -33,6 +14,51 @@ import GlobalSeo from "@/components/seo/GlobalSeo";
 import ConsentAwareAnalytics from "@/components/analytics/ConsentAwareAnalytics";
 import { Toaster } from "react-hot-toast";
 import RewardFeed from "@/components/ui/RewardFeed";
+
+// "Archivo SemiCondensed" is not a separate family — it is the variable
+// Archivo at 87.5% width. The wdth axis is loaded here; globals.css pins
+// `font-stretch: 87.5%` on the display utility, which is what actually
+// selects the SemiCondensed cut. Weight runs the full 100–900, so
+// `font-black` renders a true Black again.
+// latin-ext is not optional here: the masthead, the bylines and half the forum
+// are Bosnian. Declared as `latin` only, next/font still *declares* the other
+// subsets but preloads none of them — so the file carrying č, ć, ž, š and đ was
+// fetched on every page anyway, measured at 83 KB, only late. Same bytes,
+// earlier, and no reflow on somebody's surname.
+const archivo = Archivo({
+  variable: "--font-display-src",
+  subsets: ["latin", "latin-ext"],
+  display: 'swap',
+  preload: true,
+  axes: ["wdth"],
+});
+
+// Inter is an excellent typeface and the most-used one on the web, which is the
+// problem: paired with Archivo — another neutral grotesque — the two did not
+// read as a pair, they read as one font at two widths. Plex has a drawn,
+// slightly engineered hand (the cut terminals on a, l, t) that belongs on a
+// site about hardware and games, and it holds up at 13px on a dark ground.
+const plexSans = IBM_Plex_Sans({
+  variable: "--font-body-src",
+  subsets: ["latin", "latin-ext"],
+  display: 'swap',
+  preload: true,
+});
+
+// Digits only. The site is full of numbers that are the content rather than
+// decoration — review scores, XP, bounty, leaderboard positions, counters — and
+// a proportional face makes a column of them wander. Plex Mono is the same
+// family's monospace, so it sits beside the body text instead of arguing.
+//
+// One weight, latin only: digits are ASCII, and Plex Mono has no variable cut,
+// so every extra weight is another file.
+const plexMono = IBM_Plex_Mono({
+  variable: "--font-mono-src",
+  subsets: ["latin"],
+  weight: ["600"],
+  display: 'swap',
+  preload: true,
+});
 
 
 async function getSiteSettings() {
@@ -167,7 +193,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${archivo.variable} ${inter.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${archivo.variable} ${plexSans.variable} ${plexMono.variable} dark`} suppressHydrationWarning>
       <head>
         {/* Organization + WebSite JSON-LD — server-rendered so SEO crawlers see it in raw HTML */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />

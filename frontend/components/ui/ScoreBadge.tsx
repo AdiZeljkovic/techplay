@@ -28,7 +28,7 @@ export default function ScoreBadge({ score, variant = "bar", className }: ScoreB
         return (
             <span
                 className={cn(
-                    "inline-flex items-center px-2 py-1 rounded-[var(--radius-inner)] font-display text-[12px] font-bold tabular-nums",
+                    "inline-flex items-center px-2 py-1 rounded-[var(--radius-inner)] font-numeric text-[12px]",
                     className,
                 )}
                 style={{ backgroundColor: color, color: ink }}
@@ -42,7 +42,7 @@ export default function ScoreBadge({ score, variant = "bar", className }: ScoreB
     return (
         <span
             className={cn(
-                "inline-flex items-baseline font-display text-[21px] font-bold tabular-nums leading-none tracking-[-0.02em]",
+                "inline-flex items-baseline font-numeric text-[21px] leading-none",
                 className,
             )}
             style={{ color }}
