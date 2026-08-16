@@ -4,11 +4,19 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 
+/**
+ * The four doors, described by what is behind them.
+ *
+ * "Search & discover 200,000+ games" was both a boast and wrong — the
+ * catalogue holds about 141,000. The count is stated once, in the hero, where
+ * it is read from the API; repeating a number in four places is four chances
+ * for it to rot.
+ */
 const LINKS = [
-    { art: "/quicklinks/game-database.webp",    title: "Game Database",    sub: "Search & discover 200,000+ games",   href: "/games",    cta: "Browse games" },
-    { art: "/quicklinks/release-calendar.webp", title: "Release Calendar", sub: "Track upcoming game releases",       href: "/calendar", cta: "See what's next" },
-    { art: "/quicklinks/my-games.webp",         title: "My Games",         sub: "Build your library and watchlist",   href: "/login",    cta: "Start tracking" },
-    { art: "/quicklinks/community.webp",        title: "Community",        sub: "Forums, reviews & player discussions", href: "/forum",  cta: "Join the talk" },
+    { art: "/quicklinks/game-database.webp",    title: "Game Database",    sub: "Every release, with the detail to decide",   href: "/games",    cta: "Browse games" },
+    { art: "/quicklinks/release-calendar.webp", title: "Release Calendar", sub: "What is coming, and when",       href: "/calendar", cta: "See what's next" },
+    { art: "/quicklinks/my-games.webp",         title: "My Games",         sub: "Your collection, hours and backlog",   href: "/login",    cta: "Open your library" },
+    { art: "/quicklinks/community.webp",        title: "Forum",        sub: "Boards for help, builds and argument", href: "/forum",  cta: "See the boards" },
 ];
 
 /**

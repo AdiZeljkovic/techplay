@@ -13,6 +13,8 @@ import { DisplayAd } from "@/components/ads/AdSense";
 
 interface HomeClientProps {
     initialData?: {
+        /** Read from the API so the hero's headline figure cannot go stale. */
+        gameCount?: number | null;
         hero: Article[];
         news: Article[];
         reviews: Article[];
@@ -49,7 +51,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                 {/* Hero + quick links enter as one band; the choreography then
                     walks the full page — no section appears without its cue */}
                 <div className="tp-fade-up tp-d1 space-y-6">
-                    <HomeHero heroArticles={heroArticles} />
+                    <HomeHero gameCount={initialData?.gameCount} heroArticles={heroArticles} />
                     <QuickLinksBand />
                 </div>
                 <div className="tp-fade-up tp-d2"><DiscoverGames /></div>
@@ -61,7 +63,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
 
                 <div className="tp-fade-up tp-d4"><ReviewWall reviews={reviews} /></div>
 
-                {/* Database discovery — content only a 200K-title catalog can produce */}
+                {/* Database discovery — content only a catalogue this size can produce */}
                 <div className="tp-fade-up tp-d5 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                     <HiddenGems />
                     <OnThisDay />

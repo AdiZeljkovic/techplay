@@ -12,7 +12,7 @@ export default function PrivacyClient() {
     return (
         <LegalLayout
             title="Privacy Policy"
-            description="We value your privacy. Learn how we collect, use, and protect your data."
+            description="What we collect, why, and what you can remove."
             icon={Shield}
             lastUpdated="March 24, 2026"
             keyPoints={KEY_POINTS}
@@ -41,6 +41,7 @@ export default function PrivacyClient() {
             <ul>
                 <li><strong>Account Data:</strong> When you register, we collect your username, email address, and an encrypted password. If you choose to fill out your profile, we may also store a display name, bio, avatar, gamertags (e.g., Battle.net, Steam), and PC specifications.</li>
                 <li><strong>Authentication via Third Parties:</strong> If you sign in using Discord, Battle.net, or Google, we receive a limited set of profile data from those services (typically your username and email). We do not receive or store your password from those providers.</li>
+                <li><strong>Connected Gaming Accounts:</strong> If you choose to connect a Steam, PlayStation or Xbox account, we store the account identifier that platform gives us, its display name, and the access credentials needed to keep it in sync. We then retrieve the games associated with that account and, where the platform reports it, the total time you have played each one. We read that figure again on a schedule, and the increase between two readings is offered to you as a suggested play session. Nothing is added to your journal until you accept it. Disconnecting the account stops the syncing and removes the stored credentials; you can delete the imported library and any recorded sessions from your profile at any time.</li>
                 <li><strong>Usage Data:</strong> We automatically collect technical information such as your IP address, browser type and version, operating system, pages visited, time spent on the Service, and referring URLs. This data is used to keep the platform running properly and to understand how it is being used.</li>
                 <li><strong>Forum &amp; Community Content:</strong> Posts, comments, reactions, and other content you submit to the forum or article comment sections are stored and associated with your account.</li>
                 <li><strong>Purchase Data:</strong> If you make a purchase in our shop, we collect order details and process payments through PayPal. We do not store full card numbers or financial credentials on our servers.</li>

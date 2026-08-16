@@ -87,7 +87,7 @@ export async function generateMetadata(): Promise<Metadata> {
       default: siteName,
       template: `%s ${separator} ${siteName}`,
     },
-    description: settings.seo_meta_description || "Your source for gaming news, reviews, hardware analysis, and community discussions.",
+    description: settings.seo_meta_description || "TechPlay keeps a record of your gaming. Connect Steam and your library fills itself — hours, sessions and finished games — alongside a catalogue of 141,000 titles, release dates, reviews and guides.",
     keywords: ["gaming", "gaming news", "hardware reviews", "PC gaming", "esports", "game database", "TechPlay"],
     openGraph: {
       type: 'website',

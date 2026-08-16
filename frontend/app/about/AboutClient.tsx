@@ -17,26 +17,37 @@ import { Target, Zap, Heart, Globe, Shield, Users, ArrowRight } from "lucide-rea
  * leaves this route's bundle entirely.
  */
 
+/**
+ * Principles, not slogans.
+ *
+ * What stood here was written in the voice of a message board: "No Sponsored
+ * Bullshit", "our writers grind ranked", "we get it". It read as an attempt to
+ * sound like the audience rather than as anything the audience could hold us
+ * to — and none of it described what the site actually does.
+ *
+ * Each of these is a rule the code already follows, which is the only kind
+ * worth printing.
+ */
 const VALUES = [
-    { icon: Target, title: "We Actually Test Things", desc: "Benchmarks, stress tests, daily use. We don't copy-paste press releases and call it a review." },
-    { icon: Shield, title: "No Sponsored Bullshit", desc: "If a product sucks, we'll tell you. Even if the brand sent us 10 units for free." },
-    { icon: Users, title: "Community First", desc: "You guys keep the lights on, not advertisers. Your trust matters more than any partnership deal." },
-    { icon: Heart, title: "We're Gamers Too", desc: "Our writers grind ranked, debate console wars in Slack, and spend paychecks on RGB. We get it." },
-    { icon: Zap, title: "Fast & Accurate", desc: "Breaking news drops while it's still fresh. Deep dives go live when we've tested everything twice." },
-    { icon: Globe, title: "For Everyone", desc: "Whether you're building a €3000 rig or gaming on a laptop from 2015, you belong here." },
+    { icon: Target, title: "Every number shows its working", desc: "Taste matching publishes its weights. Recommendations list the components behind each score. If a figure cannot be explained, it does not go on the page." },
+    { icon: Shield, title: "Derived, not guessed", desc: "What the profile says about you is read from your collection and your playtime. Nothing is inferred from a model you cannot inspect." },
+    { icon: Users, title: "Nothing is logged without you", desc: "Playtime read from Steam becomes a proposed session, never a recorded one. A diary you did not write is not a diary." },
+    { icon: Heart, title: "Reviews are independent", desc: "Hardware and games are covered on their merits. Advertising and coverage are handled by different people and never traded against each other." },
+    { icon: Zap, title: "Corrections are visible", desc: "When we get something wrong we change it and say so, rather than editing quietly and hoping." },
+    { icon: Globe, title: "The catalogue is the floor, not the pitch", desc: "141,000 games exist here so the rest can work. A large database is table stakes; what you do with yours is not." },
 ];
 
 const COVERAGE = [
-    { title: "Hardware Reviews", items: ["GPUs, CPUs, and motherboards", "Gaming laptops and peripherals", "Monitors, mice, keyboards", "Real-world benchmarks"] },
-    { title: "Game Coverage", items: ["Day-one reviews (no spoilers)", "Patch notes breakdowns", "Indie game spotlights", "Performance analysis"] },
-    { title: "Guides & Tutorials", items: ["PC building for beginners", "Optimization guides", "Troubleshooting common issues", "Settings deep dives"] },
-    { title: "Industry News", items: ["Game announcements", "Tech releases and rumors", "Esports updates", "Developer interviews"] },
+    { title: "Your library", items: ["Steam import and playtime sync", "Playing, backlog, completed, wishlist, dropped", "Sessions proposed from real playtime", "Lists you can publish or keep private"] },
+    { title: "What it tells you", items: ["Taste across genres and eras", "Median hours and completion rate", "How your taste compares to another player", "Your year, counted and compared"] },
+    { title: "What to play next", items: ["Backlog Advisor, filtered by mood", "Release calendar for what is coming", "Reviews and ratings with a stated scale", "Guides when a game gets in the way"] },
+    { title: "The catalogue", items: ["141,000 games with release detail", "Browse by genre, platform, year or tag", "Hardware and tech coverage", "News, when it matters"] },
 ];
 
 const STORY = [
-    "TechPlay started back in 2020 as a small blog covering local gaming news from the Balkans. Gaming has always been in our blood — late-night sessions, heated debates about which console is better, and that constant itch to know what's coming next.",
-    "What began as a passion project quickly grew into something bigger. We realized there was a gap: people wanted honest takes on games and tech, not recycled press releases dressed up as reviews.",
-    "Today, we cover everything from the latest AAA releases and esports drama to hardware reviews and that weird indie game everyone's sleeping on. Gaming isn't just what we write about — it's what we do when the keyboards go silent.",
+    "TechPlay began in 2020 as a small publication covering gaming and hardware from the Balkans, for readers who wanted a straight answer about whether something was worth buying.",
+    "The publishing side still runs. But the longer we did it, the clearer a second problem became: everyone writes about games, and nobody keeps a usable record of the games you have actually played. Your hours sit in one launcher, your finished titles in another, and your own taste is something you would have to work out by hand.",
+    "So we built the part that was missing. A library that fills itself from what you play, and a profile that reads it back — what you reach for, how you finish, how close your taste sits to somebody else's. The catalogue, the calendar and the coverage are the ground it stands on.",
 ];
 
 /** Section heading, same treatment the homepage rails use. */
@@ -57,22 +68,27 @@ export default function AboutClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             <PageHero
                 title="About TechPlay"
-                description="Built by gamers, for gamers. Just honest gaming and tech talk."
+                description="A record of your gaming, and a publication around it."
             />
 
             <div className="container-page py-10 md:py-14 space-y-10 md:space-y-14">
                 <section className="tp-fade-up tp-d1 max-w-3xl">
-                    <SectionTitle>What We Do</SectionTitle>
+                    <SectionTitle>What TechPlay is</SectionTitle>
                     <div className="space-y-4 text-[14.5px] text-[var(--ink-mid)] leading-relaxed">
                         <p>
-                            We test hardware until it breaks. We play games until 4 AM to write honest reviews.
-                            We dig through patch notes so you don&apos;t have to. And we do it because we genuinely
-                            care about this stuff — not because some PR agency asked nicely.
+                            Every gaming site tells you about games. TechPlay also tells you about your
+                            gaming.
                         </p>
                         <p>
-                            TechPlay exists to answer one simple question: &ldquo;Is this actually worth buying?&rdquo;
-                            No fluff, no sponsored hot takes, just real opinions from people who spend their own
-                            money on gear.
+                            Connect Steam once and your library assembles itself: the games you own, the
+                            hours you put in, the ones you finished. From that the site can describe your
+                            taste in figures you can check, tell you how close it sits to another player&apos;s,
+                            and suggest something to play tonight with the reasoning attached.
+                        </p>
+                        <p>
+                            Around it sits the rest of a publication — a catalogue of 141,000 games, a
+                            release calendar, reviews, hardware coverage and guides. Those are why people
+                            arrive. The record is why they come back.
                         </p>
                     </div>
                 </section>
@@ -103,17 +119,21 @@ export default function AboutClient() {
                         <div className="space-y-4 text-[14px] text-[var(--ink-mid)] leading-relaxed">
                             {STORY.map((p) => <p key={p.slice(0, 24)}>{p}</p>)}
                             <p className="text-[var(--ink-hi)] font-semibold">
-                                We&apos;re not the biggest, but gaming runs in our veins. And we&apos;re just getting started.
+                                We are not the biggest gaming site, and that is not the ambition. The
+                                ambition is to be the one that knows what you play.
                             </p>
                         </div>
                     </div>
 
                     <Panel title="By the numbers" variant="console" className="lg:sticky lg:top-24">
                         <dl className="divide-y divide-[var(--line)]">
+                            {/* An "∞" here would contradict the first principle
+                                on this very page. Every figure below is one
+                                somebody could check. */}
                             {[
                                 ["2020", "Founded"],
+                                ["141,000", "Games catalogued"],
                                 ["0", "Sponsored reviews"],
-                                ["∞", "Gaming hours"],
                             ].map(([value, label]) => (
                                 <div key={label} className="flex items-baseline justify-between gap-4 py-3 first:pt-0 last:pb-0">
                                     <dt className="text-[11px] font-bold uppercase tracking-wider text-[var(--ink-faint)]">{label}</dt>
@@ -125,8 +145,8 @@ export default function AboutClient() {
                 </section>
 
                 <section className="tp-fade-up tp-d4">
-                    <SectionTitle sub="We cover the full spectrum of gaming and tech. Here's what to expect.">
-                        What You&apos;ll Find Here
+                    <SectionTitle sub="Four things, and the order matters — the first two are the reason the others are here.">
+                        What you get
                     </SectionTitle>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {COVERAGE.map((category) => (
@@ -146,13 +166,13 @@ export default function AboutClient() {
 
                 <section className="tp-fade-up tp-d5 flex flex-col items-center gap-4 py-4 text-center">
                     <p className="text-[13px] text-[var(--ink-low)]">
-                        Questions? Suggestions? Think we missed something important?
+                        Something wrong, missing, or worth covering? We would rather hear it.
                     </p>
                     <Link
                         href="/contact"
                         className="btn-command inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-display text-[13px] font-bold uppercase tracking-wider transition-colors duration-300"
                     >
-                        Get in Touch
+                        Contact us
                         <ArrowRight className="w-4 h-4" />
                     </Link>
                 </section>

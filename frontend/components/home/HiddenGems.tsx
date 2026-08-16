@@ -21,7 +21,7 @@ const fetcher = () => axios.get("/games/hidden-gems").then((r) => (r.data?.resul
 
 /**
  * Highly rated games hardly anyone has voted on — the kind of pick only a
- * 200K-title database can surface. Rotates once a day (server-side).
+ * catalogue this size can surface. Rotates once a day (server-side).
  */
 export default function HiddenGems() {
     const { data: games } = useSWR("hidden-gems", fetcher, {

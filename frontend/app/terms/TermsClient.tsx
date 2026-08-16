@@ -5,7 +5,7 @@ export default function TermsClient() {
     return (
         <LegalLayout
             title="Terms of Service"
-            description="Please read these terms carefully before using our service."
+            description="The rules for using TechPlay, and what you can expect from us."
             icon={FileText}
             lastUpdated="January 1, 2026"
         >

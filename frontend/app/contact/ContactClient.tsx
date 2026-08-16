@@ -16,19 +16,19 @@ const INBOXES = [
     {
         icon: MessageSquare,
         title: "General & Editorial",
-        desc: "News tips, game review requests, press releases, or just saying hi.",
+        desc: "News tips, review requests, press releases, corrections.",
         email: "redakcija@techplay.gg",
     },
     {
         icon: Briefcase,
         title: "Advertising & Partnerships",
-        desc: "Want to advertise or partner with us? Let's talk rates and options.",
+        desc: "Advertising, sponsorships and partnerships. Handled separately from editorial.",
         email: "marketing@techplay.gg",
     },
     {
         icon: HelpCircle,
         title: "Technical Support",
-        desc: "Site broken? Can't log in? Comments not working? We'll fix it.",
+        desc: "Account problems, a Steam import that will not sync, anything broken.",
         email: "support@techplay.gg",
     },
 ];
@@ -38,7 +38,7 @@ export default function ContactClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             <PageHero
                 title="Contact Us"
-                description="Questions, tips, or partnership ideas — pick the right inbox and we'll answer."
+                description="Three inboxes, so your message reaches the person who can answer it."
                 iconNode={<Mail className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />}
             />
 
@@ -46,9 +46,9 @@ export default function ContactClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 items-start">
                     <div className="tp-fade-up tp-d1 space-y-4">
                         <p className="text-[14px] text-[var(--ink-mid)] leading-relaxed">
-                            We actually read our emails (shocking, we know). Whether you&apos;ve got a news tip,
-                            want your game reviewed, or just found a typo that&apos;s driving you nuts — hit the
-                            right inbox below and we&apos;ll get back to you.
+                            Every message is read by a person. Pick the inbox that fits and you will
+                            normally hear back within two working days — sooner if something on the site
+                            is broken.
                         </p>
 
                         {INBOXES.map((inbox) => (

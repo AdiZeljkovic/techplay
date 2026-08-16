@@ -209,7 +209,7 @@ export default function GameDatabaseHub({
     const facets = hub?.data.facets;
     const stats = hub?.data.stats;
 
-    // Typing should not fire a query per keystroke against 200,000 rows.
+    // Typing should not fire a query per keystroke against a table this size.
     useEffect(() => {
         const t = setTimeout(() => setSearch(typed.trim()), 350);
         return () => clearTimeout(t);

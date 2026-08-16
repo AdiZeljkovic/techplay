@@ -2,11 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { Gamepad2, ListChecks, Award, Users, Check } from "lucide-react";
 
+/**
+ * What the account is for, stated as what it does rather than what it offers.
+ *
+ * These were "Track Games / Build Backlog / Earn Achievements / Join
+ * Community" — the feature list of any site with a login, and the last one
+ * pointed at an empty forum. Each line now names a mechanism that exists and
+ * that nowhere else has: playtime read from Steam, sessions proposed rather
+ * than invented, taste derived from a collection, weights published.
+ */
 const FEATURES = [
-    { icon: Gamepad2, title: "Track Games", sub: "Log and organize your collection" },
-    { icon: ListChecks, title: "Build Backlog", sub: "Save games and plan your next play" },
-    { icon: Award, title: "Earn Achievements", sub: "Unlock badges and show your progress" },
-    { icon: Users, title: "Join Community", sub: "Discuss, review and connect with players" },
+    { icon: Gamepad2, title: "Your library fills itself", sub: "Connect Steam and the games, hours and finished titles arrive on their own" },
+    { icon: ListChecks, title: "Sessions you never have to write", sub: "Playtime is read on a schedule and offered as a session — nothing is logged until you say so" },
+    { icon: Award, title: "Your taste, in numbers", sub: "Genres, medians and a completion rate derived from what you own, not guessed" },
+    { icon: Users, title: "How close your taste is to anyone else's", sub: "One percentage, with the weights behind it published" },
 ];
 
 /**
@@ -40,17 +49,18 @@ export default function ProfileCtaBand() {
                 <div className="flex flex-col justify-center">
                     <p className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] mb-3">
                         <span className="w-1 h-4 rounded-full bg-[var(--accent)]" />
-                        Build your gaming identity
+                        What an account is for
                     </p>
 
                     <h2 className="font-display text-[28px] md:text-[34px] font-black text-[var(--ink-hi)] leading-[1.08]">
-                        Your games. Your profile.
+                        The record builds
                         <br />
-                        <span className="text-[var(--accent)]">Your community.</span>
+                        <span className="text-[var(--accent)]">itself.</span>
                     </h2>
 
                     <p className="mt-4 text-[14px] text-[var(--ink-mid)] max-w-[440px] leading-relaxed">
-                        Create a free TechPlay profile to track everything you play, earn your rank, and join a community that actually cares about games.
+                        Most of what a profile here knows about you arrives without you typing it.
+                        The longer you play, the more there is to read back.
                     </p>
 
                     <ul className="mt-7 space-y-3">
@@ -72,12 +82,12 @@ export default function ProfileCtaBand() {
                             href="/register"
                             className="inline-flex items-center gap-2 px-7 h-12 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
                         >
-                            Create Your Profile
+                            Start your library
                         </Link>
                         <span className="text-[12px] text-[var(--ink-faint)]">
-                            Free forever ·{" "}
+                            Free, and no card ·{" "}
                             <Link href="/login" className="text-[var(--ink-mid)] hover:text-[var(--accent)] font-semibold transition-colors">
-                                Already a member?
+                                Already have an account?
                             </Link>
                         </span>
                     </div>

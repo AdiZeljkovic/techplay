@@ -15,10 +15,10 @@ import Panel from "@/components/ui/Panel";
  */
 
 const AD_SPECS = [
-    { name: "Billboard / Skin", dims: "970×250 + background", desc: "Maximum impact. Own the top of the homepage and wrap the site experience.", icon: Layout },
-    { name: "Leaderboard", dims: "728×90", desc: "High visibility across all pages. The industry staple for brand awareness.", icon: Layers },
-    { name: "Medium Rectangle", dims: "300×250", desc: "Integrated into the sidebar and article content. High click-through rates.", icon: MonitorSmartphone },
-    { name: "Mobile Sticky", dims: "320×50 / 320×100", desc: "Persistent footer ad on mobile devices. Cannot be missed.", icon: Zap },
+    { name: "Billboard / Skin", dims: "970×250 + background", desc: "The top of the homepage, plus a background wrap. One advertiser at a time.", icon: Layout },
+    { name: "Leaderboard", dims: "728×90", desc: "Runs across the site. The standard unit, and the easiest to plan around.", icon: Layers },
+    { name: "Medium Rectangle", dims: "300×250", desc: "In the sidebar and inside articles, where readers are already stopped.", icon: MonitorSmartphone },
+    { name: "Mobile Sticky", dims: "320×50 / 320×100", desc: "Fixed to the foot of the screen on phones, where most of our traffic is.", icon: Zap },
 ];
 
 const AUDIENCE = [
@@ -29,9 +29,9 @@ const AUDIENCE = [
 ];
 
 const BEYOND = [
-    { icon: Shield, title: "Brand Storytelling", desc: "Share your announcements through PR and promo articles. We give your launches the context they need, ensuring your message lands with impact." },
-    { icon: Video, title: "Video & Social", desc: "Short-form video content (Reels/TikTok) and social media blasts that reach gamers where they scroll." },
-    { icon: MousePointerClick, title: "Giveaways", desc: "High-engagement campaigns that drive traffic and social following. You provide the loot, we bring the crowd." },
+    { icon: Shield, title: "Brand Storytelling", desc: "Announcements written up properly and labelled as sponsored. We will say what a product does; we will not say it is good." },
+    { icon: Video, title: "Video & Social", desc: "Short-form video and social posts, produced with you and published on our channels." },
+    { icon: MousePointerClick, title: "Giveaways", desc: "You supply the keys or hardware, we run the entry, the draw and the winner contact." },
 ];
 
 function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
@@ -51,7 +51,7 @@ export default function MarketingClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             <PageHero
                 title="Advertising & Partnerships"
-                description="Connect with a passionate audience of gamers, tech enthusiasts, and early adopters."
+                description="Display, sponsored coverage and giveaways — with editorial kept separate from all of it."
                 iconNode={<Megaphone className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />}
             />
 
@@ -95,7 +95,7 @@ export default function MarketingClient() {
 
                 <section className="tp-fade-up tp-d3 grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-6 items-start">
                     <div>
-                        <SectionTitle sub="We support all IAB standard ad units, optimized for performance and visibility without ruining the user experience.">
+                        <SectionTitle sub="IAB standard units. We cap density per page rather than filling every slot available.">
                             Standard advertising units
                         </SectionTitle>
                         <div className="space-y-3">
@@ -146,7 +146,7 @@ export default function MarketingClient() {
                 </section>
 
                 <section className="tp-fade-up tp-d4">
-                    <SectionTitle sub="Display is great, but story is better. We specialize in custom integrations that cut through banner blindness.">
+                    <SectionTitle sub="When a banner is not the right shape for what you are launching.">
                         Beyond the banner
                     </SectionTitle>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

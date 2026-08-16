@@ -184,7 +184,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                     No Steam or Xbox? Pick your games by hand
                                 </h3>
                                 <p className="text-[12.5px] text-white/50 leading-relaxed">
-                                    Choose {PICK_TARGET} games you love from our database of 200,000+ titles.
+                                    Choose {PICK_TARGET} games you love. We use them to work out your taste — nothing here is guessed.
                                 </p>
                             </button>
                         </div>
@@ -238,7 +238,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 type="text"
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Search 200,000+ games..."
+                                placeholder="Search the catalogue…"
                                 className="w-full bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] h-12 pl-11 pr-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50 transition-colors"
                             />
                         </div>

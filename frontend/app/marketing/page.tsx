@@ -5,7 +5,7 @@ import { generatePageMetadata } from "@/lib/seo";
 export async function generateMetadata(): Promise<Metadata> {
     return generatePageMetadata('/marketing', {
         title: "Advertise with us",
-        description: "Reach a passionate audience in the world of technology and gaming.",
+        description: "Advertise on TechPlay — display units, sponsored coverage and giveaways, with editorial kept independent. Rates and formats on request.",
     });
 }
 

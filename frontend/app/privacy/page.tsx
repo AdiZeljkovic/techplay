@@ -5,7 +5,7 @@ import PrivacyClient from "./PrivacyClient";
 export async function generateMetadata(): Promise<Metadata> {
     return generatePageMetadata('/privacy', {
         title: "Privacy Policy",
-        description: "Learn how TechPlay collects, uses, and protects your personal data.",
+        description: "What data TechPlay collects — including from connected Steam, PlayStation and Xbox accounts — how it is used, and how to remove it.",
     });
 }
 

@@ -5,7 +5,7 @@ export default function CookiesClient() {
     return (
         <LegalLayout
             title="Cookie Policy"
-            description="A full breakdown of every cookie we use, why we use it, and how you can control it."
+            description="Every cookie we set, what it does, and how to turn it off."
             icon={Cookie}
             lastUpdated="March 24, 2026"
         >
