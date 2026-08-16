@@ -5,6 +5,7 @@ import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Sans } from "next/font/google"
 import { getServerApiUrl } from "@/lib/api";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
+import SwrDefaults from "@/components/providers/SwrDefaults";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
@@ -242,6 +243,7 @@ export default async function RootLayout({
             crossOrigin="anonymous"
         />
 
+        <SwrDefaults>
         <SiteSettingsProvider initialSettings={settings}>
             <MobileMenuProvider>
               <CartProvider>
@@ -261,6 +263,7 @@ export default async function RootLayout({
               </CartProvider>
             </MobileMenuProvider>
         </SiteSettingsProvider>
+        </SwrDefaults>
       </body>
     </html>
   );

@@ -119,7 +119,7 @@ export default function CookieConsentBanner() {
                                         <h3 className="text-xl font-bold text-white mb-2">We value your privacy</h3>
                                         <p className="text-white/55 text-sm leading-relaxed max-w-2xl">
                                             We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.
-                                            You can choose to accept all or customize your preferences. Read our <Link href="/privacy" className="text-[var(--accent)] hover:underline">Privacy Policy</Link> and <Link href="/cookies" className="text-[var(--accent)] hover:underline">Cookie Policy</Link>.
+                                            You can choose to accept all or customize your preferences. Read our <Link href="/privacy" prefetch={false} className="text-[var(--accent)] hover:underline">Privacy Policy</Link> and <Link href="/cookies" prefetch={false} className="text-[var(--accent)] hover:underline">Cookie Policy</Link>.
                                         </p>
                                     </div>
                                 </div>

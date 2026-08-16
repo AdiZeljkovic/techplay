@@ -99,7 +99,7 @@ export default function Footer() {
             <div className="relative container-page pt-8 md:pt-14 pb-7 md:pb-10">
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 md:gap-10">
                     <div className="max-w-[440px]">
-                        <Link href="/" className="group inline-block" aria-label="TechPlay — home">
+                        <Link href="/" prefetch={false} className="group inline-block" aria-label="TechPlay — home">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src="/techplay-logo.png"
@@ -169,7 +169,15 @@ export default function Footer() {
                                 {i > 0 && (
                                     <span aria-hidden className="hidden sm:block w-1 h-1 mx-3 rounded-full bg-[var(--line-strong)]" />
                                 )}
+                                {/* A footer is where a page ends, not where a
+                                    reader navigates from. Every one of these
+                                    also sits in the header, so Next was
+                                    prefetching the same route twice on every
+                                    page — measured: /games pulled 41 route
+                                    payloads, 121 KB, and nine of them were
+                                    this list a second time. */}
                                 <Link
+                                    prefetch={false}
                                     href={item.href}
                                     className="inline-block py-3 -my-3 sm:py-0 sm:my-0 font-display text-[12px] font-bold uppercase tracking-[0.1em] text-[var(--ink-low)] hover:text-[var(--accent)] transition-colors duration-150"
                                 >
@@ -191,6 +199,7 @@ export default function Footer() {
                         <span aria-hidden className="hidden sm:block w-px h-3 bg-[var(--line-strong)]" />
                         {LEGAL.map((l) => (
                             <Link
+                                prefetch={false}
                                 key={l.name}
                                 href={l.href}
                                 className="text-[12px] text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors duration-150"

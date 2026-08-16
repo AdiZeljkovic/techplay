@@ -645,6 +645,7 @@ function NavItem({ item, badge, onHoverChange }: {
         >
             <Link
                 href={item.href}
+                prefetch={false}
                 className={cn(
                     "relative flex items-center gap-1 text-[13px] font-semibold tracking-[0.01em] transition-colors whitespace-nowrap px-2 py-2.5",
                     isActive || isOpen ? "text-accent" : "text-[var(--ink-mid)] hover:text-[var(--ink-hi)]"
@@ -746,6 +747,7 @@ function NavItem({ item, badge, onHoverChange }: {
                                 <div className="px-5 py-3 border-t border-[var(--line)] bg-[var(--fill-1)]">
                                     <Link
                                         href={item.href}
+                                        prefetch={false}
                                         className="group/all flex items-center gap-1.5 font-display text-[11px] font-bold text-[var(--accent)] hover:text-[var(--accent-hover)] uppercase tracking-[0.12em] transition-colors duration-150"
                                     >
                                         {item.viewAllLabel}
@@ -1167,12 +1169,14 @@ export default function Header() {
                             <div className="hidden xl:flex items-center gap-3">
                                 <Link
                                     href="/login"
+                                    prefetch={false}
                                     className="text-[var(--ink-mid)] hover:text-white font-semibold transition-colors text-[13px] px-2"
                                 >
                                     Sign In
                                 </Link>
                                 <Link
                                     href="/register"
+                                    prefetch={false}
                                     className="inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white px-5 h-10 rounded-[var(--radius-card)] font-bold transition-colors text-[13px] leading-none"
                                 >
                                     Join TechPlay
