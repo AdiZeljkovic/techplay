@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/seo";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import SupportClient from "./SupportClient";
 import type { SupportTier } from "@/types/support";
 
@@ -18,7 +18,7 @@ async function getTiers(): Promise<SupportTier[]> {
     try {
         const res = await fetch(`${getServerApiUrl()}/support/tiers`, {
             next: { revalidate: 300 },
-            headers: { Accept: 'application/json' },
+            headers: serverHeaders(),
         });
 
         if (!res.ok) return [];

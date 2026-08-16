@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getApiUrl, getServerApiUrl } from "@/lib/api";
+import { getApiUrl, getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import type { Gta6Character } from "@/types";
 import Gta6EntityDetail from "@/components/gta6/Gta6EntityDetail";
@@ -13,7 +13,7 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
     try {
         const res = await fetch(`${getServerApiUrl()}/gta6/characters`, {
             next: { revalidate: 3600 },
-            headers: { Accept: "application/json" },
+            headers: serverHeaders(),
         });
         if (!res.ok) return [];
         const json = await res.json();

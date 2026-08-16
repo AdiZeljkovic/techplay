@@ -3,7 +3,7 @@ import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { HARDWARE_CATEGORIES } from "@/lib/categories";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import type { Article } from "@/types";
 
@@ -27,7 +27,7 @@ async function getInitialCategoryData(categoryId: string) {
         const params = new URLSearchParams({ page: '1', category: categoryId });
         const res = await fetch(`${getServerApiUrl()}/tech?${params.toString()}`, {
             next: { revalidate: 600 },
-            headers: { 'Accept': 'application/json' },
+            headers: serverHeaders(),
         });
         if (!res.ok) return null;
         return await res.json();

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { Car } from "lucide-react";
 import { generatePageMetadata } from "@/lib/seo";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import Gta6EntityGrid from "@/components/gta6/Gta6EntityGrid";
 import Gta6SectionHero from "@/components/gta6/Gta6SectionHero";
 import { fetchGta6Entities, gta6ItemListLd } from "@/lib/gta6";
@@ -35,7 +35,7 @@ async function fetchClasses(): Promise<string[]> {
     try {
         const res = await fetch(`${getServerApiUrl()}/gta6/vehicles/classes`, {
             next: { revalidate: 3600 },
-            headers: { Accept: "application/json" },
+            headers: serverHeaders(),
         });
         if (!res.ok) return [];
         const json = await res.json();

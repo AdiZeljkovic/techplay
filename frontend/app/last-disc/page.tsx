@@ -3,7 +3,7 @@ import Link from "next/link";
 import {
     Disc3, ShieldCheck, Library, Users2, HandCoins, Repeat2, Scale, MessageSquare, ArrowRight, PenLine,
 } from "lucide-react";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import LastDiscClient from "./LastDiscClient";
 import ShareRow from "./ShareRow";
 
@@ -66,6 +66,7 @@ interface Coverage {
 async function getCoverage(): Promise<Coverage[]> {
     try {
         const res = await fetch(`${getServerApiUrl()}/search/articles?q=physical`, {
+            headers: serverHeaders(),
             next: { revalidate: 900 },
         });
 

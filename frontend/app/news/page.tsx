@@ -1,7 +1,7 @@
 
 import SectionHub from "@/components/editorial/SectionHub";
 import { generateDynamicMetadata } from "@/lib/seo";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { Metadata } from "next";
 
 // Revalidate every 5 minutes
@@ -15,7 +15,7 @@ async function getInitialNews() {
     try {
         const res = await fetch(`${getServerApiUrl()}/news?page=1`, {
             next: { revalidate: 300, tags: ['news'] },
-            headers: { 'Accept': 'application/json' },
+            headers: serverHeaders(),
         });
         if (!res.ok) return null;
         return await res.json();

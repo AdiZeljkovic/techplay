@@ -1,4 +1,4 @@
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 
 /**
  * The RSS feed, served from the site's own domain.
@@ -20,7 +20,7 @@ export async function GET(_request?: Request) {
 
     try {
         const res = await fetch(`${root}/feed`, {
-            headers: { Accept: "application/rss+xml, application/xml, text/xml" },
+            headers: serverHeaders({ Accept: "application/rss+xml, application/xml, text/xml" }),
             next: { revalidate: 900 },
         });
 

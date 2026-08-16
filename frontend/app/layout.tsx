@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Sans } from "next/font/google";
 
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
 import SwrDefaults from "@/components/providers/SwrDefaults";
@@ -66,6 +66,7 @@ const plexMono = IBM_Plex_Mono({
 async function getSiteSettings() {
   try {
     const res = await fetch(`${getServerApiUrl()}/settings`, {
+            headers: serverHeaders(),
       next: { revalidate: 3600 } // Cache for 1 hour
     });
     if (!res.ok) return {};

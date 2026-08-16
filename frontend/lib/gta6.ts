@@ -1,4 +1,5 @@
 import type { Gta6Entity } from "@/types";
+import { serverHeaders } from "@/lib/api";
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
@@ -40,7 +41,7 @@ export async function fetchGta6Entities(apiUrl: string, path: string): Promise<G
     try {
         const res = await fetch(`${apiUrl}${path}`, {
             next: { revalidate: 3600 },
-            headers: { Accept: "application/json" },
+            headers: serverHeaders(),
         });
         if (!res.ok) return [];
         const json = await res.json();

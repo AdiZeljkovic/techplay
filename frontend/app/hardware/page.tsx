@@ -1,7 +1,7 @@
 import SectionHub from "@/components/editorial/SectionHub";
 import { Metadata } from "next";
 import { generatePageMetadata } from "@/lib/seo";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 
 // Revalidate every 10 minutes
 export const revalidate = 600;
@@ -17,7 +17,7 @@ async function getInitialHardware() {
     try {
         const res = await fetch(`${getServerApiUrl()}/tech?page=1`, {
             next: { revalidate: 600, tags: ['hardware'] },
-            headers: { 'Accept': 'application/json' },
+            headers: serverHeaders(),
         });
         if (!res.ok) return null;
         return await res.json();

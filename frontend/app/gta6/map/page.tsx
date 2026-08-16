@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { generatePageMetadata } from "@/lib/seo";
 import Gta6MapClient from "@/components/gta6/Gta6MapClient";
 
@@ -38,7 +38,7 @@ async function fetchCategories(): Promise<string[]> {
     try {
         const res = await fetch(`${getServerApiUrl()}/gta6/categories`, {
             next: { revalidate: 86400 },
-            headers: { Accept: "application/json" },
+            headers: serverHeaders(),
         });
         if (!res.ok) return [];
         const json = await res.json();
@@ -52,7 +52,7 @@ async function fetchLocationCount(): Promise<number> {
     try {
         const res = await fetch(`${getServerApiUrl()}/gta6/locations`, {
             next: { revalidate: 86400 },
-            headers: { Accept: "application/json" },
+            headers: serverHeaders(),
         });
         if (!res.ok) return 0;
         const json = await res.json();

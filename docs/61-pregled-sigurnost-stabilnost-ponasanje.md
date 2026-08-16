@@ -154,7 +154,66 @@ ako neko vrati pun `UserResource` ili doda polje iz navike.
 
 ---
 
-## 8. Zdravo (izmjereno)
+## 9. API pozivi: brzi i bez duplikata, ali SSR je dijelio jedan budzet (16.08.2026.)
+
+Prijava: kroz Network tab se vidi mnogo zahtjeva, neki se duplaju.
+
+### Sto se tice samih API poziva — zdravo
+
+Snimljeno kroz **25 sekundi** po stranici, sedam stranica:
+
+| stranica | poziva | razlicitih | ponavljanja |
+|---|---:|---:|---|
+| `/` | 4 | 4 | nema |
+| `/latest` | 2 | 2 | nema |
+| `/games` | 3 | 3 | nema |
+| `/forum` | 6 | 6 | nema |
+| `/calendar` | 2 | 2 | nema |
+| `/leaderboard` | 2 | 2 | nema |
+
+Vremena odziva, mjereno direktno tri puta po endpointu: **90–190 ms na svemu**,
+ukljucujuci `/calendar`. (U browseru je izgledao kao 546 ms — to je bio hladan
+prvi pogodak.) Nema sporog endpointa.
+
+Anketiranje je pristojno: obavjestenja su **jedan endpoint, jednom u minuti**,
+i **pauziraju se kad je tab skriven**. Ostalo su brojaci u UI-u, ne pozivi.
+
+### Ispravka ranijeg nalaza
+
+U proslom commitu sam ostavio kao otvoreno: „na `/games` se upit ponekad salje
+drugi put oko 7,3 s". **To je bilo moje okruzenje.** Lokalni klijent zove
+`backend.test`, koji je ugasen, poziv padne s `ERR_CONNECTION_REFUSED` i SWR ga
+ponovi. Na produkciji: tri prolaza, nijedno ponavljanje.
+
+### Sto jeste problem: 61 od 63 SSR poziva bez internog tokena
+
+Backend meri `api` grupu na **60 zahtjeva u minuti po IP-u**. Provjereno na
+produkciji s razbijanjem keša: **60 × 200, pa 10 × 429.** (Prvi pokusaj nije
+pokazao nista jer Cloudflare servira `/navigation/tree` s ivice — `HIT`,
+`max-age=14400`.)
+
+Svaki serverski render odlazi s **jedne** adrese. `fetchContent()` je nosio
+`X-Internal-Token` koji podize to ogranicenje, i njegov komentar objasnjava
+tacno zasto — ali bio je **jedini**: od 63 mjesta koja grade URL preko
+`getServerApiUrl()`, token je nosilo **2**.
+
+Znaci: cijeli sajt je renderovao iz budzeta jednog posjetioca. Uz 2–3 poziva po
+renderu to je ~20–30 renderovanja u minuti prije nego API pocne odbijati, a
+crawler koji hoda kroz 187.000 stranica igara to potrosi u nekoliko sekundi —
+i stranice se iscrtaju bez podataka, tiho.
+
+**Popravljeno**: `serverHeaders()` u `lib/api.ts`, primijenjen na svih 63.
+Provjereno skriptom: nijedan serverski `fetch` vise nije bez tokena ili
+`fetchContent`-a.
+
+> **Trazi korak na serveru.** `INTERNAL_API_TOKEN` mora biti **ista vrijednost
+> u `backend/.env` i `frontend/.env`**. Prazan na bilo kojoj strani znaci da
+> izuzeca nema — backend zahtijeva neprazan secret. Dodat je u
+> `backend/.env.example`, gdje ga nije bilo.
+
+---
+
+## 10. Zdravo (izmjereno)
 
 - LCP: `/forum` 0,35 s, `/leaderboard` 0,37 s, `/games` 0,66 s, `/calendar`
   0,72 s, `/latest` 0,75 s. CLS **0,000** svuda. (`/latest` je prije prolaza sa

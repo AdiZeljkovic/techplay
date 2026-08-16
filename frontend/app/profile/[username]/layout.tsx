@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://techplay.gg";
 
@@ -28,7 +28,7 @@ async function loadProfile(username: string): Promise<ProfileLookup> {
     try {
         const res = await fetch(`${getServerApiUrl()}/users/${encodeURIComponent(username)}`, {
             next: { revalidate: 300 },
-            headers: { Accept: "application/json" },
+            headers: serverHeaders(),
         });
 
         if (res.status === 404) return { state: "missing" };

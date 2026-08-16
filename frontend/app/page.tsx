@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import HomeClient from "./HomeClient";
 import { generatePageMetadata } from "@/lib/seo";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { Article } from "@/types";
 
 // ISR: revalidate every 60 seconds, but can be triggered on-demand
@@ -26,7 +26,7 @@ async function getHomeData(): Promise<HomeData> {
   try {
     const res = await fetch(`${apiUrl}/home`, {
       next: { revalidate: 60 },
-      headers: { 'Accept': 'application/json' },
+      headers: serverHeaders(),
     });
 
     if (!res.ok) {

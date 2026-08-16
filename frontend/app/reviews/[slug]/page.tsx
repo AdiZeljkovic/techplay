@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import SectionHub from "@/components/editorial/SectionHub";
 import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 
 // ISR enabled with on-demand revalidation
@@ -19,7 +19,7 @@ async function getInitialCategoryData(categorySlug: string) {
         const params = new URLSearchParams({ page: '1', category: categorySlug });
         const res = await fetch(`${getServerApiUrl()}/reviews?${params.toString()}`, {
             next: { revalidate: 600, tags: ['reviews'] },
-            headers: { 'Accept': 'application/json' },
+            headers: serverHeaders(),
         });
         if (!res.ok) return null;
         return await res.json();

@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { generatePageMetadata } from "@/lib/seo";
 import Gta6HubHero from "@/components/gta6/Gta6HubHero";
 import Gta6HypeBar, { type HypeStat } from "@/components/gta6/Gta6HypeBar";
@@ -48,7 +48,7 @@ async function fetchJson(path: string, revalidate = 3600): Promise<unknown> {
     try {
         const res = await fetch(`${getServerApiUrl()}${path}`, {
             next: { revalidate },
-            headers: { Accept: "application/json" } });
+            headers: serverHeaders() });
         if (!res.ok) return null;
         return await res.json();
     } catch {

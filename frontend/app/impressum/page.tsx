@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { generatePageMetadata } from "@/lib/seo";
 import ImpressumClient from "./ImpressumClient";
 
@@ -19,7 +19,7 @@ async function getStaffData() {
 
 
     try {
-        const res = await fetch(url, { cache: 'no-store' });
+        const res = await fetch(url, { cache: 'no-store', headers: serverHeaders() });
         if (!res.ok) {
             console.error('[Impressum] Staff API error - status:', res.status);
             return null;

@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
 
@@ -7,7 +7,7 @@ async function fetchSlugs(path: string): Promise<string[]> {
     try {
         const res = await fetch(`${getServerApiUrl()}${path}`, {
             next: { revalidate: 3600 },
-            headers: { Accept: "application/json" },
+            headers: serverHeaders(),
         });
         if (!res.ok) return [];
         const json = await res.json();

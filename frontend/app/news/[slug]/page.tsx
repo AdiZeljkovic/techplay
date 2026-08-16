@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import SectionHub from "@/components/editorial/SectionHub";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 
 // On-demand ISR - no automatic revalidation, only manual via /api/revalidate
@@ -20,7 +20,7 @@ async function getInitialCategoryData(categorySlug: string) {
         const params = new URLSearchParams({ page: '1', category: categorySlug });
         const res = await fetch(`${getServerApiUrl()}/news?${params.toString()}`, {
             next: { revalidate: 300, tags: ['news'] },
-            headers: { 'Accept': 'application/json' } });
+            headers: serverHeaders() });
         if (!res.ok) return null;
         return await res.json();
     } catch {

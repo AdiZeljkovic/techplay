@@ -1,6 +1,6 @@
 import MediaKitClient from "./MediaKitClient";
 import { Metadata } from "next";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import type { MediaKitData } from "@/hooks/useMediaKit";
 
 export const revalidate = 3600; // ISR: 1 hour
@@ -204,7 +204,7 @@ async function getMediaKit(): Promise<MediaKitData> {
     try {
         const res = await fetch(`${getServerApiUrl()}/media-kit`, {
             next: { revalidate: 3600 },
-            headers: { Accept: 'application/json' },
+            headers: serverHeaders(),
         });
 
         if (!res.ok) return empty;

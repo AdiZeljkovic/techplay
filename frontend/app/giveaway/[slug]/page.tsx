@@ -1,5 +1,5 @@
 import GiveawayClient from "./GiveawayClient";
-import { getServerApiUrl } from "@/lib/api";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { Metadata } from "next";
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg";
@@ -36,6 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     // and no image.
     try {
         const res = await fetch(`${getServerApiUrl()}/giveaways/${slug}`, {
+            headers: serverHeaders(),
             next: { revalidate: 60 },
         });
 
