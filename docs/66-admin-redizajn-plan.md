@@ -492,11 +492,10 @@ snimanju.
 
 | | |
 |---|---|
-| Postavki prije / poslije | 44 / 44 (danas 43, vidi dopunu) |
+| Postavki prije / poslije | 44 / 44 *(danas 43 — vidi dopunu ispod)* |
 | Nestalo | 0 |
 | Novih | 0 |
 | Promijenjenih | 0 |
-
 | `/api/v1/system/status` | HTTP 200 |
 | `techplay.gg` | HTTP 200 |
 | `/robots.txt` | netaknut |
