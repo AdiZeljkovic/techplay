@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\PageSeoResource\Schemas;
 
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -79,10 +78,6 @@ class PageSeoForm
                     ->label('NoIndex (hide from search engines)')
                     ->columnSpanFull(),
 
-                RichEditor::make('seo_text')
-                    ->label('Page Content (Bottom)')
-                    ->helperText('Content displayed at the bottom of the page.')
-                    ->columnSpanFull(),
             ])
             ->columns(2);
     }

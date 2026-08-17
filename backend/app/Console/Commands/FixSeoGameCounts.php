@@ -33,7 +33,7 @@ class FixSeoGameCounts extends Command
     protected $description = 'Replace overstated game-catalogue figures in page SEO with the real one';
 
     /** Fields that can carry the claim. */
-    private const FIELDS = ['meta_title', 'meta_description', 'og_title', 'og_description', 'seo_text'];
+    private const FIELDS = ['meta_title', 'meta_description', 'og_title', 'og_description'];
 
     public function handle(): int
     {

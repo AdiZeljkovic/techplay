@@ -38,7 +38,6 @@ class PageSeo extends Model
         'og_image',
         'canonical_url',
         'is_noindex',
-        'seo_text',
     ];
 
     protected $casts = [

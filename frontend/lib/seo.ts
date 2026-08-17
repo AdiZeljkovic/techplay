@@ -30,12 +30,11 @@ export interface PageSeoData {
     page_name: string;
     meta_title?: string;
     meta_description?: string;
-    meta_keywords?: string;
+    meta_keywords?: string | string[];
     og_title?: string;
     og_description?: string;
     og_image?: string;
     canonical_url?: string;
-    seo_text?: string;
 }
 
 export interface SiteSettings {
@@ -164,9 +163,28 @@ export async function generatePageMetadata(
         : settings.seo_og_image_default
             ? `${STORAGE_URL}/${settings.seo_og_image_default}`
             : undefined;
-    const keywords = pageSeo?.meta_keywords?.split(',').map((k: string) => k.trim())
-        || defaults?.keywords
-        || ["gaming", "tech", "reviews"];
+    /**
+     * `meta_keywords` arrives as an array, not a string.
+     *
+     * The admin field is a `TagsInput`, so Laravel stores it as JSON — `[]` for
+     * empty, `["gaming news 2026", …]` when filled. This line used to call
+     * `.split(',')` on it, which produced `["[]"]` for the forty-two empty rows
+     * and mangled the two filled ones at the commas *inside* the JSON. Every
+     * page on the site was serving `<meta name="keywords" content="[]">`.
+     *
+     * Both shapes are accepted because the column has held both. Empty means
+     * the tag is omitted rather than emitted blank — search engines ignore
+     * keywords either way, but an empty tag is a thing an audit flags.
+     */
+    const rawKeywords = pageSeo?.meta_keywords;
+    const dbKeywords = Array.isArray(rawKeywords)
+        ? rawKeywords.map((k) => String(k).trim()).filter(Boolean)
+        : typeof rawKeywords === 'string' && rawKeywords.trim() && rawKeywords.trim() !== '[]'
+            ? rawKeywords.split(',').map((k) => k.trim()).filter(Boolean)
+            : [];
+    const keywords = dbKeywords.length > 0
+        ? dbKeywords
+        : defaults?.keywords ?? undefined;
     // Always generate canonical — fallback to APP_URL + path so every page has one.
     const canonical = pageSeo?.canonical_url || `${APP_URL}${path === '/' ? '' : path}`;
 
@@ -195,10 +213,16 @@ export async function generatePageMetadata(
     };
 }
 
-/**
- * Get SEO text/content for a page (for bottom SEO text sections)
+/*
+ * `getPageSeoText` used to live here.
+ *
+ * It returned `page_seo.seo_text` — the long descriptive blocks meant to sit at
+ * the bottom of a page — and no file ever called it. Forty-four pages had one
+ * written, ninety thousand characters in total, and not a single one reached a
+ * reader.
+ *
+ * Removed 18 Aug 2026 on the owner's call: keyword-heavy text appended below
+ * the content is a tactic search engines stopped rewarding years ago, and it
+ * would have cost the pages more than it earned. The writing is not lost — it
+ * was exported to `storage/app/backups/seo-text-2026-08-18.json` first.
  */
-export async function getPageSeoText(path: string): Promise<string | null> {
-    const pageSeo = await fetchPageSeo(path);
-    return pageSeo?.seo_text || null;
-}

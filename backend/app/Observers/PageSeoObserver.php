@@ -3,31 +3,10 @@
 namespace App\Observers;
 
 use App\Models\PageSeo;
-use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Cache;
 
 class PageSeoObserver
 {
-    /**
-     * `seo_text` is a rich-text field that the frontend renders with
-     * dangerouslySetInnerHTML and nothing sanitised it — not on save, not on
-     * render. Article, review and guide bodies all pass through
-     * sanitizeStaffContent on their way in; this one was missed.
-     *
-     * It matters more than its size suggests: the block renders on
-     * techplay.gg, which is where AuthContext keeps every visitor's bearer
-     * token in localStorage. innerHTML does not run a <script> tag, but it
-     * happily runs `<img onerror>`, and `manage content` — Journalist and up —
-     * is enough to write the field.
-     */
-    public function saving(PageSeo $pageSeo): void
-    {
-        if (filled($pageSeo->seo_text)) {
-            $pageSeo->seo_text = app(SanitizationService::class)
-                ->sanitizeStaffContent($pageSeo->seo_text);
-        }
-    }
-
     /**
      * Handle the PageSeo "created" event.
      */

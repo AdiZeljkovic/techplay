@@ -242,7 +242,8 @@
       "Bash(sed -i 's|`${name}-${tag}.png`|`new-${name}-${tag}.png`|' forumshots.js)",
       "Bash(node forumshots.js)",
       "Bash(sed -i \"s|/forum/consoles-peripherals|/forum/consoles|\" unified.js)",
-      "Bash(node unified.js)"
+      "Bash(node unified.js)",
+      "Bash(echo \"  tsc izlaz: $?\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\Documents\\Projekti\\TechPlay\\frontend\\app\\calendar",
