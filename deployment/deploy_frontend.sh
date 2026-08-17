@@ -23,6 +23,13 @@ if [ -d .next/static ]; then
 fi
 
 # 2. Fresh build.
+# Next keeps fetched data in .next/cache between builds, so a rebuild alone does
+# not pick up anything edited in the admin panel — titles and descriptions kept
+# serving their old values through two deploys on 17 Aug 2026 before anybody
+# worked out why. The static chunk archive above is a different directory and is
+# untouched by this.
+rm -rf .next/cache/fetch-cache
+
 npm run build
 
 # 3. Resurrect prior chunks alongside the new ones (-n: never overwrite new).

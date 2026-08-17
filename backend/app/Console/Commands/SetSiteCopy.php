@@ -114,10 +114,13 @@ class SetSiteCopy extends Command
             ['value' => self::SITE_DESCRIPTION],
         );
 
-        // Both are read through caches that would otherwise serve the old
-        // wording until they expired on their own.
-        Cache::forget('site_settings');
-        Cache::forget('page_seo./');
+        // The keys here were guesses, and both were wrong: the endpoints cache
+        // under 'settings.all' / 'settings.grouped' and
+        // 'page_seo.path.<md5>'. The rows were written correctly and the API
+        // kept serving the old wording for an hour, through two rebuilds.
+        Cache::forget('settings.all');
+        Cache::forget('settings.grouped');
+        PageSeo::forgetCache('/');
 
         $this->newLine();
         $this->info('Applied. Rebuild the frontend so the new metadata is rendered.');

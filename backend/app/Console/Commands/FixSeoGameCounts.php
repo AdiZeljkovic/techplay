@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\Game;
 use App\Models\PageSeo;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * The catalogue size, corrected everywhere it is asserted.
@@ -112,6 +111,8 @@ class FixSeoGameCounts extends Command
 
             if (! $dry) {
                 $row->forceFill($changes)->save();
+                // Per path: the endpoint caches each one separately for an hour.
+                PageSeo::forgetCache($row->page_path);
             }
         }
 
@@ -122,7 +123,7 @@ class FixSeoGameCounts extends Command
         } elseif ($dry) {
             $this->info("{$touched} page(s) would change. Dry run — nothing written.");
         } else {
-            Cache::forget('page_seo');
+            PageSeo::forgetCache();
             $this->info("{$touched} page(s) corrected. Rebuild the frontend so the new metadata is served.");
         }
 

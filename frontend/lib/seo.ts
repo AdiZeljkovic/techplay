@@ -34,8 +34,17 @@ export async function fetchPageSeo(path: string): Promise<PageSeoData | null> {
     try {
         // Remove leading slash for API call, then re-add it
         const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+        // Five minutes, not an hour.
+        //
+        // These are two small JSON calls that decide every page's title and
+        // description, and they are edited in an admin form — so the cost of
+        // being wrong is a page that misrepresents itself to search engines,
+        // while the cost of re-fetching is nothing. An hour also outlives a
+        // deploy: Next keeps its fetch cache in .next/cache between builds, so
+        // "I changed the title and rebuilt and nothing happened" was exactly
+        // what it looked like on 17 Aug 2026, twice.
         const res = await fetch(`${API_URL}/page-seo/${encodeURIComponent(cleanPath || '/')}`, {
-            next: { revalidate: 3600 }
+            next: { revalidate: 300 }
         });
 
         if (!res.ok) return null;
@@ -52,7 +61,7 @@ export async function fetchPageSeo(path: string): Promise<PageSeoData | null> {
 export async function fetchSiteSettings(): Promise<SiteSettings> {
     try {
         const res = await fetch(`${API_URL}/settings`, {
-            next: { revalidate: 3600 }
+            next: { revalidate: 300 }
         });
         if (!res.ok) return {};
         return res.json();

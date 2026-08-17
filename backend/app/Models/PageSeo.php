@@ -3,9 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class PageSeo extends Model
 {
+    /**
+     * Drop the cached copies of one page's SEO.
+     *
+     * The endpoint caches under two keys for an hour — `page_seo.all` and
+     * `page_seo.path.<md5 of the path>` — and knowing that was spread across
+     * the admin pages. Two console commands guessed at it, forgot keys that do
+     * not exist, and wrote correct rows that the API then served stale for an
+     * hour while everybody rebuilt the frontend wondering why nothing changed.
+     */
+    public static function forgetCache(?string $path = null): void
+    {
+        Cache::forget('page_seo.all');
+
+        if ($path !== null) {
+            Cache::forget('page_seo.path.'.md5('/'.ltrim($path, '/')));
+        }
+    }
+
     protected $table = 'page_seo';
 
     protected $fillable = [
