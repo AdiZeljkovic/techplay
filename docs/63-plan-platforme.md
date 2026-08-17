@@ -270,3 +270,94 @@ Pošteno da stoji zapisano:
   `pg_stat_statements` to je nagađanje, i zato je u Fazi 4 a ne u Fazi 2.
 - **Da li cluster mod razbija on-demand revalidaciju.** Teorija kaže da ne bi,
   jer je ISR keš na disku. To se mjeri prije nego što se uključi.
+
+---
+
+## Izvršeno 17. 08. 2026. — Faza 1 i dio Faze 2
+
+### Faza 1
+
+| Stavka | Stanje |
+|---|---|
+| Backup skripta i cron | **instalirano**, `/usr/local/bin/techplay-backup`, dnevno 03:15 |
+| Backup van servera | dodan `rsync` put na Hetzner StorageBox; **čeka SSH ključ** |
+| Ranjivi paketi | **riješeno** — vidi niže, bilo je gore nego što je audit rekao |
+| Praćenje grešaka | **čeka nalog** (Sentry) |
+
+**Zavisnosti su bile gore nego što je izgledalo.** `composer audit` je prijavio 18
+upozorenja za verzije **starije** od onih u `composer.lock`. Nije bio lažni alarm —
+`vendor/` i lock su se razišli:
+
+```
+guzzlehttp/guzzle      lock 7.15.3   instalirano 7.11.1
+guzzlehttp/psr7        lock 2.13.0   instalirano 2.11.0
+league/commonmark      lock 2.9.1    instalirano 2.8.2
+phpseclib/phpseclib    lock 3.0.56   instalirano 3.0.53
+```
+
+Dakle ranjivosti **jesu** bile u pogonu, uključujući četiri DoS rupe u
+`league/commonmark` — paketu koji renderuje korisnički markdown na forumu.
+
+`deployment/deploy.sh` oduvijek pokreće `composer install`. Razilaženje je nastalo od
+deployeva rađenih ručno (`git pull`, `config:cache`, restart), koji taj korak preskaču.
+Nakon `composer install`: nula razlika od lock-a, `composer audit` čist.
+
+### Popravljeno usput: svaki pregled igre je bacan
+
+Traženje uzroka za 130.000 Redis ključeva bez isteka otkrilo je da `FlushViewCounters`
+nikad ništa nije našao. Dvije greške u istoj metodi:
+
+1. **Prefiks.** SCAN razgovara s Redisom direktno i vidi prava imena ključeva, koja nose
+   prefiks veze (`techplay-database-views:game:41`), dok GETDEL ide kroz Laravel, koji
+   prefiks dodaje sam. Obrazac je pisan bez njega — a prefiks se čitao u varijablu na
+   prvom redu metode i nikad nije upotrijebljen.
+2. **Omotač.** `Redis::scan()` vraća `false` kad je skup prazan, a kod phpredisa je
+   prazan skup usred iteracije normalna pojava, ne kraj. Rasklapanje `false` daje nulti
+   kursor, pa je petlja stajala na prvom prolazu.
+
+Izmjereno na produkciji, isti obrazac: Laravelov omotač **0** ključeva, sirovi phpredis
+uz `SCAN_RETRY` **128.866**.
+
+Posljedica je bila da su pregledi svih igara od uvođenja brojača završavali u Redisu i
+nikad nigdje dalje. Poslije popravke:
+
+| | prije | poslije |
+|---|---|---|
+| ključeva u Redisu (db0) | 130.834 | **1.335** |
+| `SUM(games.views)` | **0** | **653.338** |
+| igara s pregledima | 0 | **114.035** |
+
+To nisu nove brojke nego **vraćeni podaci** — pregledi koji su se sve vrijeme brojali.
+Ništa nije prijavljivalo grešku dok se to dešavalo, jer flush koji ništa ne nađe izgleda
+isto kao flush koji nema šta raditi. Čuva `tests/Feature/FlushViewCountersTest.php`.
+
+### Faza 2 — urađeno
+
+| Stavka | Stanje |
+|---|---|
+| PostgreSQL podešen | `shared_buffers` 128 MB → **2 GB**, `effective_cache_size` → 5 GB, `work_mem` → 16 MB, `random_page_cost` 4 → **1,1**, `max_connections` 200 → 100, `pg_stat_statements` uključen |
+| `worker_connections` | 768 → **4096** (16.384 veza umjesto 3.072), `worker_rlimit_nofile` 32768 |
+| `php8.3-fpm` | **ugašen** — nginx ga nije zvao nigdje, držao je 205 MB |
+| Swap | **2 GB**, `swappiness=10` |
+| Pravi IP posjetilaca | **vraćen** — `set_real_ip_from` za sve Cloudflareove opsege + `CF-Connecting-IP`, uz sedmični cron koji listu osvježava i odbija je ako stigne krnja |
+
+**O podešavanju baze, pošteno:** nakon njega **nema mjerljivog dobitka** na testiranim
+putanjama (API 756 → 739/s, stranica igre 32,8 → 33,6/s — to je šum). Razlog je što ti
+endpointi idu iz Redis keša, ne iz baze. Plan upita se takođe nije promijenio, samo
+procjena cijene (97.317 → 28.004). Postavke su ispravne po prvim principima — 128 MB
+bafera za bazu od 1 GB je objektivno pogrešno — ali **dobitak nije izmjeren** i pošteno
+je da tako i stoji dok se 2 GB bafera ne napuni i pogođenost ne bude mjerljiva.
+
+**Zašto je vraćanje pravog IP-a bilo hitnije nego što je izgledalo:** nginx je bilježio
+Cloudflareove adrese, pa je pitanje „ko puzi katalog" bilo neodgovorivo — svih osam
+najčešćih izvora na `/games/` bile su `172.70.x` i `162.158.x`. Ali gore od toga:
+`fail2ban` i svako buduće blokiranje po IP-u gledali bi Cloudflareov čvor, a zabrana
+takvog čvora odsijeca dio svih posjetilaca.
+
+### Ostaje iz Faze 2
+
+- **pm2 cluster** — najveći pojedinačni dobitak (SSR s 33 na ~100 zahtjeva/s), ali prvo
+  treba izmjeriti radi li on-demand revalidacija na svim instancama.
+- **Redis: odvojiti keš od redova.** Manje hitno nego što je izgledalo: db0 je pao sa
+  130.834 na 1.335 ključeva čim su brojači počeli raditi, pa pritiska na 768 MB više
+  nema. Odvajanje ostaje ispravno, ali nije više gorući problem.
