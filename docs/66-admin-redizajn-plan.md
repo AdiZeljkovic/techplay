@@ -329,21 +329,16 @@ Novo: **Broken Links** — 62 zapisa koji trenutno nemaju gdje da se vide.
 
 ---
 
-## Dio 6 — Šta treba tvoja odluka
+## Dio 6 — Odluke *(donesene 17.08.2026)*
 
-**1. Jezik panela.** Danas: 37 resursa engleski, Dashboard bosanski.
+**1. Jezik panela: engleski svuda.** Widgeti Dashboarda prevedeni; panel više ne
+govori dva jezika. Nalaz H je zatvoren.
 
-- *Bosanski svuda* — bolji proizvod za tim koji ga koristi svaki dan. Košta
-  prolaz kroz nazive svih 37 resursa, ali pošto redizajn ionako dira svaki od
-  njih, marginalni trošak je mali. **Preporučujem ovo.**
-- *Engleski svuda* — pola sata posla, prevedu se moja četiri widgeta.
+**2. Analytics ostaje kako jeste.** Ne dira se u ovom redizajnu. Nalaz D ostaje
+zapisan za trenutak kad bude podataka za pravu stranicu.
 
-**2. Analytics.** Da li postaje prava stranica (promet, izvori, konverzija) ili
-se widget seli na Dashboard a stavka nestaje?
-
-**3. Ad Campaigns.** 297 redova, 17 polja, 10 kolona — najveći ekran u
-monetizaciji. Koristi li se? Ako da, ostaje kako jeste; ako je pripremljen za
-kasnije, ide pod „skriveno dok je prazno".
+**3. Ad Campaigns se koristi.** Ostaje pun ekran; dobija konvencije liste i novi
+dizajn kao i svi ostali, bez skraćivanja.
 
 ---
 
@@ -351,11 +346,35 @@ kasnije, ide pod „skriveno dok je prazno".
 
 Po odnosu koristi i rizika. Svaka faza je samostalna i deployabilna.
 
-### Faza 1 — Dizajn jezik *(bez rizika, najviše se vidi)*
+### Faza 1 — Dizajn jezik — *urađeno 17.08.2026*
 
-Proširiti `theme.css` s 9 selektora na pun sistem: tabele, obrasci, dugmad,
-badgevi, modali, login. Nijedna PHP izmjena — samo CSS. Ako nešto ne valja,
-vraća se jedan fajl.
+Ispalo je da ovo **nije bio CSS problem.** Panel nije ličio na sajt jer paleta
+nikad nije stigla do njega.
+
+`Color::hex()` čita samo **nijansu** boje koju mu daš, pa svjetlinu i hromu
+gradi iz fiksne ljestvice — a hromu poništi kad je ulaz blizu sive. Tako je
+`#10141B`, najtamnija ploha sajta, izašao kao `oklch(0.3946 0 261)` na nijansi
+900: ravno srednje sivo. Iz `--gray-900` se boje sekcije, sidebar i topbar,
+dakle sve. Akcent je prošao isto — `#DC143C` ušao, svjetlija isprana crvena
+izašla.
+
+Prepisivanje `--color-gray-*` u temi nije pomagalo jer kompajlirana Filamentova
+pravila čitaju `--gray-*` — **drugu varijablu**, koju PHP ubrizga u `<head>` iz
+`->colors()`. Rampe su sada ispisane ručno; nijanse 700–950 su četiri plohe
+sajta, doslovno.
+
+Četiri semantičke boje idu na Filamentove ugrađene rampe, jer već pogađaju
+sajt: Red 500 i `#EF4444` dijele svjetlinu 0.637 i nijansu 25.3; Emerald i
+`#10B981` dijele 0.696 i 162.5; isto Amber i Blue. Razlikuje se samo hroma, i
+tu je Filamentova ista boja u širem gamutu.
+
+Uz to, dvije klase u temi **nisu postojale** — `fi-sidebar-item-button` (pravo
+je `fi-sidebar-item-btn`) i `fi-ta-header-cell-label` (takve klase nema) — pa
+pravila na njima nikad nisu ni primijenjena. Stylesheet pada tiho, i to je
+razlog zašto se provjerava a ne čita.
+
+Tema sada pokriva tabele, obrasce, dugmad, badgeve, tabove, prazna stanja i
+login. Gustina reda pada s 52 na 44px.
 
 ### Faza 2 — Konvencije liste *(nizak rizik, mehanički)*
 
@@ -364,11 +383,43 @@ Kroz svih 37: `ViewAction`, `recordUrl`, `persistFiltersInSession`,
 `defaultSort` gdje fali, prazna stanja s tekstom. Radi se skriptom pa se
 provjerava iscrtavanjem, kao što je rađena navigacija.
 
-### Faza 3 — Broken Links ekran *(bez rizika, novo)*
+### Faza 3 — Broken Links ekran — *urađeno 17.08.2026*
 
-Resurs nad `broken_links`: gdje je link nađen, gdje vodi, koji je status kod,
-kad je zadnji put provjeren, dugme „označi kao popravljeno". Widget na Dashboardu
-dobija `->url()` i broj konačno vodi negdje.
+Prije ekrana je trebalo popraviti podatak.
+
+Skener je slao `HEAD` i predstavljao se kao `TechPlay Link Checker/1.0`, pa je
+**29 od 62 zapisa** bilo 403 s x.com, reddita, samsunga i netflixa — stranica
+koje odbijaju bota, ne stranica kojih nema. Novi `LinkChecker` se predstavlja
+kao preglednik, na 403/405/429/501 pita ponovo `GET`-om (jer je to ono što
+čitalac zapravo vidi) i prati redirekcije — link koji vodi na novu adresu nije
+mrtav, a do sada je računat kao takav.
+
+Ponovna provjera svih 62:
+
+| | |
+|---|---|
+| Provjereno | 62 |
+| **Radi, označeno popravljenim** | **41** |
+| Ostalo neispravnih | 21 |
+| — od toga stvarno nestalih (404/410) | **8** |
+| — odbilo provjeru | 6 |
+| — nedostupno / bez odgovora | 7 |
+
+Ekran ne počinje URL-om nego dijagnozom: *gone* (jedina prava stavka), *refused*,
+*unreachable*. Svaki red ima „check again" jer status kodovi zastarijevaju — tri
+od četiri 5xx zapisa provjerena tog dana odgovaraju 200 danas, skan je uhvatio
+restart Octanea. Badge i kartica na Dashboardu broje samo 404/410; badge koji
+piše 62 kad je osam mrtvo je badge koji naučiš ignorisati.
+
+**Dvoje nađeno usput, van admina i nedirnuto:**
+
+- `/videos` vraća **404**. Sekcija je navedena u `CLAUDE.md`, ali `app/videos`
+  u frontendu ne postoji i ništa je ne linkuje osim jednog članka. Nije
+  regresija — stranica nikad nije napravljena.
+- Četiri obrisane igre (`alone-in-the-dark-2022`, `final-fantasy-1987`,
+  `final-fantasy-10`, `marathon-2`) vraćaju **404 umjesto 410**, jer nemaju
+  zapis u `game_tombstones` — a tabela ima 60.981 red. Znači purge ih je obrisao
+  bez tombstonea. To je stavka iz plana baze igara, ne iz ovog.
 
 ### Faza 4 — Settings *(srednji rizik, najveća korist)*
 
