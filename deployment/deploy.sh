@@ -40,8 +40,16 @@ sudo supervisorctl restart techplay-octane:*
 # autorestart brings them back with the new code).
 php artisan queue:restart
 
-# Same for the Pulse daemons, which cache code like any other long-running
-# process. Non-fatal: Pulse being down must not fail a deploy.
+# 2b. ADMIN PANEL STYLESHEET
+#
+# The panel's theme is compiled by Vite from resources/css/filament/admin, and
+# nothing else builds it — this script used to build the Next.js frontend and
+# leave the backend's own assets alone. For a long time that did not show,
+# because viteTheme() was never called and the compiled file was never loaded;
+# now that it is, a deploy that skips this ships the previous look.
+echo "Building admin theme..."
+npm ci --no-audit --no-fund
+npm run build
 
 # 3. FRONTEND SETUP
 echo "🎨 Building Frontend..."

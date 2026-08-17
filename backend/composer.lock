@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dae44f2c88d0f568a1775157c58a0418",
+    "content-hash": "d9507545bf21140811fa6da19e1f1c73",
     "packages": [
         {
             "name": "blade-ui-kit/blade-heroicons",
@@ -1162,117 +1162,6 @@
                 "source": "https://github.com/ezyang/htmlpurifier/tree/v4.19.0"
             },
             "time": "2025-10-17T16:34:55+00:00"
-        },
-        {
-            "name": "filafly/brisk",
-            "version": "v1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/filafly/brisk.git",
-                "reference": "c5cc3c8124ada91fb2354d5be1208d8644350eda"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/filafly/brisk/zipball/c5cc3c8124ada91fb2354d5be1208d8644350eda",
-                "reference": "c5cc3c8124ada91fb2354d5be1208d8644350eda",
-                "shasum": ""
-            },
-            "require": {
-                "filafly/theme-core": "^1.0",
-                "filament/filament": "^4.0 || ^5.0",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.22",
-                "phpunit/phpunit": "^12.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Filafly\\Themes\\Brisk\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "proprietary"
-            ],
-            "authors": [
-                {
-                    "name": "Nolan Nordlund",
-                    "email": "nolan@filafly.com",
-                    "homepage": "https://www.filafly.com/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "A simple, friendly theme for Filament.",
-            "homepage": "https://filafly.com/themes/brisk",
-            "keywords": [
-                "Simple",
-                "brisk",
-                "filament",
-                "friendly",
-                "laravel",
-                "theme"
-            ],
-            "support": {
-                "issues": "https://github.com/filafly/brisk/issues",
-                "source": "https://github.com/filafly/brisk/tree/v1.1.0"
-            },
-            "time": "2026-01-22T19:28:11+00:00"
-        },
-        {
-            "name": "filafly/theme-core",
-            "version": "v1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/filafly/theme-core.git",
-                "reference": "320023ceec8dd3affaac9cc4ac4bdf56e794eaad"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/filafly/theme-core/zipball/320023ceec8dd3affaac9cc4ac4bdf56e794eaad",
-                "reference": "320023ceec8dd3affaac9cc4ac4bdf56e794eaad",
-                "shasum": ""
-            },
-            "require": {
-                "filament/filament": "^4.0 || ^5.0",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.22"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Filafly\\Themes\\Core\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "proprietary"
-            ],
-            "authors": [
-                {
-                    "name": "Nolan Nordlund",
-                    "email": "nolan@filafly.com",
-                    "homepage": "https://www.filafly.com/",
-                    "role": "Developer"
-                }
-            ],
-            "description": "An extendable theme class accelerating development of Filament themes.",
-            "homepage": "https://filafly.com/",
-            "keywords": [
-                "extendable",
-                "filament",
-                "laravel",
-                "template",
-                "theme"
-            ],
-            "support": {
-                "issues": "https://github.com/filafly/theme-core/issues",
-                "source": "https://github.com/filafly/theme-core/tree/v1.1.0"
-            },
-            "time": "2026-02-26T10:28:09+00:00"
         },
         {
             "name": "filament/actions",

@@ -3,7 +3,6 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Widgets\StatsOverview;
-use Filafly\Themes\Brisk\BriskTheme;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -11,6 +10,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -40,7 +40,43 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('favicon.ico'))
             ->sidebarCollapsibleOnDesktop()
             ->collapsedSidebarWidth('9rem')
-            ->plugin(BriskTheme::make())
+
+            /*
+             * The site's palette, so the panel and the product look like one
+             * thing. Values are the tokens in frontend/app/globals.css:
+             * #DC143C is --accent, and the four semantic colours are the same
+             * ones every alert and badge on the site already uses.
+             *
+             * Filament builds eleven shades from each hex, which is a better
+             * ramp than one written by hand. The exact dark surfaces it cannot
+             * infer are set in resources/css/filament/admin/theme.css.
+             */
+            ->colors([
+                'primary' => Color::hex('#DC143C'),
+                'danger' => Color::hex('#EF4444'),
+                'success' => Color::hex('#10B981'),
+                'warning' => Color::hex('#F59E0B'),
+                'info' => Color::hex('#3B82F6'),
+                'gray' => Color::hex('#10141B'),
+            ])
+
+            /*
+             * Body face. Headings take Instrument Sans and figures take IBM
+             * Plex Mono, both in the theme stylesheet — Filament takes one
+             * family here and the site pairs three.
+             *
+             * This replaces Kumbh Sans, which arrived with the Brisk theme.
+             * Brisk was eight lines of CSS and that font; removing it costs
+             * nothing and stops something else deciding how the panel looks.
+             */
+            ->font('IBM Plex Sans')
+
+            /*
+             * Without this the stylesheet below is compiled on every deploy and
+             * never sent to a browser — which is exactly what had been
+             * happening. The panel was running stock Filament CSS.
+             */
+            ->viteTheme('resources/css/filament/admin/theme.css')
             // ->renderHook(
             //     'panels::head.end',
             //     fn() => view('filament.custom-styles')

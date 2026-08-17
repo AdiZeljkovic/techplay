@@ -1,1 +1,165 @@
-@import '../../../../vendor/filafly/brisk/resources/css/theme.css';
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/*
+ * TechPlay admin — the site's design system, applied to Filament.
+ *
+ * Until now the panel ran on stock Filament CSS plus a font called Kumbh Sans,
+ * which the Brisk theme set and nothing else asked for. `viteTheme()` was never
+ * called, so the 611 KB this file compiles to was built on every deploy and
+ * never loaded. The panel therefore looked like Filament, and the site looks
+ * like TechPlay, and the two shared nothing.
+ *
+ * Every value below is copied from `frontend/app/globals.css`. Where a number
+ * looks odd — 0.3125rem, 0.1875rem — it is odd there too, on purpose: the
+ * frontend's corners are nearly square, and that is a large part of why it
+ * reads the way it does. Rounding them off here would make the panel a
+ * different product.
+ *
+ * The colour ramps come from PHP, in AdminPanelProvider, because Filament
+ * generates eleven shades from one hex better than a person does by hand. What
+ * is here is what a ramp cannot express: the four exact surfaces, the typeface
+ * pairing, and the radii.
+ */
+
+@theme {
+    /*
+     * Three faces, the same three the site uses.
+     *
+     * Instrument Sans carries headings, IBM Plex Sans the body, IBM Plex Mono
+     * anything that is a number. That last one matters more in an admin panel
+     * than on the site: a table of counts, prices and dates is unreadable when
+     * the digits do not line up.
+     */
+    --font-family: 'IBM Plex Sans';
+    --mono-font-family: 'IBM Plex Mono';
+
+    /*
+     * Surfaces, exactly as the site defines them. These four are why the site
+     * looks like a piece of equipment rather than a document — cool, very dark,
+     * and separated by small steps rather than big ones.
+     */
+    --color-gray-950: #05070a; /* --surface-0 */
+    --color-gray-900: #0b0e14; /* --surface-1 */
+    --color-gray-800: #10141b; /* --surface-2 */
+    --color-gray-700: #161b22; /* --surface-3 */
+    --color-gray-600: #262c36;
+    --color-gray-500: #3a4250;
+    --color-gray-400: #71717a; /* --text-muted */
+    --color-gray-300: #a1a1aa; /* --text-secondary */
+    --color-gray-200: #c9cbd1;
+    --color-gray-100: #e4e5e8;
+    --color-gray-50: #f4f4f5;
+}
+
+:root {
+    /*
+     * Radii. The site's scale, not Tailwind's — panel 8px, card 5px, inner 3px.
+     * Filament's own default is roughly twice this at every step.
+     */
+    --radius-panel: 0.5rem;
+    --radius-card: 0.3125rem;
+    --radius-inner: 0.1875rem;
+}
+
+/*
+ * Headings take the display face.
+ *
+ * Filament sets one family for everything. The site pairs two, and the pairing
+ * is most of its character: Instrument Sans is narrower and more geometric,
+ * which is why headings read as headings without needing to be large.
+ */
+.fi-header-heading,
+.fi-section-header-heading,
+.fi-modal-heading,
+.fi-wi-stats-overview-stat-value,
+.fi-ta-header-cell-label,
+h1,
+h2,
+h3 {
+    font-family: 'Instrument Sans', var(--font-family), sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/*
+ * Anything that is a number gets the mono face and tabular figures.
+ *
+ * A table of view counts where the digits do not align is a table you have to
+ * read twice. This is the single change with the largest effect on how the
+ * panel feels to use.
+ */
+.fi-ta-text-item-label:has(+ *),
+.fi-wi-stats-overview-stat-value,
+.fi-ta-record-checkbox,
+.fi-badge {
+    font-variant-numeric: tabular-nums;
+}
+
+.fi-wi-stats-overview-stat-value {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+
+/*
+ * Borders, at the site's weight.
+ *
+ * The site draws lines at 6% white and raises them to 12% where something is
+ * interactive. Filament's default is a solid grey that reads as much heavier
+ * against a surface this dark.
+ */
+.dark .fi-section,
+.dark .fi-ta,
+.dark .fi-modal-window,
+.dark .fi-dropdown-panel,
+.dark .fi-input-wrp {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.dark .fi-input-wrp:focus-within,
+.dark .fi-btn:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/*
+ * The sidebar carries the site's own left-edge treatment: an accent bar on the
+ * active item rather than a filled pill. On a dark, low-contrast surface a
+ * filled block is a lot of colour for "you are here"; a 2px rule says the same
+ * thing quietly, and it is what the site's navigation does.
+ */
+.dark .fi-sidebar-item-active .fi-sidebar-item-button {
+    background-color: rgba(255, 255, 255, 0.03);
+    box-shadow: inset 2px 0 0 0 var(--color-primary-500);
+}
+
+.dark .fi-sidebar-group-label {
+    font-family: 'Instrument Sans', var(--font-family), sans-serif;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/*
+ * The top rule the site puts above every panel. One hairline, fading out at
+ * both ends, in the accent. It is the site's signature and costs nothing.
+ */
+.dark .fi-main > .fi-section:first-child::before {
+    content: '';
+    position: absolute;
+    inset-inline: 1.5rem;
+    top: 0;
+    height: 2px;
+    background: linear-gradient(
+        to right,
+        transparent,
+        color-mix(in srgb, var(--color-primary-500) 60%, transparent),
+        transparent
+    );
+}
+
+.dark .fi-main > .fi-section:first-child {
+    position: relative;
+}
