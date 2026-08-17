@@ -41,7 +41,11 @@ class PublishingPulse extends BaseWidget
         });
 
         $last = $data['last'] ? Carbon::parse($data['last']) : null;
-        $daysSince = $last ? (int) $last->startOfDay()->diffInDays(now()->startOfDay()) : null;
+        // copy() matters here. Carbon is mutable, so `$last->startOfDay()`
+        // rewinds the instance to midnight — and the description below then
+        // prints "00:00" for an article published at 15:58. It looked right
+        // until the two were read side by side.
+        $daysSince = $last ? (int) $last->copy()->startOfDay()->diffInDays(now()->startOfDay()) : null;
 
         return [
             Stat::make('Danas', $data['today'])
