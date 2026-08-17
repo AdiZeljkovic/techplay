@@ -365,3 +365,107 @@ dva sata (1 h nginx + 1 h rub). Ako to postane problem, čisti se oboje —
 
 Skripta koja je sve primijenila, uz backup zatečenih pravila u JSON: `cf_apply.py`
 (scratchpad sesije). Detalji u `deployment/cloudflare-cache-rules.md`.
+
+---
+
+## Sadržajne ispravke, 2026-08-17
+
+Četiri stavke koje su ostale otvorene iz prethodnih sekcija, redom.
+
+### Članak datiran tri mjeseca unaprijed
+
+Članak #119 (`what-does-valves-new-console-mean-for-the-market`) nosio je
+`published_at = 2026-11-14`, a nastao je u siječnju i zadnji put uređen **7. 8. 2026.**
+
+Nije bio zakazan. Zakazivanje ovdje ide preko `status = 'scheduled'`, koji komanda
+`articles:publish-scheduled` prebacuje u `published` kad dođe vrijeme — pa je `published` s
+datumom unaprijed uvijek greška u podacima, nikad plan. Posljedica je bila trostruka:
+
+1. **News sitemap** je uzimao `published_at >= now()-48h` **bez gornje granice**, a "kasnije
+   od prije 48 sati" je trajno istinito za budući datum. Članak je zato bio jedini i stalni
+   stanovnik feeda od kolovoza nadalje. Google News odbija budući datum objave i odbija feed
+   koji ga nosi — dakle **cijeli news feed je bio nevažeći koliko god je taj red postojao**.
+2. Članak je bio **dostupan direktno**, ali ga **nije bilo ni na jednoj listi** — liste
+   filtriraju `published_at <= now()`, detaljna ruta ne.
+3. Datum objave vidljiv čitaocu bio je neistinit.
+
+**Popravljeno:** prozor je sada omeđen s obje strane (`whereBetween`), i indeks više ne
+oglašava feed koji je samo budući datum držao otvorenim. Dva testa u
+`SitemapAndRobotsTest`. Datum članka vraćen na `updated_at` — jedinu činjenicu koju baza
+nosi; pogađati koji je mjesec trebao biti nije popravka. Članak je sada na listi `/news`,
+sedmi po redu.
+
+**Provjereno poslije:** nijedan članak ni vodič više nije datiran u budućnost.
+`sitemap-news.xml` sadrži samo `/news` i **više nije u indeksu** — ispravno, jer u zadnja
+48 sata nema objava.
+
+### "1.000.000+ igara" — 34 stranice, ne pet
+
+`seo:fix-game-counts` je hvatao `1M+`, `one million` i `over a million`, ali **ne i oblik s
+razdjelnicima**: `1,000,000`. Ispisan brojevima, ne liči na skraćenicu za koju su obrasci
+pisani. Ostalo je stajati na `/impressum` ("our 1,000,000+ game database"), na `/marketing`
+("data on over 1,000,000 titles" — stranica na kojoj se tvrdnja iznosi nekome od koga se
+traži novac), i na `/hardware/*`, `/forum/*`, `/reviews/*`, `/cookies`, `/register`.
+
+**Popravljeno: 34 stranice.** Katalog drži 142.110; upisano je "140.000+", zaokruženo
+nadolje na deset tisuća da rečenica ostane istinita kako katalog raste. Provjereno poslije:
+riječ "million" ne postoji ni u jednom polju nijednog `page_seo` zapisa.
+
+### Tvrdnje o publici
+
+`seo:fix-game-counts` ih je namjerno samo **prijavljivao**, uz obrazloženje da regex ne
+treba odlučivati kakva je publika. To je vrijedilo dok neko ne odluči. Nova komanda
+`seo:fix-audience-claims` je ta odluka, ispisana:
+
+| Stranica | Bilo | Sada |
+|---|---|---|
+| `/marketing` | "reach millions of gaming enthusiasts" | "reach an audience that arrives for the hardware numbers and stays for the catalogue" |
+| `/marketing` | "a highly engaged, tech-savvy audience of millions worldwide" | "a highly engaged, technical audience" |
+| `/impressum` | "a trusted environment for our millions of readers worldwide" | "a trusted environment for our readers" |
+| `/terms` | "a trusted advisor for millions of enthusiasts worldwide" | "a reference for people who take games and hardware seriously" |
+
+Zamjene **ne ubacuju manji broj**. Stvaran broj zastari za mjesec dana i vraća isti problem;
+publika se opisuje po tome kakva jest, a ne koliko je ima. Za oglašivača je to i korisnije —
+"angažirana i tehnička" prodaje bolje od brojke koju kupac provjeri u alatu za procjenu
+prometa i ne povjeruje joj.
+
+Svaka zamjena je ispisana doslovno, a komanda odbija upis kad ne nađe tačno očekivani tekst
+— ručna izmjena u admin panelu se nikad tiho ne pregazi.
+
+### "Devet stranica bez SEO zapisa" — nalaz je bio pogrešan
+
+Provjera je pokazala nešto drugo. Šest GTA6 stranica, `/roadmap` i `/latest` imaju u kodu
+**bolje naslove i opise nego što bi im se upisalo u bazu** ("GTA 6 Interactive Map — 1,000+
+Locations in Vice City & Leonida"). Nedostatak zapisa im nije problem.
+
+Pravi problem je bio drugdje, i šira klasa: **pet stranica je izgovaralo brend dvaput.**
+
+| | Bilo | Sada |
+|---|---|---|
+| `/giveaways` | Giveaways - TechPlay \| TechPlay | Giveaways \| TechPlay |
+| `/calendar` | Game Release Calendar - TechPlay \| TechPlay | Game Release Calendar \| TechPlay |
+| `/shop` | Shop - TechPlay \| Gaming Merchandise & Gear \| TechPlay | Shop — Gaming Merchandise & Gear \| TechPlay |
+| `/wow-analyzer` | … Gear Check \| TechPlay \| TechPlay | … Gear Check \| TechPlay |
+| `/media-kit` | Advertise on TechPlay \| … 2026 \| TechPlay | Advertise on TechPlay — Media Kit 2026 |
+
+Ista greška kao `/news` ranije, ali s druge strane: tamo je **fallback** bio brend, ovdje ga
+je **default već sadržavao**. `/media-kit` je riješen suprotno od ostalih — tamo brend
+zaslužuje mjesto u rečenici, pa je naslov označen apsolutnim i sufiks otpada.
+
+### Ostaje na odluku vlasnika
+
+`/media-kit` iznosi četiri konkretne brojke oglašivačima: **"20K+ engaged gamers"**,
+**"CPM from $1.00"**, **"62% desktop traffic"**, **"12.4% monthly growth"**. Nijedna se ne
+može potkrijepiti iz baze. Ono što baza nosi:
+
+| | |
+|---|---|
+| registrovanih korisnika | 51 |
+| aktivnih zadnjih 30 dana | 2 |
+| objavljenih članaka | 619 |
+| ukupno pregleda članaka (od početka) | 129.931 |
+
+Brojke o prometu možda postoje u Google Analyticsu, koji odavde nije vidljiv — zato ovo nije
+dirano. Ali dok se ne potvrde, to su tvrdnje prema kupcima. Standard u industriji za medijski
+kit ove veličine je ne objaviti brojku koju ne možeš braniti, nego "trenutne brojke na
+upit".
