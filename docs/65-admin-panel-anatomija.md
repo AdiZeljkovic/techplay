@@ -210,7 +210,7 @@ vidi — sadržaj stiže drugim Livewire zahtjevom. Provjera ide preko
 | `Roles` i `Social Media` oba imaju `sort = 3` u System grupi | redoslijed je slučajan, mijenja se između deployeva |
 | GTA 6 koristi `sort` 11, 12, 13 za tri stavke | brojevi nemaju značenje; grupa ih ionako drži zajedno |
 | Sedam resursa ima **nula redova** | GameRating, Order, Post, Product, Report, UserSupport — svaki je stavka u sidebaru koju treba preskočiti |
-| `Posts` (0) stoji uz `Threads` (7) | forum koristi `Thread` + `ForumPost`; `Post` je treći model koji niko ne puni |
+| `Posts` (0) stoji uz `Threads` (7) | ~~forum koristi `Thread` + `ForumPost`; `Post` je treći model koji niko ne puni~~ **netačno, vidi ispod** |
 | Tri SEO površine se iz sidebara ne razlikuju | SEO Manager / Ultimate SEO / Page SEO — audit iz avgusta je potvrdio da nisu duplikati nego tri sloja, ali imena to ne kažu |
 | `Categories` i `Forum Categories` su isti model | razlikuje ih `type`; ispravno, ali iz sidebara izgleda kao greška |
 
@@ -303,8 +303,38 @@ Resurs ostaje dostupan preko URL-a i vrati se u sidebar sam s prvim zapisom.
 Cijena je šest `SELECT EXISTS` upita po iscrtavanju navigacije, što je na
 prometu admin panela ispod mjerljivog.
 
-Za `Post` i dalje stoji pitanje je li model uopće u upotrebi — forum radi na
-`Thread` + `ForumPost`. Sakrivanje kupuje vrijeme, ne odgovara na to.
+### `Post` nije mrtav model — forum je prazan *(provjereno 17.08.2026)*
+
+Ovaj dokument je dvaput tvrdio da forum radi na `Thread` + `ForumPost` i da je
+`Post` treći model koji niko ne puni. **Netačno.** `ForumPost` model ne postoji;
+`ForumPostObserver` posmatra baš `Post`. Forum ima dva modela, ne tri:
+
+```
+Thread  →  tema
+Post    →  odgovor u temi
+```
+
+`Post` je referenciran na 18 mjesta u živom kodu — `ForumController` (8×,
+uključujući `createPost`, spajanje tema, označavanje rješenja),
+`PostReactionController`, `GiveawayController` (uslov za učešće),
+`ReportController`, relacije na `Thread`, `User` i `Category`, observer i
+policy. Put za odgovaranje je cijel:
+
+| Sloj | Stanje |
+|---|---|
+| `POST /forum/threads/{slug}/posts` | postoji, `throttle:20,1` + `ban.check` |
+| `ThreadClient.tsx` | zove je, plus izmjena, brisanje i označavanje rješenja |
+| `/forum` i stranica teme | HTTP 200 |
+| `/forum` u navigaciji | linkovan 3× s naslovne |
+
+Nula redova znači tačno ono što piše: **niko nikad nije odgovorio.** Svih 7 tema
+je napravljeno 27.01.2026, istog dana, i to su uvodne teme („Welcome to
+TechPlay", „The Introduction Megathread", „The Rig Showcase"). Nula reakcija na
+odgovore jer nema odgovora.
+
+To je proizvodno pitanje, ne tehničko, i sakrivanje reda iz sidebara je ovdje
+ispravan potez upravo zato: ništa se ne briše, a red se vrati sam onog dana kad
+neko prvi put odgovori.
 
 ---
 
