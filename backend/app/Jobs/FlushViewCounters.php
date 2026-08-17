@@ -39,13 +39,29 @@ class FlushViewCounters implements ShouldQueue
         $this->flushPattern('clicks:ad:*', 'ad_campaigns', 'click_count');
     }
 
+    /**
+     * The prefix is the whole job.
+     *
+     * SCAN talks to Redis directly and sees the real key names, which carry the
+     * connection's prefix: `techplay-database-views:game:41`. GETDEL goes
+     * through Laravel, which adds that prefix itself. So a pattern written
+     * without it matches nothing, and a key passed back with it gets the prefix
+     * twice and deletes something that does not exist.
+     *
+     * This code read the prefix into a variable and then never used it. The
+     * result, measured on 17 Aug 2026: 130,861 `views:game:*` keys in Redis, not
+     * one of them with an expiry, and `SUM(games.views)` = **0**. Every view of
+     * every game since the counters were introduced had been counted into Redis
+     * and never written anywhere. Nothing failed; the flush simply never found
+     * anything to flush, five minutes at a time.
+     */
     private function flushPattern(string $pattern, string $table, string $column): void
     {
-        $prefix = config('database.redis.options.prefix', '');
+        $prefix = (string) config('database.redis.options.prefix', '');
         $cursor = '0';
 
         do {
-            [$cursor, $keys] = Redis::scan($cursor, ['match' => $pattern, 'count' => 100]);
+            [$cursor, $keys] = Redis::scan($cursor, ['match' => $prefix.$pattern, 'count' => 100]);
 
             if (empty($keys)) {
                 continue;
@@ -53,6 +69,12 @@ class FlushViewCounters implements ShouldQueue
 
             foreach ($keys as $key) {
                 $id = (int) substr($key, strrpos($key, ':') + 1);
+
+                // Back to the unprefixed name, because everything below goes
+                // through Laravel and Laravel prefixes for us.
+                $key = $prefix !== '' && str_starts_with($key, $prefix)
+                    ? substr($key, strlen($prefix))
+                    : $key;
 
                 if ($id <= 0) {
                     continue;
