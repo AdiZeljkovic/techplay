@@ -198,3 +198,44 @@ Izmjereno protiv produkcije, ne pretpostavljeno.
 3. **11 GTA6 likova vraća 404** na produkciji a rade lokalno — deployani build je stariji.
 4. `/news` i `/reviews` imaju `<title>TechPlay | TechPlay</title>`; `og:image` fali na svim hub stranicama; `/calendar` i `/leaderboard` bez canonicala; `/games` i `/forum` bez `<h1>`.
 5. **Google News:** tehnika je spremna, ritam nije — 1 članak u 30 dana, a jedini u news sitemapu datiran je 14. 11. 2026, u budućnosti.
+
+### Zašto popravka sitemapa nije radila — 17. 08. 2026
+
+Kod je bio ispravan, deployan, proces restartovan, OPcache isključen, svi Laravel kešovi
+očišćeni — a sajt je i dalje servirao `/tech/` putanje. Sat vremena traženja, pa nalaz:
+
+**`sitemap:generate` piše statične XML fajlove u `public/`, a FrankenPHP servira svaki
+stvarni fajl iz `public/` prije nego što PHP uopšte bude pozvan.** Rute u `web.php` za te
+putanje na produkciji **nikad se ne izvršavaju**.
+
+Redoslijed eliminacije, da se ne ponavlja:
+
+| Sumnja | Provjera | Ishod |
+|---|---|---|
+| Kod nije deployan | `grep` po fajlu na serveru | fajl ima novu verziju |
+| OPcache drži stari bytecode | `php -i \| grep opcache` | OPcache potpuno **isključen** |
+| Proces radi iz drugog direktorija | `grep directory /etc/supervisor/conf.d/*octane*` | ispravan put |
+| Laravel keš (config/route) | `optimize:clear` + restart | bez promjene |
+| Druga kopija klase | `find` + `autoload_classmap.php` | jedna klasa, jedan put |
+| **CLI vs HTTP** | isti kontroler kroz `tinker` | **CLI daje `/hardware/`, HTTP `/tech/`** |
+| Statični fajl u `public/` | `ls public/sitemap*.xml` | **15 fajlova, pisani u ponoć** |
+
+Zaključna provjera je bila ključna: pokrenuti **isti kod kroz CLI** i uporediti sa serviranim
+odgovorom. Kad se ta dva razlikuju, uzrok nije u kodu ni u kešu — nego u tome što se kod ne
+izvršava.
+
+**Statičko generisanje ostaje** i to je ispravno na ovoj skali: fajlovi kataloga su po ~8 MB,
+166.000 URL-ova ukupno; sastavljati to na svaki zahtjev znači upit nad 50.000 redova svaki
+put kad crawler dođe.
+
+**Popravljeno je ono što nije standard:**
+
+1. `GenerateSitemap` sada **briše fajlove koje više ne piše**. Zatečeno: `sitemap-videos.xml`
+   od prije uklanjanja videa, i `sitemap-games-4.xml` i `-5.xml` od 109 bajta otkad se katalog
+   smanjio s pet fajlova na tri. Sva tri su se i dalje servirala, a index ih nije referencirao.
+2. Napomena u `routes/web.php` da su te rute **fallback**, a ne ono što sajt servira, i da
+   nakon izmjene kontrolera treba pokrenuti `sitemap:generate`.
+3. `/public/sitemap*.xml` u `.gitignore` — bili su neignorisani, pa bi `git add -A` unio 8 MB
+   XML-a u repo, a zastarjela kopija bi se deployala preko svježe.
+
+**Za deploy:** nakon svake izmjene `SitemapController`, obavezno `php artisan sitemap:generate`.

@@ -11,6 +11,23 @@ Route::get('/', function () {
 
 // Sitemaps
 Route::get('/feed', [RssController::class, 'index']);
+/*
+ * Sitemaps: these routes are a fallback, not what the site serves.
+ *
+ * `sitemap:generate` writes the same XML to public/ every six hours, and
+ * FrankenPHP serves any real file there before PHP is reached — so on
+ * production the files win and none of the routes below ever run.
+ *
+ * That is on purpose: the catalogue files are ~8 MB each and 166,000 URLs in
+ * total, which is not something to assemble per request. But it cost an hour on
+ * 17 Aug 2026, because a fix to SitemapController changed nothing and every
+ * obvious suspect — OPcache, config cache, route cache, a stale process — was
+ * eliminated before anybody thought to look in public/.
+ *
+ * So: change the controller, then run `php artisan sitemap:generate`. The
+ * routes stay because they are what the generator calls, and because a missing
+ * file should answer with fresh XML rather than a 404.
+ */
 Route::get('/sitemap.xml', [SitemapController::class, 'index']);
 Route::get('/sitemap-pages.xml', [SitemapController::class, 'pages']);
 Route::get('/sitemap-articles.xml', [SitemapController::class, 'articles']);

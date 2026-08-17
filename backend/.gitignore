@@ -25,3 +25,10 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Sitemaps are generated into public/ by `sitemap:generate` every six hours.
+# They are build output, not source: the catalogue files run to ~8 MB each, and
+# a stale copy committed here would be deployed over the fresh one and served
+# ahead of the routes — FrankenPHP answers with any real file in public/ before
+# PHP is reached.
+/public/sitemap*.xml
