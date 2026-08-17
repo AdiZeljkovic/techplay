@@ -28,7 +28,7 @@ class CatalogueHealth extends BaseWidget
 {
     protected static ?int $sort = 3;
 
-    protected ?string $heading = 'Katalog igara';
+    protected ?string $heading = 'Game catalogue';
 
     protected function getStats(): array
     {
@@ -45,14 +45,14 @@ class CatalogueHealth extends BaseWidget
         $share = $data['total'] > 0 ? round($data['described'] / $data['total'] * 100) : 0;
 
         return [
-            Stat::make('Igara u katalogu', number_format($data['total']))
-                ->description($data['week'] > 0 ? '+'.number_format($data['week']).' ove sedmice' : 'ništa novo ove sedmice')
+            Stat::make('Games in catalogue', number_format($data['total']))
+                ->description($data['week'] > 0 ? '+'.number_format($data['week']).' this week' : 'nothing new this week')
                 ->descriptionIcon('heroicon-m-puzzle-piece')
                 ->url(GameResource::getUrl('index'))
                 ->color('primary'),
 
-            Stat::make('U sitemapu', $share.'%')
-                ->description(number_format($missing).' bez opisa, dakle nevidljivo')
+            Stat::make('In sitemap', $share.'%')
+                ->description(number_format($missing).' without a description, so invisible')
                 ->descriptionIcon('heroicon-m-magnifying-glass')
                 // Below three quarters the catalogue's reach is materially
                 // smaller than its size, which is the whole argument for having
@@ -63,8 +63,8 @@ class CatalogueHealth extends BaseWidget
                     default => 'danger',
                 }),
 
-            Stat::make('Pregleda igara', number_format($data['views']))
-                ->description('ukupno, od uvođenja brojača')
+            Stat::make('Game views', number_format($data['views']))
+                ->description('total, since the counter was added')
                 ->descriptionIcon('heroicon-m-eye')
                 ->color($data['views'] > 0 ? 'success' : 'danger'),
         ];

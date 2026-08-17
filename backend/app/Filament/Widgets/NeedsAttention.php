@@ -31,7 +31,7 @@ class NeedsAttention extends BaseWidget
 {
     protected static ?int $sort = 1;
 
-    protected ?string $heading = 'Traži pažnju';
+    protected ?string $heading = 'Needs attention';
 
     /**
      * Sixty seconds.
@@ -55,32 +55,32 @@ class NeedsAttention extends BaseWidget
         $stats = [];
 
         if ($counts['comments'] > 0) {
-            $stats[] = Stat::make('Komentari na čekanju', $counts['comments'])
-                ->description('Čekaju odobrenje')
+            $stats[] = Stat::make('Pending comments', $counts['comments'])
+                ->description('Waiting for approval')
                 ->descriptionIcon('heroicon-m-chat-bubble-left-ellipsis')
                 ->url(CommentResource::getUrl('index'))
                 ->color('warning');
         }
 
         if ($counts['reports'] > 0) {
-            $stats[] = Stat::make('Otvorene prijave', $counts['reports'])
-                ->description('Neko je nešto prijavio')
+            $stats[] = Stat::make('Open reports', $counts['reports'])
+                ->description('Somebody reported something')
                 ->descriptionIcon('heroicon-m-flag')
                 ->url(ReportResource::getUrl('index'))
                 ->color('danger');
         }
 
         if ($counts['review'] > 0) {
-            $stats[] = Stat::make('Na reviziji', $counts['review'])
-                ->description('Napisano, čeka odobrenje')
+            $stats[] = Stat::make('In review', $counts['review'])
+                ->description('Written, awaiting approval')
                 ->descriptionIcon('heroicon-m-eye')
                 ->url(NewsResource::getUrl('index'))
                 ->color('warning');
         }
 
         if ($counts['drafts'] > 0) {
-            $stats[] = Stat::make('Draftovi', $counts['drafts'])
-                ->description('Započeto, nije objavljeno')
+            $stats[] = Stat::make('Drafts', $counts['drafts'])
+                ->description('Started, never published')
                 ->descriptionIcon('heroicon-m-pencil')
                 ->url(NewsResource::getUrl('index'))
                 ->color('gray');
@@ -88,23 +88,23 @@ class NeedsAttention extends BaseWidget
 
         // A failed job is never routine. It stays red however few there are.
         if ($counts['failed'] > 0) {
-            $stats[] = Stat::make('Neuspjeli poslovi', $counts['failed'])
-                ->description('Red poslova nešto nije obradio')
+            $stats[] = Stat::make('Failed jobs', $counts['failed'])
+                ->description('The queue failed to process something')
                 ->descriptionIcon('heroicon-m-exclamation-triangle')
                 ->color('danger');
         }
 
         if ($counts['links'] > 0) {
-            $stats[] = Stat::make('Mrtvi linkovi', $counts['links'])
-                ->description('Nađeni sedmičnim skenom')
+            $stats[] = Stat::make('Broken links', $counts['links'])
+                ->description('Found by the weekly scan')
                 ->descriptionIcon('heroicon-m-link-slash')
                 ->color($counts['links'] > 50 ? 'danger' : 'warning');
         }
 
         if ($stats === []) {
             return [
-                Stat::make('Sve čisto', '—')
-                    ->description('Ništa ne čeka odobrenje ni popravku')
+                Stat::make('All clear', '—')
+                    ->description('Nothing waiting for approval or repair')
                     ->descriptionIcon('heroicon-m-check-circle')
                     ->color('success'),
             ];

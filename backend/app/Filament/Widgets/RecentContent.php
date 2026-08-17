@@ -91,7 +91,7 @@ class RecentContent extends BaseWidget
                     }.'/'.$record->slug)
                     ->openUrlInNewTab(),
             ])
-            ->emptyStateHeading('Još ništa nije objavljeno')
+            ->emptyStateHeading('Nothing published yet')
             ->emptyStateIcon('heroicon-o-document-text');
     }
 

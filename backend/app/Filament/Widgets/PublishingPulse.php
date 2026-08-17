@@ -24,7 +24,7 @@ class PublishingPulse extends BaseWidget
 {
     protected static ?int $sort = 2;
 
-    protected ?string $heading = 'Objavljivanje';
+    protected ?string $heading = 'Publishing';
 
     protected function getStats(): array
     {
@@ -48,22 +48,22 @@ class PublishingPulse extends BaseWidget
         $daysSince = $last ? (int) $last->copy()->startOfDay()->diffInDays(now()->startOfDay()) : null;
 
         return [
-            Stat::make('Danas', $data['today'])
-                ->description($data['week'].' ove sedmice')
+            Stat::make('Today', $data['today'])
+                ->description($data['week'].' this week')
                 ->descriptionIcon('heroicon-m-document-text')
                 ->chart($data['series'])
                 ->color($data['today'] > 0 ? 'success' : 'gray'),
 
-            Stat::make('Ovaj mjesec', $data['month'])
-                ->description('objavljenih članaka')
+            Stat::make('This month', $data['month'])
+                ->description('articles published')
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('primary'),
 
             Stat::make(
-                'Od zadnje objave',
-                $daysSince === null ? '—' : ($daysSince === 0 ? 'danas' : $daysSince.($daysSince === 1 ? ' dan' : ' dana')),
+                'Since last publish',
+                $daysSince === null ? '—' : ($daysSince === 0 ? 'today' : $daysSince.($daysSince === 1 ? ' day' : ' days')),
             )
-                ->description($last ? $last->format('d.m.Y H:i') : 'nema objava')
+                ->description($last ? $last->format('d.m.Y H:i') : 'nothing published yet')
                 ->descriptionIcon('heroicon-m-clock')
                 // Google News drops a publisher that goes quiet. Three days is
                 // a slow week; seven is a problem somebody should know about.

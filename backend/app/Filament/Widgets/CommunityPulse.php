@@ -28,7 +28,7 @@ class CommunityPulse extends BaseWidget
 {
     protected static ?int $sort = 4;
 
-    protected ?string $heading = 'Zajednica';
+    protected ?string $heading = 'Community';
 
     protected function getStats(): array
     {
@@ -45,23 +45,23 @@ class CommunityPulse extends BaseWidget
         $endsIn = $season?->end_date ? (int) now()->startOfDay()->diffInDays($season->end_date, false) : null;
 
         return [
-            Stat::make('Aktivni (7 dana)', $data['active'])
-                ->description('od '.number_format($data['users']).' registrovanih')
+            Stat::make('Active (7 days)', $data['active'])
+                ->description('of '.number_format($data['users']).' registered')
                 ->descriptionIcon('heroicon-m-user-circle')
                 ->url(UserResource::getUrl('index'))
                 ->color($data['active'] > 0 ? 'success' : 'gray'),
 
-            Stat::make('Novi ovaj mjesec', $data['new'])
-                ->description($data['comments'].' komentara ove sedmice')
+            Stat::make('New this month', $data['new'])
+                ->description($data['comments'].' comments this week')
                 ->descriptionIcon('heroicon-m-user-plus')
                 ->color($data['new'] > 0 ? 'primary' : 'gray'),
 
-            Stat::make('Sezona', $season?->name ?? 'nijedna aktivna')
+            Stat::make('Season', $season?->name ?? 'none active')
                 ->description(match (true) {
-                    $season === null => 'quest-ovi nemaju sezonu',
-                    $endsIn === null => $data['bounty'].' bounty transakcija ove sedmice',
-                    $endsIn < 0 => 'istekla prije '.abs($endsIn).' dana',
-                    default => 'još '.$endsIn.' dana · '.$data['bounty'].' transakcija ove sedmice',
+                    $season === null => 'quests belong to no season',
+                    $endsIn === null => $data['bounty'].' bounty transactions this week',
+                    $endsIn < 0 => 'ended '.$this->days(abs($endsIn)).' ago',
+                    default => $this->days($endsIn).' left · '.$data['bounty'].' transactions this week',
                 })
                 ->descriptionIcon('heroicon-m-trophy')
                 ->color(match (true) {
@@ -71,5 +71,14 @@ class CommunityPulse extends BaseWidget
                     default => 'success',
                 }),
         ];
+    }
+
+    /**
+     * "1 days ago" is the kind of thing nobody reports and everybody notices,
+     * and a season boundary is exactly where the count is 1.
+     */
+    private function days(int $n): string
+    {
+        return $n.($n === 1 ? ' day' : ' days');
     }
 }

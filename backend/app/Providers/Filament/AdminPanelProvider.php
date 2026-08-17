@@ -45,22 +45,76 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
 
             /*
-             * The site's palette, so the panel and the product look like one
-             * thing. Values are the tokens in frontend/app/globals.css:
-             * #DC143C is --accent, and the four semantic colours are the same
-             * ones every alert and badge on the site already uses.
+             * The palette, and the reason it is written out longhand.
              *
-             * Filament builds eleven shades from each hex, which is a better
-             * ramp than one written by hand. The exact dark surfaces it cannot
-             * infer are set in resources/css/filament/admin/theme.css.
+             * This used to be six calls to `Color::hex()`. That looked right and
+             * was not: `generatePalette()` reads only the **hue** off the colour
+             * you hand it, then rebuilds lightness and chroma from a fixed
+             * ladder — and it zeroes the chroma entirely when the input is
+             * near-grey. So `Color::hex('#10141B')`, the site's darkest panel,
+             * came out the far end as `oklch(0.3946 0 261)` at shade 900: a flat
+             * mid-grey. Every section, the sidebar and the topbar are painted
+             * from `--gray-900`, so the whole panel was mid-grey while the site
+             * is near-black. The accent fared no better — #DC143C went in and a
+             * lighter, washed-out crimson came out.
+             *
+             * Overriding `--color-gray-*` in the stylesheet did not fix it,
+             * because the compiled component rules read `--gray-*`, which is a
+             * different variable injected at runtime from exactly this array.
+             *
+             * Shades 700–950 are the site's four surfaces, unchanged. The ramp
+             * stays monotonic light-to-dark so the light theme still works if
+             * anybody switches to it.
              */
             ->colors([
-                'primary' => Color::hex('#DC143C'),
-                'danger' => Color::hex('#EF4444'),
-                'success' => Color::hex('#10B981'),
-                'warning' => Color::hex('#F59E0B'),
-                'info' => Color::hex('#3B82F6'),
-                'gray' => Color::hex('#10141B'),
+                'gray' => [
+                    50 => 'oklch(0.975 0.002 260)',
+                    100 => 'oklch(0.935 0.004 260)',
+                    200 => 'oklch(0.860 0.006 260)',
+                    300 => 'oklch(0.740 0.009 260)',
+                    400 => 'oklch(0.610 0.012 260)',  // prigušen tekst
+                    500 => 'oklch(0.490 0.015 260)',  // placeholder
+                    600 => 'oklch(0.380 0.018 260)',  // ivice
+                    700 => 'oklch(0.220 0.016 257)',  // #161B22  surface-3
+                    800 => 'oklch(0.190 0.016 262)',  // #10141B  surface-2
+                    900 => 'oklch(0.164 0.014 264)',  // #0B0E14  surface-1
+                    950 => 'oklch(0.127 0.009 254)',  // #05070A  surface-0
+                ],
+
+                /*
+                 * In dark mode Filament reads primary-400 for text and icons and
+                 * primary-500 for fills — 22 rules against 23. The site already
+                 * makes that exact distinction: --accent is the fill, --accent-ink
+                 * the same red lifted for text on a dark ground. So 500 is
+                 * #DC143C and 400 is #FF4D6A, which is not a compromise but the
+                 * pairing the design system was built around.
+                 */
+                'primary' => [
+                    50 => 'oklch(0.970 0.018 18)',
+                    100 => 'oklch(0.935 0.042 18)',
+                    200 => 'oklch(0.880 0.088 17)',
+                    300 => 'oklch(0.790 0.150 16)',
+                    400 => 'oklch(0.678 0.213 16)',   // #FF4D6A  --accent-ink
+                    500 => 'oklch(0.571 0.222 20)',   // #DC143C  --accent
+                    600 => 'oklch(0.495 0.200 21)',
+                    700 => 'oklch(0.420 0.170 21)',
+                    800 => 'oklch(0.350 0.135 21)',
+                    900 => 'oklch(0.300 0.105 21)',
+                    950 => 'oklch(0.210 0.075 21)',
+                ],
+
+                /*
+                 * The four semantic colours are Filament's own ramps rather than
+                 * hand-written ones, because they already land on the site's
+                 * values: Red 500 and #EF4444 share a lightness of 0.637 and a
+                 * hue of 25.3, Emerald 500 and #10B981 share 0.696 / 162.5, and
+                 * so on for Amber and Blue. Only the chroma differs, and there
+                 * Filament's is the wider-gamut version of the same colour.
+                 */
+                'danger' => Color::Red,
+                'success' => Color::Emerald,
+                'warning' => Color::Amber,
+                'info' => Color::Blue,
             ])
 
             /*

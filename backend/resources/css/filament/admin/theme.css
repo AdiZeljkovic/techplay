@@ -6,22 +6,33 @@
 /*
  * TechPlay admin — the site's design system, applied to Filament.
  *
- * Until now the panel ran on stock Filament CSS plus a font called Kumbh Sans,
- * which the Brisk theme set and nothing else asked for. `viteTheme()` was never
- * called, so the 611 KB this file compiles to was built on every deploy and
- * never loaded. The panel therefore looked like Filament, and the site looks
- * like TechPlay, and the two shared nothing.
- *
  * Every value below is copied from `frontend/app/globals.css`. Where a number
  * looks odd — 0.3125rem, 0.1875rem — it is odd there too, on purpose: the
  * frontend's corners are nearly square, and that is a large part of why it
  * reads the way it does. Rounding them off here would make the panel a
  * different product.
  *
- * The colour ramps come from PHP, in AdminPanelProvider, because Filament
- * generates eleven shades from one hex better than a person does by hand. What
- * is here is what a ramp cannot express: the four exact surfaces, the typeface
- * pairing, and the radii.
+ * ── What lives where ──────────────────────────────────────────────────────
+ *
+ * The colours are NOT here. They are in AdminPanelProvider, as explicit ramps,
+ * because the compiled Filament rules read `--gray-900` and `--primary-500` —
+ * variables injected at runtime from PHP — and not the `--color-gray-900` that
+ * a stylesheet can set. An earlier version of this file set the latter and had
+ * no effect on a single component. See the comment on `->colors()` for what
+ * `Color::hex()` actually does to a colour you hand it.
+ *
+ * What is here is what a colour ramp cannot express: the typeface pairing, the
+ * radii, the density, and the handful of places where Filament's default
+ * treatment is heavier than the site's.
+ *
+ * ── A note on selectors ───────────────────────────────────────────────────
+ *
+ * Every class below was read out of Filament's own blade templates or its
+ * compiled stylesheet before being used. Two selectors in the previous version
+ * of this file did not exist at all — `.fi-sidebar-item-button` (it is
+ * `.fi-sidebar-item-btn`) and `.fi-ta-header-cell-label` (there is no such
+ * class) — so the rules attached to them had never once applied. A stylesheet
+ * fails silently, which is exactly why it needs checking rather than reading.
  */
 
 @theme {
@@ -37,9 +48,9 @@
     --mono-font-family: 'IBM Plex Mono';
 
     /*
-     * Surfaces, exactly as the site defines them. These four are why the site
-     * looks like a piece of equipment rather than a document — cool, very dark,
-     * and separated by small steps rather than big ones.
+     * The same surfaces as the runtime ramp, for the Tailwind utility classes
+     * that blade templates use directly (`bg-gray-900` and friends). The
+     * component rules do not read these — but the custom pages do.
      */
     --color-gray-950: #05070a; /* --surface-0 */
     --color-gray-900: #0b0e14; /* --surface-1 */
@@ -62,20 +73,25 @@
     --radius-panel: 0.5rem;
     --radius-card: 0.3125rem;
     --radius-inner: 0.1875rem;
+
+    /* The site's two line weights: quiet, and interactive. */
+    --tp-line: rgb(255 255 255 / 0.06);
+    --tp-line-strong: rgb(255 255 255 / 0.12);
+    --tp-fill: rgb(255 255 255 / 0.03);
 }
 
+/* ─────────────────────────────────────────────────────────── typography ── */
+
 /*
- * Headings take the display face.
- *
- * Filament sets one family for everything. The site pairs two, and the pairing
- * is most of its character: Instrument Sans is narrower and more geometric,
- * which is why headings read as headings without needing to be large.
+ * Headings take the display face. Filament sets one family for everything; the
+ * site pairs two, and the pairing is most of its character — Instrument Sans is
+ * narrower and more geometric, which is why headings read as headings without
+ * needing to be large.
  */
 .fi-header-heading,
 .fi-section-header-heading,
 .fi-modal-heading,
 .fi-wi-stats-overview-stat-value,
-.fi-ta-header-cell-label,
 h1,
 h2,
 h3 {
@@ -84,68 +100,53 @@ h3 {
 }
 
 /*
- * Anything that is a number gets the mono face and tabular figures.
- *
- * A table of view counts where the digits do not align is a table you have to
- * read twice. This is the single change with the largest effect on how the
- * panel feels to use.
+ * Anything that is a number gets the mono face and tabular figures. This is the
+ * single change with the largest effect on how the panel feels to use: a table
+ * of view counts whose digits do not align is a table you read twice.
  */
-.fi-ta-text-item-label:has(+ *),
-.fi-wi-stats-overview-stat-value,
-.fi-ta-record-checkbox,
-.fi-badge {
-    font-variant-numeric: tabular-nums;
-}
-
 .fi-wi-stats-overview-stat-value {
     font-family: 'IBM Plex Mono', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.02em;
 }
 
+.fi-ta-text,
+.fi-badge,
+.fi-pagination {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ──────────────────────────────────────────────────────────── surfaces ── */
+
 /*
- * Borders, at the site's weight.
- *
- * The site draws lines at 6% white and raises them to 12% where something is
- * interactive. Filament's default is a solid grey that reads as much heavier
- * against a surface this dark.
+ * Borders at the site's weight. The site draws lines at 6% white and raises
+ * them to 12% where something is interactive; Filament's default is a solid
+ * grey that reads much heavier against a surface this dark.
  */
 .dark .fi-section,
 .dark .fi-ta,
 .dark .fi-modal-window,
 .dark .fi-dropdown-panel,
-.dark .fi-input-wrp {
-    border-color: rgba(255, 255, 255, 0.06);
+.dark .fi-input-wrp,
+.dark .fi-fo-repeater-item {
+    border-color: var(--tp-line);
+    --tw-ring-color: var(--tp-line);
 }
 
 .dark .fi-input-wrp:focus-within,
 .dark .fi-btn:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-}
-
-/*
- * The sidebar carries the site's own left-edge treatment: an accent bar on the
- * active item rather than a filled pill. On a dark, low-contrast surface a
- * filled block is a lot of colour for "you are here"; a 2px rule says the same
- * thing quietly, and it is what the site's navigation does.
- */
-.dark .fi-sidebar-item-active .fi-sidebar-item-button {
-    background-color: rgba(255, 255, 255, 0.03);
-    box-shadow: inset 2px 0 0 0 var(--color-primary-500);
-}
-
-.dark .fi-sidebar-group-label {
-    font-family: 'Instrument Sans', var(--font-family), sans-serif;
-    font-size: 0.6875rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.3);
+    border-color: var(--tp-line-strong);
+    --tw-ring-color: var(--tp-line-strong);
 }
 
 /*
  * The top rule the site puts above every panel. One hairline, fading out at
  * both ends, in the accent. It is the site's signature and costs nothing.
  */
+.dark .fi-main > .fi-section:first-child {
+    position: relative;
+}
+
 .dark .fi-main > .fi-section:first-child::before {
     content: '';
     position: absolute;
@@ -155,11 +156,158 @@ h3 {
     background: linear-gradient(
         to right,
         transparent,
-        color-mix(in srgb, var(--color-primary-500) 60%, transparent),
+        color-mix(in srgb, var(--primary-500) 60%, transparent),
         transparent
     );
 }
 
-.dark .fi-main > .fi-section:first-child {
-    position: relative;
+/* ─────────────────────────────────────────────────────────────── tables ── */
+
+/*
+ * Density. Filament pads a cell by four spacing steps top and bottom, which
+ * with a 20px line puts a row at 52px. Three steps puts it at 44 — four more
+ * rows on a screen, on lists of 142,000 games and 622 articles.
+ */
+.fi-ta-text:not(.fi-inline) {
+    padding-block: calc(var(--spacing) * 3);
+}
+
+/*
+ * The header becomes a rail rather than a row: a shade darker than the rows it
+ * labels, and set as a micro-label. It stops competing with the first line of
+ * data, which in a dense table is the thing the eye should land on.
+ */
+.dark .fi-ta-header-cell {
+    background-color: var(--gray-950);
+    font-family: 'Instrument Sans', var(--font-family), sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.45);
+}
+
+.dark .fi-ta-row:hover {
+    background-color: var(--gray-800);
+}
+
+.dark .fi-ta-row {
+    transition: background-color 120ms var(--ease-hud, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/*
+ * The empty state's icon sits in a light circle by default — a bright disc on a
+ * near-black page. It becomes a raised surface instead.
+ */
+.dark .fi-ta-empty-state-icon-bg {
+    background-color: var(--gray-800);
+}
+
+.dark .fi-ta-empty-state {
+    border-color: var(--tp-line);
+}
+
+/* ──────────────────────────────────────────────────────────────── forms ── */
+
+/*
+ * Inputs sit on surface-2, one step up from the panel behind them, which is how
+ * the site separates a field from the card it is in. Filament's dark input is
+ * the same colour as its panel, so a form reads as one undifferentiated block.
+ */
+.dark .fi-input-wrp {
+    background-color: var(--gray-800);
+}
+
+.dark .fi-input-wrp:focus-within {
+    --tw-ring-color: color-mix(in srgb, var(--primary-500) 45%, transparent);
+}
+
+.dark .fi-fo-field-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgb(255 255 255 / 0.7);
+}
+
+/* ──────────────────────────────────────────────── buttons and badges ── */
+
+.fi-btn {
+    border-radius: var(--radius-inner);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+}
+
+.fi-badge {
+    border-radius: var(--radius-inner);
+    font-weight: 500;
+}
+
+/*
+ * Badges lose their ring. On a dark ground a tinted fill already reads as a
+ * badge, and the ring on top of it makes a table of six badges look like a row
+ * of buttons — which invites a click that does nothing.
+ */
+.dark .fi-badge {
+    --tw-ring-color: transparent;
+}
+
+/* ────────────────────────────────────────────────────────────── sidebar ── */
+
+/*
+ * The site's left-edge treatment: an accent bar on the active item rather than
+ * a filled pill. On a dark, low-contrast surface a filled block is a lot of
+ * colour for "you are here"; a 2px rule says the same thing quietly, and it is
+ * what the site's own navigation does.
+ *
+ * `.fi-sidebar-item-btn`, not `-button`. The previous spelling matched nothing.
+ */
+.dark .fi-sidebar-item.fi-active .fi-sidebar-item-btn {
+    background-color: var(--tp-fill);
+    box-shadow: inset 2px 0 0 0 var(--primary-500);
+}
+
+.dark .fi-sidebar-group-label {
+    font-family: 'Instrument Sans', var(--font-family), sans-serif;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.3);
+}
+
+.dark .fi-topbar {
+    border-bottom: 1px solid var(--tp-line);
+}
+
+/* ───────────────────────────────────────────────────────────────── tabs ── */
+
+/*
+ * Tabs are underlined, not filled. A filled tab and a filled button are the
+ * same shape at the same weight, and a form that opens with six of them reads
+ * as a toolbar. The underline is the accent, and it is the only accent on the
+ * screen that is not an action.
+ */
+.dark .fi-tabs-item.fi-active {
+    background-color: transparent;
+    box-shadow: inset 0 -2px 0 0 var(--primary-500);
+    color: var(--primary-400);
+}
+
+.dark .fi-tabs-item:hover:not(.fi-active) {
+    background-color: var(--tp-fill);
+}
+
+/* ───────────────────────────────────────────────────────── login screen ── */
+
+/*
+ * The one screen every person sees before anything else, and the only one that
+ * was still stock. It gets the window surface and the same near-square card as
+ * everything behind it.
+ */
+.dark .fi-simple-layout {
+    background-color: var(--gray-950);
+}
+
+.dark .fi-simple-main {
+    background-color: var(--gray-900);
+    border: 1px solid var(--tp-line);
+    border-radius: var(--radius-panel);
 }
