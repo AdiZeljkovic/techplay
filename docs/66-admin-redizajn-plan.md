@@ -125,14 +125,16 @@ vertikalni prostor i pažnju.
 u tab. Sekcije ostaju samo tamo gdje ih u jednom tabu ima dvije ili više
 (Basic Info ima i „Featured Image" — tu okvir radi posao).
 
-### F. Igre su devet panela u nizu
+### F. ~~Igre su devet panela u nizu~~ — **netačno, povučeno 18.08.2026**
 
-`GameResource`: 20 polja, **9 sekcija, nijedan tab**. Description, Cover Image,
-Screenshots, Trailers & Videos, Details, Critic Scores, Companies, Taxonomy —
-sve jedno ispod drugog, jedan dugačak skrol.
+Ovo je pisalo da `GameResource` ima devet sekcija, nijedan tab, i jedan dugačak
+skrol. Nije tako. Obrazac je dvokolonski kao i svi ostali: lijevo (2/3) ime,
+opis, cover, screenshoti i video; desno (1/3) Details, Critic Scores, Companies,
+Taxonomy. Dvije sekcije su čak i sklopljene po defaultu.
 
-**Prijedlog:** tri taba — *Osnovno* (opis, taksonomija, detalji), *Mediji*
-(cover, screenshots, video), *Ocjene i kompanije*.
+Greška je bila u mjerenju: brojao sam `Section::make` i `Tab::make` odvojeno, pa
+je ekran s pet sekcija u lijevoj koloni i četiri u desnoj izgledao kao devet
+panela u nizu. Rasporeda se iz brojanja ne vidi.
 
 ### G. Konvencije liste — izmjereno na svih 37
 
@@ -515,10 +517,39 @@ Zatečena je i jedna prava duplikacija: `seo_noindex_archive` (vrijednost 0) i
 `seo_noindex_archives` (vrijednost 1). Obrazac prikazuje množinu, jer je nju
 koristio Ultimate SEO; jednina ostaje u bazi neprikazana.
 
-### Faza 5 — Arhetip zapisa *(srednji rizik)*
+### Faza 5 — Arhetip zapisa — *već je bio napravljen*
 
-Dvokolonski raspored na uređivačkim ekranima. Počinje s News kao pilotom; ako
-uređivanje jednog članka bude brže, ide na ostale.
+Ova faza je otpala jer je posao već obavljen, i to dosljedno. Svih pet velikih
+uređivačkih ekrana — News, Reviews, Guides, Tech i Games — koristi isti kostur:
+
+```php
+->columns(['default' => 1, 'lg' => 3])
+    Group  ->columnSpan(['lg' => 2])   naslov, slug, sazetak, sadrzaj
+    Group  ->columnSpan(['lg' => 1])   Publish · SEO · Media
+```
+
+Dvokolonski raspored koji Dio 4 predlaže kao arhetip je već kućni stil. Ono što
+sam prijavio kao „četiri taba: Content · Publish · SEO · Media" bila su tri taba
+u desnoj traci i jedna **sekcija** zvana Content u lijevoj koloni — grep koji
+traži `Tab::make` i `Section::make` ne zna koje je unutar kojeg.
+
+Izmjereno prije nego što je faza otkazana (render na serveru):
+
+| Ekran | Vrijeme | Polja | Naslova sekcija | Tabova |
+|---|---|---|---|---|
+| News edit | 309 ms | 82 | 1 | 3 |
+| Game edit | 171 ms | 79 | 8 | 0 |
+| Giveaway edit | 443 ms | 311 | 6 | 5 |
+
+Jedini stvaran nalaz iz ove grupe bio je **E**, i on je popravljen: pet sekcija
+u Giveaways-u koje su prepričavale naslov svog taba izgubile su naslove. Broj
+naslova sekcija na tom ekranu pao je sa **6 na 1** — ostala je „Featured Image",
+jedina koja ne ponavlja tab iznad sebe. Dvije sekcije koje nose opis zadržale
+su ga, jer opis kaže nešto što naslov taba ne kaže.
+
+Nalaz E je bio tačan zato što je provjeren čitanjem ugnježđenja
+(`Tab::make('Prize')` → `Section::make('Prize Information')`), a nalazi F i ovaj
+netačni jer su izvedeni iz brojanja. Ista razlika kao kod `recordUrl`.
 
 ### Faza 6 — `BaseArticleResource` *(najveći rizik, najveća ušteda koda)*
 
@@ -530,9 +561,10 @@ sidebaru i četiri URL-a ostaju netaknuta.
 `parentItem` gnježđenje, Moderation ekran, relation manageri (Quests pod
 Seasons, Posts pod Threads, Game Ratings pod Games).
 
-### Faza 8 — Giveaway i Game obrasci *(nizak rizik, ograničen doseg)*
+### Faza 8 — ~~Giveaway i Game obrasci~~ — *otpala*
 
-Brisanje pet dvostrukih okvira; Game iz devet panela u tri taba.
+Giveawayevih pet dvostrukih okvira je obrisano u Fazi 5. Game nema šta da se
+popravi — vidi povučeni nalaz F.
 
 ---
 
