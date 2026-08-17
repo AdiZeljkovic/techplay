@@ -1,4 +1,5 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import './dashboard.css';
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
@@ -97,6 +98,11 @@
     --tp-label-ink: rgb(0 0 0 / 0.65);
     --tp-group-ink: rgb(0 0 0 / 0.4);
     --tp-hover: var(--gray-50);
+
+    /* Dashboard surfaces. Light mode: a panel is paper on a tinted ground. */
+    --tp-panel-bg: #ffffff;
+    --tp-lead-ink: #18181b;
+    --tp-track: rgb(0 0 0 / 0.08);
 }
 
 .dark {
@@ -109,6 +115,11 @@
     --tp-label-ink: rgb(255 255 255 / 0.7);
     --tp-group-ink: rgb(255 255 255 / 0.3);
     --tp-hover: var(--gray-800);
+
+    /* Dark: surface-1, the same panel the site draws. */
+    --tp-panel-bg: var(--gray-900);
+    --tp-lead-ink: #ffffff;
+    --tp-track: rgb(255 255 255 / 0.08);
 }
 
 /* ─────────────────────────────────────────────────────────── typography ── */

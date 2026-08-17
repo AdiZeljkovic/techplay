@@ -2,11 +2,7 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\CatalogueHealth;
-use App\Filament\Widgets\CommunityPulse;
-use App\Filament\Widgets\NeedsAttention;
-use App\Filament\Widgets\PublishingPulse;
-use App\Filament\Widgets\ReachPulse;
+use App\Filament\Widgets\NewsroomConsole;
 use App\Filament\Widgets\RecentContent;
 use Filament\Pages\Dashboard as BaseDashboard;
 
@@ -26,14 +22,24 @@ use Filament\Pages\Dashboard as BaseDashboard;
  *
  * The order is the order the questions get asked:
  *
- *   1. Is anything waiting for me?          NeedsAttention
- *   2. Are we still publishing?             PublishingPulse
- *   3. How is the catalogue doing?          CatalogueHealth
- *   4. Is anybody out there?                CommunityPulse
- *   5. What went out, and how did it do?    RecentContent
+ *   1. Is anything waiting for me?
+ *   2. Are we still publishing?
+ *   3. Did anybody read it?
+ *   4. How is the catalogue doing?
+ *   5. Is anybody out there?
+ *   6. What went out, and how did it do?
  *
- * The counts that used to live in this class are gone with the custom Blade
- * view — they are inside the widgets now, cached, where a number belongs.
+ * ── Second rebuild, 18 Aug 2026 ──────────────────────────────────────────
+ *
+ * The first rebuild answered those six questions with six stats widgets, and
+ * the result read as a spreadsheet: five bands of three identical boxes,
+ * fifteen numbers at the same size in the same frame, nothing saying which to
+ * read first. Right answers, no hierarchy.
+ *
+ * Questions one to five now live on one surface — `NewsroomConsole` — where
+ * size can carry rank, a hairline can do the work a border was doing, and a
+ * ratio can be a bar instead of a printed percentage. Question six is still a
+ * table, because a list of what went out is a list.
  */
 class Dashboard extends BaseDashboard
 {
@@ -62,26 +68,22 @@ class Dashboard extends BaseDashboard
     }
 
     /**
-     * The order the questions get asked.
+     * Two widgets, not six.
      *
-     *   1. Is anything waiting for me?          NeedsAttention
-     *   2. Are we still publishing?             PublishingPulse
-     *   3. Did anybody read it?                 ReachPulse
-     *   4. How is the catalogue doing?          CatalogueHealth
-     *   5. Is anybody out there?                CommunityPulse
-     *   6. What went out, and how did it do?    RecentContent
+     * The six-widget version answered the right questions and looked like a
+     * spreadsheet: five bands of three identical boxes, every number the same
+     * size in the same frame. The questions have not changed — is anything
+     * waiting, are we publishing, did anybody read it, how is the catalogue,
+     * is anybody out there — but they now share one surface, where size can
+     * say which matters and a hairline can do the work a border was doing.
      *
-     * Reach was the missing one. Everything above it counted work going out and
-     * nothing counted whether it arrived.
+     * `NewsroomConsole` reads all of it from one cached payload, so the page
+     * costs one round of queries instead of one per box.
      */
     public function getWidgets(): array
     {
         return [
-            NeedsAttention::class,
-            PublishingPulse::class,
-            ReachPulse::class,
-            CatalogueHealth::class,
-            CommunityPulse::class,
+            NewsroomConsole::class,
             RecentContent::class,
         ];
     }

@@ -1,0 +1,380 @@
+/* ═══════════════════════════════════════════════════════ the console ══ */
+
+/*
+ * The dashboard this replaces was five bands of three identical white boxes —
+ * fifteen cards, every number the same size in the same frame, and nothing
+ * saying which to read first. A border is a strong signal and should mean
+ * "this is a different thing"; spent on every number it means nothing.
+ *
+ * So: few surfaces, hairlines instead of frames, size carrying rank, and a
+ * shape wherever a number has one — a bar for a share, a line for a series.
+ * Colour is rationed to the four states. The accent appears once, on the rule
+ * above the lead panel, which is the site's own signature.
+ *
+ * Every colour reads a token defined for both themes in theme.css. There is no
+ * literal white or black in this file.
+ */
+
+.tp-console {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.tp-panel {
+    position: relative;
+    background-color: var(--tp-panel-bg);
+    border: 1px solid var(--tp-line);
+    border-radius: var(--radius-panel);
+    padding: 1.25rem 1.5rem;
+}
+
+/* One hairline, fading at both ends, in the accent. The site's signature. */
+.tp-panel--lead::before {
+    content: '';
+    position: absolute;
+    inset-inline: 1.5rem;
+    top: -1px;
+    height: 2px;
+    background: linear-gradient(
+        to right,
+        transparent,
+        color-mix(in srgb, var(--primary-500) 70%, transparent),
+        transparent
+    );
+}
+
+.tp-lead {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 2rem;
+}
+
+@media (max-width: 60rem) {
+    .tp-lead {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+}
+
+.tp-eyebrow {
+    display: block;
+    font-family: 'Instrument Sans', var(--font-family), sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tp-group-ink);
+    margin-bottom: 0.5rem;
+}
+
+.tp-eyebrow--tight {
+    margin-bottom: 0.25rem;
+}
+
+/*
+ * Days since the last publish is set large because a newsroom that has gone
+ * quiet is the one condition on this page that gets worse the longer nobody
+ * notices.
+ */
+.tp-huge {
+    display: block;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 3rem;
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: var(--tp-lead-ink);
+}
+
+.tp-huge__unit {
+    font-size: 1rem;
+    letter-spacing: 0;
+    margin-inline-start: 0.375rem;
+    color: var(--tp-group-ink);
+}
+
+.tp-sub {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--tp-group-ink);
+    margin-top: 0.375rem;
+}
+
+.tp-lead__counts {
+    display: flex;
+    gap: 1.75rem;
+    padding-inline-start: 2rem;
+    border-inline-start: 1px solid var(--tp-line);
+}
+
+@media (max-width: 60rem) {
+    .tp-lead__counts {
+        padding-inline-start: 0;
+        border-inline-start: 0;
+    }
+}
+
+.tp-count__n {
+    display: block;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    color: var(--tp-lead-ink);
+}
+
+.tp-count__l {
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tp-group-ink);
+}
+
+/* ── the fortnight ── */
+
+.tp-spark {
+    position: relative;
+    min-width: 0;
+}
+
+.tp-spark svg {
+    display: block;
+    width: 100%;
+    height: 3.25rem;
+    overflow: visible;
+}
+
+.tp-spark__area {
+    fill: color-mix(in srgb, var(--primary-500) 12%, transparent);
+}
+
+.tp-spark__line {
+    fill: none;
+    stroke: var(--primary-400);
+    stroke-width: 1.25;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+}
+
+.tp-spark__caption {
+    position: absolute;
+    inset-block-end: -0.25rem;
+    inset-inline-end: 0;
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tp-group-ink);
+}
+
+/* ── the queue rail ── */
+
+.tp-attention {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--tp-line);
+}
+
+.tp-attention .tp-eyebrow {
+    margin-bottom: 0;
+    margin-inline-end: 0.25rem;
+}
+
+.tp-chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.375rem;
+    padding: 0.3125rem 0.625rem;
+    border-radius: var(--radius-inner);
+    border: 1px solid var(--tp-line-strong);
+    font-size: 0.8125rem;
+    color: var(--tp-label-ink);
+    transition:
+        border-color 120ms ease,
+        background-color 120ms ease;
+}
+
+a.tp-chip:hover {
+    background-color: var(--tp-fill);
+    border-color: currentColor;
+}
+
+.tp-chip__n {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.tp-chip--bad {
+    color: var(--danger-500);
+    border-color: color-mix(in srgb, var(--danger-500) 45%, transparent);
+}
+
+.tp-chip--warn {
+    color: var(--warning-500);
+    border-color: color-mix(in srgb, var(--warning-500) 45%, transparent);
+}
+
+.tp-chip--idle {
+    color: var(--tp-label-ink);
+}
+
+.tp-clear {
+    font-size: 0.8125rem;
+    color: var(--success-500);
+}
+
+/* ── the three readouts ── */
+
+.tp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (max-width: 75rem) {
+    .tp-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 48rem) {
+    .tp-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tp-metric {
+    margin-bottom: 1rem;
+}
+
+.tp-big {
+    display: block;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 2rem;
+    line-height: 1.05;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--tp-lead-ink);
+}
+
+.tp-metric .tp-sub {
+    margin-top: 0.25rem;
+}
+
+/* A label and a figure on one line, separated by a hairline, not a card. */
+.tp-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.5rem;
+    border-top: 1px solid var(--tp-line);
+}
+
+.tp-row__l {
+    font-size: 0.8125rem;
+    color: var(--tp-group-ink);
+}
+
+.tp-row__v {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.9375rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--tp-label-ink);
+}
+
+.tp-up {
+    color: var(--success-500);
+}
+
+.tp-warn {
+    color: var(--warning-500);
+}
+
+/* ── a share gets a bar ── */
+
+.tp-bar-wrap {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--tp-line);
+}
+
+.tp-bar-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.tp-bar {
+    height: 4px;
+    margin-top: 0.5rem;
+    border-radius: 999px;
+    background-color: var(--tp-track);
+    overflow: hidden;
+}
+
+.tp-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background-color: currentColor;
+}
+
+.tp-tone-good {
+    color: var(--success-500);
+}
+
+.tp-tone-warn {
+    color: var(--warning-500);
+}
+
+.tp-tone-bad {
+    color: var(--danger-500);
+}
+
+.tp-tone-idle {
+    color: var(--tp-group-ink);
+}
+
+/* ── the piece that won ── */
+
+.tp-best {
+    display: block;
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-card);
+    background-color: var(--tp-fill);
+    border: 1px solid var(--tp-line);
+    transition: border-color 120ms ease;
+}
+
+a.tp-best:hover {
+    border-color: var(--tp-line-strong);
+}
+
+.tp-best__n {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--success-500);
+}
+
+.tp-best__t {
+    display: block;
+    margin-top: 0.125rem;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: var(--tp-label-ink);
+}
