@@ -82,7 +82,7 @@ class GiveawayResource extends Resource
                     Tabs\Tab::make('Basic Info')
                         ->icon('heroicon-o-information-circle')
                         ->schema([
-                            Section::make('Giveaway Details')
+                            Section::make()
                                 ->schema([
                                     TextInput::make('title')
                                         ->required()
@@ -126,7 +126,7 @@ class GiveawayResource extends Resource
                     Tabs\Tab::make('Prize')
                         ->icon('heroicon-o-trophy')
                         ->schema([
-                            Section::make('Prize Information')
+                            Section::make()
                                 ->schema([
                                     Grid::make(2)->schema([
                                         TextInput::make('prize_name')
@@ -153,7 +153,7 @@ class GiveawayResource extends Resource
                     Tabs\Tab::make('Prize Tiers')
                         ->icon('heroicon-o-star')
                         ->schema([
-                            Section::make('Multiple Winners System')
+                            Section::make()
                                 ->description('Define prize tiers with multiple winners (e.g., Gold/Silver/Bronze). Leave empty for single-winner mode.')
                                 ->schema([
                                     Repeater::make('prizeTiers')
@@ -205,7 +205,7 @@ class GiveawayResource extends Resource
                     Tabs\Tab::make('Tasks')
                         ->icon('heroicon-o-clipboard-document-check')
                         ->schema([
-                            Section::make('Entry Tasks')
+                            Section::make()
                                 ->description('Define tasks users can complete to earn points')
                                 ->schema([
                                     Repeater::make('tasks')
@@ -282,7 +282,7 @@ class GiveawayResource extends Resource
                     Tabs\Tab::make('Schedule')
                         ->icon('heroicon-o-clock')
                         ->schema([
-                            Section::make('Timing')
+                            Section::make()
                                 ->schema([
                                     Grid::make(2)->schema([
                                         DateTimePicker::make('starts_at')
