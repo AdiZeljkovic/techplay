@@ -203,6 +203,44 @@ Stat widgeti su **lazy** (Filamentov default), pa ih render same stranice ne
 vidi — sadržaj stiže drugim Livewire zahtjevom. Provjera ide preko
 `Livewire::mount($klasa)`, ne preko HTML-a `/admin`.
 
+### Dashboard, drugi prolaz *(18.08.2026)*
+
+Screenshot je otkrio tri stvari odjednom.
+
+**Panel se iscrtavao u svijetlom modu.** Namješten je na
+`defaultThemeMode(Dark)`, ali default je samo default — spremljena postavka ili
+OS pobjeđuju. Dvadeset šest od trideset devet pravila u temi bilo je pod
+`.dark`, dakle **dvije trećine teme se toj osobi nikad nisu ni prikazale.**
+Tokeni sada dolaze u paru: oblik (radijus, pismo, gustina reda) piše se jednom i
+važi u oba moda, boja čita token koji se mijenja s modom, a doslovnog bijelog ni
+crnog nema izvan ta dva bloka.
+
+**Prvi red je bio ragged** — dvije kartice i trećina prazne stranice pored njih.
+Uzrok: mreža stranice bila je tri kolone, a svaki stats widget ionako sam slaže
+svoje kartice, pa je mreža odlučivala samo šta biva s ostatkom. Stranica je sada
+**jedna kolona** — niz punih traka, svaka jedno pitanje — a svaki widget kaže
+koliko kartica ima kroz `getColumns()`.
+
+**Dodan je Reach**, jer je dashboard znao reći koliko je članaka izašlo i ni
+riječi o tome jesu li sletjeli.
+
+| Šta pokazuje | Danas |
+|---|---|
+| Ukupno pregleda članaka | 133.992 kroz 625 objavljenih |
+| Zarađeno ovaj mjesec | 1.677 od 16 objavljenih |
+| Najbolji ovaj mjesec | 569 pregleda, imenovan i povezan na svoju izmjenu |
+
+**Graf prometa nije moguć i neće biti bez novog bilježenja.** `article_reads`
+ima 32 reda otkako su u avgustu ukinuti zapisi po posjeti, a `articles.views` je
+brojač bez istorije. Nijedna tabela u bazi nema dnevni niz. Ono što brojač može
+reći je oblik mjeseca, i to je ono što Reach pokazuje.
+
+Redoslijed pitanja je sada: *čeka li me išta → objavljujemo li → je li iko
+pročitao → kakav je katalog → ima li koga → šta je izašlo.*
+
+`RecentContent` je preveden na engleski; bio je posljednji bosanski ostatak u
+panelu.
+
 ### 5. Sitnije, ali stvarno
 
 | Nalaz | Zašto smeta |
