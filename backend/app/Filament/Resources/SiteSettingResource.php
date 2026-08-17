@@ -17,16 +17,37 @@ class SiteSettingResource extends Resource
 {
     protected static ?string $model = SiteSetting::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-wrench-screwdriver';
 
-    protected static ?string $navigationLabel = 'Site Settings';
+    protected static ?string $navigationLabel = 'Raw settings table';
+
+    /**
+     * Out of the sidebar, still at /admin/site-settings.
+     *
+     * This is the raw key/value editor: a `value` string field and a `type`
+     * dropdown offering `text` or `boolean`, with nothing to say which one the
+     * row wants. Changing the site's name here meant finding the row called
+     * `site_name` and typing into a column. The Settings page does that job
+     * properly now, with the right control for each value and the right group
+     * written back.
+     *
+     * It stays reachable because it is the only screen that can add a key the
+     * Settings page has never heard of, or repair one whose group is wrong —
+     * the escape hatch for the day something is stored that no form knows
+     * about. That is a rare day, and rare is exactly what a sidebar row is bad
+     * at representing.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     public static function getNavigationGroup(): ?string
     {
         return 'System';
     }
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 90;
 
     public static function form(Schema $schema): Schema
     {
