@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\StatsOverview;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -135,9 +134,13 @@ HTML)
                 'System',
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                StatsOverview::class,
-            ])
+            /*
+             * Deliberately empty. Widgets registered here are appended to every
+             * dashboard; the Dashboard page names its own five in the order the
+             * questions get asked, and a sixth arriving from the panel config
+             * would land at the bottom without anybody choosing where.
+             */
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
