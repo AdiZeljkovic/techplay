@@ -317,8 +317,8 @@ Spajanja iz Dijela 2, primijenjena. **36 vidljivih stavki postaje 27.**
 | **Community** | Users, Forum Categories, Threads, Moderation | Posts → RM na temi; Comments+Reports → Moderation s tabovima |
 | **Gamification** | Progression, Seasons, Store, Bounty Ledger, Collections | 8 → 5 |
 | **Shop & Monetization** | Giveaways, Support Tiers, Ad Campaigns | — |
-| **SEO & Marketing** | SEO Manager, Redirects, Newsletter | Ultimate SEO → Settings; Page SEO → tab |
-| **System** | Settings, Article Categories, Roles, Broken Links | Site Settings + Social Media → Settings; Analytics → Dashboard |
+| **SEO & Marketing** | SEO Manager, Redirects, Newsletter | Ultimate SEO → Settings *(urađeno)*; Page SEO → tab |
+| **System** | Settings, Article Categories, Roles, Analytics, Broken Links | Site Settings + Social Media → Settings *(urađeno)*; Analytics ostaje po odluci |
 
 Tri spajanja u Gamificationu:
 
@@ -456,11 +456,49 @@ piše 62 kad je osam mrtvo je badge koji naučiš ignorisati.
   zapis u `game_tombstones` — a tabela ima 60.981 red. Znači purge ih je obrisao
   bez tombstonea. To je stavka iz plana baze igara, ne iz ovog.
 
-### Faza 4 — Settings *(srednji rizik, najveća korist)*
+### Faza 4 — Settings — *urađeno 18.08.2026*
 
-Jedna stranica umjesto tri. Rizik je stvaran jer se dira `site_settings`, a o
-njoj ovisi maintenance mode. Radi se s testom prije i poslije na svih 44
-postavke.
+Jedna stranica sa šest tabova umjesto tri ekrana. Site Settings (sirova
+key/value tabela) izlazi iz sidebara ali ostaje na `/admin/site-settings` —
+jedina je koja može dodati ključ za koji obrazac nije čuo. Ultimate SEO i
+Social Media su obrisani.
+
+**Dvije stvari odavde mogu srušiti sajt** i zato su ispisane izričito:
+
+`maintenance_mode` čita `SystemController::status()`, a Next.js middleware ga
+poziva na **svaki** zahtjev. Traži grupu `general` i vrijednost tačno `'1'` ili
+`'true'`. PHP kastuje `false` u **prazan string**, ne u `'0'` — pa je
+`writeSetting()` eksplicitan. Grupa putuje uz ključ umjesto da naslijedi default
+`general` iz `SiteSetting::set()`; bez toga bi se grupa `socials` tiho preselila
+na prvom snimanju.
+
+**Provjera prije i poslije**, snimanje obrasca bez ijedne izmjene:
+
+| | |
+|---|---|
+| Postavki prije / poslije | 44 / 44 |
+| Nestalo | 0 |
+| Novih | 0 |
+| Promijenjenih | 0 |
+| `maintenance_mode` | `value="0"`, `group=general`, `type=boolean` |
+| `/api/v1/system/status` | `maintenance_mode: false` |
+| `techplay.gg` | HTTP 200 |
+| `/robots.txt` | netaknut |
+
+Obje grane boolean upisa dokazane na `seo_noindex_tags` (na spisku, ništa ga ne
+čita, vraćen na početnu vrijednost): `true → "1"`, `false → "0"`.
+
+**Nalaz usput: 19 od 44 postavke ne čita niko.** Dvanaest opisuju firmu za
+strukturirane podatke, a `SchemaService` tvrdo kodira `'name' => 'TechPlay'` i
+ne čita nijednu — dakle adresa, matični naziv, godina osnivanja i kontakt se
+mogu unijeti i nigdje ne stižu. Polja ostaju jer su podaci tačni, ali tab to
+kaže naglas umjesto da se pravi da rade. Spajanje tih polja na `SchemaService`
+je posao od dvadesetak redova i **nije dio ovog plana** — zapisano je da se ne
+izgubi.
+
+Zatečena je i jedna prava duplikacija: `seo_noindex_archive` (vrijednost 0) i
+`seo_noindex_archives` (vrijednost 1). Obrazac prikazuje množinu, jer je nju
+koristio Ultimate SEO; jednina ostaje u bazi neprikazana.
 
 ### Faza 5 — Arhetip zapisa *(srednji rizik)*
 
