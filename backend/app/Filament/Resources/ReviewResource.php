@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Components\MediaPickerFields;
+use App\Filament\Components\PublishTab;
 use App\Filament\Components\SeoFields;
 use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
 use App\Filament\Resources\ReviewResource\Pages;
@@ -10,7 +11,6 @@ use App\Models\Article;
 use App\Models\Game;
 // Layout Components (from Schemas)
 use App\Policies\ArticlePolicy;
-use App\Services\CacheService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -25,7 +25,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
@@ -427,57 +426,7 @@ class ReviewResource extends Resource
                         Tabs::make('ReviewMeta')
                             ->tabs([
                                 // TAB: PUBLISH
-                                Tab::make('Publish')
-                                    ->icon('heroicon-o-paper-airplane')
-                                    ->schema([
-                                        Select::make('status')
-                                            ->label('Status')
-                                            ->options([
-                                                'draft' => '📝 Draft',
-                                                'ready_for_review' => '👁️ Pending Review',
-                                                'scheduled' => '🕐 Scheduled',
-                                                'published' => '🌐 Published',
-                                            ])
-                                            ->default('draft')
-                                            ->required()
-                                            ->native(false)
-                                            ->helperText('Use "Scheduled" to auto-publish on the Publish Date'),
-
-                                        DateTimePicker::make('published_at')
-                                            ->label('Publish Date')
-                                            ->native(false)
-                                            ->displayFormat('M j, Y • g:i A')
-                                            ->default(now())
-                                            ->helperText('When should this review go live?'),
-
-                                        Select::make('category_id')
-                                            ->label('Category')
-                                            ->relationship('category', 'name', function (Builder $query) {
-                                                return $query->where('type', 'reviews')
-                                                    ->whereNotNull('parent_id');
-                                            })
-                                            ->searchable()
-                                            ->preload()
-                                            ->required()
-                                            ->native(false),
-
-                                        TagsInput::make('tags')
-                                            ->label('Tags')
-                                            ->placeholder('Add tag...')
-                                            ->helperText('Press Enter after each tag'),
-
-                                        Toggle::make('is_featured_in_hero')
-                                            ->label('🌟 Feature in Homepage Hero')
-                                            ->helperText('Highlight this review at the top of homepage'),
-
-                                        Select::make('author_id')
-                                            ->label('Author')
-                                            ->options(fn () => CacheService::getAuthors())
-                                            ->searchable()
-                                            ->default(fn () => auth()->id())
-                                            ->required()
-                                            ->native(false),
-                                    ]),
+                                PublishTab::make('reviews', 'review'),
 
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')

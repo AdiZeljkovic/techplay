@@ -3,22 +3,18 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Components\MediaPickerFields;
+use App\Filament\Components\PublishTab;
 use App\Filament\Components\SeoFields;
 use App\Filament\Resources\TechResource\Pages;
 use App\Models\Article;
-use App\Services\CacheService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
@@ -163,56 +159,7 @@ class TechResource extends Resource
                         Tabs::make('TechMeta')
                             ->tabs([
                                 // TAB: PUBLISH
-                                Tab::make('Publish')
-                                    ->icon('heroicon-o-paper-airplane')
-                                    ->schema([
-                                        Select::make('status')
-                                            ->label('Status')
-                                            ->options([
-                                                'draft' => '📝 Draft',
-                                                'ready_for_review' => '👁️ Pending Review',
-                                                'published' => '🌐 Published',
-                                            ])
-                                            ->default('draft')
-                                            ->required()
-                                            ->native(false)
-                                            ->helperText('Set to Published to go live'),
-
-                                        DateTimePicker::make('published_at')
-                                            ->label('Publish Date')
-                                            ->native(false)
-                                            ->displayFormat('M j, Y • g:i A')
-                                            ->default(now())
-                                            ->helperText('When should this article go live?'),
-
-                                        Select::make('category_id')
-                                            ->label('Category')
-                                            ->relationship('category', 'name', function (Builder $query) {
-                                                return $query->where('type', 'tech')
-                                                    ->whereNotNull('parent_id');
-                                            })
-                                            ->searchable()
-                                            ->preload()
-                                            ->required()
-                                            ->native(false),
-
-                                        TagsInput::make('tags')
-                                            ->label('Tags')
-                                            ->placeholder('Add tag...')
-                                            ->helperText('Press Enter after each tag'),
-
-                                        Toggle::make('is_featured_in_hero')
-                                            ->label('🌟 Feature in Homepage Hero')
-                                            ->helperText('Highlight this article at the top of homepage'),
-
-                                        Select::make('author_id')
-                                            ->label('Author')
-                                            ->options(fn () => CacheService::getAuthors())
-                                            ->searchable()
-                                            ->default(fn () => auth()->id())
-                                            ->required()
-                                            ->native(false),
-                                    ]),
+                                PublishTab::make('tech', 'article'),
 
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')

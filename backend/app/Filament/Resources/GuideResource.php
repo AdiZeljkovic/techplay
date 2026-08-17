@@ -3,23 +3,19 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Components\MediaPickerFields;
+use App\Filament\Components\PublishTab;
 use App\Filament\Components\SeoFields;
 use App\Filament\Resources\GuideResource\Pages;
-use App\Models\Game;
 use App\Models\Guide;
-use App\Services\CacheService;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -197,65 +193,7 @@ class GuideResource extends Resource
                         Tabs::make('GuideMeta')
                             ->tabs([
                                 // TAB: PUBLISH
-                                Tab::make('Publish')
-                                    ->icon('heroicon-o-paper-airplane')
-                                    ->schema([
-                                        Select::make('status')
-                                            ->label('Status')
-                                            ->options([
-                                                'draft' => '📝 Draft',
-                                                'ready_for_review' => '👁️ Pending Review',
-                                                'published' => '🌐 Published',
-                                            ])
-                                            ->default('draft')
-                                            ->required()
-                                            ->native(false)
-                                            ->helperText('Set to Published to go live'),
-
-                                        DateTimePicker::make('published_at')
-                                            ->label('Publish Date')
-                                            ->native(false)
-                                            ->displayFormat('M j, Y • g:i A')
-                                            ->default(now())
-                                            ->helperText('When should this guide go live?'),
-
-                                        Select::make('difficulty')
-                                            ->label('Difficulty')
-                                            ->options([
-                                                'beginner' => '🟢 Beginner',
-                                                'intermediate' => '🟡 Intermediate',
-                                                'advanced' => '🔴 Advanced',
-                                            ])
-                                            ->required()
-                                            ->native(false)
-                                            ->helperText('Skill level required'),
-
-                                        TagsInput::make('tags')
-                                            ->label('Tags')
-                                            ->placeholder('Add tag...')
-                                            ->helperText('Press Enter after each tag'),
-
-                                        Select::make('game_id')
-                                            ->label('Linked game')
-                                            ->placeholder('Search the games database...')
-                                            ->searchable()
-                                            ->getSearchResultsUsing(fn (string $search) => Game::query()
-                                                ->where('name', 'ilike', "%{$search}%")
-                                                ->orderByDesc('rating')
-                                                ->limit(20)
-                                                ->pluck('name', 'id')
-                                                ->toArray())
-                                            ->getOptionLabelUsing(fn ($value) => Game::find($value)?->name)
-                                            ->helperText('Auto-detected from the title on save; set it here to override.'),
-
-                                        Select::make('author_id')
-                                            ->label('Author')
-                                            ->options(fn () => CacheService::getAuthors())
-                                            ->searchable()
-                                            ->default(fn () => auth()->id())
-                                            ->required()
-                                            ->native(false),
-                                    ]),
+                                PublishTab::make(null, 'guide', withGameLink: true, withHeroToggle: false, extra: [PublishTab::difficulty()]),
 
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')
