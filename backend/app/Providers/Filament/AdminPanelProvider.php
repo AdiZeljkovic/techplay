@@ -37,8 +37,12 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(asset('techplay-logo.png'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('favicon.ico'))
+            // Collapsed means icons only. The width override that used to sit
+            // here was 9rem — 144px, three times an icon — so the collapsed
+            // sidebar read as a wide empty column with the labels missing
+            // rather than as a sidebar somebody had folded away. Filament's own
+            // collapsed width is the width of the icon, which is the point.
             ->sidebarCollapsibleOnDesktop()
-            ->collapsedSidebarWidth('9rem')
 
             /*
              * The site's palette, so the panel and the product look like one
