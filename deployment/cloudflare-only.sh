@@ -12,20 +12,48 @@
 # lost by refusing the rest. (The other subdomains live on 167.235.19.21 and
 # are not affected by anything here.)
 #
-# ## Why this is written as a script rather than a handful of ufw commands
+# ## The dead man's switch, and why the first design was wrong
 #
 # Getting the range list wrong takes the whole site down, and the failure is
-# silent from the server's own point of view: loopback still answers 200 while
-# the internet sees nothing. So this applies the change, tests from outside the
-# firewall's perspective, and puts the old rules back if the test fails.
+# invisible from the server: loopback still answers 200 while the internet sees
+# nothing. The first version of this tried to verify itself by curling
+# https://techplay.gg — from the server. That cannot work, and it failed for a
+# reason worth remembering: Cloudflare answers a server-side request to our own
+# hostname with a 403 challenge, the same behaviour that kept 44 SEO records out
+# of production and that stopped GlitchTip receiving events. The script
+# concluded the site was broken and reverted a change that was fine.
+#
+# A machine behind a firewall cannot test whether that firewall lets the world
+# in. So it does not try. Instead it applies the change and schedules its own
+# undoing a few minutes later; whoever ran it checks from outside and cancels
+# the revert if the site is up. Forget to cancel, lose your connection, or be
+# wrong about the ranges — either way the rules come back on their own.
 #
 # Usage:
-#   bash deployment/cloudflare-only.sh          # show what would change
-#   bash deployment/cloudflare-only.sh --apply
+#   bash deployment/cloudflare-only.sh            # show what would change
+#   bash deployment/cloudflare-only.sh --apply    # apply, auto-revert in 5 min
+#   bash deployment/cloudflare-only.sh --confirm  # cancel the revert, keep it
 set -uo pipefail
 
 APPLY=false
+CONFIRM=false
 [ "${1:-}" = "--apply" ] && APPLY=true
+[ "${1:-}" = "--confirm" ] && CONFIRM=true
+
+REVERT=/usr/local/bin/techplay-ufw-revert
+
+if [ "$CONFIRM" = true ]; then
+    # Cancel every pending revert this script queued.
+    for job in $(atq 2>/dev/null | awk '{print $1}'); do
+        if at -c "$job" 2>/dev/null | grep -q techplay-ufw-revert; then
+            atrm "$job" && echo "otkazano automatsko vraćanje (posao $job)"
+        fi
+    done
+    rm -f "$REVERT"
+    echo "Zaključavanje zadržano. Origin prima 80/443 samo od Cloudflarea."
+    ufw status | grep -cE '^(80|443)/tcp +ALLOW +Anywhere' | sed 's/^/općih dozvola preostalo: /'
+    exit 0
+fi
 
 V4=$(curl -fsS --max-time 20 https://www.cloudflare.com/ips-v4) || { echo "ne mogu dohvatiti IPv4 opsege"; exit 1; }
 V6=$(curl -fsS --max-time 20 https://www.cloudflare.com/ips-v6) || { echo "ne mogu dohvatiti IPv6 opsege"; exit 1; }
@@ -65,27 +93,23 @@ ufw delete allow 80/tcp  >/dev/null 2>&1
 ufw delete allow 443/tcp >/dev/null 2>&1
 ufw reload >/dev/null
 
+# The switch. Written to disk rather than inlined so `--confirm` can find it.
+cat > "$REVERT" <<'SCRIPT'
+#!/usr/bin/env bash
+ufw allow 80/tcp  comment 'HTTP (nginx)'  >/dev/null 2>&1
+ufw allow 443/tcp comment 'HTTPS (nginx)' >/dev/null 2>&1
+ufw reload >/dev/null 2>&1
+logger -t techplay-ufw "automatsko vraćanje: opće dozvole za 80/443 su vraćene"
+SCRIPT
+chmod +x "$REVERT"
+echo "$REVERT" | at now + 5 minutes 2>/dev/null
 echo
-echo "Provjera izvana (kroz Cloudflare, koji mora i dalje prolaziti):"
-ok=true
-for path in / /news /games/doom; do
-    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "https://techplay.gg${path}")
-    echo "  $code  $path"
-    [ "$code" = "200" ] || ok=false
-done
-code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 https://api-beta.techplay.gg/admin/login)
-echo "  $code  api-beta/admin/login"
-[ "$code" = "200" ] || ok=false
 
-if [ "$ok" = false ]; then
-    echo
-    echo "!! PROVJERA PALA — vraćam opće dozvole"
-    ufw allow 80/tcp  comment 'HTTP (nginx)'  >/dev/null
-    ufw allow 443/tcp comment 'HTTPS (nginx)' >/dev/null
-    ufw reload >/dev/null
-    echo "   vraćeno. Pogledaj /root/ufw-before-cf-only.txt i syslog."
-    exit 1
-fi
-
+ufw status | grep -cE '^(80|443)/tcp +ALLOW +Anywhere' | sed 's/^/Općih dozvola sada: /'
 echo
-echo "Prošlo. Origin sada prima 80/443 samo od Cloudflarea."
+echo "Primijenjeno. Vraća se samo od sebe za 5 minuta."
+echo
+echo "  1. provjeri IZVANA (ne s ovog servera — odatle Cloudflare svakako odbija):"
+echo "       curl -s -o /dev/null -w '%{http_code}\n' https://techplay.gg/"
+echo "  2. ako je 200:  bash deployment/cloudflare-only.sh --confirm"
+echo "  3. ako nije:    ne radi ništa, vraća se samo"
