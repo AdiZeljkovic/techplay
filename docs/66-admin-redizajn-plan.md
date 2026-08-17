@@ -139,7 +139,6 @@ sve jedno ispod drugog, jedan dugačak skrol.
 | Konvencija | Ima je |
 |---|---|
 | `ViewAction` — pregled bez uređivanja | **0 / 37** |
-| Klik na red otvara zapis (`recordUrl`) | **0 / 37** |
 | Pamćenje filtera, pretrage i sortiranja | **0 / 37** |
 | Prazno stanje s porukom | **0 / 37** |
 | Izbor broja redova po stranici | **0 / 37** |
@@ -147,6 +146,12 @@ sve jedno ispod drugog, jedan dugačak skrol.
 | Badge s brojem u sidebaru | 2 / 37 |
 | `defaultSort` | 21 / 37 |
 | Naizmjenične trake u tabeli | 1 / 37 |
+
+> **Ispravka.** Prva verzija ove tabele imala je i red „klik na red otvara zapis
+> — 0 / 37". Netačno: `ListRecords` sam postavlja `recordUrl` i traži prvo
+> `view` pa `edit` akciju. Klik je uvijek radio, samo je vodio pravo u obrazac
+> za izmjenu, jer `view` nigdje nije postojao. Izmjereno je odsustvo poziva, a
+> zaključeno odsustvo ponašanja — to nije isto.
 
 Tri nule su ozbiljne:
 
@@ -376,12 +381,42 @@ razlog zašto se provjerava a ne čita.
 Tema sada pokriva tabele, obrasce, dugmad, badgeve, tabove, prazna stanja i
 login. Gustina reda pada s 52 na 44px.
 
-### Faza 2 — Konvencije liste *(nizak rizik, mehanički)*
+### Faza 2 — Konvencije liste — *urađeno 17.08.2026*
 
-Kroz svih 37: `ViewAction`, `recordUrl`, `persistFiltersInSession`,
-`persistSortInSession`, `persistSearchInSession`, `paginationPageOptions`,
-`defaultSort` gdje fali, prazna stanja s tekstom. Radi se skriptom pa se
-provjerava iscrtavanjem, kao što je rađena navigacija.
+Ispalo je da većina ovoga ne treba ići kroz 37 fajlova nego kroz jedan.
+
+**`Table::configureUsing()` u `AdminPanelProvider::boot()`** postavlja
+pamćenje filtera, sortiranja i pretrage, veličine stranice (10/25/50/100,
+podrazumijevano 25) i prazno stanje — za svaku tabelu u panelu, uključujući one
+koje još nisu napisane. Poziv teče **prije** resursove `table()` metode, pa
+resurs koji hoće svoje i dalje pobjeđuje.
+
+Trideset sedam kopija iste četiri linije je trideset sedam prilika da se jedna
+zaboravi, a konvencija koja vrijedi na trideset pet ekrana nije konvencija nego
+nešto što se mora provjeravati.
+
+Prazno stanje se izvodi iz oznake modela, pa svaki ekran dobija svoju rečenicu
+besplatno: *No products yet*, *No orders yet*, *No reports yet* — umjesto
+Filamentovog „No records found" na sva 37.
+
+**Po resursu je ostalo dvoje.**
+
+`defaultSort` na preostalih 16, s kolonama provjerenim protiv žive šeme — jer
+`achievements` nema `sort_order` a ni `categories` ga nema, a oboje je bila prva
+pretpostavka. Redovi čekanja idu najnovije prvo, konfiguracija abecedno,
+ljestvice od najniže prečke.
+
+`ViewAction` ide **samo tamo gdje se prvo čita pa odlučuje**: komentari, prijave,
+forumski odgovori i teme, narudžbe, podrške, ocjene, kolekcije. Ne ide na
+članke — Filamentov pregled iscrtava isti obrazac onemogućen, a četiri taba i
+rich editor u modalu su lošiji način da se pročita tekst nego objavljena
+stranica. Zato sadržaj (News, Reviews, Guides, Tech, Games, Giveaways) dobija
+**„View on site"**, vidljiv samo kad zapis ima slug i, gdje postoji status,
+kad je objavljen. Link koji otvara 404 je gori od nikakvog — nauči te da ne
+vjeruješ ni onom u redu ispod.
+
+Time je i **klik na red** dobio smisao: `ListRecords` traži `view` pa `edit`, pa
+sada moderacijski ekrani otvaraju pregled, a ostali kao i prije izmjenu.
 
 ### Faza 3 — Broken Links ekran — *urađeno 17.08.2026*
 
