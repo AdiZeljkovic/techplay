@@ -463,25 +463,41 @@ key/value tabela) izlazi iz sidebara ali ostaje na `/admin/site-settings` —
 jedina je koja može dodati ključ za koji obrazac nije čuo. Ultimate SEO i
 Social Media su obrisani.
 
-**Dvije stvari odavde mogu srušiti sajt** i zato su ispisane izričito:
+**Kako se vrijednost upisuje** — jer kolona je string za sve. PHP kastuje
+`false` u **prazan string**, ne u `'0'`, pa je `writeSetting()` eksplicitan.
+Grupa putuje uz ključ umjesto da naslijedi default `general` iz
+`SiteSetting::set()`; bez toga bi se grupa `socials` tiho preselila na prvom
+snimanju.
 
-`maintenance_mode` čita `SystemController::status()`, a Next.js middleware ga
-poziva na **svaki** zahtjev. Traži grupu `general` i vrijednost tačno `'1'` ili
-`'true'`. PHP kastuje `false` u **prazan string**, ne u `'0'` — pa je
-`writeSetting()` eksplicitan. Grupa putuje uz ključ umjesto da naslijedi default
-`general` iz `SiteSetting::set()`; bez toga bi se grupa `socials` tiho preselila
-na prvom snimanju.
+> **Dopuna, 18.08.2026 — maintenance mode obrisan.** Bio je najopasnija
+> vrijednost na ovoj stranici i ispalo je da je bio mrtav, i to na najgori
+> način: middleware koji ga je čitao obrisan je nekoliko mjeseci ranije zajedno
+> sa stranicom `/coming-soon`, a postavka je nadživjela oboje — i dalje se mogla
+> uključiti, i dalje bi vratila `true`, i ništa je više ne bi poslušalo.
+> Uključivanje bi tvrdilo da je sajt ugašen a sajt bi radio.
+>
+> Otišli su: postavka, prekidač na ovoj stranici, polje `maintenance_mode` iz
+> `/system/status`, i dvije mrtve grane u frontendu koje su čuvale rutu koja se
+> ne može dosegnuti — `AppShell` je uz njih izgubio i `usePathname()` koji je
+> postojao samo zbog nje. Postavki je sada **43**.
+>
+> `/system/status` ostaje jer ga Discord bot zove kao provjeru živosti. Bio je
+> tipovan kao `{status, version}` a polje `status` nikad nije dobijao, pa je
+> dodano umjesto da laž stoji u botovom tipu.
+>
+> Za namjerno gašenje sajta postoje `php artisan down` i nginx — nijedan ne
+> košta upit u bazu na svaki zahtjev.
 
 **Provjera prije i poslije**, snimanje obrasca bez ijedne izmjene:
 
 | | |
 |---|---|
-| Postavki prije / poslije | 44 / 44 |
+| Postavki prije / poslije | 44 / 44 (danas 43, vidi dopunu) |
 | Nestalo | 0 |
 | Novih | 0 |
 | Promijenjenih | 0 |
-| `maintenance_mode` | `value="0"`, `group=general`, `type=boolean` |
-| `/api/v1/system/status` | `maintenance_mode: false` |
+
+| `/api/v1/system/status` | HTTP 200 |
 | `techplay.gg` | HTTP 200 |
 | `/robots.txt` | netaknut |
 

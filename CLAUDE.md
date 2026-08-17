@@ -140,7 +140,7 @@ Bot authenticates to the backend using a shared API token (not Sanctum — uses 
 
 **N+1 prevention:** `Model::preventLazyLoading(!app()->isProduction())` is enabled in `AppServiceProvider`. All new queries must eager-load relationships. Violations throw in dev/staging.
 
-**Maintenance mode:** Controlled via `SiteSetting` model (database-driven). The Next.js middleware polls `/api/v1/system/status` on every page request and redirects to `/coming-soon` when `maintenance_mode === true`. Bypass via `techplay_maintenance_bypass` cookie.
+**Maintenance mode:** removed (18 Aug 2026). The middleware that polled `/api/v1/system/status` and the `/coming-soon` page were deleted some time earlier; the `maintenance_mode` setting outlived both, still toggleable from the admin and connected to nothing, so switching it on would have claimed the site was down while the site kept serving. To take the site down deliberately, use `php artisan down` or nginx — neither costs a database round trip per request. `/api/v1/system/status` still exists as a liveness ping for the Discord bot.
 
 **Privée giveaways:** Separate auth flow from TechPlay accounts. `PriveeGiveawayController` handles Google OAuth and Privée-specific login — no Sanctum token required.
 
