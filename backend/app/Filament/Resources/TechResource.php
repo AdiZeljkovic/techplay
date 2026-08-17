@@ -7,6 +7,7 @@ use App\Filament\Components\SeoFields;
 use App\Filament\Resources\TechResource\Pages;
 use App\Models\Article;
 use App\Services\CacheService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
@@ -286,6 +287,12 @@ class TechResource extends Resource
                 CreateAction::make(),
             ])
             ->actions([
+                Action::make('onSite')
+                    ->label('View on site')
+                    ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->url(fn ($record): string => config('app.site_url').'/hardware/'.$record->slug, shouldOpenInNewTab: true)
+                    ->visible(fn ($record): bool => filled($record->slug) && $record->status === 'published'),
                 EditAction::make(),
             ])
             ->bulkActions([

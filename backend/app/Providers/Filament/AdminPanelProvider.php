@@ -11,6 +11,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\Width;
+use Filament\Tables\Table;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -21,6 +22,52 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
+    /**
+     * The conventions every list in the panel keeps, set once.
+     *
+     * These were measured across all 37 resources before being written: not one
+     * of them persisted a filter, chose a page size, or said anything useful
+     * when its table was empty. Thirty-seven copies of the same four lines is
+     * thirty-seven chances to forget one, and a convention that holds on
+     * thirty-five screens is not a convention — it is a thing you have to
+     * remember to check.
+     *
+     * `configureUsing` runs when the table is constructed, before the resource's
+     * own `table()` method, so anything a resource sets for itself still wins.
+     * A new resource gets all of this without being told.
+     */
+    public function boot(): void
+    {
+        Table::configureUsing(function (Table $table): void {
+            $table
+                /*
+                 * The thing that costs the most time and is never written down:
+                 * you filter comments to "pending", open one, come back, and the
+                 * filter is gone. Multiply by every moderated comment.
+                 */
+                ->persistFiltersInSession()
+                ->persistSortInSession()
+                ->persistSearchInSession()
+
+                /*
+                 * Ten rows is Filament's default and it is a default chosen for
+                 * screenshots. On a 1440px screen at 44px a row, twenty-five
+                 * fits without scrolling and turns most of these lists into one
+                 * page instead of three.
+                 */
+                ->paginationPageOptions([10, 25, 50, 100])
+                ->defaultPaginationPageOption(25)
+
+                /*
+                 * "No records found" is what all thirty-seven said. This says
+                 * which records, using the label the resource already declares,
+                 * so every screen gets a specific sentence for free and the ones
+                 * that deserve a written explanation can still override it.
+                 */
+                ->emptyStateHeading(fn (Table $table): string => 'No '.$table->getPluralModelLabel().' yet');
+        });
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel

@@ -76,6 +76,7 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('name', 'asc')
             ->columns([
                 Tables\Columns\ImageColumn::make('image_url')
                     ->label('Image')

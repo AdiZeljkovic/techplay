@@ -68,6 +68,7 @@ class SiteSettingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('group', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('key')
                     ->searchable()

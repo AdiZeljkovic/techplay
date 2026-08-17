@@ -8,6 +8,7 @@ use App\Filament\Resources\GuideResource\Pages;
 use App\Models\Game;
 use App\Models\Guide;
 use App\Services\CacheService;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -320,6 +321,12 @@ class GuideResource extends Resource
                 CreateAction::make(),
             ])
             ->actions([
+                Action::make('onSite')
+                    ->label('View on site')
+                    ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->url(fn ($record): string => config('app.site_url').'/guides/'.$record->slug, shouldOpenInNewTab: true)
+                    ->visible(fn ($record): bool => filled($record->slug) && $record->status === 'published'),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

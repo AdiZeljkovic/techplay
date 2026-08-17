@@ -65,6 +65,7 @@ class SupportTierResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('price', 'asc')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),

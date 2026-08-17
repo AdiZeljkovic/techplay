@@ -8,6 +8,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -74,6 +75,7 @@ class UserGameResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('updated_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('user.username')->label('User')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('game.name')->label('Game')->searchable()->limit(40),
@@ -88,6 +90,7 @@ class UserGameResource extends Resource
                     ->options(array_combine(UserGame::STATUSES, array_map('ucfirst', UserGame::STATUSES))),
             ])
             ->actions([
+                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

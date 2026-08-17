@@ -380,6 +380,12 @@ class GiveawayResource extends Resource
                     ]),
             ])
             ->actions([
+                Action::make('onSite')
+                    ->label('View on site')
+                    ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->color('gray')
+                    ->url(fn ($record): string => config('app.site_url').'/giveaways/'.$record->slug, shouldOpenInNewTab: true)
+                    ->visible(fn ($record): bool => filled($record->slug)),
                 Action::make('copyLink')
                     ->label('Copy Link')
                     ->icon('heroicon-o-link')
