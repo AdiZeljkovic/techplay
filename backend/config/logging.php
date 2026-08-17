@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\TelegramChannel;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -51,6 +52,23 @@ return [
     */
 
     'channels' => [
+        /*
+         * Errors and worse, sent to Telegram as they happen.
+         *
+         * The log file waits to be read. This does not: an exception arrives on
+         * a phone within seconds, deduplicated so a burst of the same fault is
+         * one message rather than the twenty-six that broadcasting produced.
+         *
+         * Netdata covers the machine and the databases; nothing there can see
+         * an exception, which is the whole reason this channel exists. See
+         * app/Logging/TelegramChannel.php.
+         */
+        'telegram' => [
+            'driver' => 'custom',
+            'via' => TelegramChannel::class,
+            'level' => env('LOG_TELEGRAM_LEVEL', 'error'),
+            'dedup_seconds' => env('LOG_TELEGRAM_DEDUP', 600),
+        ],
 
         'stack' => [
             'driver' => 'stack',

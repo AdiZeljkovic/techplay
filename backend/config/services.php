@@ -20,6 +20,20 @@ return [
     | both .env files. No token configured = no exemption.
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Telegram alerts
+    |--------------------------------------------------------------------------
+    | One bot carries both halves of the monitoring: Netdata's alarms about the
+    | machine, and this application's exceptions through the `telegram` log
+    | channel. Same chat, so there is one place to look.
+    */
+
+    'telegram' => [
+        'token' => env('TELEGRAM_ALERT_TOKEN'),
+        'chat_id' => env('TELEGRAM_ALERT_CHAT_ID'),
+    ],
+
     'internal' => [
         'token' => env('INTERNAL_API_TOKEN'),
     ],
