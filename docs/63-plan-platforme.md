@@ -479,3 +479,33 @@ bi poslalo stare događaje kao nove.
 | **Nekorišteni indeksi** | mjeriti nakon punog ciklusa, ne po današnjem očitanju |
 | **`offset` paginacija u sitemapu** | radi, ali poskupljuje sa svakom stranicom |
 | **pm2 cluster** | tek uz dijeljeni `cacheHandler` |
+
+---
+
+## Pulse uklonjen u cijelosti, 17. 08. 2026.
+
+Uzorkovanje na 1% je opisalo problem, nije ga riješilo: alat za nadzor koji kosta vise
+od onoga sto nadzire. Vlasnikova odluka je da ide potpuno, a nadzor servera preuzima
+Netdata.
+
+Uklonjeno: paket `laravel/pulse`, `config/pulse.php`, `viewPulse` gate u
+`AppServiceProvider`, korak `pulse:restart` u `deploy.sh`, zakomentarisani `/pulse` blok u
+`deployment/nginx.conf`, `deployment/supervisor-pulse.conf`, dva supervisor procesa,
+`PULSE_*` varijable iz `.env`, logovi i ostatak u Redisu.
+
+Migracija koja je tabele **pravila** je obrisana, pa ih nova baza nikad ne stvara; nova
+migracija ih brise s `dropIfExists`, sto je na novoj bazi bez ucinka a na postojecoj ih
+uklanja. `docs/53-pulse-monitoring.md` ostaje kao zapis, s napomenom na vrhu da opisuje
+nesto cega vise nema.
+
+| | |
+|---|---|
+| tabela `pulse_*` | 0 |
+| baza | **485 MB** (jutros 1139) |
+| supervisor procesa | 5 → **3** (reverb, octane, worker) |
+| testovi | 514 prolazi, 7 preskočeno, 0 padova |
+| 16 javnih ruta + admin | sve 200 |
+
+**Sto je s tim izgubljeno:** 123 izuzetka, 34 spora zahtjeva i 23 spora posla koje je
+Pulse biljezio. To nije nista — ali to je posao za pravo pracenje gresaka (Sentry, Faza 1),
+a ne za alat koji za tih 180 redova naplacuje 647 MB.
