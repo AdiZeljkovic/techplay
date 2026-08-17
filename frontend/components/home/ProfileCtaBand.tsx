@@ -12,8 +12,8 @@ import { Gamepad2, ListChecks, Award, Users, Check } from "lucide-react";
  * than invented, taste derived from a collection, weights published.
  */
 const FEATURES = [
-    { icon: Gamepad2, title: "Your library fills itself", sub: "Connect Steam and the games, hours and finished titles arrive on their own" },
-    { icon: ListChecks, title: "Sessions you never have to write", sub: "Playtime is read on a schedule and offered as a session — nothing is logged until you say so" },
+    { icon: Gamepad2, title: "One library, every platform", sub: "Steam, PlayStation and Xbox in one place — plus anything you add by hand" },
+    { icon: ListChecks, title: "Hours counted without you", sub: "Playtime is read on a schedule and offered as a session — nothing is logged until you say so" },
     { icon: Award, title: "Your taste, in numbers", sub: "Genres, medians and a completion rate derived from what you own, not guessed" },
     { icon: Users, title: "How close your taste is to anyone else's", sub: "One percentage, with the weights behind it published" },
 ];
@@ -59,8 +59,9 @@ export default function ProfileCtaBand() {
                     </h2>
 
                     <p className="mt-4 text-[14px] text-[var(--ink-mid)] max-w-[440px] leading-relaxed">
-                        Most of what a profile here knows about you arrives without you typing it.
-                        The longer you play, the more there is to read back.
+                        Your games arrive from wherever you actually play them, and most of what
+                        this profile knows comes without you typing it. The longer you play, the
+                        more there is to read back.
                     </p>
 
                     <ul className="mt-7 space-y-3">

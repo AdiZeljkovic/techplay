@@ -43,16 +43,22 @@ class SetSiteCopy extends Command
      * precisely so that no human has to remember to update it. Say the thing
      * that stays true instead.
      */
-    private const HOME_TITLE = 'TechPlay — Game Library & Backlog Tracker, Synced From Steam';
+    /*
+     * Three platform names, because that is both the product and the search
+     * term. An earlier version said "Synced From Steam", which described a
+     * third of what this does — nowhere else shows a player what they own
+     * across platforms, and that is the whole reason to be here.
+     */
+    private const HOME_TITLE = 'TechPlay — One Game Library for PC, PlayStation & Xbox';
 
-    private const HOME_DESCRIPTION = 'Connect Steam and your game library fills itself — hours, sessions, finished titles. See your taste in numbers, and get a straight answer on what to play tonight.';
+    private const HOME_DESCRIPTION = 'Connect Steam, PlayStation and Xbox and every game you own lands in one library, with the hours you played. See your taste in numbers, and get a straight answer on what to play tonight.';
 
-    private const HOME_OG_TITLE = 'TechPlay — your game library, kept for you';
+    private const HOME_OG_TITLE = 'TechPlay — one library for everything you play';
 
-    private const HOME_OG_DESCRIPTION = 'Your library fills itself from what you actually play. Then TechPlay reads it back: your taste, your year, and what to play next.';
+    private const HOME_OG_DESCRIPTION = 'Steam, PlayStation and Xbox in one library, filled from what you actually play. Then TechPlay reads it back: your taste, your year, and what to play next.';
 
     /** Used on any page that has not been given wording of its own. */
-    private const SITE_DESCRIPTION = 'TechPlay keeps a record of your gaming — a library that fills itself from what you play — alongside game reviews, release dates, hardware coverage and guides.';
+    private const SITE_DESCRIPTION = 'TechPlay puts every game you own in one library — Steam, PlayStation and Xbox together — alongside game reviews, release dates, hardware coverage and guides.';
 
     public function handle(): int
     {

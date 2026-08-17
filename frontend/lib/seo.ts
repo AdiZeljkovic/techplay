@@ -84,7 +84,7 @@ export async function generatePageMetadata(
 
     // Use page-specific SEO if available, otherwise fall back to defaults/global settings
     const title = pageSeo?.meta_title || defaults?.title || siteName;
-    const description = pageSeo?.meta_description || defaults?.description || settings.seo_meta_description || "TechPlay keeps a record of your gaming. Connect Steam and your library fills itself — hours, sessions and finished games — alongside a catalogue of 141,000 titles, release dates, reviews and guides.";
+    const description = pageSeo?.meta_description || defaults?.description || settings.seo_meta_description || "TechPlay puts every game you own in one library — Steam, PlayStation and Xbox together, with the hours you played — then reads your taste back to you. Plus reviews, release dates and a 141,000-game catalogue.";
     const ogTitle = pageSeo?.og_title || title;
     const ogDescription = pageSeo?.og_description || description;
     const ogImage = pageSeo?.og_image

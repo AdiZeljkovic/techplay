@@ -44,8 +44,8 @@ export default function HomeHero({
     const catalogue = gameCount ? `${Math.floor(gameCount / 1000).toLocaleString("en-US")},000` : null;
 
     const stats = [
+        { value: "3", label: "Platforms in one place" },
         catalogue ? { value: catalogue, label: "Games in the catalogue" } : null,
-        { value: "Daily", label: "Release tracking" },
         { value: "Free", label: "To keep a library" },
     ].filter(Boolean) as { value: string; label: string }[];
 
@@ -80,22 +80,22 @@ export default function HomeHero({
                         Gaming, on the record
                     </p>
 
-                    {/* Two short lines rather than the argument. "Every gaming
-                        site tells you about games, we tell you about your
-                        gaming" is the sharper sentence, but as a headline it
-                        picks a fight with competitors on the front door and
-                        runs to three lines at this size. It does the same job
-                        on the About page, where a reader has asked. */}
+                    {/* The headline is the thing no platform gives you.
+                        Steam shows Steam. PSN shows PlayStation. Nobody shows
+                        you what you own across all of them, and that — not
+                        "we track your games" — is the reason to be here.
+                        An earlier version led with Steam alone, which sold a
+                        third of the product. */}
                     <h1 className="font-display text-[30px] md:text-[50px] font-black leading-[1.02] text-[var(--ink-hi)]">
-                        Your library, kept for you.
+                        One library for
                         <br />
-                        <span className="text-[var(--accent)]">And read back to you.</span>
+                        <span className="text-[var(--accent)]">everything you play.</span>
                     </h1>
 
-                    <p className="hidden md:block mt-5 text-[15px] text-[var(--ink-mid)] leading-relaxed max-w-[420px]">
-                        Connect Steam once and the games, hours and finished titles arrive on
-                        their own. TechPlay turns that into your taste, your year, and a straight
-                        answer about what to play tonight.
+                    <p className="hidden md:block mt-5 text-[15px] text-[var(--ink-mid)] leading-relaxed max-w-[440px]">
+                        Connect Steam, PlayStation and Xbox and your games arrive on their own —
+                        with the hours you put in. Add anything else by hand. Then TechPlay reads
+                        it back: your taste, your year, and what to play tonight.
                     </p>
 
                     <form onSubmit={submitSearch} className="mt-4 md:mt-7 max-w-[440px]">

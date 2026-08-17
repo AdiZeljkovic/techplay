@@ -38,7 +38,7 @@ const VALUES = [
 ];
 
 const COVERAGE = [
-    { title: "Your library", items: ["Steam import and playtime sync", "Playing, backlog, completed, wishlist, dropped", "Sessions proposed from real playtime", "Lists you can publish or keep private"] },
+    { title: "Your library", items: ["Steam, PlayStation and Xbox in one place", "Anything else added by hand", "Playing, backlog, completed, wishlist, dropped", "Hours counted, sessions proposed not invented"] },
     { title: "What it tells you", items: ["Taste across genres and eras", "Median hours and completion rate", "How your taste compares to another player", "Your year, counted and compared"] },
     { title: "What to play next", items: ["Backlog Advisor, filtered by mood", "Release calendar for what is coming", "Reviews and ratings with a stated scale", "Guides when a game gets in the way"] },
     { title: "The catalogue", items: ["141,000 games with release detail", "Browse by genre, platform, year or tag", "Hardware and tech coverage", "News, when it matters"] },
@@ -68,7 +68,7 @@ export default function AboutClient() {
         <main className="min-h-screen bg-[var(--surface-0)]">
             <PageHero
                 title="About TechPlay"
-                description="A record of your gaming, and a publication around it."
+                description="One library across every platform you play on, and a publication around it."
             />
 
             <div className="container-page py-10 md:py-14 space-y-10 md:space-y-14">
@@ -80,10 +80,15 @@ export default function AboutClient() {
                             gaming.
                         </p>
                         <p>
-                            Connect Steam once and your library assembles itself: the games you own, the
-                            hours you put in, the ones you finished. From that the site can describe your
-                            taste in figures you can check, tell you how close it sits to another player&apos;s,
-                            and suggest something to play tonight with the reasoning attached.
+                            Nowhere else shows you what you own across platforms. Steam shows Steam;
+                            PlayStation shows PlayStation. Connect all three and your library assembles
+                            itself in one place — the games, the hours, the ones you finished — and
+                            anything they miss you can add by hand from the catalogue.
+                        </p>
+                        <p>
+                            From that the site can describe your taste in figures you can check, tell you
+                            how close it sits to another player&apos;s, and suggest something to play tonight
+                            with the reasoning attached.
                         </p>
                         <p>
                             Around it sits the rest of a publication — a catalogue of 141,000 games, a
