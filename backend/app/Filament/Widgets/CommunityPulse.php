@@ -38,11 +38,11 @@ class CommunityPulse extends BaseWidget
             'active' => User::where('last_seen_at', '>=', now()->subDays(7))->count(),
             'comments' => Comment::where('created_at', '>=', now()->startOfWeek())->count(),
             'bounty' => DB::table('bounty_transactions')->where('created_at', '>=', now()->startOfWeek())->count(),
-            'season' => Season::where('is_active', true)->first(['name', 'ends_at']),
+            'season' => Season::where('is_active', true)->first(['name', 'end_date']),
         ]);
 
         $season = $data['season'];
-        $endsIn = $season?->ends_at ? (int) now()->startOfDay()->diffInDays($season->ends_at, false) : null;
+        $endsIn = $season?->end_date ? (int) now()->startOfDay()->diffInDays($season->end_date, false) : null;
 
         return [
             Stat::make('Aktivni (7 dana)', $data['active'])
