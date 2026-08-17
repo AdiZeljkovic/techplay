@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\BrokenLinkResource;
 use App\Filament\Resources\CommentResource;
 use App\Filament\Resources\NewsResource;
 use App\Filament\Resources\ReportResource;
@@ -49,7 +50,7 @@ class NeedsAttention extends BaseWidget
             'review' => Article::where('status', 'pending_review')->count(),
             'drafts' => Article::where('status', 'draft')->count(),
             'failed' => DB::table('failed_jobs')->count(),
-            'links' => DB::table('broken_links')->where('is_fixed', false)->count(),
+            'links' => DB::table('broken_links')->where('is_fixed', false)->whereIn('status_code', [404, 410])->count(),
         ]);
 
         $stats = [];
@@ -94,11 +95,16 @@ class NeedsAttention extends BaseWidget
                 ->color('danger');
         }
 
+        // Counts the ones that are actually gone, not every row. Of the 62 on
+        // record in August, 29 were sites refusing our checker and their links
+        // work in a browser; a card reading 62 sends you to fix 29 things that
+        // are not broken.
         if ($counts['links'] > 0) {
             $stats[] = Stat::make('Broken links', $counts['links'])
-                ->description('Found by the weekly scan')
+                ->description('Dead pages found by the weekly scan')
                 ->descriptionIcon('heroicon-m-link-slash')
-                ->color($counts['links'] > 50 ? 'danger' : 'warning');
+                ->url(BrokenLinkResource::getUrl('index'))
+                ->color($counts['links'] > 20 ? 'danger' : 'warning');
         }
 
         if ($stats === []) {

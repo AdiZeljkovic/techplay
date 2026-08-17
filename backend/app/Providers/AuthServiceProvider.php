@@ -6,6 +6,7 @@ use App\Models\Achievement;
 use App\Models\AdCampaign;
 use App\Models\Article;
 use App\Models\BountyTransaction;
+use App\Models\BrokenLink;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Customization;
@@ -90,6 +91,7 @@ class AuthServiceProvider extends ServiceProvider
         Rank::class => AdminOnlyPolicy::class,
         RewardItem::class => AdminOnlyPolicy::class,
         SiteSetting::class => AdminOnlyPolicy::class,
+        BrokenLink::class => AdminOnlyPolicy::class,
         SupportTier::class => AdminOnlyPolicy::class,
         UserGame::class => AdminOnlyPolicy::class,
 

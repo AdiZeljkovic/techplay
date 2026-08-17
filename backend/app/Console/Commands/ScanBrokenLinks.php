@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\Article;
 use App\Models\BrokenLink;
+use App\Services\LinkChecker;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 
 class ScanBrokenLinks extends Command
 {
@@ -90,31 +90,14 @@ class ScanBrokenLinks extends Command
     }
 
     /**
-     * Check if a link is accessible
+     * Check if a link is accessible.
+     *
+     * The HEAD-request-as-a-bot version that used to live here produced 29 of
+     * the 62 links on record as false 403s. LinkChecker explains why.
      */
     private function checkLink(string $url): array
     {
-        try {
-            $response = Http::timeout(10)
-                ->withHeaders([
-                    'User-Agent' => 'TechPlay Link Checker/1.0',
-                ])
-                ->head($url);
-
-            $statusCode = $response->status();
-
-            return [
-                'ok' => $statusCode >= 200 && $statusCode < 400,
-                'status_code' => $statusCode,
-                'error_message' => null,
-            ];
-        } catch (\Exception $e) {
-            return [
-                'ok' => false,
-                'status_code' => 0,
-                'error_message' => substr($e->getMessage(), 0, 255),
-            ];
-        }
+        return app(LinkChecker::class)->check($url);
     }
 
     /**
