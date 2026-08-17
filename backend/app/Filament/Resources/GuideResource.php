@@ -193,7 +193,16 @@ class GuideResource extends Resource
                         Tabs::make('GuideMeta')
                             ->tabs([
                                 // TAB: PUBLISH
-                                PublishTab::make(null, 'guide', withGameLink: true, withHeroToggle: false, extra: [PublishTab::difficulty()]),
+                                PublishTab::make(
+                                    null,
+                                    'guide',
+                                    withGameLink: true,
+                                    withHeroToggle: false,
+                                    extra: [PublishTab::difficulty()],
+                                    // Guides are their own model on their own
+                                    // table; the scheduler only walks Article.
+                                    withScheduling: false,
+                                ),
 
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')

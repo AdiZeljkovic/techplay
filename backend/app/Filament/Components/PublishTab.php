@@ -23,15 +23,24 @@ use Illuminate\Database\Eloquent\Builder;
  *
  * ── What the drift cost ──────────────────────────────────────────────────
  *
- * Only the News copy offered **Scheduled** as a status. The other three did
- * not, so a review, a guide or a hardware piece could not be scheduled — while
- * `articles:publish-scheduled` has been running every minute the whole time,
- * and every one of those screens still showed a "Publish Date" field that
- * therefore did nothing but sit there.
+ * Only the News copy offered **Scheduled** as a status. Reviews and Tech did
+ * not, so neither could be scheduled — while `articles:publish-scheduled` has
+ * been running every minute the whole time, and both screens still showed a
+ * "Publish Date" field that therefore did nothing but sit there.
  *
  * That is the argument for extraction in one sentence: the bug was not that
- * four files were long, it was that three of them were quietly a version
- * behind.
+ * four files were long, it was that some of them were quietly a version behind.
+ *
+ * ── And the trap that nearly replaced it ─────────────────────────────────
+ *
+ * The first version of this class handed "Scheduled" to all four callers,
+ * which would have been a worse bug than the one it fixed. Guides are **not
+ * articles**: `GuideResource` is backed by its own `Guide` model on its own
+ * table, and the scheduler queries `Article`. A scheduled guide would have sat
+ * at that status forever, with the screen implying it was on its way.
+ *
+ * Hence `$withScheduling`. A control is only offered where something is
+ * listening for it.
  */
 class PublishTab
 {
@@ -41,6 +50,7 @@ class PublishTab
      * @param  bool  $withGameLink  whether the record can point at a game in the catalogue
      * @param  bool  $withHeroToggle  whether it can be pinned to the homepage hero
      * @param  array  $extra  fields only this type has, placed where the category picker would sit — Guides file by difficulty instead of category
+     * @param  bool  $withScheduling  offer "Scheduled" as a status. Only true where something actually publishes it: `articles:publish-scheduled` queries `Article`, and Guides are their own model on their own table, so a scheduled guide would sit at that status forever. Offering a switch that is not wired to anything is worse than not offering it.
      */
     public static function make(
         ?string $categoryType = null,
@@ -48,22 +58,25 @@ class PublishTab
         bool $withGameLink = false,
         bool $withHeroToggle = true,
         array $extra = [],
+        bool $withScheduling = true,
     ): Tab {
         return Tab::make('Publish')
             ->icon('heroicon-o-paper-airplane')
             ->schema(array_values(array_filter(array_merge([
                 Select::make('status')
                     ->label('Status')
-                    ->options([
+                    ->options(array_filter([
                         'draft' => '📝 Draft',
                         'ready_for_review' => '👁️ Pending Review',
-                        'scheduled' => '🕐 Scheduled',
+                        'scheduled' => $withScheduling ? '🕐 Scheduled' : null,
                         'published' => '🌐 Published',
-                    ])
+                    ]))
                     ->default('draft')
                     ->required()
                     ->native(false)
-                    ->helperText('Use "Scheduled" to publish automatically on the date below.'),
+                    ->helperText($withScheduling
+                        ? 'Use "Scheduled" to publish automatically on the date below.'
+                        : 'Publishing here is manual.'),
 
                 DateTimePicker::make('published_at')
                     ->label('Publish date')
