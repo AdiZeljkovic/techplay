@@ -21,6 +21,7 @@
         "mews/purifier": "^3.4",
         "predis/predis": "^3.4",
         "pusher/pusher-php-server": "^7.2",
+        "sentry/sentry-laravel": "^4.27",
         "spatie/laravel-permission": "^6.24"
     },
     "require-dev": {

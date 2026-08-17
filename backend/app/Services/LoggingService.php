@@ -9,7 +9,9 @@ use Throwable;
  * Centralized logging service for consistent error tracking
  *
  * MONITORING: All errors logged with context for debugging
- * FUTURE: Can integrate with Sentry, Bugsnag, or other services
+ * Errors logged here also reach GlitchTip (self-hosted, glitchtip.techplay.gg)
+ * through the Sentry Laravel SDK, and Telegram through the `telegram` log
+ * channel. Neither needs calling from here — both hook the logger itself.
  */
 class LoggingService
 {

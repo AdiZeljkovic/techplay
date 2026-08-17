@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
 
@@ -16,13 +17,38 @@ export default function GlobalError({
     reset: () => void;
 }) {
     useEffect(() => {
-        // Log error to console in development
+        /**
+         * The console is the visitor's, not ours.
+         *
+         * This is the one place on the site where an error is guaranteed to be
+         * invisible to everything on the server: the request already returned
+         * 200, the HTML was fine, and React failed afterwards in somebody's
+         * browser. Netdata sees a healthy machine, nginx sees a served page,
+         * and the reader sees this screen.
+         *
+         * The GlitchTip SDK reports it from here — same SDK and DSN format as
+         * Sentry, self-hosted, so events stay on our own server.
+         */
+        /**
+         * The console this writes to is the visitor's, not ours.
+         *
+         * A global error means React gave up rendering the whole tree, and by
+         * then the request has already returned 200 with valid HTML. nginx
+         * recorded a success, Netdata shows a healthy machine, and the Laravel
+         * log has nothing — because nothing failed on the server. The reader is
+         * simply looking at this screen instead of the site.
+         *
+         * `digest` is Next's hash of the server-side error, and it is the only
+         * way to tie this to the corresponding server event: production strips
+         * the real message from the client for safety, so the hash is the
+         * thread between the two.
+         */
         console.error("Global error:", error);
 
-        // TODO: Send to error monitoring service
-        // if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
-        //     // Send to Sentry, LogRocket, etc.
-        // }
+        Sentry.captureException(error, {
+            tags: { boundary: "global" },
+            extra: { digest: error.digest },
+        });
     }, [error]);
 
     return (

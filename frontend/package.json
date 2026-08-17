@@ -13,6 +13,7 @@
   "dependencies": {
     "@paypal/react-paypal-js": "^8.9.2",
     "@radix-ui/react-avatar": "^1.1.11",
+    "@sentry/nextjs": "^10.70.0",
     "@tailwindcss/typography": "^0.5.19",
     "@tiptap/extension-image": "^3.17.1",
     "@tiptap/extension-link": "^3.17.1",
