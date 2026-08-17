@@ -238,6 +238,36 @@ reći je oblik mjeseca, i to je ono što Reach pokazuje.
 Redoslijed pitanja je sada: *čeka li me išta → objavljujemo li → je li iko
 pročitao → kakav je katalog → ima li koga → šta je izašlo.*
 
+### Dashboard, treći prolaz — od tabele do konzole *(18.08.2026)*
+
+Drugi prolaz je odgovarao na prava pitanja i **izgledao kao spreadsheet**: pet
+traka po tri identične bijele kocke, petnaest brojeva iste veličine u istom
+okviru, i ništa nije govorilo koji čitati prvi. Ivica je jak signal i treba da
+znači „ovo je druga stvar" — potrošena na svaki broj ne znači ništa.
+
+Šest widgeta je postalo **jedan** (`NewsroomConsole`) s jednim keširanim upitom
+umjesto jednog po kocki, plus tabela ispod.
+
+**Četiri odluke koje čine razliku:**
+
+| Princip | Kako izgleda |
+|---|---|
+| Veličina nosi rang | Dana od zadnje objave je najveći broj na stranici — jedino stanje ovdje koje se pogoršava što ga duže niko ne primijeti |
+| Oblik nosi stanje | Udio ima traku (koliko kataloga pretraživači vide, koliko je sezone proteklo), niz ima liniju |
+| Hairline umjesto okvira | Povezani brojevi dijele plohu, razdvojeni linijom od 6% |
+| Boja je racionirana | Četiri stanja; akcent se pojavljuje **jednom**, na crti iznad vodeće plohe |
+
+Sparkline je konačno širok koliko i panel umjesto četrdeset piksela u kartici —
+SVG putanja se računa u PHP-u iz istog niza od 14 dana.
+
+Red čekanja više nisu kartice nego traka čipova, svaki vodi na svoj ekran, i
+poredani su po tome čime se prvo treba pozabaviti — neuspjeli posao ispred
+drafta, jer je draft nečija odluka a neuspjeli posao nešto što se pokvarilo. Kad
+nema ničega: jedna tiha rečenica umjesto reda nula.
+
+Stil je u zasebnom `dashboard.css`, sve boje čitaju tokene definisane za oba
+moda. **Doslovnog bijelog ni crnog u tom fajlu nema.**
+
 `RecentContent` je preveden na engleski; bio je posljednji bosanski ostatak u
 panelu.
 
