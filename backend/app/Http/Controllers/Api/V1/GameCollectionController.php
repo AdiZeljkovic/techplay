@@ -275,7 +275,8 @@ class GameCollectionController extends Controller
         $skipped = [];
 
         foreach ($lines as $i => $line) {
-            $cols = str_getcsv($line);
+            // Explicit $escape: PHP 8.4 changes the default and warns without it.
+            $cols = str_getcsv($line, ',', '"', '\\');
             $name = trim((string) ($cols[0] ?? ''));
 
             // Skip an obvious header row

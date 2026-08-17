@@ -25,7 +25,15 @@ class GameController extends Controller
             return [];
         }
 
-        return str_getcsv(trim($value, '{}'));
+        // PHP 8.4 changes str_getcsv()'s default $escape from "\\" to "", and warns
+        // on every call that leaves it out. That warning arrives with a full stack
+        // trace, and these two run on every game read — between 2,000 and 5,500
+        // lines a day, into a laravel.log that had reached 1.9 GB.
+        //
+        // Passing the current default explicitly keeps today's parsing exactly as
+        // it is: PostgreSQL escapes with a backslash inside quoted array elements,
+        // so "" would be the wrong value here, not merely a different one.
+        return str_getcsv(trim($value, '{}'), ',', '"', '\\');
     }
 
     /**
