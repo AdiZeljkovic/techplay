@@ -6,6 +6,7 @@ use App\Filament\Widgets\CatalogueHealth;
 use App\Filament\Widgets\CommunityPulse;
 use App\Filament\Widgets\NeedsAttention;
 use App\Filament\Widgets\PublishingPulse;
+use App\Filament\Widgets\ReachPulse;
 use App\Filament\Widgets\RecentContent;
 use Filament\Pages\Dashboard as BaseDashboard;
 
@@ -45,16 +46,40 @@ class Dashboard extends BaseDashboard
      * a hand-rolled `.db-stat` sitting one above the other never looked like
      * they belonged to the same product.
      */
+    /**
+     * One column, and every widget spans it.
+     *
+     * The grid used to be three, which sounds like more control and was less:
+     * each stats widget already lays its own cards out, so the page grid was
+     * only deciding what happened to the leftovers — and produced the ragged
+     * first row where two cards sat beside a third of empty page. With one
+     * column the page is a stack of full-width bands, each band a question,
+     * and the card counts inside them are stated by the widgets themselves.
+     */
     public function getColumns(): int|array
     {
-        return 3;
+        return 1;
     }
 
+    /**
+     * The order the questions get asked.
+     *
+     *   1. Is anything waiting for me?          NeedsAttention
+     *   2. Are we still publishing?             PublishingPulse
+     *   3. Did anybody read it?                 ReachPulse
+     *   4. How is the catalogue doing?          CatalogueHealth
+     *   5. Is anybody out there?                CommunityPulse
+     *   6. What went out, and how did it do?    RecentContent
+     *
+     * Reach was the missing one. Everything above it counted work going out and
+     * nothing counted whether it arrived.
+     */
     public function getWidgets(): array
     {
         return [
             NeedsAttention::class,
             PublishingPulse::class,
+            ReachPulse::class,
             CatalogueHealth::class,
             CommunityPulse::class,
             RecentContent::class,

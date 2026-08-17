@@ -81,4 +81,13 @@ class CommunityPulse extends BaseWidget
     {
         return $n.($n === 1 ? ' day' : ' days');
     }
+
+    /**
+     * Three stats, three columns — stated rather than inferred from the grid,
+     * so the row fills at every width.
+     */
+    public function getColumns(): int
+    {
+        return 3;
+    }
 }

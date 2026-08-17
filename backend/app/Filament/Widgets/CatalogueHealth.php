@@ -69,4 +69,13 @@ class CatalogueHealth extends BaseWidget
                 ->color($data['views'] > 0 ? 'success' : 'danger'),
         ];
     }
+
+    /**
+     * Three stats, three columns — stated rather than inferred from the grid,
+     * so the row fills at every width.
+     */
+    public function getColumns(): int
+    {
+        return 3;
+    }
 }

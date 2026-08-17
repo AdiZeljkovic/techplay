@@ -118,4 +118,17 @@ class NeedsAttention extends BaseWidget
 
         return $stats;
     }
+
+    /**
+     * As many columns as there are cards, up to three.
+     *
+     * This widget is the only one on the dashboard whose card count changes —
+     * it shows nothing that is zero — and left to the grid it produced the
+     * ragged first row: two cards and a third of empty page beside them. A
+     * fourth card wraps to a second line rather than squeezing six into one.
+     */
+    public function getColumns(): int
+    {
+        return min(max(count($this->getStats()), 1), 3);
+    }
 }

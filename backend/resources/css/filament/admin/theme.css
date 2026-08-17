@@ -65,6 +65,20 @@
     --color-gray-50: #f4f4f5;
 }
 
+/*
+ * ── Two themes, because the panel is used in both ─────────────────────────
+ *
+ * The panel is configured `defaultThemeMode(Dark)`, and for months everything
+ * in this file was written under `.dark`. Then a screenshot arrived showing the
+ * dashboard in **light mode** — the default is only a default, and a stored
+ * preference or an OS set to light beats it. Twenty-six of thirty-nine rules
+ * here had never applied for that person.
+ *
+ * So the tokens below come in pairs. Anything that is shape — a radius, a
+ * typeface, a letter-spacing, a row height — is written once and applies in
+ * both. Anything that is colour reads a token, and the token changes with the
+ * mode. Nothing states a literal white or black outside these two blocks.
+ */
 :root {
     /*
      * Radii. The site's scale, not Tailwind's — panel 8px, card 5px, inner 3px.
@@ -74,10 +88,27 @@
     --radius-card: 0.3125rem;
     --radius-inner: 0.1875rem;
 
-    /* The site's two line weights: quiet, and interactive. */
+    /* Light: ink on paper. The same weights, inverted. */
+    --tp-line: rgb(0 0 0 / 0.08);
+    --tp-line-strong: rgb(0 0 0 / 0.16);
+    --tp-fill: rgb(0 0 0 / 0.03);
+    --tp-rail-bg: var(--gray-50);
+    --tp-rail-ink: rgb(0 0 0 / 0.5);
+    --tp-label-ink: rgb(0 0 0 / 0.65);
+    --tp-group-ink: rgb(0 0 0 / 0.4);
+    --tp-hover: var(--gray-50);
+}
+
+.dark {
+    /* The site's own two line weights. */
     --tp-line: rgb(255 255 255 / 0.06);
     --tp-line-strong: rgb(255 255 255 / 0.12);
     --tp-fill: rgb(255 255 255 / 0.03);
+    --tp-rail-bg: var(--gray-950);
+    --tp-rail-ink: rgb(255 255 255 / 0.45);
+    --tp-label-ink: rgb(255 255 255 / 0.7);
+    --tp-group-ink: rgb(255 255 255 / 0.3);
+    --tp-hover: var(--gray-800);
 }
 
 /* ─────────────────────────────────────────────────────────── typography ── */
@@ -123,18 +154,18 @@ h3 {
  * them to 12% where something is interactive; Filament's default is a solid
  * grey that reads much heavier against a surface this dark.
  */
-.dark .fi-section,
-.dark .fi-ta,
-.dark .fi-modal-window,
-.dark .fi-dropdown-panel,
-.dark .fi-input-wrp,
-.dark .fi-fo-repeater-item {
+.fi-section,
+.fi-ta,
+.fi-modal-window,
+.fi-dropdown-panel,
+.fi-input-wrp,
+.fi-fo-repeater-item {
     border-color: var(--tp-line);
     --tw-ring-color: var(--tp-line);
 }
 
-.dark .fi-input-wrp:focus-within,
-.dark .fi-btn:hover {
+.fi-input-wrp:focus-within,
+.fi-btn:hover {
     border-color: var(--tp-line-strong);
     --tw-ring-color: var(--tp-line-strong);
 }
@@ -143,11 +174,11 @@ h3 {
  * The top rule the site puts above every panel. One hairline, fading out at
  * both ends, in the accent. It is the site's signature and costs nothing.
  */
-.dark .fi-main > .fi-section:first-child {
+.fi-main > .fi-section:first-child {
     position: relative;
 }
 
-.dark .fi-main > .fi-section:first-child::before {
+.fi-main > .fi-section:first-child::before {
     content: '';
     position: absolute;
     inset-inline: 1.5rem;
@@ -177,21 +208,21 @@ h3 {
  * labels, and set as a micro-label. It stops competing with the first line of
  * data, which in a dense table is the thing the eye should land on.
  */
-.dark .fi-ta-header-cell {
-    background-color: var(--gray-950);
+.fi-ta-header-cell {
+    background-color: var(--tp-rail-bg);
     font-family: 'Instrument Sans', var(--font-family), sans-serif;
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgb(255 255 255 / 0.45);
+    color: var(--tp-rail-ink);
 }
 
-.dark .fi-ta-row:hover {
-    background-color: var(--gray-800);
+.fi-ta-row:hover {
+    background-color: var(--tp-hover);
 }
 
-.dark .fi-ta-row {
+.fi-ta-row {
     transition: background-color 120ms var(--ease-hud, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
@@ -199,11 +230,11 @@ h3 {
  * The empty state's icon sits in a light circle by default — a bright disc on a
  * near-black page. It becomes a raised surface instead.
  */
-.dark .fi-ta-empty-state-icon-bg {
-    background-color: var(--gray-800);
+.fi-ta-empty-state-icon-bg {
+    background-color: var(--tp-hover);
 }
 
-.dark .fi-ta-empty-state {
+.fi-ta-empty-state {
     border-color: var(--tp-line);
 }
 
@@ -222,10 +253,10 @@ h3 {
     --tw-ring-color: color-mix(in srgb, var(--primary-500) 45%, transparent);
 }
 
-.dark .fi-fo-field-label {
+.fi-fo-field-label {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: rgb(255 255 255 / 0.7);
+    color: var(--tp-label-ink);
 }
 
 /* ──────────────────────────────────────────────── buttons and badges ── */
@@ -246,7 +277,7 @@ h3 {
  * badge, and the ring on top of it makes a table of six badges look like a row
  * of buttons — which invites a click that does nothing.
  */
-.dark .fi-badge {
+.fi-badge {
     --tw-ring-color: transparent;
 }
 
@@ -260,20 +291,20 @@ h3 {
  *
  * `.fi-sidebar-item-btn`, not `-button`. The previous spelling matched nothing.
  */
-.dark .fi-sidebar-item.fi-active .fi-sidebar-item-btn {
+.fi-sidebar-item.fi-active .fi-sidebar-item-btn {
     background-color: var(--tp-fill);
     box-shadow: inset 2px 0 0 0 var(--primary-500);
 }
 
-.dark .fi-sidebar-group-label {
+.fi-sidebar-group-label {
     font-family: 'Instrument Sans', var(--font-family), sans-serif;
     font-size: 0.6875rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgb(255 255 255 / 0.3);
+    color: var(--tp-group-ink);
 }
 
-.dark .fi-topbar {
+.fi-topbar {
     border-bottom: 1px solid var(--tp-line);
 }
 
@@ -285,13 +316,13 @@ h3 {
  * as a toolbar. The underline is the accent, and it is the only accent on the
  * screen that is not an action.
  */
-.dark .fi-tabs-item.fi-active {
+.fi-tabs-item.fi-active {
     background-color: transparent;
     box-shadow: inset 0 -2px 0 0 var(--primary-500);
     color: var(--primary-400);
 }
 
-.dark .fi-tabs-item:hover:not(.fi-active) {
+.fi-tabs-item:hover:not(.fi-active) {
     background-color: var(--tp-fill);
 }
 

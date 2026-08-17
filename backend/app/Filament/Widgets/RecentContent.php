@@ -31,7 +31,7 @@ class RecentContent extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->heading('Zadnje objavljeno')
+            ->heading('Recently published')
             ->query(
                 Article::query()
                     ->where('status', 'published')
@@ -45,14 +45,14 @@ class RecentContent extends BaseWidget
             ->paginated(false)
             ->columns([
                 TextColumn::make('title')
-                    ->label('Naslov')
+                    ->label('Title')
                     ->limit(60)
                     ->weight('medium')
                     ->searchable(false)
                     ->sortable(false),
 
                 TextColumn::make('category.name')
-                    ->label('Sekcija')
+                    ->label('Section')
                     ->badge()
                     ->color(fn ($record) => match ($record->category?->type) {
                         'reviews' => 'warning',
@@ -62,19 +62,19 @@ class RecentContent extends BaseWidget
                     ->sortable(false),
 
                 TextColumn::make('author.display_name')
-                    ->label('Autor')
+                    ->label('Author')
                     ->default('—')
                     ->color('gray')
                     ->sortable(false),
 
                 TextColumn::make('views')
-                    ->label('Pregleda')
+                    ->label('Views')
                     ->numeric()
                     ->alignEnd()
                     ->sortable(false),
 
                 TextColumn::make('published_at')
-                    ->label('Objavljeno')
+                    ->label('Published')
                     ->since()
                     ->description(fn ($record) => $record->published_at?->format('d.m.Y H:i'))
                     ->alignEnd()
@@ -82,7 +82,7 @@ class RecentContent extends BaseWidget
             ])
             ->recordActions([
                 Action::make('open')
-                    ->label('Otvori')
+                    ->label('Open')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->url(fn ($record) => config('app.site_url').'/'.match ($record->category?->type) {
                         'reviews' => 'reviews',

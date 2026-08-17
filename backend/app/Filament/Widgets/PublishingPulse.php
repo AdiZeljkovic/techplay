@@ -96,4 +96,13 @@ class PublishingPulse extends BaseWidget
             ->map(fn ($back) => (int) ($rows[now()->subDays($back)->toDateString()] ?? 0))
             ->all();
     }
+
+    /**
+     * Three stats, three columns — stated rather than inferred from the grid,
+     * so the row fills at every width.
+     */
+    public function getColumns(): int
+    {
+        return 3;
+    }
 }
