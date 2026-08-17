@@ -329,17 +329,39 @@ koje ima prednost nad prefiksom.
 deploy ne stiže ni do koga sat vremena — a arhiva chunkova znači da stari HTML i dalje
 *radi*, što je gore od pucanja: ništa ne javi da se novi build ne servira.
 
-### Cloudflare — pročitano kroz API, ne pretpostavljeno
+### Cloudflare — pročitano kroz API, pa popravljeno
 
-| Nalaz | Stanje |
+Zatečeno i riješeno istog dana:
+
+| Nalaz | Riješeno kako |
 |---|---|
-| **Rate limit "Games scraper protection"** blokira >50 zahtjeva/10 s na `/games/*`, **bez izuzeća za pretraživače**. Googlebot na 114.000 stranica ide brže od toga. | otvoreno — treba `and not cf.client.bot` |
-| Četiri cache pravila (`Home`, `News`, `Navigation`, `Settings` API) imaju `"cache": true` uz `edge_ttl: bypass_by_default` — **ne kešira ništa** | otvoreno — brisati |
-| `min_tls_version: 1.0` (povučen 2021.) | otvoreno — na 1.2 |
-| `always_use_https: off` (origin ipak radi 301) | otvoreno |
-| `browser_cache_ttl: 14400` umjesto poštovanja zaglavlja | otvoreno |
-| HSTS `max-age=31536000; includeSubDomains` | ispravno |
-| `_next/static` → `cf-cache-status: HIT` | ispravno |
+| **Rate limit "Games scraper protection"** blokirao je >50 zahtjeva/10 s na `/games/*` **bez izuzeća za pretraživače**. Googlebot na 114.000 stranica ide brže od toga — pravilo je blokiralo indeksiranje kataloga. | izraz sada `... and not cf.client.bot`; to polje je istinito samo za crawlere koje Cloudflare sam verificira, pa scraper ništa ne dobija |
+| Četiri cache pravila (`Home`, `News`, `Navigation`, `Settings` API) imala su `"cache": true` uz `edge_ttl: bypass_by_default` — **kontradikcija koja ne kešira ništa** | obrisana; sedam pravila svedeno na četiri |
+| HTML nigdje nije bio proglašen keširanim, pa je i savršeno dobar `s-maxage=300` bio ignorisan | pravilo **HTML edge cache**, namjerno `respect_origin` — Next sam kaže šta koliko vrijedi, a stranice koje se ne smiju keširati šalju `no-store` i ostaju vani |
+| `/games/*` slao `no-store` (force-dynamic), pa ga je rub poslušao | pravilo **Cache game pages**, jedino s `override_origin` (1 h) |
+| `min_tls_version: 1.0` (povučen 2021.) | 1.2 |
+| `always_use_https: off` | uključeno |
+| `browser_cache_ttl: 14400` | poštuje zaglavlja |
 
-Skripta koja sve to primjenjuje uz backup postojećih pravila u JSON: `cf_apply.py`
+Izmjereno poslije, kroz javni hostname:
+
+| URL | prvi | drugi | treći |
+|---|---|---|---|
+| `/games/doom` | MISS | **HIT** | **HIT** |
+| `/news` | MISS | **HIT** | **HIT** |
+| `/` | MISS | **HIT** | **HIT** |
+| `/games` | MISS | **HIT** | **HIT** |
+
+Privatne putanje provjerene dvaput svaka — `/login`, `/register`, `/settings`, `/messages`,
+`/friends`, `/cart`, `/shop/checkout`, `/profile/*`, `/forum/create`, `/api/revalidate` — sve
+ostaju `DYNAMIC`, dakle nekeširane. TLS 1.0 se odbija, TLS 1.2 prolazi, `http://` i dalje
+301 na HTTPS, sweep od 26 ruta bez ijednog pada.
+
+**Napomena o slojevima:** `/games/*` je sada keširan **dvaput** — nginx na originu i
+Cloudflare na rubu. To nije višak: nginx štiti origin i radi bez obzira na rub, rub štiti
+mrežu i radi bez obzira na origin. Ali znači i da izmijenjena igra može biti zastarjela do
+dva sata (1 h nginx + 1 h rub). Ako to postane problem, čisti se oboje —
+`find /var/cache/nginx/techplay -type f -delete` i purge na Cloudflareu.
+
+Skripta koja je sve primijenila, uz backup zatečenih pravila u JSON: `cf_apply.py`
 (scratchpad sesije). Detalji u `deployment/cloudflare-cache-rules.md`.
