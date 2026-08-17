@@ -220,27 +220,33 @@ vidi — sadržaj stiže drugim Livewire zahtjevom. Provjera ide preko
 
 Poredano po odnosu koristi i rizika.
 
-### A. Preurediti navigaciju *(bez rizika, najveći efekat)*
+### A. Preurediti navigaciju — *urađeno 17.08.2026*
 
-Iz osam grupa sa 14-članom ostavom u sedam s ravnomjernom težinom:
+Osam grupa, ravnomjerne težine. Ono što stvarno stoji u sidebaru danas
+(prazni resursi su sakriveni, pa je vidljivih 36 od 42):
 
-| Grupa | Stavke |
-|---|---|
-| **Content** | Release Calendar, News, Reviews, Guides, Tech, Media Library |
-| **Game Database** | Games, Game Ratings |
-| **GTA 6** | Characters, Vehicles, Weapons |
-| **Community** | Users, Forum Categories, Threads, Comments, Reports |
-| **Gamification** | Ranks, Achievements, Seasons, Quests, Rewards Store, Customizations, Bounty Ledger, Game Collections |
-| **Monetization** | Products, Orders, Support Tiers, User Supports, Ad Campaigns, Giveaways |
-| **SEO** | SEO Manager, Ultimate SEO, Page SEO, Redirects, Newsletter |
-| **System** | Categories, Site Settings, Roles, Social Media, Analytics |
+| Grupa | Stavke | Sakriveno dok je prazno |
+|---|---|---|
+| **Content Studio** | Release Calendar, News, Reviews, Guides, Tech, Media Library | — |
+| **Game Database** | Games | Game Ratings |
+| **GTA 6** | Characters, Vehicles, Weapons | — |
+| **Community** | Users, Forum Categories, Threads, Comments | Reports, Posts |
+| **Gamification** | Ranks, Achievements, Seasons, Quests, Rewards Store, Customizations, Bounty Ledger, Game Collections | — |
+| **Shop & Monetization** | Giveaways, Support Tiers, Ad Campaigns | Products, Orders, User Supports |
+| **SEO & Marketing** | SEO Manager, Ultimate SEO, Page SEO, Redirects, Newsletter Subscribers | — |
+| **System** | Categories, Site Settings, Roles, Social Media, Analytics | — |
 
-Tri pomjeranja koja nose najviše: **ekonomija dobija svoje ime**, Release
-Calendar se pridružuje sadržaju umjesto da bude sam, a Giveaways prelazi u
-monetizaciju gdje i pripada.
+Tri pomjeranja nose najviše: **ekonomija je dobila svoje ime** (bila je osam od
+četrnaest redova u Communityju, pa su Users i Threads stajali pored Bounty
+Ledgera), Release Calendar se pridružio sadržaju umjesto da bude sam u grupi od
+jedne stavke, a Giveaways je prešao u monetizaciju gdje i pripada.
 
-Uz to: `sort` vrijednosti prenumerisati u korake od 10, da se novo umetanje ne
-sudara.
+`sort` vrijednosti su prenumerisane u korake od 10; stranice i resursi dijele
+istu skalu jer se međusobno sortiraju.
+
+Imena grupa nisu skraćivana na „Content" i „Monetization" kako je prvo
+predloženo — postojeća imena rade, a preimenovanje bi bilo promjena koju treba
+ponovo naučiti bez ičega zauzvrat.
 
 ### B. Spojiti News, Reviews i Tech u jedan resurs *(srednji rizik, najveća ušteda)*
 
@@ -281,14 +287,24 @@ Ukupno članaka, Korisnici, Komentari na čekanju — i obrisati inline `<style>
 
 Dashboard tada ima: jedan red statistike, red brzih akcija, najčitanije članke.
 
-### E. Sakriti prazne resurse dok se ne napune *(nizak rizik)*
+### E. Sakriti prazne resurse dok se ne napune — *urađeno 17.08.2026*
 
-Sedam resursa s nula redova su sedam stavki koje se svaki dan preskaču.
-`shouldRegisterNavigation()` može vratiti `false` dok je tabela prazna — resurs
-ostaje dostupan preko URL-a i pojavi se sam kad dobije prvi red.
+Šest resursa s nula redova (ne sedam — `Review` je u međuvremenu obrisan):
+Game Ratings, Orders, Posts, Products, Reports, User Supports. Svaki sada nosi:
 
-Za `Post` treba prvo odgovoriti da li je model uopće u upotrebi; ako nije, ide
-istim putem kao `Review`.
+```php
+public static function shouldRegisterNavigation(): bool
+{
+    return static::getModel()::query()->exists();
+}
+```
+
+Resurs ostaje dostupan preko URL-a i vrati se u sidebar sam s prvim zapisom.
+Cijena je šest `SELECT EXISTS` upita po iscrtavanju navigacije, što je na
+prometu admin panela ispod mjerljivog.
+
+Za `Post` i dalje stoji pitanje je li model uopće u upotrebi — forum radi na
+`Thread` + `ForumPost`. Sakrivanje kupuje vrijeme, ne odgovara na to.
 
 ---
 
@@ -301,15 +317,26 @@ minimalna i to je dobro — ali tri stvari vrijede pažnje.
 panela, jer jedini ima svoj `<style>`. Filamentov `Stat` widget izgleda drukčije
 od `db-stat` kartice tik ispod njega.
 
-**Ikone su dosljedne osim na dva mjesta.** `star` se koristi i za Reviews i za
-Game Ratings; `chat-bubble-left-right` i za Threads i za Comments; `flag` i za
-Reports i za Quests; `gift` i za Giveaways i za Rewards Store. Četiri para
-identičnih ikona u istom sidebaru — u skupljenom stanju (9rem) ikona je jedino
-što se vidi.
+**Ikone su se ponavljale na šest mjesta** — *riješeno 17.08.2026*. Prvo brojanje
+je našlo pet parova jer je gledalo samo resurse; šesti je bio `calendar-days`,
+koji su dijelili Seasons i Release Calendar (stranica, ne resurs).
 
-**Skupljeni sidebar je 9rem.** To je dovoljno za ikonu i kratki tekst, ali kod 37
-stavki i četiri ponovljene ikone, skupljeno stanje je teško čitati. Ili
-razdvojiti ikone, ili prihvatiti da se sidebar drži otvoren.
+| Bilo | Sada |
+|---|---|
+| Comments = Threads (`chat-bubble-left-right`) | Comments → `chat-bubble-oval-left-ellipsis` |
+| Game Ratings = Reviews (`star`) | Game Ratings → `hand-thumb-up` |
+| Giveaways = Rewards Store (`gift`) | Rewards Store → `building-storefront` |
+| Page SEO = SEO Manager (`document-magnifying-glass`) | Page SEO → `document-text` |
+| Quests = Reports (`flag`) | Quests → `map` |
+| Seasons = Release Calendar (`calendar-days`) | Seasons → `clock` |
+
+Provjera je sada dio pregleda: iscrtaj `$panel->getNavigation()` i prebroj ikone.
+Nula ponovljenih na 36 vidljivih stavki.
+
+**Skupljeni sidebar** je bio prisiljen na 9rem — 144px, tri širine ikonice. U
+tom stanju nije izgledao presavijeno nego pokvareno, kao sidebar kojem natpisi
+nisu učitani. Override je uklonjen; skupljeno je sad široko koliko i ikona, što
+je jedino stanje koje se čita kao namjera.
 
 ---
 
