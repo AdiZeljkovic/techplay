@@ -30,7 +30,7 @@ class CatalogueHealth extends BaseWidget
 
     protected ?string $heading = 'Katalog igara';
 
-    protected function stats(): array
+    protected function getStats(): array
     {
         // Counting 142,000 rows three ways is not something to do on every page
         // load, and the answer changes at the pace the aggregator runs.

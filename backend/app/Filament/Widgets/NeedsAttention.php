@@ -41,7 +41,7 @@ class NeedsAttention extends BaseWidget
      * drop. The queue counts in particular are the kind a person watches
      * immediately after acting on them.
      */
-    protected function stats(): array
+    protected function getStats(): array
     {
         $counts = Cache::remember('dashboard.attention.v1', 60, fn () => [
             'comments' => Comment::where('status', 'pending')->count(),

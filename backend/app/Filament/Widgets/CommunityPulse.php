@@ -30,7 +30,7 @@ class CommunityPulse extends BaseWidget
 
     protected ?string $heading = 'Zajednica';
 
-    protected function stats(): array
+    protected function getStats(): array
     {
         $data = Cache::remember('dashboard.community.v1', 300, fn () => [
             'users' => User::count(),

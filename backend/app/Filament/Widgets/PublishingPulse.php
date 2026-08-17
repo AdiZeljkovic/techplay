@@ -26,7 +26,7 @@ class PublishingPulse extends BaseWidget
 
     protected ?string $heading = 'Objavljivanje';
 
-    protected function stats(): array
+    protected function getStats(): array
     {
         $data = Cache::remember('dashboard.publishing.v1', 300, function () {
             $published = Article::where('status', 'published');
