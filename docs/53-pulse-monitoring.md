@@ -1,5 +1,16 @@
 # 53 — Laravel Pulse: podešavanje na produkciji
 
+> **POVUČENO 17. 08. 2026.** Laravel Pulse je uklonjen iz projekta. Od 1.483.270
+> redova koje je nakupio, **1.483.067 su bili zapisi o pogotku i promašaju keša** —
+> 647 MB od baze koja je ukupno imala 1080 MB. Sve zbog čega je Pulse postojao stalo
+> je u preostala 203 reda: 123 izuzetka, 34 spora zahtjeva, 23 spora posla.
+>
+> Alat za nadzor koji košta više od onoga što nadzire, na katalogu čija je glavna
+> tabela 377 MB. Nadzor servera preuzima Netdata.
+>
+> Ovaj dokument ostaje kao zapis kako je bilo postavljeno, ne kao uputstvo.
+
+
 **Status:** konfiguracija spremna, čeka izvršavanje na serveru (11. 08. 2026.)
 
 ---

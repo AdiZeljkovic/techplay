@@ -42,7 +42,6 @@ php artisan queue:restart
 
 # Same for the Pulse daemons, which cache code like any other long-running
 # process. Non-fatal: Pulse being down must not fail a deploy.
-php artisan pulse:restart || true
 
 # 3. FRONTEND SETUP
 echo "🎨 Building Frontend..."

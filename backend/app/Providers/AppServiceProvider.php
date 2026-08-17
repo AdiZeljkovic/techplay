@@ -47,7 +47,6 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -190,16 +189,6 @@ class AppServiceProvider extends ServiceProvider
             });
         }
 
-        // Pulse Authorization
-        Gate::define('viewPulse', function ($user = null) {
-            // For now, allow local dev or logged in admins.
-            // Since user might be null, we need to check.
-            // Actually, Pulse auth usually handles user resolution.
-            // Let's allow if user has 'admin' role.
-            $user = $user ?? auth()->user();
-
-            return $user && $user->isAdmin();
-        });
     }
 
     /**
