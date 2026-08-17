@@ -29,7 +29,11 @@ export async function generateMetadata(): Promise<Metadata> {
     ];
 
     return {
-        title,
+        // Absolute, because the brand is already the subject of the sentence.
+        // The root template appends "| TechPlay" to anything it is given, and
+        // "Advertise on TechPlay — Media Kit 2026 | TechPlay" says it twice for
+        // no reader's benefit.
+        title: { absolute: title },
         description,
         keywords: keywords.join(", "),
         authors: [{ name: "TechPlay" }],
