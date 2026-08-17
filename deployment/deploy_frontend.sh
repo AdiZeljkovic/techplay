@@ -103,6 +103,35 @@ if [ -d "$CACHE" ]; then
     echo "Ispraznjen nginx kes za /games/ (bilo: ${before:-?})"
 fi
 
+# 5c. And the one in front of that.
+#
+# Cloudflare holds HTML for as long as the origin's s-maxage says — an hour on
+# most pages. Without this, a deploy is invisible to visitors for that hour
+# while every check run from the server says it worked, because the server sees
+# its own origin. Five titles were verified fixed at the origin and still wrong
+# in a browser for exactly this reason.
+#
+# Optional by design: the token lives at /root/.cf_token, outside the repo, and
+# the deploy carries on without it rather than failing. Zone is techplay.gg.
+CF_TOKEN_FILE=/root/.cf_token
+CF_ZONE=a528af7dc34924b77b38cf8fa2dc29cf
+if [ -r "$CF_TOKEN_FILE" ]; then
+    cf_token=$(tr -d ' \t\r\n"'"'" < "$CF_TOKEN_FILE" | sed 's/^CF_TOKEN=//')
+    purge=$(curl -s -X POST \
+        "https://api.cloudflare.com/client/v4/zones/${CF_ZONE}/purge_cache" \
+        -H "Authorization: Bearer ${cf_token}" \
+        -H "Content-Type: application/json" \
+        --data '{"purge_everything":true}' || true)
+    case "$purge" in
+        *'"success":true'*) echo "Cloudflare kes ocisten." ;;
+        *)                  echo "Cloudflare purge nije uspio (deploy se nastavlja): ${purge:0:160}" ;;
+    esac
+else
+    echo "Nema $CF_TOKEN_FILE — Cloudflare kes NIJE ociscen."
+    echo "  Izmjene ce se vidjeti tek kad istekne s-maxage (do sat vremena),"
+    echo "  ili rucno: Cloudflare -> Caching -> Purge Everything."
+fi
+
 # 6. Ask the running server what it thinks it needs, then check it is there.
 #
 # The archive above protects HTML already in the wild. It does not protect
