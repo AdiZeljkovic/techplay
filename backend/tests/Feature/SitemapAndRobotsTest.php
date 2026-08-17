@@ -90,4 +90,25 @@ class SitemapAndRobotsTest extends TestCase
             $this->assertStringStartsWith('https://techplay.gg/', $loc, "child sitemap on the wrong host: {$loc}");
         }
     }
+
+    /**
+     * A page number past the catalogue is a page that does not exist.
+     *
+     * This returned "<urlset></urlset>" with a 200 for any number at all. It
+     * went unnoticed because static files in public/ answered first — and the
+     * moment those were pruned, the route began serving empty sitemaps for
+     * pages 4 and 5, the very files the pruning had just removed. A crawler
+     * holding an old URL would be told, with a 200, that it is still valid.
+     */
+    public function test_a_game_sitemap_page_past_the_catalogue_is_a_404(): void
+    {
+        $this->get('/sitemap-games-99.xml')->assertNotFound();
+    }
+
+    public function test_the_first_game_sitemap_page_still_answers(): void
+    {
+        $this->get('/sitemap-games-1.xml')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/xml');
+    }
 }

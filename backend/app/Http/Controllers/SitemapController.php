@@ -431,6 +431,23 @@ class SitemapController extends Controller
     public function games(int $page = 1): Response
     {
         $perPage = 50000;
+
+        // A page beyond the catalogue is not an empty sitemap, it is a page
+        // that does not exist.
+        //
+        // Until 17 Aug 2026 this returned "<urlset></urlset>" with a 200 for
+        // any page number at all. It went unnoticed because static files in
+        // public/ answered first — and the moment those were pruned, the route
+        // began serving empty sitemaps for pages 4 and 5, which is exactly what
+        // the pruning had just removed. A crawler holding an old URL would keep
+        // fetching them and be told, with a 200, that they are still valid.
+        $total = Game::whereNotNull('description')->count();
+        $lastPage = max(1, (int) ceil($total / $perPage));
+
+        if ($page > $lastPage) {
+            abort(404);
+        }
+
         $xml = $this->xmlHeader();
 
         Game::whereNotNull('description')

@@ -239,3 +239,9 @@ put kad crawler dođe.
    XML-a u repo, a zastarjela kopija bi se deployala preko svježe.
 
 **Za deploy:** nakon svake izmjene `SitemapController`, obavezno `php artisan sitemap:generate`.
+
+**Nastavak istog dana:** čim je pruning obrisao `sitemap-games-4/5.xml`, ruta ih je počela
+servirati kao **prazan `<urlset></urlset>` sa statusom 200** — jer `games()` nije provjeravao
+opseg. Crawler koji drži stari URL bio bi obaviješten, statusom 200, da je i dalje važeći.
+Sada `games()` vraća **404** za stranu izvan kataloga. To je i dobar primjer kako popravka
+otkrije sljedeći sloj: statični fajlovi su godinu dana skrivali da ruta nema provjeru.
