@@ -268,6 +268,47 @@ nema ničega: jedna tiha rečenica umjesto reda nula.
 Stil je u zasebnom `dashboard.css`, sve boje čitaju tokene definisane za oba
 moda. **Doslovnog bijelog ni crnog u tom fajlu nema.**
 
+---
+
+## Panel na telefonu *(18.08.2026)*
+
+Filament je responzivan i ništa ovdje nije spašavanje. Ono što ne daje je oblik
+koji telefon uči čovjeka da očekuje: **traka pod palcem.** Na stolu je sidebar
+ispravan; na telefonu je ladica koju moraš dozvati iz gornjeg desnog ugla —
+najdalje tačke od palca.
+
+### Četiri odredišta i ulaz u ostalo
+
+Biraju se po tome šta se radi **u adminu** s telefona, a to je druga lista od
+one po čemu čitalac otvara sajt. **Admin je svoj sistem** i njegova traka se ne
+izvodi iz frontendove. Niko ne piše recenziju od dvije hiljade riječi na
+telefonu; na telefonu provjeravaš, odobravaš i postavljaš fotografiju.
+
+| Tab | Zašto je tu |
+|---|---|
+| **Dashboard** | čeka li me šta, objavljujemo li |
+| **Articles** | pročitaj šta je izašlo, objavi što je spremno |
+| **Comments** | red moderacije, s brojem na samom tabu |
+| **Media** | upload iz galerije — jedini admin posao koji telefon radi *bolje* od stola |
+| **More** | otvara Filamentovu ladicu preko `$store.sidebar.open()` |
+
+Peto dugme namjerno ne pravi drugi meni. U sidebaru je 36 stavki i one imaju
+jedno mjesto.
+
+### Ostalo što traka nosi sa sobom
+
+- Targeti od **56px** — iznad praga od 44
+- `env(safe-area-inset-bottom)` za home indicator
+- Blur na donjoj **i** gornjoj traci, da okvire sadržaj kao jedna aplikacija
+- `.fi-main` dobija donji padding, da sadržaj ne završi pod trakom
+- Naslov stranice i akcije se slažu jedno pod drugo umjesto da se otimaju o red
+- Akcent se troši na dvije stvari: crta na gornjoj ivici trake i pločica ispod
+  aktivne ikone — pa je „ovdje si" najglasnije na traci
+- `prefers-reduced-motion` gasi prelaz
+
+Sve ispod **1024px**; iznad toga panel je netaknut, a traka je skriveni `<nav>`.
+Stil je u `mobile.css`, boje preko istih tokena, bez ijednog doslovnog bijelog.
+
 `RecentContent` je preveden na engleski; bio je posljednji bosanski ostatak u
 panelu.
 
