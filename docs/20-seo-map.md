@@ -193,10 +193,13 @@ Izmjereno protiv produkcije, ne pretpostavljeno.
 
 ### Ostaje otvoreno
 
-1. **Katalog se ne može puzati.** Stranica igre pravi **5 API poziva**, limit je 60/min po IP-u → greške iznad ~12 pregleda u minuti. Izmjereno: 5/12 padova na 15 zahtjeva u minuti nakon pauze; 63/75 punom brzinom. Izuzeće za `X-Internal-Token` postoji u kodu ali očito ne stiže iz deployanog frontenda.
-2. **HTML se ne kešira na rubu** — `cf-cache-status: DYNAMIC`/`BYPASS`. Svaki dolazak ide do origina i tamo se pomnoži s pet.
+1. ~~**Katalog se ne može puzati.**~~ **Riješeno isti dan** — vidi sekciju niže. 0/75 padova.
+2. ~~**HTML se ne kešira na rubu.**~~ **Za `/games/*` riješeno na originu** (nginx), za ostatak
+   HTML-a čeka Cloudflare pravilo — vidi niže.
 3. **11 GTA6 likova vraća 404** na produkciji a rade lokalno — deployani build je stariji.
-4. `/news` i `/reviews` imaju `<title>TechPlay | TechPlay</title>`; `og:image` fali na svim hub stranicama; `/calendar` i `/leaderboard` bez canonicala; `/games` i `/forum` bez `<h1>`.
+4. ~~`/news` i `/reviews` imaju `<title>TechPlay | TechPlay</title>`~~ **riješeno**; ostaje:
+   `og:image` fali na svim hub stranicama; `/calendar` i `/leaderboard` bez canonicala;
+   `/games` i `/forum` bez `<h1>`.
 5. **Google News:** tehnika je spremna, ritam nije — 1 članak u 30 dana, a jedini u news sitemapu datiran je 14. 11. 2026, u budućnosti.
 
 ### Zašto popravka sitemapa nije radila — 17. 08. 2026
@@ -245,3 +248,98 @@ servirati kao **prazan `<urlset></urlset>` sa statusom 200** — jer `games()` n
 opseg. Crawler koji drži stari URL bio bi obaviješten, statusom 200, da je i dalje važeći.
 Sada `games()` vraća **404** za stranu izvan kataloga. To je i dobar primjer kako popravka
 otkrije sljedeći sloj: statični fajlovi su godinu dana skrivali da ruta nema provjeru.
+
+---
+
+## Audit 2026-08-17, drugi dio — zašto katalog nije bio prohodan
+
+Tri sloja, jedan iznad drugog. Svaki je sam za sebe zatvarao katalog za pretraživače, pa
+popravka bilo kojeg jednog ne bi ništa promijenila.
+
+### Sloj 1 — pet API poziva po stranici igre
+
+Stranica je dohvaćala igru, njene screenshotove, serijal, prijedloge i povezane članke
+zasebno, a `generateMetadata` je igru dohvaćala šesti put. API mjeri **60 zahtjeva u minuti
+po IP-u** pozivaoca, a svaki serverski render izlazi s jedne adrese — dakle **dvanaest
+pregleda igara u minuti** iscrpi budžet, a trinaesti dobije 429 koji render pretvori u 500.
+
+Izmjereno prije: 5 od 12 stranica palo pri 15 zahtjeva u minuti, 63 od 75 punom brzinom.
+
+Novi endpoint `GET /games/{slug}/bundle` vraća svih pet dijelova odjednom. Četiri
+samostalna endpointa ostaju — imaju druge pozivaoce, a jedan od njih personalizuje za
+prijavljenog čitaoca, što bundle namjerno **ne** radi da bi mogao biti keširan i dijeljen.
+
+Čuva `tests/Feature/GameBundleTest.php` (5 testova: oblik odgovora, poklapanje s pojedinačnim
+endpointom, 404 se ne umotava u uspjeh, prazni nizovi umjesto `null`, keširajuće zaglavlje).
+
+**Poslije: 0 padova od 75.**
+
+### Sloj 2 — `INTERNAL_API_TOKEN` koji se nije poklapao
+
+Izuzeće od limita za vlastiti SSR proces postoji u `AppServiceProvider::bootApiRateLimiter()`
+i radi. Nije radilo zato što je **`frontend/.env.local` nosio drugi token od backenda**, a
+Next `.env.local` čita s **višim prioritetom** od `.env` — koji se, ironično, poklapao.
+
+Kako je otkriveno: build je ispisivao `[seo] page-seo for "/news" answered 429` za svaku od
+44 stranice. To logovanje je dodano isti dan upravo zato što je tiha zamjena bazom pisanog
+SEO-a kodnim fallbackom nevidljiva — stranica se i dalje renderuje i i dalje ima naslov.
+
+Popravljeno: token rotiran, **jedno mjesto po aplikaciji**, `INTERNAL_API_TOKEN` uklonjen iz
+`.env.local`. Provjera: 70 uzastopnih poziva s tokenom → 70×200.
+
+**Posljedica koja je čekala od 17. 08.:** tek sada svih 44 `page_seo` zapisa stvarno izlaze u
+HTML. Prvo ih je blokirao Cloudflare 403 na serverskoj strani (`lib/seo.ts` je zvao javni
+hostname), a onda ovaj token. Provjereno na deset stranica — sve nose naslov iz baze.
+
+Devet stranica **nema** zapis u bazi pa idu na kod: `/giveaways`, `/roadmap`, `/latest` i šest
+`/gta6*`. Nije greška, ali su bez uređenog naslova i opisa.
+
+### Sloj 3 — `/games/*` se nije keširao nigdje
+
+`/games/[slug]` je `export const dynamic = "force-dynamic"` **namjerno**: 114.000 slugova kao
+ISR fajlovi je broj fajlova koji niko ne želi održavati, i komentar u tom fajlu to kaže —
+*"Cloudflare CDN caches page responses; Next.js writes nothing to disk."*
+
+Napravljena je samo prva polovina. `force-dynamic` tjera Next da šalje
+`Cache-Control: private, no-cache, no-store`, Cloudflare ga je poslušao, i svaka od tih
+stranica renderovala se iznova na svaki zahtjev. Izmjereno: `cf-cache-status: BYPASS`.
+
+Riješeno **na originu, u nginxu** (`deployment/nginx-games-cache.conf`) — radi bez obzira na
+to je li rub ikad podešen, i vidi se u `nginx -T` umjesto da živi u tuđem dashboardu.
+Ograničeno tamo gdje ISR nije: 4 GB s LRU izbacivanjem, mjereno ~27 KB po keširanoj stranici
+(gzip), dakle oko **150.000 unosa — cijeli katalog**.
+
+Sigurno za dijeljenje među posjetiocima jer prijava ovdje živi u `localStorage`: server nikad
+ne zna ko pita, pa je svaki odgovor već anoniman. Provjereno — nema `Set-Cookie` ni na jednoj
+`/games/` stranici; skriva se svejedno.
+
+RSC navigacija nije pogođena: Next 16 preusmjerava klijentske navigacije na `?_rsc=<hash>`,
+pa je varijanta dio URL-a i ne može se sudariti s HTML unosom.
+
+| | prije | poslije |
+|---|---|---|
+| 75 stranica iz sitemapa | 8181 ms, 0/75 HIT | **3876 ms, 75/75 HIT** |
+| 40 stranica, hladno → toplo | — | 3917 ms → 2001 ms |
+
+**Nuspojava koju je trebalo pokriti:** čim postoji prefiks lokacija `^~ /games/`, nginx
+odgovara na `/games` sa 301 na `/games/`. Riješeno tačnim podudaranjem `location = /games`,
+koje ima prednost nad prefiksom.
+
+**Deploy:** `deploy_frontend.sh` sada prazni taj keš nakon provjere spremnosti. Bez toga
+deploy ne stiže ni do koga sat vremena — a arhiva chunkova znači da stari HTML i dalje
+*radi*, što je gore od pucanja: ništa ne javi da se novi build ne servira.
+
+### Cloudflare — pročitano kroz API, ne pretpostavljeno
+
+| Nalaz | Stanje |
+|---|---|
+| **Rate limit "Games scraper protection"** blokira >50 zahtjeva/10 s na `/games/*`, **bez izuzeća za pretraživače**. Googlebot na 114.000 stranica ide brže od toga. | otvoreno — treba `and not cf.client.bot` |
+| Četiri cache pravila (`Home`, `News`, `Navigation`, `Settings` API) imaju `"cache": true` uz `edge_ttl: bypass_by_default` — **ne kešira ništa** | otvoreno — brisati |
+| `min_tls_version: 1.0` (povučen 2021.) | otvoreno — na 1.2 |
+| `always_use_https: off` (origin ipak radi 301) | otvoreno |
+| `browser_cache_ttl: 14400` umjesto poštovanja zaglavlja | otvoreno |
+| HSTS `max-age=31536000; includeSubDomains` | ispravno |
+| `_next/static` → `cf-cache-status: HIT` | ispravno |
+
+Skripta koja sve to primjenjuje uz backup postojećih pravila u JSON: `cf_apply.py`
+(scratchpad sesije). Detalji u `deployment/cloudflare-cache-rules.md`.
