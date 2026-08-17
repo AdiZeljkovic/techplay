@@ -580,6 +580,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/games/random', [GameController::class, 'random']);
         Route::get('/games/hub/{type}/{value}', [GameRatingController::class, 'hub']);
         Route::get('/games', [GameController::class, 'index']);
+        // One call for a whole game page. Five separate ones per render put the
+        // catalogue over the API's per-IP rate limit at twelve views a minute.
+        Route::get('/games/{slug}/bundle', [GameController::class, 'bundle']);
         Route::get('/games/{slug}/articles', [GameController::class, 'articles']);
         Route::get('/games/{slug}/screenshots', [GameController::class, 'screenshots']);
         Route::get('/games/{slug}/videos', [GameController::class, 'videos']);

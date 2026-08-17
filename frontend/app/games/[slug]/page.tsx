@@ -106,14 +106,49 @@ interface RelatedArticle {
     path: string;
 }
 
+/* ─── Loading ────────────────────────────────────────────────────────────────── */
+
+/** Everything the page draws, in one response. */
+interface GameBundle {
+    game: GameDetail;
+    screenshots: ApiScreenshot[];
+    series: GameListItem[];
+    suggested: GameListItem[];
+    articles: RelatedArticle[];
+}
+
+/**
+ * One request per render, for the whole page.
+ *
+ * This used to be five — the game, its screenshots, its series, its suggestions
+ * and its related articles — plus a sixth from generateMetadata. The API meters
+ * at sixty requests a minute keyed on the caller's IP, and every server render
+ * leaves from one address, so twelve game views a minute drained the budget and
+ * the thirteenth got a 429 that this page turned into a 500. Measured against
+ * production: five of twelve pages failed at fifteen requests a minute, and
+ * sixty-three of seventy-five at full speed.
+ *
+ * That is a page count no reader would ever hit, and exactly the pace a crawler
+ * works at — with 114,000 game URLs in the sitemap, the catalogue was
+ * effectively closed to indexing.
+ *
+ * generateMetadata and the body both call this. Next deduplicates identical
+ * fetches within one render, so the pair costs a single request; they must stay
+ * identical for that to hold.
+ */
+function loadGame(slug: string) {
+    return fetchContent<GameBundle>(`${getApiUrl()}/games/${slug}/bundle`);
+}
+
 /* ─── generateMetadata ───────────────────────────────────────────────────────── */
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
 
     try {
-        const game = await fetchContent<GameDetail>(`${getApiUrl()}/games/${slug}`);
-        if (!game) return { title: "Game Not Found" };
+        const bundle = await loadGame(slug);
+        if (!bundle) return { title: "Game Not Found" };
+        const game = bundle.game;
 
         const year      = game.released ? new Date(game.released).getFullYear() : null;
         const platforms = (game.platforms ?? []).slice(0, 3).join(", ");
@@ -316,31 +351,27 @@ function MiniGameCard({ game }: { game: GameListItem }) {
 
 export default async function GameDetailPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const base     = getApiUrl();
 
-    // The main record goes through fetchContent: a real 404/410 renders
-    // notFound, a backend hiccup retries and then throws — it must never
-    // become a cached claim that the game does not exist. The side rails
-    // swallow their failures instead; a page without suggestions is a page,
-    // a page that 404s because the screenshots call dropped is a lie.
-    const headers: HeadersInit = process.env.INTERNAL_API_TOKEN
-        ? { "X-Internal-Token": process.env.INTERNAL_API_TOKEN }
-        : {};
-    const [game, screenshotsRes, seriesRes, suggestedRes, articlesRes] = await Promise.all([
-        fetchContent<GameDetail>(`${base}/games/${slug}`),
-        fetch(`${base}/games/${slug}/screenshots`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-        fetch(`${base}/games/${slug}/series`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-        fetch(`${base}/games/${slug}/suggested`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-        fetch(`${base}/games/${slug}/articles`, { headers }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
-    ]) as [GameDetail | null, { results: ApiScreenshot[] } | null, { results: GameListItem[] } | null, { results: GameListItem[] } | null, { data: RelatedArticle[] } | null];
+    // The whole page comes from fetchContent: a real 404/410 renders notFound,
+    // a backend hiccup retries and then throws — it must never become a cached
+    // claim that the game does not exist.
+    //
+    // The side rails used to be four separate calls that swallowed their own
+    // failures, on the reasoning that a page without suggestions is still a
+    // page. They now ride along with the record, and the backend already
+    // answers with empty arrays rather than errors when a rail has nothing —
+    // so the rails still cannot take the page down, they just no longer cost
+    // four fifths of the API's rate limit to fetch.
+    const bundle = await loadGame(slug);
 
-    if (!game) notFound();
+    if (!bundle) notFound();
 
-    const relatedArticles = articlesRes?.data ?? [];
+    const game = bundle.game;
+    const relatedArticles = bundle.articles ?? [];
     if (game.rating) game.rating = Number(game.rating);
 
     // Normalise both shapes (Moby objects, aggregator URL strings) for the lightbox
-    const screenshots = (screenshotsRes?.results ?? []).map((s, i) => ({
+    const screenshots = (bundle.screenshots ?? []).map((s, i) => ({
         id:     i,
         image:  typeof s === "string" ? s : s.image,
         width:  typeof s === "string" ? 1280 : (s.width  ?? 640),
@@ -363,8 +394,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     const heroArt = screenshots[0]?.image ?? game.cover_url;
     const heroIsCover = !screenshots[0]?.image;
 
-    const series     = (seriesRes?.results ?? []).filter((g) => g.slug !== slug);
-    const suggested  = suggestedRes?.results ?? [];
+    const series     = (bundle.series ?? []).filter((g) => g.slug !== slug);
+    const suggested  = bundle.suggested ?? [];
     const isUpcoming = game.released ? new Date(game.released) > new Date() : false;
     const released   = releaseLine(game);
     const trailer    = game.videos?.[0] ?? null;

@@ -142,9 +142,22 @@ export async function generatePageMetadata(
      * takes the template.
      */
     const dbTitle = pageSeo?.meta_title?.trim() || null;
-    const title = dbTitle ?? (defaults?.title || siteName);
+    /**
+     * No title at all beats the site name as a title.
+     *
+     * The last resort here was `siteName`, which the root template then
+     * completed into "TechPlay | TechPlay" — that is what /news and /reviews
+     * served, because neither passes a default and neither has a record. The
+     * root layout already declares `default: siteName` for pages that set
+     * nothing, and that path produces a plain "TechPlay". Returning undefined
+     * hands the decision back to it.
+     */
+    const title = dbTitle ?? defaults?.title ?? undefined;
     const description = pageSeo?.meta_description || defaults?.description || settings.seo_meta_description || "TechPlay puts every game you own in one library — Steam, PlayStation and Xbox together, with the hours you played — then reads your taste back to you. Plus reviews, release dates and a 141,000-game catalogue.";
-    const ogTitle = pageSeo?.og_title || title;
+    // The page title may now be undefined so the layout's default can take
+    // over, but an og:title never inherits anything — a share card with no
+    // title is a bare link, so it falls back to the site name here.
+    const ogTitle = pageSeo?.og_title || title || siteName;
     const ogDescription = pageSeo?.og_description || description;
     const ogImage = pageSeo?.og_image
         ? `${STORAGE_URL}/${pageSeo.og_image}`
@@ -180,13 +193,6 @@ export async function generatePageMetadata(
             images: ogImage ? [ogImage] : [],
         },
     };
-}
-
-/**
- * Legacy function for backwards compatibility
- */
-export async function generateDynamicMetadata(path: string): Promise<Metadata> {
-    return generatePageMetadata(path);
 }
 
 /**

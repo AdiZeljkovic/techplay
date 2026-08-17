@@ -1,6 +1,6 @@
 
 import SectionHub from "@/components/editorial/SectionHub";
-import { generateDynamicMetadata } from "@/lib/seo";
+import { generatePageMetadata } from "@/lib/seo";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { Metadata } from "next";
 
@@ -8,7 +8,13 @@ import { Metadata } from "next";
 export const revalidate = 600;
 
 export async function generateMetadata(): Promise<Metadata> {
-    return generateDynamicMetadata('/reviews');
+    // As with /news: no page_seo row and no defaults meant this went out as
+    // "TechPlay | TechPlay".
+    return generatePageMetadata('/reviews', {
+        title: "Game Reviews",
+        description: "Scored reviews of new games — what works, what does not, and whether it is worth your evening.",
+        keywords: ["game reviews", "video game reviews", "review scores"],
+    });
 }
 
 async function getInitialReviews() {

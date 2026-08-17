@@ -242,6 +242,51 @@ class GameController extends Controller
         };
     }
 
+    /**
+     * GET /games/{slug}/bundle — everything one game page needs, in one call.
+     *
+     * The page was making five requests per render: the game, its screenshots,
+     * its series, its suggestions and its related articles. The API meters at
+     * sixty requests a minute keyed on the caller's IP, and every server render
+     * leaves from one address — so twelve game views a minute exhausted the
+     * budget and the thirteenth got a 429 that the render turned into a 500.
+     * Measured against production: five of twelve pages failed at a pace of
+     * fifteen requests a minute, sixty-three of seventy-five at full speed.
+     *
+     * A crawler does not browse at twelve pages a minute, and there are 114,000
+     * of these. This is the difference between a catalogue that can be indexed
+     * and one that cannot.
+     *
+     * The four separate endpoints stay: they are used elsewhere, and one of
+     * them personalises on the signed-in reader, which this deliberately does
+     * not — the bundle exists to be cached and shared, so it answers the same
+     * way for everybody.
+     */
+    public function bundle(Request $request, string $slug)
+    {
+        $game = $this->show($request, $slug);
+
+        // Not found or gone: hand the caller the same status rather than an
+        // envelope wrapped around an error.
+        if ($game->getStatusCode() !== 200) {
+            return $game;
+        }
+
+        $decode = function ($response, string $key, $fallback) {
+            $data = json_decode($response->getContent(), true);
+
+            return $data[$key] ?? $fallback;
+        };
+
+        return response()->json([
+            'game' => json_decode($game->getContent(), true),
+            'screenshots' => $decode($this->screenshots($slug), 'results', []),
+            'series' => $decode($this->series($slug), 'results', []),
+            'suggested' => $decode($this->suggested($slug), 'results', []),
+            'articles' => $decode($this->articles($slug), 'data', []),
+        ])->header('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+    }
+
     public function articles(string $slug)
     {
         $gameId = Game::where('slug', $slug)->value('id');
