@@ -509,3 +509,81 @@ nesto cega vise nema.
 **Sto je s tim izgubljeno:** 123 izuzetka, 34 spora zahtjeva i 23 spora posla koje je
 Pulse biljezio. To nije nista — ali to je posao za pravo pracenje gresaka (Sentry, Faza 1),
 a ne za alat koji za tih 180 redova naplacuje 647 MB.
+
+---
+
+## Nastavak, 17. 08. 2026 — Faza 3 i 4
+
+### Nadzor je postavljen — vidi `docs/64-nadzor.md`
+
+Netdata (mašina, PostgreSQL, Redis, nginx, stopa 5xx), healthcheck svakih pet
+minuta (procesi, sajt, API, websocket, backup, certifikat), GlitchTip
+(samohostovan, izuzeci s backenda i iz preglednika), sve u jedan Telegram kanal.
+Sentry nije uzet: njegov samohostovani build traži 16 GB RAM-a, GlitchTip radi
+isti posao u 260 MB i prima iste SDK-ove.
+
+### 80 i 443 samo za Cloudflare — urađeno
+
+Origin je primao promet od bilo koga ko zna IP adresu; `curl --resolve` na
+origin je vraćao stranicu, mimo WAF-a, rate limitinga i keša. Sada `ufw`
+propušta 80 i 443 samo iz 22 Cloudflareova opsega. Provjereno izvana: 12 ruta
+200, admin 200, GlitchTip 200, a **direktan pogodak na IP odbijen**.
+
+Sedmični cron koji osvježava opsege sada održava i `ufw` pravila, ne samo nginx
+snippet. Dodaje samo; brisanje zastarjelog opsega ostavljeno je čovjeku, jer
+pogrešno brisanje ovdje zatvara sajt.
+
+**Prva verzija skripte je bila pogrešna i to je poučno.** Provjeravala je samo
+sebe tako što je s **servera** pozvala `https://techplay.gg` — a odatle
+Cloudflare vraća 403 izazov, isto što je jutros držalo SEO zapise van produkcije
+i što je popodne sprečavalo GlitchTip da prima događaje. Skripta je zaključila da
+je sajt pao i vratila izmjenu koja je bila ispravna.
+
+Mašina iza firewalla ne može provjeriti pušta li taj firewall svijet unutra, pa
+više ne pokušava: primijeni izmjenu i **zakaže vlastito poništavanje za pet
+minuta**. Ko je pokrenuo, provjeri izvana i potvrdi s `--confirm`. Zaboraviš,
+pukne ti veza ili pogriješiš s opsezima — pravila se vrate sama.
+
+### Node 20 → 24, ne 22
+
+Istraživanje je promijenilo cilj. **Node 22 je već u Maintenance LTS-u** (do
+04/2027), a **24 je Active LTS** (do 04/2028). Next 16 traži samo `>=20.9`, pa je
+22 značio isti posao za godinu dana manje.
+
+Sada `v24.19.0`, `npm 11.17.0`, pm2 pod novim Nodeom, `node_modules` prekopirani
+i front prebildan. 22 rute provjerene izvana, sve 200.
+
+**Cijena, pošteno:** `pm2 update` je oborio proces i pm2 lista je ostala prazna —
+**99 grešaka 502/503 u tom satu**, oko minut-dva nedostupnosti prije nego što je
+`pm2 resurrect` vratio stanje. Za sljedeći put: `pm2 resurrect` treba biti
+spreman prije `pm2 update`, ne poslije.
+
+### `offset` paginacija u sitemapu — ne dira se
+
+Bio sam sumnjao i na gore: `->each()` interno zove `chunk()`, koji radi
+`forPage()` i može prepisati postojeći `offset`/`limit` — u tom slučaju bi sve tri
+stranice sadržavale istih prvih 50.000 igara.
+
+**Mjerenje je to opovrglo.** 115.321 jedinstvenih URL-ova u tri fajla, **nula
+preklapanja**, a u bazi 115.325 igara s opisom (četiri otpadaju kao smeće u
+slugu). Radi ispravno.
+
+Time i sama optimizacija otpada. Izmjereno: **29 poziva, 1.483 ms ukupno, svakih
+6 sati.** Prepravljati kod koji ispravno dijeli 115.000 URL-ova zbog uštede od
+sekunde i po dnevno nije trampa — to je vrsta izmjene koja pokvari nešto što
+radi.
+
+### Nekorišteni indeksi — mjerenje umjesto odluke
+
+`idx_scan = 0` danas ne znači ništa: statistika se resetuje pri restartu, a ovaj
+je server restartovan danas kad je baza podešena. Indeks koji sat vremena nakon
+restarta izgleda nekorišten može biti onaj koji drži hub stranicu.
+
+Zato `/usr/local/bin/techplay-index-usage` piše datirani snimak svakog ponedjeljka
+u `/var/log/techplay-index-usage/`. Nakon nekoliko sedmica, indeks s nula
+skeniranja u **svakom** fajlu je stvarno nekorišten, i to je tvrdnja na koju se
+smije djelovati. Prvi snimak: 440 indeksa.
+
+Kandidati po današnjem očitanju, **koje ne treba brisati po njemu**:
+`games_hub_name_idx` (6,8 MB), `games_release_precision_index` (1,6 MB),
+`game_tombstones_pkey` (1,3 MB).
