@@ -42,6 +42,19 @@ class PageSeo extends Model
 
     protected $casts = [
         'is_noindex' => 'boolean',
+
+        /*
+         * The admin field is a `TagsInput`, so this column has always held JSON
+         * — `[]` when empty, `["gaming news 2026", …]` when filled — and without
+         * a cast it left the model as the raw string. Every consumer then had to
+         * guess: `lib/seo.ts` guessed "comma-separated" and called `.split(',')`
+         * on it, which turned `[]` into the single keyword `[]` and shipped
+         * `<meta name="keywords" content="[]">` on every page of the site.
+         *
+         * Casting here fixes it for everything that reads the model at once,
+         * rather than for the one consumer that happened to be looked at.
+         */
+        'meta_keywords' => 'array',
     ];
 
     /**

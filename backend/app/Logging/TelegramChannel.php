@@ -3,6 +3,7 @@
 namespace App\Logging;
 
 use Monolog\Handler\DeduplicationHandler;
+use Monolog\Handler\WhatFailureGroupHandler;
 use Monolog\Logger;
 
 /**
@@ -34,13 +35,30 @@ class TelegramChannel
             level: $config['level'] ?? 'error',
         );
 
+        $dedup = new DeduplicationHandler(
+            handler: $handler,
+            deduplicationStore: storage_path('logs/telegram-dedup.log'),
+            deduplicationLevel: $config['level'] ?? 'error',
+            time: (int) ($config['dedup_seconds'] ?? 600),
+        );
+
+        /*
+         * A logger that cannot write must not take the request down with it.
+         *
+         * On 18 Aug 2026 the dedup file ended up owned by root while Octane runs
+         * as www-data. Every error then produced two failures: the original one,
+         * and `file_put_contents(): Permission denied` from the handler trying
+         * to record it — and the second one surfaced as a 500. `/page-seo` and
+         * `/redirects` both answered 500 for a while, which meant every page
+         * title on the site silently fell back to its code default.
+         *
+         * The ownership is fixed, but the shape of the bug is the lesson: the
+         * alerting path had become load-bearing. `WhatFailureGroupHandler`
+         * swallows anything thrown inside it, so from here a broken Telegram
+         * alert costs an alert and nothing else.
+         */
         return new Logger('telegram', [
-            new DeduplicationHandler(
-                handler: $handler,
-                deduplicationStore: storage_path('logs/telegram-dedup.log'),
-                deduplicationLevel: $config['level'] ?? 'error',
-                time: (int) ($config['dedup_seconds'] ?? 600),
-            ),
+            new WhatFailureGroupHandler([$dedup]),
         ]);
     }
 }
