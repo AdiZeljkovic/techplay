@@ -92,7 +92,6 @@ const PROFILE_PATHS = ["/profile", "/settings", "/friends", "/messages", "/login
  * button — would fight it for the same 60px, and the reader would lose.
  */
 const HIDDEN_ON = [
-    "/coming-soon",
     "/forum/create",
     "/shop/checkout",
     "/support/checkout",

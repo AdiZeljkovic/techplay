@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\SiteSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -12,19 +11,23 @@ use Illuminate\Support\Facades\Redis;
 class SystemController extends Controller
 {
     /**
-     * Get system status and public settings.
+     * A liveness ping, and nothing more.
+     *
+     * This used to answer the question "is the site in maintenance mode", which
+     * the Next.js middleware asked on every single page request. Maintenance
+     * mode is gone — the middleware was deleted with it, `/coming-soon` no
+     * longer exists, and the setting it read outlived both by several months,
+     * still toggleable from the admin and connected to nothing.
+     *
+     * One consumer remains: the Discord bot calls this to check the API is
+     * awake. It types the reply as `{status, version}` and has never received a
+     * `status` field, so that is added here rather than left as a lie in the
+     * bot's type. It only ever checks whether the call threw.
      */
     public function status()
     {
-        // Get maintenance mode setting
-        $maintenance = SiteSetting::where('key', 'maintenance_mode')
-            ->where('group', 'general') // Assuming it's in general group
-            ->first();
-
-        $isMaintenance = $maintenance && ($maintenance->value === '1' || $maintenance->value === 'true');
-
         return response()->json([
-            'maintenance_mode' => $isMaintenance,
+            'status' => 'ok',
             'version' => '1.0.0',
             'timestamp' => now()->toIso8601String(),
         ]);

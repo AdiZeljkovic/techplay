@@ -31,19 +31,22 @@ use Illuminate\Support\Facades\Cache;
  *
  * All three wrote to `site_settings`. Nothing said which one to use.
  *
- * ── The two things that can break the site from here ─────────────────────
+ * ── How a value is stored ────────────────────────────────────────────────
  *
- * `maintenance_mode` is read by `SystemController::status()`, which the Next.js
- * middleware polls on every page request. It matches on **group `general` and
- * value exactly `'1'` or `'true'`**. Two ways to break that accidentally:
- * writing the row into another group, and letting a false toggle cast to `''`
- * instead of `'0'` — PHP casts `false` to the empty string, and an empty string
- * is not what anybody reading this table later will expect to find.
+ * The `value` column is a string for everything, so a boolean has to be written
+ * deliberately: PHP casts `false` to the **empty string**, not to `'0'`, and an
+ * empty string is not what anybody reading this table later will expect to
+ * find. `writeSetting()` writes `'1'` or `'0'` and says which type it is.
  *
- * So `writeSetting()` below is explicit about both, and every field declares
- * the group it belongs to rather than inheriting `SiteSetting::set()`'s default
- * of `general` — which is how the socials group would have quietly migrated
- * out of existence on first save.
+ * Every field also declares the group it belongs to rather than inheriting
+ * `SiteSetting::set()`'s default of `general` — which is how the `socials`
+ * group would have quietly migrated out of existence on the first save.
+ *
+ * Maintenance mode used to be the dangerous value on this page. It is gone:
+ * the middleware that read it was deleted months ago along with
+ * `/coming-soon`, and the setting outlived both, still toggleable and wired to
+ * nothing. If the site ever needs to be taken down deliberately, `php artisan
+ * down` and nginx both do it without a database round trip on every request.
  */
 class Settings extends Page implements HasForms
 {
@@ -74,7 +77,6 @@ class Settings extends Page implements HasForms
      * having to guess whether '' meant false or meant nobody ever set it.
      */
     private const BOOLEANS = [
-        'maintenance_mode',
         'seo_noindex_search',
         'seo_noindex_archives',
         'seo_noindex_categories',
@@ -127,14 +129,6 @@ class Settings extends Page implements HasForms
                                     ->label('Tagline')
                                     ->maxLength(160)
                                     ->helperText('Shown beside the name in search results and on social cards.'),
-
-                                Toggle::make('maintenance_mode')
-                                    ->label('Maintenance mode')
-                                    ->helperText(
-                                        'Turning this on sends every visitor to /coming-soon. '
-                                        .'The front end checks it on every page request, so it takes effect '
-                                        .'within seconds. Staff bypass it with the techplay_maintenance_bypass cookie.'
-                                    ),
                             ]),
 
                         Tab::make('SEO')
@@ -334,7 +328,7 @@ class Settings extends Page implements HasForms
     private function keys(): array
     {
         return array_merge(
-            ['site_name', 'site_tagline', 'maintenance_mode'],
+            ['site_name', 'site_tagline'],
             ['seo_meta_description', 'seo_default_keywords', 'seo_title_separator', 'seo_twitter_card_type', 'seo_og_image_default'],
             self::BOOLEANS,
             ['seo_robots_txt_content'],

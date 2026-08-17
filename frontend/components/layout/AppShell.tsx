@@ -1,20 +1,20 @@
 "use client";
 
-import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 import PageTransition from './PageTransition';
 import MobileTabBar from './MobileTabBar';
 
+/*
+ * The chrome every page sits inside.
+ *
+ * This used to open by checking for `/coming-soon` and returning a bare <main>
+ * for it — the maintenance-mode landing page. That page, and the middleware
+ * that sent people to it, were removed some time ago; the branch guarding them
+ * outlived both, along with the `usePathname()` call that existed only to feed
+ * it. A route that cannot be reached does not need a special case.
+ */
 export default function AppShell({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
-    // Hide header/footer on coming soon page
-    const isComingSoon = pathname === "/coming-soon" || pathname.startsWith("/coming-soon");
-
-    if (isComingSoon) {
-        return <main className="flex-grow">{children}</main>;
-    }
-
     return (
         <>
             <PageTransition />
