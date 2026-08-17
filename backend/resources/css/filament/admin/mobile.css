@@ -1,0 +1,225 @@
+/* ═══════════════════════════════════════════════════ mobile admin ══════ */
+
+/*
+ * The admin panel as an app on a phone.
+ *
+ * Filament ships responsive — nothing here is a rescue. What it does not ship
+ * is the shape a phone teaches you to expect: a bottom bar under the thumb, a
+ * top bar that stays put, targets you can hit without aiming. On a desk the
+ * sidebar is right; on a phone the sidebar is a drawer you have to summon, and
+ * the four things you actually came to do should be one tap away at the bottom
+ * of the screen.
+ *
+ * Everything below applies only under 768px (Filament's own `lg` breakpoint,
+ * where it already folds the sidebar away). Above it, the panel is untouched.
+ *
+ * Colours read the same tokens as the rest of the theme, so this works in both
+ * light and dark without a single literal.
+ */
+
+.tp-tabbar {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+
+    /* ── the bar ──────────────────────────────────────────────────────── */
+
+    .tp-tabbar {
+        display: block;
+        position: fixed;
+        inset-inline: 0;
+        bottom: 0;
+        z-index: 40;
+        padding: 0.375rem 0.75rem calc(0.375rem + env(safe-area-inset-bottom, 0px));
+        background-color: color-mix(in srgb, var(--tp-panel-bg) 92%, transparent);
+        backdrop-filter: saturate(140%) blur(12px);
+        -webkit-backdrop-filter: saturate(140%) blur(12px);
+        border-top: 1px solid var(--tp-line);
+    }
+
+    /*
+     * A crimson hairline along the top edge, pooling at the two ends. It marks
+     * where the console begins without spending the accent on the whole bar —
+     * which would leave nothing to say "you are here" with.
+     */
+    .tp-tabbar::before {
+        content: '';
+        position: absolute;
+        inset-inline: 0;
+        top: -1px;
+        height: 1px;
+        background: linear-gradient(
+            to right,
+            color-mix(in srgb, var(--primary-500) 55%, transparent),
+            transparent 22%,
+            transparent 78%,
+            color-mix(in srgb, var(--primary-500) 55%, transparent)
+        );
+    }
+
+    .tp-tabbar__inner {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.25rem;
+        max-width: 32rem;
+        margin-inline: auto;
+    }
+
+    /* ── a tab ────────────────────────────────────────────────────────── */
+
+    .tp-tab {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.1875rem;
+        /* 56px of touch target, comfortably over the 44px floor. */
+        min-height: 3.5rem;
+        padding: 0.375rem 0;
+        border: 0;
+        background: transparent;
+        color: var(--tp-group-ink);
+        font-family: 'Instrument Sans', var(--font-family), sans-serif;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition: color 140ms ease;
+    }
+
+    .tp-tab__mark {
+        position: relative;
+        display: grid;
+        place-items: center;
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+
+    .tp-tab__mark svg {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .tp-tab__label {
+        font-size: 0.625rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+    }
+
+    /*
+     * Active: the accent, and a tile under the mark. The tile is the switch —
+     * the one place besides the frame where the red is spent, so "you are here"
+     * is the loudest thing on the bar.
+     */
+    .tp-tab.is-active {
+        color: var(--primary-500);
+    }
+
+    .tp-tab.is-active .tp-tab__mark::before {
+        content: '';
+        position: absolute;
+        inset: -0.125rem;
+        border-radius: var(--radius-inner);
+        background-color: color-mix(in srgb, var(--primary-500) 14%, transparent);
+    }
+
+    .tp-tab:active {
+        color: var(--primary-400);
+    }
+
+    /* Pending work, counted on the tab it lives on. */
+    .tp-tab__badge {
+        position: absolute;
+        top: -0.25rem;
+        inset-inline-end: -0.375rem;
+        min-width: 1rem;
+        height: 1rem;
+        padding-inline: 0.1875rem;
+        display: grid;
+        place-items: center;
+        border-radius: 999px;
+        background-color: var(--danger-500);
+        color: #fff;
+        font-family: 'IBM Plex Mono', ui-monospace, monospace;
+        font-size: 0.625rem;
+        font-weight: 600;
+        line-height: 1;
+    }
+
+    /* ── give the bar room, and stop the body scrolling under it ───────── */
+
+    .fi-main {
+        padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* ── the top bar becomes an app header ────────────────────────────── */
+
+    /*
+     * Filament's topbar is already sticky; on a phone it earns a little more
+     * presence — the same blur as the bottom bar, so the two frame the content
+     * as one app rather than two loose strips.
+     */
+    .fi-topbar > nav {
+        background-color: color-mix(in srgb, var(--tp-panel-bg) 92%, transparent);
+        backdrop-filter: saturate(140%) blur(12px);
+        -webkit-backdrop-filter: saturate(140%) blur(12px);
+    }
+
+    /* ── bigger touch targets inside the page ─────────────────────────── */
+
+    /*
+     * Table rows and form controls are sized for a mouse. On a phone the row is
+     * where you tap to open a record, so it gets a taller line; inputs and
+     * buttons clear the 44px floor.
+     */
+    .fi-ta-row .fi-ta-cell {
+        padding-block: 0.25rem;
+    }
+
+    .fi-input,
+    .fi-select-input,
+    .fi-btn {
+        min-height: 2.75rem;
+    }
+
+    /*
+     * The page heading and its actions stack rather than fighting for one line;
+     * a "New article" button wrapping under a long title is better than the
+     * title truncating to make room for it.
+     */
+    .fi-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .fi-header .fi-ac {
+        width: 100%;
+    }
+
+    /*
+     * The console dashboard reflows on its own through its own media queries;
+     * this only tightens the outer padding so it uses the narrow width fully.
+     */
+    .tp-panel {
+        padding: 1rem 1.125rem;
+    }
+
+    .tp-huge {
+        font-size: 2.5rem;
+    }
+}
+
+/* Phones specifically: at 480px the five labels still fit, but the in-page
+   chrome can lose a little more weight. */
+@media (max-width: 480px) {
+    .tp-lead__counts {
+        gap: 1.25rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tp-tab {
+        transition: none;
+    }
+}

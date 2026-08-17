@@ -221,6 +221,20 @@ document.addEventListener('mousedown', function (e) {
 </script>
 HTML)
             )
+            /*
+             * The phone's bottom navigation.
+             *
+             * Injected at body end so it sits above the page and outside the
+             * scroll container, fixed to the bottom of the viewport. It is
+             * hidden above 1024px in CSS, so on a desk it costs nothing but a
+             * hidden <nav>. The fifth button opens Filament's own sidebar
+             * drawer through `$store.sidebar.open()`, so the full menu has one
+             * home rather than two.
+             */
+            ->renderHook(
+                'panels::body.end',
+                fn () => view('filament.mobile-nav'),
+            )
             ->maxContentWidth(Width::Full)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
