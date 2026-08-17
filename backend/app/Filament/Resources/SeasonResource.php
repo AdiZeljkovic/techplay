@@ -10,6 +10,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -47,7 +48,7 @@ class SeasonResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (?string $state, Forms\Set $set) => filled($state) ? $set('slug', Str::slug($state)) : null),
+                    ->afterStateUpdated(fn (?string $state, Set $set) => filled($state) ? $set('slug', Str::slug($state)) : null),
 
                 Forms\Components\TextInput::make('slug')
                     ->required()

@@ -61,6 +61,8 @@ class TechResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
+            // Filament does not eager load relationship columns by itself.
+            ->with(['author', 'category'])
             ->whereHas('category', function ($query) {
                 $query->where('type', 'tech');
             });

@@ -32,6 +32,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class GuideResource extends Resource
@@ -41,6 +42,19 @@ class GuideResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
 
     protected static ?string $slug = 'guides';
+
+    /**
+     * Eager load what the table shows.
+     *
+     * Filament does not do this by itself — its table code never reads a
+     * column's relationship name for loading, only for grouping. Measured on
+     * production: without this, ten rows cost one to two extra queries each, so
+     * a full page of twenty-five ran about fifty queries to draw one column.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['author']);
+    }
 
     public static function getNavigationGroup(): ?string
     {

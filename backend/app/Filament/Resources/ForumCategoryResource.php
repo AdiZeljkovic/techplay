@@ -38,7 +38,9 @@ class ForumCategoryResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('type', 'forum');
+        return parent::getEloquentQuery()
+            // Filament does not eager load relationship columns by itself.
+            ->with(['parent'])->where('type', 'forum');
     }
 
     public static function form(Schema $schema): Schema

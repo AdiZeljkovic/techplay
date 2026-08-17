@@ -29,7 +29,6 @@ use App\Models\Quest;
 use App\Models\Rank;
 use App\Models\Redirect;
 use App\Models\Report;
-use App\Models\Review;
 use App\Models\RewardItem;
 use App\Models\Season;
 use App\Models\SiteSetting;
@@ -44,7 +43,6 @@ use App\Policies\ArticlePolicy;
 use App\Policies\ContentPolicy;
 use App\Policies\ModerationPolicy;
 use App\Policies\NewsPolicy;
-use App\Policies\ReviewPolicy;
 use App\Policies\UserManagementPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Spatie\Permission\Models\Role;
@@ -65,7 +63,6 @@ class AuthServiceProvider extends ServiceProvider
         // are already tiered by permission (create/update on `manage content`,
         // delete on `delete articles`, publish on `publish articles`).
         Article::class => ArticlePolicy::class,
-        Review::class => ReviewPolicy::class,
         News::class => NewsPolicy::class,
 
         // Forum moderation

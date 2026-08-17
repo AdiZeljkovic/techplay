@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Models\AdCampaign;
 use App\Models\Article;
 use App\Models\Giveaway;
-use App\Models\Review;
 use App\Services\ImageOptimizer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -171,16 +170,6 @@ class OptimizeExistingImages extends Command
         try {
             Article::where('featured_image_url', $oldPath)
                 ->update(['featured_image_url' => $newPath]);
-        } catch (\Exception $e) {
-            // Column might not exist, ignore
-        }
-
-        // Update reviews - cover_image column
-        try {
-            if (class_exists(Review::class)) {
-                Review::where('cover_image', $oldPath)
-                    ->update(['cover_image' => $newPath]);
-            }
         } catch (\Exception $e) {
             // Column might not exist, ignore
         }

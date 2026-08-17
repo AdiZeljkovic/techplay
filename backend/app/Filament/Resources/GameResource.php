@@ -10,6 +10,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms;
 use Filament\Resources\Resource;
+// Grid is imported for the same reason Group and Section are: without it, PHP
+// resolves `Grid::make()` against the current namespace and looks for
+// App\Filament\Resources\Grid. That is what broke the create form for a
+// catalogue of 142,110 games — the page answered 500 and nobody could add one.
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;

@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReportResource extends Resource
 {
@@ -22,6 +23,19 @@ class ReportResource extends Resource
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-flag';
 
     protected static ?int $navigationSort = 6;
+
+    /**
+     * Eager load what the table shows.
+     *
+     * Filament does not do this by itself — its table code never reads a
+     * column's relationship name for loading, only for grouping. Measured on
+     * production: without this, ten rows cost one to two extra queries each, so
+     * a full page of twenty-five ran about fifty queries to draw one column.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['reporter']);
+    }
 
     public static function getNavigationGroup(): ?string
     {

@@ -6,7 +6,6 @@ use App\Models\Article;
 use App\Models\Comment;
 use App\Models\Guide;
 use App\Models\MediaKitSetting;
-use App\Models\Review;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -29,15 +28,31 @@ class MediaKitService
     }
 
     /**
-     * Get content statistics
+     * Counted by category, because that is what a review actually is here.
+     *
+     * This asked a `Review` model whose table has never held a row, so the
+     * media kit told advertisers we had published **zero reviews** — while
+     * counting those same 38 reviews, and 55 hardware pieces, inside
+     * `total_articles`. One number was too small, the other too large, and
+     * `total_content` was wrong by the difference.
+     *
+     * Reviews are Articles in a category of type `reviews`, the same way tech
+     * is `tech` and news is `news`; the site has worked that way throughout.
      */
     private function getContentStats(): array
     {
-        $totalArticles = Article::count();
-        $totalReviews = Review::count();
+        $byType = fn (string $type) => Article::whereHas(
+            'category',
+            fn ($q) => $q->where('type', $type)
+        );
+
+        $totalArticles = $byType('news')->count();
+        $totalReviews = $byType('reviews')->count();
+        $totalTech = $byType('tech')->count();
         $totalGuides = Guide::count();
 
-        $totalViews = Article::sum('views') + Review::sum('views') + Guide::sum('views');
+        // Article::sum already covers reviews and tech — they are Articles.
+        $totalViews = Article::sum('views') + Guide::sum('views');
 
         $avgArticleLength = Article::avg('reading_time');
 
@@ -49,8 +64,9 @@ class MediaKitService
         return [
             'total_articles' => $totalArticles,
             'total_reviews' => $totalReviews,
+            'total_tech' => $totalTech,
             'total_guides' => $totalGuides,
-            'total_content' => $totalArticles + $totalReviews + $totalGuides,
+            'total_content' => $totalArticles + $totalReviews + $totalTech + $totalGuides,
             'total_views' => $totalViews,
             'avg_article_length' => round($avgArticleLength ?? 0),
             'articles_this_month' => $articlesThisMonth,

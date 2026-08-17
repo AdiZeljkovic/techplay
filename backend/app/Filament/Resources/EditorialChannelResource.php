@@ -14,6 +14,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -44,7 +46,7 @@ class EditorialChannelResource extends Resource
                 TextInput::make('name')
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (string $operation, $state, Forms\Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
+                    ->afterStateUpdated(fn (string $operation, $state, Set $set) => $operation === 'create' ? $set('slug', Str::slug($state)) : null),
 
                 TextInput::make('slug')
                     ->required()
@@ -83,7 +85,10 @@ class EditorialChannelResource extends Resource
                         'Journalist' => 'Journalist',
                         'Moderator' => 'Moderator',
                     ])
-                    ->visible(fn (Forms\Get $get) => $get('is_private')),
+                    // Filament v5 hands closures Schemas\Components\Utilities\Get.
+                    // The old Forms\Get type made this a TypeError the moment the
+                    // form rendered, so the create page answered 500.
+                    ->visible(fn (Get $get) => $get('is_private')),
             ]);
     }
 

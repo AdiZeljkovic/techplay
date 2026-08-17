@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Guide;
-use App\Models\Review;
 use App\Services\FunnelAnalytics;
 use App\Services\RevalidationService;
 use App\Traits\ApiResponse;
@@ -44,14 +43,10 @@ class TrackingController extends Controller
     /**
      * Determine category path for revalidation based on model type
      *
-     * @param  Article|Review|Guide  $article
+     * @param  Article|Guide  $article
      */
     protected function getCategoryPath($article): ?string
     {
-        if ($article instanceof Review) {
-            return 'reviews';
-        }
-
         if ($article instanceof Guide) {
             return 'guides';
         }

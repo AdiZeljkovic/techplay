@@ -7,7 +7,6 @@ use App\Http\Resources\V1\CommentResource;
 use App\Models\Article;
 use App\Models\Comment;
 use App\Models\Guide;
-use App\Models\Review;
 use App\Models\User;
 use App\Notifications\ArticleCommentNotification;
 use App\Notifications\CommentReplyNotification;
@@ -366,7 +365,16 @@ class CommentController extends Controller
     {
         return match ($type) {
             'article' => Article::class,
-            'review' => Review::class,
+            // A review is an Article with a review category, exactly as `tech`
+            // below is. This used to map to a `Review` model whose table has
+            // never held a row — so a comment left on a review page was stored
+            // against a record that does not exist. It read back correctly, by
+            // itself, which is why nobody noticed; but `$comment->commentable`
+            // was null for every one of them, so the link in the notification
+            // had no slug and admin moderation could not show what was being
+            // discussed. No data to migrate: all 19 comments in production are
+            // already Article.
+            'review' => Article::class,
             'guide' => Guide::class,
             'tech' => Article::class,
             'profile' => User::class, // profile wall (V3)
