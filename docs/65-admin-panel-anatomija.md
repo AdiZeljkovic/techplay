@@ -160,7 +160,7 @@ Ironija je da `BrokenLinksWidget` i `OrphanPagesWidget` prikazuju baš ono što
 `ScanBrokenLinks` cron piše u bazu svake nedjelje — podaci se skupljaju i nikom
 ne pokazuju.
 
-### 4. Dashboard ima dva sistema statistike na istoj stranici
+### 4. Dashboard ima dva sistema statistike na istoj stranici — *riješeno 17.08.2026*
 
 `StatsOverview` widget (vrh stranice) pokazuje **Total Users** i
 **Published Articles**.
@@ -170,6 +170,38 @@ Ispod njega, ručno napisan HTML u `dashboard.blade.php` (141 red, s vlastitim
 
 „Users" je tu dvaput, jednom u Filamentovoj kartici a jednom u ručno pisanoj —
 dva različita izgleda za isti broj, jedan ispod drugog.
+
+**Šta je sada.** `dashboard.blade.php` i `StatsOverview` su obrisani. Pet
+widgeta, po redu kojim se pitanja stvarno postavljaju:
+
+| Widget | Odgovara na | Keš |
+|---|---|---|
+| `NeedsAttention` | čeka li me išta? | 60 s |
+| `PublishingPulse` | objavljujemo li još? | 300 s |
+| `CatalogueHealth` | koliki dio kataloga je u sitemapu? | 900 s |
+| `CommunityPulse` | ima li koga? | 300 s |
+| `RecentContent` | šta je izašlo i kako je prošlo? | — |
+
+Pravilo je jedno: **svaki broj mora mijenjati šta radiš sljedeće.** Zbir koji
+samo raste — registrovanih korisnika, ikad objavljenih članaka — jednak je i u
+najboljoj i u najgoroj sedmici, pa ide u izvještaj a ne na ekran koji se otvara
+dvadeset puta dnevno. `NeedsAttention` zato prikazuje samo ono što nije nula:
+red „Komentari na čekanju: 0" je prostor koji oko nauči preskakati, a onda ga
+preskoči i onog dana kad piše 14.
+
+**Dvije greške koje su preživjele prvi deploy**, obje vrijedne pamćenja:
+
+1. Metode su se zvale `stats()`, a `StatsOverviewWidget` zove **`getStats()`**.
+   Provjerio sam ih pozivajući `stats()` refleksijom — što je tačno pogrešan
+   test: dokazao je da upiti vraćaju smislene brojeve i ništa o tome hoće li ih
+   Filament ikad zatražiti. Widgeti su iscrtavali naslov nad praznim tijelom.
+2. Sidebar je izgledao kao da je izgubio natpise. Nije — bio je skupljen, a
+   `collapsedSidebarWidth('9rem')` je skupljeno stanje činio 144px širokim, tri
+   širine ikonice prazne kolone. Override je uklonjen.
+
+Stat widgeti su **lazy** (Filamentov default), pa ih render same stranice ne
+vidi — sadržaj stiže drugim Livewire zahtjevom. Provjera ide preko
+`Livewire::mount($klasa)`, ne preko HTML-a `/admin`.
 
 ### 5. Sitnije, ali stvarno
 
