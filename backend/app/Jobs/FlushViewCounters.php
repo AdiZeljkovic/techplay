@@ -40,64 +40,98 @@ class FlushViewCounters implements ShouldQueue
     }
 
     /**
-     * The prefix is the whole job.
+     * Two faults, both of which made this find nothing at all.
      *
-     * SCAN talks to Redis directly and sees the real key names, which carry the
-     * connection's prefix: `techplay-database-views:game:41`. GETDEL goes
-     * through Laravel, which adds that prefix itself. So a pattern written
-     * without it matches nothing, and a key passed back with it gets the prefix
-     * twice and deletes something that does not exist.
+     * **The prefix.** SCAN talks to Redis directly and sees the real key names,
+     * which carry the connection's prefix — `techplay-database-views:game:41` —
+     * while GETDEL goes through Laravel, which adds that prefix itself. The
+     * pattern was written without it. The prefix was even read into a variable
+     * on the first line and then never used.
      *
-     * This code read the prefix into a variable and then never used it. The
-     * result, measured on 17 Aug 2026: 130,861 `views:game:*` keys in Redis, not
-     * one of them with an expiry, and `SUM(games.views)` = **0**. Every view of
-     * every game since the counters were introduced had been counted into Redis
-     * and never written anywhere. Nothing failed; the flush simply never found
-     * anything to flush, five minutes at a time.
+     * **The wrapper.** `Redis::scan()` returns `false` when a batch comes back
+     * empty, and with phpredis an empty batch mid-iteration is routine, not an
+     * ending. Destructuring `false` gave a null cursor, so the loop stopped on
+     * the first pass. Measured against production: the wrapper found 0 keys;
+     * the raw client with SCAN_RETRY found 128,866 under the same pattern.
+     *
+     * The consequence, measured 17 Aug 2026: **130,861** `views:game:*` keys in
+     * Redis, none with an expiry, and `SUM(games.views)` = **0**. Every view of
+     * every game since these counters were introduced had been recorded into
+     * Redis and never written down, while the keys accumulated one per game
+     * viewed on an instance shared with the queue and every session.
+     *
+     * Nothing errored throughout. A flush that finds nothing looks exactly like
+     * a flush with nothing to do.
      */
     private function flushPattern(string $pattern, string $table, string $column): void
     {
         $prefix = (string) config('database.redis.options.prefix', '');
+        $connection = Redis::connection();
+        $client = $connection->client();
+
+        // Not every client is phpredis — Predis has no such option and its own
+        // scan does not need one.
+        if ($client instanceof \Redis) {
+            $client->setOption(\Redis::OPT_SCAN, \Redis::SCAN_RETRY);
+
+            $iterator = null;
+
+            while (($keys = $client->scan($iterator, $prefix.$pattern, 500)) !== false) {
+                $this->drain($keys, $prefix, $table, $column);
+            }
+
+            return;
+        }
+
         $cursor = '0';
 
         do {
-            [$cursor, $keys] = Redis::scan($cursor, ['match' => $prefix.$pattern, 'count' => 100]);
+            $result = $connection->scan($cursor, ['match' => $prefix.$pattern, 'count' => 500]);
 
-            if (empty($keys)) {
+            if ($result === false) {
+                break;
+            }
+
+            [$cursor, $keys] = $result;
+            $this->drain($keys ?: [], $prefix, $table, $column);
+        } while ((string) $cursor !== '0');
+    }
+
+    /**
+     * @param  array<int, string>  $keys  as Redis names them, prefix included
+     */
+    private function drain(array $keys, string $prefix, string $table, string $column): void
+    {
+        foreach ($keys as $key) {
+            $id = (int) substr($key, strrpos($key, ':') + 1);
+
+            if ($id <= 0) {
                 continue;
             }
 
-            foreach ($keys as $key) {
-                $id = (int) substr($key, strrpos($key, ':') + 1);
+            // Back to the unprefixed name: everything below goes through
+            // Laravel, and Laravel adds the prefix itself.
+            $name = $prefix !== '' && str_starts_with($key, $prefix)
+                ? substr($key, strlen($prefix))
+                : $key;
 
-                // Back to the unprefixed name, because everything below goes
-                // through Laravel and Laravel prefixes for us.
-                $key = $prefix !== '' && str_starts_with($key, $prefix)
-                    ? substr($key, strlen($prefix))
-                    : $key;
+            // Read and clear in one step. Reading, writing and then deleting
+            // lost every view recorded in between — exactly when a page is
+            // busiest — and re-applied the whole counter if the worker died
+            // before the delete.
+            $count = (int) Redis::getdel($name);
 
-                if ($id <= 0) {
-                    continue;
-                }
-
-                // Read and clear in one step. Reading, writing and then
-                // deleting lost every view recorded in between — exactly when
-                // a page is busiest — and re-applied the whole counter if the
-                // worker died before the delete.
-                $count = (int) Redis::getdel($key);
-
-                if ($count <= 0) {
-                    continue;
-                }
-
-                try {
-                    DB::table($table)->where('id', $id)->increment($column, $count);
-                } catch (Throwable $e) {
-                    // Put it back rather than lose it.
-                    Redis::incrby($key, $count);
-                    throw $e;
-                }
+            if ($count <= 0) {
+                continue;
             }
-        } while ($cursor !== '0');
+
+            try {
+                DB::table($table)->where('id', $id)->increment($column, $count);
+            } catch (Throwable $e) {
+                // Put it back rather than lose it.
+                Redis::incrby($name, $count);
+                throw $e;
+            }
+        }
     }
 }
