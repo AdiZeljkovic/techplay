@@ -361,3 +361,121 @@ takvog čvora odsijeca dio svih posjetilaca.
 - **Redis: odvojiti keš od redova.** Manje hitno nego što je izgledalo: db0 je pao sa
   130.834 na 1.335 ključeva čim su brojači počeli raditi, pa pritiska na 768 MB više
   nema. Odvajanje ostaje ispravno, ali nije više gorući problem.
+
+---
+
+## Nastavak, 17. 08. 2026 — Faza 2 dovršena, Faza 3 započeta
+
+### pm2 cluster — **odlučeno da se ne radi**, i zašto
+
+Ovo je bio najveći pojedinačni dobitak u planu (SSR s 33 na ~100 zahtjeva/s). Prije
+uključivanja je pročitana Nextova dokumentacija u `node_modules/next/dist/docs/`, koja
+odgovara izričito:
+
+> *„When running multiple instances, the default file-system cache is per-instance.
+> On-demand revalidation only invalidates the instance that receives the call. Use a
+> shared custom cache handler to coordinate across instances."*
+
+Dakle cluster bez dijeljenog `cacheHandler`-a znači da objavljen članak stigne samo do
+one instance koja primi poziv na `/api/revalidate`. Pisanje takvog handlera mijenja način
+na koji se **svaka** stranica kešira, a pri sadašnjem prometu (2,4 zahtjeva/s prosjek,
+granica 33/s na nekeširanom putu) to ne opravdava rizik.
+
+Ostaje kao poznat sljedeći korak, s poznatim preduslovom — ne kao nešto što je propušteno.
+
+### Keš slika — ranija odluka je bila pogrešna
+
+Granica od 4 GB postavljena jutros izvedena je iz **brzine rasta** (6,5 GB za dva dana).
+Mjerenje samog keša umjesto njegovog rasta pokazalo je nešto drugo:
+
+```
+79.502 direktorija (jedinstvenih slika)
+79.504 fajla (varijanti)          →  jedna varijanta po slici
+58,6 KB prosjek                   →  cijeli katalog ≈ 7,9 GB
+```
+
+Šest `deviceSizes` i pet `qualities` ništa ne umnožavaju, jer Next piše samo ono što se
+zaista zatraži — a traži se jedna veličina jedne naslovnice. Rast nikad nije bio stopa;
+bilo je to puzanje koje prvi put dolazi do 142.110 igara.
+
+Granica ispod radnog skupa ne štiti disk — ona izbacuje naslovnice koje će opet zatrebati,
+a svako izbacivanje kupuje novu optimizaciju. Optimizacija slika je najteži CPU posao na
+ovoj mašini i 110 današnjih 502-ica bilo je baš na `/_next/image`. **Granica podignuta na
+12 GB**, cron s jednog sata na dnevni.
+
+### Pulse je bio 60% baze, i to gotovo cijeli jedan zapisivač
+
+```
+cache_miss   856.830 unosa  +  1.008.780 agregata
+cache_hit    626.237 unosa
+──────────────────────────────────────────────────
+ostalo          203 unosa   (123 izuzetka, 34 spora zahtjeva, 23 spora posla…)
+```
+
+99,99% prostora bili su zapisi o pogotku i promašaju keša, pri stopi uzorkovanja **1** —
+svaki pojedinačni. Ono što ima vrijednost stane u 203 reda. Odnos pogodaka i promašaja
+Redis ionako prijavljuje tačno, kroz `INFO stats`.
+
+`PULSE_CACHE_INTERACTIONS_SAMPLE_RATE=0.01`, stari redovi obrisani, `VACUUM FULL`.
+
+| | prije | poslije |
+|---|---|---|
+| baza | **1139 MB** | **488 MB** |
+| `pulse_aggregates` | 363 MB | van prvih pet tabela |
+| `pulse_entries` | 290 MB | van prvih pet tabela |
+
+### Sekvencijalna skeniranja — nalaz je bio pogrešno uokviren
+
+`pg_stat_statements` je uključen i odgovorio je: **nema upita koji melje `games`.**
+
+Brojka od 159.270 je kumulativna kroz mjesece — za 40 minuta narasla je za **116**, uz
+16,6 miliona indeksnih skeniranja. Odnos 1:104 je zdrav. Jedini upit koji zaista prolazi
+tabelu je `select id, name from games order by id limit ? offset ?`, 29 poziva po 51 ms —
+generator sitemapa, svakih 6 sati.
+
+Ranija pretpostavka da neki bot melje bazu **nije potvrđena**. Ono što jest istina je da
+`offset` paginacija preko 142.000 redova poskupljuje sa svakom stranicom, i to je stavka
+za Fazu 3, ne hitnost.
+
+### Emitovanje: backend je slao događaje kroz pola interneta
+
+Reverb je jutros prorađen na klijentskoj strani, ali objava s backenda i dalje je padala.
+Uzrok:
+
+```
+REVERB_HOST=api-beta.techplay.gg   REVERB_PORT=8080   REVERB_SCHEME=https
+```
+
+Za servis koji sluša na `127.0.0.1:8080` i govori **čistim HTTP-om**. Svaki događaj je
+izlazio na javnu mrežu, prema portu koji Cloudflare ne nosi preko TLS-a i koji je od danas
+iza firewalla, pa se vraćao kao `cURL error 35: wrong version number`. To je izvor onih 26
+neuspjelih poslova.
+
+Sada `REVERB_HOST=127.0.0.1`, `REVERB_SCHEME=http`. Objava prolazi, websocket handshake i
+dalje vraća `101`. Frontend nije dirnut — on ima vlastite `NEXT_PUBLIC_REVERB_*`.
+
+Neuspjeli poslovi obrisani, a ne ponovljeni: 26 od 28 su emitovanja od jučer, i ponavljanje
+bi poslalo stare događaje kao nove.
+
+### Stanje na kraju dana
+
+| | |
+|---|---|
+| baza | 488 MB (bilo 1139) |
+| Redis db0 | 1.308 ključeva (bilo 130.834) |
+| keš slika | 4,9 GB, granica 12 GB |
+| disk | 15 GB od 75 (21%) |
+| RAM | 2,7 GB od 7,5 |
+| neuspjelih poslova | 0 |
+
+### Šta je ostalo
+
+| | |
+|---|---|
+| **Backup van servera** | čeka SSH ključ na StorageBoxu — skripta i cron su spremni |
+| **Praćenje grešaka** | čeka nalog (Sentry) |
+| **80/443 samo za Cloudflare** | zatvara zadnji put do origina; treba uz cron za opsege |
+| **Node 22** | prije nego 20 izađe iz podrške u 04/2026 |
+| **Nekorišteni indeksi** | mjeriti nakon punog ciklusa, ne po današnjem očitanju |
+| **`offset` paginacija u sitemapu** | radi, ali poskupljuje sa svakom stranicom |
+| **pm2 cluster** | tek uz dijeljeni `cacheHandler` |
