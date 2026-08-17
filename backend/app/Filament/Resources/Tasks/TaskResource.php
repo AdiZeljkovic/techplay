@@ -46,7 +46,9 @@ class TaskResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
+        // Both columns the table draws are relationships, and Filament does not
+        // load them by itself — measured at two extra queries per row.
+        $query = parent::getEloquentQuery()->with(['assignee', 'creator']);
         $user = auth()->user();
 
         if ($user->hasRole(['Super Admin', 'Admin', 'Editor-in-Chief', 'Editor'])) {
