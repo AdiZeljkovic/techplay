@@ -40,7 +40,7 @@ class SimpleThreadResource extends Resource
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 30;
 
     protected static ?string $navigationLabel = 'Threads';
 

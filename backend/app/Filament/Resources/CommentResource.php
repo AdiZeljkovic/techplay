@@ -35,7 +35,7 @@ class CommentResource extends Resource
 
     public static function getNavigationIcon(): ?string
     {
-        return 'heroicon-o-chat-bubble-left-right';
+        return 'heroicon-o-chat-bubble-oval-left-ellipsis';
     }
 
     public static function getNavigationGroup(): ?string
@@ -45,7 +45,7 @@ class CommentResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return 5;
+        return 40;
     }
 
     public static function getNavigationBadge(): ?string

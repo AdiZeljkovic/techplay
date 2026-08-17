@@ -30,7 +30,7 @@ class ForumCategoryResource extends Resource
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $navigationLabel = 'Forum Categories';
 

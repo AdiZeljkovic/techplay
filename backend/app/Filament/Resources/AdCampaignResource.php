@@ -29,7 +29,7 @@ class AdCampaignResource extends Resource
         return 'Shop & Monetization';
     }
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 60;
 
     public static function getNavigationLabel(): string
     {

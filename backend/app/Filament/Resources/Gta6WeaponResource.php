@@ -27,7 +27,7 @@ class Gta6WeaponResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bolt';
 
-    protected static ?int $navigationSort = 13;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationGroup(): ?string
     {

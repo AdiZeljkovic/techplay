@@ -26,7 +26,7 @@ class RoleResource extends Resource
         return 'System';
     }
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 30;
 
     public static function canAccess(): bool
     {

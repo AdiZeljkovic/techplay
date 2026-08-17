@@ -61,7 +61,7 @@ class GuideResource extends Resource
         return 'Content Studio';
     }
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 40;
 
     public static function getNavigationLabel(): string
     {

@@ -26,10 +26,10 @@ class CustomizationResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 13;
+    protected static ?int $navigationSort = 60;
 
     public static function form(Schema $schema): Schema
     {

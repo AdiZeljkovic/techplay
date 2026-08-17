@@ -20,16 +20,16 @@ class RewardItemResource extends Resource
 {
     protected static ?string $model = RewardItem::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-gift';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
 
     protected static ?string $navigationLabel = 'Rewards Store';
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 50;
 
     public static function form(Schema $schema): Schema
     {

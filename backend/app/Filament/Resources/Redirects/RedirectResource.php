@@ -26,7 +26,7 @@ class RedirectResource extends Resource
         return 'SEO & Marketing';
     }
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 40;
 
     public static function form(Schema $schema): Schema
     {

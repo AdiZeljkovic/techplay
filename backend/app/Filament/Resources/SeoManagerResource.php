@@ -44,7 +44,7 @@ class SeoManagerResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return 1;
+        return 10;
     }
 
     public static function table(Table $table): Table

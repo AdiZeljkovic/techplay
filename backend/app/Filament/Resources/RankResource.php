@@ -22,10 +22,10 @@ class RankResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 7;
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {

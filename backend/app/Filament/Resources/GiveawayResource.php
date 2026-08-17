@@ -34,11 +34,11 @@ class GiveawayResource extends Resource
 {
     protected static ?string $model = Giveaway::class;
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 10;
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Content Studio';
+        return 'Shop & Monetization';
     }
 
     public static function getNavigationIcon(): string

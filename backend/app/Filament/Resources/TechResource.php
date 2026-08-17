@@ -46,7 +46,7 @@ class TechResource extends Resource
         return 'Content Studio';
     }
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationLabel(): string
     {

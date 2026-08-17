@@ -41,7 +41,20 @@ class ReleaseCalendar extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Editorial Tools';
+        return 'Content Studio';
+    }
+
+    /**
+     * First in the group, above News.
+     *
+     * It used to be a group of its own called Editorial Tools, containing
+     * nothing else. A group of one is a heading with no work to do; the
+     * calendar is where the week's publishing gets planned, so it belongs at
+     * the top of the content list rather than beside it.
+     */
+    public static function getNavigationSort(): ?int
+    {
+        return 10;
     }
 
     public static function getNavigationBadge(): ?string

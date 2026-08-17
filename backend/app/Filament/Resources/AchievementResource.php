@@ -22,10 +22,10 @@ class AchievementResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {

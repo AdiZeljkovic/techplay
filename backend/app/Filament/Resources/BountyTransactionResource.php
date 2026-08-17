@@ -42,10 +42,10 @@ class BountyTransactionResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 14;
+    protected static ?int $navigationSort = 70;
 
     public static function canCreate(): bool
     {

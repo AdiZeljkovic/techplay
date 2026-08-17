@@ -21,9 +21,21 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class GameRatingResource extends Resource
 {
+    /**
+     * Hidden while the table is empty.
+     *
+     * The screen still exists and still works — this only keeps a row out of a
+     * sidebar of forty-two, where a permanent zero is a row the eye learns to
+     * skip. It comes back on its own with the first record.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::getModel()::query()->exists();
+    }
+
     protected static ?string $model = GameRating::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-star';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-hand-thumb-up';
 
     protected static ?string $navigationLabel = 'Game Ratings';
 
@@ -45,7 +57,7 @@ class GameRatingResource extends Resource
         return 'Game Database';
     }
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {

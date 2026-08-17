@@ -46,7 +46,7 @@ class UserResource extends Resource
         return 'Community';
     }
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 10;
 
     public static function canAccess(): bool
     {

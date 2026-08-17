@@ -127,12 +127,24 @@ HTML)
             // Undeclared groups still render, but they queue up after every
             // declared one — so 'GTA 6' was landing below System, at the very
             // bottom, no matter what navigationSort its resources carried.
+            /*
+             * Eight groups, and the order is the day: what you publish, what
+             * the catalogue holds, who is here, what they earn, what it makes,
+             * how it is found, how it is configured.
+             *
+             * 'Editorial Tools' is gone — it held Release Calendar and nothing
+             * else, and a group of one is a heading with no work to do. In its
+             * place, 'Gamification': the XP economy was eight of Community's
+             * fourteen rows, which meant Users and Threads sat beside Bounty
+             * Ledger and Customizations. Those are two different jobs, usually
+             * done by two different people, and now they read as two.
+             */
             ->navigationGroups([
-                'Editorial Tools',
                 'Content Studio',
                 'Game Database',
                 'GTA 6',
                 'Community',
+                'Gamification',
                 'Shop & Monetization',
                 'SEO & Marketing',
                 'System',

@@ -44,7 +44,7 @@ class NewsResource extends Resource
         return 'Content Studio';
     }
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 20;
 
     public static function getNavigationLabel(): string
     {

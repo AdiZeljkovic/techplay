@@ -25,7 +25,7 @@ class SupportTierResource extends Resource
         return 'Shop & Monetization';
     }
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 40;
 
     public static function form(Schema $schema): Schema
     {

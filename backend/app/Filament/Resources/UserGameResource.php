@@ -38,10 +38,10 @@ class UserGameResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 11;
+    protected static ?int $navigationSort = 80;
 
     public static function form(Schema $schema): Schema
     {

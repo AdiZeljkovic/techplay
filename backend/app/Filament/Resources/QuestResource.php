@@ -28,7 +28,7 @@ class QuestResource extends Resource
 {
     protected static ?string $model = Quest::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-flag';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-map';
 
     /**
      * Eager load what the table shows.
@@ -45,10 +45,10 @@ class QuestResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 40;
 
     /** Every criteria the code emits, and what triggers it. */
     private const CRITERIA = [

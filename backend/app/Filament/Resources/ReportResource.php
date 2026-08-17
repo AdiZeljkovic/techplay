@@ -18,11 +18,23 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ReportResource extends Resource
 {
+    /**
+     * Hidden while the table is empty.
+     *
+     * The screen still exists and still works — this only keeps a row out of a
+     * sidebar of forty-two, where a permanent zero is a row the eye learns to
+     * skip. It comes back on its own with the first record.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::getModel()::query()->exists();
+    }
+
     protected static ?string $model = Report::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-flag';
 
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 50;
 
     /**
      * Eager load what the table shows.

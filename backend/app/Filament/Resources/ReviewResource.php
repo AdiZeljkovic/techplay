@@ -57,7 +57,7 @@ class ReviewResource extends Resource
         return 'Content Studio';
     }
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 30;
 
     public static function getNavigationLabel(): string
     {

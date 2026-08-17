@@ -46,7 +46,7 @@ class SocialSettings extends Page implements HasForms
 
     public static function getNavigationSort(): ?int
     {
-        return 3;
+        return 40;
     }
 
     public function mount(): void

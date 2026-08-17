@@ -31,14 +31,14 @@ class SeasonResource extends Resource
 {
     protected static ?string $model = Season::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Community';
+        return 'Gamification';
     }
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
     {

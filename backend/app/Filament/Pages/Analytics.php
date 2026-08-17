@@ -23,7 +23,7 @@ class Analytics extends Page
 
     protected static string|\UnitEnum|null $navigationGroup = 'System';
 
-    protected static ?int $navigationSort = 100;
+    protected static ?int $navigationSort = 50;
 
     protected function getHeaderWidgets(): array
     {
