@@ -55,7 +55,7 @@ class SitemapController extends Controller
         if (Product::where('is_active', true)->exists()) {
             $sitemaps[] = 'sitemap-products.xml';
         }
-        if (Article::where('status', 'published')->where('published_at', '>=', now()->subHours(48))->exists()) {
+        if (Article::where('status', 'published')->whereBetween('published_at', [now()->subHours(48), now()])->exists()) {
             $sitemaps[] = 'sitemap-news.xml';
         }
         if (Article::where('status', 'published')->whereNotNull('featured_image_url')->exists()) {
@@ -311,8 +311,17 @@ class SitemapController extends Controller
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">'."\n";
 
+        // Both ends of the window, not just the lower one.
+        //
+        // Scheduling here is done with `status = 'scheduled'`, so a *published*
+        // article dated in the future is a mistyped date rather than an
+        // intention — and with only a lower bound it never leaves this file
+        // again, because "later than 48 hours ago" stays true forever. That is
+        // what happened: one article dated 14 Nov 2026 sat here from August
+        // onward as the sole entry, and Google News rejects a future
+        // publication date outright, so the feed was rejected with it.
         $articles = Article::where('status', 'published')
-            ->where('published_at', '>=', now()->subHours(48))
+            ->whereBetween('published_at', [now()->subHours(48), now()])
             ->with('category:id,type')
             ->select('slug', 'category_id', 'title', 'published_at')
             ->orderBy('published_at', 'desc')

@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Article;
+use App\Models\Category;
 use App\Models\SiteSetting;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -110,5 +113,74 @@ class SitemapAndRobotsTest extends TestCase
         $this->get('/sitemap-games-1.xml')
             ->assertOk()
             ->assertHeader('Content-Type', 'application/xml');
+    }
+
+    /**
+     * A publication date in the future is not a news item.
+     *
+     * The window here was "published in the last 48 hours", expressed with only
+     * a lower bound — and "later than 48 hours ago" is permanently true of any
+     * future date. So one article dated 14 Nov 2026, published in August with
+     * what was almost certainly a mistyped month, became the sole and permanent
+     * occupant of the news feed. Google News rejects a future publication date,
+     * and it rejects the feed containing it.
+     *
+     * Scheduling on this site is `status = 'scheduled'`, which a command flips
+     * over at the appointed time, so a *published* row dated ahead is a data
+     * error and never a plan.
+     */
+    public function test_an_article_dated_in_the_future_stays_out_of_the_news_feed(): void
+    {
+        $category = Category::firstOrCreate(['slug' => 'news'], ['name' => 'News', 'type' => 'news']);
+        $author = User::factory()->create();
+
+        $fresh = Article::create([
+            'title' => 'Published an hour ago',
+            'slug' => 'published-an-hour-ago',
+            'status' => 'published',
+            'published_at' => now()->subHour(),
+            'category_id' => $category->id,
+            'author_id' => $author->id,
+            'content' => '<p>Body enough to be a story.</p>',
+        ]);
+
+        Article::create([
+            'title' => 'Dated three months out',
+            'slug' => 'dated-three-months-out',
+            'status' => 'published',
+            'published_at' => now()->addMonths(3),
+            'category_id' => $category->id,
+            'author_id' => $author->id,
+            'content' => '<p>Body enough to be a story.</p>',
+        ]);
+
+        $body = $this->get('/sitemap-news.xml')->assertOk()->getContent();
+
+        $this->assertStringContainsString($fresh->slug, $body);
+        $this->assertStringNotContainsString('dated-three-months-out', $body);
+    }
+
+    /**
+     * The index must not advertise a news feed that the future-dated article
+     * was the only reason to include.
+     */
+    public function test_the_index_does_not_list_a_news_feed_held_open_by_a_future_date(): void
+    {
+        $category = Category::firstOrCreate(['slug' => 'news'], ['name' => 'News', 'type' => 'news']);
+        $author = User::factory()->create();
+
+        Article::create([
+            'title' => 'Dated three months out',
+            'slug' => 'only-a-future-article',
+            'status' => 'published',
+            'published_at' => now()->addMonths(3),
+            'category_id' => $category->id,
+            'author_id' => $author->id,
+            'content' => '<p>Body enough to be a story.</p>',
+        ]);
+
+        $body = $this->get('/sitemap.xml')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('sitemap-news.xml', $body);
     }
 }

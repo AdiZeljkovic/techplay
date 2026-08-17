@@ -4,7 +4,7 @@ import GiveawayHub from "./GiveawayHub";
 
 export async function generateMetadata(): Promise<Metadata> {
     const metadata = await generatePageMetadata('/giveaways', {
-        title: "Giveaways - TechPlay",
+        title: "Giveaways",
         description: "Browse active and past giveaways. Enter to win amazing gaming prizes!",
     });
     return { ...metadata, robots: { index: false, follow: false } };

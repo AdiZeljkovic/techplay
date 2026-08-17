@@ -3,14 +3,14 @@ import ShopClient from "./ShopClient";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Shop - TechPlay | Gaming Merchandise & Gear",
+    title: "Shop — Gaming Merchandise & Gear",
     description: "Official TechPlay merchandise, premium gaming gear, and exclusive hardware accessories. Shop hoodies, peripherals, and more.",
     keywords: [
         "techplay shop", "gaming merchandise", "gaming gear", "gaming accessories",
         "gaming hoodies", "gaming peripherals", "techplay merch", "buy gaming products",
     ],
     openGraph: {
-        title: "Shop - TechPlay | Gaming Merchandise & Gear",
+        title: "Shop — Gaming Merchandise & Gear",
         description: "Official TechPlay merchandise, premium gaming gear, and exclusive hardware accessories.",
         type: "website",
         url: "https://techplay.gg/shop",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Shop - TechPlay | Gaming Merchandise & Gear",
+        title: "Shop — Gaming Merchandise & Gear",
         description: "Official TechPlay merchandise, premium gaming gear, and exclusive hardware accessories.",
     },
     alternates: {

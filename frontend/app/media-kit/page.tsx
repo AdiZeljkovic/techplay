@@ -8,7 +8,7 @@ export const revalidate = 3600; // ISR: 1 hour
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg';
 
 export async function generateMetadata(): Promise<Metadata> {
-    const title = "Advertise on TechPlay | Gaming & Tech Media Kit 2026";
+    const title = "Advertise on TechPlay — Media Kit 2026";
     const description = "Reach 20K+ engaged gamers and tech enthusiasts. Competitive CPM rates from $1.00, 62% desktop traffic, 12.4% monthly growth. Global gaming tech portal with verified audience and real-time analytics.";
     const keywords = [
         "gaming advertising",
@@ -122,7 +122,7 @@ const structuredData = {
             "@type": "WebPage",
             "@id": `${APP_URL}/media-kit/#webpage`,
             "url": `${APP_URL}/media-kit`,
-            "name": "Advertise on TechPlay | Gaming & Tech Media Kit 2026",
+            "name": "Advertise on TechPlay — Media Kit 2026",
             "description": "Reach 20K+ engaged gamers and tech enthusiasts. Competitive CPM rates from $1.00, 62% desktop traffic, 12.4% monthly growth.",
             "isPartOf": {
                 "@id": `${APP_URL}/#website`

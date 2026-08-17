@@ -3,7 +3,7 @@ import Script from "next/script";
 import WowAnalyzerClient from "@/components/wow/WowAnalyzerClient";
 
 export const metadata: Metadata = {
-    title: "WoW Character Analyzer - Free Midnight Readiness Score & Gear Check | TechPlay",
+    title: "WoW Character Analyzer — Free Midnight Readiness Score & Gear Check",
     description: "Instantly analyze your World of Warcraft character for Midnight expansion. Check gear, M+ score, raid progress, collections, and get expert tips from Profesor Buffy. Free WoW analyzer tool - no login required!",
     keywords: [
         // Primary keywords (high volume)

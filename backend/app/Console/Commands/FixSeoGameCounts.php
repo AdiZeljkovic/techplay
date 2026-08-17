@@ -65,9 +65,18 @@ class FixSeoGameCounts extends Command
         // match the number and leave the sentence alone.
         //
         // Ordered longest-first: "over 1M" has to be seen before "1M".
+        //
+        // The digits-with-separators form was missed on the first run and left
+        // "our 1,000,000+ game database" standing on /impressum and "data on
+        // over 1,000,000 titles" on /marketing — the page where the claim is
+        // made to somebody being asked for money. Written out, the number does
+        // not look like the shorthand the earlier patterns were built for.
         $patterns = [
+            '/\bover\s+1[,.\s]?000[,.\s]?000\+?(?=\W)/i' => "over {$spelled}",
             '/\bover\s+1\s*M\+?(?=\W)/i' => "over {$spelled}",
             '/\bover\s+(?:1|one)\s+million(?=\W)/i' => "over {$spelled}",
+            '/\b1[,.\s]?000[,.\s]?000\+/' => "{$spelled}+",
+            '/\b1[,.\s]?000[,.\s]?000\b/' => $spelled,
             '/\b1\s*M\+/i' => "{$spelled}+",
             '/\b(?:1|one)\s+million\b/i' => $spelled,
             // The earlier, smaller overstatement, from before the catalogue was
