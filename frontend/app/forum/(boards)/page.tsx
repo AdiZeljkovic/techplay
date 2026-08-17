@@ -9,19 +9,15 @@ export async function generateMetadata(): Promise<Metadata> {
     });
 
     /**
-     * Absolute, so the forum's title template does not apply to the forum's
-     * own front page.
+     * Nothing to do here any more.
      *
-     * The title here comes from the admin panel's page SEO, which already
-     * carries its own branding. With the template added on top it read
-     * "TechPlay Community Forums | Global Gaming & Hardware Discussions |
-     * TechPlay Forum" — measured, not predicted. Boards and threads below still
-     * want the suffix; this one page does not.
+     * This used to force the title absolute, because the admin-written title
+     * already carried its own branding and the forum template added a second
+     * suffix. generatePageMetadata now marks every database title absolute for
+     * that same reason, so re-wrapping it here would only risk flattening it
+     * back into a plain string.
      */
-    return {
-        ...meta,
-        title: { absolute: typeof meta.title === 'string' ? meta.title : 'Community Forums' },
-    };
+    return meta;
 }
 
 export default function ForumPage() {

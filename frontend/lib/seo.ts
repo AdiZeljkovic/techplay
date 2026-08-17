@@ -131,7 +131,18 @@ export async function generatePageMetadata(
     const siteName = settings.site_name || "TechPlay";
 
     // Use page-specific SEO if available, otherwise fall back to defaults/global settings
-    const title = pageSeo?.meta_title || defaults?.title || siteName;
+    /**
+     * A title written in the admin panel is the finished title.
+     *
+     * The root layout appends "| TechPlay" to whatever a page returns, and 31
+     * of the 44 records already end in it — so the moment these finally began
+     * arriving, /news read "Gaming News 2026 | Breaking Headlines & Industry
+     * Updates | TechPlay | TechPlay". Marking it absolute keeps the editor's
+     * wording exactly as written; a fallback title is a fragment and still
+     * takes the template.
+     */
+    const dbTitle = pageSeo?.meta_title?.trim() || null;
+    const title = dbTitle ?? (defaults?.title || siteName);
     const description = pageSeo?.meta_description || defaults?.description || settings.seo_meta_description || "TechPlay puts every game you own in one library — Steam, PlayStation and Xbox together, with the hours you played — then reads your taste back to you. Plus reviews, release dates and a 141,000-game catalogue.";
     const ogTitle = pageSeo?.og_title || title;
     const ogDescription = pageSeo?.og_description || description;
@@ -147,7 +158,7 @@ export async function generatePageMetadata(
     const canonical = pageSeo?.canonical_url || `${APP_URL}${path === '/' ? '' : path}`;
 
     return {
-        title,
+        title: dbTitle ? { absolute: dbTitle } : title,
         description,
         keywords,
         alternates: {
