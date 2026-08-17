@@ -49,7 +49,6 @@ use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\JournalController;
 use App\Http\Controllers\Api\V1\LastDiscController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
-use App\Http\Controllers\Api\V1\MediaKitController;
 use App\Http\Controllers\Api\V1\NavigationController;
 use App\Http\Controllers\Api\V1\NewsController;
 use App\Http\Controllers\Api\V1\NewsletterController;
@@ -415,7 +414,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/home', [HomeController::class, 'index']);
 
         // Media Kit
-        Route::get('/media-kit', [MediaKitController::class, 'index']);
 
         // Search
         Route::get('/search/articles', [SearchController::class, 'articles']);

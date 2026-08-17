@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Layout, Layers, MonitorSmartphone, Zap, Users, Globe, Cpu, ShoppingCart, Shield, MousePointerClick, Mail, Download, Megaphone, Video } from "lucide-react";
+import { Layout, Layers, MonitorSmartphone, Zap, Users, Globe, Cpu, ShoppingCart, Shield, MousePointerClick, Mail, Megaphone, Video } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
 
@@ -177,12 +176,11 @@ export default function MarketingClient() {
                         >
                             <Mail className="w-4 h-4" /> marketing@techplay.gg
                         </a>
-                        <Link
-                            href="/media-kit"
-                            className="btn-command btn-command-quiet inline-flex items-center gap-2 h-11 px-6 bg-[var(--fill-2)] text-[var(--ink-hi)] font-display text-[13px] font-bold uppercase tracking-wider hover:bg-[var(--fill-3)] transition-colors duration-300"
-                        >
-                            <Download className="w-4 h-4" /> View Media Kit
-                        </Link>
+                        {/* The media kit lived at /media-kit and was removed on
+                            17 Aug 2026; it is being replaced by a PDF. A button
+                            to a page that no longer exists is worse than one
+                            button, so the email above carries this on its own
+                            until there is a file to link. */}
                     </div>
 
                     <p className="mt-6 text-[12px] text-[var(--ink-faint)]">Agency? Ask for our agency rate card.</p>

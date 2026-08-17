@@ -14,7 +14,6 @@ use App\Models\Redirect;
 use App\Models\RewardItem;
 use App\Models\Season;
 use App\Models\SiteSetting;
-use App\Models\Task;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -138,10 +137,15 @@ class AdminPanelAccessTest extends TestCase
      * RoleResource edits Spatie roles, permission checkboxes included, and it
      * had no policy — so a Moderator could tick `manage users` onto the role
      * they already hold and walk into everything the tiers above deny them.
-     * Redirect and Task were open the same way, for the same reason: added
-     * after the tiering, never mapped.
+     * Redirect was open the same way, for the same reason: added after the
+     * tiering, never mapped.
+     *
+     * Task was the third of these. It was removed from the project on 17 Aug
+     * 2026 along with Editorial Chat — not because either was broken, but
+     * because neither was used. Its assertion goes with it rather than being
+     * left to test a class that no longer exists.
      */
-    public function test_the_three_resources_added_after_the_tiering_are_not_open(): void
+    public function test_the_resources_added_after_the_tiering_are_not_open(): void
     {
         $moderator = $this->withRole('Moderator');
         $editor = $this->withRole('Editor');
@@ -152,10 +156,9 @@ class AdminPanelAccessTest extends TestCase
         $this->assertFalse($editor->can('viewAny', Role::class));
         $this->assertTrue($admin->can('viewAny', Role::class));
 
-        // These two the editorial team does need — a renamed slug needs a
-        // redirect the same day, and tasks are their own workflow.
+        // This the editorial team does need: a renamed slug wants a redirect
+        // the same day.
         $this->assertTrue($editor->can('viewAny', Redirect::class));
-        $this->assertTrue($editor->can('viewAny', Task::class));
         $this->assertFalse($moderator->can('viewAny', Redirect::class), 'routing is not moderation');
     }
 

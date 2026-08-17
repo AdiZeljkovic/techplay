@@ -191,16 +191,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Message::class, 'sender_id');
     }
 
-    public function sentEditorialMessages()
-    {
-        return $this->hasMany(EditorialMessage::class, 'user_id');
-    }
-
-    public function receivedEditorialMessages()
-    {
-        return $this->hasMany(EditorialMessage::class, 'recipient_id');
-    }
-
     /**
      * The cover image as something a browser can load.
      *

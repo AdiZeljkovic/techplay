@@ -11,7 +11,6 @@ use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
 use App\Models\Guide;
 use App\Models\Media;
-use App\Models\MediaKitSetting;
 use App\Models\Order;
 use App\Models\PageSeo;
 use App\Models\Post;
@@ -28,7 +27,6 @@ use App\Observers\Gta6CharacterObserver;
 use App\Observers\Gta6VehicleObserver;
 use App\Observers\Gta6WeaponObserver;
 use App\Observers\GuideObserver;
-use App\Observers\MediaKitSettingObserver;
 use App\Observers\MediaObserver;
 use App\Observers\OrderObserver;
 use App\Observers\PageSeoObserver;
@@ -160,7 +158,6 @@ class AppServiceProvider extends ServiceProvider
         SiteSetting::observe(SiteSettingObserver::class);
         PageSeo::observe(PageSeoObserver::class);
         Order::observe(OrderObserver::class);
-        MediaKitSetting::observe(MediaKitSettingObserver::class);
 
         // GTA 6 content observers — cache invalidation + Next.js ISR revalidation
         Gta6Character::observe(Gta6CharacterObserver::class);

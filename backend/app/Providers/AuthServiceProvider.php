@@ -9,7 +9,6 @@ use App\Models\BountyTransaction;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Customization;
-use App\Models\EditorialChannel;
 use App\Models\Game;
 use App\Models\GameRating;
 use App\Models\Giveaway;
@@ -18,7 +17,6 @@ use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
 use App\Models\Guide;
 use App\Models\Media;
-use App\Models\MediaKitSetting;
 use App\Models\News;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
@@ -33,7 +31,6 @@ use App\Models\RewardItem;
 use App\Models\Season;
 use App\Models\SiteSetting;
 use App\Models\SupportTier;
-use App\Models\Task;
 use App\Models\Thread;
 use App\Models\User;
 use App\Models\UserGame;
@@ -73,7 +70,6 @@ class AuthServiceProvider extends ServiceProvider
 
         // Editorial content and the curated databases
         Category::class => ContentPolicy::class,
-        EditorialChannel::class => ContentPolicy::class,
         Game::class => ContentPolicy::class,
         GameRating::class => ContentPolicy::class,
         Gta6Character::class => ContentPolicy::class,
@@ -88,7 +84,6 @@ class AuthServiceProvider extends ServiceProvider
         AdCampaign::class => AdminOnlyPolicy::class,
         Customization::class => AdminOnlyPolicy::class,
         Giveaway::class => AdminOnlyPolicy::class,
-        MediaKitSetting::class => AdminOnlyPolicy::class,
         NewsletterSubscriber::class => AdminOnlyPolicy::class,
         Order::class => AdminOnlyPolicy::class,
         Product::class => AdminOnlyPolicy::class,
@@ -115,7 +110,6 @@ class AuthServiceProvider extends ServiceProvider
         Redirect::class => ContentPolicy::class,
 
         // Editorial tasks — the group they live in is called Editorial Tools.
-        Task::class => ContentPolicy::class,
 
         // The XP/bounty economy, which had no admin surface until now.
         Season::class => AdminOnlyPolicy::class,

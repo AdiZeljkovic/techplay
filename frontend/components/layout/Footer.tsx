@@ -61,7 +61,6 @@ const ABOUT = [
     { name: "About Us",          href: "/about" },
     { name: "Contact",           href: "/contact" },
     { name: "Advertise With Us", href: "/marketing" },
-    { name: "Media Kit",         href: "/media-kit" },
     { name: "Our Rating System", href: "/rating-system" },
     { name: "Roadmap",           href: "/roadmap" },
     { name: "Shop",              href: "/shop" },

@@ -67,7 +67,6 @@ const LABELS: Array<[string, string, string]> = [
     ["/terms", "Terms", "/"],
     ["/cookies", "Cookies", "/"],
     ["/impressum", "Impressum", "/"],
-    ["/media-kit", "Media kit", "/"],
     ["/marketing", "Advertise", "/"],
     ["/roadmap", "Roadmap", "/"],
     ["/rating-system", "Rating system", "/"],
