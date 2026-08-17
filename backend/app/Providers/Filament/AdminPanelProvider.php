@@ -77,6 +77,26 @@ class AdminPanelProvider extends PanelProvider
              * happening. The panel was running stock Filament CSS.
              */
             ->viteTheme('resources/css/filament/admin/theme.css')
+
+            /*
+             * The other two faces.
+             *
+             * `font()` above takes one family and Filament loads it; the theme
+             * stylesheet also asks for Instrument Sans on headings and IBM Plex
+             * Mono on figures, and nothing would have fetched either — the
+             * browser would have quietly fallen back to the body face and the
+             * pairing that gives the site its character would have been absent
+             * while every rule looked correct.
+             *
+             * Same provider Filament already uses, so this adds no new
+             * connection. `display=swap` keeps text visible while they load.
+             */
+            ->renderHook(
+                'panels::head.end',
+                fn () => new HtmlString(
+                    '<link rel="stylesheet" href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700|ibm-plex-mono:400,500,600&display=swap" />'
+                )
+            )
             // ->renderHook(
             //     'panels::head.end',
             //     fn() => view('filament.custom-styles')
