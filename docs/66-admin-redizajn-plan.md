@@ -604,15 +604,94 @@ Provjereno iscrtavanjem sva četiri ekrana:
 proširiti na `Guide` model. Posao od nekoliko redova, ali je promjena ponašanja
 objavljivanja, ne admin panela.
 
-### Faza 7 — Spajanja u navigaciji *(nizak rizik)*
+### Faza 7 — Spajanja u navigaciji — *otpala, 18.08.2026*
 
-`parentItem` gnježđenje, Moderation ekran, relation manageri (Quests pod
-Seasons, Posts pod Threads, Game Ratings pod Games).
+Sve tri zamisli padaju kad se provjere na podacima. Ostavljam ih zapisane s
+razlogom, jer bi inače neko drugi krenuo istim putem.
+
+**`parentItem` gnježđenje** (Progression = Ranks + Achievements, Store =
+Rewards + Customizations) tehnički radi — `Resource::getNavigationItems()` zove
+`->parentItem()`, a djeca se prikazuju tek kad je roditelj aktivan. Ali roditelj
+mora biti **druga stavka u istoj grupi**, a ne izmišljeni naslov. „Achievements"
+ispod „Ranks" znači da dostignuća pripadaju rangovima. Ne pripadaju. Ravan spisak
+od osam je bolji od stabla koje tvrdi neistinu.
+
+**Quests pod Seasons** bi sakrio 39 od 42 questa. `season_id` je nullable i samo
+tri questa imaju sezonu; ostali bi ostali bez ekrana s kojeg se otvaraju. Veza
+postoji, ali nije obavezna, i to je razlika koju plan nije uzeo u obzir.
+
+**Posts pod Threads** i **Game Ratings pod Games** ne dobijaju ništa: obje tabele
+su prazne pa su im ekrani ionako već skriveni. Uz to `Game` nema inverznu
+relaciju na ocjene — postoji samo `GameRating::game()`.
+
+Navigacija je ionako sređena u prvom prolazu 17.08. Stanje danas:
+
+```
+Content Studio 6 · Gamification 8 · Community 4 · SEO & Marketing 4
+System 5 · GTA 6 3 · Shop & Monetization 3 · Game Database 1
+```
+
+Najveća grupa ima osam stavki. To nije problem koji je ovaj plan opisao — taj je
+bio Community sa četrnaest, i on je riješen.
+
+Urađeno je jedino što je iz nalaza I stvarno ostalo: **Categories → Article
+Categories**, jer su taj resurs i Forum Categories isti `Category` model razdvojen
+kolonom `type` i iz sidebara su izgledali kao dvaput naveden ekran.
+
+`ListTeches` ostaje. Pokvareni plural je samo u imenu PHP klase — URL je
+`admin/tech-articles`, dakle korisnik ga nikad ne vidi, a preimenovanje klase
+nosi rizik zarad ničega.
+
+---
+
+## Provjera cijelog panela nakon svih izmjena
+
+Svaka GET ruta pod `/admin` iscrtana s prijavljenim administratorom:
+
+| | |
+|---|---|
+| Ekrana provjereno | **74** |
+| Odgovorilo 200 | **73** |
+| Izuzetak | `/admin/login` → 302, jer je sesija već prijavljena |
 
 ### Faza 8 — ~~Giveaway i Game obrasci~~ — *otpala*
 
 Giveawayevih pet dvostrukih okvira je obrisano u Fazi 5. Game nema šta da se
 popravi — vidi povučeni nalaz F.
+
+---
+
+## Zaključak — šta je od plana ostalo stajati
+
+Osam faza, i pola ih se raspalo pri dodiru s kodom. To je nalaz o planu, ne o
+kodu, i vrijedi ga zapisati.
+
+| Faza | Ishod |
+|---|---|
+| 1 — Dizajn jezik | urađeno; uzrok nije bio CSS nego paleta koja nikad nije stigla do panela |
+| 2 — Konvencije liste | urađeno; većina kroz `Table::configureUsing()`, jedno mjesto umjesto 37 |
+| 3 — Broken Links | urađeno; prvo je trebalo popraviti skener, 41 od 62 „mrtva" linka radi |
+| 4 — Settings | urađeno; tri ekrana u jedan, svih 44 postavke prošle netaknuto |
+| 5 — Arhetip zapisa | **otpala** — već je bio napravljen na svih pet ekrana |
+| 6 — Dijeljeni obrazac | urađeno, ali kroz komponentu a ne nasljeđivanje; ušteda 80 redova umjesto 1.100 |
+| 7 — Spajanja u navigaciji | **otpala** — sve tri zamisli padaju na podacima |
+| 8 — Giveaway i Game | **otpala** — Giveaway riješen u Fazi 5, Game nije imao problem |
+
+**Obrazac u greškama je jedan i isti:** svaki nalaz koji je izveden iz *brojanja*
+ispao je netačan, a svaki koji je izveden iz *čitanja* je stajao.
+
+- „Klik na red ne radi" — brojao sam pozive `recordUrl`, a `ListRecords` ga
+  postavlja sam
+- „Game je devet panela u nizu" — brojao sam sekcije, a raspored se iz brojanja
+  ne vidi
+- „1.100 redova duplikata" — brojao sam polja, a dvije trećine su se već dijelile
+- „Četiri resursa nad istim modelom" — Guide je vlastiti model
+- Nalaz E o Giveawayu bio je tačan jer sam pročitao ugnježđenje, a ne prebrojao ga
+
+Ono što je posao stvarno donio nisu bili redovi koda nego tri stvari koje niko
+nije tražio: **zakazivanje koje su tri ekrana izgubila**, **skener koji je
+prijavljivao 29 lažnih mrtvih linkova**, i **prekidač za maintenance koji je
+tvrdio da gasi sajt a nije bio spojen ni na šta**.
 
 ---
 
