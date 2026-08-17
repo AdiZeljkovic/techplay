@@ -86,6 +86,23 @@ if [ "$ready" -ne 1 ]; then
     exit 1
 fi
 
+# 5b. Drop the edge cache in front of the game pages.
+#
+# nginx holds /games/* for an hour (deployment/nginx-games-cache.conf). Without
+# this, a deploy that changes how a game page renders reaches nobody until that
+# hour is up — the archive above means the stale HTML still *works*, which is
+# worse in its way: nothing breaks, so nothing tells you the new build is not
+# being served.
+#
+# Deliberately after the readiness check. Emptying the cache while the server
+# is still coming up would refill it with whatever a half-started Next answers.
+CACHE=/var/cache/nginx/techplay
+if [ -d "$CACHE" ]; then
+    before=$(du -sh "$CACHE" 2>/dev/null | cut -f1)
+    find "$CACHE" -type f -delete 2>/dev/null || true
+    echo "Ispraznjen nginx kes za /games/ (bilo: ${before:-?})"
+fi
+
 # 6. Ask the running server what it thinks it needs, then check it is there.
 #
 # The archive above protects HTML already in the wild. It does not protect

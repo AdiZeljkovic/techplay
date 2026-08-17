@@ -1,12 +1,37 @@
 # Cloudflare Edge Cache Configuration for TechPlay
 
-> **Status, 11 August 2026:** none of the rules below had ever been applied.
-> Verified with `curl -I`: the homepage answers `cf-cache-status: DYNAMIC`
-> (not cached at the edge at all), and every uploaded image came back with
-> `cache-control: max-age=14400`.
+> **Status, 17 August 2026 — read this before the rest of the file.**
 >
-> That 14400 is nobody's decision — it is Cloudflare's default Browser Cache
-> TTL of 4 hours, applied because the origin sent no `Cache-Control` at all.
+> The zone was read through the API. Seven cache rules exist, and four of them
+> cache nothing at all: `Cache Home API`, `Cache News API`, `Cache Navigation
+> API` and `Cache Settings API` each carry `"cache": true` together with
+> `edge_ttl.mode = "bypass_by_default"`, which is a contradiction — eligible for
+> cache, then bypassed. They should be deleted rather than trusted.
+>
+> Measured on the live site the same day:
+>
+> | URL | `cf-cache-status` | why |
+> |---|---|---|
+> | `/_next/static/…` | `HIT` | the one rule that works |
+> | `/news` | `DYNAMIC` | no rule marks HTML cacheable, so a perfectly good `s-maxage=300` is ignored |
+> | `/games/evoland` | `BYPASS` | origin sends `no-store`; the rule that exists does not override it |
+>
+> **The game pages no longer depend on this.** nginx caches them at the origin
+> instead — see `nginx-games-cache.conf`, which works whether or not the edge is
+> ever configured. What is still open at the edge is HTML in general, and one
+> rule that is actively harmful:
+>
+> **Rate limiting → "Games scraper protection"** blocks anything exceeding 50
+> requests per 10 seconds on `/games/*`, with no exemption for search engines.
+> Googlebot walking a 114,000-page catalogue goes faster than that. The
+> expression needs `and not cf.client.bot` appended — that field is true only
+> for crawlers Cloudflare itself verifies, so a scraper gains nothing.
+>
+> A script that applies all of this is in the session scratchpad
+> (`cf_apply.py`); it backs each ruleset up to JSON before writing.
+>
+> The 14400 below is nobody's decision — it is Cloudflare's default Browser
+> Cache TTL of 4 hours, applied because the origin sent no `Cache-Control`.
 
 ---
 
