@@ -33,7 +33,7 @@ class SetSiteCopy extends Command
 {
     protected $signature = 'site:copy {--dry-run : Print the changes without writing them}';
 
-    protected $description = 'Apply the reviewed homepage and site-wide SEO copy';
+    protected $description = 'Apply the reviewed homepage copy, site description and robots.txt';
 
     /**
      * Deliberately no game count in either string.
@@ -86,6 +86,9 @@ class SetSiteCopy extends Command
             $this->line('      after:  '.$after);
         }
 
+        // Before the dry-run exit, or --dry-run would never show it.
+        $this->fixRobots($dry);
+
         if ($dry) {
             $this->newLine();
             $this->info('Dry run — nothing written.');
@@ -114,5 +117,50 @@ class SetSiteCopy extends Command
         $this->info('Applied. Rebuild the frontend so the new metadata is rendered.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * robots.txt, corrected in place rather than replaced.
+     *
+     * It lives in a `site_settings` row and is edited in a form, so like the
+     * homepage copy it was never reviewed — and it still pointed Googlebot-News
+     * at /tech/, a section that moved to /hardware and now answers 404 on all
+     * four of its paths.
+     *
+     * Only the known-wrong lines are touched. Whoever wrote the rest of this
+     * file had reasons, and a command that overwrites it wholesale would lose
+     * them the first time it ran.
+     */
+    private function fixRobots(bool $dry): void
+    {
+        $robots = (string) SiteSetting::get('seo_robots_txt_content', '');
+
+        if ($robots === '') {
+            $this->line('  = robots.txt — not set in the database, nothing to correct');
+
+            return;
+        }
+
+        $fixed = str_replace(
+            ['Allow: /tech/', 'Disallow: /tech/'],
+            ['Allow: /hardware/', 'Disallow: /hardware/'],
+            $robots
+        );
+
+        // The Sitemap line is appended by the route on every request now, so a
+        // stored one is at best duplication and at worst the wrong hostname.
+        $fixed = trim((string) preg_replace('/^[ 	]*Sitemap:.*$/mi', '', $fixed));
+
+        if ($fixed === trim($robots)) {
+            $this->line('  = robots.txt — already correct');
+
+            return;
+        }
+
+        $this->line('  <fg=yellow>~</> robots.txt — /tech/ paths and any stored Sitemap line');
+
+        if (! $dry) {
+            SiteSetting::updateOrCreate(['key' => 'seo_robots_txt_content'], ['value' => $fixed]);
+        }
     }
 }

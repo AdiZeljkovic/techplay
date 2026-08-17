@@ -425,7 +425,7 @@ class EditorialChat extends Page
         }
 
         $response = Http::get('https://api.giphy.com/v1/gifs/search', [
-            'api_key' => env('GIPHY_API_KEY'),
+            'api_key' => config('services.giphy.key'),
             'q' => $this->giphySearch,
             'limit' => 20,
             'rating' => 'g',

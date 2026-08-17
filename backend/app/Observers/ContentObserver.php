@@ -46,7 +46,9 @@ class ContentObserver
         }
 
         // Assuming frontend URL pattern
-        $frontendUrl = env('FRONTEND_URL', 'https://techplay.gg');
+        // Was env() with a hard-coded default. It produced the right URL only
+        // because the default happened to match production.
+        $frontendUrl = rtrim((string) config('app.site_url'), '/');
 
         // category is nullable, and this threw on any article saved without
         // one — a crash on publish, from a search-engine ping nobody needs to

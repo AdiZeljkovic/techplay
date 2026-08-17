@@ -162,3 +162,39 @@
 - **Image alt text** — AltTextService postoji (AI-generated), ali integracija UNKNOWN
 - **Sitemaps automatski rebuild** — komanda postoji, ali cron scheduling UNKNOWN
 - **Breadcrumbs JSON-LD** — UNKNOWN
+
+---
+
+## Audit 2026-08-17 — sitemap, robots i puzanje
+
+Izmjereno protiv produkcije, ne pretpostavljeno.
+
+### Nađeno i popravljeno
+
+| Težina | Nalaz |
+|---|---|
+| **Kritično** | `robots.txt` je prijavljivao `Sitemap: https://api-beta.techplay.gg/sitemap.xml` — **API host**. Crawler slijedi to, stiže na drugi hostname čiji index pokazuje nazad na techplay.gg, a sitemap koji navodi URL-ove s tuđeg hosta se odbija osim ako su oba verifikovana kao jedno svojstvo. Uzrok: `env('FRONTEND_URL', config('app.url'))` — kad varijabla nije postavljena, padne na API URL. Jedan fallback je vjerovatno koštao cijeli sitemap od 166.000 URL-ova. |
+| Visoko | `sitemap-categories.xml` slao je na `/tech/benchmarks`, `/tech/guides`, `/tech/reviews`, `/tech/news`. Sekcija je prešla na `/hardware`; sva četiri vraćaju **404**. Sada čita ispravne putanje. |
+| Visoko | `robots.txt` je imao `Allow: /tech/` za Googlebot-News — upućivao je News crawler na mrtve putanje. |
+| Srednje | **Dvije sitemape.** `frontend/app/sitemap.ts` se gradi i servira (lokalno provjereno, 2.300 bajta, 40-ak URL-ova), a na produkciji ga nginx presreće u korist backendove. Da se to pravilo ikad promijeni, sitemap tiho pada sa 166.000 na 40 URL-ova. Mrtva datoteka **obrisana** — 404 je barem vidljiv, tiho pogrešan sitemap nije. |
+
+**Vlastita greška uhvaćena prije commita:** prvi popravak je koristio `config('app.frontend_url')` cijeli, a ta vrijednost je **lista razdvojena zarezima** (CORS treba svaki origin) — proizvodilo je `http://a,http://b,http://c/sitemap.xml`. Sada se uzima prvi unos.
+
+Čuva `tests/Feature/SitemapAndRobotsTest.php` — 5 testova nad hostom sitemapa, zarezima u
+`FRONTEND_URL`, pohranjenom `Sitemap:` linijom, `/tech/` putanjama i hostom djece indeksa.
+
+### Provjereno i čisto
+
+- **Tombstones:** 60.975 obrisanih igara, **nijedna** nije ostala u sitemapu.
+- **Pravilo ulaska:** `Game::whereNotNull('description')` — 114.789 od 141.580; tanke igre bez opisa su ispravno vani.
+- **Facete:** 14 žanrova + 333 platforme + 217 tagova + 80 godina = 644 stranice. Nema eksplozije faceta.
+- **Strukturirani podaci:** članci nose `NewsArticle`/`Article` + `BreadcrumbList` + `Person` + `Organization` + `SpeakableSpecification`; žanr/platforma/godina nose `CollectionPage` + `BreadcrumbList`.
+- **Core Web Vitals:** LCP 0,24–0,82 s, CLS 0,000, TTFB 0,07–0,69 s (mobilni viewport, bez usporavanja mreže — donja granica, ne terenski podatak).
+
+### Ostaje otvoreno
+
+1. **Katalog se ne može puzati.** Stranica igre pravi **5 API poziva**, limit je 60/min po IP-u → greške iznad ~12 pregleda u minuti. Izmjereno: 5/12 padova na 15 zahtjeva u minuti nakon pauze; 63/75 punom brzinom. Izuzeće za `X-Internal-Token` postoji u kodu ali očito ne stiže iz deployanog frontenda.
+2. **HTML se ne kešira na rubu** — `cf-cache-status: DYNAMIC`/`BYPASS`. Svaki dolazak ide do origina i tamo se pomnoži s pet.
+3. **11 GTA6 likova vraća 404** na produkciji a rade lokalno — deployani build je stariji.
+4. `/news` i `/reviews` imaju `<title>TechPlay | TechPlay</title>`; `og:image` fali na svim hub stranicama; `/calendar` i `/leaderboard` bez canonicala; `/games` i `/forum` bez `<h1>`.
+5. **Google News:** tehnika je spremna, ritam nije — 1 članak u 30 dana, a jedini u news sitemapu datiran je 14. 11. 2026, u budućnosti.

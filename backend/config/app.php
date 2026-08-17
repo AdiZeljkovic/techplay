@@ -133,7 +133,37 @@ return [
     |
     */
 
+    /*
+     | FRONTEND_URL doubles as the CORS allow-list, so it may hold several
+     | origins separated by commas. Anything that needs *the* address of the
+     | site — a link in an email, a canonical URL, the Sitemap line in
+     | robots.txt — must use `site_url` below instead, which is always exactly
+     | one address.
+     */
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+
+    /*
+     | The canonical public address of the site, normalised here rather than at
+     | each call site.
+     |
+     | Two rules meet in this line, and both were being broken:
+     |
+     |   1. env() may only be called from inside a config file. Laravel's own
+     |      documentation says so, because `config:cache` — which production
+     |      runs — makes env() return null everywhere else. A route was doing
+     |      `env('FRONTEND_URL', config('app.url'))`, got null, and fell back to
+     |      the API's hostname; robots.txt then told every crawler the sitemap
+     |      lived on api-beta.techplay.gg.
+     |
+     |   2. The value may be a list. Taking it whole produced
+     |      "http://a,http://b,http://c/sitemap.xml".
+     |
+     | Normalising once here means neither mistake can be made again downstream.
+     */
+    'site_url' => rtrim(
+        trim(explode(',', (string) env('FRONTEND_URL', 'http://localhost:3000'))[0]),
+        '/'
+    ),
     'revalidation_secret' => env('REVALIDATE_SECRET_TOKEN', env('REVALIDATION_SECRET')),
 
 ];

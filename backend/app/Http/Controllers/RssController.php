@@ -24,7 +24,7 @@ class RssController extends Controller
             ->limit(10)
             ->get();
 
-        $frontendUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL')), '/');
+        $frontendUrl = rtrim((string) config('app.site_url'), '/');
         $siteTitle = config('app.name', 'TechPlay');
         $feedUrl = $frontendUrl.'/feed';
 

@@ -25,11 +25,28 @@ Route::get('/sitemap-games-{page}.xml', [SitemapController::class, 'games'])->wh
 Route::get('/robots.txt', function () {
     $content = SiteSetting::get('seo_robots_txt_content', "User-agent: *\nAllow: /");
 
-    // Append sitemap URL (use frontend URL, not backend API URL)
-    $sitemapUrl = rtrim(env('FRONTEND_URL', config('app.url')), '/').'/sitemap.xml';
-    if (! str_contains($content, 'Sitemap:')) {
-        $content .= "\n\nSitemap: ".$sitemapUrl;
-    }
+    // Where the sitemap lives — and it has to be the site's own hostname.
+    //
+    // This read FRONTEND_URL and fell back to config('app.url'), which is the
+    // API host. With FRONTEND_URL unset on the server it produced
+    //
+    //     Sitemap: https://api-beta.techplay.gg/sitemap.xml
+    //
+    // on techplay.gg's robots.txt. A crawler following that lands on a
+    // different hostname whose index points back at techplay.gg, and a sitemap
+    // listing URLs on a host other than its own is refused unless both are
+    // verified as the same property. One fallback was very likely costing the
+    // whole 166,000-URL sitemap.
+    //
+    // config('app.site_url') is normalised in config/app.php: one address,
+    // never the comma-separated CORS list, and read through config so that
+    // `config:cache` cannot turn it into null.
+    $sitemapUrl = rtrim((string) config('app.site_url'), '/').'/sitemap.xml';
+
+    // A Sitemap line already in the stored content is replaced rather than
+    // kept: the one this bug wrote is exactly the kind that would survive.
+    $content = trim((string) preg_replace('/^[ \t]*Sitemap:.*$/mi', '', $content));
+    $content .= "\n\nSitemap: ".$sitemapUrl;
 
     return response($content, 200)
         ->header('Content-Type', 'text/plain');

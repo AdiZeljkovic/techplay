@@ -87,7 +87,7 @@ class VerificationController extends Controller
         }
 
         // Redirect to frontend verification page with query param
-        $frontendUrl = config('app.frontend_url', 'https://beta.techplay.gg');
+        $frontendUrl = config('app.site_url');
 
         return redirect()->away($frontendUrl.'/verify-email?verified=1');
     }

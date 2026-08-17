@@ -22,6 +22,10 @@ class ValidateEnv extends Command
 
     public function handle(): int
     {
+        if ($this->refuseIfConfigIsCached()) {
+            return 1;
+        }
+
         $this->info('🔍 Validating environment configuration...');
         $this->newLine();
 
@@ -35,6 +39,27 @@ class ValidateEnv extends Command
         $this->displayResults();
 
         return empty($this->errors) ? 0 : 1;
+    }
+
+    /**
+     * This command reads env() on purpose — it is checking the .env file, which
+     * is the one job env() is for. But `config:cache` makes env() return null
+     * for everything, so run afterwards it reports every variable as missing
+     * and every check as failed.
+     *
+     * Rather than let it lie, it says so and stops. Deploy order is: validate,
+     * then cache.
+     */
+    private function refuseIfConfigIsCached(): bool
+    {
+        if (! app()->configurationIsCached()) {
+            return false;
+        }
+
+        $this->error('Configuration is cached, so env() reads as null and every check below would fail.');
+        $this->line('  Run <fg=yellow>php artisan config:clear</fg=yellow> first, or run this before config:cache in the deploy.');
+
+        return true;
     }
 
     private function validateRequired(): void

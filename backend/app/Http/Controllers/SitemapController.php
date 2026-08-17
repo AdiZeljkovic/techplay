@@ -22,7 +22,12 @@ class SitemapController extends Controller
 
     public function __construct()
     {
-        $this->frontendUrl = config('app.frontend_url', 'https://techplay.gg');
+        // Every URL in every sitemap is built from this, so it has to be one
+        // address. config('app.frontend_url') doubles as the CORS allow-list
+        // and can hold several comma-separated origins — which would have put
+        // "https://a,https://b/games/foo" in 166,000 places. site_url is
+        // normalised in config/app.php for exactly this.
+        $this->frontendUrl = rtrim((string) config('app.site_url'), '/');
         $this->apiUrl = config('app.url', 'https://api-beta.techplay.gg');
     }
 
@@ -214,10 +219,20 @@ class SitemapController extends Controller
             $xml .= $this->urlEntry("{$this->frontendUrl}/reviews/{$cat}", null, 'daily', '0.6');
         }
 
-        // Tech categories - URL format: /tech/benchmarks
-        $techCategories = ['benchmarks', 'guides', 'reviews', 'news'];
-        foreach ($techCategories as $cat) {
-            $xml .= $this->urlEntry("{$this->frontendUrl}/tech/{$cat}", null, 'weekly', '0.6');
+        // Hardware categories - URL format: /hardware/benchmarks
+        //
+        // These were emitted under /tech/ until 17 Aug 2026. The section moved
+        // to /hardware and the sitemap was never updated, so four of the
+        // seventeen URLs here pointed at pages that answer 404 — measured
+        // against production, all four.
+        //
+        // The slugs are duplicated from the frontend's HARDWARE_CATEGORIES,
+        // which is what let them drift in the first place. Worth noting for
+        // whoever moves a section next: this list and that one have to be
+        // changed together.
+        $hardwareCategories = ['reviews', 'benchmarks', 'guides', 'news'];
+        foreach ($hardwareCategories as $cat) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/hardware/{$cat}", null, 'weekly', '0.6');
         }
 
         $xml .= '</urlset>';
