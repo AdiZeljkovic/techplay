@@ -38,6 +38,15 @@ class CategoryResource extends Resource
         return parent::getEloquentQuery()->with(['parent']);
     }
 
+    /**
+     * "Article Categories", not "Categories".
+     *
+     * This resource and `ForumCategoryResource` are the same `Category` model
+     * split by a `type` column — which is correct, and from the sidebar looked
+     * like somebody had listed the same screen twice. One word fixes that.
+     */
+    protected static ?string $navigationLabel = 'Article Categories';
+
     public static function getNavigationGroup(): ?string
     {
         return 'System';
