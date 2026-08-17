@@ -1,7 +1,27 @@
 
 import { Metadata } from 'next';
+import { getServerApiUrl, serverHeaders } from '@/lib/api';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+/**
+ * Every title, description, canonical and OG tag on the site is decided here,
+ * from `page_seo` and `site_settings` — the database is the source, and the
+ * strings further down are only a fallback for when it cannot be reached.
+ *
+ * That fallback had become the actual value. This file read
+ * NEXT_PUBLIC_API_URL and called it from the server, which means going out to
+ * the public hostname and back through Cloudflare — and Cloudflare answers a
+ * server-side Node request with a 403 challenge page. Verified from the box on
+ * 17 Aug 2026: status 403, "Just a moment…". So every fetch failed, every page
+ * silently used the code defaults, and none of the forty-four SEO records
+ * anybody had written in the admin panel ever reached a visitor.
+ *
+ * NEXT_PRIVATE_API_URL exists for exactly this and goes straight to Octane.
+ * Resolved per call rather than at module load, because the value is only in
+ * the environment at request time.
+ */
+function apiUrl(): string {
+    return getServerApiUrl();
+}
 const STORAGE_URL = process.env.NEXT_PUBLIC_STORAGE_URL || 'https://api-beta.techplay.gg/storage';
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg').replace(/\/$/, '');
 
@@ -43,14 +63,25 @@ export async function fetchPageSeo(path: string): Promise<PageSeoData | null> {
         // deploy: Next keeps its fetch cache in .next/cache between builds, so
         // "I changed the title and rebuilt and nothing happened" was exactly
         // what it looked like on 17 Aug 2026, twice.
-        const res = await fetch(`${API_URL}/page-seo/${encodeURIComponent(cleanPath || '/')}`, {
+        const res = await fetch(`${apiUrl()}/page-seo/${encodeURIComponent(cleanPath || '/')}`, {
+            headers: serverHeaders(),
             next: { revalidate: 300 }
         });
 
-        if (!res.ok) return null;
+        if (!res.ok) {
+            // Loud on purpose. A silent fallback here is indistinguishable from
+            // a working site: the page still renders, still has a title, and
+            // nothing anywhere says the database was never consulted. That is
+            // how forty-four SEO records went unused without anybody noticing.
+            console.error(`[seo] page-seo for "${path}" answered ${res.status} — falling back to code defaults`);
+
+            return null;
+        }
+
         return res.json();
     } catch (error) {
-        console.error('Error fetching SEO data:', error);
+        console.error(`[seo] page-seo for "${path}" could not be reached — falling back to code defaults`, error);
+
         return null;
     }
 }
@@ -60,12 +91,20 @@ export async function fetchPageSeo(path: string): Promise<PageSeoData | null> {
  */
 export async function fetchSiteSettings(): Promise<SiteSettings> {
     try {
-        const res = await fetch(`${API_URL}/settings`, {
+        const res = await fetch(`${apiUrl()}/settings`, {
+            headers: serverHeaders(),
             next: { revalidate: 300 }
         });
-        if (!res.ok) return {};
+        if (!res.ok) {
+            console.error(`[seo] settings answered ${res.status} — falling back to code defaults`);
+
+            return {};
+        }
+
         return res.json();
-    } catch {
+    } catch (error) {
+        console.error('[seo] settings could not be reached — falling back to code defaults', error);
+
         return {};
     }
 }
