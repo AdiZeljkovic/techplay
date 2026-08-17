@@ -58,6 +58,12 @@ a treći put se zaboravi.
 tanke potklase koje deklarišu samo tip kategorije i svoja dodatna polja. Četiri
 stavke u sidebaru ostaju, četiri URL-a ostaju, ~1.100 redova nestaje.
 
+> **Dopuna 18.08.2026.** Procjena od 1.100 redova je bila pogrešna, a i pristup.
+> SEO i Media tabovi se već dijele kroz `SeoFields` i `MediaPickerFields`, pa je
+> stvarno duplirano bio samo Publish tab. Riješeno je istim obrascem umjesto
+> nasljeđivanjem — vidi Fazu 6. Uz to: **Guide nije `Article`** nego vlastiti
+> model, pa „četiri resursa nad istim modelom" ni ne stoji; njih su tri.
+
 ### B. Postavke su na tri mjesta
 
 44 postavke u tabeli `site_settings`, a mijenjaju se kroz tri različita ekrana:
@@ -551,10 +557,52 @@ Nalaz E je bio tačan zato što je provjeren čitanjem ugnježđenja
 (`Tab::make('Prize')` → `Section::make('Prize Information')`), a nalazi F i ovaj
 netačni jer su izvedeni iz brojanja. Ista razlika kao kod `recordUrl`.
 
-### Faza 6 — `BaseArticleResource` *(najveći rizik, najveća ušteda koda)*
+### Faza 6 — dijeljeni Publish tab — *urađeno 18.08.2026*
 
-Tek nakon što Faza 5 dokaže raspored. ~1.100 redova manje. Četiri stavke u
-sidebaru i četiri URL-a ostaju netaknuta.
+Nasljeđivanja nije bilo. Kad se izmjerilo šta je stvarno duplirano, ostao je
+jedan blok — i za njega projekat već ima obrazac.
+
+**Prvo ispravka procjene.** Plan je tvrdio da se spajanjem gubi ~1.100 redova.
+Netačno: SEO i Media tabovi se **već dijele** kroz `SeoFields::make()` i
+`MediaPickerFields::make()`, sve četiri ih zovu. Jedino što je bilo prepisano
+četiri puta je Publish tab — 46 do 59 redova po fajlu.
+
+| Fajl | Prije | Poslije |
+|---|---|---|
+| NewsResource | 339 | 275 |
+| ReviewResource | 592 | 541 |
+| TechResource | 313 | 260 |
+| GuideResource | 355 | 293 |
+
+230 redova manje u resursima, 150 u novoj komponenti — neto oko 80. Ušteda je
+skromna i nije razlog zbog kojeg ovo vrijedi.
+
+**Razlog je ovo:** samo je News nudio status **Scheduled**. Reviews i Tech nisu,
+pa se nisu mogli zakazati — a `articles:publish-scheduled` radi **svake minute**
+cijelo to vrijeme, i oba ekrana su i dalje prikazivala polje „Publish Date" koje
+onda ne radi ništa. Problem nije bio što su četiri fajla duga, nego što su neki
+bili tiho jednu verziju iza. SEO i Media tabovi nisu odlutali baš zato što su
+bili dijeljeni.
+
+**I zamka koju je to zamalo uvelo.** Prva verzija komponente dala je „Scheduled"
+svim četirima. To bi bila gora greška od one koju popravlja: **Guides nisu
+članci.** `GuideResource` stoji na vlastitom `Guide` modelu i vlastitoj tabeli
+(4 zapisa), a scheduler pretražuje `Article`. Zakazan vodič bi zauvijek ostao na
+tom statusu dok bi ekran tvrdio da je na putu. Otud parametar
+`withScheduling` — kontrola se nudi samo tamo gdje je neko sluša.
+
+Provjereno iscrtavanjem sva četiri ekrana:
+
+| Ekran | Model | Scheduled | Poruka |
+|---|---|---|---|
+| News | Article | da | *publish automatically* |
+| Reviews | Article | da | *publish automatically* |
+| Tech | Article | da | *publish automatically* |
+| Guides | Guide | **ne** | *Publishing here is manual* |
+
+**Zapisano, izvan dosega:** ako se hoće zakazivanje i za vodiče, scheduler treba
+proširiti na `Guide` model. Posao od nekoliko redova, ali je promjena ponašanja
+objavljivanja, ne admin panela.
 
 ### Faza 7 — Spajanja u navigaciji *(nizak rizik)*
 
