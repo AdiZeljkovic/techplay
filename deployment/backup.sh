@@ -15,15 +15,24 @@
 #   chmod +x /usr/local/bin/techplay-backup
 #   crontab -e   →   15 3 * * * /usr/local/bin/techplay-backup >> /var/log/techplay-backup.log 2>&1
 #
-# Off-site: set REMOTE to an rclone target (S3, B2, a Storage Box). Without it
-# the script still runs, but says loudly that the copy never left the machine.
+# Off-site, two ways, either of which is enough:
+#
+#   TECHPLAY_BACKUP_SSH     rsync over SSH — what a Hetzner Storage Box wants,
+#                           e.g. storagebox:techplay (a Host in ~/.ssh/config,
+#                           so the port and key live there rather than here)
+#   TECHPLAY_BACKUP_REMOTE  an rclone target, e.g. b2:techplay-backups
+#
+# With neither, the script still runs and says loudly that the copy never left
+# the machine.
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/var/www/techplay}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/techplay}"
 REMOTE="${TECHPLAY_BACKUP_REMOTE:-}"      # e.g. b2:techplay-backups
+SSH_REMOTE="${TECHPLAY_BACKUP_SSH:-}"     # e.g. storagebox:techplay
 KEEP_DAILY="${KEEP_DAILY:-7}"
 KEEP_WEEKLY="${KEEP_WEEKLY:-4}"
+KEEP_REMOTE="${KEEP_REMOTE:-14}"          # how many nights to keep off-site
 
 STAMP="$(date +%Y-%m-%d_%H%M)"
 DEST="${BACKUP_DIR}/${STAMP}"
@@ -66,12 +75,41 @@ SIZE="$(du -sh "$DEST" | cut -f1)"
 echo "  ${SIZE} written to ${DEST}"
 
 # ── off the machine ──
-if [ -n "$REMOTE" ] && command -v rclone > /dev/null 2>&1; then
+#
+# This is the half that matters. Everything above survives a mistake; only this
+# survives the disk.
+shipped=0
+
+if [ -n "$SSH_REMOTE" ]; then
+    host="${SSH_REMOTE%%:*}"
+    path="${SSH_REMOTE#*:}"
+    # -e ssh with no options: the Host entry in ~/.ssh/config carries the port,
+    # the key and the user, so none of it is duplicated here.
+    if ssh "$host" "mkdir -p ${path}/${STAMP}" 2>/dev/null \
+       && rsync -a --partial "${DEST}/" "${host}:${path}/${STAMP}/"; then
+        echo "  copied to ${SSH_REMOTE}/${STAMP}"
+        shipped=1
+
+        # Retention on the far side, from the far side's own listing. A local
+        # `find` cannot see what is over there, and an off-site copy that grows
+        # without limit eventually stops being written at all.
+        ssh "$host" "ls -1d ${path}/20* 2>/dev/null | sort | head -n -${KEEP_REMOTE} | xargs -r rm -rf" \
+            2>/dev/null || echo "  (remote retention pass failed — harmless, but check the quota)"
+    else
+        echo "  !! rsync to ${SSH_REMOTE} FAILED" >&2
+    fi
+fi
+
+if [ "$shipped" -eq 0 ] && [ -n "$REMOTE" ] && command -v rclone > /dev/null 2>&1; then
     rclone copy "$DEST" "${REMOTE}/${STAMP}" --transfers 4
     echo "  copied to ${REMOTE}/${STAMP}"
-else
-    echo "  !! NOT copied off this machine — set TECHPLAY_BACKUP_REMOTE and install rclone."
+    shipped=1
+fi
+
+if [ "$shipped" -eq 0 ]; then
+    echo "  !! NOT copied off this machine — set TECHPLAY_BACKUP_SSH (or _REMOTE)."
     echo "     A backup on the same disk survives a mistake, not a dead disk."
+    exit 2
 fi
 
 # ── retention: keep the last N days, plus one per week ──
