@@ -37,6 +37,8 @@ export interface Guide {
     updated_at: string;
     /** The column exists and the detail page reads it; the type simply never said so. */
     published_at?: string | null;
+    /** Set by the "Hide from search engines" toggle in the admin. */
+    is_noindex?: boolean;
     author: {
         username: string;
         author_slug?: string;
