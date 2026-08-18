@@ -48,8 +48,25 @@ Meta keywords Google ionako ignoriše, pa je šteta za rangiranje nikakva — al
 svaka stranica sajta nosi vidljivo pogrešan tag, i to je prvo što izbaci svaki
 audit alat.
 
-**Uz to: admin nema polje za `meta_keywords`.** Ne može se ni popraviti kroz
-panel.
+> **Ispravka.** Prva verzija ovog nalaza tvrdila je i da *admin nema polje za
+> `meta_keywords`*. **Netačno** — polje postoji, `TagsInput::make('meta_keywords')`.
+> Grep kojim sam nabrajao polja filtrirao je po tipu (`TextInput|Textarea|…`) i
+> `TagsInput` nije bio na spisku. Ista greška kao i nekoliko puta prije: brojanje
+> po obrascu umjesto čitanja.
+>
+> Ta ispravka objašnjava i uzrok bolje nego prvobitna tvrdnja: `TagsInput` piše
+> **niz**, Laravel ga serijalizuje u JSON, a `lib/seo.ts` ga je čitao kao tekst.
+> Nesklad je između dva ispravna kraja, ne posljedica polja koje fali.
+
+**Riješeno 18.08.2026.** Cast `'meta_keywords' => 'array'` na modelu — pa svaki
+potrošač dobija niz, ne samo onaj koji je slučajno pogledan — i `lib/seo.ts`
+prihvata oba oblika i izostavlja tag kad je prazan. Provjereno na produkciji:
+
+| Stranica | keywords tag |
+|---|---|
+| `/` | nema (prazno) |
+| `/about` | nema (prazno) |
+| `/news` | `gaming news 2026,video game headlines,industry a…` |
 
 ## Kvar 2 — 44 SEO teksta koje niko ne prikazuje
 
@@ -66,7 +83,21 @@ export async function getPageSeoText(path: string): Promise<string | null>
 ```
 
 **Nijedan fajl je ne zove.** Napisan je SEO tekst za 44 stranice i nijedna ga ne
-iscrtava. I ovdje: **admin nema polje za `seo_text`.**
+iscrtava.
+
+> **Ispravka.** Ovdje je isto stajalo da *admin nema polje* — netačno, imao je
+> `RichEditor::make('seo_text')`, i promašen je iz istog razloga kao `TagsInput`.
+
+**Obrisano 18.08.2026, vlasnikova odluka** — i tačna: tekst nakalemljen ispod
+sadržaja da nosi ključne riječi je taktika koju pretraživači odavno ne
+nagrađuju, i koštala bi stranice više nego što bi donijela kad bi se počela
+iscrtavati.
+
+Otišli su: kolona na `page_seo` **i** na `categories`, polje u obrascu,
+sanitizacija u observeru, dva spiska polja u komandama, funkcija i tip na
+frontu. **Pisanje nije izgubljeno** — svih 90.023 znaka izvezeno je prije
+brisanja u `storage/app/backups/seo-text-2026-08-18.json`, s kopijom na
+`/root/`.
 
 ## Kvar 3 — prekidač „ne indeksiraj" ne radi ništa
 
@@ -138,17 +169,46 @@ lista ima smisla. Samo joj se iz sidebara ne vidi da gleda iste redove.
 
 ---
 
+## Kvar 6 — logger je bio nosiv, i obarao je zahtjeve
+
+Nađen usput, dok se provjeravalo brisanje: `/api/v1/page-seo/{put}` i
+`/api/v1/redirects` su naizmjenično vraćali **500**.
+
+`storage/logs/telegram-dedup.log` bio je u vlasništvu **roota**, a Octane radi
+kao **www-data**. Svaka greška je onda pravila dvije: originalnu, i
+`file_put_contents(): Permission denied` iz handlera koji pokušava da je
+zabilježi — a druga je izlazila kao 500.
+
+Posljedica je bila tiša nego što zvuči i gora: dok je `/page-seo` vraćao 500,
+`lib/seo.ts` je hvatao `!res.ok`, padao na kod-default, i **svaki naslov na
+sajtu je bio fallback.** Baš ono što je jedan raniji commit već popravljao.
+
+Vlasništvo je popravljeno, ali oblik greške je pouka: **put za uzbunu je postao
+nosiv.** Sada je umotan u `WhatFailureGroupHandler`, pa pokvaren Telegram alert
+košta alert i ništa više.
+
+---
+
 ## Redoslijed popravki
 
-| # | Šta | Gdje | Rizik |
-|---|---|---|---|
-| 1 | Redirekcije u build (127.0.0.1 + Host) | `next.config.ts` | nizak — jedna adresa |
-| 2 | `keywords="[]"` s naslovnice i svih 44 | `lib/seo.ts` + polje u adminu | nizak |
-| 3 | Meki 404 na četiri sekcije | stranice sekcija | srednji — dira iscrtavanje |
-| 4 | `seo_text` da se negdje prikaže | odluka o dizajnu, pa onda kod | traži tvoju odluku gdje |
-| 5 | `is_noindex` na stranicama: ili robots izlaz ili brisanje prekidača | `lib/seo.ts` ili admin | nizak |
-| 6 | Skloniti Indexing tab dok ga niko ne čita | admin | nikakav |
+| # | Šta | Stanje |
+|---|---|---|
+| — | `keywords="[]"` na svakoj stranici | **riješeno** — cast na modelu + tolerantno čitanje |
+| — | `seo_text` | **obrisan**, uz izvoz svih 44 bloka |
+| — | Logger obara zahtjeve | **riješeno** — vlasništvo + `WhatFailureGroupHandler` |
+| 1 | Redirekcije u build (127.0.0.1 + Host umjesto javnog imena) | otvoreno, nizak rizik |
+| 2 | Meki 404 na `/news`, `/reviews`, `/guides`, `/hardware` | otvoreno, **najvažnije za indeks** |
+| 3 | `is_noindex` na stranicama: ili robots izlaz ili brisanje prekidača | otvoreno |
+| 4 | Skloniti Indexing tab dok ga niko ne čita | otvoreno, nikakav rizik |
 
-Prvo dvoje su čisti dobici bez pregovora. Treće je najvažnije za indeks. Četvrto
-je pitanje za tebe: `seo_text` je 44 napisana bloka i treba odlučiti **gdje na
-stranici** stoje prije nego se zakuca kod.
+---
+
+## Šta je ova revizija naučila o samoj sebi
+
+Dva od šest nalaza bila su djelimično netačna, i oba iz istog razloga: **nabrajao
+sam polja grepom koji filtrira po tipu.** `TagsInput` i `RichEditor` nisu bili na
+spisku, pa su dva postojeća polja prijavljena kao nepostojeća.
+
+To je isti obrazac koji je zabilježen i u `66-admin-redizajn-plan.md`: nalaz
+izveden iz **brojanja** ispao je netačan, nalaz izveden iz **čitanja** je stajao.
+Ovdje je razlika bila jedan `grep` bez filtera.
