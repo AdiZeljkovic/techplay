@@ -76,22 +76,44 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // Artwork in public/ is served with Next's four-hour default, so the
-      // quicklink tiles, rank badges and page heroes are re-fetched several
-      // times a day for files that never change. They are versioned by name:
-      // replacing the art means a new filename, so a month is safe.
+      /*
+       * Artwork in public/ is served with Next's four-hour default, so the
+       * quicklink tiles, rank badges and page heroes are re-fetched several
+       * times a day for files that never change. They are versioned by name:
+       * replacing the art means a new filename, so a month is safe.
+       *
+       * The extension in the pattern is load-bearing. This first read
+       * `/gta6/:file*`, and `*` makes the segment optional — so it matched the
+       * **page** `/gta6` and its six children as well as the seventeen images
+       * in `public/gta6/`. Those pages went out with a thirty-day
+       * `Cache-Control` meant for artwork, and an HTML page cannot be cached
+       * that way: the script names inside it change with every build, so a
+       * reader holding yesterday's HTML asks for chunks that no longer exist
+       * and gets a page with no JavaScript at all.
+       *
+       * Only `/gta6` has routes today. The others are guarded the same way
+       * because the trap is the pattern, not the folder.
+       */
       ...[
-        '/quicklinks/:file*', '/images/:file*', '/ranks/:file*', '/gta6/:file*', '/frames/:file*', '/rewards/:file*',
+        '/quicklinks/:file*', '/images/:file*', '/ranks/:file*', '/frames/:file*', '/rewards/:file*',
         // Brand marks sit at the root and are on every page.
         '/techplay-logo.png', '/techplay-mark.png', '/logo.png',
         '/favicon.ico', '/favicon-16x16.png', '/favicon-32x32.png', '/apple-touch-icon.png',
         '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png',
-      ].map(
-        (source) => ({
-          source,
-          headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=604800' }],
-        })
-      ),
+      ].map((source) => ({
+        // `:file*` alone matches the bare prefix too. Requiring an image
+        // extension keeps this to the files it was written for.
+        source: source.endsWith('/:file*')
+          ? source.replace('/:file*', '/:file(.*\.(?:png|jpe?g|webp|avif|svg|gif|ico))')
+          : source,
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=604800' }],
+      })),
+
+      // The GTA 6 artwork, now that the pages of the same name are out of it.
+      {
+        source: '/gta6/:file(.*\.(?:png|jpe?g|webp|avif|svg|gif|ico))',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=604800' }],
+      },
     ];
   },
 
