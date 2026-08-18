@@ -59,13 +59,36 @@ class NewsletterSubscriberResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
                     ->sortable(),
+                /*
+                 * When they left, and it is a date rather than a flag on purpose:
+                 * "unsubscribed" and "unsubscribed nine months ago" are different
+                 * facts, and only the second one tells you whether the list is
+                 * shrinking.
+                 */
+                Tables\Columns\TextColumn::make('unsubscribed_at')
+                    ->label('Left')
+                    ->dateTime('d.m.Y')
+                    ->placeholder('—')
+                    ->color('danger')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\TernaryFilter::make('email_verified_at')
+                    ->label('Confirmed')
+                    ->nullable()
+                    ->trueLabel('Confirmed')
+                    ->falseLabel('Never confirmed')
+                    ->placeholder('All'),
+
+                // The one that matters before a send: who is actually reachable.
+                Tables\Filters\Filter::make('mailable')
+                    ->label('Reachable')
+                    ->query(fn ($query) => $query->mailable())
+                    ->toggle(),
             ])
             ->actions([
                 EditAction::make(),

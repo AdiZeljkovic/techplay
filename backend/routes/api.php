@@ -395,6 +395,22 @@ Route::prefix('v1')->group(function () {
             Route::post('/newsletter/verify', [NewsletterController::class, 'verify']);
         });
 
+        /*
+         * Getting off the list. Both verbs, and deliberately looser limits than
+         * anything else here.
+         *
+         * POST is what Gmail calls by itself when the reader presses the
+         * unsubscribe button in the message header (RFC 8058); GET is the link
+         * in the body. Throttling this the way subscribing is throttled would
+         * mean somebody who cannot get off the list because they tried twice —
+         * which is the failure this route exists to prevent. The token is a
+         * 64-character secret, so the route is not guessable in the first place.
+         */
+        Route::middleware('throttle:30,1')->group(function () {
+            Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe']);
+            Route::post('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe']);
+        });
+
         // The Last Disc — open letter and poll. Reads are open; writing is
         // throttled hard, because a petition's whole value is that its number
         // is real.

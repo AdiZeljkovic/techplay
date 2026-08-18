@@ -17,6 +17,7 @@ use App\Models\Gta6Character;
 use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
 use App\Models\Guide;
+use App\Models\MailSuppression;
 use App\Models\Media;
 use App\Models\News;
 use App\Models\NewsletterSubscriber;
@@ -127,6 +128,10 @@ class AuthServiceProvider extends ServiceProvider
          * only record of what failed and why.
          */
         QueueMonitor::class => AdminOnlyPolicy::class,
+
+        // Who we have been told to stop writing to. Personal data, and a
+        // list whose removal has consequences for the sending domain.
+        MailSuppression::class => AdminOnlyPolicy::class,
     ];
 
     /**
