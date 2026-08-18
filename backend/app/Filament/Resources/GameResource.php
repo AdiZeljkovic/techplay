@@ -26,12 +26,34 @@ use Filament\Tables\Enums\PaginationMode;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class GameResource extends Resource
 {
+    /**
+     * Findable from the top bar.
+     *
+     * The search box was wired to four resources, none of them the ones
+     * anybody looks for. A hit is titled by `$recordTitleAttribute` and
+     * matched against the columns below.
+     */
+    protected static ?string $recordTitleAttribute = 'name';
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'slug'];
+    }
+
+    /** @return array<string, string|null> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter(['Released' => $record->released?->format('Y')]);
+    }
+
     protected static ?string $model = Game::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-puzzle-piece';

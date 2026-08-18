@@ -21,6 +21,27 @@ use Illuminate\Support\Str;
 
 class UserResource extends Resource
 {
+    /**
+     * Findable from the top bar.
+     *
+     * The search box was wired to four resources, none of them the ones
+     * anybody looks for. A hit is titled by `$recordTitleAttribute` and
+     * matched against the columns below.
+     */
+    protected static ?string $recordTitleAttribute = 'username';
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['username', 'display_name', 'email'];
+    }
+
+    /** @return array<string, string|null> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter(['Email' => $record->email]);
+    }
+
     protected static ?string $model = User::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-users';

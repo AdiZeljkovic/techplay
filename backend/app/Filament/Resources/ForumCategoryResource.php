@@ -21,6 +21,21 @@ use Illuminate\Support\Str;
 
 class ForumCategoryResource extends Resource
 {
+    /**
+     * Findable from the top bar.
+     *
+     * The search box was wired to four resources, none of them the ones
+     * anybody looks for. A hit is titled by `$recordTitleAttribute` and
+     * matched against the columns below.
+     */
+    protected static ?string $recordTitleAttribute = 'name';
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'slug'];
+    }
+
     protected static ?string $model = Category::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-bottom-center-text';

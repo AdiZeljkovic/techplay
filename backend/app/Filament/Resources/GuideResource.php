@@ -30,10 +30,32 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class GuideResource extends Resource
 {
+    /**
+     * Findable from the top bar.
+     *
+     * The search box was wired to four resources, none of them the ones
+     * anybody looks for. A hit is titled by `$recordTitleAttribute` and
+     * matched against the columns below.
+     */
+    protected static ?string $recordTitleAttribute = 'title';
+
+    /** @return list<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['title', 'slug'];
+    }
+
+    /** @return array<string, string|null> */
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        return array_filter(['Difficulty' => $record->difficulty, 'Status' => $record->status]);
+    }
+
     protected static ?string $model = Guide::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
