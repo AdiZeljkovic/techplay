@@ -820,3 +820,74 @@ ostajala na sajtu, servirana iz Next data kesa, s naslovom i tekstom.
 clanka; `GuideObserver::deleted` nije javljao nista, iako `updated()` javlja
 oduvijek. Oba sada zovu `revalidateArticle`, sto gadja tag — mehanizam koji
 stvarno radi.
+
+---
+
+## Biblioteka slika *(18.08.2026)*
+
+„Choose from library" je nudio kolonu ovakvih redova:
+
+```
+usUTo74GmWm0hYlJLA1yYR10R8jvTwRfXkYf1405
+01KECBS95PJ4EEKMFRR54PNTSM
+01KECCAVXDSSNGJ7JA977TJ40J
+```
+
+Bez slicice, bez imena, s pretragom koja je mogla gadjati samo taj isti tekst —
+koji niko nikad nije ni vidio ni ukucao. Sve troje ima isti korijen: biblioteku
+je napravio `media:sync`, koji hoda po disku i pise **jedan red po fajlu**, a
+naslov uzima iz imena fajla.
+
+### Sta je tacno bilo
+
+| | |
+|---|---|
+| Redova u biblioteci | 36 |
+| Stvarnih slika | **18** — svaka dvaput, jednom kao `.jpg`, jednom kao `.webp` |
+| Naslova koji su ime fajla | **36 od 36** |
+| Avatara nudjenih kao naslovna slika vijesti | 8 |
+| Slika koje clanci stvarno koriste, a bile su u biblioteci | **0 od 624** |
+
+Zadnji red je najgori: biblioteka i sajt nisu imali nijednu zajednicku sliku.
+Uz to, upload iz forme za clanak **nikad nije upisivao red** — pa se nije ni
+punila.
+
+### Sta je sada
+
+- **`original_name`** kolona. Filament snima pod generisanim ULID-om, sto je
+  ispravno — ne moze se sudariti i ne moze nositi zlonamjerno ime — ali to je
+  bilo jedino ime koje se cuvalo. `storeFileNamesIn` ga sada hvata na oba
+  mjesta gdje se ucitava.
+- **Slicice u biracu.** Biblioteka slika treba da pokazuje slike.
+- **Pretraga u PostgreSQL-u** po naslovu, originalnom imenu i putanji, umjesto
+  klijentske nad 200 preucitanih redova.
+- **Upload iz clanka upisuje red**, zajedno s alt tekstom.
+- **`media:tidy`** — sklapa `.webp` u `webp_path` originala, brise responzivne
+  isjecke, prazni naslove koji su samo ime fajla, i **imenuje sliku po tekstu
+  koji ilustruje**.
+
+Zadnje je jedino sto se moglo uraditi za stare slike: originalna imena su
+izgubljena zauvijek, ali vecina tih slika je necija naslovna slika, a to nesto
+ima naslov. `Kingdom Come: Deliverance 2 – review` je bolji odgovor na pitanje
+*koja je ovo slika* nego `01KEQHACPVVAHBWYCP3EXKT1D0`.
+
+| | prije | poslije |
+|---|---|---|
+| Redova | 36 | 1.167 |
+| U biracu | 36 | 1.151 |
+| Imenovanih | 0 | **628** |
+| S alt tekstom | 0 | 280 |
+| Avatara u biracu | 8 | **0** |
+| Responzivnih isjecaka | — | **0** (bilo 294) |
+
+### Dvije greske uhvacene brojanjem, ne citanjem
+
+**Zagrada u `whereRaw`.** Neparentiziran `or` unutar `whereRaw` dodaje se na
+najvisi nivo, pa se `A and B and X or Y` vezuje kao `(A and B and X) or Y`. `Y`
+je bilo tacno za svaki red koji nije webp — dakle cijeli `where` uslov je bio
+uvijek tacan, i avatari su i dalje ulazili u izbor. Vidjelo se tek kad sam
+prebrojao rezultat.
+
+**Podvlaka, ne crtica.** `ImageOptimizationService` pise `x_thumb.webp`, a moj
+prvi filter je trazio `-thumb`. Prva provjera je rekla „0 varijanti"; druga,
+s pravim znakom, **294 od 1.461 reda** — tacno po 98 svake velicine.
