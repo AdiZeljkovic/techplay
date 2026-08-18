@@ -35,6 +35,10 @@ class AltTextTest extends TestCase
             '01KEQ5KW66WJGTKV4KBRH7WEH4.webp',
             'usUTo74GmWm0hYlJLA1yYR10R8jvTwRfXkYf1405.png',
             'trjuano9SSKIZCkR2UY7gJJhV9nt21lLgdJS1OqO.jpg',
+            // Forty characters and not a digit among them — the first version
+            // of the guard asked for a digit and let this one through, which
+            // became `Ueawjnsurgdccjlsxvibomllenyzgrfipmzxxrzx` in the library.
+            'UEaWjnSURGdcCjlsXVibOMllEnyzGRFIPMZxxrzX.png',
         ] as $storageName) {
             $this->assertTrue(AltTextService::looksLikeStorageName($storageName), $storageName);
             $this->assertNull(AltTextService::suggest($storageName), $storageName);

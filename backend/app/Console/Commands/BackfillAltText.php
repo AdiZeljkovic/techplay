@@ -35,10 +35,13 @@ class BackfillAltText extends Command
     {
         $dry = (bool) $this->option('dry-run');
 
+        $scrubbed = $this->scrub($dry);
+
         $covers = $this->backfillCovers($dry);
         $library = $this->backfillLibrary($dry);
 
         $this->table(['', 'rows'], [
+            ['Noise cleared out first', $scrubbed],
             ['Article covers described', $covers['filled']],
             ['  ...still without one', $covers['left']],
             ['Library pictures described', $library['filled']],
@@ -50,6 +53,37 @@ class BackfillAltText extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Clear descriptions that are only a storage name wearing a capital letter.
+     *
+     * An earlier run of this command wrote
+     * `Ueawjnsurgdccjlsxvibomllenyzgrfipmzxxrzx` into the library, because the
+     * guard in `AltTextService` asked for a digit and that particular
+     * forty-character name has none. The guard is fixed; this removes what it
+     * let through, so a re-run can replace it with something true.
+     *
+     * Only ever clears what the guard now rejects — a description somebody
+     * wrote is never touched.
+     */
+    private function scrub(bool $dry): int
+    {
+        $cleared = 0;
+
+        foreach (Media::whereNotNull('alt_text')->where('alt_text', '<>', '')->get() as $item) {
+            if (! AltTextService::looksLikeStorageName((string) $item->alt_text)) {
+                continue;
+            }
+
+            $cleared++;
+
+            if (! $dry) {
+                $item->forceFill(['alt_text' => null])->save();
+            }
+        }
+
+        return $cleared;
     }
 
     /** @return array{filled: int, left: int} */

@@ -45,7 +45,19 @@ class AltTextService
             return false;
         }
 
-        return (bool) preg_match('/\d/', $stem) && (bool) preg_match('/[a-z]/i', $stem);
+        /*
+         * No digit requirement.
+         *
+         * The first version asked for one, and `UEaWjnSURGdcCjlsXVibOMllEnyzGRFIPMZxxrzX.png`
+         * walked straight past it — forty characters, no digits — and came out
+         * of `Str::title()` as `Ueawjnsurgdccjlsxvibomllenyzgrfipmzxxrzx`,
+         * which is precisely the noise this method exists to catch.
+         *
+         * Length and the absence of any separator are enough on their own. A
+         * real file name of sixteen characters or more almost always has a
+         * hyphen, an underscore or a space in it; `cyberpunk2077` is thirteen.
+         */
+        return (bool) preg_match('/[a-z]/i', $stem);
     }
 
     /**
