@@ -39,6 +39,31 @@ class TidyMediaLibrary extends Command
         $folded = 0;
         $cleared = 0;
 
+        /*
+         * Responsive variants are not pictures.
+         *
+         * `ImageOptimizationService` writes `x_thumb.webp`, `x_medium.webp` and
+         * `x_large.webp` beside every image it processes, and a walk of the disk
+         * counts each as its own entry — 294 of the 1,461 rows, exactly 98 of
+         * each size. They are regenerable crops of something already in here,
+         * and nobody picking cover art wants to be offered the thumbnail of it.
+         *
+         * Only the row goes; the file stays where the frontend expects it.
+         */
+        $variants = 0;
+
+        foreach (Media::pluck('path', 'id') as $id => $path) {
+            if (! preg_match('/_(thumb|small|medium|large|xl|xxl)\.[a-z0-9]+$/i', (string) $path)) {
+                continue;
+            }
+
+            $variants++;
+
+            if (! $dry) {
+                Media::whereKey($id)->delete();
+            }
+        }
+
         // `lower(...) like`, not `ilike`: the same statement has to run on
         // PostgreSQL in production and on SQLite in the test suite.
         foreach (Media::whereRaw('lower(path) like ?', ['%.webp'])->get() as $derivative) {
@@ -113,6 +138,7 @@ class TidyMediaLibrary extends Command
         }
 
         $this->table(['', 'rows'], [
+            ['Responsive variants removed', $variants],
             ['WebP rows folded into their original', $folded],
             ['Titles that were only a storage name', $cleared],
             ['Named after the piece they illustrate', $named],

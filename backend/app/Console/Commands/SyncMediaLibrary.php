@@ -60,6 +60,19 @@ class SyncMediaLibrary extends Command
                 }
 
                 /*
+                 * `x_thumb.webp`, `x_medium.webp`, `x_large.webp` — the sizes
+                 * `ImageOptimizationService` renders next to every image. Crops
+                 * of something already here, and never what anyone is looking
+                 * for in a picker.
+                 */
+                if (preg_match('/_(thumb|small|medium|large|xl|xxl)\.[a-z0-9]+$/i', $file)) {
+                    $totalSkipped++;
+                    $progressBar->advance();
+
+                    continue;
+                }
+
+                /*
                  * A .webp beside its original is a conversion, not a picture.
                  *
                  * `ImageOptimizationService` writes `x.webp` next to `x.jpg`,

@@ -37,6 +37,17 @@ class MediaPickerFields
             // `collection` is NOT NULL on this table, so this needs no null arm.
             ->where('collection', '<>', 'avatars')
             /*
+             * And the responsive crops. `_thumb`, `_medium`, `_large` beside
+             * every processed image — 294 of the 1,461 rows when this was
+             * written. `escape '\'` because `_` is a LIKE wildcard, and both
+             * PostgreSQL and SQLite honour it.
+             */
+            ->where(function ($query) {
+                foreach (['thumb', 'small', 'medium', 'large', 'xl', 'xxl'] as $size) {
+                    $query->whereRaw("lower(path) not like ? escape '\'", ['%\_'.$size.'.%']);
+                }
+            })
+            /*
              * Belt and braces after `media:tidy`: if a derivative row ever
              * reappears, it still does not show up as a second picture.
              *

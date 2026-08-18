@@ -180,4 +180,27 @@ class MediaLibraryTest extends TestCase
         $this->assertSame('Key art from the announcement', $used->fresh()->alt_text);
         $this->assertNull($orphan->fresh()->title);
     }
+
+    /**
+     * `ImageOptimizationService` renders `_thumb`, `_medium` and `_large` next
+     * to every image it processes. A walk of the disk counted each as its own
+     * picture — 294 of 1,461 rows, exactly 98 of each size — so a third of the
+     * library was crops of the other two thirds.
+     */
+    public function test_responsive_crops_are_neither_stored_nor_offered(): void
+    {
+        $this->media(['title' => 'Real picture', 'path' => 'articles/AAA.jpg']);
+        $this->media(['title' => null, 'path' => 'articles/AAA_thumb.webp']);
+        $this->media(['title' => null, 'path' => 'articles/AAA_medium.webp']);
+        $this->media(['title' => null, 'path' => 'articles/AAA_large.webp']);
+
+        $offered = (new \ReflectionMethod(MediaPickerFields::class, 'libraryQuery'))
+            ->invoke(null)->pluck('path')->all();
+
+        $this->assertSame(['articles/AAA.jpg'], $offered, 'the picker must not offer crops');
+
+        $this->artisan('media:tidy')->assertSuccessful();
+
+        $this->assertSame(1, Media::count(), 'and the library should not keep them either');
+    }
 }
