@@ -215,8 +215,21 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net" />
 
-        {/* Hide cookie banner before React hydration for returning users — runs sync, no flash */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('cookie_preferences')){var s=document.createElement('style');s.textContent='#cookie-banner{display:none!important}';document.head.appendChild(s);}}catch(e){}})();` }} />
+        {/*
+            Hide the cookie banner before hydration for people who have already
+            answered it — runs sync, so they never see it flash past.
+
+            It marks the <html> element rather than appending a <style> to the
+            head, which is what it used to do. The rule itself lives in
+            globals.css. The difference matters: this script runs while the
+            document is still parsing, before React hydrates, so anything it
+            adds to the head is a node React never rendered and cannot account
+            for — and a mismatch at that level makes React throw the whole
+            server-rendered tree away and redraw from scratch, which reads as
+            the screen darkening for a moment. Marking <html> is free of that,
+            because <html> already carries suppressHydrationWarning below.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('cookie_preferences')){document.documentElement.classList.add('cookie-choice-made');}}catch(e){}})();` }} />
 
         {/* dataLayer + Consent Mode: analytics granted (cookieless), ads denied */}
         <script dangerouslySetInnerHTML={{ __html: `

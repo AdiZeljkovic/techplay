@@ -1068,3 +1068,10 @@ body.tp-navigating .tp-page {
      to roughly the width it had. */
   letter-spacing: -0.02em;
 }
+
+/* Set by the inline script in layout.tsx for readers who have already answered
+   the cookie banner, so it is hidden on the first paint rather than after
+   hydration. See the comment there for why this is a class and not injected CSS. */
+.cookie-choice-made #cookie-banner {
+    display: none !important;
+}
