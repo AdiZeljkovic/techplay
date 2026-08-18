@@ -138,6 +138,43 @@ class SeoReadoutTest extends TestCase
     }
 
     /**
+     * The tab's own badge used to be a green tick shown whenever `meta_title`
+     * was filled — rewarding the one thing the checks have stopped asking for,
+     * and silent about the other eight.
+     */
+    public function test_the_tab_badge_counts_what_is_still_open(): void
+    {
+        [$count, $colour] = SeoFields::tabBadge([
+            'title' => '', 'excerpt' => '', 'content' => '', 'meta_title' => '',
+            'meta_description' => '', 'focus_keyword' => '', 'featured_image_url' => null, 'slug' => '',
+        ]);
+        $this->assertNull($count, 'a blank article has nothing to report');
+
+        [$count, $colour] = SeoFields::tabBadge([
+            'title' => 'Quake gets a free new campaign for its thirtieth anniversary',
+            'slug' => 'quake-free-campaign-thirtieth-anniversary',
+            'excerpt' => str_repeat('a', 150),
+            'meta_description' => str_repeat('b', 150),
+            'focus_keyword' => 'Quake',
+            'featured_image_url' => 'articles/quake.jpg',
+            'content' => '<h2>Quake at thirty</h2><h3>Two</h3><p><a href="/news">link</a> '.str_repeat('word ', 400).'</p>',
+        ]);
+        $this->assertNull($count, 'a finished article has nothing to report either');
+        $this->assertSame('success', $colour);
+
+        // A piece with a missing image and no description: two hard failures.
+        [$count, $colour] = SeoFields::tabBadge([
+            'title' => 'A headline of a perfectly reasonable length for search',
+            'content' => '<h2>One</h2><h3>Two</h3><p><a href="/news">x</a> search '.str_repeat('word ', 400).'</p>',
+            'excerpt' => str_repeat('a', 150),
+            'meta_description' => '', 'meta_title' => '', 'focus_keyword' => 'search', 'featured_image_url' => null,
+            'slug' => 'a-headline',
+        ]);
+        $this->assertSame('2', $count);
+        $this->assertSame('danger', $colour);
+    }
+
+    /**
      * Auto-fill never invents an ellipsis or cuts a word in half — the fix the
      * title button already had and the description button had been missing,
      * where `substr` could also have sliced a multibyte character in two.

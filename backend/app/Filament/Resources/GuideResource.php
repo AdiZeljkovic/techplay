@@ -162,8 +162,8 @@ class GuideResource extends Resource
                                 // TAB: SEO with Live Checker
                                 Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->badge(fn ($get) => $get('meta_title') ? '✓' : null)
-                                    ->badgeColor('success')
+                                    ->badge(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[0])
+                                    ->badgeColor(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[1])
                                     ->schema(SeoFields::make('techplay.gg/guides/', false)),
 
                                 // TAB: MEDIA with Library Picker

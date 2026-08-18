@@ -107,8 +107,8 @@ class NewsResource extends Resource
 
                                 Tabs\Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
-                                    ->badge(fn ($get) => $get('meta_title') ? '✓' : null)
-                                    ->badgeColor('success')
+                                    ->badge(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[0])
+                                    ->badgeColor(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[1])
                                     ->schema(SeoFields::make('techplay.gg/news/')),
 
                                 Tabs\Tab::make('Media')

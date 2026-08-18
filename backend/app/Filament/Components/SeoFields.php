@@ -234,6 +234,54 @@ class SeoFields
     }
 
     /**
+     * What the SEO tab shows on its own label.
+     *
+     * It used to be a green ✓ whenever `meta_title` was filled in — which
+     * rewarded exactly the thing the check inside the tab has stopped asking
+     * for, and said nothing at all about the other eight checks. A tab badge
+     * should carry the reason you would open the tab, so it carries the number
+     * of things still open, and disappears when there are none.
+     *
+     * @return array{0: string|null, 1: string}
+     */
+    public static function tabBadge(array $state): array
+    {
+        $result = static::analyse($state);
+
+        if (! $result['started']) {
+            return [null, 'gray'];
+        }
+
+        $open = array_filter($result['checks'], fn ($c) => $c['tone'] === 'bad' || $c['tone'] === 'warn');
+
+        if ($open === []) {
+            return [null, 'success'];
+        }
+
+        return [(string) count($open), array_filter($open, fn ($c) => $c['tone'] === 'bad') === [] ? 'warning' : 'danger'];
+    }
+
+    /**
+     * The state the readout reads, gathered from a form in one place so the tab
+     * badge and the panel inside it can never be looking at different fields.
+     *
+     * @return array<string, mixed>
+     */
+    public static function state(callable $get): array
+    {
+        return [
+            'title' => $get('title'),
+            'excerpt' => $get('excerpt'),
+            'content' => $get('content'),
+            'meta_title' => $get('meta_title'),
+            'meta_description' => $get('meta_description'),
+            'focus_keyword' => $get('focus_keyword'),
+            'featured_image_url' => $get('featured_image_url'),
+            'slug' => $get('slug'),
+        ];
+    }
+
+    /**
      * Get SEO Tab schema with auto-fill and SEO checker
      */
     public static function make(string $urlPrefix = 'techplay.gg/', bool $includeCanonical = true): array
@@ -242,16 +290,7 @@ class SeoFields
             Placeholder::make('seo_analysis')
                 ->label('')
                 ->content(function ($get) {
-                    $result = static::analyse([
-                        'title' => $get('title'),
-                        'excerpt' => $get('excerpt'),
-                        'content' => $get('content'),
-                        'meta_title' => $get('meta_title'),
-                        'meta_description' => $get('meta_description'),
-                        'focus_keyword' => $get('focus_keyword'),
-                        'featured_image_url' => $get('featured_image_url'),
-                        'slug' => $get('slug'),
-                    ]);
+                    $result = static::analyse(static::state($get));
 
                     // A blank form is blank. Scoring it says nothing about the
                     // piece and everything about the fact that it does not exist
