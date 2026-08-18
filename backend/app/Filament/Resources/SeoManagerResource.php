@@ -10,6 +10,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class SeoManagerResource extends Resource
 {
@@ -47,6 +48,19 @@ class SeoManagerResource extends Resource
         return 10;
     }
 
+    /**
+     * Eager load what the table draws.
+     *
+     * Filament does not do this by itself — its table code never reads a
+     * column's relationship name for loading, only for grouping. Measured
+     * before: 27 queries to draw 25 rows, one of them per row for the section
+     * badge that was rendering blank anyway.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('category:id,name,type');
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -58,10 +72,11 @@ class SeoManagerResource extends Resource
                     ->limit(40)
                     ->tooltip(fn ($record) => $record->title),
 
-                TextColumn::make('category')
+                TextColumn::make('category.type')
                     ->label('Type')
                     ->badge()
-                    ->color('gray'),
+                    ->color('gray')
+                    ->placeholder('—'),
 
                 TextColumn::make('meta_title')
                     ->label('Meta Title')

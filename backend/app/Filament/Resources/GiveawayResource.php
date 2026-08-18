@@ -28,6 +28,7 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class GiveawayResource extends Resource
@@ -329,6 +330,18 @@ class GiveawayResource extends Resource
             Forms\Components\Hidden::make('created_by')
                 ->default(fn () => auth()->id()),
         ]);
+    }
+
+    /**
+     * Eager load the winner the table shows.
+     *
+     * Two rows today, so two extra queries — but the table draws
+     * `winner.username` and nothing loaded it, and a giveaway list grows the
+     * way giveaways do.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('winner:id,username');
     }
 
     public static function table(Table $table): Table
