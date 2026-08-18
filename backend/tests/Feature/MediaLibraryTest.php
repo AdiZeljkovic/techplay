@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Components\MediaPickerFields;
 use App\Models\Media;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -100,5 +101,49 @@ class MediaLibraryTest extends TestCase
         $this->artisan('media:tidy', ['--dry-run' => true])->assertSuccessful();
 
         $this->assertSame(2, Media::count());
+    }
+
+    /**
+     * What the picker offers.
+     *
+     * Both exclusions were shipped broken once and caught by counting: an
+     * unparenthesised `or` inside `whereRaw` is appended at the top level, so
+     * `A and B and X or Y` binds as `(A and B and X) or Y` — and Y was true for
+     * every non-WebP row, which made the whole clause always true and put
+     * somebody's profile picture in the list of candidate news heroes.
+     */
+    public function test_the_picker_leaves_out_avatars_and_conversions(): void
+    {
+        $this->media(['title' => 'Cover art', 'path' => 'articles/AAA.jpg']);
+        $this->media(['title' => null, 'path' => 'articles/AAA.webp']);
+        $this->media(['title' => null, 'path' => 'avatars/BBB.jpg', 'collection' => 'avatars']);
+        $this->media(['title' => null, 'path' => 'articles/CCC.png']);
+        $this->media(['title' => null, 'path' => 'articles/DDD.pdf', 'mime_type' => 'application/pdf']);
+
+        $paths = (new \ReflectionMethod(MediaPickerFields::class, 'libraryQuery'))
+            ->invoke(null)->pluck('path')->all();
+
+        sort($paths);
+
+        $this->assertSame(['articles/AAA.jpg', 'articles/CCC.png'], $paths);
+    }
+
+    public function test_an_option_carries_a_thumbnail_and_a_readable_name(): void
+    {
+        $this->media([
+            'title' => 'Hogwarts Legacy 2 key art',
+            'path' => 'articles/AAA.jpg',
+            'width' => 1200,
+            'height' => 630,
+        ]);
+
+        $rows = (new \ReflectionMethod(MediaPickerFields::class, 'libraryQuery'))->invoke(null)->get();
+        $options = (new \ReflectionMethod(MediaPickerFields::class, 'libraryOptions'))->invoke(null, $rows);
+
+        $label = $options['articles/AAA.jpg'] ?? '';
+
+        $this->assertStringContainsString('<img src=', $label);
+        $this->assertStringContainsString('Hogwarts Legacy 2 key art', $label);
+        $this->assertStringContainsString('1200×630', $label);
     }
 }

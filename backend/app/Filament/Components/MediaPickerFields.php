@@ -34,7 +34,8 @@ class MediaPickerFields
     {
         return Media::query()
             ->where('mime_type', 'like', 'image/%')
-            ->where(fn ($q) => $q->whereNull('collection')->orWhere('collection', '<>', 'avatars'))
+            // `collection` is NOT NULL on this table, so this needs no null arm.
+            ->where('collection', '<>', 'avatars')
             /*
              * Belt and braces after `media:tidy`: if a derivative row ever
              * reappears, it still does not show up as a second picture.
@@ -43,13 +44,21 @@ class MediaPickerFields
              * because this query runs on PostgreSQL in production and on SQLite
              * in the test suite, and only one of those has the latter.
              */
-            ->whereRaw("lower(path) not like '%.webp' or not exists (
+            /*
+             * Parenthesised, and that is not cosmetic: an unwrapped `or` inside
+             * `whereRaw` is appended at the top level, so `A and B and X or Y`
+             * binds as `(A and B and X) or Y` — and `Y` is true for every
+             * non-WebP row, which quietly made the whole `where` clause always
+             * true. It shipped avatars into the picker until the count was read
+             * back.
+             */
+            ->whereRaw("(lower(path) not like '%.webp' or not exists (
                 select 1 from media m2 where m2.path in (
                     substr(media.path, 1, length(media.path) - 5) || '.jpg',
                     substr(media.path, 1, length(media.path) - 5) || '.jpeg',
                     substr(media.path, 1, length(media.path) - 5) || '.png'
                 )
-            )")
+            ))")
             ->orderByDesc('created_at');
     }
 
