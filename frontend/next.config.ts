@@ -248,18 +248,25 @@ const nextConfig: NextConfig = {
    * slug answered 200 instead of 301, which is duplicate content on a site
    * whose whole point is search reach.
    *
+   * The address is NEXT_PRIVATE_API_URL, not the public one. A request from
+   * this box to our own public hostname goes out to Cloudflare and comes
+   * back a 403 challenge; !res.ok then returned an empty list, silently, on
+   * every build. Verified 18 Aug 2026: zero of the twenty-one redirects were
+   * in routes-manifest.json. It is loud now, because silence here looks
+   * exactly like "there are no redirects".
+   *
    * Read at build rather than per request, so there is no runtime cost and no
    * middleware to reintroduce. The trade is that a redirect added in the admin
    * takes effect on the next deploy, not immediately.
    */
   async redirects() {
-    const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/$/, '');
+    const backendBase = (process.env.NEXT_PRIVATE_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1").replace(/\/$/, '');
     try {
       const res = await fetch(`${backendBase}/redirects`, {
         headers: { Accept: 'application/json' },
         signal: AbortSignal.timeout(8000),
       });
-      if (!res.ok) return [];
+      if (!res.ok) { console.error("[redirects] " + backendBase + "/redirects answered " + res.status + " — no redirects in this build"); return []; }
       const rows: Array<{ source_url?: string; target_url?: string; status_code?: number }> = await res.json();
 
       const seen = new Set<string>();
