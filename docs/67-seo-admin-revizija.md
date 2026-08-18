@@ -226,3 +226,49 @@ spisku, pa su dva postojeća polja prijavljena kao nepostojeća.
 To je isti obrazac koji je zabilježen i u `66-admin-redizajn-plan.md`: nalaz
 izveden iz **brojanja** ispao je netačan, nalaz izveden iz **čitanja** je stajao.
 Ovdje je razlika bila jedan `grep` bez filtera.
+
+---
+
+## Dodatak: dva servisa za revalidaciju spojena u jedan *(18.08.2026)*
+
+Kad admin nešto objavi, backend mora javiti frontu da baci keširanu
+stranicu. Za članke to je jedini put — `/news/[slug]` se gradi s
+`revalidate = false`, dakle osvježava se **samo** na taj poziv.
+
+Taj posao su radila **dva servisa**, 118 i 223 reda, i oba su imala metodu
+`revalidateArticle` koja nije značila isto:
+
+| Servis | Potpis | Šalje |
+|---|---|---|
+| `RevalidationService` | `(slug, category)` | `type`, `slug`, `category` — **ispravno** |
+| `CacheRevalidationService` | `(type, slug, paths)` | bez `category` — front bi odbio |
+
+Drugu nije zvao niko, ali je stajala u fajlu gdje se rješavaju igre i
+kategorije — tačno tamo gdje bi neko ko dodaje novi tip sadržaja pogledao.
+**Mene je uhvatila:** čitao sam pogrešnu klasu i prijavio revalidaciju
+članaka kao pokvarenu dok je cijelo vrijeme radila.
+
+Nisu se slagali ni oko autentikacije — `x-revalidate-token` naspram
+`Authorization: Bearer`, iz dva konfiguracijska ključa s istom vrijednošću.
+Next endpoint zbog toga nosi kod za **oba**, s komentarom koji imenuje oba
+servisa. Duplikat ne ostaje na jednoj strani API-ja.
+
+Sada je jedan servis, šest metoda, svaka šalje tip koji endpoint stvarno
+obrađuje. Provjereno protiv žive stranice:
+
+| Metoda | Odgovor |
+|---|---|
+| `revalidateArticle` | `true` |
+| `revalidateGame` | `true` |
+| `revalidateHomepage` | `true` |
+| `revalidateCategory` | `true` |
+| `revalidateNavigation` | `true` |
+| `revalidatePaths` | `true` |
+| `revalidatePaths([])` | `false` — čuvar, prazan poziv bi front odbio |
+
+Uz to: neuspjeh se sada bilježi na razini **error**, ne `warning`. Log level
+panela je `error`, pa je upozorenje poruka koju niko nikad ne pročita — a
+tako pokvarena revalidacija ostaje nevidljiva dok sajt servira staro.
+
+Pet observera prevedeno sa statičkih poziva; nijedan više ne zove metodu koja
+ne postoji, a svih 38 lista u panelu se i dalje iscrtava bez greške.
