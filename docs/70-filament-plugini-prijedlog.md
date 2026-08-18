@@ -133,3 +133,55 @@ ni iz baze.
 **Prije bilo čega drugog: podići CLI PHP na 8.4** da se poklopi s onim koji
 aplikacija ionako već koristi. Inače svaki plugin koji se ubuduće instalira
 dolazi u starijoj liniji, tiho.
+
+---
+
+## Urađeno *(18.08.2026)*
+
+Obje preporuke koje ne traže plugin.
+
+### CLI PHP 8.3 → 8.4
+
+Instaliran `php8.4` sa **svim** ekstenzijama koje je 8.3 imao — provjereno
+`diff`-om spiska modula, prazan. Prije prebacivanja podrazumijevanog testirano
+pod 8.4: Laravel bootuje, baza i Redis odgovaraju, Filament učitava 38 resursa,
+admin stranica vraća 200.
+
+| | Prije | Poslije |
+|---|---|---|
+| CLI / composer / artisan | 8.3.32 | **8.4.24** |
+| FrankenPHP (servira aplikaciju) | 8.4.16 | 8.4.16 |
+| `config.platform.php` | 8.3.29 | **8.4.16** |
+
+Platform pin ide na **8.4.16**, dakle na nižu od dvije verzije koje stvarno
+rade — tako razrješavanje paketa vrijedi i za CLI i za servirani proces.
+
+**Dokaz da je vrijedilo:** isti `composer require --dry-run` koji je prije
+nudio `pxlrbt/filament-activity-log` **v2.2.0** sada nudi **v3.1.2**.
+
+Restartovani svi servisi koji idu preko CLI PHP-a — Octane, queue worker i
+Reverb. Scheduler radi, healthcheck svih osam zeleno.
+
+### Globalna pretraga, bez plugina
+
+Bila je podešena na četiri resursa — Ad Campaigns, Media, Redirects i Roles —
+što je otprilike četiri koja bi čovjek najmanje tražio. Sada je na **14**.
+
+Deset dodanih: News, Reviews, Tech, Guides, Games, Users, Threads, Giveaways i
+obje kategorije. Svaki pogodak nosi red konteksta — sekciju i status za članke,
+godinu izlaska za igru, e-mail za korisnika — jer dva slična naslova bez toga
+izgledaju isto.
+
+**Limit je spušten sa 50 na 5 po resursu.** Sa 142.110 igara svaka česta riječ
+je preplavljivala panel: pretraga „adi" vraćala je pedeset igara i zatrpala dva
+korisnika koje je zapravo tražila.
+
+| Upit | Prije | Poslije |
+|---|---|---|
+| „elder scrolls" | 56 pogodaka, 212 ms | **10**, 119 ms |
+| „adi" | 70 pogodaka, 122 ms | **14**, 66 ms — *korisnici se sada vide* |
+| „gaming" | 55 pogodaka, 296 ms | **21** kroz 7 vrsta, 146 ms |
+
+Uže je i **brže**, jer se ne dohvaća pedeset redova po resursu.
+
+Svih 38 lista se i dalje iscrtava bez greške.
