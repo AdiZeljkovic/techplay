@@ -100,6 +100,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             images: images,
         },
+        // Same toggle as News and Reviews honour; this page did not.
+        robots: {
+            index: !article.is_noindex,
+            follow: !article.is_noindex,
+        },
         alternates: {
             canonical: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/hardware/${slug}`,
         },

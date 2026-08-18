@@ -68,6 +68,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: `${process.env.NEXT_PUBLIC_APP_URL}/guides/${slug}`,
         },
+        /*
+         * "Hide from search engines" is offered on the guide editor and, until
+         * now, was the only thing on that screen wired to nothing: flipping it
+         * wrote a column and this page kept emitting the default index,follow.
+         */
+        robots: {
+            index: !guide.is_noindex,
+            follow: !guide.is_noindex,
+        },
     };
 }
 

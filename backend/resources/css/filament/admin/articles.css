@@ -223,3 +223,129 @@
     text-transform: uppercase;
     color: var(--tp-group-ink);
 }
+
+/* ── the SEO readout ──────────────────────────────────────────────────────── */
+
+/*
+ * What this replaced drew itself entirely in inline hex: a ground at
+ * `rgba(0,0,0,0.2)` that became a grey slab on a light panel, a progress track
+ * at `rgba(255,255,255,0.1)` that was invisible on white, and one colour per
+ * line of text — so the block read as an error dump even when the article was
+ * fine.
+ *
+ * Tone here is carried by the shared `.tp-tone-*` classes, which set `color`
+ * only. The dot and the bar fill take `currentColor`, so a check and its marker
+ * can never disagree about what state they are in.
+ */
+.tp-seo {
+    padding: 0.875rem 1rem 1rem;
+    border: 1px solid var(--tp-line);
+    border-radius: var(--radius-card);
+    background-color: var(--tp-fill);
+}
+
+.tp-seo__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.tp-seo__score {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+}
+
+.tp-seo__pct {
+    font-size: 0.875rem;
+    opacity: 0.65;
+    margin-inline-start: 0.0625rem;
+}
+
+.tp-seo__track {
+    display: block;
+    height: 4px;
+    margin-block: 0.75rem 0.625rem;
+    border-radius: 999px;
+    background-color: var(--tp-track);
+    overflow: hidden;
+}
+
+.tp-seo__track > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background-color: currentColor;
+}
+
+.tp-seo__verdict {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--tp-label-ink);
+}
+
+.tp-seo__list {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tp-seo__item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+}
+
+/*
+ * A dot rather than an emoji. ❌ / ⚠️ / 💡 render at three different sizes and
+ * three different baselines in the same list, so the left edge never lined up
+ * and the mark outweighed the sentence it belonged to.
+ */
+.tp-seo__dot {
+    flex-shrink: 0;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    margin-top: 0.3125rem;
+    border-radius: 999px;
+    background-color: currentColor;
+}
+
+.tp-seo__text {
+    color: var(--tp-lead-ink);
+    min-width: 0;
+}
+
+/* The why, one step quieter than the what. */
+.tp-seo__hint {
+    display: block;
+    font-style: normal;
+    font-size: 0.75rem;
+    color: var(--tp-group-ink);
+}
+
+.tp-seo__passed {
+    margin: 0.875rem 0 0;
+    padding-top: 0.625rem;
+    border-top: 1px solid var(--tp-line);
+    font-size: 0.75rem;
+    color: var(--tp-group-ink);
+}
+
+.tp-seo__blank {
+    margin: 0.375rem 0 0.25rem;
+    font-size: 0.9375rem;
+    color: var(--tp-label-ink);
+}
+
+.tp-seo--idle .tp-sub {
+    margin: 0;
+}

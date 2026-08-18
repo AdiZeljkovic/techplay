@@ -112,6 +112,20 @@ class ArticleEditorFields
                         ->hiddenLabel()
                         ->placeholder('Start writing the '.$noun.'…')
                         ->required()
+                        /*
+                         * Syncs when you click out of the editor.
+                         *
+                         * Without this the body is a deferred binding, so the
+                         * SEO readout in the rail — which judges word count,
+                         * headings, links and keyword-in-body, 45 of its 100
+                         * points — kept saying "nothing written yet" through an
+                         * entire article, and only caught up if you happened to
+                         * blur some other field. The editor is `wire:ignore` and
+                         * the component supports `isLiveOnBlur` natively, so
+                         * this costs one round trip when you leave the canvas
+                         * and nothing while you type.
+                         */
+                        ->live(onBlur: true)
                         ->toolbarButtons([
                             'bold',
                             'italic',

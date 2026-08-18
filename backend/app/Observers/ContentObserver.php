@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Jobs\SubmitIndexNow;
 use App\Models\Article;
+use App\Support\Copy;
 use Illuminate\Support\Facades\App;
 
 class ContentObserver
@@ -14,8 +15,10 @@ class ContentObserver
     public function saving(Article $article): void
     {
         if ($article->isDirty('content') && $article->content) {
-            $wordCount = str_word_count(strip_tags($article->content));
-            $article->reading_time = ceil($wordCount / 200);
+            // Was `str_word_count(strip_tags(...))`, which welded a word to the
+            // next one at every </p> and split words at every diacritic. See
+            // `Copy::words()` for what that cost measured across the catalogue.
+            $article->reading_time = Copy::readingMinutes($article->content);
         }
     }
 
