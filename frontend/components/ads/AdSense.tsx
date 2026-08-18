@@ -105,6 +105,26 @@ function AdSlot({
     const consent = useMarketingConsent();
     const [filled, setFilled] = useState(false);
 
+    /*
+     * The <ins> is mounted in the browser, never rendered on the server.
+     *
+     * `ins.adsbygoogle` is on every ad blocker's hiding list, and the ones that
+     * strip the node rather than merely hiding it take it out of the document
+     * before React hydrates. React then finds a child it rendered on the server
+     * missing from the DOM, and a structural mismatch is not repaired in place:
+     * it throws the whole server-rendered tree away and redraws the page on the
+     * client. That redraw is visible — the screen darkens for a moment — and it
+     * lands on whichever page a reader arrives at with a full load, which is why
+     * it showed up on browser Back and never on an in-page link.
+     *
+     * Nothing is lost by keeping it out of the server's HTML. The slot is filled
+     * from an IntersectionObserver below, so it was never part of the first
+     * paint anyway, and ad markup is not something the crawler should be reading
+     * in the document it indexes.
+     */
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+
     useEffect(() => {
         pushed.current = false;
     }, [pathname]);
@@ -146,13 +166,15 @@ function AdSlot({
         mo?.observe(ins!, { attributes: true, attributeFilter: ["data-ad-status"] });
 
         return () => { io.disconnect(); mo?.disconnect(); };
-    }, [pathname, consent]);
+        // `mounted` belongs here: the <ins> does not exist on the first pass,
+        // so without it the observers would be wired to an empty host.
+    }, [pathname, consent, mounted]);
 
     // A new route means a new element and an undecided slot.
     useEffect(() => { setFilled(false); }, [pathname]);
 
     return (
-        <div ref={host} className={className} key={pathname}>
+        <div ref={host} className={className} key={pathname} style={{ minHeight }}>
             {/* The label appears only once an ad actually arrives. AdSense
                 leaves the slot empty when it has nothing to serve, and a word
                 reading "Advertisement" over 250px of nothing is worse than no
@@ -163,7 +185,7 @@ function AdSlot({
                     Advertisement
                 </p>
             )}
-            <ins
+            {mounted && <ins
                 key={pathname}
                 className="adsbygoogle block"
                 style={{ display: "block", minHeight, ...(layout === "in-article" ? { textAlign: "center" } : null) }}
@@ -173,7 +195,7 @@ function AdSlot({
                 {...(layout ? { "data-ad-layout": layout } : {})}
                 {...(layoutKey ? { "data-ad-layout-key": layoutKey } : {})}
                 {...(format === "auto" ? { "data-full-width-responsive": "true" } : {})}
-            />
+            />}
         </div>
     );
 }

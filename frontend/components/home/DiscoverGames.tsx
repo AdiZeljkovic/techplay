@@ -78,8 +78,19 @@ function releaseLabel(released?: string | null): string | null {
     if (!released) return null;
     const d = new Date(released);
     if (Number.isNaN(d.getTime())) return null;
-    const sameYear = d.getFullYear() === new Date().getFullYear();
-    return `${MONTHS[d.getMonth()]} ${d.getDate()}${sameYear ? "" : `, ${d.getFullYear()}`}`;
+
+    /*
+     * Read in UTC, deliberately.
+     *
+     * A release is a date, not a moment: "2026-08-19" parses as midnight UTC,
+     * and the local getters then answer in the reader's own zone. West of
+     * Greenwich that lands on the previous evening, so the same game reads
+     * "Aug 18" in Chicago and "Aug 19" on our server — a day wrong for the
+     * reader, and a hydration mismatch on top of it, which costs far more than
+     * a wrong label: React discards the server's HTML and redraws the page.
+     */
+    const sameYear = d.getUTCFullYear() === new Date().getUTCFullYear();
+    return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}${sameYear ? "" : `, ${d.getUTCFullYear()}`}`;
 }
 
 /** /games and /games/calendar both serve plain string arrays now. */
