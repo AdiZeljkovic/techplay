@@ -42,6 +42,18 @@ class TechResource extends Resource
      */
     protected static ?string $recordTitleAttribute = 'title';
 
+    /**
+     * Five hits, not fifty.
+     *
+     * Filament's default is 50 per resource, and with 142,110 games in the
+     * catalogue any common word floods the panel: searching "adi" returned
+     * fifty games and buried the two users it was actually looking for. The
+     * point of a global search is to show a spread across types and let you
+     * pick a lane — for more of one kind, that resource's own list is one
+     * click away and has filters.
+     */
+    protected static int $globalSearchResultsLimit = 5;
+
     /** @return list<string> */
     public static function getGloballySearchableAttributes(): array
     {
