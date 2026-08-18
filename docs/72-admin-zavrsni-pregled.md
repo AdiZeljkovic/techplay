@@ -173,10 +173,28 @@ ispod 3 ms. Ostatak je Blade, što je isti pojas za sve liste u panelu.
 ### Logovi
 
 `storage/logs` je 23 MB, od čega je `laravel.log` **11,7 MB** i sav je
-posljedica jedne stvari: **kanal `deprecations`** nije postojao 17. 08., pa je
-svako PHP upozorenje postajalo `EMERGENCY` sa stack traceom. 641 put. Danas
-toga više nema (0 pojava u dnevnom logu), ali stari fajl stoji i može se
-obrisati.
+posljedica jedne stvari: kanal `deprecations` se nije razrješavao, pa je svako
+PHP upozorenje postajalo `EMERGENCY` sa stack traceom.
+
+> **Ispravka, isti dan.** Ovdje je prvo pisalo „danas toga više nema". Nije bilo
+> tačno. Provjera je bila `Log::channel('deprecations')` — a taj poziv **tiho
+> padne na emergency logger** umjesto da baci grešku, pa je „kanal radi" bilo
+> lažno. Vidjelo se tek kad je probe zavrsio **u samom `laravel.log`-u**.
+>
+> Pravi uzrok: `.env` kaže `LOG_DEPRECATIONS_CHANNEL=null`, a Laravel
+> nekvotirani `null` čita kao **PHP null**. Podrazumijevana vrijednost `'null'`
+> u `env($key, $default)` vrijedi samo kad ključ **nedostaje**, nikad kad
+> postoji i null je. Kanal `null` postoji cijelo vrijeme, deset redova niže u
+> istom fajlu — samo ga niko nije tražio.
+>
+> To je i uzrok onih 259 petstotina na `/api/v1/games/{slug}`: izuzetak se
+> diže iz `HandleExceptions` usred zahtjeva, pa bezopasno upozorenje postane
+> HTTP 500.
+>
+> Popravljeno s `env('LOG_DEPRECATIONS_CHANNEL') ?: 'null'`, koje ne zavisi od
+> navodnika u `.env`. `DeprecationChannelTest` provjerava **razrješava li se
+> kanal**, ne ima li config vrijednost. `laravel.log` ispražnjen; poslije 60
+> sekundi i dalje 0 bajta.
 
 Dvije deprecation poruke koje su to pokretale i dalje postoje u kodu:
 `str_getcsv()` bez `$escape` (PHP 8.4) i jedna iz `symfony/http`.
