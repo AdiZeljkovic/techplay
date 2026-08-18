@@ -14,7 +14,9 @@ import { CheckCircle2 } from "lucide-react";
  * fetch, nothing to get wrong.
  */
 export const metadata: Metadata = {
-    title: "Unsubscribed | TechPlay",
+    // The root layout appends "| TechPlay" itself; saying it here too gave
+    // "Unsubscribed | TechPlay | TechPlay".
+    title: "Unsubscribed",
     description: "You have been removed from the TechPlay newsletter.",
     // A receipt for one person is not something search should hold on to.
     robots: { index: false, follow: false },
