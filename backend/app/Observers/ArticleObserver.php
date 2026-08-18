@@ -130,6 +130,20 @@ class ArticleObserver
      */
     public function deleted(Article $article)
     {
+        /*
+         * Forget the piece itself, first.
+         *
+         * This hook revalidated the listing it used to appear in and the
+         * homepage, and never touched the article's own key — so
+         * `{type}.show.v2.{slug}` kept answering 200 out of Redis for the full
+         * TTL_LONG after the row was gone, and the page stayed up with its
+         * title, its body and an `index, follow` in the head. `saved()` has
+         * always called this; `deleted()` never did.
+         */
+        $this->clearArticleShowCache($article->slug);
+        $this->clearAuthorCache($article);
+        $this->clearApiListingCache($article->category?->type);
+
         // Revalidate category listing when article is deleted
         if ($article->category) {
             $categoryPath = $this->getCategoryPath($article->category->type);

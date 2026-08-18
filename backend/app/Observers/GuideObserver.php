@@ -96,7 +96,17 @@ class GuideObserver
      */
     protected function invalidateCache(Guide $guide): void
     {
-        // Clear specific guide cache
+        /*
+         * v3, which is what `GuideController::show` writes.
+         *
+         * The key was bumped in the controller and this line was not, so every
+         * guide edit and every guide deletion has been clearing a key nobody
+         * writes. A deleted guide answered 200 from cache; an edited one served
+         * the old text until the TTL ran out.
+         */
+        Cache::forget("guide.show.v3.{$guide->slug}");
+
+        // The previous key, for anything still sitting in Redis under it.
         Cache::forget("guide.show.v2.{$guide->slug}");
 
         // Clear guide listing cache (first 5 pages, all difficulties, no search)
