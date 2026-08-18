@@ -265,3 +265,81 @@ alt="Arc Raiders, no logo, no text just plain image"
 ```
 
 umjesto naslova clanka, koji je tu stajao ranije.
+
+---
+
+## Sta su alati za nadzor prijavili *(18.08.2026, uvece)*
+
+Provjereni su GlitchTip, Netdata i logovi — sve troje otkako su postavljeni.
+
+### GlitchTip: 301 dogadjaj, 17.08 17:25 → 18.08 16:21
+
+| sat | dogadjaja |
+|---|---|
+| **17.08 23:00** | **277** |
+| ostalih jedanaest sati | 24 |
+
+Devedeset dva posto svega je jedan sat. Rasporedjeno po vrsti:
+
+| vrsta | puta | sta je |
+|---|---|---|
+| `500` na `/api/v1/games/{slug}` | **259** | prava greska, jedan uzrok |
+| `Could not reach the API` | 27 | **nase** — restarti Octanea pri deployu |
+| `500` na `/api/v1/news/{slug}` | 10 | isti uzrok |
+| `500` na `/api/v1/reviews/{slug}` | 2 | isti uzrok |
+| `Failed to find Server Action` | 1 | neko je imao staru stranicu otvorenu za vrijeme deploya |
+| React `#418` | 1 | neslaganje pri hidraciji |
+| `RuntimeException: provjera GlitchTipa (drugi pokusaj)` | 1 | **nas test** pri postavljanju |
+
+### Uzrok onih 271 pete stotine
+
+```
+$request->get()                     Symfony 7.4 ga je oznacio zastarjelim
+  -> Laravel salje deprecation na kanal "deprecations"
+  -> config kes bio zastario, kanal se nije razrjesavao
+  -> InvalidArgumentException usred zahtjeva
+  -> HTTP 500
+```
+
+**Bezopasno upozorenje postalo je tvrda greska zato sto je zapisivanje tog
+upozorenja pucalo.** Isti korijen kao 11,7 MB `laravel.log`-a iz ranijeg dijela
+ovog pregleda — samo sto je tamo proizveo smece u logu, a ovdje 500 na stranici
+igre.
+
+Kanal se danas razrjesava, jer je `config:cache` usput osvjezen. To je krhko:
+zavisi od toga je li kes svjez. Zato je popravljen **izvor** — 32 poziva u 14
+fajlova prelaze na `$request->input()`, pa se deprecation vise ne emituje i 500
+se ne moze vratiti bez obzira na stanje kesa.
+
+### Nase greske, prepoznate po vremenu
+
+Onih 27 `Could not reach the API` dolaze u parovima i trojkama, svaki put
+nekoliko sekundi oko restarta Octanea: 20:23, 20:36, 21:09, 22:01, 22:23,
+22:48, 23:07, 23:18, 23:51, pa 18.08 u 07:56, 10:38, 10:52, 11:34, 11:59,
+12:24, 13:49, 16:21. Svaki od tih trenutaka je jedan nas deploy.
+
+To nije greska sajta nego posljedica toga kako deployamo — kratak prozor dok
+Octane ustaje. Vrijedi znati da tako izgleda u alatu, da se ne trazi uzrok
+tamo gdje ga nema.
+
+### Netdata: **609 alarma naoruzano, nijedan nije okinuo**
+
+| | |
+|---|---|
+| Alarma u normali | 609 |
+| Warning | 0 |
+| Critical | 0 |
+
+Za dane rada nijedan nije prijavio nista — sto je dobra vijest, ali sam po sebi
+nije dokaz da bi prijavio. Zato je put provjeren: `alarm-notify.sh test` je
+poslao tri poruke na Telegram (WARNING → CRITICAL → CLEAR), i to preko **istog
+bota** koji koristi aplikacija (`sha256` tokena se poklapa).
+
+Jedna zamka usput: `health.d/` je prazan, sto na prvi pogled izgleda kao da
+alarma nema. Nema **nasih** alarma; onih 141 fabrickih zivi u
+`/usr/lib/netdata/conf.d/health.d/`.
+
+### Ostaje
+
+Telegram token stoji u citljivom obliku u `/etc/netdata/health_alarm_notify.conf`
+— vec je na spisku za rotaciju.
