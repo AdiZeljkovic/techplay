@@ -117,6 +117,13 @@ vezu zbog zaštićenog načina, i to je bilo ispravno od njega.
    jutros držalo 44 SEO zapisa van produkcije. Bez toga backend događaji nikad
    ne stižu; provjereno, ingest je vraćao 403 kroz Cloudflare i 200 direktno.
 3. **`ALLOWED_HOSTS`** je bio divlja kartica; Django je na to i upozorio.
+4. **Host mora stajati u CSP `connect-src`** (`frontend/next.config.ts`). Ovo
+   je promaklo od dana kad je SDK uveden do 19.08.2026: preglednik je svaki
+   pokušaj slanja odbijao prije nego bi krenuo, pa **nijedna greška iz
+   posjetiočevog preglednika nikad nije stigla**. Događaji koji su bili u
+   projektu Frontend došli su iz serverskog runtimea, na koji se CSP ne
+   odnosi — što je lako pročitati kao „front se javlja, sve radi". Ako se
+   projekt Frontend ikad ponovo utiša, ovo je prvo mjesto za pogledati.
 
 **Šta je namjerno isključeno:** praćenje performansi (`tracesSampleRate: 0`) jer
 Netdata to već mjeri u sekundnoj rezoluciji, i session replay jer ga GlitchTip ne
