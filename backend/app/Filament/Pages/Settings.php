@@ -75,15 +75,14 @@ class Settings extends Page implements HasForms
      * The column is a string for everything, so this list is the only thing
      * that keeps a toggle from writing an empty string and a later reader from
      * having to guess whether '' meant false or meant nobody ever set it.
+     *
+     * Empty since 18 Aug 2026. Both booleans this page ever had are gone —
+     * maintenance mode with the system it belonged to, and the six indexing
+     * toggles because nothing on the front end ever read them. The list stays
+     * because the next boolean setting belongs in it, and finding that out the
+     * hard way costs an afternoon.
      */
-    private const BOOLEANS = [
-        'seo_noindex_search',
-        'seo_noindex_archives',
-        'seo_noindex_categories',
-        'seo_noindex_tags',
-        'seo_enable_sitemap',
-        'seo_sitemap_include_images',
-    ];
+    private const BOOLEANS = [];
 
     /** Keys that live in the `socials` group. Everything else is `general`. */
     private const SOCIALS_GROUP = [
@@ -165,22 +164,24 @@ class Settings extends Page implements HasForms
                                     ->helperText('Used when an article has no image of its own. 1200×630 works everywhere.'),
                             ]),
 
-                        Tab::make('Indexing')
+                        /*
+                         * Six toggles used to sit above this — no-index search,
+                         * archives, categories and tags, plus two sitemap
+                         * switches. Every one was stored and none was ever read:
+                         * `lib/seo.ts` emitted no robots directive at all, and
+                         * the sitemap routes never consulted a setting. A switch
+                         * that reports the opposite of what it does is worse
+                         * than no switch, so they are gone.
+                         *
+                         * What stays is the one thing on this tab that is live.
+                         */
+                        Tab::make('Robots')
                             ->icon('heroicon-o-eye-slash')
                             ->schema([
-                                Grid::make(2)->schema([
-                                    Toggle::make('seo_noindex_search')->label('No-index search pages'),
-                                    Toggle::make('seo_noindex_archives')->label('No-index archives'),
-                                    Toggle::make('seo_noindex_categories')->label('No-index categories'),
-                                    Toggle::make('seo_noindex_tags')->label('No-index tags'),
-                                    Toggle::make('seo_enable_sitemap')->label('Generate sitemap'),
-                                    Toggle::make('seo_sitemap_include_images')->label('Images in sitemap'),
-                                ]),
-
                                 Textarea::make('seo_robots_txt_content')
                                     ->label('robots.txt')
-                                    ->rows(8)
-                                    ->helperText('Served verbatim at /robots.txt. This one is live — the toggles above are stored but not yet read by the front end.')
+                                    ->rows(10)
+                                    ->helperText('Served verbatim at techplay.gg/robots.txt.')
                                     ->extraInputAttributes(['class' => 'font-mono text-sm']),
                             ]),
 

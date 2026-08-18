@@ -35,6 +35,7 @@ export interface PageSeoData {
     og_description?: string;
     og_image?: string;
     canonical_url?: string;
+    is_noindex?: boolean;
 }
 
 export interface SiteSettings {
@@ -192,6 +193,21 @@ export async function generatePageMetadata(
         title: dbTitle ? { absolute: dbTitle } : title,
         description,
         keywords,
+        /*
+         * The admin's "no-index this page" switch, finally connected.
+         *
+         * `page_seo.is_noindex` has existed in the database, in the admin form
+         * and on two pages since the table was created — and this function
+         * emitted no robots directive at all, so both of those pages were
+         * indexed anyway. A control that reports the opposite of what it does
+         * is worse than no control.
+         *
+         * Articles never had this problem: their own pages build a robots block
+         * from `article.is_noindex`. Only the static pages went through here.
+         */
+        robots: pageSeo?.is_noindex
+            ? { index: false, follow: false }
+            : { index: true, follow: true },
         alternates: {
             canonical,
             languages: { 'x-default': canonical },

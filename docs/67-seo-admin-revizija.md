@@ -148,8 +148,22 @@ API ispravno vraća 404, `fetchContent` ispravno vraća `null`, stranica ispravn
 zove `notFound()` — i odgovor je svejedno 200. Igre su jedine koje to rade kako
 treba, jer je taj put popravljan zasebno.
 
-Posljedica: pretraživač može indeksirati beskonačno izmišljenih URL-ova, i
-svaki mu izgleda kao ispravna stranica.
+> **Ispravka, poslije provjere.** Ovaj nalaz je bio precijenjen. Sve četiri
+> meke 404 stranice nose `<meta name="robots" content="noindex">`, koji Next
+> ubacuje sam — provjereno na sve četiri. Pretraživač ih dakle **ne**
+> indeksira; moja tvrdnja da može indeksirati beskonačno izmišljenih URL-ova
+> nije stajala.
+>
+> Uzrok je dokumentovan u Next 16: kod **streamanog** odgovora status 200 je
+> već poslan prije nego `notFound()` pukne, pa se ne može promijeniti — i baš
+> zato Next dodaje `noindex`. `/games` vraća pravi 404 jer ima
+> `dynamic = "force-dynamic"` i ne strima prije provjere.
+>
+> **Ostavljeno namjerno.** Lijek po dokumentaciji je provjera prije
+> streamanja, dakle `force-dynamic` na četiri najprometnije uredničke rute —
+> što ukida ISR na njima. To je stvarna cijena performansi za dobitak koji
+> `noindex` već pokriva. Google mekani 404 s noindexom ionako tretira kao
+> 404 i izbacuje ga.
 
 ---
 
