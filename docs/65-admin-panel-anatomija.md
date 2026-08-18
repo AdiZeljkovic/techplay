@@ -731,3 +731,92 @@ covjek, pritisnu Create i procitaju red iz baze.
   ime API domena ikad promijeni, 401 slika pukne.
 - **Guides nemaju istoriju verzija** — `ArticleVersionObserver` gleda samo
   `Article`.
+
+---
+
+## Tri stvari sa spiska *(18.08.2026, kasnije istog dana)*
+
+### 1. Koraci se konacno iscrtavaju
+
+Kolona je dobijena ranije tog dana; ovo je druga polovina. `GuideSteps`
+komponenta crta numerisanu listu na sini — s brojem u krugu, naslovom, tekstom i
+slikom po koraku — a `stepsForSchema()` puni `HowToStep` niz u JSON-LD-u,
+tacno tamo gdje je stajalo:
+
+```
+"step": [], // Could parse steps if structured
+```
+
+Numeracija je ovdje **sadrzaj a ne ukras**: cijela poenta sekcije je da korak
+tri dolazi poslije koraka dva.
+
+**A onda se otkrilo da HowTo blok nikad nije ni stizao do citaoca.**
+`GuideDetailView` je koristio `<Script>` iz `next/script`, koji podrazumijeva
+`afterInteractive` — tag se ubacuje na klijentu poslije hidracije, pa ga u
+HTML-u koji server posalje **nema**. Svaka druga detaljna stranica na sajtu
+koristi obicni mali `<script>` bas zbog toga. Vidjelo se tek kad je blok dobio
+prave korake da ih propusti.
+
+Provjereno privremenim vodicem: tri `HowToStep` unosa u serviranom HTML-u,
+sekcija se iscrtava, `<title>` dolazi iz `seo_title` koji panel sada pise.
+
+### 2. Osam mrtvih kolona van
+
+Sve prebrojane na 625 redova prije brisanja:
+
+| kolona | popunjeno | ko ju je citao |
+|---|---|---|
+| `seo_title`, `seo_description` | **0** | rezerva iza `meta_title` na tri stranice |
+| `content_updated_at` | 0 | nista, nigdje |
+| `translation_of_id` | 0 | `HreflangService`, koji niko ne zove |
+| `review_rating`, `review_pros`, `review_cons` | 0 | `SchemaService`, nedostizan |
+| `is_featured` | 625 × `false` | slan u API payloadu, cita ga niko |
+
+`seo_*` par je bio drugi SEO par pored `meta_*`, koji nijedan ekran nije nudio —
+pa je lanac `meta_title || seo_title || title` imao srednji clan koji ne moze
+biti nista osim `null`, i cekao da ga neko pogresno spoji. **Guides i Categories
+zadrzavaju svoje** — tamo je `seo_*` pravi par i sada je spojen s oba kraja.
+
+`HreflangService` je obrisan: jedini izvor podataka mu je bio
+`translation_of_id`, a poziva nije imao nijednog.
+
+### 3. `SchemaService` — popravljen, ne obrisan
+
+Usput se vidjelo da recenzije **nikad nisu emitovale strukturirane podatke**, iz
+dva nezavisna razloga od kojih je svaki bio dovoljan:
+
+```php
+if (! $article->review_rating || $article->category !== 'reviews') {
+```
+
+`$article->category` je **Category model**, pa `!== 'reviews'` nikad nije moglo
+biti netacno — cuvar je opalio na svakom pozivu ikad. Isti red s `'guides'` stoji
+u HowTo bloku. A `review_rating` je kolona koju nijedna recenzija nema: ocjena
+je oduvijek u `review_score` (38 od 38), verdikt u `review_data`.
+
+Sada cita ono sto postoji, ima cetiri testa, i `ReviewSchemaTest` provjerava i
+da cuvar zaista cuva — da vijest ne dobije ocjenu.
+
+### 4. Slike na relativne putanje
+
+401 clanak je u koloni cuvao pun URL
+`https://api-beta.techplay.gg/storage/articles/…`, 223 cistu putanju. Oba su
+radila jer `getFeaturedImageUrlAttribute()` propusta apsolutni URL i prosiruje
+relativni.
+
+Ali **ime domena je tu bilo podatak, ne konfiguracija**. Preimenujes API domen —
+a `api-beta` ovaj projekat vec zove istorijskim imenom — i 401 slika pukne
+odjednom, bez ijedne izmjene u kodu koja bi to objasnila.
+
+`php artisan images:normalise-paths` skida nas vlastiti prefiks i **tudje hostove
+ostavlja na miru**. Poslije: 0 apsolutnih, 624 relativne, accessor vraca identican
+URL, slike stizu s 200.
+
+### 5. I posljednja polovina jucerasnje popravke
+
+Brisanje je cistilo Redis ali frontu nije javljalo nista — pa je stranica
+ostajala na sajtu, servirana iz Next data kesa, s naslovom i tekstom.
+`ArticleObserver::deleted` je revalidirao listu i naslovnicu ali ne i URL samog
+clanka; `GuideObserver::deleted` nije javljao nista, iako `updated()` javlja
+oduvijek. Oba sada zovu `revalidateArticle`, sto gadja tag — mehanizam koji
+stvarno radi.
