@@ -17,6 +17,7 @@ use App\Models\Post;
 use App\Models\Product;
 use App\Models\SiteSetting;
 use App\Models\Thread;
+use App\Notifications\AdminAlert;
 use App\Observers\ArticleObserver;
 use App\Observers\CategoryObserver;
 use App\Observers\CommentObserver;
@@ -42,11 +43,14 @@ use Filament\Forms\Components\FileUpload;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\Factory;
 
 class AppServiceProvider extends ServiceProvider
@@ -202,6 +206,25 @@ class AppServiceProvider extends ServiceProvider
         // both "Sign in with Discord" buttons have been doing.
         $socialite->extend('discord', function ($app) use ($socialite) {
             return $socialite->buildProvider(DiscordProvider::class, config('services.discord'));
+        });
+
+        /*
+         * A failed job tells somebody.
+         *
+         * Until now a job could die and leave two traces: a row in
+         * `failed_jobs`, and a red number on a dashboard you have to already be
+         * looking at. This reaches the bell in the top bar instead.
+         *
+         * `Queue::failing()` fires once per job after its final retry, so it is
+         * not chatty. And `AdminAlert` is deliberately not queued — an alert
+         * about the queue being broken must not be delivered by the queue.
+         */
+        Queue::failing(function (JobFailed $event): void {
+            AdminAlert::send(
+                title: 'Job failed: '.class_basename($event->job->resolveName()),
+                body: Str::limit($event->exception->getMessage(), 140),
+                colour: 'danger',
+            );
         });
     }
 }

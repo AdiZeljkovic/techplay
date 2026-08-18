@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Croustibat\FilamentJobsMonitor\FilamentJobsMonitorPlugin;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -19,6 +20,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -299,6 +301,52 @@ HTML)
              * would land at the bottom without anybody choosing where.
              */
             ->widgets([])
+            /*
+             * Two plugins, and the reason each is here.
+             *
+             * **Jobs Monitor** gives the queue a screen. Seven kinds of job run
+             * through it — OG data, view counters, MobyGames enrichment, two
+             * IndexNow submitters, giveaway reminders, chat reminders — and
+             * until now the only sign any of them existed was a count of
+             * failures on the dashboard that led nowhere. This lists what ran,
+             * what is waiting, and groups failures by error rather than
+             * repeating the same one forty times. It is what Horizon would do,
+             * except Horizon needs Redis as the queue driver and this works
+             * with the one we have.
+             *
+             * **Apex Charts** is here for the charts the analytics work will
+             * need. Filament's own ChartWidget is in core and the dashboard's
+             * sparkline is hand-drawn SVG, so nothing today depends on this —
+             * it earns its place when a real analytics page gets built, and
+             * until then it costs an autoloaded class nobody instantiates.
+             */
+            /*
+             * The bell in the top bar.
+             *
+             * Filament reads Laravel's own `notifications` table, so this needed
+             * no plugin — the table has been there all along with 157 rows in
+             * it. What it did not have is a reader: every one of those was
+             * written for a **site** user (achievements, quests, rank-ups) and
+             * seen only on techplay.gg.
+             *
+             * That is worth knowing before opening it: the one admin account is
+             * also a player, so the bell will show their own achievements
+             * alongside anything addressed to them as staff. `AdminAlert` is the
+             * class that speaks to them as staff — see App\Notifications.
+             *
+             * Polled every 30 seconds rather than pushed. Reverb is running and
+             * could carry these live, but a websocket per open admin tab to
+             * learn about a failed job half a minute sooner is not a trade worth
+             * making; the poll is one indexed query.
+             */
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
+
+            ->plugins([
+                FilamentJobsMonitorPlugin::make(),
+                FilamentApexChartsPlugin::make(),
+            ])
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
