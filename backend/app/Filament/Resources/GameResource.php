@@ -23,6 +23,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\PaginationMode;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -283,6 +284,30 @@ class GameResource extends Resource
      * a description", "does it have screenshots" — so the answer is computed in
      * SQL and the content never leaves the database.
      */
+    /**
+     * The platforms worth filtering by.
+     *
+     * Not read from the column: `platforms` is a `text[]` across 142,110 rows
+     * and `select distinct unnest(...)` on it is a full scan for a dropdown.
+     * These are the ones a person actually looks for, spelled the way the
+     * catalogue spells them.
+     *
+     * @var list<string>
+     */
+    public const PLATFORMS = [
+        'PC',
+        'PlayStation 5',
+        'PlayStation 4',
+        'Xbox Series X|S',
+        'Xbox One',
+        'Nintendo Switch',
+        'Nintendo Switch 2',
+        'iOS',
+        'Android',
+        'macOS',
+        'Linux',
+    ];
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->select([
@@ -404,7 +429,24 @@ class GameResource extends Resource
              * primary key, and reads twenty-five rows.
              */
             ->defaultSort('id', 'desc')
+            /*
+             * One filter for 142,110 rows was the thinnest tooling in the panel
+             * on its largest list. These three are what curating a catalogue
+             * this size actually asks of it, and each is backed by an index that
+             * already exists — `games_platforms_gin` has been sitting there
+             * unused by the admin since the catalogue was rebuilt.
+             */
             ->filters([
+                SelectFilter::make('platform')
+                    ->label('Platform')
+                    ->options(fn () => array_combine(static::PLATFORMS, static::PLATFORMS))
+                    ->query(fn (Builder $q, array $data) => filled($data['value'] ?? null)
+                        // `@> ARRAY[?]::text[]` is the containment operator the
+                        // GIN index answers; `LIKE` on the array's text form
+                        // would scan all 142,110 rows.
+                        ? $q->whereRaw('platforms @> ARRAY[?]::text[]', [$data['value']])
+                        : $q),
+
                 TernaryFilter::make('description')
                     ->label('Description')
                     ->queries(
@@ -413,6 +455,18 @@ class GameResource extends Resource
                     )
                     ->trueLabel('Has description')
                     ->falseLabel('Needs description')
+                    ->placeholder('All games'),
+
+                // 9,619 games have no cover, and a games page without one looks
+                // broken rather than sparse.
+                TernaryFilter::make('cover')
+                    ->label('Cover art')
+                    ->queries(
+                        true: fn (Builder $q) => $q->whereNotNull('cover_url'),
+                        false: fn (Builder $q) => $q->whereNull('cover_url'),
+                    )
+                    ->trueLabel('Has cover')
+                    ->falseLabel('Needs cover')
                     ->placeholder('All games'),
             ])
             ->headerActions([

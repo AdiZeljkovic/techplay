@@ -93,7 +93,18 @@ class SeoManagerResource extends Resource
 
                 TextColumn::make('meta_title_length')
                     ->label('Title Len')
-                    ->state(fn ($record) => strlen($record->meta_title ?? ''))
+                    /*
+                     * Characters, not bytes.
+                     *
+                     * This screen exists to show these two numbers across all
+                     * 625 articles, and it was counting `strlen` — so a curly
+                     * apostrophe read as three, a č as two. 74 titles and 141
+                     * descriptions showed a wrong length, and on **eight** of
+                     * them the badge came out the wrong colour: green for a
+                     * description that is actually outside the band, or amber
+                     * for one that is inside it.
+                     */
+                    ->state(fn ($record) => mb_strlen($record->meta_title ?? ''))
                     ->badge()
                     ->color(fn ($state) => match (true) {
                         $state == 0 => 'danger',
@@ -104,7 +115,7 @@ class SeoManagerResource extends Resource
 
                 TextColumn::make('meta_desc_length')
                     ->label('Desc Len')
-                    ->state(fn ($record) => strlen($record->meta_description ?? ''))
+                    ->state(fn ($record) => mb_strlen($record->meta_description ?? ''))
                     ->badge()
                     ->color(fn ($state) => match (true) {
                         $state == 0 => 'danger',

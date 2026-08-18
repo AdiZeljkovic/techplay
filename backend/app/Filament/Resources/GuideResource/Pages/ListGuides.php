@@ -3,10 +3,10 @@
 namespace App\Filament\Resources\GuideResource\Pages;
 
 use App\Filament\Resources\GuideResource;
+use App\Filament\Widgets\GuidesPulse;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\Width;
-use App\Filament\Widgets\GuidesPulse;
 
 class ListGuides extends ListRecords
 {

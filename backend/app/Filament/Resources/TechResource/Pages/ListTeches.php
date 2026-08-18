@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\TechResource\Pages;
 
 use App\Filament\Resources\TechResource;
+use App\Filament\Widgets\TechPulse;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\Width;
-use App\Filament\Widgets\TechPulse;
 
 class ListTeches extends ListRecords
 {

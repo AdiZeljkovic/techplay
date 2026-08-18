@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\MediaResource\Pages;
 
 use App\Filament\Resources\MediaResource;
+use App\Filament\Widgets\MediaPulse;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Widgets\MediaPulse;
 
 class ListMedia extends ListRecords
 {

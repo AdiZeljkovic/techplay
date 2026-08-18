@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\BrokenLinkResource\Pages;
 
 use App\Filament\Resources\BrokenLinkResource;
+use App\Filament\Widgets\BrokenLinksPulse;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Artisan;
-use App\Filament\Widgets\BrokenLinksPulse;
 
 class ListBrokenLinks extends ListRecords
 {

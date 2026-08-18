@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\NewsResource\Pages;
 
 use App\Filament\Resources\NewsResource;
+use App\Filament\Widgets\NewsPulse;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\Width;
-use App\Filament\Widgets\NewsPulse;
 
 class ListNews extends ListRecords
 {

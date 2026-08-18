@@ -143,15 +143,16 @@ class QuestResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
+                    ->sortable()
                     ->description(fn (Quest $record) => self::CRITERIA[$record->criteria_type] ?? $record->criteria_type),
 
                 Tables\Columns\TextColumn::make('type')
                     ->badge()
                     ->color(fn (?string $state) => $state === 'permanent' ? 'gray' : 'info'),
 
-                Tables\Columns\TextColumn::make('criteria_value')->label('Target')->numeric(),
-                Tables\Columns\TextColumn::make('xp_reward')->label('XP')->numeric(),
-                Tables\Columns\TextColumn::make('bounty_reward')->label('Bounty')->numeric(),
+                Tables\Columns\TextColumn::make('criteria_value')->label('Target')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('xp_reward')->label('XP')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('bounty_reward')->label('Bounty')->numeric()->sortable(),
 
                 Tables\Columns\TextColumn::make('season.name')
                     ->label('Season')

@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\ReviewResource\Pages;
 
 use App\Filament\Resources\ReviewResource;
+use App\Filament\Widgets\ReviewsPulse;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Enums\Width;
-use App\Filament\Widgets\ReviewsPulse;
 
 class ListReviews extends ListRecords
 {

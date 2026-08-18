@@ -247,7 +247,8 @@
       "Bash(cd /c/Users/adize/Documents/Projekti/TechPlay/backend *)",
       "Bash(php -l app/Filament/Components/MediaPickerFields.php)",
       "Bash(sed -n '/Video option\\\\|withVideo\\\\|_video_divider/,+3p' app/Filament/Components/MediaPickerFields.php)",
-      "Bash(rm -f tests/Feature/DbgPulseTest.php /tmp/dbg_pulse.php)"
+      "Bash(rm -f tests/Feature/DbgPulseTest.php /tmp/dbg_pulse.php)",
+      "Bash(ssh -i ~/.ssh/techplay_deploy -o BatchMode=yes root@46.224.110.57 'cd /var/www/techplay/backend && php artisan tinker --execute='\\\\'' *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\Documents\\Projekti\\TechPlay\\frontend\\app\\calendar",

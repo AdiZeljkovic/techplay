@@ -42,6 +42,7 @@ use App\Policies\ContentPolicy;
 use App\Policies\ModerationPolicy;
 use App\Policies\NewsPolicy;
 use App\Policies\UserManagementPolicy;
+use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Spatie\Permission\Models\Role;
 
@@ -117,6 +118,15 @@ class AuthServiceProvider extends ServiceProvider
         Season::class => AdminOnlyPolicy::class,
         Quest::class => AdminOnlyPolicy::class,
         BountyTransaction::class => AdminOnlyPolicy::class,
+
+        /*
+         * The Jobs Monitor's own model, added with the plugin on 18.08.2026 and
+         * the last one left unmapped. Filament allows everything for a model it
+         * has no policy for, and that list ships two bulk actions — so anybody
+         * who can open the panel could clear the queue history, which is the
+         * only record of what failed and why.
+         */
+        QueueMonitor::class => AdminOnlyPolicy::class,
     ];
 
     /**
