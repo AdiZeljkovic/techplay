@@ -309,7 +309,16 @@ class GamerDnaService
         }
 
         return User::whereIn('id', $ids)
-            ->get(['id', 'username', 'display_name', 'avatar'])
+            /*
+             * `avatar_url`, not `avatar`.
+             *
+             * There is no `avatar` column and never has been, so this threw
+             * SQLSTATE 42703 every single time a reader had peers — the map
+             * below was already reading `avatar_url`, so only the select was
+             * wrong. Nothing in the panel or the test suite touches this path;
+             * it was found in the production log.
+             */
+            ->get(['id', 'username', 'display_name', 'avatar_url'])
             ->sortBy(fn (User $u) => array_search($u->id, $ids, true))
             ->map(fn (User $u) => [
                 'username' => $u->username,

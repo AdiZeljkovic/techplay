@@ -100,7 +100,21 @@ CACHE=/var/cache/nginx/techplay
 if [ -d "$CACHE" ]; then
     before=$(du -sh "$CACHE" 2>/dev/null | cut -f1)
     find "$CACHE" -type f -delete 2>/dev/null || true
-    echo "Ispraznjen nginx kes za /games/ (bilo: ${before:-?})"
+
+    # And then restart nginx, which is the half this was missing.
+    #
+    # Deleting the files does not tell nginx they are gone: the key index lives
+    # in a shared memory zone owned by the master process, and it survives a
+    # reload. So after every frontend deploy the cache manager spent hours
+    # trying to evict entries that were no longer on disk, one `[crit] unlink()
+    # failed` per entry — 5,413 of them in the four hours after the deploy on
+    # 18.08.2026, on a cache holding 21,589 files.
+    #
+    # A restart rebuilds the zone from what is actually there. It costs well
+    # under a second, and this script has already waited for the new frontend to
+    # answer before reaching this line.
+    systemctl restart nginx
+    echo "Ispraznjen nginx kes za /games/ (bilo: ${before:-?}) i nginx restartovan"
 fi
 
 # 5c. And the one in front of that.
