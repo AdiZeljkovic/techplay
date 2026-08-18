@@ -345,7 +345,20 @@ class GameResource extends Resource
                     ->trueColor('success')
                     ->falseColor('gray'),
             ])
-            ->defaultSort('rating', 'desc')
+            /*
+             * Newest first, not highest rated.
+             *
+             * `defaultSort('rating', 'desc')` looked sensible and was the
+             * slowest thing in the panel. 114,301 of the 142,110 games have no
+             * rating at all, and Postgres sorts NULLs first on a DESC — so the
+             * screen opened with a hundred and fourteen thousand unrated rows,
+             * and the planner had to walk every one of them before it could
+             * order the first 25 by id. Measured: 38,076 buffers read, 229 ms.
+             *
+             * `id` descending is the aggregator's arrival order, uses the
+             * primary key, and reads twenty-five rows.
+             */
+            ->defaultSort('id', 'desc')
             ->filters([
                 TernaryFilter::make('description')
                     ->label('Description')
