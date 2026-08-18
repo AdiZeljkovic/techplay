@@ -378,3 +378,72 @@ a.tp-best:hover {
     line-height: 1.35;
     color: var(--tp-label-ink);
 }
+
+/* ══════════════════════════════════════════ the strip above a list ══════ */
+
+/*
+ * Same language as the console, one size down.
+ *
+ * A list page already has a heading, a search box, filters and a table; a
+ * second full dashboard on top of it would be competing with the thing it is
+ * introducing. So: one surface, one large figure, and the rest as support type
+ * behind a single hairline — the divider says "these support that", where four
+ * bordered cards would have said "these are four separate things".
+ */
+.tp-pulse {
+    display: grid;
+    grid-template-columns: minmax(11rem, auto) minmax(0, 1fr);
+    align-items: center;
+    gap: 2rem;
+    padding-block: 1.125rem;
+}
+
+@media (max-width: 56rem) {
+    .tp-pulse {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+}
+
+.tp-pulse__lead {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+/* A shade smaller than the dashboard's lead: this one is a preamble, not the page. */
+.tp-pulse .tp-huge {
+    font-size: 2.25rem;
+}
+
+.tp-pulse__figures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.75rem;
+    padding-inline-start: 2rem;
+    border-inline-start: 1px solid var(--tp-line);
+}
+
+@media (max-width: 56rem) {
+    .tp-pulse__figures {
+        padding-inline-start: 0;
+        border-inline-start: 0;
+        border-top: 1px solid var(--tp-line);
+        padding-top: 1rem;
+        gap: 1.25rem 1.75rem;
+    }
+}
+
+.tp-pulse__figure {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1875rem;
+}
+
+.tp-pulse__n {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 1.125rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    color: var(--tp-lead-ink);
+}

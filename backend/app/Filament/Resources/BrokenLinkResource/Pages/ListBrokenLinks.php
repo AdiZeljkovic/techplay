@@ -7,6 +7,7 @@ use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Artisan;
+use App\Filament\Widgets\BrokenLinksPulse;
 
 class ListBrokenLinks extends ListRecords
 {
@@ -38,5 +39,11 @@ class ListBrokenLinks extends ListRecords
                         ->send();
                 }),
         ];
+    }
+
+    /** @return array<int, class-string> */
+    protected function getHeaderWidgets(): array
+    {
+        return [BrokenLinksPulse::class];
     }
 }
