@@ -213,24 +213,26 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'media.rawg.io',
       },
-      // The hosts production data actually returns, sampled across /home,
-      // /news, /reviews, /guides, /leaderboard, /staff, /shop, /giveaways,
-      // /rewards, /gta6 and /games. These images carry `unoptimized` at the
-      // call site; the patterns are the safety net, because an unlisted host
-      // does not degrade — it throws and takes the section with it.
-      {
-        // Where game covers come from since the catalogue rebuild.
-        protocol: 'https',
-        hostname: 'cdn.mobygames.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'shared.akamai.steamstatic.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.steamstatic.com',
-      },
+      /*
+       * The hosts production data actually returns, sampled across /home,
+       * /news, /reviews, /guides, /leaderboard, /staff, /shop, /giveaways,
+       * /rewards, /gta6 and /games.
+       *
+       * Steam and MobyGames used to be here, and being here is what let them
+       * hurt us. Their images carry `unoptimized` at the call site — except one
+       * gallery, which forgot, and that single omission became 115,436 of the
+       * 134,535 requests the optimiser served: each one a fetch of somebody
+       * else's 380 KB JPEG, decoded and re-encoded, on a four-core box.
+       *
+       * Arriving at roughly one a second and costing a second of CPU apiece,
+       * they queued rather than completed, and the queue never drained: every
+       * request timed out, the endpoint was marked dead, and on 18.08.2026 that
+       * took every route on techplay.gg to 502.
+       *
+       * Unlisted, a stale request is refused in microseconds instead of held
+       * for a minute. The comment that used to sit here called the list a
+       * safety net — it was, and a net that catches this much is a hammock.
+       */
       {
         // Discord avatars arrive as absolute URLs and pass straight through
         // getAvatarSrc().
