@@ -653,3 +653,81 @@ svaki filter pretvara u odgovor.
 `Livewire::test()` **i** `->call('loadTable')`: panel ima `deferLoading()`, pa
 lista koja je samo montirana iscrta okvir i nijedan red, a tvrdnja o redovima
 bi prosla ili pala iz pogresnog razloga.
+
+---
+
+## Revizija cetiri ekrana za pisanje *(18.08.2026)*
+
+Prosao sam **svako polje sve cetiri forme** i uporedio ga s tabelom u koju
+pise. To je provjera koje nije bilo, i naslo je nesto sto se nikako nije moglo
+vidjeti s ekrana.
+
+### Sest polja na Guides ekranu pisalo je u kolone kojih nema
+
+| polje | sta je bilo |
+|---|---|
+| `steps` | **cijela sekcija Step-by-Step** — nema kolonu |
+| `meta_title` | tabela ima `seo_title` |
+| `meta_description` | tabela ima `seo_description` |
+| `featured_image_alt` | nema kolonu |
+| `featured_video_url` | nema kolonu |
+| `tags` | nema kolonu |
+
+Nijedno nije bilo u `$fillable`, pa je Laravel sve tiho odbacivao. **Forma se
+iscrta, snimanje uspije, zapis se pojavi u listi.** Napises osam koraka, uz
+svaki ucitas screenshot, pritisnes Create — vodic se snimi bez ijednog koraka i
+bez ijedne poruke.
+
+Sto je gore: dva od tih polja imala su svoj par u tabeli koji je stajao prazan.
+`seo_title` i `seo_description` postoje na `guides` otkad je tabela napravljena
+i **nikad ih niko nije ni pisao ni citao** — panel je pisao imena kolona koja
+`articles` ima, a front je isao pravo na naslov i standfirst.
+
+**Sada:** `steps` dobija `jsonb` kolonu (rad se vise ne baca), SEO tab pise
+`seo_*` i `guides/[slug]` ih cita, a tags/alt/video se na tom ekranu ne nude —
+jer ih tabela nema.
+
+`tests/Feature/FormFieldsPersistTest.php` hoda kroz sva cetiri ekrana i pada
+ako iko ponovo ponudi polje bez kolone. Uz to dva testa koja popune formu kao
+covjek, pritisnu Create i procitaju red iz baze.
+
+### Ostalo popravljeno
+
+- **SEO provjera gleda i alt tekst.** 345 od 625 clanaka ima sliku bez opisa —
+  jedina stvarna rupa u katalogu, a checker je o njoj sutio.
+- **Reviews konacno nudi `canonical_url`.** `reviews/[slug]` ga cita oduvijek;
+  taj ekran je jedini od cetiri koji ga nikad nije nudio.
+- **Tech dobija istoriju verzija.** `ArticleVersionObserver` pise verzije za sve
+  clanke; taj ekran ih jedini nije prikazivao.
+- **Lista autora se cistila nikad.** `clearAdminDropdowns()` u vlastitom
+  komentaru pise *„zovi ovo kad se korisnici ili role promijene"*, a zvao ga je
+  samo `CategoryObserver`. Dodas novinara i nema ga u Author selectu ni u Author
+  filteru dok ne prodje sat.
+
+### Provjereno da radi
+
+| | |
+|---|---|
+| Polja bez kolone, sva cetiri ekrana | **0** (bilo 6) |
+| Zakazano objavljivanje | `articles:publish-scheduled` svake minute; nudi se samo tamo gdje ga ima ko izvrsiti |
+| Auto-vezivanje igre iz naslova | radi, `ContentGameLinker` u `ArticleObserver::saving` |
+| `is_noindex` | sva cetiri tipa, provjereno privremenim clankom pa obrisano |
+| `canonical_url` | sva cetiri |
+| Liste | News 328 ms, Reviews 295, Tech 270, Guides 143 |
+
+### Nadjeno, nije dirano
+
+- **`steps` se ne iscrtava na frontu.** Kolona sada postoji i rad se cuva, ali
+  `GuideDetailView` ima samo mjesto za njih u JSON-LD bloku:
+  `"step": [], // Could parse steps if structured`. Da bi sekcija bila
+  upotrebljiva treba jos i prikaz.
+- **Sest mrtvih kolona na `articles`:** `seo_title`, `seo_description`,
+  `content_updated_at`, `translation_of_id`, `review_rating`, `review_pros`,
+  `review_cons` — svih **0 od 625**. Prve dvije front cita kao rezervu iza
+  `meta_*`, ostale ne cita niko; `review_*` je zamijenjen s `review_data`.
+  `is_featured` je popunjen svuda ali svuda `false` i nista ga ne postavlja.
+- **401 clanak cuva apsolutni URL slike** s `api-beta.techplay.gg` u koloni,
+  223 cuva relativnu putanju. Accessor propusta oba, pa danas radi — ali ako se
+  ime API domena ikad promijeni, 401 slika pukne.
+- **Guides nemaju istoriju verzija** — `ArticleVersionObserver` gleda samo
+  `Article`.
