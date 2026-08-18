@@ -123,7 +123,6 @@ Single-guild bot. Services are singletons started in the `ClientReady` event:
 | `RecapService` | Weekly activity recaps |
 | `SubscriptionService` | Manages Discord channel subscriptions for news notifications |
 | `ChallengeService` | Gaming challenges with reaction-based acceptance |
-| `PriveeService` | Integration with Privée giveaway platform |
 | `StatusService` | Bot status rotation |
 
 Slash commands defined in `src/commands/definitions.ts`, dispatched via `src/handlers/commands.ts`. Event handlers (welcome, moderation, challenge reactions) in `src/handlers/events.ts`.
@@ -142,7 +141,6 @@ Bot authenticates to the backend using a shared API token (not Sanctum — uses 
 
 **Maintenance mode:** removed (18 Aug 2026). The middleware that polled `/api/v1/system/status` and the `/coming-soon` page were deleted some time earlier; the `maintenance_mode` setting outlived both, still toggleable from the admin and connected to nothing, so switching it on would have claimed the site was down while the site kept serving. To take the site down deliberately, use `php artisan down` or nginx — neither costs a database round trip per request. `/api/v1/system/status` still exists as a liveness ping for the Discord bot.
 
-**Privée giveaways:** Separate auth flow from TechPlay accounts. `PriveeGiveawayController` handles Google OAuth and Privée-specific login — no Sanctum token required.
 
 ---
 
