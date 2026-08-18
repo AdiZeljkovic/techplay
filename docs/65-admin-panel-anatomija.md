@@ -489,3 +489,64 @@ je jedino stanje koje se čita kao namjera.
   ima mnogo pravila. To bi rekao neko ko je popunio taj obrazac, ne brojanje.
 - **Koliko traje uređivanje članka u praksi.** Mjereno je vrijeme učitavanja
   stranice, ne vrijeme rada.
+
+---
+
+## Release Calendar, redizajn *(18.08.2026)*
+
+### Prvo: tri kolone kojih nema
+
+Stranica je čitala `background_image`, `details_data` i `platform_names` —
+**sve tri preimenovane** u sanaciji kataloga igara, i nijedna od tada nije
+postojala. Posljedica se vidjela na svakom paru: sive kocke umjesto
+naslovnica, bez izdavača, bez platformi.
+
+A podaci su bili tu cijelo vrijeme:
+
+| | |
+|---|---|
+| Unosa u kalendaru | 2.461 |
+| Sa `cover_url` | **2.461** |
+| S izdavačem | **2.461** |
+| S platformama | **2.460** |
+
+Stranica nije prikazivala ništa tamo gdje je mogla prikazati sve. Poslije
+popravke: šest naslovnica na tri para, **nijedna prazna**.
+
+### Zatim: raspored po pravilima konzole
+
+**Pet kartica u dvokolonskoj mreži** — s rupom gdje je peta trebala biti —
+zamijenjeno je **jednom tabelom prodavnica**. Dijele istu mjeru, koliki dio
+onoga što prodavnica nudi je stigao u kalendar, a udio se čita samo jedan
+pored drugog:
+
+| Prodavnica | U kalendaru | Viđeno | Udio |
+|---|---|---|---|
+| Steam | 1.978 | 3.162 | 63% |
+| Nintendo | 230 | 311 | 74% |
+| PlayStation | 88 | 116 | 76% |
+| **Xbox** | **357** | **42.344** | **0,8%** |
+
+Xbox je razlog zašto taj oblik uopšte treba: 357 od 42.344 je druga vrsta
+broja od Steamovih 1.978 od 3.162, i pet odvojenih kutija je to potpuno
+sakrilo.
+
+**Tri gola broja za tri mjeseca** postala su trake u razmjeri. „1.609 · 704 ·
+148" se čita kao *tri mjeseca*; nacrtano se čita kao **kraj sezone**.
+
+Red čekanja je dobio broj u naslovu, a zastarjela sinhronizacija boju —
+PlayStation nije osvježen sedmicu dana dok su ostali od jučer.
+
+### Ostavljeno namjerno
+
+`pending()` traje **531 ms sa samo pet upita** — dakle nije baza nego
+uparivanje u PHP-u, kroz `GameMerger::candidates()` i `GameMatcher::verdict()`.
+To je posao zbog kojeg stranica postoji.
+
+Kraći keš bi to skratio, ali Livewire ponovo iscrtava poslije svake odluke —
+pa bi ti se par koji si upravo riješio vratio na ekran. Tačnost je ovdje
+vrednija od pola sekunde.
+
+Stil je u `calendar.css` i nastavlja se na tokene iz `dashboard.css` —
+`.tp-panel`, `.tp-huge`, `.tp-eyebrow`, `.tp-bar` i tonovi dolaze odande.
+To je i bila poenta pisanja tog fajla na taj način.
