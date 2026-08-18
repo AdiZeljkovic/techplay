@@ -103,7 +103,19 @@ class AltTextService
 
         $name = preg_replace('/\s+/u', ' ', trim(str_replace(['-', '_', '.'], ' ', $name)));
 
+        /*
+         * One short word is not a description.
+         *
+         * `BBB.jpg` became "Bbb" and `ff.png` became "Ff" — the same noise this
+         * class exists to refuse, just shorter than a ULID. A single token has
+         * to be long enough to be a word; anything with a space in it has
+         * already earned the benefit of the doubt.
+         */
         if (mb_strlen($name) < 3) {
+            return null;
+        }
+
+        if (! str_contains($name, ' ') && mb_strlen($name) < 6) {
             return null;
         }
 

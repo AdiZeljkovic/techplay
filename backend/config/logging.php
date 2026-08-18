@@ -32,8 +32,27 @@ return [
     |
     */
 
+    /*
+     * `?:`, not a default argument — and the difference cost 12 MB of log and a
+     * page of 500s.
+     *
+     * `.env` says `LOG_DEPRECATIONS_CHANNEL=null`. Laravel's env parser reads an
+     * unquoted `null` as **PHP null**, and a default argument only applies when
+     * the key is *missing*, never when it is present and null. So this resolved
+     * to null, `LogManager` could not find a channel by that name, and every
+     * deprecation notice raised `InvalidArgumentException: Log [deprecations]
+     * is not defined` instead.
+     *
+     * Which is worse than it sounds. The exception is thrown from inside
+     * `HandleExceptions` during the request, so a harmless deprecation notice
+     * became an HTTP 500: 259 of them on `/api/v1/games/{slug}` in one hour on
+     * 17.08.2026, and 12 MB of emergency-logger output in `laravel.log`.
+     *
+     * The `null` channel it wants has existed the whole time, ten lines below.
+     * Nothing was ever asking for it.
+     */
     'deprecations' => [
-        'channel' => env('LOG_DEPRECATIONS_CHANNEL', 'null'),
+        'channel' => env('LOG_DEPRECATIONS_CHANNEL') ?: 'null',
         'trace' => env('LOG_DEPRECATIONS_TRACE', false),
     ],
 

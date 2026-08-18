@@ -159,4 +159,62 @@ class AltTextTest extends TestCase
 
         $this->assertSame('How to beat the first boss', $picture->fresh()->alt_text);
     }
+
+    /**
+     * Most pictures are not covers — they sit inside the copy, and 236 of those
+     * inline tags already carry an alt an editor typed. That is a better
+     * description than anything derivable, so it is harvested rather than
+     * replaced.
+     */
+    public function test_an_alt_written_into_the_body_is_harvested(): void
+    {
+        $this->article([
+            'title' => 'Marathon gets a server slam',
+            'featured_image_url' => 'articles/cover.jpg',
+            'featured_image_alt' => 'Cover',
+            'content' => '<p>Text</p><img src="/storage/articles/content/AAA.jpg" alt="Bungie Marathon key art"><p>More</p>',
+        ]);
+
+        $described = Media::create(['path' => 'articles/content/AAA.jpg', 'mime_type' => 'image/jpeg', 'collection' => 'articles']);
+
+        $this->artisan('images:backfill-alt')->assertSuccessful();
+
+        $this->assertSame('Bungie Marathon key art', $described->fresh()->alt_text);
+    }
+
+    /**
+     * And where the body tag has no alt, the piece it illustrates names it —
+     * which is still far better than nothing.
+     */
+    public function test_a_body_image_without_an_alt_falls_back_to_the_piece(): void
+    {
+        $this->article([
+            'title' => 'Dragon Ball Sparking Zero review',
+            'featured_image_url' => 'articles/cover2.jpg',
+            'featured_image_alt' => 'Cover',
+            'content' => '<p>Text</p><img src="/storage/articles/content/BBB.jpg"><p>More</p>',
+        ]);
+
+        $bare = Media::create(['path' => 'articles/content/BBB.jpg', 'mime_type' => 'image/jpeg', 'collection' => 'articles']);
+
+        $this->artisan('images:backfill-alt')->assertSuccessful();
+
+        $this->assertSame('Dragon Ball Sparking Zero review', $bare->fresh()->alt_text);
+    }
+
+    /**
+     * A picture in nobody's copy and with a generated name still gets nothing.
+     */
+    public function test_a_true_orphan_is_still_left_alone(): void
+    {
+        $orphan = Media::create([
+            'path' => 'articles/content/01KEQ5KW66WJGTKV4KBRH7WEH4.jpg',
+            'mime_type' => 'image/jpeg',
+            'collection' => 'articles',
+        ]);
+
+        $this->artisan('images:backfill-alt')->assertSuccessful();
+
+        $this->assertNull($orphan->fresh()->alt_text);
+    }
 }

@@ -64,29 +64,29 @@ npm start               # node dist/index.js (production)
 
 **Auth:** Laravel Sanctum with Bearer tokens. Token stored in frontend `localStorage`. Discord OAuth and Battle.net OAuth via `SocialAuthController` / `BattleNetAuthController`. No server-side session auth for API routes.
 
-**Content model:** The central article type is `Article` (news, reviews, tech/hardware, guides, videos all share this model via polymorphic category association). Separate `Post` and `Thread` models handle the forum. `Game` is a standalone model populated from MobyGames.
+**Content model:** The central article type is `Article` (news, reviews, tech/hardware, guides, videos all share this model via polymorphic category association). Separate `Post` and `Thread` models handle the forum. `Game` is a standalone model populated by the store aggregator (`Services/Releases/BlindCatalogueSync`, `SteamService`, `PlayStationService`), not from MobyGames — that source was retired in the 08/2026 catalogue rebuild. 142,110 rows.
 
-**Observers + cache revalidation:** Every content model has an Observer in `app/Observers/`. On publish/update, observers call `CacheRevalidationService::revalidateArticle()`, which POSTs to the Next.js `/api/revalidate` endpoint to invalidate ISR cache. All observers are registered in `AppServiceProvider`.
+**Observers + cache revalidation:** Every content model has an Observer in `app/Observers/`. On publish, update **and delete**, observers call `RevalidationService::revalidateArticle()`, which POSTs to the Next.js `/api/revalidate` endpoint. There used to be two services doing this — `CacheRevalidationService` and `RevalidationService` — which is how `deleted()` came to clear Redis without telling the frontend; they were merged 18 Aug 2026. All observers are registered in `AppServiceProvider`.
 
-**Games database:** Populated from MobyGames API (`MobyGamesService`). Games are stored locally in PostgreSQL — the API **never proxies live MobyGames requests**. `Game.genre_names` and `Game.platform_names` are PostgreSQL `TEXT[]` columns; queries use `@> ARRAY[?]::text[]` syntax. The `pgArray()` helper in `GameController` handles deserializing these when PHP receives them as strings.
+**Games database:** Built by the store aggregator — `SyncReleases` / `MergeReleases` over `Services/Releases/`, with `SteamService` and `PlayStationService` as sources. MobyGames, RAWG and IGDB were all retired in the 08/2026 rebuild. Games are stored locally in PostgreSQL; the API **never proxies a live request to a store**. `Game.genres` and `Game.platforms` are `TEXT[]` columns (renamed from `genre_names` / `platform_names` in that rebuild, along with `background_image` → `cover_url`) and are queried with `@> ARRAY[?]::text[]`, which is what the `games_genres_gin` / `games_platforms_gin` indexes answer. The `pgArray()` helper in `GameController` deserialises them when PDO hands them back as strings.
 
-**AI integrations:** `GeminiService` (Gemini 2.5 Flash) and `OpenAIService` (GPT-4 Turbo) both provide WoW character readiness analysis. `BlizzardService` fetches character data from the Blizzard API; `BlizzardDataTransformer` / `BlizzardDataTransformerV2` minify it before passing to AI. `GroqService` is available for fast inference.
+**AI integrations:** WoW character readiness analysis runs on `GroqService`. `BlizzardService` fetches character data from the Blizzard API and `BlizzardDataTransformerV2` minifies it before the model sees it; `RaiderIOService` supplies the rest. `GeminiService` and `OpenAIService` were described here for months and called by nothing — both deleted 18 Aug 2026.
 
 **XP / gamification:** `XpService` awards XP for comments, games added, games completed and game reviews, with a 100 XP/day cap and 60s cooldown. (Article reads award nothing — the constant existed but nothing ever called it, and it was removed on 11 Aug 2026 along with the per-visit view logs.) XP gates rank promotions via `Rank` model. Discord bot mirrors this system through the `/api/v1/discord/xp` endpoint.
 
-**Admin panel:** Filament v5 at `/admin`. Resources cover all content types. Uses the NeoBrutalism theme (`caresome/filament-neobrutalism-theme`).
+**Admin panel:** Filament v5 at `/admin`, 38 resources. There is **no theme package** — `viteTheme('resources/css/filament/admin/theme.css')` compiles the site's own design tokens onto Filament. (This file claimed NeoBrutalism, then Brisk; neither is installed.) Two plugins: `croustibat/filament-jobs-monitor` and `leandrocfe/filament-apex-charts`.
 
 **Key services:**
 - `SanitizationService` — XSS protection for all user content
 - `ImageService` / `ImageOptimizationService` — upload validation + processing
-- `IndexNowService` — pings Bing/Yandex on publish via `PingIndexNow` job
+- `IndexNowService` — pings Bing/Yandex on publish via the `SubmitIndexNow` job
 - `SchemaService` — generates JSON-LD structured data
 - `PayPalService` + `PayPalWebhookController` — shop orders and subscriptions (signature-verified webhooks)
 - `CacheService` / `RevalidationService` — Redis-backed caching with on-demand Next.js revalidation
 
 **Real-time:** Laravel Reverb (WebSocket server) + Pusher protocol. Frontend uses `laravel-echo` + `pusher-js`. Events in `app/Events/` broadcast on publish (articles, comments, forum posts, etc.) — for forum content specifically, dispatch happens inside Model Observers (`ThreadObserver`, `ForumPostObserver`), not inline in the controller.
 
-**Queue jobs:** `FetchOgData`, `FlushViewCounters`, `MobyEnrichmentJob`, `PingIndexNow`, `SubmitIndexNow`, `SendGiveawayReminders`, `SendChatReminder`.
+**Queue jobs:** `FetchOgData`, `FlushViewCounters`, `MobyEnrichmentJob`, `SubmitIndexNow`, `SendGiveawayReminders`, `SendChatReminder`. (`PingIndexNow` was listed here and dispatched by nothing — deleted 18 Aug 2026.)
 
 **Testing:** PHPUnit, in-memory SQLite for tests (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`). Run `php artisan test`.
 
@@ -96,7 +96,7 @@ npm start               # node dist/index.js (production)
 
 **Data fetching strategy:** Server components fetch directly from backend at build/request time (`next: { revalidate: N }`). ISR is the primary caching strategy. Image optimization is **disabled** (`images: { unoptimized: true }`) to avoid disk exhaustion from the large game image library.
 
-**Auth:** Client-side only. `AuthContext` (`context/AuthContext.tsx`) stores token + user in `localStorage`, restores on mount, verifies in background. Middleware (`middleware.ts`) only handles maintenance mode checks — it does not enforce auth (cannot access localStorage server-side).
+**Auth:** Client-side only. `AuthContext` (`context/AuthContext.tsx`) stores token + user in `localStorage`, restores on mount, verifies in background. Middleware (`middleware.ts`) does not enforce auth — it cannot, since the token lives in `localStorage`. It no longer checks maintenance mode either; that was removed with maintenance mode itself.
 
 **API client:** `lib/api.ts` exports `getApiUrl()` which replaces `localhost` with `127.0.0.1` to avoid IPv6 issues in Node.js SSR. All fetch calls use `process.env.NEXT_PUBLIC_API_URL`.
 
@@ -136,7 +136,7 @@ Bot authenticates to the backend using a shared API token (not Sanctum — uses 
 
 **PostgreSQL TEXT[] arrays:** Game genre/platform/tag data is stored as PostgreSQL array columns. When PHP receives values from DB via PDO, they may arrive as raw strings like `{Action,"Role-Playing (RPG)"}`. Always pass through the `pgArray()` helper before using `array_map` or similar PHP array functions.
 
-**Content revalidation flow:** Publish/update an Article → Observer fires → `CacheRevalidationService::revalidateArticle()` → POST to `{FRONTEND_URL}/api/revalidate` with Bearer `REVALIDATION_SECRET` → Next.js purges ISR cache for affected paths.
+**Content revalidation flow:** Publish, update or delete an Article → Observer fires → `RevalidationService::revalidateArticle()` → POST to `{FRONTEND_URL}/api/revalidate` with Bearer **`REVALIDATE_SECRET_TOKEN`** (not `REVALIDATION_SECRET`; both names were in circulation and the endpoint reads either) → Next purges by **tag**. Note `revalidatePath()` on a dynamic route is a no-op in Next 16 — the tag purge is what actually works.
 
 **N+1 prevention:** `Model::preventLazyLoading(!app()->isProduction())` is enabled in `AppServiceProvider`. All new queries must eager-load relationships. Violations throw in dev/staging.
 
