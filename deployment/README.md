@@ -200,3 +200,22 @@ If you have a local database dump you want to import:
       -H 'Sec-WebSocket-Version: 13' -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
       'https://api-beta.techplay.gg/app/techplay-reverb-key?protocol=7&client=js&version=8.4.0'
     ```
+
+## `nginx-site-techplay.conf`
+
+Kopija zivog `/etc/nginx/sites-available/techplay`, u repou od 18.08.2026 —
+jer se do tada nalazila samo na serveru, a u njoj je popravka bez koje sajt
+pada:
+
+**Jedna spora putanja ne smije oboriti sve ostale.** `/_next/image` dovlaci
+naslovnice s tudjih CDN-ova (MobyGames, Steam) i optimizuje ih. Kad je taj CDN
+spor, zahtjev drzi konekciju do `proxy_read_timeout`, nginx to broji kao pad
+upstreama, i poslije `max_fails` proglasi server mrtvim — za **sve** lokacije,
+ne samo za sporu. Tako je usporen tudji CDN oborio cijeli techplay.gg na 502
+dok je Next odgovarao na `/news` za 160 ms.
+
+`max_fails=0` kaze: nikad ne zakljucuj da je ovaj server mrtav. Backend je
+jedan; proglasavanje mrtvim ne moze zaobici nista, moze samo spor zahtjev
+pretvoriti u ispad cijelog sajta.
+
+Izmjereno poslije: **0 `no live upstreams` i 0 novih 502 u 90 sekundi.**
