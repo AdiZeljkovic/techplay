@@ -3,6 +3,7 @@
 namespace App\Filament\Components;
 
 use App\Models\Media;
+use App\Services\AltTextService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
@@ -182,7 +183,7 @@ class MediaPickerFields
                             ->placeholder('What is in the picture?')
                             ->helperText('Read aloud by screen readers, and read by Google.'),
                     ])
-                    ->action(function (array $data, $set) use ($pathField, $altField, $collection) {
+                    ->action(function (array $data, $get, $set) use ($pathField, $altField, $collection) {
                         if (empty($data['new_image'])) {
                             return;
                         }
@@ -192,8 +193,25 @@ class MediaPickerFields
 
                         $set($pathField, $path);
 
-                        if ($altField && filled($data['new_image_alt'] ?? null)) {
-                            $set($altField, $data['new_image_alt']);
+                        /*
+                         * A description, offered rather than demanded.
+                         *
+                         * Whatever was typed wins. Failing that, the name the
+                         * file arrived with, if that name is language — and
+                         * failing that, the headline of the piece it is going
+                         * on. `suggest()` returns null rather than deriving
+                         * something from a storage identifier, so an empty alt
+                         * stays empty instead of becoming
+                         * `Keq5Kw66Wjgtkv4Kbrh7Weh4`.
+                         */
+                        $alt = AltTextService::suggest(
+                            $original,
+                            (string) $get('title'),
+                            $data['new_image_alt'] ?? null,
+                        );
+
+                        if ($altField && filled($alt)) {
+                            $set($altField, $alt);
                         }
 
                         // Into the library, so the next article can reuse it.
@@ -202,7 +220,7 @@ class MediaPickerFields
                             [
                                 'title' => $original ? pathinfo($original, PATHINFO_FILENAME) : null,
                                 'original_name' => $original,
-                                'alt_text' => $data['new_image_alt'] ?? null,
+                                'alt_text' => $alt,
                                 'collection' => $collection,
                                 'mime_type' => Storage::disk('public')->mimeType($path) ?: null,
                                 'size' => Storage::disk('public')->exists($path) ? Storage::disk('public')->size($path) : null,
