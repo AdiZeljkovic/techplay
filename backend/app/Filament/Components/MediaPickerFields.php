@@ -25,10 +25,10 @@ class MediaPickerFields
         return [
             // Actual form field that gets saved - editable text input for the path
             TextInput::make($pathField)
-                ->label('Image Path')
-                ->placeholder('Use Upload or Choose from Library buttons below...')
+                ->label('Image path')
+                ->placeholder('Set by Upload or Choose from library')
                 ->live()
-                ->helperText('Path will be set automatically when you upload or choose an image'),
+                ->extraInputAttributes(['class' => 'tp-permalink'], merge: true),
 
             // Current image preview
             Placeholder::make('_current_image_preview')
@@ -44,14 +44,14 @@ class MediaPickerFields
                         }
 
                         return new HtmlString(
-                            '<div style="position: relative; display: inline-block;">'.
-                            '<img src="'.e($url).'" alt="Current" style="max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: cover;" />'.
-                            '<div style="margin-top: 8px; font-size: 12px; color: #6b7280;">📷 '.basename($path).'</div>'.
+                            '<div class="tp-media-preview">'.
+                            '<img src="'.e($url).'" alt="Current featured image" />'.
+                            '<span class="tp-media-name">'.e(basename($path)).'</span>'.
                             '</div>'
                         );
                     }
 
-                    return new HtmlString('<div style="padding: 24px; background: rgba(0,0,0,0.2); border-radius: 8px; text-align: center; color: #6b7280;"><span style="font-size: 32px;">🖼️</span><br/>No image selected</div>');
+                    return new HtmlString('<div class="tp-media-empty">No image chosen yet</div>');
                 })
                 ->columnSpanFull(),
 
@@ -59,7 +59,7 @@ class MediaPickerFields
             Actions::make([
                 // Upload new button
                 Action::make('upload_new')
-                    ->label('📤 Upload New')
+                    ->label('Upload')
                     ->color('primary')
                     ->modalHeading('Upload New Image')
                     ->modalWidth('lg')
@@ -87,7 +87,7 @@ class MediaPickerFields
 
                 // Choose from library button - using proper Select component
                 Action::make('choose_from_library')
-                    ->label('📚 Choose from Library')
+                    ->label('Choose from library')
                     ->color('gray')
                     ->modalHeading('Media Library')
                     ->modalDescription('Select an existing image from your library')
@@ -106,11 +106,11 @@ class MediaPickerFields
                                     ->mapWithKeys(function ($media) {
                                         $title = $media->title ?: basename($media->path);
 
-                                        return [$media->path => "📷 {$title}"];
+                                        return [$media->path => $title];
                                     })
                                     ->toArray();
                             })
-                            ->getOptionLabelUsing(fn ($value) => '📷 '.basename($value))
+                            ->getOptionLabelUsing(fn ($value) => basename($value))
                             ->helperText('Start typing to search for images'),
 
                         Placeholder::make('selected_preview')
@@ -121,11 +121,11 @@ class MediaPickerFields
                                     $url = Storage::disk('public')->url($path);
 
                                     return new HtmlString(
-                                        '<img src="'.e($url).'" alt="Preview" style="max-width: 300px; max-height: 200px; border-radius: 8px; object-fit: cover;" />'
+                                        '<div class="tp-media-preview"><img src="'.e($url).'" alt="Preview" /></div>'
                                     );
                                 }
 
-                                return new HtmlString('<span style="color: #6b7280;">Select an image above to see preview</span>');
+                                return new HtmlString('<div class="tp-media-empty">Pick one above to see it here</div>');
                             }),
                     ])
                     ->action(function (array $data, $set) use ($pathField, $altField) {
@@ -139,11 +139,11 @@ class MediaPickerFields
                             }
                         }
                     })
-                    ->modalSubmitActionLabel('✓ Use This Image'),
+                    ->modalSubmitActionLabel('Use this image'),
 
                 // Clear image button
                 Action::make('clear_image')
-                    ->label('🗑️ Remove')
+                    ->label('Remove')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading('Remove Image?')
@@ -158,21 +158,15 @@ class MediaPickerFields
             // Alt text field (optional — only included if altField is provided)
             ...($altField ? [
                 TextInput::make($altField)
-                    ->label('Image Alt Text')
-                    ->placeholder('Describe the image for accessibility...')
-                    ->helperText('Important for SEO and accessibility'),
+                    ->label('Alt text')
+                    ->placeholder('What is in the picture?')
+                    ->helperText('Read aloud by screen readers, and read by Google. 280 of 625 articles have one.'),
             ] : []),
 
             // ─── Video option ────────────────────────────────────────────────
             Placeholder::make('_video_divider')
                 ->label('')
-                ->content(new HtmlString(
-                    '<div style="display:flex;align-items:center;gap:12px;margin:8px 0;">'.
-                    '<div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>'.
-                    '<span style="color:#71717a;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">or use a video instead</span>'.
-                    '<div style="flex:1;height:1px;background:rgba(255,255,255,0.08);"></div>'.
-                    '</div>'
-                ))
+                ->content(new HtmlString('<div class="tp-or"><span>or use a video instead</span></div>'))
                 ->columnSpanFull(),
 
             TextInput::make('featured_video_url')

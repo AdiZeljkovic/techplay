@@ -1,0 +1,225 @@
+/* ══════════════════════════════════════════════ writing articles ════════ */
+
+/*
+ * The four article screens — News, Reviews, Guides, Tech — as a place to write
+ * rather than a form to fill in.
+ *
+ * Everything here is either about the list (`ArticleTable`) or the editor
+ * (`ArticleEditorFields`). Tokens come from theme.css; nothing below states a
+ * literal colour, so both themes get the same treatment.
+ */
+
+/* ── the list row ─────────────────────────────────────────────────────────── */
+
+/*
+ * Cover art at the ratio it was made for.
+ *
+ * The column used to be `->circular()->size(40)`: a 16:9 still centre-cropped to
+ * a disc. Every article has art, so this ran 528 times down the News list and
+ * the first thing on every row looked like an avatar — it read as *who wrote it*
+ * when it meant *what it is about*.
+ */
+.tp-thumb {
+    width: 71px;
+    height: 40px;
+    object-fit: cover;
+    background-color: var(--tp-hover);
+}
+
+/*
+ * The byline under the headline. Filament's description slot is one line of
+ * muted text; these are the pieces inside it.
+ */
+.tp-meta-section {
+    color: var(--tp-label-ink);
+}
+
+.tp-meta-dot {
+    margin-inline: 0.375rem;
+    opacity: 0.4;
+}
+
+/*
+ * Marks, not columns.
+ *
+ * A status column printed the same green badge on all 528 rows; a star column
+ * drew 514 empty outlines in the accent red. Both are now marks that appear only
+ * when the row is *not* the ordinary case, so the eye has nothing to filter out
+ * on the 97% of rows where nothing is unusual.
+ *
+ * They are deliberately quieter than a Filament badge — small caps rather than a
+ * filled pill — because they sit inside a line of running text, and a pill there
+ * would outweigh the headline above it.
+ */
+.tp-mark {
+    display: inline-block;
+    padding: 0.0625rem 0.3125rem;
+    border-radius: var(--radius-inner);
+    border: 1px solid currentColor;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    vertical-align: 1px;
+}
+
+.tp-mark--hero {
+    color: var(--warning-500);
+}
+
+.tp-mark--draft {
+    color: var(--tp-group-ink);
+}
+
+.tp-mark--sched {
+    color: var(--info-500);
+}
+
+/* Counts and dates line up as columns of digits, so they get the mono face. */
+.tp-figure {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── the editor ───────────────────────────────────────────────────────────── */
+
+/*
+ * The headline, at headline size.
+ *
+ * It was a 14px input under a label reading "Article Title" — the same weight as
+ * the permalink beneath it. On a screen whose entire purpose is one piece of
+ * writing, the first line of that writing should not be indistinguishable from
+ * its own metadata.
+ */
+.tp-headline {
+    font-family: 'Instrument Sans', var(--font-family), sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+@media (max-width: 40rem) {
+    .tp-headline {
+        font-size: 1.25rem;
+    }
+}
+
+/*
+ * The permalink is derived and rarely edited, so it reads as a URL rather than
+ * as a field — small, mono, quiet. It used to sit at full weight in half a row,
+ * next to the excerpt, as though the two were equally worth your attention.
+ */
+.tp-permalink {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: var(--tp-label-ink);
+}
+
+/*
+ * A canvas, not a field.
+ *
+ * The body editor had no height of its own, so it opened at Filament's default —
+ * a few lines — and every article was written through a slot. This gives it most
+ * of a screen and lets it grow.
+ */
+.tp-canvas .fi-fo-rich-editor-content {
+    min-height: 34rem;
+}
+
+@media (max-width: 64rem) {
+    .tp-canvas .fi-fo-rich-editor-content {
+        min-height: 24rem;
+    }
+}
+
+/*
+ * Body copy in the editor at reading size and measure. What you type should look
+ * roughly like what the site will publish, or the paragraph you judged as "about
+ * right" while writing is a different length on the page.
+ */
+.tp-canvas .fi-fo-rich-editor-content {
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.tp-canvas .fi-fo-rich-editor-content > * {
+    max-width: 42rem;
+}
+
+/*
+ * The toolbar follows you down a long article instead of scrolling away at the
+ * top of it.
+ */
+.tp-canvas .fi-fo-rich-editor-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: var(--tp-panel-bg);
+    border-bottom: 1px solid var(--tp-line);
+}
+
+/* ── the media tab ────────────────────────────────────────────────────────── */
+
+/*
+ * The featured-image block used to draw itself with inline styles, and one of
+ * them was a real bug: the "or use a video instead" divider was a rule at
+ * `rgba(255,255,255,0.08)` — white on white, invisible to anyone whose panel was
+ * in light mode, which is exactly the failure the theme's dark-only rules had.
+ * Everything here reads a token instead, so both modes get a line.
+ */
+.tp-media-preview {
+    display: inline-block;
+}
+
+.tp-media-preview img {
+    display: block;
+    max-width: 100%;
+    max-height: 12.5rem;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--tp-line);
+    object-fit: cover;
+}
+
+.tp-media-name {
+    display: block;
+    margin-top: 0.5rem;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.6875rem;
+    color: var(--tp-group-ink);
+    overflow-wrap: anywhere;
+}
+
+.tp-media-empty {
+    padding: 1.5rem;
+    border: 1px dashed var(--tp-line-strong);
+    border-radius: var(--radius-card);
+    background-color: var(--tp-fill);
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--tp-group-ink);
+}
+
+.tp-or {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-block: 0.5rem;
+}
+
+.tp-or::before,
+.tp-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--tp-line);
+}
+
+.tp-or span {
+    font-family: 'Instrument Sans', var(--font-family), sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tp-group-ink);
+}

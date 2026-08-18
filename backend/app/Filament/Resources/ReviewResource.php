@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Components\ArticleEditorFields;
+use App\Filament\Components\ArticleTable;
 use App\Filament\Components\MediaPickerFields;
 use App\Filament\Components\PublishTab;
 use App\Filament\Components\SeoFields;
@@ -11,16 +13,10 @@ use App\Models\Article;
 use App\Models\Game;
 // Layout Components (from Schemas)
 use App\Policies\ArticlePolicy;
-use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
 // Form Field Components (from Forms)
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
@@ -34,14 +30,10 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class ReviewResource extends Resource
 {
@@ -144,80 +136,7 @@ class ReviewResource extends Resource
                 // LEFT COLUMN - MAIN CONTENT AREA (2/3 width)
                 // ═══════════════════════════════════════════════════════════
                 Group::make()
-                    ->schema([
-                        // TITLE SECTION
-                        Section::make()
-                            ->schema([
-                                TextInput::make('title')
-                                    ->label('Review Title')
-                                    ->placeholder('Write a compelling review title...')
-                                    ->required()
-                                    ->maxLength(100)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state)))
-                                    ->helperText(
-                                        fn ($state) => $state
-                                        ? (strlen($state).'/100 chars'.(strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
-                                        : 'Aim for 50-60 characters for optimal SEO'
-                                    ),
-
-                                Grid::make(2)->schema([
-                                    TextInput::make('slug')
-                                        ->label('Permalink')
-                                        ->prefix('techplay.gg/reviews/')
-                                        ->placeholder('auto-generated-slug')
-                                        ->required()
-                                        ->unique(ignoreRecord: true)
-                                        ->helperText('URL-friendly • Auto-generated from title'),
-
-                                    Textarea::make('excerpt')
-                                        ->label('Excerpt')
-                                        ->placeholder('Brief summary for cards and social sharing...')
-                                        ->rows(2)
-                                        ->maxLength(200)
-                                        ->helperText(
-                                            fn ($state) => $state
-                                            ? strlen($state).'/200 chars'
-                                            : 'Short description shown in previews'
-                                        ),
-                                ]),
-                            ])
-                            ->compact(),
-
-                        // CONTENT EDITOR
-                        Section::make('Review Content')
-                            ->icon('heroicon-o-document-text')
-                            ->description('Write your in-depth review. Share your thoughts, experiences, and analysis.')
-                            ->schema([
-                                RichEditor::make('content')
-                                    ->label('')
-                                    ->placeholder('Start writing your review...')
-                                    ->required()
-                                    ->toolbarButtons([
-                                        'attachFiles',
-                                        'blockquote',
-                                        'bold',
-                                        'bulletList',
-                                        'codeBlock',
-                                        'h2',
-                                        'h3',
-                                        'italic',
-                                        'link',
-                                        'orderedList',
-                                        'redo',
-                                        'strike',
-                                        'table',
-                                        'underline',
-                                        'undo',
-                                        'alignStart',
-                                        'alignCenter',
-                                        'alignEnd',
-                                        'alignJustify',
-                                    ])
-                                    ->fileAttachmentsDisk('public')
-                                    ->fileAttachmentsDirectory('articles/content'),
-                            ]),
-
+                    ->schema(array_merge(ArticleEditorFields::make('techplay.gg/reviews/', 'review'), [
                         // GAME DETAILS - Collapsible
                         Section::make('Game / Product Details')
                             ->icon('heroicon-o-puzzle-piece')
@@ -226,7 +145,7 @@ class ReviewResource extends Resource
                             ->collapsible()
                             ->schema([
                                 Select::make('catalogue_game_search')
-                                    ->label('🔍 Auto-fill from the games database')
+                                    ->label('Auto-fill from the games database')
                                     ->placeholder('Type a game name to search...')
                                     ->searchable()
                                     ->getSearchResultsUsing(function (string $search) {
@@ -368,7 +287,7 @@ class ReviewResource extends Resource
                             ->collapsible()
                             ->schema([
                                 TextInput::make('review_score')
-                                    ->label('🏆 FINAL SCORE')
+                                    ->label('Final score')
                                     ->readOnly()
                                     ->dehydrated()
                                     ->numeric()
@@ -422,12 +341,12 @@ class ReviewResource extends Resource
                             ->schema([
                                 Grid::make(2)->schema([
                                     Repeater::make('review_data.pros')
-                                        ->label('✅ The Good')
+                                        ->label('The good')
                                         ->simple(TextInput::make('item')->placeholder('Add positive point...'))
                                         ->defaultItems(3)
                                         ->addActionLabel('Add Pro'),
                                     Repeater::make('review_data.cons')
-                                        ->label('❌ The Bad')
+                                        ->label('The bad')
                                         ->simple(TextInput::make('item')->placeholder('Add negative point...'))
                                         ->defaultItems(3)
                                         ->addActionLabel('Add Con'),
@@ -440,17 +359,17 @@ class ReviewResource extends Resource
                                 Select::make('review_data.cta')
                                     ->label('Recommendation')
                                     ->options([
-                                        'must_play' => '🏆 Must Play',
-                                        'recommended' => '👍 Recommended',
-                                        'wait_sale' => '⏳ Wait for Sale',
-                                        'skip' => '👎 Skip It',
-                                        'none' => 'No Verdict',
+                                        'must_play' => 'Must play',
+                                        'recommended' => 'Recommended',
+                                        'wait_sale' => 'Wait for a sale',
+                                        'skip' => 'Skip it',
+                                        'none' => 'No verdict',
                                     ])
                                     ->default('none')
                                     ->native(false),
                             ]),
-                    ])
-                    ->columnSpan(['default' => 1, 'lg' => 2]), // Explicit Span
+                    ]))
+                    ->columnSpan(['default' => 1, 'lg' => 2]),
 
                 // ═══════════════════════════════════════════════════════════
                 // RIGHT COLUMN - SIDEBAR WITH TABS (1/3 width)
@@ -482,79 +401,26 @@ class ReviewResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                ImageColumn::make('featured_image_url')
-                    ->label('')
-                    ->circular()
-                    ->size(40),
-                TextColumn::make('title')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(50)
-                    ->tooltip(fn ($record) => $record->title),
+        return ArticleTable::configure(
+            $table,
+            sitePath: 'reviews',
+            categoryType: 'reviews',
+            // The one column a review list has that the others do not, and the
+            // only one here that every row fills in: 38 of 38 carry a score,
+            // averaging 7.5.
+            extraColumns: [
                 TextColumn::make('review_score')
                     ->label('Score')
+                    ->sortable()
                     ->badge()
                     ->color(fn ($state) => match (true) {
                         $state >= 8 => 'success',
                         $state >= 6 => 'warning',
                         default => 'danger',
                     })
-                    ->formatStateUsing(fn ($state) => $state ? $state.'/10' : '-'),
-                TextColumn::make('category.name')
-                    ->label('Category')
-                    ->badge()
-                    ->color('info')
-                    ->sortable(),
-                IconColumn::make('is_featured_in_hero')
-                    ->boolean()
-                    ->label('🌟')
-                    ->trueIcon('heroicon-s-star')
-                    ->falseIcon('heroicon-o-star'),
-                TextColumn::make('status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
-                        'ready_for_review' => 'warning',
-                        'scheduled' => 'info',
-                        'published' => 'success',
-                        default => 'gray',
-                    }),
-                TextColumn::make('published_at')
-                    ->label('Published')
-                    ->since()
-                    ->sortable(),
-            ])
-            ->defaultSort('published_at', 'desc')
-            ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'ready_for_review' => 'Pending Review',
-                        'scheduled' => 'Scheduled',
-                        'published' => 'Published',
-                    ]),
-                SelectFilter::make('category')
-                    ->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'reviews')),
-            ])
-            ->headerActions([
-                CreateAction::make(),
-            ])
-            ->actions([
-                Action::make('onSite')
-                    ->label('View on site')
-                    ->icon('heroicon-m-arrow-top-right-on-square')
-                    ->color('gray')
-                    ->url(fn ($record): string => config('app.site_url').'/reviews/'.$record->slug, shouldOpenInNewTab: true)
-                    ->visible(fn ($record): bool => filled($record->slug) && $record->status === 'published'),
-                EditAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+                    ->formatStateUsing(fn ($state) => filled($state) ? number_format((float) $state, 1) : '—'),
+            ],
+        );
     }
 
     public static function getRelations(): array

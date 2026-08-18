@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Components\ArticleEditorFields;
+use App\Filament\Components\ArticleTable;
 use App\Filament\Components\MediaPickerFields;
 use App\Filament\Components\PublishTab;
 use App\Filament\Components\SeoFields;
@@ -9,26 +11,13 @@ use App\Filament\Resources\NewsResource\Pages;
 use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
 use App\Models\Article;
 use App\Policies\NewsPolicy;
-use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class NewsResource extends Resource
 {
@@ -102,193 +91,39 @@ class NewsResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema
-            ->columns(['default' => 1, 'lg' => 3]) // Explicit Grid Definition
+            ->columns(['default' => 1, 'lg' => 3])
             ->components([
-                // ═══════════════════════════════════════════════════════════
-                // LEFT COLUMN - MAIN CONTENT AREA (2/3 width)
-                // ═══════════════════════════════════════════════════════════
+                // The writing surface: headline, permalink, standfirst, body.
                 Group::make()
-                    ->schema([
-                        // TITLE SECTION - Clean, prominent
-                        Section::make()
-                            ->schema([
-                                Forms\Components\TextInput::make('title')
-                                    ->label('Article Title')
-                                    ->placeholder('Write a compelling headline...')
-                                    ->required()
-                                    ->maxLength(100)
-                                    ->live(onBlur: true)
-                                    ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state)))
-                                    ->helperText(
-                                        fn ($state) => $state
-                                        ? (strlen($state).'/100 chars'.(strlen($state) > 60 ? ' — Consider shortening for SEO' : ' ✓'))
-                                        : 'Aim for 50-60 characters for optimal SEO'
-                                    ),
+                    ->schema(ArticleEditorFields::make('techplay.gg/news/', 'story'))
+                    ->columnSpan(['default' => 1, 'lg' => 2]),
 
-                                Grid::make(2)->schema([
-                                    Forms\Components\TextInput::make('slug')
-                                        ->label('Permalink')
-                                        ->prefix('techplay.gg/news/')
-                                        ->placeholder('auto-generated-slug')
-                                        ->required()
-                                        ->unique(ignoreRecord: true)
-                                        ->helperText('URL-friendly • Auto-generated from title'),
-
-                                    Forms\Components\Textarea::make('excerpt')
-                                        ->label('Excerpt')
-                                        ->placeholder('Brief summary for cards and social sharing...')
-                                        ->rows(2)
-                                        ->maxLength(200)
-                                        ->helperText(
-                                            fn ($state) => $state
-                                            ? strlen($state).'/200 chars'
-                                            : 'Short description shown in previews'
-                                        ),
-                                ]),
-                            ])
-                            ->compact(),
-
-                        // CONTENT EDITOR
-                        Section::make('Content')
-                            ->icon('heroicon-o-document-text')
-                            ->description('Write your article using the rich text editor. Add images, links, and formatting.')
-                            ->schema([
-                                Forms\Components\RichEditor::make('content')
-                                    ->label('')
-                                    ->placeholder('Start writing your story...')
-                                    ->helperText('To embed media, paste the URL or use the attach/video button.')
-                                    ->required()
-                                    ->toolbarButtons([
-                                        'attachFiles',
-                                        'blockquote',
-                                        'bold',
-                                        'bulletList',
-                                        'codeBlock',
-                                        'h2',
-                                        'h3',
-                                        'italic',
-                                        'link',
-                                        'orderedList',
-                                        'redo',
-                                        'strike',
-                                        'table',
-                                        'underline',
-                                        'undo',
-                                        'alignStart',
-                                        'alignCenter',
-                                        'alignEnd',
-                                        'alignJustify',
-                                    ])
-                                    ->fileAttachmentsDisk('public')
-                                    ->fileAttachmentsDirectory('articles/content'),
-                            ]),
-                    ])
-                    ->columnSpan(['default' => 1, 'lg' => 2]), // Explicit Span
-
-                // ═══════════════════════════════════════════════════════════
-                // RIGHT COLUMN - SIDEBAR WITH TABS (1/3 width)
-                // ═══════════════════════════════════════════════════════════
+                // Everything that is *about* the piece rather than part of it.
                 Group::make()
                     ->schema([
                         Tabs::make('ArticleMeta')
                             ->tabs([
-                                // ─────────────────────────────────────────────
-                                // TAB: PUBLISH
-                                // ─────────────────────────────────────────────
                                 PublishTab::make('news', 'article', withGameLink: true),
 
-                                // ─────────────────────────────────────────────
-                                // TAB: SEO with Live Checker
-                                // ─────────────────────────────────────────────
                                 Tabs\Tab::make('SEO')
                                     ->icon('heroicon-o-magnifying-glass')
                                     ->badge(fn ($get) => $get('meta_title') ? '✓' : null)
                                     ->badgeColor('success')
                                     ->schema(SeoFields::make('techplay.gg/news/')),
 
-                                // ─────────────────────────────────────────────
-                                // TAB: MEDIA with Library Picker
-                                // ─────────────────────────────────────────────
                                 Tabs\Tab::make('Media')
                                     ->icon('heroicon-o-photo')
                                     ->schema(MediaPickerFields::make('featured_image_url', 'featured_image_alt', 'articles')),
                             ])
                             ->persistTabInQueryString(),
                     ])
-                    ->columnSpan(['default' => 1, 'lg' => 1]), // Explicit Span
+                    ->columnSpan(['default' => 1, 'lg' => 1]),
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                ImageColumn::make('featured_image_url')
-                    ->label('')
-                    ->circular()
-                    ->size(40),
-                TextColumn::make('title')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(50)
-                    ->tooltip(fn ($record) => $record->title),
-                TextColumn::make('category.name')
-                    ->label('Category')
-                    ->badge()
-                    ->color('info')
-                    ->sortable(),
-                IconColumn::make('is_featured_in_hero')
-                    ->boolean()
-                    ->label('🌟')
-                    ->trueIcon('heroicon-s-star')
-                    ->falseIcon('heroicon-o-star'),
-                TextColumn::make('status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
-                        'ready_for_review' => 'warning',
-                        'scheduled' => 'info',
-                        'published' => 'success',
-                        default => 'gray',
-                    }),
-                TextColumn::make('views')
-                    ->numeric()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('published_at')
-                    ->label('Published')
-                    ->since()
-                    ->sortable(),
-            ])
-            ->defaultSort('published_at', 'desc')
-            ->filters([
-                SelectFilter::make('status')
-                    ->options([
-                        'draft' => 'Draft',
-                        'ready_for_review' => 'Pending Review',
-                        'scheduled' => 'Scheduled',
-                        'published' => 'Published',
-                    ]),
-                SelectFilter::make('category')
-                    ->relationship('category', 'name', fn (Builder $query) => $query->where('type', 'news')),
-            ])
-            ->headerActions([
-                CreateAction::make(),
-            ])
-            ->actions([
-                Action::make('onSite')
-                    ->label('View on site')
-                    ->icon('heroicon-m-arrow-top-right-on-square')
-                    ->color('gray')
-                    ->url(fn ($record): string => config('app.site_url').'/news/'.$record->slug, shouldOpenInNewTab: true)
-                    ->visible(fn ($record): bool => filled($record->slug) && $record->status === 'published'),
-                EditAction::make(),
-            ])
-            ->bulkActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+        return ArticleTable::configure($table, sitePath: 'news', categoryType: 'news');
     }
 
     public static function getRelations(): array

@@ -2,6 +2,7 @@
 @import './dashboard.css';
 @import './mobile.css';
 @import './calendar.css';
+@import './articles.css';
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';

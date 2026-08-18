@@ -66,10 +66,10 @@ class PublishTab
                 Select::make('status')
                     ->label('Status')
                     ->options(array_filter([
-                        'draft' => '📝 Draft',
-                        'ready_for_review' => '👁️ Pending Review',
-                        'scheduled' => $withScheduling ? '🕐 Scheduled' : null,
-                        'published' => '🌐 Published',
+                        'draft' => 'Draft',
+                        'ready_for_review' => 'Pending review',
+                        'scheduled' => $withScheduling ? 'Scheduled' : null,
+                        'published' => 'Published',
                     ]))
                     ->default('draft')
                     ->required()
@@ -103,7 +103,7 @@ class PublishTab
                     ->helperText('Press Enter after each tag'),
 
                 ! $withHeroToggle ? null : Toggle::make('is_featured_in_hero')
-                    ->label('🌟 Feature in homepage hero')
+                    ->label('Feature in homepage hero')
                     ->helperText('Pin this '.$noun.' to the top of the homepage'),
 
                 ! $withGameLink ? null : Select::make('game_id')
@@ -141,9 +141,9 @@ class PublishTab
         return Select::make('difficulty')
             ->label('Difficulty')
             ->options([
-                'beginner' => '🟢 Beginner',
-                'intermediate' => '🟡 Intermediate',
-                'advanced' => '🔴 Advanced',
+                'beginner' => 'Beginner',
+                'intermediate' => 'Intermediate',
+                'advanced' => 'Advanced',
             ])
             ->required()
             ->native(false)
