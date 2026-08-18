@@ -131,3 +131,61 @@ koloni tabele. Lijepo, ali mi IP adrese nigdje ne prikazujemo u panelu.
 
 Ostalo bih ostavio. Ne zato što je loše, nego zato što bi kod nas bio drugi
 sistem za nešto što već radi.
+
+---
+
+## Instalirano *(18.08.2026)*
+
+| Paket | Verzija | Cijena |
+|---|---|---|
+| `croustibat/filament-jobs-monitor` | v4.5.0 | besplatan |
+| `leandrocfe/filament-apex-charts` | 5.1.3 | besplatan |
+
+Obje su se razriješile na **najnovije** linije — što je direktna posljedica
+jučerašnje nadogradnje CLI PHP-a na 8.4. Prije toga bi composer uzeo starije.
+
+Objavljene su samo **migracije i konfiguracija**. Poglede i prevode koje je
+`vendor:publish` također kopirao sam obrisao — objavljena kopija pogleda ne
+dobija ispravke pri nadogradnji plugina, a nemamo razloga da ih mijenjamo.
+
+Nove tabele: `queue_monitors` i `queue_monitor_failure_groups`.
+
+### Zvono u topbaru — bez plugina
+
+Filament čita Laravelovu vlastitu `notifications` tabelu, pa ovdje plugin nije
+ni trebao. Tabela je bila tu sve vrijeme, sa **157 redova** — ali svi su pisani
+za **igrača**: dostignuća, questovi, rangovi, čitani na sajtu. Ništa nikad nije
+govorilo administratoru.
+
+To je vrijedilo znati prije uključivanja: jedini admin nalog je i igrač, pa će
+zvono pokazivati i njegova vlastita dostignuća.
+
+Zato je dodan **`AdminAlert`** — klasa koja se obraća osoblju. Prva stvar koju
+javlja je **neuspio posao**: dosad je job mogao umrijeti i ostaviti red u
+`failed_jobs` i crveni broj na ekranu koji moraš već gledati.
+
+Dvije odluke u njemu vrijedi zapisati:
+
+- `Queue::failing()` se javi **jednom po poslu** poslije zadnjeg pokušaja, pa
+  nije brbljav.
+- `AdminAlert` namjerno **nije u redu čekanja**. Obavijest da je red pokvaren ne
+  smije putovati kroz red.
+
+Anketa svakih 30 sekundi umjesto guranja preko websocketa. Reverb radi i mogao
+bi ovo nositi uživo, ali websocket po otvorenom tabu da bi se za pola minute
+ranije saznalo za pali posao nije trampa koja se isplati; anketa je jedan
+indeksirani upit.
+
+### Provjereno
+
+| | |
+|---|---|
+| Lista u panelu | **39** (bila 38, Jobs Monitor je nova) |
+| Koje pucaju | **0** |
+| Jobs Monitor ekran | 158 ms, 50 KB |
+| `AdminAlert` test | stigao administratoru, zapis obrisan poslije |
+| Healthcheck | svih osam zeleno |
+
+**Apex Charts danas ne radi ništa** — jezgro ima `ChartWidget`, a sparkline na
+Dashboardu je ručno pisan SVG. Instaliran je za analitičku stranicu kad se bude
+pravila; dotad košta jednu autoloadovanu klasu koju niko ne instancira.
