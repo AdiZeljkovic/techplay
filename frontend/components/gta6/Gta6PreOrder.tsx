@@ -27,7 +27,7 @@ function PlatformIcon({ kind }: { kind: string }) {
 export default function Gta6PreOrder() {
     return (
         <div id="preorder" className="relative rounded-[var(--radius-panel)] overflow-hidden border border-[var(--gta-pink)]/25 bg-[var(--surface-1)] scroll-mt-24">
-            <Image src="/gta6/preorder.png" alt="" fill sizes="(max-width:1320px) 100vw, 1320px" className="object-cover" />
+            <Image src="/gta6/preorder.webp" alt="" fill sizes="(max-width:1320px) 100vw, 1320px" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/90 via-[var(--surface-0)]/55 to-[var(--surface-0)]/30" />
             <div className="relative p-6 md:p-8 flex flex-col lg:flex-row lg:items-center gap-6">
                 <div className="flex-1">

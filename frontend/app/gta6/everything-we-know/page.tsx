@@ -103,7 +103,7 @@ export default function Gta6EverythingWeKnowPage() {
                     subtitle="Every officially confirmed detail about Grand Theft Auto VI — gathered, verified and updated as Rockstar reveals more."
                     breadcrumb="Everything We Know"
                     badge="The Complete Guide"
-                    image="/gta6/card-everything.png"
+                    image="/gta6/card-everything.webp"
                 >
                     <Gta6Countdown />
                 </Gta6SectionHero>

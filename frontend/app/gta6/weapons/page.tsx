@@ -88,7 +88,7 @@ export default async function Gta6WeaponsPage() {
                     subtitle="Every confirmed firearm, melee weapon and explosive in Grand Theft Auto VI"
                     breadcrumb="Weapons"
                     badge="The Arsenal"
-                    image="/gta6/card-weapons.png"
+                    image="/gta6/card-weapons.webp"
                 />
 
                 <div className="container-page py-8">

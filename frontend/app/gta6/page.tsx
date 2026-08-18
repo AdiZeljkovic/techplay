@@ -125,7 +125,7 @@ export default async function Gta6HubPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-7">
                         {/* Map — big feature */}
                         <Link href="/gta6/map" className="group relative md:col-span-2 rounded-[var(--radius-panel)] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] gta6-card min-h-[240px] md:min-h-[300px]">
-                            <Image src="/gta6/card-map.png" alt="GTA 6 interactive map" fill sizes="(max-width:768px) 100vw, 66vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                            <Image src="/gta6/card-map.webp" alt="GTA 6 interactive map" fill sizes="(max-width:768px) 100vw, 66vw" className="object-cover group-hover:scale-105 transition-transform duration-700" />
                             <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/55 to-[var(--surface-0)]/10" />
                             <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/70 to-transparent" />
                             <div className="relative h-full p-7 flex flex-col justify-end">
@@ -156,9 +156,9 @@ export default async function Gta6HubPage() {
                         </Link>
 
                         {/* Smaller cards */}
-                        <BentoCard href="/gta6/vehicles" icon={Car} title="Vehicles" desc="Cars, bikes, boats & much more." cta="View all" image="/gta6/card-vehicles.png" />
-                        <BentoCard href="/gta6/weapons" icon={Crosshair} title="Weapons" desc="All confirmed weapons." cta="View all" image="/gta6/card-weapons.png" />
-                        <BentoCard href="/gta6/everything-we-know" icon={BookOpen} title="Everything We Know" desc="A complete summary of all confirmed info." cta="Read now" image="/gta6/card-everything.png" />
+                        <BentoCard href="/gta6/vehicles" icon={Car} title="Vehicles" desc="Cars, bikes, boats & much more." cta="View all" image="/gta6/card-vehicles.webp" />
+                        <BentoCard href="/gta6/weapons" icon={Crosshair} title="Weapons" desc="All confirmed weapons." cta="View all" image="/gta6/card-weapons.webp" />
+                        <BentoCard href="/gta6/everything-we-know" icon={BookOpen} title="Everything We Know" desc="A complete summary of all confirmed info." cta="Read now" image="/gta6/card-everything.webp" />
                     </div>
                 </section>
 

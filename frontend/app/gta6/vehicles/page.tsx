@@ -88,7 +88,7 @@ export default async function Gta6VehiclesPage() {
                     subtitle="Every confirmed car, motorcycle, boat and aircraft spotted across Leonida"
                     breadcrumb="Vehicles"
                     badge="The Garage"
-                    image="/gta6/card-vehicles.png"
+                    image="/gta6/card-vehicles.webp"
                 />
 
                 <div className="container-page py-8">

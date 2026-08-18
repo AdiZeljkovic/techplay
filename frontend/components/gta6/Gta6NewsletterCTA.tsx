@@ -42,7 +42,7 @@ export default function Gta6NewsletterCTA() {
 
     return (
         <div className="relative rounded-[var(--radius-panel)] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] gta6-grain">
-            <Image src="/gta6/newsletter.png" alt="" fill sizes="(max-width:1320px) 100vw, 1320px" className="object-cover object-right" />
+            <Image src="/gta6/newsletter.webp" alt="" fill sizes="(max-width:1320px) 100vw, 1320px" className="object-cover object-right" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/80 to-[var(--surface-0)]/20" />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--gta-violet)]/25 via-[var(--gta-pink)]/10 to-transparent pointer-events-none" />
 
