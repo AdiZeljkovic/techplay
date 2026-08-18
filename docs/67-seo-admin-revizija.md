@@ -210,10 +210,10 @@ košta alert i ništa više.
 | — | `keywords="[]"` na svakoj stranici | **riješeno** — cast na modelu + tolerantno čitanje |
 | — | `seo_text` | **obrisan**, uz izvoz svih 44 bloka |
 | — | Logger obara zahtjeve | **riješeno** — vlasništvo + `WhatFailureGroupHandler` |
-| 1 | Redirekcije u build (127.0.0.1 + Host umjesto javnog imena) | otvoreno, nizak rizik |
-| 2 | Meki 404 na `/news`, `/reviews`, `/guides`, `/hardware` | otvoreno, **najvažnije za indeks** |
-| 3 | `is_noindex` na stranicama: ili robots izlaz ili brisanje prekidača | otvoreno |
-| 4 | Skloniti Indexing tab dok ga niko ne čita | otvoreno, nikakav rizik |
+| 1 | Redirekcije u build | **riješeno** — `NEXT_PRIVATE_API_URL`; 22 u manifestu, stari slug vraća 301 |
+| 2 | Meki 404 na četiri sekcije | **ostavljeno namjerno** — `noindex` već stoji, lijek bi ukinuo ISR |
+| 3 | `is_noindex` na stranicama | **riješeno** — `/login` i `/register` sada nose `noindex, nofollow` |
+| 4 | Indexing tab | **riješeno** — šest mrtvih prekidača obrisano, tab se zove Robots |
 
 ---
 
