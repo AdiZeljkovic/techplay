@@ -282,6 +282,17 @@ class GameResource extends Resource
              * searching and filtering.
              */
             ->paginationMode(PaginationMode::Simple)
+            /*
+             * Selection stops at the page you are looking at.
+             *
+             * Filament's "select all" needs a total, and asking `count(*)` of
+             * 142,110 rows costs 52 ms on every single load of this screen —
+             * a quarter of its render time, spent so a checkbox can offer to
+             * select a hundred and forty-two thousand games at once. That is
+             * not an operation anyone should reach for from a list, and the
+             * bulk action underneath it is Delete.
+             */
+            ->selectCurrentPageOnly()
             ->columns([
                 ImageColumn::make('cover_url')
                     ->label('')
