@@ -106,3 +106,40 @@ Zajedno: **269 → 100 ms** na najtežem ekranu, uz kostur koji traje jedan trep
 
 Za mjeru: prije ove sesije `/admin/games-database` je trošio 362 ms samo na
 tabelu, s upitom od 198 ms. Sada je cijela stranica 213 ms, a upit 2 ms.
+
+---
+
+## Primijenjeno *(18.08.2026)*
+
+`deferLoading()` je uključen **globalno**, u `Table::configureUsing` gdje već
+stoje ostale konvencije liste — ne na izabranim ekranima.
+
+Mjerenje svih 38 lista je promijenilo prvobitni plan: **nema izdvojeno teških.**
+Sve su bile 210–280 ms jer sve prikazuju 25 redova, pa bi primjena na tri
+ostavila trideset četiri nepromijenjena.
+
+Broj redova je ostao 25. S uključenom odgodom deset i dvadeset pet daju isto
+~100 ms, jer redova nema u prvom odgovoru ni u jednom slučaju — smanjivanje bi
+bilo gubitak bez dobitka.
+
+### Rezultat na svih 38 lista
+
+| | Prije | Poslije |
+|---|---|---|
+| Prosjek | 174 ms | **95 ms** |
+| Najsporija | 283 ms | **119 ms** |
+| Prosječan HTML | ~600 KB | **182 KB** |
+| Lista koje ne vraćaju 200 | 0 | **0** |
+
+### Provjereno da nije samo brže nego i tačno
+
+Svaka od 38 lista je montirana, pa joj je pozvano učitavanje tabele, pa je
+prebrojano koliko redova stigne — i uporedeno s brojem zapisa u bazi:
+
+| | |
+|---|---|
+| Tabela koje se učitaju s redovima | **32** |
+| Tabela koje su prazne jer nema zapisa | 6 |
+| Tabela koje ostanu prazne a imaju zapise | **0** |
+
+Healthcheck svih osam stavki zelen, sajt i API netaknuti.
