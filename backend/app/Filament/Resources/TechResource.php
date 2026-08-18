@@ -7,6 +7,7 @@ use App\Filament\Components\ArticleTable;
 use App\Filament\Components\MediaPickerFields;
 use App\Filament\Components\PublishTab;
 use App\Filament\Components\SeoFields;
+use App\Filament\Resources\NewsResource\RelationManagers\ContentVersionsRelationManager;
 use App\Filament\Resources\TechResource\Pages;
 use App\Models\Article;
 use Filament\Resources\Resource;
@@ -122,6 +123,18 @@ class TechResource extends Resource
     public static function table(Table $table): Table
     {
         return ArticleTable::configure($table, sitePath: 'hardware', categoryType: 'tech');
+    }
+
+    /**
+     * Tech articles are `Article` rows, so `ArticleVersionObserver` has been
+     * writing their version history all along — this screen was simply the one
+     * of the three that never showed it.
+     */
+    public static function getRelations(): array
+    {
+        return [
+            ContentVersionsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

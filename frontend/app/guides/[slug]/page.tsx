@@ -45,9 +45,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
     const images = imageUrl ? [imageUrl] : [];
 
+    /*
+     * `seo_title` and `seo_description` are columns on `guides` that nothing has
+     * ever written or read: the admin's SEO tab was writing `meta_title` and
+     * `meta_description`, which this table does not have, and this page went
+     * straight to the headline and the standfirst. Both ends are fixed now, so
+     * an override set in the panel reaches the page.
+     */
+    const seoTitle = guide.seo_title || `${guide.title} - TechPlay Guides`;
+    const seoDescription = guide.seo_description || guide.excerpt || `Read our guide on ${guide.title}`;
+
     return {
-        title: `${guide.title} - TechPlay Guides`,
-        description: guide.excerpt || `Read our guide on ${guide.title}`,
+        title: seoTitle,
+        description: seoDescription,
         openGraph: {
             title: guide.title,
             description: guide.excerpt || `Read our guide on ${guide.title}`,
@@ -66,7 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             images: images,
         },
         alternates: {
-            canonical: `${process.env.NEXT_PUBLIC_APP_URL}/guides/${slug}`,
+            canonical: guide.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/guides/${slug}`,
         },
         /*
          * "Hide from search engines" is offered on the guide editor and, until

@@ -97,6 +97,7 @@ class SeoFields
         $metaDescription = trim((string) ($state['meta_description'] ?? ''));
         $focusKeyword = trim((string) ($state['focus_keyword'] ?? ''));
         $featuredImage = $state['featured_image_url'] ?? null;
+        $imageAlt = trim((string) ($state['featured_image_alt'] ?? ''));
         $slug = (string) ($state['slug'] ?? '');
 
         $words = static::words($content);
@@ -187,12 +188,18 @@ class SeoFields
             $add('warn', "{$words} words", 'Short enough that search will treat it as a stub.', 4);
         }
 
-        // 6 ── the picture every share needs
+        // 6 ── the picture every share needs, and whether anything describes it
+        //
+        // The alt text is the one field with a real gap in the catalogue —
+        // 345 of 625 articles have none — and the old checker never mentioned
+        // it, so nobody had a reason to notice.
         $max += 10;
-        if (filled($featuredImage)) {
-            $add('good', 'Featured image is set', null, 10);
-        } else {
+        if (! filled($featuredImage)) {
             $add('bad', 'No featured image', 'Every share card and every list on the site uses it.', 0);
+        } elseif ($imageAlt !== '') {
+            $add('good', 'Featured image is set, with alt text', null, 10);
+        } else {
+            $add('warn', 'Featured image has no alt text', 'One line in the Media tab. Screen readers read it, and so does Google.', 6);
         }
 
         // 7 ── the standfirst
@@ -267,16 +274,20 @@ class SeoFields
      *
      * @return array<string, mixed>
      */
-    public static function state(callable $get): array
-    {
+    public static function state(
+        callable $get,
+        string $titleField = 'meta_title',
+        string $descriptionField = 'meta_description',
+    ): array {
         return [
             'title' => $get('title'),
             'excerpt' => $get('excerpt'),
             'content' => $get('content'),
-            'meta_title' => $get('meta_title'),
-            'meta_description' => $get('meta_description'),
+            'meta_title' => $get($titleField),
+            'meta_description' => $get($descriptionField),
             'focus_keyword' => $get('focus_keyword'),
             'featured_image_url' => $get('featured_image_url'),
+            'featured_image_alt' => $get('featured_image_alt'),
             'slug' => $get('slug'),
         ];
     }
@@ -284,13 +295,21 @@ class SeoFields
     /**
      * Get SEO Tab schema with auto-fill and SEO checker
      */
-    public static function make(string $urlPrefix = 'techplay.gg/', bool $includeCanonical = true): array
-    {
+    /**
+     * @param  string  $titleField  column the search title is stored in — `articles` calls it `meta_title`, `guides` calls it `seo_title`
+     * @param  string  $descriptionField  likewise for the description
+     */
+    public static function make(
+        string $urlPrefix = 'techplay.gg/',
+        bool $includeCanonical = true,
+        string $titleField = 'meta_title',
+        string $descriptionField = 'meta_description',
+    ): array {
         return [
             Placeholder::make('seo_analysis')
                 ->label('')
-                ->content(function ($get) {
-                    $result = static::analyse(static::state($get));
+                ->content(function ($get) use ($titleField, $descriptionField) {
+                    $result = static::analyse(static::state($get, $titleField, $descriptionField));
 
                     // A blank form is blank. Scoring it says nothing about the
                     // piece and everything about the fact that it does not exist
@@ -365,7 +384,7 @@ class SeoFields
                 ->helperText('Optional. The phrase this piece should be found by.')
                 ->live(onBlur: true),
 
-            TextInput::make('meta_title')
+            TextInput::make($titleField)
                 ->label('SEO title')
                 ->placeholder('Leave empty to use the headline')
                 ->maxLength(70)
@@ -377,7 +396,7 @@ class SeoFields
                     Action::make('fill_from_title')
                         ->icon('heroicon-o-arrow-down-tray')
                         ->tooltip('Fill from the headline')
-                        ->action(function ($get, $set) {
+                        ->action(function ($get, $set) use ($titleField) {
                             $title = $get('title');
 
                             if ($title) {
@@ -391,12 +410,12 @@ class SeoFields
                                 // an ellipsis in it is just a shorter title that
                                 // reads as broken, in the tab and on every share
                                 // card.
-                                $set('meta_title', SeoFields::shorten($title, 60));
+                                $set($titleField, SeoFields::shorten($title, 60));
                             }
                         })
                 ),
 
-            Textarea::make('meta_description')
+            Textarea::make($descriptionField)
                 ->label('Meta description')
                 ->placeholder('The line under the title in search results.')
                 ->rows(3)
@@ -409,7 +428,7 @@ class SeoFields
                     Action::make('fill_from_excerpt')
                         ->icon('heroicon-o-arrow-down-tray')
                         ->label('Fill from standfirst')
-                        ->action(function ($get, $set) {
+                        ->action(function ($get, $set) use ($descriptionField) {
                             $excerpt = $get('excerpt');
 
                             if ($excerpt) {
@@ -419,7 +438,7 @@ class SeoFields
                                 // not want, and — counting bytes — could slice a
                                 // multibyte character in half and leave broken
                                 // text in the tag.
-                                $set('meta_description', SeoFields::shorten($excerpt, 160));
+                                $set($descriptionField, SeoFields::shorten($excerpt, 160));
                             }
                         })
                 ),

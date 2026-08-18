@@ -244,7 +244,9 @@
       "Bash(sed -i \"s|/forum/consoles-peripherals|/forum/consoles|\" unified.js)",
       "Bash(node unified.js)",
       "Bash(echo \"  tsc izlaz: $?\")",
-      "Bash(cd /c/Users/adize/Documents/Projekti/TechPlay/backend *)"
+      "Bash(cd /c/Users/adize/Documents/Projekti/TechPlay/backend *)",
+      "Bash(php -l app/Filament/Components/MediaPickerFields.php)",
+      "Bash(sed -n '/Video option\\\\|withVideo\\\\|_video_divider/,+3p' app/Filament/Components/MediaPickerFields.php)"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\Documents\\Projekti\\TechPlay\\frontend\\app\\calendar",

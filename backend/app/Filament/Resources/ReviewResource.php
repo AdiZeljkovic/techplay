@@ -386,7 +386,10 @@ class ReviewResource extends Resource
                                     ->icon('heroicon-o-magnifying-glass')
                                     ->badge(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[0])
                                     ->badgeColor(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[1])
-                                    ->schema(SeoFields::make('techplay.gg/reviews/', false)),
+                                    // `reviews/[slug]` reads `canonical_url` and
+                                    // always has; this screen was the only one of
+                                    // the four that never let anyone set it.
+                                    ->schema(SeoFields::make('techplay.gg/reviews/')),
 
                                 // TAB: MEDIA with Library Picker
                                 Tab::make('Media')

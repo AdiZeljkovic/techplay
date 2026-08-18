@@ -39,6 +39,12 @@ export interface Guide {
     published_at?: string | null;
     /** Set by the "Hide from search engines" toggle in the admin. */
     is_noindex?: boolean;
+    /** SEO overrides from the panel. Columns that existed but nothing wrote. */
+    seo_title?: string | null;
+    seo_description?: string | null;
+    canonical_url?: string | null;
+    /** The step-by-step section of the editor. Stored since 18.08.2026. */
+    steps?: Array<{ title?: string; description?: string; image?: string }> | null;
     author: {
         username: string;
         author_slug?: string;

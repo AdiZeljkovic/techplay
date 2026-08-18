@@ -16,6 +16,7 @@ class Guide extends Model
         'title',
         'slug',
         'content',
+        'steps',
         'excerpt',
         'featured_image_url',
         'difficulty', // beginner, intermediate, advanced
@@ -31,6 +32,7 @@ class Guide extends Model
     ];
 
     protected $casts = [
+        'steps' => 'array',
         'is_noindex' => 'boolean',
         'published_at' => 'datetime',
     ];

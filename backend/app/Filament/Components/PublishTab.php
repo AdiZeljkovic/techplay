@@ -50,6 +50,7 @@ class PublishTab
      * @param  bool  $withGameLink  whether the record can point at a game in the catalogue
      * @param  bool  $withHeroToggle  whether it can be pinned to the homepage hero
      * @param  array  $extra  fields only this type has, placed where the category picker would sit — Guides file by difficulty instead of category
+     * @param  bool  $withTags  offer the tag box. `guides` has no `tags` column, so on that screen every tag typed here was discarded on save without a word.
      * @param  bool  $withScheduling  offer "Scheduled" as a status. Only true where something actually publishes it: `articles:publish-scheduled` queries `Article`, and Guides are their own model on their own table, so a scheduled guide would sit at that status forever. Offering a switch that is not wired to anything is worse than not offering it.
      */
     public static function make(
@@ -59,6 +60,7 @@ class PublishTab
         bool $withHeroToggle = true,
         array $extra = [],
         bool $withScheduling = true,
+        bool $withTags = true,
     ): Tab {
         return Tab::make('Publish')
             ->icon('heroicon-o-paper-airplane')
@@ -97,7 +99,7 @@ class PublishTab
                     ->required()
                     ->native(false),
             ], $extra, [
-                TagsInput::make('tags')
+                ! $withTags ? null : TagsInput::make('tags')
                     ->label('Tags')
                     ->placeholder('Add tag...')
                     ->helperText('Press Enter after each tag'),

@@ -25,6 +25,7 @@ class SeoReadoutTest extends TestCase
             'meta_description' => '',
             'focus_keyword' => '',
             'featured_image_url' => null,
+            'featured_image_alt' => '',
             'slug' => '',
         ], $overrides));
     }
@@ -129,6 +130,7 @@ class SeoReadoutTest extends TestCase
             'meta_description' => str_repeat('b', 150),
             'focus_keyword' => 'Quake',
             'featured_image_url' => 'articles/quake.jpg',
+            'featured_image_alt' => 'Ranger stands in a Quake corridor',
             'content' => '<h2>Quake at thirty</h2><h3>Two</h3><p><a href="/news">link</a> '.str_repeat('word ', 400).'</p>',
         ]);
 
@@ -157,6 +159,7 @@ class SeoReadoutTest extends TestCase
             'meta_description' => str_repeat('b', 150),
             'focus_keyword' => 'Quake',
             'featured_image_url' => 'articles/quake.jpg',
+            'featured_image_alt' => 'Ranger stands in a Quake corridor',
             'content' => '<h2>Quake at thirty</h2><h3>Two</h3><p><a href="/news">link</a> '.str_repeat('word ', 400).'</p>',
         ]);
         $this->assertNull($count, 'a finished article has nothing to report either');
@@ -172,6 +175,33 @@ class SeoReadoutTest extends TestCase
         ]);
         $this->assertSame('2', $count);
         $this->assertSame('danger', $colour);
+    }
+
+    /**
+     * The gap the old checker never mentioned: 345 of 625 published articles
+     * have a featured image and no alt text for it.
+     */
+    public function test_a_featured_image_without_alt_text_is_flagged(): void
+    {
+        $result = $this->analyse([
+            'title' => 'A headline of a perfectly reasonable length for search',
+            'content' => str_repeat('word ', 400),
+            'featured_image_url' => 'articles/x.jpg',
+        ]);
+
+        $check = collect($result['checks'])->first(fn ($c) => str_contains($c['label'], 'Featured image'));
+
+        $this->assertSame('warn', $check['tone']);
+        $this->assertStringContainsString('alt text', $check['label']);
+
+        $withAlt = $this->analyse([
+            'title' => 'A headline of a perfectly reasonable length for search',
+            'content' => str_repeat('word ', 400),
+            'featured_image_url' => 'articles/x.jpg',
+            'featured_image_alt' => 'Someone playing a game',
+        ]);
+
+        $this->assertSame('good', collect($withAlt['checks'])->first(fn ($c) => str_contains($c['label'], 'Featured image'))['tone']);
     }
 
     /**

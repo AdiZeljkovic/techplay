@@ -20,7 +20,8 @@ class MediaPickerFields
     public static function make(
         string $pathField = 'featured_image_url',
         ?string $altField = 'featured_image_alt',
-        string $collection = 'articles'
+        string $collection = 'articles',
+        bool $withVideo = true,
     ): array {
         return [
             // Actual form field that gets saved - editable text input for the path
@@ -163,19 +164,28 @@ class MediaPickerFields
                     ->helperText('Read aloud by screen readers, and read by Google. 280 of 625 articles have one.'),
             ] : []),
 
-            // ─── Video option ────────────────────────────────────────────────
-            Placeholder::make('_video_divider')
-                ->label('')
-                ->content(new HtmlString('<div class="tp-or"><span>or use a video instead</span></div>'))
-                ->columnSpanFull(),
+            /*
+             * The video alternative, where there is a column to put it in.
+             *
+             * `guides` has no `featured_video_url`, so on that screen a pasted
+             * YouTube link went nowhere: not fillable, silently dropped, and the
+             * helper text underneath promised a hero player that could never
+             * appear.
+             */
+            ...(! $withVideo ? [] : [
+                Placeholder::make('_video_divider')
+                    ->label('')
+                    ->content(new HtmlString('<div class="tp-or"><span>or use a video instead</span></div>'))
+                    ->columnSpanFull(),
 
-            TextInput::make('featured_video_url')
-                ->label('Featured Video URL')
-                ->placeholder('https://www.youtube.com/watch?v=... or https://vimeo.com/...')
-                ->helperText('YouTube or Vimeo link. When set, the hero shows a video player — clicking play hides the title overlay and starts the video.')
-                ->url()
-                ->suffixIcon('heroicon-o-video-camera')
-                ->columnSpanFull(),
+                TextInput::make('featured_video_url')
+                    ->label('Featured Video URL')
+                    ->placeholder('https://www.youtube.com/watch?v=... or https://vimeo.com/...')
+                    ->helperText('YouTube or Vimeo link. When set, the hero shows a video player — clicking play hides the title overlay and starts the video.')
+                    ->url()
+                    ->suffixIcon('heroicon-o-video-camera')
+                    ->columnSpanFull(),
+            ]),
         ];
     }
 }

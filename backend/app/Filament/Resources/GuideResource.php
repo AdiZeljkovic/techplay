@@ -157,6 +157,9 @@ class GuideResource extends Resource
                                     // Guides are their own model on their own
                                     // table; the scheduler only walks Article.
                                     withScheduling: false,
+                                    // And `guides` has no `tags` column, so
+                                    // every tag typed here used to vanish on save.
+                                    withTags: false,
                                 ),
 
                                 // TAB: SEO with Live Checker
@@ -164,12 +167,28 @@ class GuideResource extends Resource
                                     ->icon('heroicon-o-magnifying-glass')
                                     ->badge(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[0])
                                     ->badgeColor(fn ($get) => SeoFields::tabBadge(SeoFields::state($get))[1])
-                                    ->schema(SeoFields::make('techplay.gg/guides/', false)),
+                                    /*
+                                     * `guides` stores these as `seo_title` and
+                                     * `seo_description`. The shared component
+                                     * wrote `meta_title` / `meta_description`,
+                                     * which `articles` has and this table does
+                                     * not — so both fields on this screen were
+                                     * discarded on every save while the two
+                                     * columns that do exist stayed empty.
+                                     */
+                                    ->schema(SeoFields::make(
+                                        'techplay.gg/guides/',
+                                        includeCanonical: true,
+                                        titleField: 'seo_title',
+                                        descriptionField: 'seo_description',
+                                    )),
 
                                 // TAB: MEDIA with Library Picker
                                 Tab::make('Media')
                                     ->icon('heroicon-o-photo')
-                                    ->schema(MediaPickerFields::make('featured_image_url', 'featured_image_alt', 'guides')),
+                                    // No `featured_image_alt` and no
+                                    // `featured_video_url` on this table either.
+                                    ->schema(MediaPickerFields::make('featured_image_url', null, 'guides', withVideo: false)),
                             ])
                             ->persistTabInQueryString(),
                     ])
