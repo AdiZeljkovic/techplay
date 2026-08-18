@@ -27,6 +27,20 @@ class CacheRevalidationService
      * @param  string  $slug  - article slug
      * @param  array  $additionalPaths  - additional paths to revalidate
      */
+    /**
+     * Not the method the observers use.
+     *
+     * `RevalidationService::revalidateArticle(string $slug, string $category)`
+     * is what every article path actually calls, and it sends the `category`
+     * the Next endpoint requires. This one takes a `$type` first, sends no
+     * `category` at all, and would be answered with
+     * `{"error":"Missing \"slug\" or \"category\" for article revalidation"}`.
+     *
+     * Nothing calls it. Left in place rather than deleted because the two
+     * services are easy to confuse — this comment is worth more than the
+     * removal, since the next person to reach for it is reaching for the
+     * wrong class.
+     */
     public static function revalidateArticle(string $type, string $slug, array $additionalPaths = []): bool
     {
         $frontendUrl = config('app.frontend_url');
