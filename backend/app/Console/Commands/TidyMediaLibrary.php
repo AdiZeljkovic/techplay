@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Article;
+use App\Models\Guide;
 use App\Models\Media;
 use Illuminate\Console\Command;
 
@@ -78,9 +80,42 @@ class TidyMediaLibrary extends Command
             }
         }
 
+        /*
+         * Name what can be named.
+         *
+         * The original file names are gone — they were thrown away at upload
+         * long before `original_name` existed, and no amount of tidying brings
+         * them back. But most of these pictures are the cover of something, and
+         * the thing they are the cover of has a title. `Hogwarts Legacy 2 is
+         * officially being made` is a far better answer to "which picture is
+         * this" than `01KEQHACPVVAHBWYCP3EXKT1D0`.
+         */
+        $named = 0;
+
+        foreach (Media::whereNull('title')->get() as $item) {
+            $owner = Article::where('featured_image_url', $item->path)->first()
+                ?? ($item->webp_path ? Article::where('featured_image_url', $item->webp_path)->first() : null)
+                ?? Guide::where('featured_image_url', $item->path)->first();
+
+            if (! $owner) {
+                continue;
+            }
+
+            $named++;
+
+            if (! $dry) {
+                $item->forceFill([
+                    'title' => $owner->title,
+                    // And the alt text somebody already wrote for it.
+                    'alt_text' => $item->alt_text ?: ($owner->featured_image_alt ?? null),
+                ])->save();
+            }
+        }
+
         $this->table(['', 'rows'], [
             ['WebP rows folded into their original', $folded],
             ['Titles that were only a storage name', $cleared],
+            ['Named after the piece they illustrate', $named],
             ['Left in the library', $dry ? Media::count().' (unchanged)' : Media::count()],
         ]);
 

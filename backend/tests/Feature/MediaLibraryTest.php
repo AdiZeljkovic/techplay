@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Filament\Components\MediaPickerFields;
+use App\Models\Article;
+use App\Models\Category;
 use App\Models\Media;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -145,5 +148,36 @@ class MediaLibraryTest extends TestCase
         $this->assertStringContainsString('<img src=', $label);
         $this->assertStringContainsString('Hogwarts Legacy 2 key art', $label);
         $this->assertStringContainsString('1200×630', $label);
+    }
+
+    /**
+     * The original file names are gone — thrown away at upload, long before
+     * there was a column to keep them in. But most of these pictures are the
+     * cover of something, and that something has a title.
+     */
+    public function test_tidy_names_a_picture_after_the_piece_it_illustrates(): void
+    {
+        $parent = Category::create(['name' => 'News', 'slug' => 'news-root-'.uniqid(), 'type' => 'news']);
+        $category = Category::create([
+            'name' => 'Gaming', 'slug' => 'news-'.uniqid(), 'type' => 'news', 'parent_id' => $parent->id,
+        ]);
+
+        Article::factory()->create([
+            'title' => 'Hogwarts Legacy 2 is officially being made',
+            'featured_image_url' => 'articles/01KEQHACPVVAHBWYCP3EXKT1D0.jpg',
+            'featured_image_alt' => 'Key art from the announcement',
+            'category_id' => $category->id,
+            'author_id' => User::factory()->create()->id,
+            'is_featured_in_hero' => false,
+        ]);
+
+        $orphan = $this->media(['title' => null, 'path' => 'articles/nobody-uses-this.jpg']);
+        $used = $this->media(['title' => null, 'path' => 'articles/01KEQHACPVVAHBWYCP3EXKT1D0.jpg']);
+
+        $this->artisan('media:tidy')->assertSuccessful();
+
+        $this->assertSame('Hogwarts Legacy 2 is officially being made', $used->fresh()->title);
+        $this->assertSame('Key art from the announcement', $used->fresh()->alt_text);
+        $this->assertNull($orphan->fresh()->title);
     }
 }
