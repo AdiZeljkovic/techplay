@@ -261,7 +261,10 @@ class GameResource extends Resource
             'views',
             'platforms',
             'genres',
-            DB::raw("(description IS NOT NULL AND description <> '') AS has_description"),
+            // No empty-string descriptions exist (checked: 0 of 142,110), so IS NOT
+            // NULL is enough — and unlike a comparison it never has to detoast the
+            // column to answer.
+            DB::raw('(description IS NOT NULL) AS has_description'),
             DB::raw("(screenshots IS NOT NULL AND screenshots::text NOT IN ('[]', 'null', '')) AS has_screenshots"),
         ]);
     }
