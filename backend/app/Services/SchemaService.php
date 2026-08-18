@@ -12,9 +12,22 @@ class SchemaService
      */
     public static function getReviewSchema(Article $article): ?array
     {
-        if (! $article->review_rating || $article->category !== 'reviews') {
+        /*
+         * Two reasons this never produced anything.
+         *
+         * `$article->category` is the Category model, so `!== 'reviews'` was
+         * true for every article ever passed in — the guard could not fail to
+         * fire. And `review_rating` was a column no review has ever carried:
+         * the score lives in `review_score` (38 of 38) and the verdict in
+         * `review_data`, which is where this reads from now.
+         */
+        $score = $article->review_score;
+
+        if (! $score || $article->category?->type !== 'reviews') {
             return null;
         }
+
+        $verdict = (array) ($article->review_data ?? []);
 
         return [
             '@context' => 'https://schema.org',
@@ -25,7 +38,7 @@ class SchemaService
             ],
             'reviewRating' => [
                 '@type' => 'Rating',
-                'ratingValue' => $article->review_rating,
+                'ratingValue' => (string) $score,
                 'bestRating' => '10',
                 'worstRating' => '1',
             ],
@@ -39,8 +52,8 @@ class SchemaService
             ],
             'datePublished' => $article->published_at?->toIso8601String(),
             'reviewBody' => Str::limit(strip_tags($article->excerpt ?? $article->content), 500),
-            'positiveNotes' => $article->review_pros ?? [],
-            'negativeNotes' => $article->review_cons ?? [],
+            'positiveNotes' => array_values(array_filter((array) ($verdict['pros'] ?? []))),
+            'negativeNotes' => array_values(array_filter((array) ($verdict['cons'] ?? []))),
         ];
     }
 
@@ -97,7 +110,9 @@ class SchemaService
      */
     public static function getHowToSchema(Article $article): ?array
     {
-        if ($article->category !== 'guides') {
+        // Same comparison bug as the review block: a Category model is never
+        // the string 'guides', so this guard fired on every call.
+        if ($article->category?->type !== 'guides') {
             return null;
         }
 
@@ -180,11 +195,11 @@ class SchemaService
             'name' => $productName,
             'description' => $article->excerpt ?? Str::limit(strip_tags($article->content), 200),
             'image' => $article->featured_image_url,
-            'review' => $article->review_rating ? [
+            'review' => $article->review_score ? [
                 '@type' => 'Review',
                 'reviewRating' => [
                     '@type' => 'Rating',
-                    'ratingValue' => $article->review_rating,
+                    'ratingValue' => (string) $article->review_score,
                     'bestRating' => '10',
                 ],
                 'author' => [

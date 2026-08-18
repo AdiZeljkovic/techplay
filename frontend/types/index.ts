@@ -75,9 +75,12 @@ export interface Article {
     content: string;
     category: Category; // Updated from string
     is_featured_in_hero: boolean;
-    seo_title?: string;
-    seo_description?: string;
-    /** What the admin form writes; preferred over the older seo_* pair. */
+    /*
+     * Dropped from `articles` on 18.08.2026: `seo_title` and `seo_description`
+     * were a second SEO pair that no screen ever offered and no row ever filled,
+     * sitting in the fallback chains as a term that could only be undefined.
+     * `guides` and `categories` keep theirs — there `seo_*` is the real pair.
+     */
     meta_title?: string;
     meta_description?: string;
     focus_keyword?: string;
@@ -143,9 +146,12 @@ export interface Review {
     excerpt?: string; // Optional helper mapping
     featured_image_url?: string; // Optional helper mapping for reused components
     updated_at: string;
-    seo_title?: string;
-    seo_description?: string;
-    /** What the admin form writes; preferred over the older seo_* pair. */
+    /*
+     * Dropped from `articles` on 18.08.2026: `seo_title` and `seo_description`
+     * were a second SEO pair that no screen ever offered and no row ever filled,
+     * sitting in the fallback chains as a term that could only be undefined.
+     * `guides` and `categories` keep theirs — there `seo_*` is the real pair.
+     */
     meta_title?: string;
     meta_description?: string;
     focus_keyword?: string;

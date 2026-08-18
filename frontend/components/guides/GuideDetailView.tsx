@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import Script from "next/script";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE, splitForAd, tidyExcerpt } from "@/lib/prose";
+import GuideSteps, { stepsForSchema, type GuideStep } from "./GuideSteps";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
@@ -44,7 +45,7 @@ export interface Guide {
     seo_description?: string | null;
     canonical_url?: string | null;
     /** The step-by-step section of the editor. Stored since 18.08.2026. */
-    steps?: Array<{ title?: string; description?: string; image?: string }> | null;
+    steps?: GuideStep[] | null;
     author: {
         username: string;
         author_slug?: string;
@@ -106,7 +107,7 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
         "name": guide.title,
         "image": imageUrl ? [imageUrl] : [],
         "totalTime": `PT${parseInt(readingTime)}M`,
-        "step": [], // Could parse steps if structured
+        "step": stepsForSchema(guide.steps, process.env.NEXT_PUBLIC_STORAGE_URL),
         "author": {
             "@type": "Person",
             "name": guide.author?.display_name || guide.author?.username
@@ -304,6 +305,8 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                         </>
                                     )}
                                     </div>
+
+                                    <GuideSteps steps={guide.steps} />
 
                                     {/* Mid-Article Ad */}
                                     <div className="my-12 xl:hidden">

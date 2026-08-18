@@ -107,8 +107,6 @@ class ReviewResource extends JsonResource
 
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
-            'seo_title' => $this->seo_title,
-            'seo_description' => $this->seo_description,
             'canonical_url' => $this->canonical_url,
             'is_noindex' => (bool) $this->is_noindex,
             // The page builds its description and Product schema from these.

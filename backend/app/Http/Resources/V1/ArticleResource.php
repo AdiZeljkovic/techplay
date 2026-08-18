@@ -127,7 +127,6 @@ class ArticleResource extends JsonResource
             }),
 
             'reading_time' => ($this->reading_time ?? ceil(str_word_count(strip_tags($this->content ?? '')) / 200)).' min read',
-            'is_featured' => $this->is_featured,
             'is_featured_in_hero' => $this->is_featured_in_hero,
 
             'review_score' => $this->review_score,
@@ -161,8 +160,6 @@ class ArticleResource extends JsonResource
             // card in a grid.
             'meta_title' => $this->when($detail, $this->meta_title),
             'meta_description' => $this->when($detail, $this->meta_description),
-            'seo_title' => $this->when($detail, $this->seo_title),
-            'seo_description' => $this->when($detail, $this->seo_description),
             'canonical_url' => $this->when($detail, $this->canonical_url),
             'is_noindex' => $this->when($detail, (bool) $this->is_noindex),
 

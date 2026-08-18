@@ -25,12 +25,9 @@ class Article extends Model
         'category_id',
         'game_id',
         'is_featured_in_hero',
-        'seo_title',
-        'seo_description',
         'focus_keyword',
         'canonical_url',
         'is_noindex',
-        'is_featured',
         'status',
         'published_at',
         'meta_title',
@@ -42,7 +39,6 @@ class Article extends Model
     ];
 
     protected $casts = [
-        'is_featured' => 'boolean',
         'is_featured_in_hero' => 'boolean',
         'published_at' => 'datetime',
         'review_data' => 'array',

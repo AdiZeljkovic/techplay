@@ -52,7 +52,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     const ratingValue = Number(review.review_score ?? review.rating ?? 0);
     const reviewObj: Record<string, any> = {
         "@type": "Review",
-        "headline": review.seo_title || review.title,
+        "headline": review.meta_title || review.title,
         "author": {
             "@type": "Person",
             "name": review.author?.display_name || review.author?.username || "TechPlay Reviewer",

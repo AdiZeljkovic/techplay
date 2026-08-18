@@ -67,10 +67,10 @@ export async function generateMetadata(
         };
     }
 
-    const title = review.meta_title || review.seo_title || review.title;
+    const title = review.meta_title || review.title;
     // Construct a rich description with score
     const scoreStr = `Rating: ${review.rating}/10.`;
-    const description = review.meta_description || review.seo_description || review.summary || review.excerpt || `${scoreStr} Read our full review of ${review.item_name || review.title} on TechPlay.`;
+    const description = review.meta_description || review.summary || review.excerpt || `${scoreStr} Read our full review of ${review.item_name || review.title} on TechPlay.`;
     const images = review.cover_image || review.featured_image_url
         ? [(review.cover_image || review.featured_image_url)!.startsWith('http')
             ? (review.cover_image || review.featured_image_url)!
@@ -142,10 +142,10 @@ export default async function ReviewSlugPage({ params }: Props) {
         "@type": "Product",
         "name": review.item_name || review.title,
         "image": coverImage ? [coverImage] : [],
-        "description": review.meta_description || review.seo_description || review.summary || review.excerpt || "",
+        "description": review.meta_description || review.summary || review.excerpt || "",
         "review": {
             "@type": "Review",
-            "name": review.meta_title || review.seo_title || review.title,
+            "name": review.meta_title || review.title,
             "url": reviewUrl,
             "datePublished": review.published_at || review.created_at,
             "author": {
