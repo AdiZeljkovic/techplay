@@ -964,3 +964,69 @@ poslije iscrtavanja.
 odgovor na `call()` ne serijalizuje ponovo ono sto je u njoj — pa tvrdnja
 poslije `loadTable()` ne nalazi nista i kaze da je pojas pokvaren dok on stoji
 na stranici.
+
+---
+
+## Pregled cijelog panela odjednom *(18.08.2026, zadnji krug)*
+
+Dvije mjere umjesto citanja fajl po fajl.
+
+**Prva:** otvoreno je **svih 100 ekrana** panela — svaka lista, svaka forma za
+kreiranje, svaka za izmjenu — onako kako ih otvara pretrazivac.
+
+| | |
+|---|---|
+| Ekrana provjereno | **100** |
+| Koji pucaju | **0** |
+| Najsporiji | Giveaways edit, 354 ms |
+| Najvise upita | Giveaways lista, 15 |
+
+**Druga:** ispitano je sta svaka od 38 lista *nudi* — koliko kolona, koliko
+pretrazivih, koliko sortabilnih, koliko filtera, ima li policy. Rupe nisu bile
+u tome sta je pokvareno nego sta liste ne daju.
+
+### Sta je naslo
+
+**1. SEO Manager je brojao bajtove.** Ekran cija je *jedina* svrha duzina meta
+naslova i opisa preko svih 625 clanaka mjerio je `strlen`.
+
+| | |
+|---|---|
+| Naslova s krivom duzinom | 74 |
+| Opisa s krivom duzinom | 141 |
+| **Znacki s krivom bojom** | **8** |
+
+Osam clanaka je prikazano zeleno iako im je opis izvan opsega, ili obrnuto.
+Ista greska popravljena istog dana u SEO tabu — nadjena je tek kad se traZilo
+`strlen(` po cijelom panelu.
+
+**2. Quests: 42 reda, sedam kolona, nijedna sortabilna.** Pitanje „koji quest
+najvise placa" nije imalo odgovor na ekranu koji izlistava questove.
+
+**3. `QueueMonitor` je bio jedini model bez policy.** Stigao je s pluginom
+istog dana. Filament za nemapiran model **dozvoljava sve**, a ta lista nosi
+dvije grupne akcije nad jedinim zapisom o tome sta je palo i zasto. Isti obrazac
+koji je ranije uhvacen na `Role`.
+
+**4. Games: 142.110 redova iza jednog filtera** — najtanji alat na najvecoj
+listi u panelu. Dodani:
+
+- **platforma**, kroz `platforms @> ARRAY[?]::text[]` — sto je operator koji
+  `games_platforms_gin` odgovara. Taj indeks je stajao neiskoristen od strane
+  panela otkad je katalog prepravljen. Izmjereno: `PC` → 80.720 pogodaka,
+  `Nintendo Switch` → 174, najsporiji upit **1,9 ms**.
+- **naslovnica** — 9.619 igara je bez nje, a stranica igre bez slike izgleda
+  pokvareno a ne oskudno.
+
+### Sta je namjerno **ostavljeno**
+
+**Filter na Achievements.** 67 redova, 29 razlicitih `criteria_type` — padajuci
+spisak s 29 stavki od kojih vecina ima jednu ili dvije igre bio bi vise nereda
+nego pomoci. Pretraga to rjesava, a tri strane po 25 redova se prelistaju.
+
+**Analytics stranica** drzi jedan widget (`MostViewedArticles`). Provjereno da
+nije duplikat — Dashboard ga vise ne prikazuje otkad je prepravljen u konzolu.
+
+**Pretraga na Jobs listi** (218 redova, nijedna kolona pretraziva) — to je
+tabela plugina i njen resurs; mijenjanje bi znacilo prepisivati tudji ekran.
+Zapisano, nije dirano.
