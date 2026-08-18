@@ -193,3 +193,75 @@ Dvije deprecation poruke koje su to pokretale i dalje postoje u kodu:
 | psysh piše ERROR u log | `php artisan tinker` bez upisivog HOME-a; smeta traženju pravih grešaka |
 | Jobs lista bez pretrage | 218 redova, tabela plugina — mijenjanje znači prepisivati tuđi ekran |
 | CLAUDE.md zaostaje | WoW servisi, `PingIndexNow`, NeoBrutalism tema |
+
+---
+
+## Dopuna: mrtav kod obrisan, alt tekst spojen *(isti dan)*
+
+### Obrisano — 1.350 redova
+
+| | redova |
+|---|---|
+| `SeoAnalyzerService` | 343 |
+| `seo-score.blade` | 231 |
+| `KeywordDensityService` | 184 |
+| `GeminiService` | 179 |
+| `OpenAIService` | 156 |
+| `social-preview.blade` | 147 |
+| `Jobs/PingIndexNow` | 41 |
+| `seo-preview.blade` | 41 |
+| `serp-preview.blade` | 28 |
+
+`AltTextService` je **zadrzan i ukljucen**, jer alt tekst treba za SEO.
+
+### Zasto ga nije bilo dovoljno samo pozvati
+
+Nad nasim storageom stari servis je davao ovo:
+
+```
+01KEQ5KW66WJGTKV4KBRH7WEH4.webp   ->  Keq5Kw66Wjgtkv4Kbrh7Weh4
+usUTo74GmWm0hYlJLA1yYR10R8...png  ->  Usuto74Gmwm0Hyljla1Yyr10R8...
+```
+
+Filament snima pod generisanim identifikatorom, pa „parsiraj ime fajla" ovdje
+nije strategija nego masina koja cita masinsko knjigovodstvo i zove to opisom.
+**Takav alt je gori od praznog:** Google ga obezvrijedi, a citac ekrana ga
+procita naglas, slovo po slovo, nekome ko je pitao sta je na slici.
+
+Servis sada vazi jedno pravilo — **radije nista nego sum**. `suggest()` vraca
+`null` kad nema nista posteno, i redom pokusava:
+
+1. natpis koji je covjek napisao,
+2. ime s kojim je fajl stigao, ako je to jezik,
+3. naslov teksta koji slika ilustruje,
+4. nista.
+
+### I onda se naslo zasto to nikad nije ni radilo
+
+`featured_image_alt` stoji na formi, u Media tabu, otkad taj tab postoji — i
+**zavrsavao je u bazi.** `ArticleResource` ga nije slao, nijedna stranica ga
+nije citala, a front je za `alt` koristio naslov clanka.
+
+`ReviewResource` ga je slao od ranije, ali ga `ReviewDetailView` nije koristio.
+
+Znaci svaki opis koji je urednik pazljivo napisao za naslovnu sliku isao je u
+nista, godinu dana.
+
+### Poslije
+
+| | prije | poslije |
+|---|---|---|
+| Clanaka bez opisa naslovne slike | 345 od 625 | **0 od 626** |
+| Slika u biblioteci bez opisa | 887 od 1.167 | 538 od 1.168 |
+| Stize li opis do stranice | **ne** | da |
+
+Onih 538 su slike iz tijela teksta koje nijedan clanak ne koristi kao
+naslovnu, s generisanim imenima — servis ih posteno odbija umjesto da izmisli.
+
+Provjereno na zivoj stranici:
+
+```
+alt="Arc Raiders, no logo, no text just plain image"
+```
+
+umjesto naslova clanka, koji je tu stajao ranije.
