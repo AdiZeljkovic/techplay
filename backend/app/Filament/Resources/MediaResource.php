@@ -65,7 +65,11 @@ class MediaResource extends Resource
                             ->maxSize(10240)
                             ->required()
                             ->columnSpanFull()
-                            ->helperText('Max file size: 10MB. Supported: JPG, PNG, GIF, WebP'),
+                            // Storage keeps a generated name; this keeps the one
+                            // the file arrived with, which is the only one
+                            // anybody can search for later.
+                            ->storeFileNamesIn('original_name')
+                            ->helperText('Max 10 MB. JPG, PNG, GIF or WebP. The file name is kept so you can find it again.'),
                     ]),
 
                 Section::make('Image Details')
@@ -73,9 +77,9 @@ class MediaResource extends Resource
                         Grid::make(2)->schema([
                             Forms\Components\TextInput::make('title')
                                 ->label('Title')
-                                ->placeholder('Give this image a name...')
+                                ->placeholder('Left empty, the file name is used')
                                 ->maxLength(255)
-                                ->helperText('Optional - helps with organization'),
+                                ->helperText('What this picture is of. It is what the library search matches on.'),
 
                             Forms\Components\Select::make('collection')
                                 ->label('Collection')

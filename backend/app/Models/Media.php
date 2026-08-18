@@ -15,6 +15,7 @@ class Media extends Model
 
     protected $fillable = [
         'title',
+        'original_name',
         'path',
         'webp_path',
         'alt_text',
@@ -61,6 +62,28 @@ class Media extends Model
         }
 
         return round($bytes, 2).' '.$units[$i];
+    }
+
+    /**
+     * The name to put in front of a person.
+     *
+     * In order: whatever they typed as a title, then the name the file arrived
+     * with, and only then the storage name — which is a ULID and tells nobody
+     * anything. Every row in the library used to fall straight through to the
+     * third one, because the first two were never captured.
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        foreach ([$this->title, $this->original_name] as $candidate) {
+            $candidate = trim((string) $candidate);
+
+            // A title that is just the storage name is not a title.
+            if ($candidate !== '' && $candidate !== pathinfo($this->path, PATHINFO_FILENAME)) {
+                return pathinfo($candidate, PATHINFO_FILENAME) ?: $candidate;
+            }
+        }
+
+        return pathinfo($this->path, PATHINFO_BASENAME);
     }
 
     /**

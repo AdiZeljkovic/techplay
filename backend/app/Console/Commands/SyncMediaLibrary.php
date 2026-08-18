@@ -59,12 +59,43 @@ class SyncMediaLibrary extends Command
                     continue;
                 }
 
+                /*
+                 * A .webp beside its original is a conversion, not a picture.
+                 *
+                 * `ImageOptimizationService` writes `x.webp` next to `x.jpg`,
+                 * and a walk of the disk sees two files — which is how the
+                 * library came to hold 36 rows for 18 pictures, each one listed
+                 * twice under two unreadable names. It belongs on the original
+                 * row, in the column that exists for it.
+                 */
+                if (preg_match('/\.webp$/i', $file)) {
+                    $base = preg_replace('/\.webp$/i', '', $file);
+
+                    $original = Media::where('path', $base.'.jpg')
+                        ->orWhere('path', $base.'.jpeg')
+                        ->orWhere('path', $base.'.png')
+                        ->first();
+
+                    if ($original) {
+                        $original->forceFill(['webp_path' => $file])->save();
+                        $totalSkipped++;
+                        $progressBar->advance();
+
+                        continue;
+                    }
+                }
+
                 // Create media record
                 $fullPath = $disk->path($file);
-                $fileName = basename($file);
 
                 $media = new Media([
-                    'title' => pathinfo($fileName, PATHINFO_FILENAME),
+                    /*
+                     * No title. The file name here is a generated ULID, and a
+                     * row titled `01KEQ5KW66WJGTKV4KBRH7WEH4` reads as though
+                     * somebody named it that. Left null, the library says
+                     * "Untitled", which is true and invites a real one.
+                     */
+                    'title' => null,
                     'path' => $file,
                     'mime_type' => $mimeType,
                     'size' => $disk->size($file),

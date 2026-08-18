@@ -9,11 +9,80 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Actions;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 
 class MediaPickerFields
 {
+    /**
+     * What belongs in a picker for article art.
+     *
+     * Two exclusions, both from reading the 36 rows that were in there:
+     *
+     * **Avatars.** Eight of them, offered as candidates for a news hero. They
+     * are somebody's profile picture; they are not cover art and never will be.
+     *
+     * **WebP derivatives.** `ImageOptimizationService` writes `x.webp` next to
+     * `x.jpg`, and `media:sync` walked the disk creating a row per *file* — so
+     * all 18 pictures in the library appeared twice, as two entries with two
+     * unreadable names that happened to be the same picture. A conversion is a
+     * property of an image, not another image; `webp_path` is the column for it.
+     */
+    protected static function libraryQuery(): Builder
+    {
+        return Media::query()
+            ->where('mime_type', 'like', 'image/%')
+            ->where(fn ($q) => $q->whereNull('collection')->orWhere('collection', '<>', 'avatars'))
+            /*
+             * Belt and braces after `media:tidy`: if a derivative row ever
+             * reappears, it still does not show up as a second picture.
+             *
+             * Written with `substr` and `||` rather than `regexp_replace`
+             * because this query runs on PostgreSQL in production and on SQLite
+             * in the test suite, and only one of those has the latter.
+             */
+            ->whereRaw("lower(path) not like '%.webp' or not exists (
+                select 1 from media m2 where m2.path in (
+                    substr(media.path, 1, length(media.path) - 5) || '.jpg',
+                    substr(media.path, 1, length(media.path) - 5) || '.jpeg',
+                    substr(media.path, 1, length(media.path) - 5) || '.png'
+                )
+            )")
+            ->orderByDesc('created_at');
+    }
+
+    /**
+     * A row as one option: the picture, its name, and where it came from.
+     *
+     * `allowHtml()` is on, so everything variable here goes through `e()`.
+     *
+     * @param  Collection<int, Media>  $media
+     * @return array<string, string>
+     */
+    protected static function libraryOptions($media): array
+    {
+        return $media->mapWithKeys(function (Media $item) {
+            $url = Storage::disk('public')->url($item->path);
+
+            $meta = array_filter([
+                $item->collection,
+                $item->width && $item->height ? $item->width.'×'.$item->height : null,
+                $item->created_at?->format('j M Y'),
+            ]);
+
+            $label = '<span style="display:flex;align-items:center;gap:.625rem;">'
+                .'<img src="'.e($url).'" alt="" loading="lazy" style="width:56px;height:32px;object-fit:cover;border-radius:.1875rem;flex-shrink:0;">'
+                .'<span style="min-width:0;">'
+                .'<span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'.e($item->display_name).'</span>'
+                .'<span style="display:block;font-size:.6875rem;opacity:.55;">'.e(implode(' · ', $meta)).'</span>'
+                .'</span></span>';
+
+            return [$item->path => $label];
+        })->toArray();
+    }
+
     /**
      * Create a Media Picker field group with upload OR select from library modal
      */
@@ -59,90 +128,132 @@ class MediaPickerFields
             // Action buttons
             Actions::make([
                 // Upload new button
+                /*
+                 * Upload.
+                 *
+                 * Two things it did not do before. It kept no record of the
+                 * name the file arrived with — Filament stores under a generated
+                 * ULID, which is correct, but that was the only name kept, so
+                 * `hogwarts-legacy-2-key-art.jpg` became
+                 * `01KEQ5KW66WJGTKV4KBRH7WEH4` and nothing else. And it never
+                 * put the picture in the library at all: the row was only ever
+                 * created by `media:sync` walking the disk afterwards.
+                 */
                 Action::make('upload_new')
                     ->label('Upload')
                     ->color('primary')
-                    ->modalHeading('Upload New Image')
+                    ->modalHeading('Upload an image')
                     ->modalWidth('lg')
                     ->form([
                         FileUpload::make('new_image')
-                            ->label('Choose File')
+                            ->label('File')
                             ->image()
                             ->disk('public')
                             ->directory($collection)
+                            ->storeFileNamesIn('new_image_original_name')
                             ->imageEditor()
-                            ->imageEditorAspectRatios([
-                                '16:9',
-                                '4:3',
-                                '1:1',
-                            ])
+                            ->imageEditorAspectRatios(['16:9', '4:3', '1:1'])
                             ->maxSize(2048)
                             ->required()
-                            ->helperText('Recommended: 1200×630px for social sharing'),
+                            ->helperText('1200×630 or wider. The file name is kept so you can find it again.'),
+
+                        TextInput::make('new_image_alt')
+                            ->label('Alt text')
+                            ->placeholder('What is in the picture?')
+                            ->helperText('Read aloud by screen readers, and read by Google.'),
                     ])
-                    ->action(function (array $data, $set) use ($pathField) {
-                        if (! empty($data['new_image'])) {
-                            $set($pathField, $data['new_image']);
+                    ->action(function (array $data, $set) use ($pathField, $altField, $collection) {
+                        if (empty($data['new_image'])) {
+                            return;
                         }
+
+                        $path = $data['new_image'];
+                        $original = $data['new_image_original_name'] ?? null;
+
+                        $set($pathField, $path);
+
+                        if ($altField && filled($data['new_image_alt'] ?? null)) {
+                            $set($altField, $data['new_image_alt']);
+                        }
+
+                        // Into the library, so the next article can reuse it.
+                        Media::firstOrCreate(
+                            ['path' => $path],
+                            [
+                                'title' => $original ? pathinfo($original, PATHINFO_FILENAME) : null,
+                                'original_name' => $original,
+                                'alt_text' => $data['new_image_alt'] ?? null,
+                                'collection' => $collection,
+                                'mime_type' => Storage::disk('public')->mimeType($path) ?: null,
+                                'size' => Storage::disk('public')->exists($path) ? Storage::disk('public')->size($path) : null,
+                                'uploaded_by' => auth()->id(),
+                            ],
+                        );
                     }),
 
-                // Choose from library button - using proper Select component
+                /*
+                 * Choose from library.
+                 *
+                 * What this replaced: a select preloaded with two hundred rows,
+                 * labelled by storage name, searched in the browser against
+                 * those same storage names. The screenshot of it is a column of
+                 * `01KECBS95PJ4EEKMFRR54PNTSM` — and searching was the only way
+                 * through, against text nobody has ever seen or typed.
+                 *
+                 * Now: thumbnails, because a picture library should show
+                 * pictures; the name a person gave it; and the search runs in
+                 * PostgreSQL over the title, the original file name and the
+                 * path, so it works past the first two hundred rows.
+                 */
                 Action::make('choose_from_library')
                     ->label('Choose from library')
                     ->color('gray')
-                    ->modalHeading('Media Library')
-                    ->modalDescription('Select an existing image from your library')
+                    ->modalHeading('Media library')
                     ->modalWidth('xl')
                     ->form([
                         Select::make('selected_path')
-                            ->label('Select Image')
-                            ->placeholder('Search for an image...')
-                            ->searchable()
+                            ->label('Image')
+                            ->placeholder('Newest first — type to search')
                             ->required()
-                            ->options(function () {
-                                return Media::query()
-                                    ->orderBy('created_at', 'desc')
-                                    ->limit(200)
-                                    ->get()
-                                    ->mapWithKeys(function ($media) {
-                                        $title = $media->title ?: basename($media->path);
+                            ->searchable()
+                            ->allowHtml()
+                            ->options(fn () => static::libraryOptions(static::libraryQuery()->limit(40)->get()))
+                            ->getSearchResultsUsing(function (string $search) {
+                                $term = '%'.mb_strtolower(str_replace(['%', '_'], ['\%', '\_'], $search)).'%';
 
-                                        return [$media->path => $title];
-                                    })
-                                    ->toArray();
+                                return static::libraryOptions(
+                                    static::libraryQuery()
+                                        ->where(fn ($q) => $q
+                                            ->whereRaw('lower(title) like ?', [$term])
+                                            ->orWhereRaw('lower(original_name) like ?', [$term])
+                                            ->orWhereRaw('lower(path) like ?', [$term]))
+                                        ->limit(40)
+                                        ->get()
+                                );
                             })
-                            ->getOptionLabelUsing(fn ($value) => basename($value))
-                            ->helperText('Start typing to search for images'),
-
-                        Placeholder::make('selected_preview')
-                            ->label('Preview')
-                            ->content(function ($get) {
-                                $path = $get('selected_path');
-                                if ($path) {
-                                    $url = Storage::disk('public')->url($path);
-
-                                    return new HtmlString(
-                                        '<div class="tp-media-preview"><img src="'.e($url).'" alt="Preview" /></div>'
-                                    );
-                                }
-
-                                return new HtmlString('<div class="tp-media-empty">Pick one above to see it here</div>');
-                            }),
+                            ->getOptionLabelUsing(fn ($value) => static::libraryOptions(
+                                Media::where('path', $value)->get()
+                            )[$value] ?? basename((string) $value)),
                     ])
                     ->action(function (array $data, $set) use ($pathField, $altField) {
-                        if (! empty($data['selected_path'])) {
-                            $set($pathField, $data['selected_path']);
+                        if (empty($data['selected_path'])) {
+                            return;
+                        }
 
-                            // Also set alt text if available
-                            $media = Media::where('path', $data['selected_path'])->first();
-                            if ($media && $media->alt_text) {
-                                $set($altField, $media->alt_text);
+                        $set($pathField, $data['selected_path']);
+
+                        // Carry the alt text across, so a picture described once
+                        // stays described.
+                        if ($altField) {
+                            $alt = Media::where('path', $data['selected_path'])->value('alt_text');
+
+                            if (filled($alt)) {
+                                $set($altField, $alt);
                             }
                         }
                     })
                     ->modalSubmitActionLabel('Use this image'),
 
-                // Clear image button
                 Action::make('clear_image')
                     ->label('Remove')
                     ->color('danger')
