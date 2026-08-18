@@ -19,8 +19,8 @@ class Gta6WeaponsController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $search = $request->get('search');
-        $type = $request->get('type');
+        $search = $request->input('search');
+        $type = $request->input('type');
 
         $cacheKey = 'gta6.weapons.'.md5(serialize(compact('search', 'type')));
 

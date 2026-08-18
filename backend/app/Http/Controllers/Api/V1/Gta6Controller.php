@@ -23,8 +23,8 @@ class Gta6Controller extends Controller
      */
     public function locations(Request $request): JsonResponse
     {
-        $category = $request->get('category');
-        $search = $request->get('search');
+        $category = $request->input('category');
+        $search = $request->input('search');
         $confirmed = $request->boolean('confirmed');
 
         $cacheKey = 'gta6.locations.'.md5(serialize(compact('category', 'search', 'confirmed')));

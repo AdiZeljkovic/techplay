@@ -16,7 +16,7 @@ class ShopController extends Controller
 {
     public function index()
     {
-        $page = request()->get('page', 1);
+        $page = request()->input('page', 1);
         $cacheKey = "shop.products.page_{$page}";
 
         return Cache::remember($cacheKey, CacheService::TTL_LONG, function () {

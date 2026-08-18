@@ -19,9 +19,9 @@ class GuideController extends Controller
 
     public function index(Request $request)
     {
-        $page = $request->get('page', 1);
-        $difficulty = $request->get('difficulty', 'all');
-        $search = $request->get('search', '');
+        $page = $request->input('page', 1);
+        $difficulty = $request->input('difficulty', 'all');
+        $search = $request->input('search', '');
         $cacheKey = "guides.index.v3.page_{$page}.diff_{$difficulty}.search_".md5($search);
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($request, $search) {

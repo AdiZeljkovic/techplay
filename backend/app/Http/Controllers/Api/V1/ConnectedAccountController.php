@@ -97,7 +97,7 @@ class ConnectedAccountController extends Controller
         }
 
         // Extract Steam64 ID from claimed_id URL
-        $claimedId = $request->get('openid_claimed_id', '');
+        $claimedId = $request->input('openid_claimed_id', '');
         preg_match('#/(\d{17})$#', $claimedId, $m);
         $steamId = $m[1] ?? null;
 
@@ -107,7 +107,7 @@ class ConnectedAccountController extends Controller
 
         // Identify the user from the single-use handle. `pull` reads and
         // removes in one step, so a replayed callback finds nothing.
-        $state = (string) $request->get('state', '');
+        $state = (string) $request->input('state', '');
         $userId = $state !== ''
             ? Cache::pull('steam:link:'.$state)
             : null;

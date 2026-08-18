@@ -159,8 +159,8 @@ class ForumController extends Controller
 
     public function showCategory($slug)
     {
-        $page = request()->get('page', 1);
-        $tagSlug = request()->get('tag');
+        $page = request()->input('page', 1);
+        $tagSlug = request()->input('tag');
 
         // Checked before anything is read or cached. A board nobody is allowed
         // to see answers 404 rather than 403: a refusal confirms the board is
@@ -1170,11 +1170,11 @@ class ForumController extends Controller
             'since' => 'nullable|in:day,week,month,year',
         ]);
 
-        $query = $request->get('q');
-        $categorySlug = $request->get('category');
-        $authorName = $request->get('author');
+        $query = $request->input('q');
+        $categorySlug = $request->input('category');
+        $authorName = $request->input('author');
 
-        $since = match ($request->get('since')) {
+        $since = match ($request->input('since')) {
             'day' => now()->subDay(),
             'week' => now()->subWeek(),
             'month' => now()->subMonth(),
@@ -1248,7 +1248,7 @@ class ForumController extends Controller
             'filters' => [
                 'category' => $categorySlug,
                 'author' => $authorName,
-                'since' => $request->get('since'),
+                'since' => $request->input('since'),
             ],
         ]);
     }

@@ -165,8 +165,8 @@ class AuthorController extends Controller
      */
     public function articles(string $slug, Request $request): JsonResponse
     {
-        $type = $request->get('type', 'all');
-        $page = (int) $request->get('page', 1);
+        $type = $request->input('type', 'all');
+        $page = (int) $request->input('page', 1);
         $cacheKey = "author.articles.v1.{$slug}.type_{$type}.page_{$page}";
 
         $data = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($slug, $type, $page) {

@@ -17,8 +17,8 @@ class TechController extends Controller
      */
     public function index(Request $request)
     {
-        $page = $request->get('page', 1);
-        $category = $request->get('category', 'all');
+        $page = $request->input('page', 1);
+        $category = $request->input('category', 'all');
         $cacheKey = "tech.index.v3.page_{$page}.cat_{$category}";
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request) {

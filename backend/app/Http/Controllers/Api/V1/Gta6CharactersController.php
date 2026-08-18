@@ -19,8 +19,8 @@ class Gta6CharactersController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $search = $request->get('search');
-        $role = $request->get('role');
+        $search = $request->input('search');
+        $role = $request->input('role');
 
         $cacheKey = 'gta6.characters.'.md5(serialize(compact('search', 'role')));
 

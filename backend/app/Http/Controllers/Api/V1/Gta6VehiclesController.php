@@ -19,8 +19,8 @@ class Gta6VehiclesController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $search = $request->get('search');
-        $class = $request->get('class');
+        $search = $request->input('search');
+        $class = $request->input('class');
 
         $cacheKey = 'gta6.vehicles.'.md5(serialize(compact('search', 'class')));
 

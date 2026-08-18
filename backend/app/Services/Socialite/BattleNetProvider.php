@@ -19,7 +19,7 @@ class BattleNetProvider extends AbstractProvider
      */
     protected function getAuthUrl($state)
     {
-        $region = request()->get('region', 'us'); // us, eu, kr, tw
+        $region = request()->input('region', 'us'); // us, eu, kr, tw
         $baseUrl = "https://{$region}.battle.net";
 
         return $this->buildAuthUrlFromBase($baseUrl.'/oauth/authorize', $state);

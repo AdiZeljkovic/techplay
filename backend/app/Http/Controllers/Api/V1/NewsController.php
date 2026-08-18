@@ -17,9 +17,9 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
-        $page = $request->get('page', 1);
-        $category = $request->get('category', 'all');
-        $search = $request->get('search', '');
+        $page = $request->input('page', 1);
+        $category = $request->input('category', 'all');
+        $search = $request->input('search', '');
         $cacheKey = "news.index.v3.page_{$page}.cat_{$category}.search_".md5($search);
 
         // Note: Caching for 1 hour (production)

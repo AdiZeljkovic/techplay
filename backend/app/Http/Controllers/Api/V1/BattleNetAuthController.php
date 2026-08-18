@@ -21,7 +21,7 @@ class BattleNetAuthController extends Controller
      */
     public function redirect(Request $request)
     {
-        $region = $request->get('region', 'us'); // Allow frontend to specify region
+        $region = $request->input('region', 'us'); // Allow frontend to specify region
         session(['battlenet_region' => $region]); // Store in session for token exchange
 
         return Socialite::driver('battlenet')->stateless()->redirect();
