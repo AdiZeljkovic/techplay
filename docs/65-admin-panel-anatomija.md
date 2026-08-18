@@ -550,3 +550,106 @@ vrednija od pola sekunde.
 Stil je u `calendar.css` i nastavlja se na tokene iz `dashboard.css` —
 `.tp-panel`, `.tp-huge`, `.tp-eyebrow`, `.tp-bar` i tonovi dolaze odande.
 To je i bila poenta pisanja tog fajla na taj način.
+
+---
+
+## Cetiri ekrana za pisanje *(18.08.2026)*
+
+Poravnaj u glavi: News, Reviews, Guides i Tech su **jedan** ekran nacrtan
+cetiri puta. Sada su i u kodu jedan — `ArticleEditorFields` i `ArticleTable`,
+uz `PublishTab`, `SeoFields` i `MediaPickerFields` koji su vec bili zajednicki.
+
+### Prvo: dvije kolone koje nista ne govore
+
+Izmjereno na zivoj bazi prije nego je ista napisano:
+
+| kolona | News 528 | Reviews 38 | Tech 58 | Guides 4 |
+|---|---|---|---|---|
+| Status | **528 published** | 38 published | 55 od 58 | 4 published |
+| Zvjezdica (hero) | 14 (2,7%) | 2 | **0** | — |
+| Pregledi | *sakriveni* | *nema kolone* | *sakriveni* | *sakriveni* |
+| Autor | *nema kolone* | *nema kolone* | *nema kolone* | ima |
+
+Status je crtao istu zelenu znacku na **svakom** redu tri od cetiri liste.
+Kolona koja nikad ne moze pomoci da nesto nadjes, treca s desna. Zvjezdica je
+crtala 514 praznih obrisa **u akcentnoj crvenoj** — najsvjetlija ponovljena
+oznaka na ekranu znacila je „ne".
+
+A `views`, jedini broj koji se razlikuje po redu i odgovara na jedino pitanje
+koje se postavlja starom arhivom, bio je **iskljucen po defaultu** na sve tri
+liste koje su ga imale, a Reviews ga nisu imali uopste. Reviews u prosjeku
+imaju **1.124** pregleda prema Newsovih 116 — to niko nije mogao vidjeti.
+
+I: sest ljudi pise News (Dogashin 259, FrendlyKraken 105, adi 63,
+XLBanana47 52, Kurlaga 45, Zdase 4) a nije bilo ni kolone ni filtera za autora.
+
+### Pravilo
+
+Isto koje vazi za konzolu na Dashboardu: **kolona zasluzuje sirinu time sto se
+razlikuje medju redovima.** Status i hero vise nisu kolone nego oznake na
+vlastitom redu, i pojave se samo kad red **nije** obican. Oboje ostaju u
+filterima — tako se za njih pita namjerno, umjesto da ti se 528 puta odgovori.
+
+Na njihovo mjesto ide ono sto je bilo sakriveno: potpis (rubrika · autor) i
+pregledi, sa zbirom u podnozju — pa svaki filter odgovara na pitanje: izaberi
+autora, procitaj njegov doseg.
+
+Naslovnica se crta **16:9** umjesto kruzno. Svaki clanak ima sliku, pa je 528
+puta jedna 16:9 fotografija bila obrezana u disk velicine avatara — prva stvar
+u redu izgledala je kao da govori *ko*, a govorila je *sta*.
+
+### Forma: mjesto za pisanje
+
+Naslov je bio input od 14px pod natpisom „Article Title", iste tezine kao
+permalink ispod njega. Sada:
+
+- naslov u velicini naslova, bez natpisa;
+- permalink odmah ispod, mali i mono — izveden je i cita se cesce nego sto se
+  mijenja;
+- standfirst dobija vlastiti red (ranije pola reda i dva reda visine, iako je
+  to recenica koja mora prodati tekst na kartici i u dijeljenju);
+- platno visoko 34rem, s ljepljivom trakom alata i mjerom od 42rem;
+- iz sekcije tijela izbacen opis „Write your article using the rich text
+  editor" — objasnjavao je traku alata nekome ko je koristi svaki dan, i to
+  na svakom otvaranju.
+
+### Popravljeno usput
+
+**Izmjena naslova objavljenog clanka prepisivala je slug.** `afterStateUpdated`
+je radio i na ekranu za izmjenu, pa je ispravka tipfelera u naslovu tiho
+pomjerala **zivi URL** — svi dolazni linkovi na 404, bez ijedne rijeci na
+ekranu. Vjerovatno odatle dobar dio od 21 reda u Redirects. Sada se slug pise
+sam samo pri kreiranju; test to zakljucava.
+
+**Razdjelnik u Media tabu bio je bijel na bijelom.** Crtao se inline kao
+`rgba(255,255,255,0.08)` — nevidljiv svakome ko panel drzi u svijetloj temi.
+Ista greska kao ona s pravilima pod `.dark`. Cijeli Media tab sada cita tokene.
+
+**Test koji nista ne provjerava.** `InputHardeningTest` je pisao u `seo_text`,
+kolonu obrisanu 18.08. — pisanje u nepostojecu kolonu ne tvrdi nista, a cita se
+kao pokrivenost. Obrisan, uz objasnjenje zasto.
+
+### Izmjereno poslije (zagrijano, tri prolaza, najbolji)
+
+| Lista | Vrijeme | Upita | Najsporiji upit |
+|---|---|---|---|
+| News | 285 ms | 8 | 3,1 ms |
+| Reviews | 280 ms | 8 | 5,6 ms |
+| Tech | 282 ms | 8 | 4,5 ms |
+| Guides | 143 ms | 4 | 1,3 ms |
+| *Games (nedirano)* | 197 ms | 1 | 1,8 ms |
+| *Comments (nedirano)* | 220 ms | 4 | 2,4 ms |
+
+Baza je ~13 ms od 285; ostalo je Blade. To je isti pojas kao liste koje nisu
+dirane, pa ovo nije bila izmjena brzine i ne tvrdi se da jest.
+
+Dvije sitnice vrijedi znati: Filament racuna zbir **dvaput** (2,2 + 2,6 ms), i
+opcije filtera po kategoriji ucitava dvaput. Ostavljeno — 5 ms za podnozje koje
+svaki filter pretvara u odgovor.
+
+### Provjere
+
+`tests/Feature/ArticleDeskTest.php` — sedam testova. Svi idu kroz
+`Livewire::test()` **i** `->call('loadTable')`: panel ima `deferLoading()`, pa
+lista koja je samo montirana iscrta okvir i nijedan red, a tvrdnja o redovima
+bi prosla ili pala iz pogresnog razloga.
