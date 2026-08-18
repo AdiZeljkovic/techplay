@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Gta6Weapon;
-use App\Services\CacheRevalidationService;
+use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 
 class Gta6WeaponObserver
@@ -18,13 +18,13 @@ class Gta6WeaponObserver
     {
         $this->clearCache($weapon->slug);
         // Detail pages were removed — weapons are a showcase-only listing
-        CacheRevalidationService::revalidatePaths(['/gta6/weapons']);
+        app(RevalidationService::class)->revalidatePaths(['/gta6/weapons']);
     }
 
     public function deleted(Gta6Weapon $weapon): void
     {
         $this->clearCache($weapon->slug);
-        CacheRevalidationService::revalidatePaths(['/gta6/weapons']);
+        app(RevalidationService::class)->revalidatePaths(['/gta6/weapons']);
     }
 
     private function clearCache(string $slug): void

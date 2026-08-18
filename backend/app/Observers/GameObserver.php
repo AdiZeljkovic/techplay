@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Game;
-use App\Services\CacheRevalidationService;
+use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -50,7 +50,7 @@ class GameObserver
         }
 
         try {
-            CacheRevalidationService::revalidateGame($game->slug);
+            app(RevalidationService::class)->revalidateGame($game->slug);
         } catch (\Throwable $e) {
             Log::warning('[GameObserver] Revalidation failed', ['slug' => $game->slug, 'error' => $e->getMessage()]);
         }
@@ -80,7 +80,7 @@ class GameObserver
         }
 
         try {
-            CacheRevalidationService::revalidateGame($game->slug);
+            app(RevalidationService::class)->revalidateGame($game->slug);
         } catch (\Throwable $e) {
             Log::warning('[GameObserver] Revalidation failed', ['slug' => $game->slug, 'error' => $e->getMessage()]);
         }

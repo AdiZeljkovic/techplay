@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Gta6Character;
-use App\Services\CacheRevalidationService;
+use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 
 class Gta6CharacterObserver
@@ -11,7 +11,7 @@ class Gta6CharacterObserver
     public function saved(Gta6Character $character): void
     {
         $this->clearCache($character->slug);
-        CacheRevalidationService::revalidatePaths([
+        app(RevalidationService::class)->revalidatePaths([
             '/gta6/characters',
             '/gta6/characters/'.$character->slug,
             '/gta6',
@@ -21,7 +21,7 @@ class Gta6CharacterObserver
     public function deleted(Gta6Character $character): void
     {
         $this->clearCache($character->slug);
-        CacheRevalidationService::revalidatePaths(['/gta6/characters', '/gta6']);
+        app(RevalidationService::class)->revalidatePaths(['/gta6/characters', '/gta6']);
     }
 
     private function clearCache(string $slug): void

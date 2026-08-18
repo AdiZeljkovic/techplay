@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Gta6Vehicle;
-use App\Services\CacheRevalidationService;
+use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 
 class Gta6VehicleObserver
@@ -19,13 +19,13 @@ class Gta6VehicleObserver
     {
         $this->clearCache($vehicle->slug);
         // Detail pages were removed — vehicles are a showcase-only listing
-        CacheRevalidationService::revalidatePaths(['/gta6/vehicles']);
+        app(RevalidationService::class)->revalidatePaths(['/gta6/vehicles']);
     }
 
     public function deleted(Gta6Vehicle $vehicle): void
     {
         $this->clearCache($vehicle->slug);
-        CacheRevalidationService::revalidatePaths(['/gta6/vehicles']);
+        app(RevalidationService::class)->revalidatePaths(['/gta6/vehicles']);
     }
 
     private function clearCache(string $slug): void

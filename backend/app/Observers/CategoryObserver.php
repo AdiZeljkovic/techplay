@@ -3,8 +3,8 @@
 namespace App\Observers;
 
 use App\Models\Category;
-use App\Services\CacheRevalidationService;
 use App\Services\CacheService;
+use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 
 class CategoryObserver
@@ -45,6 +45,6 @@ class CategoryObserver
         CacheService::clearAdminDropdowns();
 
         // Trigger Next.js revalidation
-        CacheRevalidationService::revalidateNavigation();
+        app(RevalidationService::class)->revalidateNavigation();
     }
 }
