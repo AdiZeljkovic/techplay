@@ -147,7 +147,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         {imageUrl ? (
                                             <Image
                                                 src={imageUrl}
-                                                alt={decodeHtml(review.title)}
+                                                alt={decodeHtml(review.featured_image_alt || review.title)}
                                                 fill
                                                 className="object-cover object-right opacity-80"
                                                 priority

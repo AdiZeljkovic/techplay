@@ -98,6 +98,16 @@ class ArticleResource extends JsonResource
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
             'featured_image_url' => $featuredImageUrl,
+            /*
+             * Never sent until 18.08.2026.
+             *
+             * `featured_image_alt` has been on the form, in the Media tab, since
+             * the tab existed — and it stopped at the database. The API did not
+             * carry it and no page read it, so every description anybody wrote
+             * for a cover went nowhere while the site emitted the headline as
+             * the alt instead.
+             */
+            'featured_image_alt' => $this->featured_image_alt,
             'featured_video_url' => $this->featured_video_url ?: null,
             'published_at_human' => $this->published_at ? $this->published_at->diffForHumans() : null,
 

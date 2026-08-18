@@ -71,6 +71,8 @@ export interface Article {
     slug: string;
     featured_image_url: string;
     featured_video_url?: string | null;
+    /** What the cover shows. Written in the admin's Media tab. */
+    featured_image_alt?: string | null;
     excerpt: string;
     content: string;
     category: Category; // Updated from string
@@ -145,6 +147,8 @@ export interface Review {
     created_at: string;
     excerpt?: string; // Optional helper mapping
     featured_image_url?: string; // Optional helper mapping for reused components
+    /** What the cover shows. Written in the admin's Media tab. */
+    featured_image_alt?: string | null;
     updated_at: string;
     /*
      * Dropped from `articles` on 18.08.2026: `seo_title` and `seo_description`

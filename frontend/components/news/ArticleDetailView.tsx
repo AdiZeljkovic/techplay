@@ -157,7 +157,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         {heroBackground ? (
                                             <Image
                                                 src={heroBackground}
-                                                alt={decodeHtml(article.title)}
+                                                alt={decodeHtml(article.featured_image_alt || article.title)}
                                                 fill
                                                 className="object-cover object-right"
                                                 priority
