@@ -123,8 +123,17 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
         <>
         <article className="min-h-screen pb-20">
             <ReadingProgress />
-            <Script
-                id="guide-schema"
+            {/*
+                A plain <script>, not next/script.
+
+                `<Script>` defaults to `afterInteractive`, which injects the tag
+                client-side after hydration — so this HowTo block has never been
+                in the HTML the server sends, which is the copy a crawler reads
+                first. Every other detail page on the site uses a lowercase
+                <script> for exactly this. It only became visible once the block
+                had real steps in it to miss.
+            */}
+            <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
