@@ -891,3 +891,76 @@ prebrojao rezultat.
 **Podvlaka, ne crtica.** `ImageOptimizationService` pise `x_thumb.webp`, a moj
 prvi filter je trazio `-thumb`. Prva provjera je rekla „0 varijanti"; druga,
 s pravim znakom, **294 od 1.461 reda** — tacno po 98 svake velicine.
+
+---
+
+## Pojas iznad liste *(18.08.2026)*
+
+Zahtjev je bio „neka analitika iznad, da stranica odmah pokaze osnovne podatke".
+Prvo pitanje nije bilo *kako* nego **na kojim listama** — jer „dodaj statistiku
+na svaku listu" je prvi instinkt i pogresan je, iz istog razloga zbog kojeg je
+kolona `Status` morala otici s liste clanaka.
+
+Izmjerena je svaka od 38 lista prije nego je napisan ijedan widget.
+
+### Prolaze — sest
+
+| lista | vodeca brojka | zasto mijenja sta radis |
+|---|---|---|
+| News | dana od zadnje objave | redakcija koja je zasutila |
+| Reviews | isto | **41 dan** kad je normala 5 |
+| Tech | isto | plus 3 nedovrsena |
+| Guides | isto | vlastiti ritam, mjesecni |
+| Broken Links | **jos otvorenih** | 21 od 62; ostalo je vec popravljeno |
+| Media Library | % opisanih za citac ekrana | **24%** — 887 slika bez alt teksta |
+
+### Ne prolaze, i vrijedi znati zasto
+
+- **Komentari.** Svih 19 je `approved`, i nijedan komentar nikad nije bio nista
+  drugo. Broj „na cekanju" bi bio trajna nula.
+- **Orders, Products, Reports, Posts, Game Ratings, User Supports** — nula
+  redova svaki. Zaglavlje na praznoj listi je ukras.
+- **GTA 6 likovi/vozila/oruzja, rangovi, sezone, role, kategorije, questovi,
+  dostignuca** — referenca i konfiguracija. Nista se ne mijenja, pa nista nije
+  vijest.
+- **Users** — 52 reda, troje novih u mjesec. Stvarno, ali ne mijenja nista sto
+  se na tom ekranu radi.
+
+### Kako vodeca brojka zna sta znaci „kasni"
+
+Prag **nije broj koji je neko izabrao**. Svaka redakcija se poredi sa
+**vlastitim** medijanom razmaka u zadnjih godinu dana:
+
+| redakcija | medijan razmaka | od zadnje | ocjena |
+|---|---|---|---|
+| News | 0,1 dan | 1 dan | uredu |
+| Reviews | 5,2 dana | **41 dan** | osam puta preko |
+| Tech | 5,9 dana | 15 dana | upozorenje |
+| Guides | 34,2 dana | 24 dana | **ranije nego obicno** |
+
+Fiksno „javi poslije sedam dana" bi vikalo na News, koji objavljuje vise puta
+dnevno, i sutilo o Guides. Uz to ide recenica — *„Normally one every 5 days."* —
+jer `41 dan` je alarmantno tek pored toga koliko je normalno.
+
+Medijan a ne prosjek: jedan nalet od pet objava u jedno popodne povukao bi
+prosjek dolje i ucinio dvije sedmice tisine normalnim.
+
+Ima i **pod**: bez njega bi News, s medijanom od desetine dana, bio crven svaki
+put kad se popodne ne objavi nista.
+
+### Dvije stvari iz izrade
+
+**„Nije objavljeno" se pojavi samo kad ima cega.** Isto pravilo kao status na
+listi: red koji uvijek pise nulu je prostor koji oko nauci preskakati, pa ga
+preskoci i onog dana kad pise tri.
+
+**Widget nije lazy.** Filament podrazumijevano odgada widget i dovlaci ga drugim
+zahtjevom, sto je ispravno za nesto skupo. Ovo je jedan kesirani red agregata
+odmah ispod naslova stranice; odgadjanje znaci da lista vidljivo poskoci trenutak
+poslije iscrtavanja.
+
+**I jedna zamka u testu.** Provjera ide na **prvom** iscrtavanju, bez
+`loadTable()`. Header widget je vlastita ugnijezdena Livewire komponenta, a
+odgovor na `call()` ne serijalizuje ponovo ono sto je u njoj — pa tvrdnja
+poslije `loadTable()` ne nalazi nista i kaze da je pojas pokvaren dok on stoji
+na stranici.
