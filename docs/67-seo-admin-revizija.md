@@ -272,3 +272,115 @@ tako pokvarena revalidacija ostaje nevidljiva dok sajt servira staro.
 
 Pet observera prevedeno sa statičkih poziva; nijedan više ne zove metodu koja
 ne postoji, a svih 38 lista u panelu se i dalje iscrtava bez greške.
+
+---
+
+## SEO tab u clanku *(18.08.2026)*
+
+Revizija je prosli put gledala **postavke** i **PageSeo**. Ovo je panel koji
+pisac zaista gleda — traka desno u ekranu za clanak — i on je bio kriv na tri
+nacina, plus jedan prekidac koji nije radio.
+
+### 1. Brojao je bajtove i zvao ih znakovima
+
+Svaka provjera duzine isla je kroz `strlen`. U UTF-8 je kvacica dva bajta,
+tipografski apostrof tri, tri tacke tri.
+
+| | |
+|---|---|
+| Meta opisa gdje se `strlen` i `mb_strlen` razlikuju | **141 od 624** |
+| Najveca razlika | **10 znakova** |
+| Naslova s razlikom | 93 |
+
+Jedan primjer je savrsen: `strlen = 160`, `mb_strlen = 150`. Polje je
+ogranicено na 160, pisac je vidio „160/160 — optimalno", a stvarno je bio na
+**dnu** opsega, ne na vrhu.
+
+### 2. Brojanje rijeci imalo je dvije greske odjednom
+
+`str_word_count(strip_tags($content))`:
+
+- `strip_tags` brise oznake **bez razmaka**, pa je `<p>jedna</p><p>dvije</p>`
+  jedna rijec. Svaka granica pasusa i naslova spajala je dvije rijeci — a to
+  najvise pogadja bas duge, dobro strukturirane tekstove koje provjera treba da
+  nagradi.
+- `str_word_count` cita bajtove protiv ASCII spiska slova, pa lomi rijec na
+  svakom nasem slovu. Na jednoj recenziji od 886 rijeci vratio je 895.
+
+Na **594 od 625** clanaka dva racuna se ne slazu, najgori za 104 rijeci.
+
+Brojanje je sada u `App\Support\Copy`, koji zove i `ContentObserver` — inace
+bi SEO panel i „min read" na sajtu racunali razlicito. Uz to su ispravljena
+**25** zapisanih `reading_time` vrijednosti koje su se mijenjale za minutu.
+
+### 3. Ocjenjivao je prazan clanak, i kaznjavao preporuceno
+
+Otvoris „New Article" i panel kaze **`3% — Poor SEO, needs work`** iznad sedam
+crvenih redova, prije ijedne napisane rijeci. Ta tri procenta dolazila su od
+utjesnih bodova za nepopunjen `meta_title` — a to polje u vlastitom opisu kaze
+*„ostavi prazno da se koristi naslov clanka"*. Slijedis uputu, gubis 7 od 10
+bodova.
+
+Sada:
+
+- prazan clanak se **ne ocjenjuje** — pise sta ce se provjeravati kad pocnes;
+- provjera gleda **naslov koji ce pretraga stvarno ispisati** (`meta_title`, a
+  ako ga nema onda naslov clanka) — popunjavanje polja je override, ne obaveza;
+- maksimum je dostizan: ranije je prazan `meta_title` sam po sebi zakljucavao
+  strop na 93.
+
+### 4. Prekidac koji nije radio na pola ekrana
+
+„Hide from search engines" postoji na sva cetiri ekrana. Prije:
+
+| | prekidac na ekranu | front postuje |
+|---|---|---|
+| News | da | **da** |
+| Reviews | da | **da** |
+| Tech (58 clanaka) | da | **ne** |
+| Guides | da | **ne** |
+
+Provjereno tako sto je napravljen privremeni clanak s ukljucenim prekidacem,
+procitan `robots` tag i clanak odmah obrisan — sada oba vracaju
+`noindex, nofollow`.
+
+### 5. Dizajn
+
+Blok se crtao inline stilovima: podloga `rgba(0,0,0,0.2)` koja je u svijetloj
+temi bila sivi blok preko cijele sirine, traka napretka `rgba(255,255,255,0.1)`
+nevidljiva na bijelom, i **svaki red teksta u vlastitom hexu** — pa je panel
+izgledao kao ispis gresaka i kad je clanak bio u redu.
+
+Sada tokeni, tacka umjesto ❌/⚠️/💡 (tri emojija u istoj listi imaju tri
+velicine i tri osnovne linije, pa lijeva ivica nikad nije bila poravnata), i
+pravilo s Dashboarda: **problemi dobiju redove, prolazi dobiju broj.**
+
+Bedz na samom tabu bio je zelena kvacica cim `meta_title` ima ista u sebi —
+nagradjivao je bas ono sto provjera vise ne trazi. Sada nosi broj otvorenih
+stavki i nestane kad ih nema.
+
+### Sto je nadjeno usput: obrisan sadrzaj ostajao je na sajtu
+
+Privremeni clanak iz tacke 4 nije htio nestati. Razlog nije bio ni Cloudflare
+ni Next:
+
+- `ArticleObserver::deleted` je revalidirao listu i naslovnicu, a **kljuc samog
+  clanka nikad** — `{tip}.show.v2.{slug}` je odgovarao 200 iz Redisa punih
+  `TTL_LONG` poslije brisanja. `saved()` je tu metodu zvao oduvijek.
+- `GuideObserver` je brisao `guide.show.v2.{slug}`, a `GuideController` pise
+  **v3**. Kljuc je podignut u kontroleru a u observeru nije, pa je svako
+  brisanje **i svaka izmjena** vodica cistila kljuc koji niko ne pise.
+
+Oboje popravljeno, `tests/Feature/DeletedContentTest.php` to drzi.
+
+### I jedna stvar koja **nije** greska iako izgleda kao greska
+
+`revalidatePath('/hardware/neki-slug')` na dinamickoj ruti **ne cisti nista** —
+Next trazi obrazac rute (`/hardware/[category]`, `'page'`). Endpoint zbog toga
+javi `success` a ne obrise. Za clanke to ne smeta jer ista grana zove i
+`revalidateTag`, sto je mehanizam koji stvarno radi; grana `paths` nema tu
+zastitu i tu je poziv prazan hod. Zapisano, nije dirano.
+
+Takodje: `REVALIDATE_SECRET_TOKEN` u `frontend/.env` i `frontend/.env.local`
+**nisu isti**. Radi samo zato sto Next ucitava `.env.local` s vecim
+prioritetom, i tamo je onaj koji se poklapa s backendom. Zamka koja ceka.
