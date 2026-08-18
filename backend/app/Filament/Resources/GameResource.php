@@ -22,9 +22,11 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\PaginationMode;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
@@ -234,9 +236,49 @@ class GameResource extends Resource
             ]);
     }
 
+    /**
+     * The list reads eight columns; the table has forty and weighs 377 MB.
+     *
+     * `select *` on this catalogue pulled about 2.2 KB of payload per row that
+     * nothing on screen used — screenshots (491 B average), box art (399),
+     * description (386), attributes (319), videos (238) — and every one of
+     * those is TOASTed, so fetching them costs a second lookup each. Measured
+     * before this: 165 ms to read twenty-five rows.
+     *
+     * The two heavy ones are only ever asked a yes/no question — "does it have
+     * a description", "does it have screenshots" — so the answer is computed in
+     * SQL and the content never leaves the database.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->select([
+            'id',
+            'name',
+            'slug',
+            'cover_url',
+            'rating',
+            'released',
+            'views',
+            'platforms',
+            'genres',
+            DB::raw("(description IS NOT NULL AND description <> '') AS has_description"),
+            DB::raw("(screenshots IS NOT NULL AND screenshots::text NOT IN ('[]', 'null', '')) AS has_screenshots"),
+        ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
+            /*
+             * Simple pagination: previous and next, no page numbers.
+             *
+             * The numbered pager has to ask `select count(*) from games` on
+             * every load, and on 142,110 rows Postgres answers that with a
+             * sequential scan — 83 ms measured, on a screen whose own render is
+             * 130. Nobody pages to 5,684 anyway; the catalogue is reached by
+             * searching and filtering.
+             */
+            ->paginationMode(PaginationMode::Simple)
             ->columns([
                 ImageColumn::make('cover_url')
                     ->label('')
@@ -284,7 +326,7 @@ class GameResource extends Resource
 
                 IconColumn::make('description')
                     ->label('Desc')
-                    ->state(fn ($record) => filled($record->description))
+                    ->state(fn ($record) => (bool) $record->has_description)
                     ->boolean()
                     ->trueIcon('heroicon-s-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
@@ -293,7 +335,7 @@ class GameResource extends Resource
 
                 IconColumn::make('screenshots')
                     ->label('Screenshots')
-                    ->state(fn ($record) => count($record->screenshots ?? []) > 0)
+                    ->state(fn ($record) => (bool) $record->has_screenshots)
                     ->boolean()
                     ->trueIcon('heroicon-s-photo')
                     ->falseIcon('heroicon-o-photo')
