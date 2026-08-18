@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\Guide;
 use App\Models\User;
+use App\Services\RevalidationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -106,5 +107,48 @@ class DeletedContentTest extends TestCase
         $guide->update(['content' => 'the new text']);
 
         $this->assertNull(Cache::get('guide.show.v3.a-guide-that-changes'));
+    }
+
+    /**
+     * Clearing Redis was only half of it. The page stayed up on techplay.gg,
+     * served out of Next's data cache with its title and body intact, because
+     * nothing told the frontend the piece was gone.
+     */
+    public function test_deleting_content_tells_the_frontend(): void
+    {
+        $sent = [];
+        $this->mock(RevalidationService::class, function ($mock) use (&$sent) {
+            $mock->shouldReceive('revalidateArticle')->andReturnUsing(function ($slug, $category) use (&$sent) {
+                $sent[] = "{$category}/{$slug}";
+
+                return true;
+            });
+            $mock->shouldReceive('revalidateCategory')->andReturn(true);
+            $mock->shouldReceive('revalidateHomepage')->andReturn(true);
+            $mock->shouldReceive('revalidateNavigation')->andReturn(true);
+            $mock->shouldReceive('revalidatePaths')->andReturn(true);
+        });
+
+        Article::factory()->create([
+            'slug' => 'an-article-being-removed',
+            'category_id' => $this->techCategory()->id,
+            'author_id' => $this->author()->id,
+            'status' => 'published',
+            'is_featured_in_hero' => false,
+        ])->delete();
+
+        Guide::create([
+            'title' => 'A guide being removed',
+            'slug' => 'a-guide-being-removed',
+            'excerpt' => 'x',
+            'content' => 'y',
+            'difficulty' => 'beginner',
+            'status' => 'published',
+            'published_at' => now(),
+            'author_id' => $this->author()->id,
+        ])->delete();
+
+        $this->assertContains('hardware/an-article-being-removed', $sent);
+        $this->assertContains('guides/a-guide-being-removed', $sent);
     }
 }

@@ -148,6 +148,16 @@ class ArticleObserver
         if ($article->category) {
             $categoryPath = $this->getCategoryPath($article->category->type);
             if ($categoryPath) {
+                /*
+                 * The piece's own page first, then the listing it used to be in.
+                 *
+                 * Clearing Redis was only half of it: the article's URL stayed
+                 * up on the site, served from Next's data cache, complete with
+                 * its title and body. `revalidateArticle` purges the tag that
+                 * page fetches under, which is the mechanism that actually
+                 * works — `revalidatePath` on a dynamic route does not.
+                 */
+                $this->revalidationService->revalidateArticle($article->slug, $categoryPath);
                 $this->revalidationService->revalidateCategory($categoryPath);
             }
         }

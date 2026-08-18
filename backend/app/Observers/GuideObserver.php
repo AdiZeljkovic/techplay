@@ -88,6 +88,13 @@ class GuideObserver
 
     public function deleted(Guide $guide): void
     {
+        /*
+         * `updated()` has always told the frontend; `deleted()` never did. So a
+         * deleted guide kept its page on techplay.gg, served out of Next's data
+         * cache, long after the row and the Redis entry were gone.
+         */
+        $this->revalidationService->revalidateArticle($guide->slug, 'guides');
+
         $this->invalidateCache($guide);
     }
 
