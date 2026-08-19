@@ -1,77 +1,83 @@
-# Zatamnjenje ekrana na Back — Cloudflare JavaScript Detections
+# Zatamnjenje ekrana na Back — Google tag gateway
 
-**Status:** uzrok utvrden 19.08.2026. Popravka je **postavka u Cloudflareu**, ne izmjena koda.
+**Status:** rijeseno 19.08.2026. Uzrok je bila **Cloudflare postavka**, ne nas kod.
+Popravka: `Web tag management -> Google tag gateway` iskljucen za zonu `techplay.gg`.
 
 ## Simptom
 
 Klik na Back u pregledniku zatamni ekran na trenutak. Dugme za nazad *unutar*
-stranice ne radi to. U konzoli:
+stranice to ne radi. U konzoli `Minified React error #418`. Zabiljezeno 1180
+pojava kod stvarnih posjetilaca prije nego je uzrok nadjen.
 
-```
-Uncaught Error: Minified React error #418
-```
-
-## Zasto bas Back
-
-Dugme u stranici je meka navigacija — React vec radi, nista se ne hidrira.
-Back u pregledniku ponovo ucitava dokument, pa se hidracija pokrece iznova. Greska
-je oduvijek bila vezana za puno ucitavanje, a ne za Back kao takav; Back je samo
-najcesci nacin da korisnik izazove puno ucitavanje stranice koju vec gleda.
+Back nije poseban — on je samo najcesci nacin da citalac izazove **puno
+ucitavanje** stranice koju vec gleda. Dugme u stranici je meka navigacija: React
+vec radi i nista se ne hidrira, pa nema bljeska.
 
 ## Uzrok
 
-Cloudflare u HTML odgovor ubacuje skriptu za detekciju botova
-(`/cdn-cgi/challenge-platform/scripts/jsd/main.js`). Ta skripta, **dok se dokument
-jos parsira** (`document.readyState === "loading"`, dakle prije nego React krene),
-napravi `<iframe>` i doda ga u `<body>`.
+Cloudflareov **Google tag gateway** ubacivao je **tri skripte na sam vrh
+`<head>`**, ispred prvog elementa koji je nas:
 
-React zatim hidrira i nailazi na dijete `<body>`-ja koje nije iscrtao. Strukturnu
+```html
+<head><script>…(window,'G-9JT5SKKVQJ','google_tags_first_party');</script>
+      <script async src="/rpeu/"></script>
+      <script>…gtag('set','developer_id.dY2E1Nz',true);</script>
+      <meta charSet="utf-8"/>   <!-- tek ovdje pocinje nas dokument -->
+```
+
+React 19 hidrira i `<head>`. Prvo na sto naidje nisu nasi elementi. Strukturnu
 razliku ne moze zakrpiti na mjestu — odbaci cijelo serversko stablo i iscrta
 stranicu iznova na klijentu. To prekrtavanje je zatamnjenje.
 
-Izmjereno:
+Mjerni ID `G-9JT5SKKVQJ` nije nas (`G-0J974Y0X23` jeste). Postavka je vazila za
+cijelu zonu, pa se tag ubacivao i u admin panel na `api-beta.techplay.gg`.
 
-| | nas server (`127.0.0.1:3000`) | nakon Cloudflarea |
-|---|---|---|
-| `challenge-platform` | 0 | 1 |
-| `createElement('iframe')` | 0 | 1 |
+## Kako je izolovano
 
-## Kako je utvrdjeno
+Ovo je bilo tesko jer se **sadrzaj cinio identicnim**. Presudio je postav s dva
+lokalna proxyja: preglednik oba vidi kao obican `http://127.0.0.1`, ista veza,
+isti prozor, a mijenja se samo odakle sadrzaj dolazi.
 
-Tri pogresne dijagnoze prije ove nastale su iz citanja koda. Ova je iz mjerenja:
+| | ishod |
+|---|---|
+| sve s nginxa | cisto |
+| sve s Cloudflarea | prekrtava |
+| **dokument** s CF, fajlovi s nginxa | **prekrtava** |
+| dokument s nginxa, **fajlovi** s CF | cisto |
+| CF dokument, uklonjen ubaceni vrh `<head>`-a | **cisto** |
 
-1. **CSP je propusten za GlitchTip** (`connect-src`). Do tada nijedna greska iz
-   preglednika nije stizala — vidi `docs/64-nadzor.md`. Tek tada je dogadjaj
-   rekao stranicu: `techplay.gg/`, a ne clanak koji je citalac gledao.
-2. **Reprodukovano u headless Chromeu** bez ijednog dodatka — cime je otpala
-   teorija o blokatoru reklama.
-3. **Nije se reprodukovalo na lokalnom dev serveru** — sto je i bio kljucni
-   podatak: lokalno nema Cloudflarea.
-4. Preko DevTools protokola zakrpljeni su `appendChild`/`insertBefore` na
-   `document.body` prije svake skripte na stranici, uz biljezenje `readyState` i
-   stack-a. Jedino umetanje u fazi `loading` je taj `<iframe>`, sa stackom koji
-   pokazuje na inline skriptu u samom dokumentu.
+Alat je u `scratchpad/`: `split-proxy.mjs` (razdvaja dokument od fajlova),
+`split-strip2.mjs` (uklanja ubaceni vrh), `did-it-redraw.mjs` (presuda).
 
-Alat je u `scratchpad/who-touches-body.mjs` — vrijedi ga ponoviti ako se greska vrati.
+## Cetiri pogresne dijagnoze prije ove, i zasto
 
-## Popravka
+Vrijedi zapisati, jer su sve nastale iz istog obrasca — zakljucivanja iz koda i
+iz korelacije umjesto iz kontrolisanog pokusa:
 
-Cloudflare dashboard za `techplay.gg` → **Security → Bots**:
+1. **Inline skripta u `app/layout.tsx`** koja je ubacivala `<style>` u `<head>`.
+   Stvarna slabost, popravljena, ali nije bila uzrok.
+2. **Blokator reklama.** Oboreno: greska se javlja i u headless Chromeu bez
+   ijednog dodatka.
+3. **Cloudflare bot skripta** (`challenge-platform`). Korisnik je zbog toga
+   iskljucio Bot Fight Mode bez potrebe. Oborено: dodavanje te skripte u zdravu
+   putanju ne lomi nista.
+4. **HTTP/3.** Oboreno: pada i preko h2.
 
-- Na Free planu: iskljuciti **Bot Fight Mode**. On ukljucuje JavaScript Detections
-  i nema zasebnog prekidaca.
-- Na Pro/Business: iskljuciti **JavaScript Detections** unutar Super Bot Fight Mode.
+Dva puta sam skripte pokusao ukloniti i zakljucio da nisu uzrok — a filter je
+pogadjao **dvije od tri**. Jedna preostala na vrhu `<head>`-a dovoljna je da
+hidracija padne.
 
-Zamjena za zastitu koju time gubimo: WAF pravila i rate limiting rade i dalje, a
-`ufw` + `fail2ban` na masini su netaknuti.
+Bila je i metodoloska greska: rani „cisti" prolazi radili su u uskom prozoru, a
+ishod ovisi o sirini. Usporedbe se moraju raditi **s istom sirinom u oba slucaja**.
 
-## Sta je usput popravljeno, ali nije bio uzrok
+## Pouka za sljedeci put
 
-Sve troje su stvarne slabosti i ostaju popravljene:
+Kad hidracija pada samo na produkciji:
 
-- Inline skripta u `app/layout.tsx` ubacivala je `<style>` u `<head>` prije
-  hidracije; sada oznacava `<html>` klasom, a pravilo je u `globals.css`.
-- `<ins class="adsbygoogle">` iscrtavao se na serveru; sada se postavlja tek u
-  pregledniku, cime reklamni okvir izlazi iz HTML-a koji indekser cita.
-- `releaseLabel` u `components/home/DiscoverGames.tsx` citao je lokalne getere s
-  datuma rasclanjenog kao UTC ponoc — dan ranije zapadno od Greenwicha.
+1. Mjeriti **ishod**, ne prijavu greske. Oznaciti serverske cvorove prije
+   hidracije (`Page.addScriptToEvaluateOnNewDocument`) i vidjeti prezive li —
+   prijava ovisi o tome je li GlitchTip SDK ziv, prekrtavanje je sam kvar.
+2. Uporediti **pocetak `<body>` i `<head>`** izvora i onoga sto stize posjetiocu.
+   Sve sto edge ubaci ispred naseg prvog elementa lomi hidraciju.
+3. Razdvojiti dokument od fajlova prije nego se krene diffati.
+4. Drzati sve ostalo konstantnim — sirinu prozora, baferiranje, protokol.
