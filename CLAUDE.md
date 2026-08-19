@@ -82,7 +82,7 @@ npm start               # node dist/index.js (production)
 - `IndexNowService` — pings Bing/Yandex on publish via the `SubmitIndexNow` job
 - `SchemaService` — generates JSON-LD structured data
 - `PayPalService` + `PayPalWebhookController` — shop orders and subscriptions (signature-verified webhooks)
-- `CacheService` / `RevalidationService` — Redis-backed caching with on-demand Next.js revalidation
+- `CacheService` / `RevalidationService` — response caching with on-demand Next.js revalidation. The store is **`file`**, not Redis (this line said Redis for months); there is no prefix scan and no tag support, which is why listing keys are kept in a register as they are written. **Article cache keys are built by `CacheService::articleShowKey()` and cleared by `forgetArticle()` / `forgetListings()` — never write one out by hand, in code or in a test.** They were spelled in three places once, the versions drifted, and edits stopped reaching readers for an hour while a test that hardcoded the stale key reported green (fixed 19 Aug 2026).
 
 **Real-time:** Laravel Reverb (WebSocket server) + Pusher protocol. Frontend uses `laravel-echo` + `pusher-js`. Events in `app/Events/` broadcast on publish (articles, comments, forum posts, etc.) — for forum content specifically, dispatch happens inside Model Observers (`ThreadObserver`, `ForumPostObserver`), not inline in the controller.
 
