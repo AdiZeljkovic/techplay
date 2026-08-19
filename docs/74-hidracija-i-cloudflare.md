@@ -1,4 +1,38 @@
-# Zatamnjenje ekrana na Back — Google tag gateway
+# Zatamnjenje ekrana na Back
+
+**Bila su dva odvojena kvara pod istim opisom.** Prvi je bacao 1180 React grešaka
+i odbacivao stablo (Cloudflare Google tag gateway, opisan niže). Drugi je bio
+**stvarno zatamnjenje** koje je korisnik prijavljivao, i on je bio u našem kodu.
+
+## Drugi kvar — `tp-navigating` ostane visjeti (rijeseno 20.08.2026)
+
+`PageTransition` na početku navigacije označi `<body class="tp-navigating">` i
+odlazeća stranica se prigusi na `opacity: 0.45` uz `saturate(0.72)`. Oznaku
+skida `app/template.tsx` kad se **nova** stranica montira.
+
+Na Back se ne montira ništa novo — Next vraća stranicu koju ruter već drži — pa
+oznaku nije imao ko skinuti. Ostajala je do sigurnosnog tajmera: **4 sekunde
+stranice pod velom**, na ruti naslovnica → Discover → članak → Back.
+
+Popravka: Back i Forward više ne dižu prigušenje nego ga **brišu**; sigurnosni
+tajmer spušten s 4000 na 1200 ms. Uz to, isti obrazac zatvoren i na `Sheet`
+(panel obavijesti je u zaglavlju, pa je preživljavao navigaciju i uz veo
+ostavljao zaključan skrol) i na `RewardFeed`.
+
+### Zašto je trajalo danima
+
+Sve sonde su mjerile **je li stranica potpuna** — a bila je. Bila je potpuna i
+zatamnjena, a to nijedna nije pitala. Presudilo je tek kad sam **snimio ekran i
+pogledao sliku**: stranica iscrtana, prekrivena velom. Zatim jedan upit za
+elementom čija je prozirnost ispod 1 → `div.tp-page, opacity 0.45,
+filter saturate(0.72)`.
+
+**Pouka:** kad korisnik kaže „zatamni", mjeri **svjetlinu**, ne potpunost. Prvi
+korak je snimak ekrana u spornom trenutku, ne konzola.
+
+---
+
+# Prvi kvar — Google tag gateway
 
 **Status:** rijeseno 19.08.2026. Uzrok je bila **Cloudflare postavka**, ne nas kod.
 Popravka: `Web tag management -> Google tag gateway` iskljucen za zonu `techplay.gg`.
