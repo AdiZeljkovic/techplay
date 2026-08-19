@@ -231,6 +231,25 @@ export default async function RootLayout({
         */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{if(localStorage.getItem('cookie_preferences')){document.documentElement.classList.add('cookie-choice-made');}}catch(e){}})();` }} />
 
+        {/*
+            Turn smooth scrolling off while the browser is restoring a position.
+
+            `html { scroll-behavior: smooth }` in globals.css is there for anchor
+            links, and it also applies to the scroll the browser performs when
+            you press Back — so instead of the page reappearing where you left
+            it, it lands at the top and glides down to your old position.
+            Measured on the live site: after Back from an article to a listing
+            the reader had scrolled 2500px into, scrollY walked 0 → 456 → 1808 →
+            2234 → 2500 over about 900ms. Nearly a second of the page racing past
+            under the cursor, which on a near-black theme reads as the screen
+            going dark — and it throws no error, which is why it outlived every
+            console-level search for it.
+
+            The listener only covers history navigation and puts the smooth
+            behaviour straight back, so links to an id still glide.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,t;addEventListener('popstate',function(){d.style.scrollBehavior='auto';clearTimeout(t);t=setTimeout(function(){d.style.scrollBehavior='';},400);});})();` }} />
+
         {/* dataLayer + Consent Mode: analytics granted (cookieless), ads denied */}
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];

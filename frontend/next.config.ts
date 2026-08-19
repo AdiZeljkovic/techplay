@@ -122,6 +122,25 @@ const nextConfig: NextConfig = {
 
   // Performance: Optimize packages and CSS
   experimental: {
+    /*
+     * Keep a page in the client cache long enough that stepping back to it does
+     * not rebuild it.
+     *
+     * Next 15 changed the `dynamic` default from 30s to 0 — nothing is kept — so
+     * a listing reached by a click and returned to by Back is fetched and
+     * reassembled rather than shown again. Measured on the live site along the
+     * route a reader actually takes (home → Discover → an article → Back): the
+     * painted frame stayed below 70% of the settled page for 3.8 seconds. On a
+     * near-black theme that is the screen going dark, and it raises no error.
+     *
+     * 30s is Next's own pre-15 default: it covers stepping back through what you
+     * were just reading, and a listing returned to minutes later is still fresh.
+     */
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
+
     optimizePackageImports: [
       'lucide-react',
       'date-fns',
