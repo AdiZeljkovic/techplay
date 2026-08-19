@@ -53,17 +53,38 @@ export default function PageTransition() {
         const begin = () => {
             document.body.classList.add(NAVIGATING);
             // If nothing ever remounts — a navigation aborted by an error
-            // boundary, a download the checks missed — the page must not
-            // stay dimmed forever.
+            // boundary, a download the checks missed — the page must not stay
+            // dimmed. Four seconds was long enough that when the release did go
+            // missing it read as a fault rather than a transition; a second and
+            // a bit is past any navigation worth dimming for.
             window.clearTimeout(timeout);
-            timeout = window.setTimeout(() => document.body.classList.remove(NAVIGATING), 4000);
+            timeout = window.setTimeout(() => document.body.classList.remove(NAVIGATING), 1200);
         };
 
         const onClick = (event: MouseEvent) => {
             if (startsNavigation(event)) begin();
         };
-        // Back/forward re-fetches the route the same way a click does.
-        const onPop = () => begin();
+
+        /*
+         * Back and forward do not get the dim.
+         *
+         * They used to, on the reasoning that they re-fetch a route the same
+         * way a click does. They do not behave the same way afterwards: a click
+         * mounts a new template, and mounting is what lifts the dim. Going back
+         * returns a page the router already holds, nothing remounts, and the
+         * class sat there until the safety timeout — four seconds of the page
+         * held at 45% opacity. Readers saw the screen go dark on Back and stay
+         * dark, with nothing in the console to explain it.
+         *
+         * There is also nothing for the dim to cover here. The reader is
+         * returning to a page they were just on, and it is served from memory.
+         * Clearing instead: a click-dim may still be in flight when Back is
+         * pressed, and that one has to go too.
+         */
+        const onPop = () => {
+            window.clearTimeout(timeout);
+            document.body.classList.remove(NAVIGATING);
+        };
 
         // Bubble phase, not capture: React's own handlers run first, so
         // defaultPrevented is already settled by the time we look at it.
