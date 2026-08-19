@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Zap, Coins, Trophy, ChevronsUp, X } from "lucide-react";
 import { getStorageUrl } from "@/lib/imageUrl";
@@ -44,6 +45,17 @@ let nextId = 0;
 export default function RewardFeed() {
     const [chips, setChips] = useState<Chip[]>([]);
     const [moment, setMoment] = useState<RewardPayload | null>(null);
+
+    /*
+     * A moment belongs to the page that earned it.
+     *
+     * This lives in the root layout, so it survives navigation — and the moment
+     * is a full-screen scrim that only a click dismissed. Leave the page with
+     * one open and it followed, darkening whatever came next until the reader
+     * thought to click it away.
+     */
+    const pathname = usePathname();
+    useEffect(() => { setMoment(null); }, [pathname]);
 
     const dismiss = useCallback((id: number) => {
         setChips((prev) => prev.filter((c) => c.id !== id));

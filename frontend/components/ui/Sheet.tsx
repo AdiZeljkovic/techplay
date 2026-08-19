@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
@@ -52,6 +53,28 @@ export default function Sheet({
     open, onClose, title, footer, children, maxHeight = "85dvh",
 }: SheetProps) {
     const scrollY = useRef(0);
+
+    /*
+     * A navigation closes it.
+     *
+     * A sheet opened from the header outlives the page it was opened on: the
+     * header does not unmount when the route changes, so without this the sheet
+     * stays up over the new page — and worse, so does the body lock below, which
+     * leaves the reader on a page they cannot scroll. The same shape of fault
+     * held the whole site at 45% opacity for four seconds on Back: state raised
+     * during a navigation, and nothing on the other side to lower it.
+     *
+     * Only on a real change. The effect also runs at mount, and closing there
+     * would mean the sheet could never open.
+     */
+    const pathname = usePathname();
+    const openedAt = useRef(pathname);
+    useEffect(() => {
+        if (pathname !== openedAt.current) {
+            openedAt.current = pathname;
+            if (open) onClose();
+        }
+    }, [pathname, open, onClose]);
 
     // Escape closes it, the way a dialog does.
     useEffect(() => {
