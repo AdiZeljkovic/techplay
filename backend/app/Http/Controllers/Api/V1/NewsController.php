@@ -21,6 +21,9 @@ class NewsController extends Controller
         $category = $request->input('category', 'all');
         $search = $request->input('search', '');
         $cacheKey = "news.index.v3.page_{$page}.cat_{$category}.search_".md5($search);
+        // Recorded so the observer can clear this exact variant; a listing
+        // key carries page, category and search, and cannot be guessed.
+        CacheService::rememberListingKey('news', $cacheKey);
 
         // Note: Caching for 1 hour (production)
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request, $search) {
@@ -71,7 +74,7 @@ class NewsController extends Controller
             // A counter must never take the page down.
         }
 
-        $cacheKey = "news.show.v3.{$slug}";
+        $cacheKey = CacheService::articleShowKey('news', $slug);
 
         $resource = Cache::remember($cacheKey, 3600, function () use ($slug) {
             $article = Article::where('slug', $slug)

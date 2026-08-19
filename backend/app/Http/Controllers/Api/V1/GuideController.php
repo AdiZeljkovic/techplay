@@ -23,6 +23,9 @@ class GuideController extends Controller
         $difficulty = $request->input('difficulty', 'all');
         $search = $request->input('search', '');
         $cacheKey = "guides.index.v3.page_{$page}.diff_{$difficulty}.search_".md5($search);
+        // Recorded so the observer can clear this exact variant; a listing
+        // key carries page, category and search, and cannot be guessed.
+        CacheService::rememberListingKey('guides', $cacheKey);
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_MEDIUM, function () use ($request, $search) {
             // Named columns, not the whole row. The listing was paginating
@@ -72,7 +75,7 @@ class GuideController extends Controller
         }
 
         // Cache the Guide data itself
-        $guide = Cache::remember("guide.show.v3.{$slug}", CacheService::TTL_LONG, function () use ($slug) {
+        $guide = Cache::remember(CacheService::articleShowKey('guide', $slug), CacheService::TTL_LONG, function () use ($slug) {
             return Guide::where('slug', $slug)
                 ->with(['author:id,username,display_name,avatar_url,bio', 'game:id,slug,name,cover_url,released,rating,genres,platforms,critic_scores'])
                 ->withCount([

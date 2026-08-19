@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\Guide;
 use App\Models\User;
+use App\Services\CacheService;
 use App\Services\RevalidationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -38,9 +39,16 @@ class DeletedContentTest extends TestCase
 
     /**
      * `ArticleObserver::deleted` revalidated the listing the piece used to be in
-     * and the homepage, and never touched the piece's own key — so
-     * `tech.show.v2.{slug}` answered 200 for the full TTL after the row was
-     * gone.
+     * and the homepage, and never touched the piece's own key — so the article's
+     * own page answered 200 for the full TTL after the row was gone.
+     *
+     * The keys come from CacheService rather than being written out here. They
+     * used to be spelled `tech.show.v2.{slug}` in this file, which is what the
+     * observer cleared and what nothing wrote: the controllers had moved to
+     * `v3`. So this test passed for weeks while deleting an article left its
+     * page cached, and while editing one left the old copy in place — the fault
+     * a journalist eventually hit on 19 Aug 2026 when a picture added after
+     * publishing never appeared.
      */
     public function test_deleting_an_article_forgets_the_page_that_served_it(): void
     {
@@ -52,16 +60,19 @@ class DeletedContentTest extends TestCase
             'is_featured_in_hero' => false,
         ]);
 
-        // What the controller writes when the page is first requested.
-        Cache::put('tech.show.v2.a-piece-that-goes-away', 'cached payload', 3600);
-        Cache::put('news.show.v2.a-piece-that-goes-away', 'cached payload', 3600);
-        Cache::put('reviews.show.v2.a-piece-that-goes-away', 'cached payload', 3600);
+        // What the controllers write when the page is first requested.
+        foreach (CacheService::ARTICLE_TYPES as $type) {
+            Cache::put(CacheService::articleShowKey($type, 'a-piece-that-goes-away'), 'cached payload', 3600);
+        }
 
         $article->delete();
 
-        $this->assertNull(Cache::get('tech.show.v2.a-piece-that-goes-away'));
-        $this->assertNull(Cache::get('news.show.v2.a-piece-that-goes-away'));
-        $this->assertNull(Cache::get('reviews.show.v2.a-piece-that-goes-away'));
+        foreach (CacheService::ARTICLE_TYPES as $type) {
+            $this->assertNull(
+                Cache::get(CacheService::articleShowKey($type, 'a-piece-that-goes-away')),
+                "the {$type} page outlived the article",
+            );
+        }
     }
 
     /**

@@ -53,41 +53,92 @@ class CacheService
         return Cache::forget($key);
     }
 
-    /**
-     * Forget all keys matching a pattern
+    /*
+     * ── Article caches ────────────────────────────────────────────────────
+     *
+     * One place where an article cache key is spelled, because the last time
+     * there were two the site quietly stopped showing edits. A controller was
+     * bumped to write `news.show.v3.{slug}` while the observer went on clearing
+     * `news.show.v2.{slug}`; nothing failed and nothing was logged. A
+     * journalist added a picture to a published article, saved it, and the page
+     * kept serving the hour-old copy without one. Reviews and every listing had
+     * drifted the same way.
+     *
+     * What stood here before was worse than the drift: a `forgetPattern($prefix)`
+     * that ignored its argument and called `Cache::flush()`, beside three
+     * clearXCache() helpers. Nothing in the application called any of them, so
+     * the cache was never actually emptied — but the next person to reach for
+     * the obvious-looking method would have emptied all of it under live
+     * traffic. Removed rather than repaired: the store is `file`, which has no
+     * prefix scan to implement them with.
      */
-    public static function forgetPattern(string $prefix): void
+
+    /** Bump this once and every reader and writer moves together. */
+    public const ARTICLE_VERSION = 'v3';
+
+    /**
+     * Sections backed by the Article model. One article may be reachable under
+     * any of them, so clearing it clears all three.
+     *
+     * Guides are not here: they are their own model with their own observer,
+     * and their key is the singular `guide.show.…`. They never drifted.
+     */
+    public const ARTICLE_TYPES = ['news', 'tech', 'reviews'];
+
+    /** Sections with cached listings. Guides have one, even though they are not Articles. */
+    public const LISTING_TYPES = ['news', 'tech', 'reviews', 'guides'];
+
+    /** The cached single article — bounded by slug, so it clears exactly. */
+    public static function articleShowKey(string $type, string $slug): string
     {
-        // Note: This works with Redis. For file cache, use tags or manual cleanup.
-        // For now, we'll use specific keys
-        Cache::flush(); // Be careful with this in production!
+        return "{$type}.show.".self::ARTICLE_VERSION.".{$slug}";
     }
 
     /**
-     * Clear home page cache
+     * Listing keys carry a page, a category and an md5 of the search term, so
+     * they cannot be enumerated the way a slug can. Each is recorded here as it
+     * is written, and that record is what invalidation reads.
+     *
+     * Redis would answer this with a prefix scan. The file store cannot, and
+     * `CACHE_STORE=file` is what this site actually runs — the docs said Redis
+     * for months. A register is the portable answer, and it reaches the search-
+     * and category-filtered variants that the old hand-listed `Cache::forget`
+     * calls never touched.
      */
-    public static function clearHomeCache(): void
+    public static function rememberListingKey(string $type, string $key): void
     {
-        self::forget(self::PREFIX_HOME.'data');
-        self::forget(self::PREFIX_HOME.'featured');
+        $registry = "listing-keys.{$type}";
+        $keys = Cache::get($registry, []);
+
+        if (! in_array($key, $keys, true)) {
+            $keys[] = $key;
+            // A day outlives any listing TTL, so the register never claims less
+            // than the cache holds. Capped, because a crawler walking ?search=
+            // would otherwise grow it without end.
+            Cache::put($registry, array_slice($keys, -500), self::TTL_DAY);
+        }
     }
 
-    /**
-     * Clear news cache
-     */
-    public static function clearNewsCache(): void
+    /** Drop one article from every section that could be serving it. */
+    public static function forgetArticle(string $slug): void
     {
-        self::forget(self::PREFIX_NEWS.'list');
-        self::forget(self::PREFIX_NEWS.'latest');
+        foreach (self::ARTICLE_TYPES as $type) {
+            Cache::forget(self::articleShowKey($type, $slug));
+        }
     }
 
-    /**
-     * Clear reviews cache
-     */
-    public static function clearReviewsCache(): void
+    /** Drop every listing recorded for a section, or for all of them. */
+    public static function forgetListings(?string $type = null): void
     {
-        self::forget(self::PREFIX_REVIEWS.'list');
-        self::forget(self::PREFIX_REVIEWS.'featured');
+        foreach ($type ? [$type] : self::LISTING_TYPES as $section) {
+            $registry = "listing-keys.{$section}";
+
+            foreach (Cache::get($registry, []) as $key) {
+                Cache::forget($key);
+            }
+
+            Cache::forget($registry);
+        }
     }
 
     /**

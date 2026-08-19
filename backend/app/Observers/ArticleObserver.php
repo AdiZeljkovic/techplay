@@ -9,6 +9,7 @@ use App\Models\UserGame;
 use App\Notifications\GameNewsNotification;
 use App\Notifications\WishlistGameReviewedNotification;
 use App\Services\BountyService;
+use App\Services\CacheService;
 use App\Services\ContentGameLinker;
 use App\Services\QuestService;
 use App\Services\RevalidationService;
@@ -184,14 +185,18 @@ class ArticleObserver
     }
 
     /**
-     * Clear individual article show caches across all possible cache keys for this slug.
-     * Needed because ReviewResource and TechResource both use Article model but different cache keys.
+     * Clear the cached article in every section that could be serving it.
+     *
+     * One Article can be reached as news, tech, a review or a guide, so all
+     * four keys go. The keys are built by CacheService rather than written out
+     * here: these three lines used to say `v2` while the controllers had moved
+     * on to `v3`, which meant an edited article kept serving its old copy for
+     * an hour — the picture a journalist had just added simply did not appear,
+     * and nothing anywhere said why.
      */
     protected function clearArticleShowCache(string $slug): void
     {
-        Cache::forget("news.show.v2.{$slug}");
-        Cache::forget("tech.show.v2.{$slug}");
-        Cache::forget("reviews.show.v2.{$slug}");
+        CacheService::forgetArticle($slug);
     }
 
     /**
@@ -199,16 +204,18 @@ class ArticleObserver
      */
     protected function clearApiListingCache(?string $categoryType): void
     {
-        // Clear first 3 pages of the affected category listing
-        $prefixes = ['news', 'tech', 'reviews', 'guides'];
-        $targets = $categoryType ? [$categoryType] : $prefixes;
-
-        foreach ($targets as $type) {
-            for ($page = 1; $page <= 3; $page++) {
-                Cache::forget("news.index.v2.page_{$page}.cat_all");
-                Cache::forget("{$type}.index.v2.page_{$page}.cat_all");
-            }
-        }
+        /*
+         * Every recorded listing for the section, not the first three pages of
+         * one shape of key.
+         *
+         * The loop that stood here forgot `{type}.index.v2.page_N.cat_all` for
+         * N in 1..3. The controllers write `v3`, so it cleared nothing at all;
+         * and even matched, it would have missed every page past the third and
+         * every listing filtered by category or search, since those keys carry
+         * an md5 of the search term. CacheService keeps a register of the keys
+         * as they are written, which is what makes them findable again.
+         */
+        CacheService::forgetListings($categoryType);
 
         // Clear trending cache
         Cache::forget('news.trending');

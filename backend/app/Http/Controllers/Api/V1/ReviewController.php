@@ -20,6 +20,9 @@ class ReviewController extends Controller
         $page = $request->input('page', 1);
         $category = $request->input('category', 'all');
         $cacheKey = "reviews.index.v3.page_{$page}.cat_{$category}";
+        // Recorded so the observer can clear this exact variant; a listing
+        // key carries page, category and search, and cannot be guessed.
+        CacheService::rememberListingKey('reviews', $cacheKey);
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($request) {
             $query = Article::query()
@@ -68,7 +71,7 @@ class ReviewController extends Controller
             // A counter must never take the page down.
         }
 
-        $cacheKey = "reviews.show.v3.{$slug}";
+        $cacheKey = CacheService::articleShowKey('reviews', $slug);
 
         $resource = Cache::remember($cacheKey, CacheService::TTL_LONG, function () use ($slug) {
             $article = Article::where('slug', $slug)
