@@ -14,6 +14,7 @@ import GameRating from "@/components/games/GameRating";
 import TrackGameButton from "@/components/games/TrackGameButton";
 import AddToListButton from "@/components/games/AddToListButton";
 import GameForumThreads from "@/components/games/GameForumThreads";
+import DataAttribution from "@/components/games/DataAttribution";
 import BoxArtGallery, { type BoxArt } from "@/components/games/BoxArtGallery";
 import TrailerPlayer from "@/components/games/TrailerPlayer";
 import Panel from "@/components/ui/Panel";
@@ -830,6 +831,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 <DisplayAd minHeight={110} />
 
                 <GameForumThreads gameSlug={slug} />
+
+                <DataAttribution className="mt-10 border-t border-white/[0.05] pt-5" />
             </div>
         </main>
     );

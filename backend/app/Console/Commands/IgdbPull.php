@@ -52,6 +52,13 @@ class IgdbPull extends Command
         'covers',
         'game_videos',
         'age_ratings',
+
+        /* An age rating row is `organization: 1, rating_category: 6` and
+           nothing else. These two say that means PEGI 12 — without them the
+           field is a pair of numbers and stays out of the merge entirely. */
+        'age_rating_organizations',
+        'age_rating_categories',
+
         'alternative_names',
         'genres',
         'themes',
@@ -65,7 +72,11 @@ class IgdbPull extends Command
         'multiplayer_modes',
         'game_time_to_beats',
         'languages',
+        /* Audio, subtitles or interface — a language row carries only the id. */
+        'language_support_types',
         'language_supports',
+        /* Which part of the world a release date belongs to. */
+        'regions',
         'artworks',
         'release_dates',
         /* The primitives are numbered, not named — `popularity_type: 5` on its

@@ -7,6 +7,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 import { DisplayAd } from "@/components/ads/AdSense";
+import DataAttribution from "@/components/games/DataAttribution";
 import Sheet from "@/components/ui/Sheet";
 import {
     Search, Star, Shuffle, SlidersHorizontal, ArrowDownWideNarrow, Check, Flame, Heart, Clock,
@@ -637,6 +638,8 @@ export default function GameDatabaseHub({
                     <DisplayAd />
                 </aside>
             </div>
+
+            <DataAttribution className="mx-auto max-w-[1400px] px-4 sm:px-6 pb-10 border-t border-white/[0.05] pt-5" />
 
             {/* ── the phone's two questions ── */}
             <Sheet

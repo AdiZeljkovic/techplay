@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Building2, MapPin, CalendarDays, Globe, Gamepad2 } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
+import DataAttribution from "@/components/games/DataAttribution";
 
 /* ─── shapes ─────────────────────────────────────────────────────────────── */
 
@@ -216,6 +217,8 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                         No games from this studio are in the database yet.
                     </p>
                 )}
+
+                <DataAttribution className="mt-12 border-t border-white/[0.05] pt-5" />
             </div>
         </main>
     );

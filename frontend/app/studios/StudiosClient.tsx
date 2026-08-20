@@ -5,6 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Search, Building2, Loader2, ArrowDownWideNarrow, Check, ChevronDown, MapPin } from "lucide-react";
+import DataAttribution from "@/components/games/DataAttribution";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -192,6 +193,8 @@ export default function StudiosClient({
                         </button>
                     </nav>
                 )}
+
+                <DataAttribution className="mt-12 border-t border-white/[0.05] pt-5" />
             </div>
         </main>
     );
