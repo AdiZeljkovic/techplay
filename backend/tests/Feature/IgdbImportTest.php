@@ -202,6 +202,35 @@ class IgdbImportTest extends TestCase
         $this->assertSame(4200, (int) $game->ratings_count);
     }
 
+    /**
+     * Games differ in what IGDB holds for them, rows in a batch must not.
+     *
+     * A bulk insert builds one VALUES list per row and Postgres requires them
+     * all to be the same length, so a game with no score sitting beside one
+     * with a score failed the whole batch — on the live catalogue, at the first
+     * pair it reached. Every row is now built against a fixed column list.
+     */
+    public function test_games_with_different_data_go_into_one_batch(): void
+    {
+        $this->igdbGame(1, 'Scored Game', [
+            'first_release_date' => gmmktime(0, 0, 0, 3, 1, 2020),
+            'total_rating' => 88.5,
+            'total_rating_count' => 120,
+        ]);
+        $this->igdbGame(2, 'Bare Scored Game', ['first_release_date' => gmmktime(0, 0, 0, 3, 1, 2021)]);
+
+        $this->importAll();
+
+        $scored = Game::where('name', 'Scored Game')->first();
+        $bare = Game::where('name', 'Bare Scored Game')->first();
+
+        $this->assertNotNull($scored);
+        $this->assertNotNull($bare);
+        $this->assertSame(8.85, round((float) $scored->rating, 2));
+        $this->assertNull($bare->rating);
+        $this->assertSame(0, (int) $bare->ratings_count);
+    }
+
     /** Without --apply it is a report and nothing more. */
     public function test_without_apply_nothing_is_created(): void
     {

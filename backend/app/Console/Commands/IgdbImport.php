@@ -57,6 +57,37 @@ class IgdbImport extends Command
     /** Their theme id for erotic content. */
     private const EROTIC = 42;
 
+    /**
+     * Every column an imported row writes, with the value it takes when IGDB
+     * has nothing for it.
+     *
+     * Fixed on purpose. A bulk insert builds one VALUES list per row and
+     * Postgres requires them all to be the same length, so a game without a
+     * score cannot simply leave `rating` out — the whole batch fails on the
+     * first row that differs. Columns absent from this list keep their table
+     * defaults, which is fine because every row omits them equally.
+     */
+    private const COLUMNS = [
+        'name' => null,
+        'slug' => null,
+        'description' => null,
+        'cover_url' => null,
+        'released' => null,
+        'release_precision' => 'day',
+        'rating' => null,
+        'ratings_count' => 0,
+        'website' => null,
+        'series_key' => null,
+        'series_name' => null,
+        'genres' => '{}',
+        'platforms' => '{}',
+        'tags' => '{}',
+        'developers' => '{}',
+        'publishers' => '{}',
+        'videos' => null,
+        'alt_titles' => null,
+    ];
+
     public function handle(IgdbFacts $facts, TitleNormalizer $normalizer): int
     {
         if (! DB::table('igdb_game_keys')->exists()) {
@@ -361,11 +392,16 @@ class IgdbImport extends Command
 
         $model = new Game;
         $model->forceFill($attributes);
+        $written = $model->getAttributes();
 
-        return $model->getAttributes() + [
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
+        $row = [];
+        foreach (self::COLUMNS as $column => $default) {
+            $row[$column] = $written[$column] ?? $default;
+        }
+
+        $row['created_at'] = $row['updated_at'] = now();
+
+        return $row;
     }
 
     /** Str::slug plus the aggregator's -2, -3 walk, done against a set in memory. */
