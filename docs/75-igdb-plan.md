@@ -276,6 +276,29 @@ Dvije obavezne provjere pri uvozu, obje bi inače tiho pokvarile bazu:
 - **`game_tombstones` se provjerava.** 60.981 zapisa; ništa u agregatoru ih ne
   gleda, pa bi uvoz uskrsnuo svaku namjerno obrisanu igru.
 
+### Faza 6 — kako je studio ispao
+
+`studios` + `game_studio` (uloga na pivotu), `igdb:studios` ih puni. Odluke:
+
+| pitanje | odgovor | zašto |
+|---|---|---|
+| ko dobija red | kompanija s bar jednom **našom** igrom — 56.911 od 72.421 | ostalo je ime u tabeli do koje se ne može doći |
+| ko ide u sitemap | `indexable`: ≥2 igre **ili** ima logo/opis — 19.377 | 35.633 ih ima tačno jednu igru; 35 hiljada praznih stranica u indeksu je tanak sadržaj u velikom |
+| ko dobija stranicu | **svi** | stranica igre vodi na studio, a veza koja daje 404 je gore od tanke stranice |
+| odakle uloga | `involved_companies`, ne `developed`/`published` liste | ista firma je često i jedno i drugo, a stranica ih prikazuje odvojeno |
+| porting i support | ne upisuju se | jesu stvarne zasluge, ali nisu čija je igra |
+| zemlja | ISO 3166-1 broj u koloni, ime iz `config/countries.php` u API-ju | mapiranje ima jedno mjesto; nepoznat broj daje `null`, ne pogađanje |
+
+`games.developers`/`publishers` **ostaju**. Pokrivaju igre koje nikad nismo
+spojili s IGDB-om i to je ono što stranica ispiše kad studio nema svoj red.
+
+Uklonjeni su `game_companies` i `game_company` — ista zamisao građena za
+MobyGames, 0 redova u obje, `moby_company_id` NOT NULL, i nijedan čitalac osim
+modela koji ih deklariše. `down()` ih vraća.
+
+Rute: `/studios`, `/studios/[slug]`, `/studios/country/[iso]`. Meni: `Studios`
+je treća kolona u `Games` padajućem meniju, uz šest zemalja koje nose katalog.
+
 ---
 
 ## 8. Mjerni alat
