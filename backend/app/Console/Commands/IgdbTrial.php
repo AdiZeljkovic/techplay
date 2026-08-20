@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Releases\TitleNormalizer;
+use App\Services\Igdb\IgdbMatcher;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +27,7 @@ class IgdbTrial extends Command
 
     protected $description = 'Probni prolaz spajanja nase baze s IGDB-om — nista ne upisuje';
 
-    public function handle(TitleNormalizer $normalizer): int
+    public function handle(IgdbMatcher $matcher): int
     {
         if (! DB::table('igdb_game_keys')->exists()) {
             $this->error('igdb_game_keys je prazna — pokreni prvo igdb:index.');
@@ -46,104 +46,22 @@ class IgdbTrial extends Command
             ->limit($limit)
             ->get();
 
-        $steam = $this->steamBridge();
-
         $outcome = ['steam' => [], 'key_year' => [], 'key_only' => [], 'ambiguous' => [], 'missing' => []];
 
         foreach ($ours as $game) {
-            $key = $normalizer->key((string) $game->name);
-            $year = $game->released ? (int) date('Y', strtotime((string) $game->released)) : null;
+            /* The rules live in IgdbMatcher, so that the run which reports and
+               the run which writes can never disagree about what a match is. */
+            $result = $matcher->match($game);
 
-            /* a. An exact identifier beats any amount of string cleverness. */
-            if (isset($steam[$game->id])) {
-                $outcome['steam'][] = [$game, $steam[$game->id]];
-
-                continue;
-            }
-
-            if ($key === '') {
-                $outcome['missing'][] = [$game, null];
-
-                continue;
-            }
-
-            $candidates = DB::table('igdb_game_keys')->where('match_key', $key)->get();
-
-            if ($candidates->isEmpty()) {
-                $outcome['missing'][] = [$game, null];
-
-                continue;
-            }
-
-            /* b. The title plus the year it came out. */
-            if ($year !== null) {
-                $sameYear = $candidates->where('release_year', $year);
-
-                if ($sameYear->count() === 1) {
-                    $outcome['key_year'][] = [$game, $sameYear->first()];
-
-                    continue;
-                }
-            }
-
-            /* c. The title alone, and only where the catalogue holds exactly one. */
-            if ($candidates->count() === 1) {
-                $outcome['key_only'][] = [$game, $candidates->first()];
-
-                continue;
-            }
-
-            /* Anything else is a guess, and a guess is what this is here to avoid. */
-            $outcome['ambiguous'][] = [$game, $candidates];
+            $outcome[$result['rule']][] = [
+                $game,
+                $result['rule'] === IgdbMatcher::AMBIGUOUS ? $result['candidates'] : $result['row'],
+            ];
         }
 
         $this->report($outcome, $ours->count(), (int) $this->option('show'));
 
         return self::SUCCESS;
-    }
-
-    /**
-     * Our Steam ids against theirs.
-     *
-     * Empty until the `external_games` endpoint has been pulled — it is 677,219
-     * rows and deliberately last in the queue, because nothing else waits on it.
-     * Until then this route contributes nothing and the report says so, rather
-     * than quietly reading as though we have no Steam ids.
-     *
-     * @return array<int, object> our game id => the IGDB row
-     */
-    private function steamBridge(): array
-    {
-        if (! DB::table('igdb_raw')->where('endpoint', 'external_games')->exists()) {
-            return [];
-        }
-
-        $ourSteam = DB::table('game_external_ids')
-            ->where('provider', 'steam')
-            ->pluck('external_id', 'game_id');
-
-        if ($ourSteam->isEmpty()) {
-            return [];
-        }
-
-        /* Their side, keyed by the Steam appid they carry as `uid`. */
-        $theirs = DB::table('igdb_raw')
-            ->where('endpoint', 'external_games')
-            ->selectRaw("payload->>'uid' as uid, (payload->>'game')::bigint as game_id")
-            ->whereRaw("payload->>'uid' is not null")
-            ->pluck('game_id', 'uid');
-
-        $bridge = [];
-
-        foreach ($ourSteam as $gameId => $appId) {
-            $igdbId = $theirs[(string) $appId] ?? null;
-
-            if ($igdbId && ($row = DB::table('igdb_game_keys')->where('igdb_id', $igdbId)->first())) {
-                $bridge[(int) $gameId] = $row;
-            }
-        }
-
-        return $bridge;
     }
 
     private function report(array $outcome, int $total, int $show): void
