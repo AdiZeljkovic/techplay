@@ -503,7 +503,22 @@ export default function SocialClient() {
                     : (hub?.blocked.length ?? 0);
 
     return (
-        <main className="min-h-screen bg-[var(--surface-0)]">
+        /*
+         * From md up the page is exactly the height of the screen and does not
+         * scroll: the banner takes what it needs, the hub takes the rest, and
+         * the parts that grow scroll inside themselves. That is what keeps the
+         * composer on screen.
+         *
+         * It was sized by arithmetic before — the panel asked for
+         * `calc(100vh - 104px)` without counting the banner above it, so it
+         * ended up about 180px taller than the space it had and the message box
+         * sat below the fold. Readers had to scroll the page to answer anybody.
+         * Letting flex measure it removes the number that was wrong.
+         *
+         * Below md the page scrolls as before: the narrow layout shows one pane
+         * at a time and the composer is already the last thing on screen.
+         */
+        <main className="bg-[var(--surface-0)] min-h-screen md:min-h-0 md:h-[calc(100dvh-72px)] md:flex md:flex-col md:overflow-hidden">
             {/* ── header ── */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -516,16 +531,19 @@ export default function SocialClient() {
                 <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page py-7 text-center">
-                    <h1 className="font-display font-black tracking-tight text-3xl md:text-5xl leading-none">
+                {/* One row instead of a stack. The title, the line under it and
+                    four pills were costing about 190px before the hub even
+                    started — on a 900px screen that is a fifth of the page spent
+                    on saying where you are. Title and counters now sit on the
+                    same line, and the sentence goes: anybody on this page came
+                    here to talk, not to be told what the page is for. */}
+                <div className="relative z-10 container-page py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 md:justify-between">
+                    <h1 className="font-display font-black tracking-tight text-2xl md:text-[28px] leading-none">
                         <span className="text-white">SOCIAL </span>
                         <span className="text-[var(--accent)]">HUB</span>
                     </h1>
-                    <p className="mt-3 text-[13px] text-white/45">Chat, squad up, and stay connected across TechPlay.</p>
 
-                    {/* The forum's pill row: mark, number, word — four of them
-                        reading as one line rather than four stacked blocks. */}
-                    <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                    <div className="flex flex-wrap items-center justify-center gap-2">
                         {([
                             [Users, stats?.friends ?? 0, "Friends"],
                             [MessageCircle, stats?.conversations ?? 0, "Chats"],
@@ -534,9 +552,9 @@ export default function SocialClient() {
                         ] as const).map(([Icon, value, label]) => (
                             <span
                                 key={label}
-                                className="inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
+                                className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
                             >
-                                <Icon className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <Icon className="w-3 h-3 text-[var(--accent)]" />
                                 <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">{value}</span>
                                 <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/35">{label}</span>
                             </span>
@@ -545,9 +563,9 @@ export default function SocialClient() {
                 </div>
             </div>
 
-            <div className="container-page py-5 grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+            <div className="container-page py-4 grid grid-cols-1 xl:grid-cols-12 gap-4 items-start md:flex-1 md:min-h-0">
                 {/* ── the hub itself ── */}
-                <div className="xl:col-span-9 min-w-0">
+                <div className="xl:col-span-9 min-w-0 md:h-full md:min-h-0">
                     {/* The chat used to be a 640px block inside a scrolling
                         page, so the composer sat below the fold and writing a
                         message meant scrolling to find the box. It is the
@@ -556,7 +574,7 @@ export default function SocialClient() {
                         while the header and the composer stay put. */}
                     <Panel
                         padding="none"
-                        className="flex flex-col xl:h-[calc(100vh-104px)] xl:min-h-[560px]"
+                        className="flex flex-col md:h-full md:min-h-0"
                         bodyClassName="flex flex-col flex-1 min-h-0"
                     >
                         {/* The four views used to be a separate panel in its own
@@ -697,16 +715,16 @@ export default function SocialClient() {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="flex items-center gap-3 p-3.5 border-b border-white/[0.07]">
+                                            <div className="flex items-center gap-2.5 p-3 border-b border-white/[0.07]">
                                                 <button onClick={() => setActiveId(null)} className="md:hidden p-1 text-white/40">
                                                     <ArrowLeft className="w-4 h-4" />
                                                 </button>
 
                                                 {active.type === "direct" ? (
-                                                    <Avatar src={active.image} alt={active.name} size="md" />
+                                                    <Avatar src={active.image} alt={active.name} size="sm" />
                                                 ) : (
-                                                    <span className="w-10 h-10 rounded-full bg-white/[0.06] border border-white/[0.09] flex items-center justify-center shrink-0">
-                                                        <UsersRound className="w-4 h-4 text-white/45" />
+                                                    <span className="w-8 h-8 rounded-full bg-white/[0.06] border border-white/[0.09] flex items-center justify-center shrink-0">
+                                                        <UsersRound className="w-3.5 h-3.5 text-white/45" />
                                                     </span>
                                                 )}
 
@@ -766,7 +784,7 @@ export default function SocialClient() {
                                                 )}
                                             </div>
 
-                                            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+                                            <div className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3 space-y-2.5">
                                                 {/* Fifty messages used to be the whole of any
                                                     conversation — there was no way to ask for
                                                     what came before. */}
@@ -949,7 +967,8 @@ export default function SocialClient() {
                 </div>
 
                 {/* ── right rail ── */}
-                <aside className="xl:col-span-3 min-w-0 space-y-4 xl:sticky xl:top-[88px]">
+                {/* Its own scroll, now that the page has none to give it. */}
+                <aside className="xl:col-span-3 min-w-0 space-y-4 md:h-full md:min-h-0 md:overflow-y-auto md:pr-1">
                     <Panel
                         title="Online Now"
                         meta={<span className="font-display text-[11px] font-black tabular-nums text-emerald-400">{stats?.online ?? 0}</span>}
