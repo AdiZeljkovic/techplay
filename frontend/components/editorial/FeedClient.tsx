@@ -9,7 +9,6 @@ import { Clock, User, Star, Sparkles, Info, Loader2, Newspaper, Gamepad2, Cpu, B
 import { useAuth } from "@/context/AuthContext";
 import { getStorageUrl } from "@/lib/imageUrl";
 import PageHero from "@/components/ui/PageHero";
-import { InFeedAd } from "@/components/ads/AdSense";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -234,12 +233,21 @@ export default function FeedClient() {
                         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {items.map((item, i) => (
                                 <Fragment key={`${item.kind}-${item.id}`}>
-                                    {/* One card in twelve, from the third row
-                                        down. The feed loads forever, so the
-                                        spacing is what keeps the ratio steady
-                                        however far somebody scrolls — a fixed
-                                        count would thin out to nothing. */}
-                                    {i > 0 && (i + 4) % 12 === 0 && <InFeedAd />}
+                                    {/* No ad in the feed.
+                                        There used to be one card in twelve from
+                                        the third row down, spaced by ratio rather
+                                        than count because the feed loads forever.
+                                        The unit itself was never the problem: what
+                                        Google served into it was a "Discover more"
+                                        related-search box, a white panel of text
+                                        links among artwork on a near-black grid.
+                                        The creative arrives finished in its own
+                                        frame and cannot be restyled from here, and
+                                        the format is picked per impression, so the
+                                        slot could not be trusted to hold something
+                                        that belongs. Removed here for the same
+                                        reason it was removed from the section
+                                        grids. */}
                                     <Card item={item} />
                                 </Fragment>
                             ))}
