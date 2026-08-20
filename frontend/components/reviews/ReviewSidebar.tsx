@@ -1,6 +1,7 @@
 "use client";
 
 import { Article } from "@/types";
+import { getScoreMeta } from "@/lib/score";
 import { Building2, Calendar, Clock, ShoppingCart, ThumbsUp, ThumbsDown, Zap, Meh, Medal, Trophy, Play, type LucideIcon } from "lucide-react";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
 import { platformMarks } from "@/components/games/ReleaseCard";
@@ -18,20 +19,32 @@ const AXES: { key: string; label: string }[] = [
     { key: "replayability", label: "Replay" },
 ];
 
-const TIERS: { min: number; label: string; color: string; icon: LucideIcon }[] = [
-    { min: 10, label: "Masterpiece", color: "#22d3ee", icon: Trophy },
-    { min: 9, label: "Amazing", color: "#34d399", icon: Medal },
-    { min: 8, label: "Great", color: "#4ade80", icon: ThumbsUp },
-    { min: 7, label: "Good", color: "#fbbf24", icon: Zap },
-    { min: 5, label: "Average", color: "#fb923c", icon: Meh },
-    { min: 0, label: "Poor", color: "#f87171", icon: ThumbsDown },
+/*
+ * The wording and the mark are this card's own — a 9.2 reads better as
+ * "Amazing" with a medal than as a band name. The colour is not: it comes from
+ * lib/score.ts like every other score on the site.
+ *
+ * It used to be six colours declared here — a cyan, two greens, a yellow, an
+ * orange and a red — which made this the fourth palette a score could be drawn
+ * in, and the only one where a 9.2 came out mint while the same 9.2 was green
+ * on its own card two scrolls up.
+ */
+const TIERS: { min: number; label: string; icon: LucideIcon }[] = [
+    { min: 10, label: "Masterpiece", icon: Trophy },
+    { min: 9, label: "Amazing", icon: Medal },
+    { min: 8, label: "Great", icon: ThumbsUp },
+    { min: 7, label: "Good", icon: Zap },
+    { min: 5, label: "Average", icon: Meh },
+    { min: 0, label: "Poor", icon: ThumbsDown },
 ];
 
+/* A recommendation, not a score — but it answers the same question, so it
+   answers it in the same three colours rather than inventing a fifth set. */
 const VERDICTS: Record<string, { label: string; color: string }> = {
-    must_play: { label: "Must play", color: "#22d3ee" },
-    recommended: { label: "Recommended", color: "#34d399" },
-    wait_sale: { label: "Wait for a sale", color: "#fbbf24" },
-    skip: { label: "Skip", color: "#f87171" },
+    must_play: { label: "Must play", color: "var(--score-great)" },
+    recommended: { label: "Recommended", color: "var(--score-great)" },
+    wait_sale: { label: "Wait for a sale", color: "var(--score-fair)" },
+    skip: { label: "Skip", color: "var(--score-poor)" },
 };
 
 /**
@@ -49,10 +62,19 @@ const VERDICTS: Record<string, { label: string; color: string }> = {
  * the top so the shape has something to be big *against*.
  */
 function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: string }) {
-    const size = 240;
+    /*
+     * The pentagon is drawn small inside a generous box on purpose: the labels
+     * live outside the outer ring, and the box has to hold them.
+     */
+    const size = 260;
+    const height = 208;
     const cx = size / 2;
-    const cy = 100;
-    const R = 62;
+    const cy = 104;
+    const R = 66;
+    /** How far past the outer ring the wording sits.
+        Tight enough that the two side labels stay inside the box: the widest of
+        them is about 40 units of type, and 1.30R leaves it ten to spare. */
+    const LABEL_R = 1.30;
 
     const point = (i: number, ratio: number) => {
         const angle = (-90 + i * 72) * (Math.PI / 180);
@@ -66,7 +88,7 @@ function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: 
     const shape = values.map((v, i) => point(i, v / 10).join(",")).join(" ");
 
     return (
-        <svg viewBox={`0 0 ${size} 186`} className="w-full h-auto" role="img" aria-label="Score breakdown by category">
+        <svg viewBox={`0 0 ${size} ${height}`} className="w-full h-auto" role="img" aria-label="Score breakdown by category">
             {/* the rings you count against */}
             {[0.2, 0.4, 0.6, 0.8, 1].map((r) => (
                 <polygon
@@ -93,16 +115,27 @@ function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: 
 
             {/* the labels, each carrying its own mark */}
             {AXES.map((a, i) => {
-                const [x, y] = point(i, 1);
+                /*
+                 * Placed along the axis, outside the ring — not nudged off the
+                 * vertex.
+                 *
+                 * The old placement put the wording 9px above the point and the
+                 * figure 13px below the wording, which for the top axis landed
+                 * the figure 4px *inside* the pentagon: a 10.0 sitting on the
+                 * line it was describing. Pushing every label out along its own
+                 * angle keeps all five clear of the shape by construction
+                 * rather than by five separate nudges.
+                 */
+                const [x, y] = point(i, LABEL_R);
                 const dx = x - cx;
                 const anchor = dx > 6 ? "start" : dx < -6 ? "end" : "middle";
-                const ox = dx > 6 ? 10 : dx < -6 ? -10 : 0;
-                const oy = y < cy ? -9 : 16;
+                // The top axis stacks upward so the pair still reads outward.
+                const oy = y < cy - R * 0.6 ? -13 : 0;
 
                 return (
                     <g key={a.key}>
                         <text
-                            x={x + ox}
+                            x={x}
                             y={y + oy}
                             textAnchor={anchor}
                             className="fill-white/40 font-display"
@@ -111,7 +144,7 @@ function ScoreRadar({ ratings, tint }: { ratings: Record<string, number>; tint: 
                             {a.label}
                         </text>
                         <text
-                            x={x + ox}
+                            x={x}
                             y={y + oy + 13}
                             textAnchor={anchor}
                             className="font-display"
@@ -135,6 +168,8 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
     const score = Number(review_score || 0);
     const tier = TIERS.find((t) => score >= t.min) ?? TIERS[TIERS.length - 1];
     const TierIcon = tier.icon;
+    /** Colour from the one place a score becomes a colour. */
+    const tone = getScoreMeta(score).color;
     const verdict = review_data.cta ? VERDICTS[review_data.cta] : undefined;
 
     // Blank entries are why a bullet with no sentence after it was appearing
@@ -159,7 +194,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                 className="relative overflow-hidden rounded-[var(--radius-panel)] border"
                 style={{
                     background: "var(--surface-1)",
-                    borderColor: `color-mix(in srgb, ${tier.color} 28%, transparent)`,
+                    borderColor: `color-mix(in srgb, ${tone} 28%, transparent)`,
                     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
                 }}
             >
@@ -169,14 +204,14 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                 <span
                     aria-hidden
                     className="absolute inset-x-0 top-0 h-[2px] z-10"
-                    style={{ background: `linear-gradient(90deg, ${tier.color}, color-mix(in srgb, ${tier.color} 18%, transparent) 62%, transparent)` }}
+                    style={{ background: `linear-gradient(90deg, ${tone}, color-mix(in srgb, ${tone} 18%, transparent) 62%, transparent)` }}
                 />
 
                 <div className="md:grid md:grid-cols-12">
                     {/* ── the scores ── */}
                     <div className="md:col-span-5 flex flex-col border-b md:border-b-0 md:border-r border-white/[0.07]" style={{ background: "var(--surface-2)" }}>
                         <div className="px-5 pt-5 pb-1 flex-1">
-                            <ScoreRadar ratings={ratings} tint={tier.color} />
+                            <ScoreRadar ratings={ratings} tint={tone} />
                         </div>
 
                         {/* The total and the verdict on one line.
@@ -189,19 +224,19 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                         <div className="flex items-center gap-4 px-5 py-4 border-t border-white/[0.07]">
                             <span
                                 className="shrink-0 w-11 h-11 rounded-[10px] flex items-center justify-center"
-                                style={{ background: `color-mix(in srgb, ${tier.color} 16%, transparent)`, color: tier.color }}
+                                style={{ background: `color-mix(in srgb, ${tone} 16%, transparent)`, color: tone }}
                             >
                                 <TierIcon className="w-[22px] h-[22px]" strokeWidth={1.6} />
                             </span>
 
                             <span className="min-w-0">
                                 <span className="flex items-baseline gap-1.5">
-                                    <span className="font-display text-[30px] font-black tabular-nums leading-none" style={{ color: tier.color }}>
+                                    <span className="font-display text-[30px] font-black tabular-nums leading-none" style={{ color: tone }}>
                                         {score.toFixed(1)}
                                     </span>
                                     <span className="font-display text-[11px] font-bold tabular-nums text-white/25">/ 10</span>
                                 </span>
-                                <span className="block mt-1 font-display text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: tier.color }}>
+                                <span className="block mt-1 font-display text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: tone }}>
                                     {tier.label}
                                 </span>
                             </span>
