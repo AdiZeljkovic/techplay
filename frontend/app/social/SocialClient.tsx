@@ -248,6 +248,8 @@ export default function SocialClient() {
 
     const fileInput = useRef<HTMLInputElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
+    /* Which conversation has already been dropped at its newest message. */
+    const openedAtEnd = useRef<number | null>(null);
 
     const { data: hub, mutate: mutateHub } = useSWR<SocialHubPayload>(user ? "/social" : null, fetcher);
     const { data: conversations, mutate: mutateList } = useSWR<ConversationRow[]>(
@@ -325,10 +327,34 @@ export default function SocialClient() {
     }, [conversations, activeId]);
 
     useEffect(() => {
-        // Only follow the conversation if the reader is already at the end —
-        // and scroll the message list, not the document.
         const list = bottomRef.current?.parentElement;
-        if (!list) return;
+        if (!list || !activeId) return;
+
+        /*
+         * Opening a conversation lands on its newest message.
+         *
+         * The rule below — follow only if the reader is already at the end —
+         * is right for a thread being read, and wrong for one being opened:
+         * a fresh list sits at scrollTop 0, which is never "near the bottom",
+         * so every conversation opened at its oldest message and the reader
+         * had to scroll down through the whole history to find out what had
+         * just been said.
+         *
+         * Once per conversation, then, jump. Twice in practice: avatars and
+         * images finish loading after the first jump and grow the list under
+         * it, so the next frame corrects for what arrived late.
+         */
+        if (openedAtEnd.current !== activeId) {
+            if ((thread?.messages?.length ?? 0) === 0) return;   // nothing to jump to yet
+            openedAtEnd.current = activeId;
+            list.scrollTop = list.scrollHeight;
+            requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
+            return;
+        }
+
+        // Reading, not arriving: follow a new message only if they are already
+        // at the end, so nobody gets yanked away from what they were reading —
+        // and scroll the message list, not the document.
         const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
         if (nearBottom) list.scrollTop = list.scrollHeight;
     }, [thread?.messages?.length, activeId]);
