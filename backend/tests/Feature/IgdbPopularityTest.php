@@ -218,6 +218,24 @@ class IgdbPopularityTest extends TestCase
         $this->assertTrue($names->contains($unmeasured->name));
     }
 
+    /**
+     * A percentile of 100 means "top half a percent of its measure", and about
+     * two hundred games sit there. Ties break on our own page views, so the
+     * most visible list in the section does not reshuffle between requests.
+     */
+    public function test_games_tied_on_popularity_are_ordered_by_our_own_views(): void
+    {
+        $quiet = Game::create(['name' => 'Tied But Quiet', 'slug' => 'tied-quiet', 'released' => '2019-01-01']);
+        $read = Game::create(['name' => 'Tied And Read', 'slug' => 'tied-read', 'released' => '2019-01-01']);
+
+        DB::table('games')->where('id', $quiet->id)->update(['popularity' => 100, 'views' => 3]);
+        DB::table('games')->where('id', $read->id)->update(['popularity' => 100, 'views' => 9000]);
+
+        $names = collect($this->getJson('/api/v1/games?ordering=-popularity')->json('results'))->pluck('name');
+
+        $this->assertSame(['Tied And Read', 'Tied But Quiet'], $names->all());
+    }
+
     /** The game page carries the standing with the measure that produced it. */
     public function test_the_game_page_names_the_measure(): void
     {

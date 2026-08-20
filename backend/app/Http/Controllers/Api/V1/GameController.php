@@ -114,9 +114,15 @@ class GameController extends Controller
                 '-views' => $q->orderByDesc('views'),  // trending by real page views
                 '-added' => $q->orderByDesc('id'),     // recently added to the database
                 // What people are actually playing and looking up, from IGDB's
-                // popularity primitives — 152,092 games carry one. NULLS LAST
+                // popularity primitives — 125,237 games carry one. NULLS LAST
                 // for the rest, same as rating above and for the same reason.
-                '-popularity' => $q->orderByRaw('popularity DESC NULLS LAST'),
+                //
+                // Broken by our own page views, because a percentile of 100
+                // means "top half a percent of its measure" and around two
+                // hundred games sit there. Without a second key their order is
+                // whatever the planner felt like, and it would change between
+                // requests on the most visible page of the section.
+                '-popularity' => $q->orderByRaw('popularity DESC NULLS LAST')->orderByDesc('views')->orderBy('id'),
                 default => $q->orderByRaw('rating DESC NULLS LAST'),  // -rating (default)
             };
 
