@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\SitemapController;
 use App\Models\Game;
+use App\Models\Studio;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
@@ -49,6 +50,13 @@ class GenerateSitemap extends Command
             'sitemap-news.xml' => fn () => $sitemap->news(),
             'sitemap-images.xml' => fn () => $sitemap->images(),
         ];
+
+        /* Only when there are studios to list. index() applies the same test,
+           and the two have to agree or the index names a file this never
+           writes — which is how sitemap-videos.xml outlived its section. */
+        if (Studio::where('indexable', true)->exists()) {
+            $sitemaps['sitemap-studios.xml'] = fn () => $sitemap->studios();
+        }
 
         foreach ($sitemaps as $filename => $generator) {
             File::put("{$outputPath}/{$filename}", $generator()->getContent());

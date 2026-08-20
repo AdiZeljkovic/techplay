@@ -147,6 +147,34 @@ class StudioApiTest extends TestCase
         $this->getJson('/api/v1/studios/nobody-here')->assertNotFound();
     }
 
+    /**
+     * The sitemap lists the studios worth crawling, and the index names the
+     * file only when there is one.
+     *
+     * The index and the generator apply the same test on purpose: when they
+     * disagreed before, the index named files nothing wrote and crawlers kept
+     * fetching them for months.
+     */
+    public function test_the_sitemap_carries_only_indexable_studios(): void
+    {
+        $this->studio('Big Studio', ['games_count' => 30]);
+        $this->studio('Small Studio', ['games_count' => 1, 'indexable' => false]);
+
+        $sitemap = $this->get('/sitemap-studios.xml');
+
+        $sitemap->assertOk();
+        $sitemap->assertSee('/studios/big-studio', false);
+        $sitemap->assertDontSee('/studios/small-studio', false);
+
+        $this->get('/sitemap.xml')->assertOk()->assertSee('sitemap-studios.xml', false);
+    }
+
+    /** No studios yet is no entry — not an empty file crawlers fetch forever. */
+    public function test_the_index_leaves_studios_out_when_there_are_none(): void
+    {
+        $this->get('/sitemap.xml')->assertOk()->assertDontSee('sitemap-studios.xml', false);
+    }
+
     /** A game carries its studios as somewhere to go, beside the plain names. */
     public function test_a_game_lists_its_studios(): void
     {

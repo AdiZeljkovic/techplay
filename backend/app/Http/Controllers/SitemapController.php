@@ -8,6 +8,7 @@ use App\Models\Game;
 use App\Models\Gta6Character;
 use App\Models\Guide;
 use App\Models\Product;
+use App\Models\Studio;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -92,6 +93,16 @@ class SitemapController extends Controller
                 $sitemaps[] = $filename;
                 $lastmod[$filename] = $gameLastmodStr;
             }
+        }
+
+        // Studios, but only once there are any — an empty file in the index is
+        // a URL a crawler fetches forever to be told nothing.
+        if (Studio::where('indexable', true)->exists()) {
+            $sitemaps[] = 'sitemap-studios.xml';
+            $studioLastmod = Studio::where('indexable', true)->max('updated_at');
+            $lastmod['sitemap-studios.xml'] = $studioLastmod
+                ? Carbon::parse($studioLastmod)->toIso8601String()
+                : now()->toIso8601String();
         }
 
         foreach ($sitemaps as $sitemap) {
@@ -474,6 +485,40 @@ class SitemapController extends Controller
                     $game->updated_at?->toIso8601String(),
                     'monthly',
                     '0.8'
+                );
+            });
+
+        $xml .= '</urlset>';
+
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * The studios worth crawling.
+     *
+     * 56,911 have a page, because every game page links to its studio and a
+     * link that 404s is worse than a thin page. Only the 31,536 with two games
+     * or something written about them go in here — `indexable` carries that
+     * decision, and the studio page sends the rest `noindex, follow` so the
+     * links out of them still count.
+     */
+    public function studios(): Response
+    {
+        $xml = $this->xmlHeader();
+
+        Studio::where('indexable', true)
+            ->select('slug', 'updated_at')
+            ->orderByDesc('games_count')
+            ->each(function (Studio $studio) use (&$xml) {
+                if (! preg_match('/[a-z0-9]/i', (string) $studio->slug)) {
+                    return;
+                }
+
+                $xml .= $this->urlEntry(
+                    "{$this->frontendUrl}/studios/{$studio->slug}",
+                    $studio->updated_at?->toIso8601String(),
+                    'monthly',
+                    '0.6'
                 );
             });
 

@@ -37,6 +37,7 @@ Route::get('/sitemap-products.xml', [SitemapController::class, 'products']);
 Route::get('/sitemap-news.xml', [SitemapController::class, 'news']);
 Route::get('/sitemap-images.xml', [SitemapController::class, 'images']);
 Route::get('/sitemap-games-{page}.xml', [SitemapController::class, 'games'])->where('page', '[1-9][0-9]*');
+Route::get('/sitemap-studios.xml', [SitemapController::class, 'studios']);
 
 // Dynamic robots.txt from admin panel
 Route::get('/robots.txt', function () {
