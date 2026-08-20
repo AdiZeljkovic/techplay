@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Services\Igdb\IgdbFacts;
 use App\Services\Igdb\IgdbMatcher;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -42,6 +43,8 @@ class IgdbMerge extends Command
 {
     protected $signature = 'igdb:merge
                             {--limit=1000 : How many of our games to consider}
+                            {--all : Every game we have, in chunks, instead of --limit}
+                            {--chunk=2000 : Games per chunk when --all is used}
                             {--order=views : views, random, or id}
                             {--replace=* : Fields IGDB may overwrite, not just fill}
                             {--apply : Actually write. Without it nothing is saved}';
@@ -79,13 +82,63 @@ class IgdbMerge extends Command
             return self::FAILURE;
         }
 
-        $ours = Game::query()
-            ->when($this->option('order') === 'views', fn ($q) => $q->orderByDesc('views'))
-            ->when($this->option('order') === 'id', fn ($q) => $q->orderBy('id'))
-            ->when($this->option('order') === 'random', fn ($q) => $q->inRandomOrder())
-            ->limit(max(1, (int) $this->option('limit')))
-            ->get();
+        $this->filled = array_fill_keys(self::FIELDS, 0);
+        $this->replaced = array_fill_keys(self::FIELDS, 0);
 
+        if ($this->option('all')) {
+            $chunk = max(1, (int) $this->option('chunk'));
+            $total = Game::count();
+            $bar = $this->output->createProgressBar($total);
+
+            /* chunkById, not chunk: the merge writes to the same table it is
+               reading, and an offset walk over a table being written to skips
+               rows. Keying on id makes the walk independent of the writes. */
+            Game::query()->orderBy('id')->chunkById($chunk, function ($games) use ($matcher, $facts, $replace, $apply, $bar) {
+                $this->mergeChunk($games, $matcher, $facts, $replace, $apply);
+                $bar->advance($games->count());
+            });
+
+            $bar->finish();
+            $this->newLine();
+            $this->sampled = $total;
+        } else {
+            $ours = Game::query()
+                ->when($this->option('order') === 'views', fn ($q) => $q->orderByDesc('views'))
+                ->when($this->option('order') === 'id', fn ($q) => $q->orderBy('id'))
+                ->when($this->option('order') === 'random', fn ($q) => $q->inRandomOrder())
+                ->limit(max(1, (int) $this->option('limit')))
+                ->get();
+
+            $this->sampled = $ours->count();
+            $this->mergeChunk($ours, $matcher, $facts, $replace, $apply);
+        }
+
+        $this->closeUndo();
+        $this->report($apply);
+
+        return self::SUCCESS;
+    }
+
+    /** Counters, kept on the command because a chunked run fills them many times. */
+    private int $sampled = 0;
+
+    private int $matchedCount = 0;
+
+    private int $touched = 0;
+
+    private int $lockedCount = 0;
+
+    private int $spared = 0;
+
+    private array $filled = [];
+
+    private array $replaced = [];
+
+    /**
+     * @param  Collection<int, Game>  $ours
+     */
+    private function mergeChunk($ours, IgdbMatcher $matcher, IgdbFacts $facts, array $replace, bool $apply): void
+    {
         /* Match first, then load their side once for everything matched. */
         $matched = [];
         foreach ($ours as $game) {
@@ -97,18 +150,11 @@ class IgdbMerge extends Command
         }
 
         if ($matched === []) {
-            $this->warn('  Nijedna igra iz uzorka nije pouzdano spojena.');
-
-            return self::SUCCESS;
+            return;
         }
 
+        $this->matchedCount += count($matched);
         $facts->load(array_map(fn ($m) => $m[1], $matched));
-
-        $filled = array_fill_keys(self::FIELDS, 0);
-        $replaced = array_fill_keys(self::FIELDS, 0);
-        $touched = 0;
-        $locked = 0;
-        $spared = 0;
 
         foreach ($matched as [$game, $igdbId, $rule]) {
             $available = $facts->forGame($igdbId);
@@ -127,7 +173,7 @@ class IgdbMerge extends Command
                 }
 
                 if (in_array($field, $lockedHere, true)) {
-                    $locked++;
+                    $this->lockedCount++;
 
                     continue;
                 }
@@ -135,7 +181,7 @@ class IgdbMerge extends Command
                 if (! $this->isEmpty($game->{$field})) {
                     if (! in_array($field, $mayReplace, true)) {
                         if ($game->is_editorial && in_array($field, $replace, true)) {
-                            $spared++;
+                            $this->spared++;
                         }
 
                         continue;   // ours stays
@@ -155,9 +201,9 @@ class IgdbMerge extends Command
                 continue;
             }
 
-            $touched++;
+            $this->touched++;
             foreach (array_keys($updates) as $field) {
-                isset($overwritten[$field]) ? $replaced[$field]++ : $filled[$field]++;
+                isset($overwritten[$field]) ? $this->replaced[$field]++ : $this->filled[$field]++;
             }
 
             if ($apply) {
@@ -176,10 +222,6 @@ class IgdbMerge extends Command
             }
         }
 
-        $this->closeUndo();
-        $this->report($ours->count(), count($matched), $touched, $filled, $replaced, $locked, $spared, $apply);
-
-        return self::SUCCESS;
     }
 
     /**
@@ -250,22 +292,22 @@ class IgdbMerge extends Command
         return is_array($value) && $value === [];
     }
 
-    private function report(int $sampled, int $matched, int $touched, array $filled, array $replaced, int $locked, int $spared, bool $apply): void
+    private function report(bool $apply): void
     {
         $this->newLine();
         $this->line(sprintf(
             '  Uzorak %s — pouzdano spojeno %s, izmijenjeno %s',
-            number_format($sampled), number_format($matched), number_format($touched)
+            number_format($this->sampled), number_format($this->matchedCount), number_format($this->touched)
         ));
         $this->newLine();
 
         $rows = [];
         foreach (self::FIELDS as $field) {
-            if ($filled[$field] > 0 || $replaced[$field] > 0) {
+            if ($this->filled[$field] > 0 || $this->replaced[$field] > 0) {
                 $rows[] = [
                     $field,
-                    $filled[$field] > 0 ? number_format($filled[$field]) : '—',
-                    $replaced[$field] > 0 ? number_format($replaced[$field]) : '—',
+                    $this->filled[$field] > 0 ? number_format($this->filled[$field]) : '—',
+                    $this->replaced[$field] > 0 ? number_format($this->replaced[$field]) : '—',
                 ];
             }
         }
@@ -275,12 +317,12 @@ class IgdbMerge extends Command
             $rows ?: [['—', '0', '0']],
         );
 
-        if ($locked > 0) {
-            $this->line('  '.number_format($locked).' polja preskoceno jer su zakljucana (locked_fields).');
+        if ($this->lockedCount > 0) {
+            $this->line('  '.number_format($this->lockedCount).' polja preskoceno jer su zakljucana (locked_fields).');
         }
 
-        if ($spared > 0) {
-            $this->line('  '.number_format($spared).' polja sacuvano jer je igra editorial — te se popunjavaju, ne prepisuju.');
+        if ($this->spared > 0) {
+            $this->line('  '.number_format($this->spared).' polja sacuvano jer je igra editorial — te se popunjavaju, ne prepisuju.');
         }
 
         $this->newLine();

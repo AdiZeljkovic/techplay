@@ -45,6 +45,13 @@ class IgdbFacts
      */
     public function load(array $igdbIds): void
     {
+        /* Cleared first, not merged into. A run works through the catalogue in
+           chunks and calls this once per chunk; companies and collections are
+           built by appending, so without this the last chunk would carry every
+           earlier one's studios around with it. */
+        $this->games = $this->covers = $this->videos = [];
+        $this->companies = $this->altNames = $this->collections = [];
+
         if ($igdbIds === []) {
             return;
         }

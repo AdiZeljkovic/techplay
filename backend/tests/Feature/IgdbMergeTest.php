@@ -325,6 +325,37 @@ class IgdbMergeTest extends TestCase
         @unlink($undo);
     }
 
+    /**
+     * --all walks the whole catalogue in chunks, and each chunk starts clean.
+     *
+     * The facts loader builds companies and collections by appending, so a chunk
+     * that did not clear first would hand the second game the first one's studio.
+     * Two games, one per chunk, each with a studio of its own is the smallest
+     * arrangement that catches it.
+     */
+    public function test_a_chunked_run_does_not_leak_between_chunks(): void
+    {
+        $this->raw('games', 100, ['name' => 'Hollow Knight', 'first_release_date' => mktime(0, 0, 0, 2, 24, 2017)]);
+        $this->raw('companies', 902, ['name' => 'Team Cherry']);
+        $this->raw('involved_companies', 903, ['game' => 100, 'company' => 902, 'developer' => true]);
+
+        $this->raw('games', 200, ['name' => 'Disco Elysium', 'first_release_date' => mktime(0, 0, 0, 10, 15, 2019)]);
+        $this->raw('companies', 912, ['name' => 'ZA/UM']);
+        $this->raw('involved_companies', 913, ['game' => 200, 'company' => 912, 'developer' => true]);
+
+        $this->artisan('igdb:index');
+
+        $first = $this->ourGame(['name' => 'Hollow Knight', 'released' => '2017-02-24']);
+        $second = $this->ourGame(['name' => 'Disco Elysium', 'released' => '2019-10-15']);
+
+        /* One game per chunk — anything larger puts both in the same load()
+           and the leak this guards against cannot happen. */
+        $this->artisan('igdb:merge', ['--all' => true, '--chunk' => 1, '--apply' => true])->assertSuccessful();
+
+        $this->assertSame(['Team Cherry'], $first->fresh()->developers);
+        $this->assertSame(['ZA/UM'], $second->fresh()->developers);
+    }
+
     /** Running it twice changes nothing the second time. */
     public function test_a_second_run_is_a_no_op(): void
     {
