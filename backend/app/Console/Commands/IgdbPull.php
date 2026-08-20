@@ -43,6 +43,12 @@ class IgdbPull extends Command
         'games',
         'companies',
         'involved_companies',
+
+        /* A company row carries the id of its logo and the ids of its sites,
+           not the values. Without these two the studio pages have a name and
+           nothing to look at — 17,902 logos and 19,065 sites, both small. */
+        'company_logos',
+        'company_websites',
         'covers',
         'game_videos',
         'age_ratings',
