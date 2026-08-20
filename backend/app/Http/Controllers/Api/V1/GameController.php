@@ -38,6 +38,31 @@ class GameController extends Controller
     }
 
     /**
+     * IGDB's seconds as hours, rounded the way a person would say them.
+     *
+     * `count` comes along because "24 hours, from 3 people" and "24 hours, from
+     * 4,000" are not the same claim, and the page can say so.
+     *
+     * @return array{hastily?: int, normally?: int, completely?: int, count: int}|null
+     */
+    private function hours(mixed $seconds): ?array
+    {
+        if (! is_array($seconds) || $seconds === []) {
+            return null;
+        }
+
+        $out = [];
+
+        foreach (['hastily', 'normally', 'completely'] as $pace) {
+            if (! empty($seconds[$pace])) {
+                $out[$pace] = max(1, (int) round(((int) $seconds[$pace]) / 3600));
+            }
+        }
+
+        return $out === [] ? null : $out + ['count' => (int) ($seconds['count'] ?? 0)];
+    }
+
+    /**
      * A random game with a real description — powers the "Random Game" button.
      * Random offset instead of ORDER BY random() so it stays fast on 200K rows.
      */
@@ -255,6 +280,18 @@ class GameController extends Controller
                 'percentile' => (int) round(((int) $game->popularity) / 100),
                 'metric' => $game->popularity_metric,
             ],
+
+            /* What the rewritten page draws. Hours rather than the seconds the
+               column holds — the precision is worth keeping in the database and
+               worth losing on the page, where "about 24 hours" is the answer
+               and "86,400 seconds" is a puzzle. */
+            'time_to_beat' => $this->hours($game->time_to_beat),
+            'game_modes' => $this->pgArray($game->game_modes),
+            'player_perspectives' => $this->pgArray($game->player_perspectives),
+            'multiplayer' => $game->multiplayer ?: null,
+            'languages' => $game->languages ?? [],
+            'artworks' => $game->artworks ?? [],
+            'similar_games' => $game->similar_games ?? [],
         ];
     }
 
