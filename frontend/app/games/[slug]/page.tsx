@@ -43,6 +43,15 @@ interface AlternateTitle {
     description: string | null;
 }
 
+/** The subset of a game's credits that has a studio page behind it. */
+interface GameStudio {
+    name: string;
+    slug: string;
+    logo_url: string | null;
+    games_count: number;
+    role: "developer" | "publisher";
+}
+
 interface GameDetail {
     id: number;
     name: string;
@@ -66,6 +75,7 @@ interface GameDetail {
     publishers: string[];
     series_key: number | null;
     series_name: string | null;
+    studios: GameStudio[];
     videos: string[];
     box_art: BoxArt[];
     critic_scores: {
@@ -293,6 +303,57 @@ function groupAttributes(attributes: GameAttribute[]) {
 function youtubeId(url: string): string | null {
     const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
     return m ? m[1] : null;
+}
+
+/**
+ * A studio credit, as a link where there is one to give.
+ *
+ * `developers` and `publishers` are plain names and cover the whole catalogue,
+ * including the games we never matched to IGDB. `studios` is the subset that
+ * has a page of its own. Names carry the row; the studio list decides which of
+ * them a reader can follow — so a game keeps its credits either way, and gains
+ * somewhere to go the moment its studio exists.
+ */
+function CompanyRow({
+    label,
+    names,
+    studios,
+    role,
+}: {
+    label: string;
+    names: string[];
+    studios: GameStudio[];
+    role: "developer" | "publisher";
+}) {
+    if (names.length === 0) return null;
+
+    const linkable = new Map(
+        (studios ?? []).filter((s) => s.role === role).map((s) => [s.name.toLowerCase(), s.slug]),
+    );
+
+    return (
+        <div>
+            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">{label}</p>
+            <p className="mt-1 text-[13px] font-medium text-white/85">
+                {names.map((name, index) => {
+                    const slug = linkable.get(name.toLowerCase());
+
+                    return (
+                        <span key={name}>
+                            {index > 0 && ", "}
+                            {slug ? (
+                                <Link href={`/studios/${slug}`} className="hover:text-[var(--accent)] transition-colors">
+                                    {name}
+                                </Link>
+                            ) : (
+                                name
+                            )}
+                        </span>
+                    );
+                })}
+            </p>
+        </div>
+    );
 }
 
 function AttributeGrid({ groups }: { groups: Record<string, string[]> }) {
@@ -677,18 +738,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         <div className="space-y-4">
                             {/* Companies appear the day the enrichment lands — an empty
                                 "Unknown" row is a shrug, so absence stays silent. */}
-                            {game.developers.length > 0 && (
-                                <div>
-                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Developer</p>
-                                    <p className="mt-1 text-[13px] font-medium text-white/85">{game.developers.join(", ")}</p>
-                                </div>
-                            )}
-                            {game.publishers.length > 0 && (
-                                <div>
-                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Publisher</p>
-                                    <p className="mt-1 text-[13px] font-medium text-white/85">{game.publishers.join(", ")}</p>
-                                </div>
-                            )}
+                            <CompanyRow label="Developer" names={game.developers} studios={game.studios} role="developer" />
+                            <CompanyRow label="Publisher" names={game.publishers} studios={game.studios} role="publisher" />
                             {released && (
                                 <div>
                                     <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Released</p>

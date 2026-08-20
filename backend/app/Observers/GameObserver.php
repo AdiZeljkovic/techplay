@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Game;
+use App\Services\CacheService;
 use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -38,9 +39,9 @@ class GameObserver
         }
 
         // Local API cache is always busted, even from CLI/queue jobs
-        Cache::forget("games.show.v4.{$game->slug}");
+        Cache::forget(CacheService::gameShowKey($game->slug));
         if ($game->wasChanged('slug')) {
-            Cache::forget('games.show.v4.'.$game->getOriginal('slug'));
+            Cache::forget(CacheService::gameShowKey((string) $game->getOriginal('slug')));
         }
 
         // Outbound HTTP (revalidation, IndexNow) only for web requests, so bulk
@@ -72,7 +73,7 @@ class GameObserver
             return;
         }
 
-        Cache::forget("games.show.v4.{$game->slug}");
+        Cache::forget(CacheService::gameShowKey($game->slug));
         Cache::forget("games.articles.v2.{$game->id}");
 
         if (app()->runningInConsole()) {

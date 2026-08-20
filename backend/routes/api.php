@@ -75,6 +75,7 @@ use App\Http\Controllers\Api\V1\ShopController;
 use App\Http\Controllers\Api\V1\SocialAuthController;
 use App\Http\Controllers\Api\V1\SteamAchievementController;
 use App\Http\Controllers\Api\V1\StreakController;
+use App\Http\Controllers\Api\V1\StudioController;
 use App\Http\Controllers\Api\V1\SupportController;
 use App\Http\Controllers\Api\V1\SystemController;
 use App\Http\Controllers\Api\V1\TasteMatchController;
@@ -605,6 +606,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/games/{slug}/ratings', [GameRatingController::class, 'index']);
         Route::get('/games/{slug}/threads', [ForumController::class, 'gameThreads']);
         Route::get('/games/{slug}', [GameController::class, 'show']);
+
+        // Studios. Listed before the catch-all slug for the same reason the
+        // game routes above are ordered as they are.
+        Route::get('/studios', [StudioController::class, 'index']);
+        Route::get('/studios/{slug}', [StudioController::class, 'show']);
     });
 
     // Rate-limited authenticated actions

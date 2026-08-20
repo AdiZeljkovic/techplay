@@ -95,6 +95,21 @@ class CacheService
     }
 
     /**
+     * The same arrangement for games, for the same reason.
+     *
+     * `games.show.v4.{slug}` was spelled out in four places across the observer
+     * and the controller — the exact shape that let the article key drift. It
+     * is v5 now because the payload gained the linked studios, and a reader
+     * holding a v4 copy would show a game page with nowhere to click.
+     */
+    public const GAME_VERSION = 'v5';
+
+    public static function gameShowKey(string $slug): string
+    {
+        return 'games.show.'.self::GAME_VERSION.".{$slug}";
+    }
+
+    /**
      * Listing keys carry a page, a category and an md5 of the search term, so
      * they cannot be enumerated the way a slug can. Each is recorded here as it
      * is written, and that record is what invalidation reads.

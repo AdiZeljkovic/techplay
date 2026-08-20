@@ -1,0 +1,167 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Game;
+use App\Models\Studio;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Tests\TestCase;
+
+/**
+ * The studios endpoints.
+ *
+ * Two things are worth pinning. The listing shows the studios worth landing on
+ * rather than all 56,911, because two thirds of them have one game and nothing
+ * written about them — but the detail page still answers for those, since every
+ * game page links to its studio and a link that 404s is worse than a thin page.
+ * And developed and published stay apart all the way to the response.
+ */
+class StudioApiTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function studio(string $name, array $attributes = []): Studio
+    {
+        return Studio::create(array_merge([
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'games_count' => 1,
+            'indexable' => true,
+        ], $attributes));
+    }
+
+    private function game(string $name, ?string $released = '2019-01-01'): Game
+    {
+        return Game::create([
+            'name' => $name,
+            'slug' => Str::slug($name),
+            'released' => $released,
+        ]);
+    }
+
+    public function test_the_listing_returns_studios_worth_landing_on(): void
+    {
+        $this->studio('Big Studio', ['games_count' => 30]);
+        $this->studio('Small Studio', ['games_count' => 1, 'indexable' => false]);
+
+        $response = $this->getJson('/api/v1/studios');
+
+        $response->assertOk()->assertJsonPath('success', true);
+
+        $names = collect($response->json('data'))->pluck('name');
+
+        $this->assertTrue($names->contains('Big Studio'));
+        $this->assertFalse($names->contains('Small Studio'), 'a thin studio is not on page one of an index');
+    }
+
+    /** The long tail is reachable for anyone who asks for it. */
+    public function test_all_includes_the_thin_ones(): void
+    {
+        $this->studio('Small Studio', ['games_count' => 1, 'indexable' => false]);
+
+        $names = collect($this->getJson('/api/v1/studios?all=1')->json('data'))->pluck('name');
+
+        $this->assertTrue($names->contains('Small Studio'));
+    }
+
+    public function test_the_listing_can_be_searched_and_sorted(): void
+    {
+        $this->studio('Arkane Studios', ['games_count' => 12]);
+        $this->studio('Zebra Games', ['games_count' => 40]);
+
+        $found = collect($this->getJson('/api/v1/studios?search=arkane')->json('data'))->pluck('name');
+        $this->assertSame(['Arkane Studios'], $found->all());
+
+        $byName = collect($this->getJson('/api/v1/studios?sort=name')->json('data'))->pluck('name');
+        $this->assertSame(['Arkane Studios', 'Zebra Games'], $byName->all());
+
+        $byGames = collect($this->getJson('/api/v1/studios?sort=games')->json('data'))->pluck('name');
+        $this->assertSame(['Zebra Games', 'Arkane Studios'], $byGames->all());
+    }
+
+    /** The role is on the pivot precisely so these two never merge. */
+    public function test_the_detail_keeps_developed_and_published_apart(): void
+    {
+        $studio = $this->studio('Bethesda', ['games_count' => 2]);
+        $made = $this->game('Their Own Game');
+        $putOut = $this->game('Somebody Elses Game');
+
+        $studio->games()->attach($made->id, ['role' => 'developer']);
+        $studio->games()->attach($putOut->id, ['role' => 'publisher']);
+
+        $response = $this->getJson('/api/v1/studios/bethesda');
+
+        $response->assertOk()
+            ->assertJsonPath('data.name', 'Bethesda')
+            ->assertJsonPath('data.developed.0.name', 'Their Own Game')
+            ->assertJsonPath('data.published.0.name', 'Somebody Elses Game');
+
+        $this->assertCount(1, $response->json('data.developed'));
+        $this->assertCount(1, $response->json('data.published'));
+    }
+
+    /** Thin or not, the page answers — a game page links straight to it. */
+    public function test_a_thin_studio_still_has_a_page(): void
+    {
+        $this->studio('Small Studio', ['games_count' => 1, 'indexable' => false]);
+
+        $this->getJson('/api/v1/studios/small-studio')
+            ->assertOk()
+            ->assertJsonPath('data.indexable', false);
+    }
+
+    /**
+     * IGDB stores ISO 3166-1 numeric and nothing else, so the mapping lives in
+     * one place on this side and the response carries a printable name.
+     */
+    public function test_a_country_comes_back_named_and_filters_either_way(): void
+    {
+        $this->studio('Japanese Studio', ['country' => 392]);
+        $this->studio('French Studio', ['country' => 250]);
+
+        $this->getJson('/api/v1/studios/japanese-studio')
+            ->assertOk()
+            ->assertJsonPath('data.country.alpha2', 'JP')
+            ->assertJsonPath('data.country.name', 'Japan');
+
+        $byLetters = collect($this->getJson('/api/v1/studios?country=JP')->json('data'))->pluck('name');
+        $byNumber = collect($this->getJson('/api/v1/studios?country=392')->json('data'))->pluck('name');
+
+        $this->assertSame(['Japanese Studio'], $byLetters->all());
+        $this->assertSame(['Japanese Studio'], $byNumber->all());
+    }
+
+    /** A code we have no name for is left off, not guessed at. */
+    public function test_an_unmapped_country_comes_back_null(): void
+    {
+        $this->studio('Somewhere Studio', ['country' => 999]);
+
+        $this->getJson('/api/v1/studios/somewhere-studio')
+            ->assertOk()
+            ->assertJsonPath('data.country', null);
+    }
+
+    public function test_an_unknown_studio_is_a_404(): void
+    {
+        $this->getJson('/api/v1/studios/nobody-here')->assertNotFound();
+    }
+
+    /** A game carries its studios as somewhere to go, beside the plain names. */
+    public function test_a_game_lists_its_studios(): void
+    {
+        $studio = $this->studio('Arkane Studios');
+        $game = $this->game('Dishonored');
+        $game->update(['developers' => ['Arkane Studios']]);
+        $studio->games()->attach($game->id, ['role' => 'developer']);
+
+        $response = $this->getJson('/api/v1/games/dishonored');
+
+        $response->assertOk()
+            ->assertJsonPath('studios.0.slug', 'arkane-studios')
+            ->assertJsonPath('studios.0.role', 'developer');
+
+        /* The names stay too — they cover games we never matched to IGDB. */
+        $this->assertSame(['Arkane Studios'], $response->json('developers'));
+    }
+}

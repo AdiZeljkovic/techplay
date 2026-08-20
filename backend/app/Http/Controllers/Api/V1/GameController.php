@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SitemapController;
 use App\Models\Article;
 use App\Models\Game;
+use App\Services\CacheService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\SanitizationService;
 use Illuminate\Http\Request;
@@ -131,7 +132,7 @@ class GameController extends Controller
 
     public function show(Request $request, string $slug)
     {
-        $payload = Cache::remember("games.show.v4.{$slug}", 600, fn () => $this->buildShowPayload($slug));
+        $payload = Cache::remember(CacheService::gameShowKey($slug), 600, fn () => $this->buildShowPayload($slug));
 
         if (! $payload) {
             // Deleted on purpose (adult purge) answers 410, so crawlers drop
@@ -175,7 +176,7 @@ class GameController extends Controller
      */
     private function buildShowPayload(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->first();
+        $game = Game::where('slug', $slug)->with('studios:id,name,slug,logo_url,games_count')->first();
 
         if (! $game) {
             return null;
@@ -211,6 +212,17 @@ class GameController extends Controller
             'tags' => $game->tags ?? [],
             'developers' => $game->developers ?? [],
             'publishers' => $game->publishers ?? [],
+
+            /* The same credits as somewhere to go. The two arrays above stay:
+               they cover games we never matched to IGDB, and they are what the
+               page prints when a studio has no row of its own. */
+            'studios' => $game->studios->map(fn ($studio) => [
+                'name' => $studio->name,
+                'slug' => $studio->slug,
+                'logo_url' => $studio->logo_url,
+                'games_count' => $studio->games_count,
+                'role' => $studio->pivot->role,
+            ])->values()->all(),
             'series_key' => $game->series_key,
             'series_name' => $game->series_name,
             'videos' => $game->videos ?? [],

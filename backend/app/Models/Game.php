@@ -67,10 +67,26 @@ class Game extends Model
         return $this->hasMany(GameStoreLink::class);
     }
 
-    public function companies(): BelongsToMany
+    /**
+     * Who made it and who put it out.
+     *
+     * `developers` and `publishers` still hold the names, and still feed the
+     * game page — this is the same information as something you can click, and
+     * as somewhere a reader can go next.
+     */
+    public function studios(): BelongsToMany
     {
-        return $this->belongsToMany(GameCompany::class, 'game_company', 'game_id', 'game_company_id')
-            ->withPivot('role');
+        return $this->belongsToMany(Studio::class)->withPivot('role');
+    }
+
+    public function developedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(Studio::class)->wherePivot('role', 'developer');
+    }
+
+    public function publishedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(Studio::class)->wherePivot('role', 'publisher');
     }
 
     public function userGames()
