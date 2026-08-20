@@ -178,4 +178,19 @@ return [
         'base_url' => 'https://xbl.io/api/v2',
     ],
 
+    /*
+     * IGDB, which is Twitch's, which is why the credentials are a Twitch app and
+     * the token comes from id.twitch.tv rather than from them.
+     *
+     * Their limit is four requests a second with at most eight in flight; going
+     * over earns a 429. The client keeps to it rather than discovering it.
+     */
+    'igdb' => [
+        'client_id' => env('IGDB_CLIENT_ID'),
+        'client_secret' => env('IGDB_CLIENT_SECRET'),
+        'base_url' => 'https://api.igdb.com/v4',
+        'token_url' => 'https://id.twitch.tv/oauth2/token',
+        'requests_per_second' => 4,
+    ],
+
 ];
