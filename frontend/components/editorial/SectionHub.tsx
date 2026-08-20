@@ -5,11 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2, Star } from "lucide-react";
+import { ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { SECTIONS, SectionKey } from "./sections";
 import { DisplayAd } from "@/components/ads/AdSense";
+import ScoreBadge from "@/components/ui/ScoreBadge";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -608,7 +609,13 @@ function ArticleCard({
 }: { article: Article; path: string; showScore?: boolean }) {
     const author = article.author?.display_name ?? article.author?.username;
     const label = article.category?.name ?? article.difficulty;
-    const score = showScore && typeof article.review_score === "number" ? article.review_score : null;
+    /*
+     * The API sends the score as a string — "9.6" — and the check here was
+     * `typeof === "number"`, so it was false every time and no review card has
+     * ever shown its score. Parse instead of trusting the wire type.
+     */
+    const parsed = showScore ? Number(article.review_score) : NaN;
+    const score = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 
     return (
         <Link
@@ -630,11 +637,13 @@ function ArticleCard({
                         {label}
                     </span>
                 )}
+                {/* The verdict, in the colour the rest of the site gives it.
+                    It was a black chip with an amber star before — a treatment
+                    that existed nowhere else and said nothing about the score
+                    beyond its digits. ScoreBadge's pill is built for sitting on
+                    artwork and is already what a score looks like here. */}
                 {score !== null && (
-                    <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 h-[20px] px-2 rounded-[5px] bg-black/75 backdrop-blur-sm font-display text-[10px] font-black tabular-nums text-white">
-                        <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
-                        {score}
-                    </span>
+                    <ScoreBadge score={score} variant="pill" className="absolute top-2.5 right-2.5 shadow-[0_2px_10px_rgba(0,0,0,0.45)]" />
                 )}
             </span>
 

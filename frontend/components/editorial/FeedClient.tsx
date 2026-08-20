@@ -2,10 +2,11 @@
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import ScoreBadge from "@/components/ui/ScoreBadge";
 import Image from "next/image";
 import useSWRInfinite from "swr/infinite";
 import axios from "@/lib/axios";
-import { Clock, User, Star, Sparkles, Info, Loader2, Newspaper, Gamepad2, Cpu, BookOpen, Layers, type LucideIcon } from "lucide-react";
+import { Clock, User, Sparkles, Info, Loader2, Newspaper, Gamepad2, Cpu, BookOpen, Layers, type LucideIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getStorageUrl } from "@/lib/imageUrl";
 import PageHero from "@/components/ui/PageHero";
@@ -338,12 +339,15 @@ function Card({ item }: { item: FeedItem }) {
                     {SECTION_LABEL[item.section]}
                 </span>
 
-                {item.review_score !== null && (
-                    <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 h-[20px] px-2 rounded-[5px] bg-black/75 backdrop-blur-sm font-display text-[10px] font-black tabular-nums text-white">
-                        <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
-                        {item.review_score}
-                    </span>
-                )}
+                {/* Same badge the section grids use, and the same parse: the
+                    score arrives as a string, so `!== null` was true for "9.6"
+                    but the number printed bare and uncoloured. */}
+                {(() => {
+                    const n = Number(item.review_score);
+                    return Number.isFinite(n) && n > 0 ? (
+                        <ScoreBadge score={n} variant="pill" className="absolute top-2.5 right-2.5 shadow-[0_2px_10px_rgba(0,0,0,0.45)]" />
+                    ) : null;
+                })()}
             </span>
 
             <span className="flex-1 flex flex-col p-3.5">
