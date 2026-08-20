@@ -181,7 +181,7 @@ njegove igre, s članka na igru i studio.
 | 2 | Puno povlačenje IGDB-a | ~5,7 mil. zapisa lokalno |
 | 3 | **Probni prolaz na 1.000 igara** | **vlasnik pregleda prije bilo čega** |
 | 4 | Spajanje postojećih 142.110 | opisi, traileri, izdavači, oznake |
-| 5 | Uvoz ~230.000 novih naslova | katalog na ~372k |
+| 5 | Uvoz ~185.000 novih naslova (mjereno, v. odjeljak 7) | katalog na ~327k |
 | 6 | Kompanije + stranice studija + navigacija | nova SEO površina |
 | 7 | Popularnost zamjenjuje `hype_score` | stvarne brojke umjesto naše procjene |
 | 8 | Nova stranica igre | |
@@ -205,7 +205,68 @@ na hiljadu igara.
 
 ---
 
-## 7. Mjerni alat
+## 7. Nalazi iz faze 4 (20.08.2026)
+
+### Opisi se NE zamjenjuju — mjereno i odbačeno
+
+Pretpostavka je bila da su naši opisi trgovinski marketing a IGDB-ovi
+enciklopedijski. Zamjena je napravljena, puštena na 200 najposjećenijih igara i
+**vraćena**, jer je izmjereno obrnuto:
+
+| | naši | IGDB `summary` |
+|---|---|---|
+| prosjek | 1.335 zn. | 415 zn. |
+| od 103 zamijenjena | — | 93 postala kraća |
+
+IGDB-ov `summary` je izdavačev blurb s trgovine („Buckle up for some epic
+PlayStation camaraderie!"), naš tekst opisuje igru („Astro Bot is a 3D mascot
+platformer developed exclusively for PlayStation 5, released in celebration of
+PlayStation's 30th anniversary"). Mehanizam ostaje — `igdb:merge
+--replace=<polje>` uz obavezan gzip zapis i `igdb:revert` — ali se na opise ne
+primjenjuje.
+
+`storyline` je zaseban slučaj: 35.335 igara (9,5%), prosjek 598 zn., ali je to
+prepričan zaplet. Kandidat za odjeljak **„Priča"** na novoj stranici igre, ne za
+opis.
+
+### Oblik se piše prema frontu, ne prema IGDB-u
+
+`GameController::show` prosljeđuje kolonu neizmijenjenu, pa oblik diktira front:
+
+| kolona | oblik koji front čita | zamka |
+|---|---|---|
+| `videos` | `string[]` URL-ova | stranica pušta YouTube regex preko svakog unosa — objekat je 500, ne „nema trailera" |
+| `alt_titles` | `[{title, description}]` | goli string se iscrta kao prazan red; IGDB `comment` (209.962 od 212.482) je taj `description` |
+| `series_key` | **integer** (ostatak od Moby group id) | slug u njoj obara insert |
+| `rating` | `decimal(3,2)`, skala 0–10 | IGDB `total_rating` je 0–100; 10.00 ne staje u kolonu |
+
+### Faza 5 — izmjereno, brojka iz plana ispravljena
+
+| tip | broj | uvozi se |
+|---|---|---|
+| 0 glavna igra | 310.933 | da |
+| 1 DLC | 17.580 | ne |
+| 5 mod | 9.755 | ne |
+| 13 paket | 8.933 | ne |
+| 11 port | 8.186 | ne — ista igra, druga platforma |
+| 3 bundle | 7.110 | ne |
+| 8 remake / 9 remaster / 4 samostalno proširenje | 3.319 | da |
+
+Kandidati (0, 4, 8, 9): **314.252**. Minus 9.866 s temom `42 Erotic`, minus
+30.457 bez omota, datuma i studija → **274.152 vrijedna uvoza**, od čega je
+~89.000 već naše. Novih stranica: **~185.000**, ne 230.000 kao u tabeli faza.
+
+Dvije obavezne provjere pri uvozu, obje bi inače tiho pokvarile bazu:
+
+- **`match_key` ostaje NULL.** Ne-null znači „agregator je vlasnik" i nosi
+  `GameMerger::candidates`, `Notability::rescore` i `StoreSync` usvajanje.
+  185.000 redova s ključem povuklo bi cijeli uvoz u te prolaze.
+- **`game_tombstones` se provjerava.** 60.981 zapisa; ništa u agregatoru ih ne
+  gleda, pa bi uvoz uskrsnuo svaku namjerno obrisanu igru.
+
+---
+
+## 8. Mjerni alat
 
 Skripte kojima je ovo izmjereno stoje u scratchpadu sesije:
 `name-match.py` (koliko naziva pogađa jednoznačno), `match2.py` (pomaže li

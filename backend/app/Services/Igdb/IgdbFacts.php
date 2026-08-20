@@ -42,8 +42,12 @@ class IgdbFacts
 
     /**
      * @param  array<int>  $igdbIds  the games this batch will merge
+     * @param  bool  $withGames  false when the caller already holds the game
+     *                           payloads and will pass them to forGame() — an
+     *                           import walking 185,000 of them has them in hand
+     *                           and does not need a second copy here.
      */
-    public function load(array $igdbIds): void
+    public function load(array $igdbIds, bool $withGames = true): void
     {
         /* Cleared first, not merged into. A run works through the catalogue in
            chunks and calls this once per chunk; companies and collections are
@@ -56,7 +60,9 @@ class IgdbFacts
             return;
         }
 
-        $this->games = $this->payloads('games', $igdbIds, fn ($p) => $p['id']);
+        if ($withGames) {
+            $this->games = $this->payloads('games', $igdbIds, fn ($p) => $p['id']);
+        }
 
         /* Covers, videos and alternative names are keyed by the game they belong
            to, so they are fetched by that rather than by their own id. */
@@ -86,9 +92,9 @@ class IgdbFacts
      *
      * @return array<string, mixed>
      */
-    public function forGame(int $igdbId): array
+    public function forGame(int $igdbId, ?array $payload = null): array
     {
-        $game = $this->games[$igdbId] ?? [];
+        $game = $payload ?? $this->games[$igdbId] ?? [];
         $out = [];
 
         if ($summary = trim((string) ($game['summary'] ?? ''))) {
