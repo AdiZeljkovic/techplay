@@ -205,6 +205,126 @@ class IgdbMergeTest extends TestCase
         $this->assertNull($game->fresh()->description);
     }
 
+    /**
+     * --replace lifts the fill-only rule for one named column.
+     *
+     * Our descriptions came off store pages and average 1,292 characters of
+     * marketing; theirs average 270 and describe the game. That is a judgement
+     * the operator makes per run, which is why it is an option and not a rule.
+     */
+    public function test_replace_overwrites_only_the_named_column(): void
+    {
+        $this->theirGame();
+        $game = $this->ourGame([
+            'description' => 'Steam marketing copy.',
+            'developers' => ['Somebody Else'],
+        ]);
+
+        $this->artisan('igdb:merge', [
+            '--limit' => 10, '--order' => 'id', '--replace' => ['description'], '--apply' => true,
+        ])->assertSuccessful();
+
+        $game->refresh();
+
+        $this->assertSame('A summary from IGDB.', $game->description);
+        $this->assertSame(['Somebody Else'], $game->developers, 'only the named column is replaced');
+    }
+
+    /** A game the redakcija wrote by hand is filled, never replaced. */
+    public function test_an_editorial_game_keeps_what_a_person_wrote(): void
+    {
+        $this->theirGame();
+        $game = $this->ourGame(['description' => 'Written in-house.']);
+        DB::table('games')->where('id', $game->id)->update(['is_editorial' => true]);
+
+        $this->artisan('igdb:merge', [
+            '--limit' => 10, '--order' => 'id', '--replace' => ['description'], '--apply' => true,
+        ])->assertSuccessful();
+
+        $game->refresh();
+
+        $this->assertSame('Written in-house.', $game->description);
+        $this->assertSame(['Team Cherry'], $game->developers, 'empty columns still fill on an editorial game');
+    }
+
+    /** Locking beats replacing — it is the stronger statement of the two. */
+    public function test_a_locked_column_is_not_replaced_either(): void
+    {
+        $this->theirGame();
+        $game = $this->ourGame([
+            'description' => 'Ours, and locked.',
+            'locked_fields' => ['description'],
+        ]);
+
+        $this->artisan('igdb:merge', [
+            '--limit' => 10, '--order' => 'id', '--replace' => ['description'], '--apply' => true,
+        ])->assertSuccessful();
+
+        $this->assertSame('Ours, and locked.', $game->fresh()->description);
+    }
+
+    /** A column name nobody recognises is a typo, not a request. */
+    public function test_it_refuses_an_unknown_replace_field(): void
+    {
+        $this->theirGame();
+        $game = $this->ourGame(['description' => 'Ours.']);
+
+        $this->artisan('igdb:merge', [
+            '--limit' => 10, '--order' => 'id', '--replace' => ['descriptions'], '--apply' => true,
+        ])->assertFailed();
+
+        $this->assertSame('Ours.', $game->fresh()->description);
+    }
+
+    /**
+     * Everything overwritten is written down first, and the written-down copy
+     * is enough to put it back. Without this the option would be a one-way door
+     * across 115,327 rows.
+     */
+    public function test_what_it_overwrites_can_be_put_back(): void
+    {
+        $this->theirGame();
+        $game = $this->ourGame(['description' => 'The original text.']);
+
+        $this->artisan('igdb:merge', [
+            '--limit' => 10, '--order' => 'id', '--replace' => ['description'], '--apply' => true,
+        ])->assertSuccessful();
+
+        $this->assertSame('A summary from IGDB.', $game->fresh()->description);
+
+        $undo = collect(glob(storage_path('app/backups/igdb-replace-*.jsonl.gz')))->sortDesc()->first();
+        $this->assertNotNull($undo, 'a replacing run must leave an undo file');
+
+        $this->artisan('igdb:revert', ['file' => $undo, '--apply' => true])->assertSuccessful();
+
+        $this->assertSame('The original text.', $game->fresh()->description);
+
+        @unlink($undo);
+    }
+
+    /** Reverting onto an id that now belongs to something else is refused. */
+    public function test_revert_skips_a_row_whose_slug_no_longer_agrees(): void
+    {
+        $this->theirGame();
+        $game = $this->ourGame(['description' => 'The original text.']);
+
+        $this->artisan('igdb:merge', [
+            '--limit' => 10, '--order' => 'id', '--replace' => ['description'], '--apply' => true,
+        ])->assertSuccessful();
+
+        DB::table('games')->where('id', $game->id)->update(['slug' => 'a-different-game']);
+
+        $undo = collect(glob(storage_path('app/backups/igdb-replace-*.jsonl.gz')))->sortDesc()->first();
+
+        $this->artisan('igdb:revert', ['file' => $undo, '--apply' => true])
+            ->expectsOutputToContain('nosi druga igra')
+            ->assertSuccessful();
+
+        $this->assertSame('A summary from IGDB.', $game->fresh()->description);
+
+        @unlink($undo);
+    }
+
     /** Running it twice changes nothing the second time. */
     public function test_a_second_run_is_a_no_op(): void
     {
