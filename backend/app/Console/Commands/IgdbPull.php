@@ -68,6 +68,10 @@ class IgdbPull extends Command
         'language_supports',
         'artworks',
         'release_dates',
+        /* The primitives are numbered, not named — `popularity_type: 5` on its
+           own says nothing. This is the twenty-row table that says which number
+           is Steam's peak players and which is IGDB's want-to-play. */
+        'popularity_types',
         'popularity_primitives',
         'screenshots',
         'websites',
