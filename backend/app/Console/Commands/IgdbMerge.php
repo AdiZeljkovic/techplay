@@ -85,6 +85,15 @@ class IgdbMerge extends Command
         $this->filled = array_fill_keys(self::FIELDS, 0);
         $this->replaced = array_fill_keys(self::FIELDS, 0);
 
+        /* One IGDB game belongs to one of ours — `game_external_ids` has a
+           unique key on (provider, external_id) and is right to. When two of our
+           rows match the same IGDB game, the second is a duplicate in our own
+           catalogue, and the useful thing to do is count it rather than let the
+           insert fail halfway through 142,110 games. */
+        foreach (DB::table('game_external_ids')->where('provider', 'igdb')->pluck('game_id', 'external_id') as $external => $gameId) {
+            $this->claimed[(int) $external] = (int) $gameId;
+        }
+
         if ($this->option('all')) {
             $chunk = max(1, (int) $this->option('chunk'));
             $total = Game::count();
@@ -130,6 +139,11 @@ class IgdbMerge extends Command
 
     private int $spared = 0;
 
+    private int $duplicates = 0;
+
+    /** igdb id => the one of our games that holds it. */
+    private array $claimed = [];
+
     private array $filled = [];
 
     private array $replaced = [];
@@ -144,9 +158,24 @@ class IgdbMerge extends Command
         foreach ($ours as $game) {
             $result = $matcher->match($game);
 
-            if (IgdbMatcher::confident($result['rule'])) {
-                $matched[$game->id] = [$game, (int) $result['row']->igdb_id, $result['rule']];
+            if (! IgdbMatcher::confident($result['rule'])) {
+                continue;
             }
+
+            $igdbId = (int) $result['row']->igdb_id;
+
+            /* Already ours, under a different row of our own. */
+            if (isset($this->claimed[$igdbId]) && $this->claimed[$igdbId] !== $game->id) {
+                $this->duplicates++;
+
+                continue;
+            }
+
+            /* Claimed on match, not on write: two of our rows can land on the
+               same IGDB game inside a single chunk, and the second one has to
+               see the first one's claim before either is saved. */
+            $this->claimed[$igdbId] = $game->id;
+            $matched[$game->id] = [$game, $igdbId, $result['rule']];
         }
 
         if ($matched === []) {
@@ -319,6 +348,10 @@ class IgdbMerge extends Command
 
         if ($this->lockedCount > 0) {
             $this->line('  '.number_format($this->lockedCount).' polja preskoceno jer su zakljucana (locked_fields).');
+        }
+
+        if ($this->duplicates > 0) {
+            $this->line('  '.number_format($this->duplicates).' nasih igara pokazuje na IGDB igru koju vec drzi druga nasa igra — duplikati u nasem katalogu.');
         }
 
         if ($this->spared > 0) {

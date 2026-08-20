@@ -356,6 +356,31 @@ class IgdbMergeTest extends TestCase
         $this->assertSame(['ZA/UM'], $second->fresh()->developers);
     }
 
+    /**
+     * Two of our rows for one of their games.
+     *
+     * `game_external_ids` has a unique key on (provider, external_id) and is
+     * right to — one IGDB game is one game. When two of our rows match it, the
+     * second is a duplicate in our own catalogue, and the merge has to say so
+     * and move on rather than die on the insert partway through the run.
+     */
+    public function test_two_of_our_games_matching_one_of_theirs_does_not_break_the_run(): void
+    {
+        $this->theirGame();
+
+        $first = $this->ourGame(['slug' => 'hollow-knight']);
+        $second = $this->ourGame(['slug' => 'hollow-knight-duplicate']);
+
+        $this->artisan('igdb:merge', ['--all' => true, '--chunk' => 1, '--apply' => true])
+            ->expectsOutputToContain('duplikati u nasem katalogu')
+            ->assertSuccessful();
+
+        $this->assertSame(['Team Cherry'], $first->fresh()->developers);
+        $this->assertSame([], $second->fresh()->developers, 'the duplicate is left alone, not filled twice');
+
+        $this->assertSame(1, DB::table('game_external_ids')->where('provider', 'igdb')->count());
+    }
+
     /** Running it twice changes nothing the second time. */
     public function test_a_second_run_is_a_no_op(): void
     {
