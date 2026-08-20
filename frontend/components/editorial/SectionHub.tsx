@@ -9,7 +9,7 @@ import { ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2, Star } fro
 import toast from "react-hot-toast";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { SECTIONS, SectionKey } from "./sections";
-import { InFeedAd, DisplayAd } from "@/components/ads/AdSense";
+import { DisplayAd } from "@/components/ads/AdSense";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -396,12 +396,20 @@ export default function SectionHub({
                             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {articles.map((a, i) => (
                                     <Fragment key={a.id}>
-                                        {/* One in-feed unit, in a card's place,
-                                            at the top of the third row. Never
-                                            first: an ad before the reader has
-                                            seen a single headline is a page
-                                            that opened with an ad. */}
-                                        {i === 6 && articles.length > 8 && <InFeedAd />}
+                                        {/* No ad in the grid.
+                                            There used to be an in-feed unit in a
+                                            card's place at the top of the third
+                                            row, sized to inherit the card's
+                                            proportions. What Google actually
+                                            served into it was a "Discover more"
+                                            related-search box: a white panel with
+                                            two text links, sitting in the middle
+                                            of a near-black grid of artwork. The
+                                            creative arrives finished and cannot be
+                                            restyled, so the only way the grid
+                                            stops carrying a white hole in it is to
+                                            not offer the slot. The rail unit below
+                                            stays. */}
                                         <ArticleCard article={a} path={config.path} showScore={config.showScore} />
                                     </Fragment>
                                 ))}
