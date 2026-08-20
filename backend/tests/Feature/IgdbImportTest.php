@@ -36,6 +36,22 @@ class IgdbImportTest extends TestCase
         ]);
     }
 
+    /** One of their release_dates rows: which game, when, and how exactly known. */
+    private function releaseDate(int $game, int $date, int $format): void
+    {
+        DB::table('igdb_raw')->insert([
+            'endpoint' => 'release_dates',
+            'igdb_id' => 7000 + $game,
+            'payload' => json_encode([
+                'id' => 7000 + $game,
+                'game' => $game,
+                'date' => $date,
+                'date_format' => $format,
+            ]),
+            'fetched_at' => now(),
+        ]);
+    }
+
     private function importAll(): void
     {
         $this->artisan('igdb:index');
@@ -173,16 +189,38 @@ class IgdbImportTest extends TestCase
         $this->assertSame(1, Game::where('name', 'Stronghold')->count());
     }
 
-    /** A date known only to the year lands on 1 January; saying "day" is a lie. */
-    public function test_a_year_only_date_is_recorded_as_year_precision(): void
+    /**
+     * Precision comes from their release_dates, not from the shape of the date.
+     *
+     * 24,506 of their games sit on 31 December because that is where a
+     * year-only entry lands. Written across as "day", the release calendar
+     * would announce twenty-four thousand games coming out on New Year's Eve.
+     */
+    public function test_precision_is_read_from_their_release_dates(): void
     {
-        $this->igdbGame(1, 'Old Game', ['first_release_date' => gmmktime(0, 0, 0, 1, 1, 1994)]);
+        $this->igdbGame(1, 'Vague Game', ['first_release_date' => gmmktime(0, 0, 0, 12, 31, 1994)]);
         $this->igdbGame(2, 'Dated Game', ['first_release_date' => gmmktime(0, 0, 0, 6, 12, 1994)]);
+        $this->igdbGame(3, 'Quarterly Game', ['first_release_date' => gmmktime(0, 0, 0, 4, 1, 2026)]);
+
+        $this->releaseDate(1, gmmktime(0, 0, 0, 12, 31, 1994), 2);   // YYYY
+        $this->releaseDate(2, gmmktime(0, 0, 0, 6, 12, 1994), 0);    // exact
+        $this->releaseDate(3, gmmktime(0, 0, 0, 4, 1, 2026), 4);     // Q2
 
         $this->importAll();
 
-        $this->assertSame('year', Game::where('name', 'Old Game')->value('release_precision'));
+        $this->assertSame('year', Game::where('name', 'Vague Game')->value('release_precision'));
         $this->assertSame('day', Game::where('name', 'Dated Game')->value('release_precision'));
+        $this->assertSame('quarter', Game::where('name', 'Quarterly Game')->value('release_precision'));
+    }
+
+    /** With no release_dates row of their own, the date's shape is all there is. */
+    public function test_a_31_december_date_falls_back_to_year_precision(): void
+    {
+        $this->igdbGame(1, 'Orphan Game', ['first_release_date' => gmmktime(0, 0, 0, 12, 31, 1988)]);
+
+        $this->importAll();
+
+        $this->assertSame('year', Game::where('name', 'Orphan Game')->value('release_precision'));
     }
 
     /** Their 0-100 against our decimal(3,2), which stops at 9.99. */

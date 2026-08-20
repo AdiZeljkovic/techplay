@@ -58,6 +58,27 @@ class IgdbImport extends Command
     private const EROTIC = 42;
 
     /**
+     * Their `date_format` against our `release_precision`, which happen to
+     * describe the same thing in the same words.
+     *
+     * Worth reading from rather than guessing at. 24,506 of their games carry a
+     * first_release_date of 31 December — an order of magnitude above any other
+     * day of the year — because that is where a year-only entry lands. Written
+     * across as "day", the release calendar would announce twenty-four thousand
+     * games coming out on New Year's Eve.
+     */
+    private const FORMATS = [
+        0 => 'day',
+        1 => 'month',
+        2 => 'year',
+        3 => 'quarter',
+        4 => 'quarter',
+        5 => 'quarter',
+        6 => 'quarter',
+        7 => 'tba',
+    ];
+
+    /**
      * Every column an imported row writes, with the value it takes when IGDB
      * has nothing for it.
      *
@@ -116,6 +137,7 @@ class IgdbImport extends Command
         $facts->load($chosen['ids'], withGames: false);
 
         $lookups = $this->lookups();
+        $lookups['precision'] = $this->precisions();
         $created = $this->build($chosen['ids'], $facts, $lookups, $guards['slugs'], $apply);
 
         $this->newLine();
@@ -276,6 +298,40 @@ class IgdbImport extends Command
         return null;
     }
 
+    /**
+     * How precisely each game's first release date is known, from their side.
+     *
+     * A game has one release_dates row per platform and region, so the one that
+     * matters is the earliest — that is the row `first_release_date` comes from.
+     * Rows without a date are TBD and carry no opinion about a date we do have.
+     */
+    private function precisions(): array
+    {
+        $best = [];
+
+        DB::table('igdb_raw')
+            ->where('endpoint', 'release_dates')
+            ->orderBy('igdb_id')
+            ->chunk(5000, function ($rows) use (&$best) {
+                foreach ($rows as $row) {
+                    $p = json_decode($row->payload, true) ?: [];
+                    $game = (int) ($p['game'] ?? 0);
+
+                    if ($game === 0 || ! isset($p['date'])) {
+                        continue;
+                    }
+
+                    $date = (int) $p['date'];
+
+                    if (! isset($best[$game]) || $date < $best[$game][0]) {
+                        $best[$game] = [$date, self::FORMATS[(int) ($p['date_format'] ?? 0)] ?? 'day'];
+                    }
+                }
+            });
+
+        return array_map(fn ($b) => $b[1], $best);
+    }
+
     /** Their id-keyed lookup tables, small enough to hold whole. */
     private function lookups(): array
     {
@@ -384,11 +440,13 @@ class IgdbImport extends Command
             $attributes['ratings_count'] = (int) ($p['total_rating_count'] ?? 0);
         }
 
-        /* The convention the catalogue already follows: a date IGDB knows only
-           to the year lands on 1 January, and saying "day" about it is a lie the
-           calendar would repeat. */
+        /* Read from their release_dates rather than guessed from the date. The
+           fallback is for games with no release_dates row at all, and follows
+           where a year-only date lands: 31 December for them, 1 January for the
+           catalogue we already had. */
         $released = $attributes['released'] ?? null;
-        $attributes['release_precision'] = ($released && str_ends_with($released, '-01-01')) ? 'year' : 'day';
+        $attributes['release_precision'] = $lookups['precision'][(int) $p['id']]
+            ?? (($released && (str_ends_with($released, '-12-31') || str_ends_with($released, '-01-01'))) ? 'year' : 'day');
 
         $model = new Game;
         $model->forceFill($attributes);
