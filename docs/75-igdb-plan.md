@@ -171,6 +171,18 @@ zasebna kolona — igre i oni koji ih prave stoje jedno uz drugo.
 **Uvezanost u oba smjera:** sa stranice igre na studio, sa studija na sve
 njegove igre, s članka na igru i studio.
 
+**Redoslijed je obavezan: studiji idu poslije uvoza igara.** Studio bez ijedne
+naše igre je prazna stranica, pa se prave samo oni koji imaju igre u katalogu —
+a to je poznato tek kad katalog bude pun. Građeni prije uvoza, gradili bi se nad
+142.110 igara pa odmah ponovo nad ~327.000.
+
+**Šta kompanije stvarno nose** (72.421 zapis): opis 16.345 (22,6%), logo 17.902
+(24,7%), zemlja 19.421, godina osnivanja 12.110, matična firma 1.946. Kompanija
+nosi i `developed`/`published` liste id-jeva igara, pa veza ne mora ići kroz
+`involved_companies` — ali uloga (developer/publisher/porting/support) tamo
+jeste, pa ide kroz nju. Logo i sajt su id-jevi u `company_logos` i
+`company_websites`; oba su naknadno dodana u povlačenje.
+
 ---
 
 ## 5. Faze
