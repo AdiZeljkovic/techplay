@@ -43,7 +43,7 @@ class IgdbMergeTest extends TestCase
         $this->raw('game_videos', 901, ['game' => $id, 'video_id' => 'UAO2urG23S4', 'name' => 'Trailer']);
         $this->raw('companies', 902, ['name' => 'Team Cherry', 'slug' => 'team-cherry']);
         $this->raw('involved_companies', 903, ['game' => $id, 'company' => 902, 'developer' => true, 'publisher' => true]);
-        $this->raw('alternative_names', 904, ['game' => $id, 'name' => 'HK']);
+        $this->raw('alternative_names', 904, ['game' => $id, 'name' => 'HK', 'comment' => 'Also known as']);
         $this->raw('collections', 905, ['name' => 'Hollow Knight', 'slug' => 'hollow-knight', 'games' => [$id]]);
 
         $this->artisan('igdb:index');
@@ -69,11 +69,38 @@ class IgdbMergeTest extends TestCase
 
         $this->assertSame('A summary from IGDB.', $game->description);
         $this->assertStringContainsString('co1abc', (string) $game->cover_url);
-        $this->assertSame('UAO2urG23S4', $game->videos[0]['id']);
         $this->assertSame(['Team Cherry'], $game->developers);
         $this->assertSame(['Team Cherry'], $game->publishers);
-        $this->assertSame(['HK'], $game->alt_titles);
         $this->assertSame('Hollow Knight', $game->series_name);
+    }
+
+    /**
+     * The shapes the game page reads, not the shapes IGDB returns.
+     *
+     * `GameController::show` hands these three columns to the front exactly as
+     * they sit in the database, so whatever is written here is what React gets.
+     * The page runs a YouTube regex over each entry of `videos` — an object
+     * there is a TypeError on a server component, which is a 500 rather than a
+     * missing trailer — and prints `.title` off each `alt_titles` entry, so
+     * bare strings render as blank rows. `series_key` is an integer column
+     * left over from the Moby group id; a slug in it fails the insert outright.
+     *
+     * All three were wrong in the first draft of the merge and all three looked
+     * fine in the dry-run report, which counts fields it would fill without
+     * knowing what shape it would fill them with.
+     */
+    public function test_it_writes_the_shapes_the_game_page_expects(): void
+    {
+        $this->theirGame();
+        $game = $this->ourGame();
+
+        $this->artisan('igdb:merge', ['--limit' => 10, '--order' => 'id', '--apply' => true])->assertSuccessful();
+
+        $game->refresh();
+
+        $this->assertSame(['https://www.youtube.com/watch?v=UAO2urG23S4'], $game->videos);
+        $this->assertSame([['title' => 'HK', 'description' => 'Also known as']], $game->alt_titles);
+        $this->assertSame(905, (int) $game->series_key);
     }
 
     /**

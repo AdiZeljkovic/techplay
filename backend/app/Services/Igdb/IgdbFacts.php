@@ -54,8 +54,21 @@ class IgdbFacts
         /* Covers, videos and alternative names are keyed by the game they belong
            to, so they are fetched by that rather than by their own id. */
         $this->covers = $this->byGame('covers', $igdbIds, fn ($p) => $p['image_id'] ?? null);
-        $this->videos = $this->byGame('game_videos', $igdbIds, fn ($p) => $p['video_id'] ?? null, true);
-        $this->altNames = $this->byGame('alternative_names', $igdbIds, fn ($p) => $p['name'] ?? null, true);
+
+        /* A watchable URL, not their id. `videos` is read straight out of the
+           column by the game page, which runs a YouTube regex over each entry —
+           anything that is not a string crashes it. */
+        $this->videos = $this->byGame('game_videos', $igdbIds, fn ($p) => isset($p['video_id'])
+            ? 'https://www.youtube.com/watch?v='.$p['video_id']
+            : null, true);
+
+        /* Same story: the column holds {title, description} objects and the page
+           reads `.title` off each one. 209,962 of their 212,482 rows carry a
+           comment — "Japanese title", "Abbreviation" — which is exactly the
+           description the panel already prints under the name. */
+        $this->altNames = $this->byGame('alternative_names', $igdbIds, fn ($p) => isset($p['name'])
+            ? ['title' => (string) $p['name'], 'description' => trim((string) ($p['comment'] ?? '')) ?: null]
+            : null, true);
 
         $this->loadCompanies($igdbIds);
         $this->loadCollections($igdbIds);
@@ -81,10 +94,7 @@ class IgdbFacts
         }
 
         if ($videos = $this->videos[$igdbId] ?? []) {
-            $out['videos'] = array_values(array_map(
-                fn ($id) => ['provider' => 'youtube', 'id' => $id, 'url' => 'https://www.youtube.com/watch?v='.$id],
-                array_slice($videos, 0, 12),
-            ));
+            $out['videos'] = array_values(array_slice(array_unique($videos), 0, 12));
         }
 
         foreach (['developers', 'publishers'] as $role) {
@@ -94,11 +104,24 @@ class IgdbFacts
         }
 
         if ($alt = $this->altNames[$igdbId] ?? []) {
-            $out['alt_titles'] = array_values(array_unique(array_slice($alt, 0, 20)));
+            $seen = [];
+            $titles = [];
+
+            foreach ($alt as $entry) {
+                if (! isset($seen[$entry['title']])) {
+                    $seen[$entry['title']] = true;
+                    $titles[] = $entry;
+                }
+            }
+
+            $out['alt_titles'] = array_slice($titles, 0, 20);
         }
 
         if ($series = $this->collections[$igdbId] ?? null) {
-            $out['series_key'] = $series['slug'];
+            /* series_key is an integer column — it held the Moby group id before
+               the rebuild renamed it. Their collection id goes in as it is; the
+               slug is theirs to route by, not ours. */
+            $out['series_key'] = $series['id'];
             $out['series_name'] = $series['name'];
         }
 
@@ -240,9 +263,9 @@ class IgdbFacts
                 foreach ($rows as $row) {
                     $p = json_decode($row->payload, true) ?: [];
                     $name = trim((string) ($p['name'] ?? ''));
-                    $slug = trim((string) ($p['slug'] ?? ''));
+                    $id = (int) ($p['id'] ?? 0);
 
-                    if ($name === '' || $slug === '') {
+                    if ($name === '' || $id === 0) {
                         continue;
                     }
 
@@ -252,7 +275,7 @@ class IgdbFacts
                                the Kingdom is in both "Zelda" and "Breath of the
                                Wild". First one wins; the alternative is a column
                                that holds two answers. */
-                            $this->collections[(int) $game] ??= ['name' => $name, 'slug' => $slug];
+                            $this->collections[(int) $game] ??= ['name' => $name, 'id' => $id];
                         }
                     }
                 }
