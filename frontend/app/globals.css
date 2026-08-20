@@ -1075,3 +1075,44 @@ body.tp-navigating .tp-page {
 .cookie-choice-made #cookie-banner {
     display: none !important;
 }
+
+/* ========================================
+   404 — HUD READOUT
+   ========================================
+   The numerals sit low-contrast and a single line sweeps them, the way a
+   diagnostic panel scans. One moving part on the whole page: a 404 is a dead
+   end, and a dead end that fidgets is worse than one that sits still. */
+
+.tp-404-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.tp-404-scan::after {
+  content: "";
+  position: absolute;
+  inset-inline: -10%;
+  height: 28%;
+  top: -30%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.05) 45%,
+    var(--accent) 50%,
+    rgba(255, 255, 255, 0.05) 55%,
+    transparent
+  );
+  opacity: 0.5;
+  animation: tp-404-sweep 4.5s var(--ease-hud) infinite;
+  pointer-events: none;
+}
+
+@keyframes tp-404-sweep {
+  0%   { top: -30%; }
+  55%  { top: 105%; }
+  100% { top: 105%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-404-scan::after { animation: none; opacity: 0; }
+}
