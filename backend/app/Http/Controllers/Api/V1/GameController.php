@@ -245,11 +245,14 @@ class GameController extends Controller
             'views' => (int) $game->views,
 
             /* Where this game stands, and by which measure — a percentile with
-               no name beside it is a number nobody can check. Null for the 54%
+               no name beside it is a number nobody can check. Null for the 62%
                of the catalogue IGDB has no reading for, and the page says
-               nothing rather than guessing. */
+               nothing rather than guessing.
+               The column holds basis points so the ordering has something to
+               work with; 9,984 is not a thing to print beside a game, so what
+               goes out is the percentile it means. */
             'popularity' => $game->popularity === null ? null : [
-                'percentile' => (int) $game->popularity,
+                'percentile' => (int) round(((int) $game->popularity) / 100),
                 'metric' => $game->popularity_metric,
             ],
         ];

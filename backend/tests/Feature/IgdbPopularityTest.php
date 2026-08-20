@@ -89,7 +89,7 @@ class IgdbPopularityTest extends TestCase
 
         $game->refresh();
 
-        $this->assertSame(100, (int) $game->popularity, 'above everything else in its measure');
+        $this->assertSame(10000, (int) $game->popularity, 'above everything else in its measure');
         $this->assertSame('24hr Peak Players', $game->popularity_metric);
         $this->assertSame(0.19, (float) $game->popularity_raw);
     }
@@ -149,8 +149,8 @@ class IgdbPopularityTest extends TestCase
 
         $this->artisan('igdb:popularity', ['--apply' => true])->assertSuccessful();
 
-        $this->assertSame(100, (int) $leader->fresh()->popularity);
-        $this->assertLessThan(50, (int) $follower->fresh()->popularity);
+        $this->assertSame(10000, (int) $leader->fresh()->popularity);
+        $this->assertLessThan(5000, (int) $follower->fresh()->popularity);
         $this->assertGreaterThan(
             (float) $leader->fresh()->popularity_raw,
             (float) $follower->fresh()->popularity_raw,
@@ -208,8 +208,8 @@ class IgdbPopularityTest extends TestCase
         $middling = Game::create(['name' => 'Middling', 'slug' => 'middling', 'released' => '2019-01-01']);
         $top = Game::create(['name' => 'Top', 'slug' => 'top', 'released' => '2019-01-01']);
 
-        DB::table('games')->where('id', $middling->id)->update(['popularity' => 40]);
-        DB::table('games')->where('id', $top->id)->update(['popularity' => 98]);
+        DB::table('games')->where('id', $middling->id)->update(['popularity' => 4000]);
+        DB::table('games')->where('id', $top->id)->update(['popularity' => 9800]);
 
         $names = collect($this->getJson('/api/v1/games?ordering=-popularity')->json('results'))->pluck('name');
 
@@ -219,17 +219,17 @@ class IgdbPopularityTest extends TestCase
     }
 
     /**
-     * A percentile of 100 means "top half a percent of its measure", and about
-     * two hundred games sit there. Ties break on our own page views, so the
-     * most visible list in the section does not reshuffle between requests.
+     * Even at ten thousand steps a handful of games share the top one, so the
+     * order still needs a second key — otherwise the most visible list in the
+     * section reshuffles between requests.
      */
     public function test_games_tied_on_popularity_are_ordered_by_our_own_views(): void
     {
         $quiet = Game::create(['name' => 'Tied But Quiet', 'slug' => 'tied-quiet', 'released' => '2019-01-01']);
         $read = Game::create(['name' => 'Tied And Read', 'slug' => 'tied-read', 'released' => '2019-01-01']);
 
-        DB::table('games')->where('id', $quiet->id)->update(['popularity' => 100, 'views' => 3]);
-        DB::table('games')->where('id', $read->id)->update(['popularity' => 100, 'views' => 9000]);
+        DB::table('games')->where('id', $quiet->id)->update(['popularity' => 10000, 'views' => 3]);
+        DB::table('games')->where('id', $read->id)->update(['popularity' => 10000, 'views' => 9000]);
 
         $names = collect($this->getJson('/api/v1/games?ordering=-popularity')->json('results'))->pluck('name');
 
@@ -242,11 +242,13 @@ class IgdbPopularityTest extends TestCase
         $game = Game::create(['name' => 'Measured', 'slug' => 'measured', 'released' => '2019-01-01']);
 
         DB::table('games')->where('id', $game->id)->update([
-            'popularity' => 97,
+            'popularity' => 9712,
             'popularity_metric' => '24hr Peak Players',
             'popularity_raw' => 0.12,
         ]);
 
+        /* The column holds basis points so the ordering has resolution; what
+           goes out is the percentile, because 9,712 is not a thing to print. */
         $this->getJson('/api/v1/games/measured')
             ->assertOk()
             ->assertJsonPath('popularity.percentile', 97)

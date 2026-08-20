@@ -15,9 +15,13 @@ use Illuminate\Support\Facades\DB;
  * whichever measure happens to produce bigger numbers, which is not a fact
  * about any game.
  *
- * So each game is placed within its own measure — a percentile from 0 to 100 —
- * and the measure it was placed in is written down beside it. Which measure a
- * game gets depends on what the site is asking:
+ * So each game is placed within its own measure — a standing from 0 to 10,000 —
+ * and the measure it was placed in is written down beside it. Basis points and
+ * not percent because a percentile was too coarse to order anything: its top
+ * step held 470 games, which is twenty-three pages of results arranged entirely
+ * by the tie-break. Ten thousand steps puts about eight in that bucket.
+ *
+ * Which measure a game gets depends on what the site is asking:
  *
  *   upcoming   Most Wishlisted Upcoming, then Want to Play. This is the
  *              question `hype_score` was invented to answer, and Steam's
@@ -106,7 +110,7 @@ class IgdbPopularity extends Command
                     $metric = $names[$type] ?? ('type '.$type);
                     $updates[] = [
                         'id' => $gameId,
-                        'popularity' => $hit['percentile'],
+                        'popularity' => $hit['standing'],
                         'popularity_metric' => $metric,
                         'popularity_raw' => $hit['value'],
                     ];
@@ -203,10 +207,13 @@ class IgdbPopularity extends Command
 
             foreach ($byGame as $game => $value) {
                 $position++;
-                /* Ascending sort, so the last position is the most popular —
-                   percentile 100 means "above everything else in this measure". */
+                /* Ascending sort, so the last position is the most popular, and
+                   the scale is basis points rather than percent. At a hundred
+                   steps the top one held 470 games and the ordering was decided
+                   entirely by the tie-break; at ten thousand it holds about
+                   eight. */
                 $ranked[$type][$game] = [
-                    'percentile' => (int) round(($position / $total) * 100),
+                    'standing' => (int) round(($position / $total) * 10000),
                     'value' => $value,
                 ];
             }
