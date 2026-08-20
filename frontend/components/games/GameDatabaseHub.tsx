@@ -40,6 +40,10 @@ interface Hub {
 
 const SORTS = [
     { value: "-rating", label: "Top Rated" },
+    // What people are actually playing and looking up, from IGDB's popularity
+    // readings — Steam peak players, wishlists, visits. 152,092 games carry
+    // one; the rest sort behind them rather than as zero.
+    { value: "-popularity", label: "Most Popular" },
     { value: "-released", label: "Newest" },
     { value: "released", label: "Oldest" },
     { value: "name", label: "A–Z" },

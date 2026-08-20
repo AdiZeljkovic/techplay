@@ -195,7 +195,7 @@ jeste, pa ide kroz nju. Logo i sajt su id-jevi u `company_logos` i
 | 4 | Spajanje postojećih 142.110 | opisi, traileri, izdavači, oznake |
 | 5 | Uvoz ~185.000 novih naslova (mjereno, v. odjeljak 7) | katalog na ~327k |
 | 6 | Kompanije + stranice studija + navigacija | nova SEO površina |
-| 7 | Popularnost zamjenjuje `hype_score` | stvarne brojke umjesto naše procjene |
+| 7 | ~~Popularnost zamjenjuje `hype_score`~~ → **popularnost ide u katalog**, `hype_score` ostaje kalendaru (v. odjeljak 7) | stvarne brojke tamo gdje ih ima |
 | 8 | Nova stranica igre | |
 | 9 | Pripis IGDB-u na frontu | |
 
@@ -298,6 +298,44 @@ modela koji ih deklariše. `down()` ih vraća.
 
 Rute: `/studios`, `/studios/[slug]`, `/studios/country/[iso]`. Meni: `Studios`
 je treća kolona u `Games` padajućem meniju, uz šest zemalja koje nose katalog.
+
+### Faza 7 — plan je rekao „zamjenjuje", mjerenje kaže „ne tu"
+
+Namjera je bila da IGDB-ova popularnost zamijeni `hype_score`. Mjerenje je to
+oborilo, i vrijedi zapisati zašto.
+
+`hype_score` se koristi na **četiri** mjesta — kalendar (dva upita), baza igara
+i dashboard — i **sva četiri** filtriraju `whereNotNull('match_key')`, dakle
+isključivo igre koje agregator drži. To su nove trgovinske objave, a upravo njih
+IGDB još nema:
+
+| | broj |
+|---|---|
+| nadolazećih agregatorskih igara | 1.271 |
+| od toga spojenih s IGDB-om | **186** |
+
+Sortiranje kalendara po popularnosti značilo bi sortiranje 1.085 igara po NULL-u.
+`hype_score` ostaje netaknut.
+
+Popularnost ide tamo gdje katalog jeste: **152.092 od 332.128 igara (46%)** nose
+bar jedno stvarno očitanje.
+
+| kolona | šta nosi |
+|---|---|
+| `popularity` | 0–100, percentil **unutar svoje mjere** |
+| `popularity_metric` | koja je to mjera; broj bez imena je broj koji niko ne može provjeriti |
+| `popularity_raw` | sama vrijednost, za stranicu igre |
+
+Percentil je unutar mjere jer sirove vrijednosti nisu uporedive: Steamov 24h
+vrhunac igrača ide do 0,19, Twitch odgledani sati do 0,26, IGDB posjete do 0,04.
+Sortiranje po sirovoj vrijednosti rangiralo bi po tome koja mjera daje veće
+brojeve, što nije podatak ni o jednoj igri.
+
+Koja mjera za koju igru: nadolazeće → *Most Wishlisted Upcoming*, pa *Want to
+Play*; izašle → *24hr Peak Players*, pa *Visits*, pa *Want to Play*.
+
+Novo sortiranje `ordering=-popularity` na `/games` („Most Popular"), i stranica
+igre dobija percentil s imenom mjere uz njega.
 
 ---
 

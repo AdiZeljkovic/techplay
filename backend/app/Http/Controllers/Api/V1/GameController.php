@@ -113,6 +113,10 @@ class GameController extends Controller
                 '-name' => $q->orderByDesc('name'),
                 '-views' => $q->orderByDesc('views'),  // trending by real page views
                 '-added' => $q->orderByDesc('id'),     // recently added to the database
+                // What people are actually playing and looking up, from IGDB's
+                // popularity primitives — 152,092 games carry one. NULLS LAST
+                // for the rest, same as rating above and for the same reason.
+                '-popularity' => $q->orderByRaw('popularity DESC NULLS LAST'),
                 default => $q->orderByRaw('rating DESC NULLS LAST'),  // -rating (default)
             };
 
@@ -233,6 +237,15 @@ class GameController extends Controller
                 ? ($game->screenshots ?? [])
                 : (($game->screenshots ?? [])['screenshots'] ?? ($game->screenshots ?? [])['results'] ?? [])),
             'views' => (int) $game->views,
+
+            /* Where this game stands, and by which measure — a percentile with
+               no name beside it is a number nobody can check. Null for the 54%
+               of the catalogue IGDB has no reading for, and the page says
+               nothing rather than guessing. */
+            'popularity' => $game->popularity === null ? null : [
+                'percentile' => (int) $game->popularity,
+                'metric' => $game->popularity_metric,
+            ],
         ];
     }
 
