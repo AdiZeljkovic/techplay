@@ -18,6 +18,7 @@ import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
+import { getScoreMeta } from "@/lib/score";
 import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
 import ArticleFooter from "@/components/ui/ArticleFooter";
@@ -46,7 +47,10 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
 
 
     const displayScore = Number(review.review_score ?? review.rating ?? 0);
-    const ratingColor = displayScore >= 8 ? "text-green-500 border-green-500" : displayScore >= 6 ? "text-yellow-500 border-yellow-500" : "text-red-500 border-red-500";
+    /* The same bands the cards use. This page carried its own ternary in Tailwind
+       classes, which is how the home page and a review ended up disagreeing about
+       the colour of the identical number. */
+    const scoreMeta = getScoreMeta(displayScore);
 
     // JSON-LD: Product with review (Google requires review/offers/aggregateRating on Product)
     const ratingValue = Number(review.review_score ?? review.rating ?? 0);
@@ -171,8 +175,11 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                                 {decodeHtml(review.category?.name) || "Review"}
                                             </div>
                                             {displayScore > 0 && (
-                                                <div className={`px-3 py-1 rounded-full border ${ratingColor} bg-black/50 backdrop-blur text-sm font-bold flex items-center gap-2`}>
-                                                    <Star className={`w-4 h-4 ${ratingColor.split(' ')[0]} fill-current`} />
+                                                <div
+                                                    className="px-3 py-1 rounded-full border bg-black/50 backdrop-blur text-sm font-bold flex items-center gap-2"
+                                                    style={{ color: scoreMeta.color, borderColor: scoreMeta.color }}
+                                                >
+                                                    <Star className="w-4 h-4 fill-current" style={{ color: scoreMeta.color }} />
                                                     <span className="text-white">{displayScore.toFixed(1)}/10</span>
                                                 </div>
                                             )}
@@ -321,8 +328,11 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                         ) : (
                                             /* Legacy Fallback for Reviews without new data structure */
                                             <div className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-6 shadow-lg text-center">
-                                                <div className={`w-32 h-32 mx-auto rounded-full border-4 ${ratingColor} bg-[var(--surface-1)] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(0,0,0,0.3)]`}>
-                                                    <span className={`text-5xl font-bold ${ratingColor.split(' ')[0]}`}>{review.rating}</span>
+                                                <div
+                                                    className="w-32 h-32 mx-auto rounded-full border-4 bg-[var(--surface-1)] flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(0,0,0,0.3)]"
+                                                    style={{ borderColor: scoreMeta.color }}
+                                                >
+                                                    <span className="text-5xl font-bold" style={{ color: scoreMeta.color }}>{review.rating}</span>
                                                 </div>
                                                 <p className="text-white/35 font-medium uppercase tracking-widest text-sm mb-6">Overall Score</p>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">

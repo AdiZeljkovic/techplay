@@ -20,7 +20,6 @@ interface ReviewCardProps {
 export default memo(function ReviewCard({ review, index, basePath = "/reviews", hideRating = false }: ReviewCardProps) {
     // Use review_score (new system) with fallback to rating (legacy)
     const score = review.review_score ?? review.rating ?? 0;
-    const ratingColor = score >= 8 ? "text-green-500" : score >= 6 ? "text-yellow-500" : "text-red-500";
 
     // Get medium variant for card images (better quality for h-48 cards on retina displays)
     const rawImageUrl = review.featured_image_url || review.cover_image;

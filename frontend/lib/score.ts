@@ -9,8 +9,8 @@ export interface ScoreMeta {
     /**
      * What to write on top of `color` when it is used as a solid fill.
      *
-     * Not always white: `good` is a light green and `fair` a yellow, and white
-     * on either is unreadable. Ink on the light bands, white on the dark ones.
+     * Not always white: `good` and `fair` are yellows, and white on yellow is
+     * unreadable. Ink on those, white on the green and the red.
      */
     ink: string;
 }

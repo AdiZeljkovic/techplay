@@ -197,10 +197,16 @@
   /* ── One track for every meter ── */
   --track: rgba(255, 255, 255, 0.08);
 
-  /* ── Review-score verdict palette (raw vars — lib/score.ts reads these) ── */
-  --score-masterpiece: #f97316;
+  /* ── Review-score verdict palette (raw vars — lib/score.ts reads these) ──
+     Five bands, three colours, on purpose. A review page has always drawn its
+     score green at 8, yellow at 6 and red below, and readers learned to read it
+     that way. The cards elsewhere painted 9+ orange and 7–8 a pale green, so the
+     same 9.4 was orange on the home page and green on its own review. The band
+     names still carry the verdict — that is what the label is for — but the
+     colour says the one thing it has always said. */
+  --score-masterpiece: #22c55e;
   --score-great: #22c55e;
-  --score-good: #86efac;
+  --score-good: #eab308;
   --score-fair: #eab308;
   --score-poor: #ef4444;
 
