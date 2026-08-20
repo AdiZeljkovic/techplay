@@ -68,7 +68,7 @@ function FeaturedCard({ article }: { article: Article }) {
     return (
         <Link
             href={articleHref(article)}
-            className="group relative flex flex-col justify-end rounded-[var(--radius-panel)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] min-h-[340px] lg:min-h-[420px] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+            className="group relative h-full flex flex-col justify-end rounded-[var(--radius-panel)] overflow-hidden border border-[var(--line)] bg-[var(--surface-1)] min-h-[340px] lg:min-h-[420px] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
         >
             {article.featured_image_url && (
                 <Image
@@ -104,7 +104,7 @@ function SideCard({ article }: { article: Article }) {
     return (
         <Link
             href={articleHref(article)}
-            className="group relative flex-1 flex gap-4 items-stretch rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
+            className="group relative flex gap-4 items-stretch rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] transition-colors duration-300"
         >
             <span className="absolute left-0 top-0 bottom-0 w-[3px] bg-[var(--accent)] scale-y-0 group-hover:scale-y-100 origin-center transition-transform duration-300" />
             <div className="relative w-[120px] sm:w-[132px] shrink-0 overflow-hidden">
@@ -202,6 +202,9 @@ export default function EditorialSpotlight({ news, reviews, tech }: { news: Arti
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                {/* Both columns end level: the grid stretches the cells, the
+                    lead card fills its own, and the three beside it set the
+                    height between them. */}
                 <div className="lg:col-span-7"><FeaturedCard article={featured} /></div>
                 <div className="lg:col-span-5 flex flex-col gap-5 min-h-[340px] lg:min-h-[420px]">
                     {side.map((a) => <SideCard key={a.slug} article={a} />)}
