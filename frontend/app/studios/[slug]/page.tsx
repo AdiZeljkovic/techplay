@@ -5,6 +5,7 @@ import { Building2, MapPin, CalendarDays, Globe, Gamepad2 } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import DataAttribution from "@/components/games/DataAttribution";
+import Panel from "@/components/ui/Panel";
 
 /* ─── shapes ─────────────────────────────────────────────────────────────── */
 
@@ -138,11 +139,26 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
             />
 
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
-                <nav className="mb-6 flex items-center gap-1.5 text-[12px] text-white/35">
-                    <Link href="/games" className="hover:text-white/70 transition-colors">Games</Link>
-                    <span>/</span>
-                    <Link href="/studios" className="hover:text-white/70 transition-colors">Studios</Link>
+            {/* ── hero ──────────────────────────────────────────────────────
+
+                The same band the game page opens with, so a reader crossing
+                from one to the other does not arrive somewhere that looks like
+                a different site. A studio has no key art, so the ground is the
+                page's own gradient rather than a picture it does not have. */}
+            <div className="relative border-b border-white/[0.07]">
+                <span aria-hidden className="absolute inset-0 overflow-hidden">
+                    <span className="absolute inset-0 bg-gradient-to-b from-[var(--surface-1)] to-[var(--surface-0)]" />
+                    <span
+                        className="absolute inset-0 opacity-70"
+                        style={{ background: "radial-gradient(60% 140% at 8% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 60%)" }}
+                    />
+                </span>
+
+                <div className="relative z-10 container-page pt-6 pb-8">
+                <nav className="mb-6 flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
+                    <Link href="/games" className="hover:text-white transition-colors">Games</Link>
+                    <span className="text-white/20">/</span>
+                    <Link href="/studios" className="hover:text-white transition-colors">Studios</Link>
                 </nav>
 
                 <header className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
@@ -249,24 +265,35 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                             </p>
                         )}
                     </div>
-                </header>
 
+                    {/* The figures, filling the half of the header that was
+                        black. Same instrument face the rest of the site uses
+                        for a block of readouts. */}
+                    <StudioFigures studio={studio} years={studio.years ?? {}} />
+                </header>
+                </div>
+            </div>
+
+            <div className="container-page py-6 space-y-5">
                 {studio.subsidiaries.length > 0 && (
-                    <section className="mt-9">
-                        <SectionTitle>Studios under {studio.name}</SectionTitle>
+                    <Panel title={`Studios under ${studio.name}`} meta={
+                        <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                            {studio.subsidiaries.length}
+                        </span>
+                    }>
                         <div className="flex flex-wrap gap-2">
                             {studio.subsidiaries.map((sub) => (
                                 <Link
                                     key={sub.slug}
                                     href={`/studios/${sub.slug}`}
-                                    className="inline-flex items-center gap-2 rounded-[9px] border border-white/[0.07] bg-white/[0.02] px-3 py-2 text-[13px] text-white/75 hover:border-white/20 transition-colors"
+                                    className="inline-flex items-center gap-2 rounded-[9px] border border-white/[0.07] bg-white/[0.02] px-3 py-2 text-[13px] text-white/75 hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:text-white transition-colors"
                                 >
                                     {sub.name}
                                     <span className="tabular-nums text-white/35">{sub.games_count}</span>
                                 </Link>
                             ))}
                         </div>
-                    </section>
+                    </Panel>
                 )}
 
                 <ReleaseHistory years={studio.years ?? {}} />
@@ -286,9 +313,11 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
 
                 {studio.developed.length === 0 && studio.published.length === 0 &&
                  (studio.ported ?? []).length === 0 && (studio.supported ?? []).length === 0 && (
-                    <p className="mt-10 text-[14px] text-white/40">
-                        No games from this studio are in the database yet.
-                    </p>
+                    <Panel>
+                        <p className="text-[14px] text-white/40">
+                            No games from this studio are in the database yet.
+                        </p>
+                    </Panel>
                 )}
 
                 <DataAttribution className="mt-12 border-t border-white/[0.05] pt-5" />
@@ -322,32 +351,75 @@ function ReleaseHistory({ years }: { years: Record<string, number> }) {
     const total = entries.reduce((sum, [, count]) => sum + count, 0);
 
     return (
-        <section className="mt-9">
-            <SectionTitle>
-                Releases by year
-                <span className="ml-2 font-normal normal-case tracking-normal text-white/25">
+        <Panel
+            material="instrument"
+            title="Releases by year"
+            meta={
+                <span className="font-display text-[10px] font-bold tabular-nums text-white/30">
                     {total.toLocaleString()} across {first}–{last}
                 </span>
-            </SectionTitle>
-
-            <div className="rounded-[12px] border border-white/[0.07] bg-white/[0.02] px-4 pt-4 pb-3">
-                <div className="flex items-end gap-[3px] h-[92px]">
-                    {entries.map(([year, count]) => (
-                        <span
-                            key={year}
-                            title={`${year}: ${count} ${count === 1 ? "release" : "releases"}`}
-                            className="group relative flex-1 min-w-[3px] rounded-t-[2px] bg-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:bg-[var(--accent)] transition-colors"
-                            style={{ height: `${Math.max(6, (count / peak) * 100)}%` }}
-                        />
-                    ))}
-                </div>
-                <div className="mt-2 flex justify-between font-display text-[10px] font-bold tabular-nums text-white/25">
-                    <span>{first}</span>
-                    <span className="text-white/35">peak {peak} in one year</span>
-                    <span>{last}</span>
-                </div>
+            }
+        >
+            <div className="flex items-end gap-[3px] h-[92px]">
+                {entries.map(([year, count]) => (
+                    <span
+                        key={year}
+                        title={`${year}: ${count} ${count === 1 ? "release" : "releases"}`}
+                        className="relative flex-1 min-w-[3px] rounded-t-[2px] bg-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:bg-[var(--accent)] transition-colors"
+                        style={{ height: `${Math.max(6, (count / peak) * 100)}%` }}
+                    />
+                ))}
             </div>
-        </section>
+            <div className="mt-2 flex justify-between font-display text-[10px] font-bold tabular-nums text-white/25">
+                <span>{first}</span>
+                <span className="text-white/35">peak {peak} in one year</span>
+                <span>{last}</span>
+            </div>
+        </Panel>
+    );
+}
+
+/**
+ * The studio in figures, in the header's empty half.
+ *
+ * The right side of this header was black from the logo down. These are the
+ * numbers already on the record — what it made, what it published, how long it
+ * has been shipping — so the space costs nothing to fill and answers the
+ * questions the shelves below only imply.
+ */
+function StudioFigures({ studio, years }: { studio: Studio; years: Record<string, number> }) {
+    const seasons = Object.keys(years ?? {}).sort();
+
+    const figures = [
+        { label: "Games", value: studio.games_count },
+        { label: "Developed", value: studio.developed_count },
+        { label: "Published", value: studio.published_count },
+        { label: "Ported", value: studio.ported_count ?? 0 },
+    ].filter((f) => f.value > 0);
+
+    if (figures.length === 0) return null;
+
+    return (
+        <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/30 p-4 sm:min-w-[210px]">
+            <div className="grid grid-cols-2 gap-x-5 gap-y-3">
+                {figures.map((figure) => (
+                    <div key={figure.label}>
+                        <p className="font-display text-[22px] font-black leading-none tabular-nums text-white">
+                            {figure.value.toLocaleString()}
+                        </p>
+                        <p className="mt-1 font-display text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
+                            {figure.label}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            {seasons.length > 1 && (
+                <p className="mt-3.5 border-t border-white/[0.07] pt-3 font-display text-[10px] font-bold tabular-nums text-white/30">
+                    Shipping {seasons[0]}–{seasons[seasons.length - 1]}
+                </p>
+            )}
+        </div>
     );
 }
 
@@ -395,12 +467,14 @@ function GameShelf({ title, games, total }: { title: string; games: StudioGame[]
     if (games.length === 0) return null;
 
     return (
-        <section className="mt-9">
-            <SectionTitle>
-                {title}
-                <span className="ml-2 tabular-nums text-white/25">{total.toLocaleString()}</span>
-            </SectionTitle>
-
+        <Panel
+            title={title}
+            meta={
+                <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                    {total.toLocaleString()}
+                </span>
+            }
+        >
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5">
                 {games.map((game) => (
                     <Link key={game.slug} href={`/games/${game.slug}`} className="group block">
@@ -436,6 +510,6 @@ function GameShelf({ title, games, total }: { title: string; games: StudioGame[]
                     </Link>
                 ))}
             </div>
-        </section>
+        </Panel>
     );
 }

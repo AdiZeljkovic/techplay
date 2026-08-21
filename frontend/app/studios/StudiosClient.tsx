@@ -81,8 +81,20 @@ export default function StudiosClient({
 
     return (
         <main className="bg-[var(--surface-0)] min-h-screen">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 sm:py-12">
-                <header className="mb-8">
+            {/* The same hero band the game and studio pages open with, so the
+                section does not look like a different site from the pages it
+                leads to. */}
+            <div className="relative border-b border-white/[0.07]">
+                <span aria-hidden className="absolute inset-0 overflow-hidden">
+                    <span className="absolute inset-0 bg-gradient-to-b from-[var(--surface-1)] to-[var(--surface-0)]" />
+                    <span
+                        className="absolute inset-0 opacity-70"
+                        style={{ background: "radial-gradient(60% 140% at 8% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 60%)" }}
+                    />
+                </span>
+
+                <div className="relative z-10 container-page pt-8 pb-7">
+                <header>
                     <p className="font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
                         {country ? (
                             <Link href="/studios" className="hover:text-[var(--accent-hover)] transition-colors">
@@ -107,7 +119,10 @@ export default function StudiosClient({
                         )}
                     </p>
                 </header>
+                </div>
+            </div>
 
+            <div className="container-page py-6">
                 <div className="flex flex-col sm:flex-row gap-2.5 mb-6">
                     <label className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
