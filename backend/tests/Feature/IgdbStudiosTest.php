@@ -265,6 +265,36 @@ class IgdbStudiosTest extends TestCase
         $this->assertSame(0, Studio::count());
     }
 
+    /**
+     * A column added after the first run has to reach the rows already there.
+     *
+     * `write()` only inserts, so `status`, `changed_at` and `employees` stayed
+     * null on all 56,911 studios while the run cheerfully reported success —
+     * "0 written" is what a complete refresh and a total miss both look like.
+     */
+    public function test_a_second_run_refreshes_what_it_already_wrote(): void
+    {
+        $this->raw('company_statuses', 1, ['name' => 'defunct']);
+        $this->ourGame('Dishonored', 100);
+        $this->raw('companies', 10, ['name' => 'Arkane Studios', 'slug' => 'arkane']);
+        $this->raw('involved_companies', 20, ['game' => 100, 'company' => 10, 'developer' => true]);
+
+        $this->artisan('igdb:studios', ['--apply' => true]);
+        $this->assertSame('active', Studio::where('igdb_id', 10)->value('status'));
+
+        /* The studio closes, and IGDB is pulled again. */
+        DB::table('igdb_raw')->where('endpoint', 'companies')->where('igdb_id', 10)->update([
+            'payload' => json_encode(['id' => 10, 'name' => 'Arkane Studios', 'slug' => 'arkane', 'status' => 1, 'company_size' => 90]),
+        ]);
+
+        $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
+
+        $studio = Studio::where('igdb_id', 10)->first();
+
+        $this->assertSame('defunct', $studio->status);
+        $this->assertSame(90, $studio->employees);
+    }
+
     /** Running it twice does not double the studios or the links. */
     public function test_a_second_run_changes_nothing(): void
     {

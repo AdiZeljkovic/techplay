@@ -82,6 +82,9 @@ class IgdbStudios extends Command
             $apply ? 'Upisano:' : 'Bilo bi upisano:', number_format($written), number_format($links)));
 
         if ($apply) {
+            $this->line('  Osvjezavam status, godinu i broj zaposlenih…');
+            $this->refresh();
+
             $this->line('  Spajam maticne firme i nasljednike…');
             $this->lineage();
 
@@ -255,6 +258,52 @@ class IgdbStudios extends Command
         }
 
         return gmdate('Y-m-d', (int) $seconds);
+    }
+
+    /**
+     * The facts that change on a studio we already hold.
+     *
+     * `write()` only inserts, so a column added after the first run stayed null
+     * on all 56,911 rows — which is exactly what happened to `status`,
+     * `changed_at` and `employees`: the run reported "0 studios written" and
+     * quietly wrote none of them.
+     *
+     * These three are facts about the company rather than anything anyone here
+     * edits, so they are refreshed rather than filled-only. A studio that closes
+     * next year should stop saying it is active.
+     */
+    private function refresh(): void
+    {
+        $byIgdb = [];
+
+        foreach (DB::table('studios')->whereNotNull('igdb_id')->pluck('id', 'igdb_id') as $igdbId => $id) {
+            $byIgdb[(int) $igdbId] = (int) $id;
+        }
+
+        $changed = 0;
+
+        DB::table('igdb_raw')
+            ->where('endpoint', 'companies')
+            ->orderBy('igdb_id')
+            ->chunk(5000, function ($rows) use ($byIgdb, &$changed) {
+                foreach ($rows as $row) {
+                    $p = json_decode($row->payload, true) ?: [];
+                    $id = $byIgdb[(int) ($p['id'] ?? 0)] ?? null;
+
+                    if ($id === null) {
+                        continue;
+                    }
+
+                    $changed += DB::table('studios')->where('id', $id)->update([
+                        'status' => $this->statuses[(int) ($p['status'] ?? 0)] ?? 'active',
+                        'changed_at' => $this->stamp($p['change_date'] ?? null),
+                        'employees' => isset($p['company_size']) ? (int) $p['company_size'] : null,
+                        'updated_at' => now(),
+                    ]);
+                }
+            });
+
+        $this->line('  '.number_format($changed).' studija osvjezeno.');
     }
 
     /**
