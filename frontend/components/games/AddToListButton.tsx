@@ -84,7 +84,7 @@ export default function AddToListButton({ slug, gameName, className = "" }: Prop
             <button
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
-                className="w-full inline-flex items-center justify-center gap-2 h-11 px-4 rounded-[var(--radius-card)] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] text-white font-display text-[11px] font-bold uppercase tracking-[0.1em] transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 h-11 px-5 whitespace-nowrap rounded-[var(--radius-card)] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] text-white font-display text-[11px] font-bold uppercase tracking-[0.1em] transition-colors"
             >
                 <ListPlus className="w-4 h-4" /> Save to a list
             </button>

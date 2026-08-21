@@ -1111,9 +1111,15 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 </div>
                             )}
 
-                            <div className="mt-5 flex flex-col sm:flex-row gap-2.5 sm:max-w-[440px]">
-                                <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
-                                <AddToListButton slug={slug} gameName={game.name} />
+                            {/* The primary action takes the room it deserves and
+                                the secondary one takes what its words need —
+                                "Save to a list" was wrapping onto two lines in a
+                                box sized for an icon. */}
+                            <div className="mt-5 flex flex-col sm:flex-row sm:items-stretch gap-2.5 sm:max-w-[520px]">
+                                <div className="sm:flex-1">
+                                    <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
+                                </div>
+                                <AddToListButton slug={slug} gameName={game.name} className="sm:w-auto sm:shrink-0" />
                             </div>
                         </div>
 
@@ -1326,16 +1332,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
                 {/* ── sidebar ── */}
                 <div className="xl:col-span-4 min-w-0 space-y-5 xl:sticky xl:top-[92px] xl:self-start">
-                    <Panel title="Your collection" className="hidden xl:block">
-                        <div className="space-y-2.5">
-                            <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
-                            {/* "This belongs on my top ten" is a thought that
-                                happens here, on the game's page — not later, in
-                                a tab, once you have remembered which game it
-                                was. */}
-                            <AddToListButton slug={slug} gameName={game.name} />
-                        </div>
-                    </Panel>
+                    {/* "Your collection" used to repeat both actions here. It
+                        existed because the hero only carried them on phones;
+                        now the hero carries them everywhere, and the same two
+                        buttons twice on one screen is a question about which
+                        one is the real one. */}
 
                     <Panel title="Facts">
                         <div className="space-y-4">
@@ -1399,10 +1400,15 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                     </p>
                                 </div>
                             )}
+                            {/* A button, not a line of text at the bottom of a
+                                list. It is the one thing in this panel a reader
+                                can act on, and it read like another fact. */}
                             {game.website && (
                                 <a href={game.website} target="_blank" rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 font-display text-[11px] font-black uppercase tracking-[0.1em] text-white/55 hover:text-[var(--accent)] transition-colors">
-                                    <Globe className="w-4 h-4" /> Official website
+                                    className="mt-1 flex h-10 w-full items-center justify-center gap-2 rounded-[var(--radius-card)] border border-white/[0.12] bg-white/[0.04] font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-white/[0.08] transition-colors">
+                                    <Globe className="w-4 h-4 text-white/50" />
+                                    Official website
+                                    <ExternalLink className="w-3 h-3 text-white/30" />
                                 </a>
                             )}
                         </div>

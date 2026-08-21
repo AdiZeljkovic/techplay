@@ -124,26 +124,40 @@ export default function GameRating({ slug }: Props) {
 
     const starLabel = ["", "Terrible", "Bad", "OK", "Good", "Excellent"];
 
+    /* The panel below speaks the language the rest of the game page speaks. It
+       carried a hardcoded `#0f1221` from an earlier design — a colour in no
+       token file, so it drifted from every surface around it as those changed. */
     return (
         <>
-        <div className="bg-[#0f1221]/80 border border-white/5 rounded-[var(--radius-panel)] p-6 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                <Star className="w-5 h-5 text-[var(--accent)]" />
-                Community Ratings
-            </h2>
+        <div className="rounded-[12px] border border-white/[0.07] bg-white/[0.02] overflow-hidden">
+            <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/[0.06]">
+                <h2 className="flex items-center gap-2 font-display text-[11px] font-black uppercase tracking-[0.14em] text-white/45">
+                    <Star className="w-3.5 h-3.5 text-[var(--accent)]" />
+                    Reader ratings
+                </h2>
+                {aggregate && aggregate.count > 0 && (
+                    <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                        {aggregate.count.toLocaleString()}
+                    </span>
+                )}
+            </div>
+
+            <div className="p-4 space-y-4">
 
             {/* TechPlay Score — editorial + community blend */}
             {techplayScore && (
-                <div className="flex items-center gap-4 mb-6 p-4 bg-gradient-to-r from-[var(--accent)]/15 to-transparent border border-[var(--accent)]/25 rounded-[var(--radius-panel)]">
-                    <div className="w-16 h-16 rounded-[var(--radius-panel)] bg-[var(--accent)] flex items-center justify-center shrink-0 shadow-lg shadow-[var(--accent)]/30">
-                        <span className="text-2xl font-black text-white">{techplayScore.score.toFixed(1)}</span>
-                    </div>
-                    <div>
-                        <p className="text-sm font-black text-white uppercase tracking-widest">TechPlay Score</p>
-                        <p className="text-xs text-white/45 mt-1">
+                <div className="flex items-center gap-4 rounded-[10px] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] p-3.5">
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[10px] bg-[var(--accent)]">
+                        <span className="font-display text-[22px] font-black leading-none tabular-nums text-white">
+                            {techplayScore.score.toFixed(1)}
+                        </span>
+                    </span>
+                    <div className="min-w-0">
+                        <p className="font-display text-[10px] font-black uppercase tracking-[0.14em] text-white">TechPlay Score</p>
+                        <p className="mt-1 text-[12px] text-white/45">
                             {techplayScore.editorial != null && `Editorial ${techplayScore.editorial.toFixed(1)}`}
                             {techplayScore.editorial != null && techplayScore.community != null && " · "}
-                            {techplayScore.community != null && `Community ${techplayScore.community.toFixed(1)}`}
+                            {techplayScore.community != null && `Readers ${techplayScore.community.toFixed(1)}`}
                             {" / 10"}
                         </p>
                     </div>
@@ -152,26 +166,30 @@ export default function GameRating({ slug }: Props) {
 
             {/* Aggregate stats */}
             {aggregate && aggregate.count > 0 && (
-                <div className="flex gap-6 mb-6 p-4 bg-white/5 rounded-[var(--radius-panel)]">
-                    <div className="text-center shrink-0">
-                        <p className="text-4xl font-black text-white">{aggregate.average?.toFixed(1)}</p>
-                        <div className="flex gap-0.5 mt-1 justify-center">
+                <div className="flex gap-5 rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-3.5">
+                    <div className="shrink-0 text-center">
+                        <p className="font-display text-[34px] font-black leading-none tabular-nums text-white">
+                            {aggregate.average?.toFixed(1)}
+                        </p>
+                        <div className="mt-1.5 flex justify-center gap-0.5">
                             {[1,2,3,4,5].map((s) => (
-                                <Star key={s} className={`w-4 h-4 ${s <= Math.round(aggregate.average ?? 0) ? "text-yellow-400 fill-yellow-400" : "text-white/20"}`} />
+                                <Star key={s} className={`w-3.5 h-3.5 ${s <= Math.round(aggregate.average ?? 0) ? "text-amber-400 fill-amber-400" : "text-white/15"}`} />
                             ))}
                         </div>
-                        <p className="text-xs text-white/45 mt-1">{aggregate.count.toLocaleString()} ratings</p>
+                        <p className="mt-1.5 text-[11px] text-white/35 tabular-nums">
+                            {aggregate.count.toLocaleString()} {aggregate.count === 1 ? "rating" : "ratings"}
+                        </p>
                     </div>
-                    <div className="flex-1 space-y-1.5">
+                    <div className="flex-1 space-y-1.5 self-center">
                         {[5,4,3,2,1].map((s) => {
                             const pct = aggregate.count > 0 ? ((aggregate.distribution[s] ?? 0) / aggregate.count * 100) : 0;
                             return (
                                 <div key={s} className="flex items-center gap-2">
-                                    <span className="text-xs text-white/45 w-3">{s}</span>
-                                    <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                        <div className="h-full bg-yellow-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
+                                    <span className="w-3 font-display text-[10px] font-bold tabular-nums text-white/35">{s}</span>
+                                    <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
+                                        <div className="h-full rounded-full bg-amber-400 transition-all duration-500" style={{ width: `${pct}%` }} />
                                     </div>
-                                    <span className="text-xs text-white/35 w-6 text-right">{aggregate.distribution[s] ?? 0}</span>
+                                    <span className="w-6 text-right text-[10.5px] tabular-nums text-white/30">{aggregate.distribution[s] ?? 0}</span>
                                 </div>
                             );
                         })}
@@ -181,8 +199,8 @@ export default function GameRating({ slug }: Props) {
 
             {/* Rating form */}
             {isAuthenticated ? (
-                <div className="mb-6 p-4 bg-white/5 rounded-[var(--radius-panel)] border border-white/10">
-                    <p className="text-sm text-white/45 mb-3">Your rating:</p>
+                <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.02] p-3.5">
+                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35 mb-2.5">Your rating</p>
 
                     {/* Stars */}
                     <div className="flex items-center gap-1 mb-3">
@@ -191,10 +209,13 @@ export default function GameRating({ slug }: Props) {
                                 onMouseEnter={() => setHovered(s)}
                                 onMouseLeave={() => setHovered(0)}
                                 onClick={() => { setMyRating(s); setShowForm(true); }}
-                                aria-label={`Rate ${s} out of 10`}
+                                /* Five stars, and the API validates 1–5. The
+                                   label said "out of 10", so a screen reader
+                                   announced a scale this control does not have. */
+                                aria-label={`Rate ${s} out of 5`}
                                 className="p-1 transition-transform hover:scale-110">
                                 <Star className={`w-7 h-7 transition-colors ${
-                                    s <= (hovered || myRating) ? "text-yellow-400 fill-yellow-400" : "text-white/20"
+                                    s <= (hovered || myRating) ? "text-amber-400 fill-amber-400" : "text-white/15"
                                 }`} />
                             </button>
                         ))}
@@ -265,25 +286,25 @@ export default function GameRating({ slug }: Props) {
                 </div>
             ) : (
                 /* Not logged in — show stars but clicking opens login modal */
-                <div className="mb-6 p-4 bg-white/5 rounded-[var(--radius-panel)] border border-white/10">
-                    <p className="text-sm text-white/45 mb-3">Rate this game:</p>
-                    <div className="flex items-center gap-1 mb-4">
+                <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.02] p-3.5">
+                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35 mb-2.5">Rate this game</p>
+                    <div className="mb-3.5 flex items-center gap-1">
                         {[1,2,3,4,5].map((s) => (
                             <button key={s}
                                 onMouseEnter={() => setHovered(s)}
                                 onMouseLeave={() => setHovered(0)}
                                 onClick={() => setShowLoginModal(true)}
-                                aria-label={`Rate ${s} out of 10`}
+                                aria-label={`Rate ${s} out of 5`}
                                 className="p-1 transition-transform hover:scale-110">
-                                <Star className={`w-7 h-7 transition-colors ${s <= hovered ? "text-yellow-400 fill-yellow-400" : "text-white/20"}`} />
+                                <Star className={`w-7 h-7 transition-colors ${s <= hovered ? "text-amber-400 fill-amber-400" : "text-white/15"}`} />
                             </button>
                         ))}
                         {hovered > 0 && (
-                            <span className="ml-2 text-sm text-white/60">{starLabel[hovered]}</span>
+                            <span className="ml-2 text-[13px] text-white/55">{starLabel[hovered]}</span>
                         )}
                     </div>
                     <button onClick={() => setShowLoginModal(true)}
-                        className="w-full py-2.5 bg-[var(--accent)]/10 hover:bg-[var(--accent)]/20 border border-[var(--accent)]/30 text-[var(--accent)] rounded-[var(--radius-card)] text-sm font-semibold transition-all">
+                        className="flex h-10 w-full items-center justify-center rounded-[var(--radius-card)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--accent)_10%,transparent)] font-display text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--accent)] hover:bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] transition-colors">
                         Sign in to rate this game
                     </button>
                 </div>
@@ -291,16 +312,16 @@ export default function GameRating({ slug }: Props) {
 
             {/* Reviews list */}
             {reviews.length > 0 && (
-                <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-widest">Reviews</h3>
+                <div className="space-y-3">
+                    <h3 className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Reviews</h3>
                     {reviews.map((r) => (
-                        <div key={r.id} className="p-4 bg-white/5 rounded-[var(--radius-panel)] border border-white/5">
+                        <div key={r.id} className="rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-3.5">
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="w-8 h-8 rounded-full bg-[var(--accent)]/30 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                                <div className="w-8 h-8 rounded-full bg-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center font-display text-[11px] font-black text-white shrink-0">
                                     {r.user?.name?.[0]?.toUpperCase() ?? "?"}
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-sm font-semibold text-white truncate">{r.user?.name}</p>
+                                    <p className="font-display text-[13px] font-bold text-white truncate">{r.user?.name}</p>
                                     <p className="text-xs text-white/35">{new Date(r.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</p>
                                 </div>
                                 <div className="ml-auto flex gap-0.5 shrink-0">
@@ -323,8 +344,9 @@ export default function GameRating({ slug }: Props) {
             )}
 
             {!loading && reviews.length === 0 && (!aggregate || aggregate.count === 0) && (
-                <p className="text-center text-white/35 text-sm py-4">No ratings yet. Be the first!</p>
+                <p className="py-1 text-center text-[12.5px] text-white/30">Nobody has rated this yet.</p>
             )}
+            </div>
         </div>
 
         {/* Login modal */}
