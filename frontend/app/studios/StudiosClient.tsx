@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Search, Building2, Loader2, ArrowDownWideNarrow, Check, ChevronDown, MapPin } from "lucide-react";
+import { Search, Building2, Loader2, ArrowDownWideNarrow, Check, ChevronDown, MapPin, X } from "lucide-react";
 import DataAttribution from "@/components/games/DataAttribution";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -33,6 +33,20 @@ const SORTS = [
     { key: "games", label: "Most games" },
     { key: "name", label: "Name" },
     { key: "founded", label: "Oldest first" },
+] as const;
+
+/**
+ * The six countries that hold most of the catalogue, in the order they hold it:
+ * 4,178 companies in the United States, 2,146 in Japan, 1,557 in the UK, 994 in
+ * Germany, 952 in France, 869 in Canada.
+ */
+const COUNTRIES = [
+    { label: "United States", iso: "US" },
+    { label: "Japan", iso: "JP" },
+    { label: "United Kingdom", iso: "GB" },
+    { label: "Germany", iso: "DE" },
+    { label: "France", iso: "FR" },
+    { label: "Canada", iso: "CA" },
 ] as const;
 
 export default function StudiosClient({
@@ -81,59 +95,94 @@ export default function StudiosClient({
 
     return (
         <main className="bg-[var(--surface-0)] min-h-screen">
-            {/* The same hero band the game and studio pages open with, so the
-                section does not look like a different site from the pages it
-                leads to. */}
-            <div className="relative border-b border-white/[0.07]">
-                <span aria-hidden className="absolute inset-0 overflow-hidden">
-                    <span className="absolute inset-0 bg-gradient-to-b from-[var(--surface-1)] to-[var(--surface-0)]" />
-                    <span
-                        className="absolute inset-0 opacity-70"
-                        style={{ background: "radial-gradient(60% 140% at 8% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 60%)" }}
-                    />
-                </span>
+            {/* ── hero ──────────────────────────────────────────────────────
 
-                <div className="relative z-10 container-page pt-8 pb-7">
-                <header>
-                    <p className="font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
+                The games database's own treatment, down to the backdrop: the
+                two sections sit next to each other in the bar and led to two
+                different-looking places. Centred title, the search under it,
+                and the ways in below that. */}
+            <section className="relative overflow-hidden border-b border-white/[0.07]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src="/images/page-hero.webp"
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
+
+                <div className="relative z-10 container-page py-5 md:py-12 text-center">
+                    <h1 className="font-display font-black tracking-tight text-[28px] md:text-[58px] leading-none">
                         {country ? (
-                            <Link href="/studios" className="hover:text-[var(--accent-hover)] transition-colors">
-                                Studios
-                            </Link>
+                            <>
+                                <span className="text-white">STUDIOS IN </span>
+                                <span className="text-[var(--accent)]">{country.name.toUpperCase()}</span>
+                            </>
                         ) : (
-                            "Game database"
+                            <>
+                                <span className="text-white">GAME </span>
+                                <span className="text-[var(--accent)]">STUDIOS</span>
+                            </>
                         )}
-                    </p>
-                    <h1 className="mt-2 font-display text-[30px] sm:text-[38px] font-black tracking-tight text-white">
-                        {country ? `Studios in ${country.name}` : "Studios"}
                     </h1>
-                    <p className="mt-2 max-w-[62ch] text-[14px] leading-relaxed text-white/55">
+
+                    <p className="hidden md:block mt-3 max-w-[720px] mx-auto text-[13px] text-white/45">
                         {country
                             ? `Developers and publishers based in ${country.name}, and everything of theirs in the database.`
-                            : "The people behind the catalogue — who developed what, who published it, and everything each of them has shipped."}
-                        {pagination && (
-                            <span className="text-white/40">
-                                {" "}
-                                {pagination.total.toLocaleString()} studios listed.
-                            </span>
-                        )}
+                            : pagination
+                                ? `The people behind the catalogue — ${pagination.total.toLocaleString()} studios, and everything each of them has shipped.`
+                                : "The people behind the catalogue — who developed what, who published it, and everything each of them has shipped."}
                     </p>
-                </header>
-                </div>
-            </div>
 
-            <div className="container-page py-6">
-                <div className="flex flex-col sm:flex-row gap-2.5 mb-6">
-                    <label className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <div className="mt-4 md:mt-6 max-w-[640px] mx-auto relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-[var(--ink-faint)] group-focus-within:text-[var(--accent)] transition-colors" />
                         <input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search studios…"
-                            className="w-full h-[42px] pl-9 pr-3 rounded-[10px] bg-white/[0.03] border border-white/[0.08] text-[14px] text-white placeholder:text-white/30 outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] transition-colors"
+                            placeholder="Search studios and publishers…"
+                            className="w-full h-12 pl-11 pr-10 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line-strong)] text-[13.5px] text-white placeholder:text-[var(--ink-faint)] outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all"
                         />
-                    </label>
+                        {search && (
+                            <button
+                                onClick={() => setSearch("")}
+                                aria-label="Clear search"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--ink-faint)] hover:text-white transition-colors"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
 
+                    {/* The ways in. Six countries hold most of the catalogue —
+                        4,178 companies in the United States, 2,146 in Japan —
+                        so they are the shortcuts, the way platforms are on the
+                        games hub. */}
+                    <div className="mt-4 md:mt-6 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 md:gap-2.5 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide snap-x scroll-pl-4 md:scroll-pl-0">
+                        {COUNTRIES.map((c) => {
+                            const on = country?.iso === c.iso.toLowerCase();
+
+                            return (
+                                <Link
+                                    key={c.iso}
+                                    href={on ? "/studios" : `/studios/country/${c.iso.toLowerCase()}`}
+                                    className={`snap-start shrink-0 inline-flex h-[38px] items-center gap-2 rounded-full border px-4 font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
+                                        on
+                                            ? "border-transparent bg-[var(--accent)] text-white"
+                                            : "border-white/[0.10] bg-black/40 text-white/70 hover:border-white/25 hover:text-white"
+                                    }`}
+                                >
+                                    <MapPin className={`h-3.5 w-3.5 ${on ? "text-white" : "text-white/35"}`} />
+                                    {c.label}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+            <div className="container-page py-6">
+                <div className="flex flex-col sm:flex-row sm:justify-end gap-2.5 mb-6">
                     <div className="relative">
                         <button
                             type="button"
