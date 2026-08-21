@@ -165,8 +165,10 @@ Vlasnikov zahtjev: studiji dobijaju **svoj sistem**, ravnopravan igrama, i
 podružnice, **sve igre koje su razvili** i **sve koje su izdali** (odvojeno), i
 naše članke koji ih spominju.
 
-**Navigacija:** `Studios` ulazi u zaglavlje, unutar `Games` padajućeg menija kao
-zasebna kolona — igre i oni koji ih prave stoje jedno uz drugo.
+**Navigacija:** `Studios` je **vlastita stavka u zaglavlju**, uz `Games` a ne u
+njemu, s padajućom listom zemalja. Prvo je bio kolona unutar `Games` menija;
+premješteno 21.08.2026. — 56.911 studija i 31.970 indeksabilnih stranica je
+sekcija, ne podlista.
 
 **Uvezanost u oba smjera:** sa stranice igre na studio, sa studija na sve
 njegove igre, s članka na igru i studio.
@@ -303,7 +305,13 @@ MobyGames, 0 redova u obje, `moby_company_id` NOT NULL, i nijedan čitalac osim
 modela koji ih deklariše. `down()` ih vraća.
 
 Rute: `/studios`, `/studios/[slug]`, `/studios/country/[iso]`. Meni: `Studios`
-je treća kolona u `Games` padajućem meniju, uz šest zemalja koje nose katalog.
+je **svoja stavka u zaglavlju**, s padajućom listom šest zemalja koje nose
+katalog.
+
+**Keširanje:** `/studios/*` ide kroz isti nginx `proxy_cache` kao `/games/*`
+(pravila u `snippets/techplay-page-cache.conf`, uključena iz obje lokacije).
+Uz to `location = /studios` **mora** postojati — bez njega nginx na `/studios`
+odgovara 301 preusmjerenjem na `/studios/`, isto kao za `/games`.
 
 ### Faza 7 — plan je rekao „zamjenjuje", mjerenje kaže „ne tu"
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {
-    BookOpen, Compass, Cpu, Disc3, Gamepad2, Gift, House, Layers, LogOut,
+    BookOpen, Building2, Compass, Cpu, Disc3, Gamepad2, Gift, House, Layers, LogOut,
     MapPinned, MessageSquare, Newspaper, Settings, ShieldHalf, ShoppingCart,
     Sparkles, Swords, Trophy, Users,
 } from "lucide-react";
@@ -74,6 +74,7 @@ const PRIMARY = [
     { name: "Home", href: "/", icon: House },
     { name: "Feed", href: "/latest", icon: Layers },
     { name: "Games", href: "/games", icon: Gamepad2 },
+    { name: "Studios", href: "/studios", icon: Building2 },
     { name: "Forum", href: "/forum", icon: MessageSquare },
 ];
 

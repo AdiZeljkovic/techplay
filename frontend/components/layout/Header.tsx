@@ -475,7 +475,7 @@ function NavReleaseRadar({ active }: { active: boolean }) {
 // Mega-dropdown for the GAMES nav item (database + calendar)
 function GamesNavItem() {
     const pathname = usePathname();
-    const isActive = pathname.startsWith("/games") || pathname.startsWith("/calendar") || pathname.startsWith("/studios");
+    const isActive = pathname.startsWith("/games") || pathname.startsWith("/calendar");
     const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => setIsHovered(false), [pathname]);
@@ -501,9 +501,7 @@ function GamesNavItem() {
                         innerClassName="grid grid-cols-[1fr_340px] items-stretch"
                     >
                         <div className="flex flex-col min-w-0">
-                            {/* Three columns since studios joined: what games are,
-                                where they run, and who made them. */}
-                            <div className="p-6 grid grid-cols-[1.4fr_0.9fr_0.9fr] gap-5">
+                            <div className="p-6 grid grid-cols-[1.6fr_1fr] gap-5">
                                 {/* Genres */}
                                 <div className="min-w-0 pr-5 border-r border-[var(--line)]">
                                     <MegaHeading title="Genres" href="/games" />
@@ -515,7 +513,7 @@ function GamesNavItem() {
                                 </div>
 
                                 {/* Platforms + Years */}
-                                <div className="min-w-0 flex flex-col gap-5 pr-5 border-r border-[var(--line)]">
+                                <div className="min-w-0 flex flex-col gap-5">
                                     <div>
                                         <MegaHeading title="Platforms" href="/games" />
                                         <div className="flex flex-col">
@@ -532,19 +530,6 @@ function GamesNavItem() {
                                                 <MegaLink key={y} href={`/games/year/${y}`}>{y}</MegaLink>
                                             ))}
                                         </div>
-                                    </div>
-                                </div>
-
-                                {/* Studios — the people, beside the games */}
-                                <div className="min-w-0">
-                                    <MegaHeading title="Studios" href="/studios" />
-                                    <div className="flex flex-col">
-                                        <MegaLink href="/studios">All studios</MegaLink>
-                                        {DB_STUDIO_COUNTRIES.map((c) => (
-                                            <MegaLink key={c.iso} href={`/studios/country/${c.iso.toLowerCase()}`}>
-                                                {c.label}
-                                            </MegaLink>
-                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -604,12 +589,19 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
     // /feed is the RSS feed and a page there would take that URL over.
     { name: "Feed", href: "/latest", activePaths: ["/latest"] },
     // Desktop renders the bespoke GamesNavItem; children below feed the mobile accordion.
-    { name: "Games", href: "/games", hasDropdown: true, activePaths: ["/games", "/calendar", "/studios"], children: [
+    { name: "Games", href: "/games", hasDropdown: true, activePaths: ["/games", "/calendar"], children: [
         { name: "All Games",        href: "/games" },
         { name: "Release Calendar", href: "/calendar" },
-        { name: "Studios",          href: "/studios" },
         ...DB_GENRES.slice(0, 8).map(g => ({ name: g.label, href: `/games/genre/${g.slug}` })),
         ...DB_PLATFORMS.map(p => ({ name: p.label, href: `/games/platform/${p.slug}` })),
+    ]},
+    // Its own place in the bar rather than a column inside Games. 56,911
+    // studios and 31,970 of them indexable is a section, not a sub-list.
+    // No viewAllLabel: the plain dropdown branch does not render one, and
+    // "All Studios" is already the first row.
+    { name: "Studios", href: "/studios", hasDropdown: true, activePaths: ["/studios"], children: [
+        { name: "All Studios", href: "/studios" },
+        ...DB_STUDIO_COUNTRIES.map(c => ({ name: c.label, href: `/studios/country/${c.iso.toLowerCase()}` })),
     ]},
     {
         name: "Community", href: "/forum", hasDropdown: true, viewAllLabel: "Open Forum",
