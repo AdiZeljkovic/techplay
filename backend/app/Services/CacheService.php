@@ -108,7 +108,7 @@ class CacheService
      * is merely missing. Any change to the shape of the show payload changes
      * this constant, in the same commit.
      */
-    public const GAME_VERSION = 'v7';
+    public const GAME_VERSION = 'v8';
 
     public static function gameShowKey(string $slug): string
     {

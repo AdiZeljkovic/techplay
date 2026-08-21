@@ -208,7 +208,30 @@ class IgdbDetailsTest extends TestCase
 
         $similar = $this->getJson('/api/v1/games/original')->json('similar_games');
 
-        $this->assertSame([['name' => 'We Have This One', 'slug' => 'we-have-this-one']], $similar);
+        /* The cover comes along on the way out rather than being stored: a copy
+           written at import time goes stale, and without one the shelf draws a
+           row of empty black cards. */
+        $this->assertSame(
+            [['name' => 'We Have This One', 'slug' => 'we-have-this-one', 'cover_url' => null]],
+            $similar,
+        );
+    }
+
+    /** And it is the current cover, not one copied at import time. */
+    public function test_a_similar_game_carries_its_cover(): void
+    {
+        $this->lookups();
+        $this->ourGame('Original', 100);
+        $this->ourGame('We Have This One', 101, ['cover_url' => 'https://example.test/cover.jpg']);
+
+        $this->raw('games', 100, ['name' => 'Original', 'similar_games' => [101]]);
+        $this->raw('games', 101, ['name' => 'We Have This One']);
+
+        $this->artisan('igdb:details', ['--apply' => true])->assertSuccessful();
+
+        $this->getJson('/api/v1/games/original')
+            ->assertOk()
+            ->assertJsonPath('similar_games.0.cover_url', 'https://example.test/cover.jpg');
     }
 
     /** Modes and perspectives come out named, not numbered. */

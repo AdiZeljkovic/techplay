@@ -77,6 +77,29 @@ class GameController extends Controller
     }
 
     /**
+     * The covers for a list of games we hold only the name and slug of.
+     *
+     * `similar_games` is written at import time from IGDB's own list, and a
+     * cover stored then would be a copy that goes stale. One query on the way
+     * out, behind the ten-minute page cache, keeps it current — and without it
+     * the shelf draws a row of empty black cards, which is worse than the row
+     * of text chips it replaced.
+     *
+     * @param  array<int, array{name: string, slug: string}>  $games
+     * @return array<int, array<string, mixed>>
+     */
+    private function withCovers(array $games): array
+    {
+        if ($games === []) {
+            return [];
+        }
+
+        $covers = Game::whereIn('slug', array_column($games, 'slug'))->pluck('cover_url', 'slug');
+
+        return array_map(fn ($game) => $game + ['cover_url' => $covers[$game['slug']] ?? null], $games);
+    }
+
+    /**
      * A keyed map that stays a map when it is empty.
      *
      * PHP's empty array encodes as `[]`, so a field that is an object on every
@@ -349,7 +372,7 @@ class GameController extends Controller
             'multiplayer' => $game->multiplayer ?: null,
             'languages' => $game->languages ?? [],
             'artworks' => $game->artworks ?? [],
-            'similar_games' => $game->similar_games ?? [],
+            'similar_games' => $this->withCovers($game->similar_games ?? []),
             'engines' => $this->pgArray($game->engines),
 
             /* Grouped by what the link is for, because "where to buy it" and

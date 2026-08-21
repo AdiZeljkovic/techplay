@@ -113,7 +113,7 @@ interface GameDetail {
     } | null;
     languages: GameLanguage[];
     artworks: ApiScreenshot[];
-    similar_games: { name: string; slug: string }[];
+    similar_games: { name: string; slug: string; cover_url: string | null }[];
     popularity: { percentile: number; metric: string } | null;
     engines: string[];
 
@@ -1445,7 +1445,20 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5">
                             {game.similar_games.slice(0, 8).map((similar) => (
                                 <Link key={similar.slug} href={`/games/${similar.slug}`} className="group block">
-                                    <span className="relative block h-[150px] overflow-hidden rounded-[9px] border border-white/[0.07] bg-white/[0.02] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
+                                    <span className="relative block h-[150px] overflow-hidden rounded-[9px] border border-white/[0.07] bg-white/[0.03] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
+                                        {similar.cover_url ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={similar.cover_url}
+                                                alt={similar.name}
+                                                loading="lazy"
+                                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+                                            />
+                                        ) : (
+                                            <span className="flex h-full w-full items-center justify-center text-white/12">
+                                                <Gamepad2 className="h-6 w-6" />
+                                            </span>
+                                        )}
                                         <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" />
                                         <span className="absolute inset-x-0 bottom-0 p-2">
                                             <span className="block font-display text-[11px] font-black leading-tight text-white line-clamp-3">
