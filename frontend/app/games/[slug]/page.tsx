@@ -7,7 +7,7 @@ import { fetchContent } from "@/lib/fetchContent";
 import {
     Calendar, Star, Globe, Gamepad2, ChevronLeft, Tag, Info,
     Layers, Shield, Newspaper, Users, Cpu, Package, Eye,
-    Clock, Languages, Check, Sparkles,
+    Clock, Languages, Check, Sparkles, ShoppingBag, ExternalLink,
 } from "lucide-react";
 import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
@@ -43,6 +43,14 @@ interface GameAttribute {
 interface AlternateTitle {
     title: string;
     description: string | null;
+}
+
+/** A game on the other end of a relation — a DLC, a remaster, a bundle. */
+interface RelatedGame {
+    name: string;
+    slug: string;
+    cover_url: string | null;
+    released: string | null;
 }
 
 /** One language, and the three separate questions asked about it. */
@@ -101,6 +109,14 @@ interface GameDetail {
     artworks: ApiScreenshot[];
     similar_games: { name: string; slug: string }[];
     popularity: { percentile: number; metric: string } | null;
+    engines: string[];
+
+    /** Grouped by what the link is for: `store`, `social`, `reference`. */
+    links: Record<string, { service: string; url: string }[]>;
+
+    /** The same rows from each end, keyed by the words the page uses. */
+    part_of: Record<string, RelatedGame[]>;
+    parts: Record<string, RelatedGame[]>;
     box_art: BoxArt[];
     critic_scores: {
         opencritic?: { score?: number | null; tier?: string | null; url?: string | null } | null;
@@ -381,6 +397,112 @@ function CompanyRow({
 }
 
 /**
+ * Where to get it, and where its people are.
+ *
+ * Store links carry the shop's name and nothing else — a row of buttons that
+ * says Steam, GOG, Epic reads faster than any wording around it. Social links
+ * sit under them, quieter, because somebody looking for the Discord is looking
+ * for it and does not need it competing with the buy row.
+ */
+function LinkRows({ links }: { links: GameDetail["links"] }) {
+    const stores = links?.store ?? [];
+    const social = links?.social ?? [];
+
+    if (stores.length === 0 && social.length === 0) return null;
+
+    return (
+        <Panel title="Where to get it" meta={<ShoppingBag className="w-4 h-4 text-white/25" />}>
+            <div className="space-y-3.5">
+                {stores.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                        {stores.map((link) => (
+                            <a
+                                key={link.service}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex h-[34px] items-center gap-1.5 rounded-[9px] border border-white/[0.09] bg-white/[0.04] px-3.5 font-display text-[12px] font-bold text-white/85 hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:text-white transition-colors"
+                            >
+                                {link.service}
+                                <ExternalLink className="w-3 h-3 text-white/30" />
+                            </a>
+                        ))}
+                    </div>
+                )}
+
+                {social.length > 0 && (
+                    <div>
+                        <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Community</p>
+                        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
+                            {social.map((link) => (
+                                <a
+                                    key={link.service}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[13px] text-white/50 hover:text-[var(--accent)] transition-colors"
+                                >
+                                    {link.service}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </Panel>
+    );
+}
+
+/**
+ * What this game belongs to, and what belongs to it.
+ *
+ * The heading is the relation itself — "DLC for", "Remastered as" — because
+ * that is the whole content of the row. A shelf labelled "Related" would be
+ * throwing away the one thing IGDB actually told us.
+ */
+function RelatedShelves({ groups }: { groups: Record<string, RelatedGame[]> }) {
+    const entries = Object.entries(groups ?? {});
+
+    if (entries.length === 0) return null;
+
+    return (
+        <>
+            {entries.map(([label, games]) => (
+                <Panel key={label} title={label} meta={<Layers className="w-4 h-4 text-white/25" />}>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+                        {games.map((related) => (
+                            <Link key={related.slug} href={`/games/${related.slug}`} className="group block">
+                                <span className="relative block h-[128px] overflow-hidden rounded-[8px] border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
+                                    {related.cover_url ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={related.cover_url}
+                                            alt={related.name}
+                                            loading="lazy"
+                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+                                        />
+                                    ) : (
+                                        <span className="flex h-full w-full items-center justify-center bg-white/[0.03] text-white/15">
+                                            <Gamepad2 className="h-5 w-5" />
+                                        </span>
+                                    )}
+                                    <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/15 to-transparent" />
+                                    <span className="absolute inset-x-0 bottom-0 p-1.5">
+                                        <span className="block font-display text-[10.5px] font-black leading-tight text-white line-clamp-2">
+                                            {related.name}
+                                        </span>
+                                    </span>
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </Panel>
+            ))}
+        </>
+    );
+}
+
+/**
  * How long the game takes, in three figures.
  *
  * IGDB collects these from players who finished it, so the sample size belongs
@@ -445,10 +567,12 @@ function WaysToPlay({
     modes,
     perspectives,
     multiplayer,
+    engines,
 }: {
     modes: string[];
     perspectives: string[];
     multiplayer: GameDetail["multiplayer"];
+    engines: string[];
 }) {
     const together: string[] = [];
 
@@ -463,7 +587,7 @@ function WaysToPlay({
     if (multiplayer?.offlinemax) players.push(`${multiplayer.offlinemax} offline`);
     if (multiplayer?.onlinemax) players.push(`${multiplayer.onlinemax} online`);
 
-    if (modes.length === 0 && perspectives.length === 0 && together.length === 0 && players.length === 0) {
+    if (modes.length === 0 && perspectives.length === 0 && together.length === 0 && players.length === 0 && engines.length === 0) {
         return null;
     }
 
@@ -473,6 +597,7 @@ function WaysToPlay({
                 <ChipRow label="Modes" values={modes} />
                 <ChipRow label="Together" values={together} />
                 <ChipRow label="Perspective" values={perspectives} />
+                <ChipRow label="Engine" values={engines} />
                 {players.length > 0 && (
                     <div>
                         <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Players</p>
@@ -818,6 +943,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 {/* ── main column ── */}
                 <div className="xl:col-span-8 min-w-0 space-y-5">
 
+                    {/* Above the trailer: somebody who already knows the game
+                        came here to buy it, and should not have to scroll past
+                        a video they have seen. */}
+                    <LinkRows links={game.links ?? {}} />
+
                     {/* Trailer — the column is filled by hand and by the aggregator; first video leads */}
                     {trailer && (
                         <Panel title="Trailer" padding="none">
@@ -865,7 +995,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         modes={game.game_modes ?? []}
                         perspectives={game.player_perspectives ?? []}
                         multiplayer={game.multiplayer ?? null}
+                        engines={game.engines ?? []}
                     />
+
+                    <RelatedShelves groups={game.part_of ?? {}} />
+                    <RelatedShelves groups={game.parts ?? {}} />
 
                     {(game.languages ?? []).length > 0 && (
                         <Panel title={`Languages (${game.languages.length})`} meta={<Languages className="w-4 h-4 text-white/25" />}>

@@ -38,6 +38,7 @@ class IgdbDetails extends Command
     private const FIELDS = [
         'time_to_beat', 'game_modes', 'player_perspectives', 'multiplayer',
         'languages', 'artworks', 'similar_games', 'screenshots', 'age_ratings',
+        'engines',
     ];
 
     public function handle(): int
@@ -149,7 +150,7 @@ class IgdbDetails extends Command
     /** The small numbered tables that turn ids into words. */
     private function lookups(): array
     {
-        $out = ['game_modes' => [], 'player_perspectives' => [], 'languages' => [], 'support_types' => [], 'organizations' => [], 'categories' => []];
+        $out = ['game_modes' => [], 'player_perspectives' => [], 'languages' => [], 'support_types' => [], 'organizations' => [], 'categories' => [], 'engines' => []];
 
         foreach ([
             'game_modes' => ['game_modes', 'name'],
@@ -157,6 +158,7 @@ class IgdbDetails extends Command
             'languages' => ['languages', 'name'],
             'support_types' => ['language_support_types', 'name'],
             'organizations' => ['age_rating_organizations', 'name'],
+            'engines' => ['game_engines', 'name'],
         ] as $key => [$endpoint, $field]) {
             foreach (DB::table('igdb_raw')->where('endpoint', $endpoint)->get() as $row) {
                 $p = json_decode($row->payload, true) ?: [];
@@ -360,17 +362,24 @@ class IgdbDetails extends Command
 
             $row = [];
 
-            foreach (['game_modes' => 'game_modes', 'player_perspectives' => 'player_perspectives'] as $field => $lookup) {
+            /* Their field name on the left, our column on the right. The two
+               agree for modes and perspectives and do not for engines, which
+               is exactly why the mapping is spelled out rather than assumed. */
+            foreach ([
+                'game_modes' => 'game_modes',
+                'player_perspectives' => 'player_perspectives',
+                'game_engines' => 'engines',
+            ] as $theirs => $column) {
                 $names = [];
 
-                foreach ((array) ($p[$field] ?? []) as $id) {
-                    if ($name = $lookups[$lookup][(int) $id] ?? null) {
+                foreach ((array) ($p[$theirs] ?? []) as $id) {
+                    if ($name = $lookups[$column][(int) $id] ?? null) {
                         $names[] = $name;
                     }
                 }
 
                 if ($names !== []) {
-                    $row[$field] = array_values(array_unique($names));
+                    $row[$column] = array_values(array_unique($names));
                 }
             }
 

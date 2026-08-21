@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SitemapController;
 use App\Models\Article;
 use App\Models\Game;
+use App\Models\GameRelation;
 use App\Services\CacheService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\SanitizationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
@@ -35,6 +37,44 @@ class GameController extends Controller
         // it is: PostgreSQL escapes with a backslash inside quoted array elements,
         // so "" would be the wrong value here, not merely a different one.
         return str_getcsv(trim($value, '{}'), ',', '"', '\\');
+    }
+
+    /**
+     * Related games, grouped under the words a page would use.
+     *
+     * The same row reads differently from each end — "DLC for Hades" on the
+     * add-on's page, "DLC" on Hades' own — so the labels come in with the side
+     * being rendered rather than being guessed here.
+     *
+     * @param  Collection<int, GameRelation>  $rows
+     * @param  string  $side  which end of the row to show: `related` or `game`
+     * @param  array<string, string>  $labels
+     * @return array<string, array<int, array<string, mixed>>>
+     */
+    private function relations($rows, string $side, array $labels): array
+    {
+        $out = [];
+
+        foreach ($rows as $row) {
+            $other = $row->{$side};
+
+            if (! $other) {
+                continue;
+            }
+
+            $label = $labels[$row->relation] ?? $row->relation;
+
+            $out[$label][] = [
+                'name' => $other->name,
+                'slug' => $other->slug,
+                'cover_url' => $other->cover_url,
+                'released' => $other->released?->format('Y-m-d'),
+            ];
+        }
+
+        /* A game can hold a hundred DLC rows; the page shows a shelf, not a
+           catalogue, and the rest are a click away on the search. */
+        return array_map(fn ($games) => array_slice($games, 0, 24), $out);
     }
 
     /**
@@ -211,7 +251,14 @@ class GameController extends Controller
      */
     private function buildShowPayload(string $slug): ?array
     {
-        $game = Game::where('slug', $slug)->with('studios:id,name,slug,logo_url,games_count')->first();
+        $game = Game::where('slug', $slug)
+            ->with([
+                'studios:id,name,slug,logo_url,games_count',
+                'links:id,game_id,kind,service,url',
+                'partOf.related:id,name,slug,cover_url,released',
+                'parts.game:id,name,slug,cover_url,released',
+            ])
+            ->first();
 
         if (! $game) {
             return null;
@@ -292,6 +339,23 @@ class GameController extends Controller
             'languages' => $game->languages ?? [],
             'artworks' => $game->artworks ?? [],
             'similar_games' => $game->similar_games ?? [],
+            'engines' => $this->pgArray($game->engines),
+
+            /* Grouped by what the link is for, because "where to buy it" and
+               "where its people are" are two different rows on the page. */
+            'links' => $game->links
+                ->groupBy('kind')
+                ->map(fn ($group) => $group->map(fn ($link) => [
+                    'service' => $link->service,
+                    'url' => $link->url,
+                ])->values()->all())
+                ->all(),
+
+            /* Both directions of the same rows: what this game belongs to, and
+               what belongs to it. A DLC page names its game; the game's page
+               names its DLC. */
+            'part_of' => $this->relations($game->partOf, 'related', GameRelation::LABELS),
+            'parts' => $this->relations($game->parts, 'game', GameRelation::REVERSE_LABELS),
         ];
     }
 

@@ -40,6 +40,7 @@ class Game extends Model
         'languages',
         'artworks',
         'similar_games',
+        'engines',
         // Written by the release aggregator.
         'match_key',
         'release_precision',
@@ -68,6 +69,7 @@ class Game extends Model
         'similar_games' => 'array',
         'game_modes' => PostgresArray::class,
         'player_perspectives' => PostgresArray::class,
+        'engines' => PostgresArray::class,
         'released' => 'date',
         'rating' => 'float',
         'series_key' => 'integer',
@@ -102,6 +104,24 @@ class Game extends Model
     public function publishedBy(): BelongsToMany
     {
         return $this->belongsToMany(Studio::class)->wherePivot('role', 'publisher');
+    }
+
+    /** Store, social and reference links from IGDB — not the aggregator's own. */
+    public function links(): HasMany
+    {
+        return $this->hasMany(GameLink::class);
+    }
+
+    /** What this game belongs to: the game it is DLC for, a remaster of, in a bundle with. */
+    public function partOf(): HasMany
+    {
+        return $this->hasMany(GameRelation::class, 'game_id');
+    }
+
+    /** And the other direction — what belongs to it. */
+    public function parts(): HasMany
+    {
+        return $this->hasMany(GameRelation::class, 'related_game_id');
     }
 
     public function userGames()
