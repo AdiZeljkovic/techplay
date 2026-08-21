@@ -513,41 +513,88 @@ function ScoreStack({ game }: { game: GameDetail }) {
 }
 
 /**
+ * Each shop's own colour, so the row is recognised before it is read.
+ *
+ * A wall of identical grey buttons makes a reader parse every label; Steam blue
+ * and Xbox green are recognised at a glance. Mixed rather than used at full
+ * strength — ten saturated brand colours side by side on a dark page is a
+ * carnival, and the point is recognition, not volume.
+ */
+const STORE_COLORS: Record<string, string> = {
+    "Steam": "#66c0f4",
+    "GOG": "#a05fb4",
+    "Epic Games Store": "#f5f5f5",
+    "Microsoft Store": "#3fa64a",
+    "Xbox Marketplace": "#3fa64a",
+    "PlayStation Store": "#3b82f6",
+    "itch.io": "#fa5c5c",
+    "App Store": "#3ea0f0",
+    "Google Play": "#3ddc84",
+    "Amazon": "#ffa724",
+};
+
+/**
  * Where to get it, and where its people are.
  *
  * Store links carry the shop's name and nothing else — a row of buttons that
- * says Steam, GOG, Epic reads faster than any wording around it. Social links
- * sit under them, quieter, because somebody looking for the Discord is looking
- * for it and does not need it competing with the buy row.
+ * says Steam, GOG, Epic reads faster than any wording around it. The official
+ * site sits with them: it is the same question, "where do I go for this", and
+ * it was a line of text at the bottom of a facts list. Community links sit
+ * under both, quieter, because somebody looking for the Discord is looking for
+ * it and does not need it competing with the buy row.
  */
-function LinkRows({ links }: { links: GameDetail["links"] }) {
+function LinkRows({ links, website }: { links: GameDetail["links"]; website: string | null }) {
     const stores = links?.store ?? [];
     const social = links?.social ?? [];
 
-    if (stores.length === 0 && social.length === 0) return null;
+    if (stores.length === 0 && social.length === 0 && !website) return null;
 
     return (
         <Panel title="Where to get it" meta={<ShoppingBag className="w-4 h-4 text-white/25" />}>
             <div className="space-y-3.5">
-                {stores.length > 0 && (
+                {(stores.length > 0 || website) && (
                     <div className="flex flex-wrap gap-2">
-                        {stores.map((link) => (
+                        {stores.map((link) => {
+                            const brand = STORE_COLORS[link.service];
+
+                            return (
+                                <a
+                                    key={link.service}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group inline-flex h-[38px] items-center gap-2 rounded-[9px] border px-4 font-display text-[12.5px] font-bold text-white transition-colors"
+                                    style={brand ? {
+                                        borderColor: `color-mix(in srgb, ${brand} 45%, transparent)`,
+                                        backgroundColor: `color-mix(in srgb, ${brand} 14%, transparent)`,
+                                    } : undefined}
+                                >
+                                    {brand && (
+                                        <span aria-hidden className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: brand }} />
+                                    )}
+                                    {link.service}
+                                    <ExternalLink className="w-3 h-3 text-white/35" />
+                                </a>
+                            );
+                        })}
+
+                        {website && (
                             <a
-                                key={link.service}
-                                href={link.url}
+                                href={website}
                                 target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex h-[34px] items-center gap-1.5 rounded-[9px] border border-white/[0.09] bg-white/[0.04] px-3.5 font-display text-[12px] font-bold text-white/85 hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:text-white transition-colors"
+                                rel="noopener noreferrer nofollow"
+                                className="inline-flex h-[38px] items-center gap-2 rounded-[9px] border border-white/[0.12] bg-white/[0.04] px-4 font-display text-[12.5px] font-bold text-white/85 hover:border-white/25 hover:text-white transition-colors"
                             >
-                                {link.service}
+                                <Globe className="w-3.5 h-3.5 text-white/45" />
+                                Official site
                                 <ExternalLink className="w-3 h-3 text-white/30" />
                             </a>
-                        ))}
+                        )}
                     </div>
                 )}
 
                 {social.length > 0 && (
-                    <div>
+                    <div className="pt-0.5">
                         <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Community</p>
                         <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
                             {social.map((link) => (
@@ -665,32 +712,52 @@ function TimeToBeat({ times }: { times: GameDetail["time_to_beat"] }) {
     const shown = paces.filter((p) => times[p.key]);
     if (shown.length === 0) return null;
 
+    /* Three figures reported by three people is not the same claim as three
+       reported by three thousand, and the difference decides whether a reader
+       should believe them. Below five it is said plainly rather than tucked
+       into the corner in grey. */
+    const thin = times.count > 0 && times.count < 5;
+
     return (
         <div className="container-page pt-5">
-            <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.02] px-4 sm:px-5 py-4">
-                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-3.5">
+            {/* The figures sit together, left, rather than spread across the
+                full width of the page. Stretched edge to edge on a wide screen
+                they read as three unrelated numbers with a lot of nothing
+                between them — which is exactly what a game with one report
+                looked like. */}
+            <div className="inline-flex w-full flex-col rounded-[14px] border border-white/[0.07] bg-white/[0.02] px-4 sm:px-5 py-4 lg:w-auto">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3.5">
                     <p className="flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/45">
                         <Clock className="w-3.5 h-3.5 text-[var(--accent)]" />
                         How long to beat
                     </p>
                     {times.count > 0 && (
-                        <p className="text-[11.5px] text-white/30 tabular-nums">
-                            from {times.count.toLocaleString()} {times.count === 1 ? "player" : "players"}
-                        </p>
+                        <span className={`inline-flex h-[19px] items-center rounded-[5px] px-1.5 font-display text-[9.5px] font-bold tabular-nums ${
+                            thin
+                                ? "border border-amber-400/25 bg-amber-400/10 text-amber-300/80"
+                                : "bg-white/[0.06] text-white/40"
+                        }`}>
+                            {thin ? `only ${times.count} ${times.count === 1 ? "report" : "reports"}` : `${times.count.toLocaleString()} players`}
+                        </span>
                     )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                    {shown.map((pace) => (
-                        <div key={pace.key}>
-                            <p className="font-display text-[22px] sm:text-[26px] font-black leading-none tabular-nums text-white">
+                <div className="flex flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-0">
+                    {shown.map((pace, index) => (
+                        <div
+                            key={pace.key}
+                            className={`sm:px-6 sm:first:pl-0 sm:last:pr-0 ${
+                                index > 0 ? "sm:border-l sm:border-white/[0.07]" : ""
+                            }`}
+                        >
+                            <p className="font-display text-[26px] sm:text-[30px] font-black leading-none tabular-nums text-white">
                                 {times[pace.key]}
-                                <span className="ml-1 text-[12px] font-bold text-white/35">h</span>
+                                <span className="ml-1 text-[13px] font-bold text-white/35">h</span>
                             </p>
                             <p className="mt-1.5 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/55">
                                 {pace.label}
                             </p>
-                            <p className="text-[11px] leading-snug text-white/30">{pace.note}</p>
+                            <p className="text-[11px] leading-snug text-white/30 whitespace-nowrap">{pace.note}</p>
                         </div>
                     ))}
                 </div>
@@ -1157,7 +1224,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     {/* Above the trailer: somebody who already knows the game
                         came here to buy it, and should not have to scroll past
                         a video they have seen. */}
-                    <LinkRows links={game.links ?? {}} />
+                    <LinkRows links={game.links ?? {}} website={game.website} />
 
                     {/* Trailer — the column is filled by hand and by the aggregator; first video leads */}
                     {trailer && (
@@ -1400,17 +1467,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                     </p>
                                 </div>
                             )}
-                            {/* A button, not a line of text at the bottom of a
-                                list. It is the one thing in this panel a reader
-                                can act on, and it read like another fact. */}
-                            {game.website && (
-                                <a href={game.website} target="_blank" rel="noopener noreferrer"
-                                    className="mt-1 flex h-10 w-full items-center justify-center gap-2 rounded-[var(--radius-card)] border border-white/[0.12] bg-white/[0.04] font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white hover:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] hover:bg-white/[0.08] transition-colors">
-                                    <Globe className="w-4 h-4 text-white/50" />
-                                    Official website
-                                    <ExternalLink className="w-3 h-3 text-white/30" />
-                                </a>
-                            )}
+                            {/* The official site moved up to "Where to get it",
+                                beside the shops. It is the same question — where
+                                do I go for this — and it was the one thing in
+                                this panel a reader could act on, reading like
+                                another fact. */}
                         </div>
                     </Panel>
 
