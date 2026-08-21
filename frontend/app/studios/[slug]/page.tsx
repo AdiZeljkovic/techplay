@@ -141,20 +141,24 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
 
             {/* ── hero ──────────────────────────────────────────────────────
 
-                The same band the game page opens with, so a reader crossing
-                from one to the other does not arrive somewhere that looks like
-                a different site. A studio has no key art, so the ground is the
-                page's own gradient rather than a picture it does not have. */}
-            <div className="relative border-b border-white/[0.07]">
-                <span aria-hidden className="absolute inset-0 overflow-hidden">
-                    <span className="absolute inset-0 bg-gradient-to-b from-[var(--surface-1)] to-[var(--surface-0)]" />
-                    <span
-                        className="absolute inset-0 opacity-70"
-                        style={{ background: "radial-gradient(60% 140% at 8% 0%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 60%)" }}
-                    />
-                </span>
+                The house backdrop, the same one the studios listing and the
+                games database open with. A studio has no key art of its own, and
+                a flat gradient made its page the one place in the section that
+                arrived without any. */}
+            <div className="relative overflow-hidden border-b border-white/[0.07]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src="/images/page-hero.webp"
+                    alt=""
+                    aria-hidden
+                    className="absolute inset-0 h-full w-full object-cover object-center"
+                />
+                {/* Weighted to the left, where the name and the logo sit — the
+                    listing's backdrop is centred because its title is. */}
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(70%_140%_at_18%_40%,rgba(5,7,10,0.88),rgba(5,7,10,0.62)_70%)]" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                <div className="relative z-10 container-page pt-6 pb-8">
+                <div className="relative z-10 container-page pt-6 pb-10">
                 <nav className="mb-6 flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
                     <Link href="/games" className="hover:text-white transition-colors">Games</Link>
                     <span className="text-white/20">/</span>
@@ -169,12 +173,12 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                         are near-black wordmarks, and on a dark tile they showed
                         as an empty square. A logo nobody can see is worse than
                         no logo, because the space is spent either way. */}
-                    <span className="flex h-[92px] w-[92px] shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-white/[0.10] bg-[#f2f3f5]">
+                    <span className="flex h-[104px] w-[104px] shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-white/[0.12] bg-[#f2f3f5] shadow-[0_16px_44px_-14px_rgba(0,0,0,0.9)]">
                         {studio.logo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={studio.logo_url} alt={studio.name} className="h-full w-full object-contain p-3" />
+                            <img src={studio.logo_url} alt={studio.name} className="h-full w-full object-contain p-3.5" />
                         ) : (
-                            <Building2 className="h-8 w-8 text-black/25" />
+                            <Building2 className="h-9 w-9 text-black/25" />
                         )}
                     </span>
 
@@ -417,7 +421,7 @@ function StudioFigures({ studio, years }: { studio: Studio; years: Record<string
     if (figures.length === 0) return null;
 
     return (
-        <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/30 p-4 sm:min-w-[210px]">
+        <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/45 backdrop-blur-sm p-4 sm:min-w-[210px]">
             {/* Flowing, not a fixed two-column grid. Three figures in two
                 columns left a hole where a fourth would be, which reads as a
                 number that failed to load. */}
