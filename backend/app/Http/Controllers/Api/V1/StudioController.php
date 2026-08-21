@@ -79,7 +79,9 @@ class StudioController extends Controller
     /** @return array<string, mixed>|null */
     private function payload(string $slug): ?array
     {
-        $studio = Studio::where('slug', $slug)->with('parent:id,name,slug')->first();
+        $studio = Studio::where('slug', $slug)
+            ->with(['parent:id,name,slug', 'became:id,name,slug'])
+            ->first();
 
         if (! $studio) {
             return null;
@@ -95,6 +97,15 @@ class StudioController extends Controller
             'founded' => $studio->founded?->format('Y-m-d'),
             'website' => $studio->website,
             'indexable' => $studio->indexable,
+
+            /* A studio that closed in 1995 is a different thing from one
+               shipping games this year, and the page had no way to say so.
+               `active` is stated rather than implied by silence, because IGDB
+               not knowing and IGDB saying "still working" are not the same. */
+            'status' => $studio->status,
+            'changed_at' => $studio->changed_at?->format('Y-m-d'),
+            'became' => $studio->became ? ['name' => $studio->became->name, 'slug' => $studio->became->slug] : null,
+            'employees' => $studio->employees,
             'games_count' => $studio->games_count,
             'developed_count' => $studio->developed_count,
             'published_count' => $studio->published_count,

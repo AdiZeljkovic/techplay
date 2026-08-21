@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Building2, MapPin, CalendarDays, Globe, Gamepad2 } from "lucide-react";
+import { Building2, MapPin, CalendarDays, Globe, Gamepad2, Users } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import DataAttribution from "@/components/games/DataAttribution";
@@ -26,6 +26,10 @@ interface Studio {
     founded: string | null;
     website: string | null;
     indexable: boolean;
+    status: "active" | "defunct" | "merged" | "renamed" | null;
+    changed_at: string | null;
+    became: { name: string; slug: string } | null;
+    employees: number | null;
     games_count: number;
     developed_count: number;
     published_count: number;
@@ -136,9 +140,12 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                     </span>
 
                     <div className="min-w-0">
-                        <h1 className="font-display text-[26px] sm:text-[34px] font-black leading-tight tracking-tight text-white">
-                            {studio.name}
-                        </h1>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                            <h1 className="font-display text-[26px] sm:text-[34px] font-black leading-tight tracking-tight text-white">
+                                {studio.name}
+                            </h1>
+                            <StatusBadge status={studio.status} />
+                        </div>
 
                         <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-white/50">
                             <span className="inline-flex items-center gap-1.5">
@@ -158,6 +165,12 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                                     Founded {founded}
                                 </span>
                             )}
+                            {studio.employees && (
+                                <span className="inline-flex items-center gap-1.5">
+                                    <Users className="h-3.5 w-3.5 text-white/30" />
+                                    <span className="tabular-nums">{studio.employees.toLocaleString()}</span> staff
+                                </span>
+                            )}
                             {studio.website && (
                                 <a
                                     href={studio.website}
@@ -170,6 +183,27 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                                 </a>
                             )}
                         </div>
+
+                        {/* What became of it. A studio that closed in 1995 reads
+                            like one shipping games this year unless the page
+                            says otherwise. */}
+                        {studio.status && studio.status !== "active" && (
+                            <p className="mt-2.5 text-[13px] text-white/50">
+                                {ENDED[studio.status]}
+                                {studio.changed_at && ` in ${new Date(studio.changed_at).getFullYear()}`}
+                                {studio.became && (
+                                    <>
+                                        {" — became "}
+                                        <Link
+                                            href={`/studios/${studio.became.slug}`}
+                                            className="text-[var(--accent)] hover:underline"
+                                        >
+                                            {studio.became.name}
+                                        </Link>
+                                    </>
+                                )}
+                            </p>
+                        )}
 
                         {studio.parent && (
                             <p className="mt-2.5 text-[13px] text-white/45">
@@ -225,6 +259,31 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
 }
 
 /* ─── pieces ─────────────────────────────────────────────────────────────── */
+
+/** How a studio's ending reads in a sentence. */
+const ENDED: Record<string, string> = {
+    defunct: "Closed",
+    merged: "Merged",
+    renamed: "Renamed",
+};
+
+/**
+ * A studio that is no longer working says so beside its name.
+ *
+ * Only the endings get a badge. "Active" is the assumption a reader already
+ * holds, and a badge that says what somebody already believes is noise — the
+ * information here is entirely in the exceptions: 1,698 closed, 469 renamed,
+ * 374 merged away.
+ */
+function StatusBadge({ status }: { status: string | null }) {
+    if (!status || status === "active") return null;
+
+    return (
+        <span className="inline-flex h-[22px] items-center rounded-[5px] border border-white/[0.12] bg-white/[0.05] px-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55">
+            {ENDED[status] ?? status}
+        </span>
+    );
+}
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
     return (

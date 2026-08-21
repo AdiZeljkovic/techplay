@@ -34,6 +34,9 @@ class IgdbStudios extends Command
     /** Their image CDN, at a size a logo is actually shown at. */
     private const LOGO = 'https://images.igdb.com/igdb/image/upload/t_logo_med/%s.png';
 
+    /** id => name, from `company_statuses`. Absent means still working. */
+    private array $statuses = [];
+
     public function handle(): int
     {
         if (! DB::table('igdb_raw')->where('endpoint', 'companies')->exists()) {
@@ -58,6 +61,15 @@ class IgdbStudios extends Command
 
         $this->line(sprintf('  %s kompanija ima nasu igru.', number_format(count($wanted))));
 
+        foreach (DB::table('igdb_raw')->where('endpoint', 'company_statuses')->get() as $row) {
+            $p = json_decode($row->payload, true) ?: [];
+            $name = $p['name'] ?? $p['status'] ?? null;
+
+            if ($name) {
+                $this->statuses[(int) $p['id']] = (string) $name;
+            }
+        }
+
         $this->line('  Citam logotipe i sajtove…');
         $logos = $this->assets('company_logos', fn ($p) => isset($p['image_id']) ? sprintf(self::LOGO, $p['image_id']) : null);
         $sites = $this->assets('company_websites', fn ($p) => $p['url'] ?? null);
@@ -70,6 +82,9 @@ class IgdbStudios extends Command
             $apply ? 'Upisano:' : 'Bilo bi upisano:', number_format($written), number_format($links)));
 
         if ($apply) {
+            $this->line('  Spajam maticne firme i nasljednike…');
+            $this->lineage();
+
             $this->line('  Racunam brojeve igara…');
             $this->counts();
         } else {
@@ -187,6 +202,13 @@ class IgdbStudios extends Command
                         'country' => isset($p['country']) ? (int) $p['country'] : null,
                         'founded' => $this->founded($p),
                         'website' => $this->firstSite($p['websites'] ?? [], $sites),
+                        'status' => $this->statuses[(int) ($p['status'] ?? 0)] ?? 'active',
+                        'changed_at' => $this->stamp($p['change_date'] ?? null),
+                        'employees' => isset($p['company_size']) ? (int) $p['company_size'] : null,
+                        /* Parents and successors are other studios, which do not
+                           all exist yet while this batch is being written. Both
+                           are joined up in a second pass. */
+                        'became_studio_id' => null,
                         'parent_id' => null,
                         'games_count' => 0,
                         'developed_count' => 0,
@@ -223,13 +245,78 @@ class IgdbStudios extends Command
      */
     private function founded(array $p): ?string
     {
-        $stamp = $p['start_date'] ?? null;
+        return $this->stamp($p['start_date'] ?? null);
+    }
 
-        if ($stamp === null || (int) $stamp < -2208988800) {   // before 1900
+    private function stamp(mixed $seconds): ?string
+    {
+        if ($seconds === null || (int) $seconds < -2208988800) {   // before 1900
             return null;
         }
 
-        return gmdate('Y-m-d', (int) $stamp);
+        return gmdate('Y-m-d', (int) $seconds);
+    }
+
+    /**
+     * Who owns whom, and who became whom.
+     *
+     * A second pass because both point at other studios, and in the first pass
+     * half of them do not exist yet — a company written before its parent would
+     * have nothing to point at. Once every row is in, this is two joins.
+     *
+     * `parent_id` has been null on all 56,911 rows since the table was created,
+     * while the studio page has been rendering "Part of" and "Studios under" for
+     * it the whole time. 1,946 companies name a parent.
+     */
+    private function lineage(): void
+    {
+        $byIgdb = [];
+
+        foreach (DB::table('studios')->whereNotNull('igdb_id')->pluck('id', 'igdb_id') as $igdbId => $id) {
+            $byIgdb[(int) $igdbId] = (int) $id;
+        }
+
+        $parents = 0;
+        $successors = 0;
+
+        DB::table('igdb_raw')
+            ->where('endpoint', 'companies')
+            ->orderBy('igdb_id')
+            ->chunk(5000, function ($rows) use ($byIgdb, &$parents, &$successors) {
+                foreach ($rows as $row) {
+                    $p = json_decode($row->payload, true) ?: [];
+                    $self = $byIgdb[(int) ($p['id'] ?? 0)] ?? null;
+
+                    if ($self === null) {
+                        continue;
+                    }
+
+                    $updates = [];
+
+                    if ($parent = $byIgdb[(int) ($p['parent'] ?? 0)] ?? null) {
+                        if ($parent !== $self) {
+                            $updates['parent_id'] = $parent;
+                            $parents++;
+                        }
+                    }
+
+                    if ($became = $byIgdb[(int) ($p['changed_company_id'] ?? 0)] ?? null) {
+                        if ($became !== $self) {
+                            $updates['became_studio_id'] = $became;
+                            $successors++;
+                        }
+                    }
+
+                    if ($updates !== []) {
+                        DB::table('studios')->where('id', $self)->update($updates);
+                    }
+                }
+            });
+
+        $this->line(sprintf(
+            '  %s studija ima maticnu firmu, %s je postalo neko drugi.',
+            number_format($parents), number_format($successors),
+        ));
     }
 
     private function firstSite(array $ids, array $sites): ?string

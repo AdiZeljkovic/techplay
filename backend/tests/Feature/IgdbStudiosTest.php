@@ -177,6 +177,79 @@ class IgdbStudiosTest extends TestCase
         $this->assertNull(Studio::where('igdb_id', 10)->value('founded'));
     }
 
+    /**
+     * The studio page has rendered "Part of" and "Studios under" since it was
+     * built, and `parent_id` was null on all 56,911 rows — nothing ever filled
+     * it. 1,946 companies name a parent.
+     */
+    public function test_a_studio_learns_who_owns_it(): void
+    {
+        $this->ourGame('Dishonored', 100);
+        $this->ourGame('Some Other Game', 101);
+
+        $this->raw('companies', 10, ['name' => 'Arkane Studios', 'slug' => 'arkane', 'parent' => 11]);
+        $this->raw('companies', 11, ['name' => 'ZeniMax Media', 'slug' => 'zenimax']);
+        $this->raw('involved_companies', 20, ['game' => 100, 'company' => 10, 'developer' => true]);
+        $this->raw('involved_companies', 21, ['game' => 101, 'company' => 11, 'publisher' => true]);
+
+        $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
+
+        $arkane = Studio::where('igdb_id', 10)->first();
+        $zenimax = Studio::where('igdb_id', 11)->first();
+
+        $this->assertSame($zenimax->id, $arkane->parent_id);
+        $this->assertTrue($zenimax->subsidiaries->contains($arkane));
+    }
+
+    /**
+     * 1,698 defunct, 469 renamed, 374 merged. Their pages read as though they
+     * were still working.
+     */
+    public function test_a_closed_studio_says_so(): void
+    {
+        $this->raw('company_statuses', 1, ['name' => 'defunct']);
+        $this->raw('company_statuses', 3, ['name' => 'renamed']);
+
+        $this->ourGame('Old Game', 100);
+        $this->ourGame('New Game', 101);
+
+        $this->raw('companies', 10, [
+            'name' => 'Cygnus Software', 'slug' => 'cygnus',
+            'status' => 3, 'change_date' => gmmktime(0, 0, 0, 1, 1, 1995), 'changed_company_id' => 11,
+        ]);
+        $this->raw('companies', 11, ['name' => 'The Successor', 'slug' => 'successor']);
+        $this->raw('involved_companies', 20, ['game' => 100, 'company' => 10, 'developer' => true]);
+        $this->raw('involved_companies', 21, ['game' => 101, 'company' => 11, 'developer' => true]);
+
+        $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
+
+        $studio = Studio::where('igdb_id', 10)->first();
+
+        $this->assertSame('renamed', $studio->status);
+        $this->assertSame('1995-01-01', $studio->changed_at->toDateString());
+        $this->assertSame('The Successor', $studio->became->name);
+
+        $this->getJson('/api/v1/studios/cygnus')
+            ->assertOk()
+            ->assertJsonPath('data.status', 'renamed')
+            ->assertJsonPath('data.became.slug', 'successor');
+    }
+
+    /** A company IGDB says nothing about is active, and says so plainly. */
+    public function test_a_studio_with_no_status_is_recorded_as_active(): void
+    {
+        $this->ourGame('Dishonored', 100);
+        $this->raw('companies', 10, ['name' => 'Arkane Studios', 'slug' => 'arkane', 'company_size' => 180]);
+        $this->raw('involved_companies', 20, ['game' => 100, 'company' => 10, 'developer' => true]);
+
+        $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
+
+        $studio = Studio::where('igdb_id', 10)->first();
+
+        $this->assertSame('active', $studio->status);
+        $this->assertSame(180, $studio->employees);
+    }
+
     /** Without --apply it is a report and nothing more. */
     public function test_without_apply_nothing_is_written(): void
     {

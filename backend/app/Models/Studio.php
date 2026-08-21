@@ -22,11 +22,14 @@ class Studio extends Model
     protected $fillable = [
         'igdb_id', 'name', 'slug', 'description', 'logo_url',
         'country', 'founded', 'website', 'parent_id',
+        'status', 'changed_at', 'became_studio_id', 'employees',
         'games_count', 'developed_count', 'published_count', 'indexable',
     ];
 
     protected $casts = [
         'founded' => 'date',
+        'changed_at' => 'date',
+        'employees' => 'integer',
         'indexable' => 'boolean',
         'igdb_id' => 'integer',
         'country' => 'integer',
@@ -58,6 +61,12 @@ class Studio extends Model
     public function subsidiaries(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /** What it turned into, when it was renamed or merged away. */
+    public function became(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'became_studio_id');
     }
 
     public function getRouteKeyName(): string
