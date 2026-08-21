@@ -7,6 +7,7 @@ import { fetchContent } from "@/lib/fetchContent";
 import {
     Calendar, Star, Globe, Gamepad2, ChevronLeft, Tag, Info,
     Layers, Shield, Newspaper, Users, Cpu, Package, Eye,
+    Clock, Languages, Check, Sparkles,
 } from "lucide-react";
 import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
@@ -44,6 +45,14 @@ interface AlternateTitle {
     description: string | null;
 }
 
+/** One language, and the three separate questions asked about it. */
+interface GameLanguage {
+    name: string;
+    audio: boolean;
+    subtitles: boolean;
+    interface: boolean;
+}
+
 /** The subset of a game's credits that has a studio page behind it. */
 interface GameStudio {
     name: string;
@@ -78,6 +87,20 @@ interface GameDetail {
     series_name: string | null;
     studios: GameStudio[];
     videos: string[];
+
+    /* From IGDB. Hours, not the seconds the column stores. */
+    time_to_beat: { hastily?: number; normally?: number; completely?: number; count: number } | null;
+    game_modes: string[];
+    player_perspectives: string[];
+    multiplayer: {
+        splitscreen?: boolean; offlinecoop?: boolean; onlinecoop?: boolean;
+        campaigncoop?: boolean; lancoop?: boolean; dropin?: boolean;
+        onlinemax?: number; offlinemax?: number;
+    } | null;
+    languages: GameLanguage[];
+    artworks: ApiScreenshot[];
+    similar_games: { name: string; slug: string }[];
+    popularity: { percentile: number; metric: string } | null;
     box_art: BoxArt[];
     critic_scores: {
         opencritic?: { score?: number | null; tier?: string | null; url?: string | null } | null;
@@ -357,6 +380,172 @@ function CompanyRow({
     );
 }
 
+/**
+ * How long the game takes, in three figures.
+ *
+ * IGDB collects these from players who finished it, so the sample size belongs
+ * beside them: "24 hours" from four people and "24 hours" from four thousand
+ * are not the same claim, and a reader deciding whether to start a hundred-hour
+ * game deserves to know which they are looking at.
+ */
+function TimeToBeat({ times }: { times: GameDetail["time_to_beat"] }) {
+    if (!times) return null;
+
+    const paces: { key: "hastily" | "normally" | "completely"; label: string; note: string }[] = [
+        { key: "hastily", label: "Rushed", note: "main story only" },
+        { key: "normally", label: "Normally", note: "story and some extras" },
+        { key: "completely", label: "Completionist", note: "everything in it" },
+    ];
+
+    const shown = paces.filter((p) => times[p.key]);
+    if (shown.length === 0) return null;
+
+    return (
+        <div className="container-page pt-5">
+            <div className="rounded-[14px] border border-white/[0.07] bg-white/[0.02] px-4 sm:px-5 py-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 mb-3.5">
+                    <p className="flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/45">
+                        <Clock className="w-3.5 h-3.5 text-[var(--accent)]" />
+                        How long to beat
+                    </p>
+                    {times.count > 0 && (
+                        <p className="text-[11.5px] text-white/30 tabular-nums">
+                            from {times.count.toLocaleString()} {times.count === 1 ? "player" : "players"}
+                        </p>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                    {shown.map((pace) => (
+                        <div key={pace.key}>
+                            <p className="font-display text-[22px] sm:text-[26px] font-black leading-none tabular-nums text-white">
+                                {times[pace.key]}
+                                <span className="ml-1 text-[12px] font-bold text-white/35">h</span>
+                            </p>
+                            <p className="mt-1.5 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/55">
+                                {pace.label}
+                            </p>
+                            <p className="text-[11px] leading-snug text-white/30">{pace.note}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Whether you can play it with somebody, and how.
+ *
+ * The flags are only ever written when true, so the absent ones are genuinely
+ * unknown rather than false — which is why this lists what a game *has* instead
+ * of drawing a grid of ticks and crosses that would claim knowledge it lacks.
+ */
+function WaysToPlay({
+    modes,
+    perspectives,
+    multiplayer,
+}: {
+    modes: string[];
+    perspectives: string[];
+    multiplayer: GameDetail["multiplayer"];
+}) {
+    const together: string[] = [];
+
+    if (multiplayer?.splitscreen) together.push("Split-screen");
+    if (multiplayer?.offlinecoop) together.push("Local co-op");
+    if (multiplayer?.onlinecoop) together.push("Online co-op");
+    if (multiplayer?.campaigncoop) together.push("Co-op campaign");
+    if (multiplayer?.lancoop) together.push("LAN");
+    if (multiplayer?.dropin) together.push("Drop-in / drop-out");
+
+    const players: string[] = [];
+    if (multiplayer?.offlinemax) players.push(`${multiplayer.offlinemax} offline`);
+    if (multiplayer?.onlinemax) players.push(`${multiplayer.onlinemax} online`);
+
+    if (modes.length === 0 && perspectives.length === 0 && together.length === 0 && players.length === 0) {
+        return null;
+    }
+
+    return (
+        <Panel title="Ways to play" meta={<Users className="w-4 h-4 text-white/25" />}>
+            <div className="space-y-3.5">
+                <ChipRow label="Modes" values={modes} />
+                <ChipRow label="Together" values={together} />
+                <ChipRow label="Perspective" values={perspectives} />
+                {players.length > 0 && (
+                    <div>
+                        <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Players</p>
+                        <p className="mt-1 text-[13px] font-medium text-white/85 tabular-nums">{players.join(" · ")}</p>
+                    </div>
+                )}
+            </div>
+        </Panel>
+    );
+}
+
+function ChipRow({ label, values }: { label: string; values: string[] }) {
+    if (values.length === 0) return null;
+
+    return (
+        <div>
+            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">{label}</p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {values.map((value) => (
+                    <span
+                        key={value}
+                        className="inline-flex h-[24px] items-center rounded-[6px] border border-white/[0.07] bg-white/[0.03] px-2 text-[12px] text-white/75"
+                    >
+                        {value}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+/**
+ * Audio, subtitles, interface — three separate questions.
+ *
+ * A game can be subtitled in twenty languages and dubbed into two, and somebody
+ * who needs to hear their own language is asking about the second column, not
+ * the first. Which is why this is a table and not a list of flags.
+ */
+function LanguageTable({ rows }: { rows: GameLanguage[] }) {
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full text-[12.5px]">
+                <thead>
+                    <tr className="text-left">
+                        <th className="pb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Language</th>
+                        {(["audio", "subtitles", "interface"] as const).map((column) => (
+                            <th key={column} className="pb-2 w-[86px] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">
+                                {column}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((row) => (
+                        <tr key={row.name} className="border-t border-white/[0.05]">
+                            <td className="py-1.5 pr-3 text-white/80">{row.name}</td>
+                            {(["audio", "subtitles", "interface"] as const).map((column) => (
+                                <td key={column} className="py-1.5">
+                                    {row[column] ? (
+                                        <Check className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                    ) : (
+                                        <span className="text-white/15">—</span>
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
 function AttributeGrid({ groups }: { groups: Record<string, string[]> }) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -433,12 +622,19 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     if (game.rating) game.rating = Number(game.rating);
 
     // Normalise both shapes (Moby objects, aggregator URL strings) for the lightbox
-    const screenshots = (bundle.screenshots ?? []).map((s, i) => ({
-        id:     i,
-        image:  typeof s === "string" ? s : s.image,
-        width:  typeof s === "string" ? 1280 : (s.width  ?? 640),
-        height: typeof s === "string" ? 720  : (s.height ?? 480),
-    })).filter((s) => !!s.image);
+    const toGallery = (pictures: ApiScreenshot[]) =>
+        pictures.map((s, i) => ({
+            id:     i,
+            image:  typeof s === "string" ? s : s.image,
+            width:  typeof s === "string" ? 1280 : (s.width  ?? 640),
+            height: typeof s === "string" ? 720  : (s.height ?? 480),
+        })).filter((s) => !!s.image);
+
+    const screenshots = toGallery(bundle.screenshots ?? []);
+
+    /* Key art, kept apart from screenshots: they are different pictures made
+       for different purposes, and mixing them makes a gallery of neither. */
+    const artworks = toGallery(game.artworks ?? []);
 
     /**
      * What stands behind the title.
@@ -612,6 +808,12 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 </div>
             </div>
 
+            {/* The first thing anybody asks about a game they are considering,
+                so it sits above everything else rather than in a panel halfway
+                down. Absent for the games IGDB has no reading on, which is most
+                of them — an empty row of dashes would be worse than silence. */}
+            <TimeToBeat times={game.time_to_beat} />
+
             <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
                 {/* ── main column ── */}
                 <div className="xl:col-span-8 min-w-0 space-y-5">
@@ -639,6 +841,12 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </Panel>
                     )}
 
+                    {artworks.length > 0 && (
+                        <Panel title={`Artwork (${artworks.length})`}>
+                            <GameScreenshotsLightbox screenshots={artworks} wrapperClassName="" />
+                        </Panel>
+                    )}
+
                     <Panel title="About">
                         {game.description ? (
                             <div className="prose prose-invert prose-sm max-w-none text-white/65 leading-relaxed [&_a]:text-[var(--accent)]"
@@ -647,6 +855,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             <p className="text-[13px] text-white/35 italic">No description available yet.</p>
                         )}
                     </Panel>
+
+                    <WaysToPlay modes={game.game_modes} perspectives={game.player_perspectives} multiplayer={game.multiplayer} />
+
+                    {game.languages.length > 0 && (
+                        <Panel title={`Languages (${game.languages.length})`} meta={<Languages className="w-4 h-4 text-white/25" />}>
+                            <LanguageTable rows={game.languages} />
+                        </Panel>
+                    )}
 
                     {/* Gameplay facts — players, input, media, business model */}
                     {Object.keys(details).length > 0 && (
@@ -778,6 +994,18 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                     </div>
                                 </div>
                             )}
+                            {/* A standing without the measure that produced it
+                                is a number nobody can check, so the measure is
+                                printed with it. */}
+                            {game.popularity && (
+                                <div>
+                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Standing</p>
+                                    <p className="mt-1 text-[13px] font-medium text-white/85">
+                                        Top {Math.max(1, 100 - game.popularity.percentile)}%
+                                        <span className="text-white/40"> by {game.popularity.metric.toLowerCase()}</span>
+                                    </p>
+                                </div>
+                            )}
                             {game.website && (
                                 <a href={game.website} target="_blank" rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 font-display text-[11px] font-black uppercase tracking-[0.1em] text-white/55 hover:text-[var(--accent)] transition-colors">
@@ -810,6 +1038,28 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </h2>
                         <div className="flex sm:grid gap-3.5 overflow-x-auto scrollbar-hide snap-x scroll-pl-4 sm:scroll-pl-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                             {series.slice(0, 6).map((g) => <MiniGameCard key={g.id} game={g} />)}
+                        </div>
+                    </section>
+                )}
+
+                {/* IGDB's own "games like this one", which is a better answer
+                    than our genre overlap when it exists — so it leads, and the
+                    genre-based row below stays for the games it has nothing on. */}
+                {game.similar_games.length > 0 && (
+                    <section>
+                        <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-black uppercase tracking-[0.08em] text-white">
+                            <Sparkles className="w-[18px] h-[18px] text-[var(--accent)]" /> Games like this
+                        </h2>
+                        <div className="flex flex-wrap gap-2">
+                            {game.similar_games.slice(0, 12).map((similar) => (
+                                <Link
+                                    key={similar.slug}
+                                    href={`/games/${similar.slug}`}
+                                    className="inline-flex h-[34px] items-center rounded-[9px] border border-white/[0.07] bg-white/[0.02] px-3.5 text-[13px] text-white/75 hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:text-white transition-colors"
+                                >
+                                    {similar.name}
+                                </Link>
+                            ))}
                         </div>
                     </section>
                 )}
