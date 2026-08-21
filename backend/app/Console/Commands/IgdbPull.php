@@ -52,6 +52,9 @@ class IgdbPull extends Command
         /* Active, defunct, or turned into somebody else — `status: 3` on its own
            says none of that. */
         'company_statuses',
+        /* Despite the name these carry no dates at all — just a company and a
+           type, so it is a classification rather than a history. */
+        'company_types',
         'company_type_histories',
         'covers',
         'game_videos',
