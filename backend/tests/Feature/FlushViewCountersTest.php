@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Jobs\FlushViewCounters;
 use App\Models\Game;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
@@ -42,16 +43,46 @@ class FlushViewCountersTest extends TestCase
         } catch (\Throwable) {
             $this->markTestSkipped('redis not reachable');
         }
+
+        /* Clean before, not only after.
+         *
+         * The database is rebuilt per test and hands out ids from 1 again;
+         * Redis is not, and these keys are named after those ids. tearDown
+         * below clears them, but a run that dies before it — a failed
+         * assertion, an interrupted suite — leaves them for the next one,
+         * which then reads 32 where it has just written 7. Starting clean
+         * costs one command and does not depend on the previous run having
+         * ended tidily.
+         *
+         * The facade returns keys with the connection prefix already applied
+         * and del() applies it again, so it has to come off in between.
+         */
+        $prefix = (string) config('database.redis.options.prefix');
+
+        foreach (Redis::keys('views:game:*') as $key) {
+            Redis::del($prefix !== '' && str_starts_with($key, $prefix) ? substr($key, strlen($prefix)) : $key);
+        }
     }
 
     private function game(string $slug, int $views = 0): Game
     {
-        return Game::create([
+        $game = Game::create([
             'name' => ucfirst(str_replace('-', ' ', $slug)),
             'slug' => $slug,
             'description' => 'Present, so the row behaves like a real one.',
-            'views' => $views,
         ]);
+
+        /* Not through create(): `views` is guarded, precisely because nothing
+           should set it but the counter this test is about. Passing it there
+           dropped it silently and started every game at zero — which only
+           showed up once Redis was reachable and these tests stopped being
+           skipped. */
+        if ($views > 0) {
+            DB::table('games')->where('id', $game->id)->update(['views' => $views]);
+            $game->refresh();
+        }
+
+        return $game;
     }
 
     public function test_a_counter_in_redis_reaches_the_games_table(): void
