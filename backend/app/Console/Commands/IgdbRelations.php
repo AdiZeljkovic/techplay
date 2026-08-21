@@ -39,7 +39,6 @@ class IgdbRelations extends Command
      * marks.
      */
     private const FIELDS = [
-        'parent_game' => ['relation' => 'dlc_of', 'inverse' => false],
         'version_parent' => ['relation' => 'edition_of', 'inverse' => false],
         'dlcs' => ['relation' => 'dlc_of', 'inverse' => true],
         'expansions' => ['relation' => 'expansion_of', 'inverse' => true],
@@ -49,6 +48,32 @@ class IgdbRelations extends Command
         'ports' => ['relation' => 'port_of', 'inverse' => true],
         'expanded_games' => ['relation' => 'expanded_from', 'inverse' => true],
         'bundles' => ['relation' => 'in_bundle', 'inverse' => false],
+    ];
+
+    /**
+     * What a `parent_game` pointer actually means, read off the child's type.
+     *
+     * `parent_game` is not "this is DLC" — it is IGDB's general "this is
+     * derived from that", and it is set on DLC, remasters, ports, expansions
+     * and episodes alike. Taking it to mean DLC put "DLC for Metroid Prime" on
+     * the Metroid Prime Remastered page, beside the correct "Remaster of" line
+     * that came from the other end of the same fact.
+     *
+     * The child's `game_type` is what says which it is.
+     */
+    private const PARENT_BY_TYPE = [
+        1 => 'dlc_of',
+        2 => 'expansion_of',
+        4 => 'expansion_of',
+        5 => 'mod_of',
+        6 => 'episode_of',
+        7 => 'season_of',
+        8 => 'remake_of',
+        9 => 'remaster_of',
+        10 => 'expanded_from',
+        11 => 'port_of',
+        13 => 'in_pack',
+        14 => 'update_of',
     ];
 
     public function handle(): int
@@ -122,6 +147,14 @@ class IgdbRelations extends Command
 
                     if ($self === null) {
                         continue;
+                    }
+
+                    /* The generic parent pointer, named by what this game is. */
+                    $parent = $ours[(int) ($p['parent_game'] ?? 0)] ?? null;
+                    $named = self::PARENT_BY_TYPE[(int) ($p['game_type'] ?? -1)] ?? null;
+
+                    if ($parent !== null && $named !== null && $parent !== $self) {
+                        $out[$self.'|'.$parent.'|'.$named] = [$self, $parent, $named];
                     }
 
                     foreach (self::FIELDS as $field => $rule) {

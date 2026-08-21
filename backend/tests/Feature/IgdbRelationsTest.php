@@ -50,8 +50,8 @@ class IgdbRelationsTest extends TestCase
         $base = $this->ourGame('Hades', 100);
         $dlc = $this->ourGame('Hades Soundtrack', 101);
 
-        $this->raw(100, ['name' => 'Hades']);
-        $this->raw(101, ['name' => 'Hades Soundtrack', 'parent_game' => 100]);
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
+        $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
 
@@ -69,11 +69,35 @@ class IgdbRelationsTest extends TestCase
         $this->ourGame('Hades', 100);
         $this->ourGame('Hades Soundtrack', 101);
 
-        $this->raw(100, ['name' => 'Hades', 'dlcs' => [101]]);
-        $this->raw(101, ['name' => 'Hades Soundtrack', 'parent_game' => 100]);
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0, 'dlcs' => [101]]);
+        $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
 
+        $this->assertSame(1, DB::table('game_relations')->count());
+    }
+
+    /**
+     * `parent_game` is not "this is DLC".
+     *
+     * It is IGDB's general "derived from", set on DLC, remasters, ports and
+     * expansions alike — and taking it to mean DLC put "DLC for Metroid Prime"
+     * on the Metroid Prime Remastered page, beside the correct "Remaster of"
+     * line that came from the other end of the same fact. What it means is on
+     * the child's `game_type`.
+     */
+    public function test_a_parent_pointer_is_named_by_what_the_child_is(): void
+    {
+        $this->ourGame('Metroid Prime', 100);
+        $this->ourGame('Metroid Prime Remastered', 101);
+
+        $this->raw(100, ['name' => 'Metroid Prime', 'game_type' => 0]);
+        $this->raw(101, ['name' => 'Metroid Prime Remastered', 'game_type' => 9, 'parent_game' => 100]);
+
+        $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('game_relations', ['relation' => 'remaster_of']);
+        $this->assertDatabaseMissing('game_relations', ['relation' => 'dlc_of']);
         $this->assertSame(1, DB::table('game_relations')->count());
     }
 
@@ -115,8 +139,8 @@ class IgdbRelationsTest extends TestCase
         $this->ourGame('Hades', 100);
         $this->ourGame('Hades Soundtrack', 101);
 
-        $this->raw(100, ['name' => 'Hades']);
-        $this->raw(101, ['name' => 'Hades Soundtrack', 'parent_game' => 100]);
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
+        $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations', ['--apply' => true]);
 
@@ -161,8 +185,8 @@ class IgdbRelationsTest extends TestCase
     {
         $this->ourGame('Hades', 100);
         $this->ourGame('Hades Soundtrack', 101);
-        $this->raw(100, ['name' => 'Hades']);
-        $this->raw(101, ['name' => 'Hades Soundtrack', 'parent_game' => 100]);
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
+        $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations')
             ->expectsOutputToContain('Nista nije upisano')

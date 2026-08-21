@@ -27,6 +27,11 @@ class GameRelation extends Model
         'edition_of' => 'Edition of',
         'expanded_from' => 'Expanded from',
         'in_bundle' => 'Included in',
+        'mod_of' => 'Mod for',
+        'episode_of' => 'Episode of',
+        'season_of' => 'Season of',
+        'in_pack' => 'Part of',
+        'update_of' => 'Update for',
     ];
 
     /** And from the other side, which is what the parent's page says. */
@@ -39,6 +44,11 @@ class GameRelation extends Model
         'edition_of' => 'Editions',
         'expanded_from' => 'Expanded into',
         'in_bundle' => 'Bundle contents',
+        'mod_of' => 'Mods',
+        'episode_of' => 'Episodes',
+        'season_of' => 'Seasons',
+        'in_pack' => 'Pack contents',
+        'update_of' => 'Updates',
     ];
 
     public function game(): BelongsTo
