@@ -64,7 +64,7 @@ class StudioController extends Controller
            slug nobody holds simply re-runs the lookup rather than being
            remembered as missing. That is the behaviour we want here. */
         $studio = CacheService::remember(
-            "studios.show.v1.{$slug}",
+            CacheService::studioShowKey($slug),
             fn () => $this->payload($slug),
             3600,
         );

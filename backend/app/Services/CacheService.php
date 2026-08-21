@@ -116,6 +116,22 @@ class CacheService
     }
 
     /**
+     * And the same for studios, for the same reason and after the same mistake.
+     *
+     * The studio payload gained `years` and the key stayed `v1`, so every studio
+     * anyone had already visited kept serving a copy without it — the section
+     * simply did not appear, on exactly the pages that get looked at most. Any
+     * change to the shape of that payload changes this constant, in the same
+     * commit.
+     */
+    public const STUDIO_VERSION = 'v2';
+
+    public static function studioShowKey(string $slug): string
+    {
+        return 'studios.show.'.self::STUDIO_VERSION.".{$slug}";
+    }
+
+    /**
      * Listing keys carry a page, a category and an md5 of the search term, so
      * they cannot be enumerated the way a slug can. Each is recorded here as it
      * is written, and that record is what invalidation reads.

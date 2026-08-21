@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Game;
 use App\Models\Studio;
+use App\Services\CacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -162,6 +164,26 @@ class StudioApiTest extends TestCase
         $years = $this->getJson('/api/v1/studios/supergiant-games')->assertOk()->json('data.years');
 
         $this->assertSame(['2017' => 1, '2018' => 1], $years, 'made and published is one release, not two');
+    }
+
+    /**
+     * The cached payload is keyed by a version, and the version lives in one
+     * place.
+     *
+     * `years` was added while the key stayed `v1`, so every studio anyone had
+     * already visited went on serving a copy without it — the section simply
+     * did not appear, on exactly the pages that get looked at most.
+     */
+    public function test_the_cached_payload_is_keyed_by_its_version(): void
+    {
+        $this->studio('Cached Studio');
+
+        $this->getJson('/api/v1/studios/cached-studio')->assertOk();
+
+        $this->assertNotNull(
+            Cache::get(CacheService::studioShowKey('cached-studio')),
+            'the response has to land under the versioned key, not a hand-written one',
+        );
     }
 
     /** The shape of a field must not depend on whether there is anything in it. */
