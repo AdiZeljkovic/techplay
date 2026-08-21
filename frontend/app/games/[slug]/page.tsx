@@ -45,10 +45,16 @@ interface AlternateTitle {
     description: string | null;
 }
 
-/** A game on the other end of a relation — a DLC, a remaster, a bundle. */
+/**
+ * A game on the other end of a relation — a DLC, a remaster, a bundle.
+ *
+ * `slug` is null for most of them, and that is the normal case rather than a
+ * gap: DLC, mods and packs have no page in this catalogue, so the other side
+ * is a name to print, not a link to offer.
+ */
 interface RelatedGame {
     name: string;
-    slug: string;
+    slug: string | null;
     cover_url: string | null;
     released: string | null;
 }
@@ -114,9 +120,8 @@ interface GameDetail {
     /** Grouped by what the link is for: `store`, `social`, `reference`. */
     links: Record<string, { service: string; url: string }[]>;
 
-    /** The same rows from each end, keyed by the words the page uses. */
-    part_of: Record<string, RelatedGame[]>;
-    parts: Record<string, RelatedGame[]>;
+    /** Both directions in one map, keyed by the words the page uses. */
+    related: Record<string, RelatedGame[]>;
     box_art: BoxArt[];
     critic_scores: {
         opencritic?: { score?: number | null; tier?: string | null; url?: string | null } | null;
@@ -456,9 +461,14 @@ function LinkRows({ links }: { links: GameDetail["links"] }) {
 /**
  * What this game belongs to, and what belongs to it.
  *
- * The heading is the relation itself — "DLC for", "Remastered as" — because
- * that is the whole content of the row. A shelf labelled "Related" would be
- * throwing away the one thing IGDB actually told us.
+ * The heading is the relation itself — "DLC", "Remastered as", "Editions" —
+ * because that is the whole content of the row. A shelf labelled "Related"
+ * would be throwing away the one thing IGDB actually told us.
+ *
+ * Most entries have no page of their own: DLC and packs are not imported as
+ * pages, so they arrive as names. Those are drawn as plain chips rather than as
+ * cards with a dead cover — a card that cannot be clicked is a card that looks
+ * broken. The ones with a page come first and get the cover.
  */
 function RelatedShelves({ groups }: { groups: Record<string, RelatedGame[]> }) {
     const entries = Object.entries(groups ?? {});
@@ -467,37 +477,59 @@ function RelatedShelves({ groups }: { groups: Record<string, RelatedGame[]> }) {
 
     return (
         <>
-            {entries.map(([label, games]) => (
-                <Panel key={label} title={label} meta={<Layers className="w-4 h-4 text-white/25" />}>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
-                        {games.map((related) => (
-                            <Link key={related.slug} href={`/games/${related.slug}`} className="group block">
-                                <span className="relative block h-[128px] overflow-hidden rounded-[8px] border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
-                                    {related.cover_url ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={related.cover_url}
-                                            alt={related.name}
-                                            loading="lazy"
-                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
-                                        />
-                                    ) : (
-                                        <span className="flex h-full w-full items-center justify-center bg-white/[0.03] text-white/15">
-                                            <Gamepad2 className="h-5 w-5" />
-                                        </span>
-                                    )}
-                                    <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/15 to-transparent" />
-                                    <span className="absolute inset-x-0 bottom-0 p-1.5">
-                                        <span className="block font-display text-[10.5px] font-black leading-tight text-white line-clamp-2">
+            {entries.map(([label, games]) => {
+                const linked = games.filter((g) => g.slug);
+                const named = games.filter((g) => !g.slug);
+
+                return (
+                    <Panel key={label} title={label} meta={<Layers className="w-4 h-4 text-white/25" />}>
+                        <div className="space-y-3">
+                            {linked.length > 0 && (
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+                                    {linked.map((related) => (
+                                        <Link key={related.slug} href={`/games/${related.slug}`} className="group block">
+                                            <span className="relative block h-[128px] overflow-hidden rounded-[8px] border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
+                                                {related.cover_url ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img
+                                                        src={related.cover_url}
+                                                        alt={related.name}
+                                                        loading="lazy"
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+                                                    />
+                                                ) : (
+                                                    <span className="flex h-full w-full items-center justify-center bg-white/[0.03] text-white/15">
+                                                        <Gamepad2 className="h-5 w-5" />
+                                                    </span>
+                                                )}
+                                                <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/15 to-transparent" />
+                                                <span className="absolute inset-x-0 bottom-0 p-1.5">
+                                                    <span className="block font-display text-[10.5px] font-black leading-tight text-white line-clamp-2">
+                                                        {related.name}
+                                                    </span>
+                                                </span>
+                                            </span>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+
+                            {named.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {named.map((related) => (
+                                        <span
+                                            key={related.name}
+                                            className="inline-flex h-[26px] items-center rounded-[6px] border border-white/[0.07] bg-white/[0.02] px-2.5 text-[12px] text-white/60"
+                                        >
                                             {related.name}
                                         </span>
-                                    </span>
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </Panel>
-            ))}
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </Panel>
+                );
+            })}
         </>
     );
 }
@@ -998,8 +1030,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         engines={game.engines ?? []}
                     />
 
-                    <RelatedShelves groups={game.part_of ?? {}} />
-                    <RelatedShelves groups={game.parts ?? {}} />
+                    <RelatedShelves groups={game.related ?? {}} />
 
                     {(game.languages ?? []).length > 0 && (
                         <Panel title={`Languages (${game.languages.length})`} meta={<Languages className="w-4 h-4 text-white/25" />}>

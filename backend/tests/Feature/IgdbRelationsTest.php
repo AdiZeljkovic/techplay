@@ -9,12 +9,13 @@ use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
- * What a game is part of.
+ * What a game is part of, and what is part of it.
  *
- * IGDB states these from both ends — a game lists its `dlcs`, and each of those
- * names it back as `parent_game` — so the thing worth pinning is that both
- * statements land on one row. Two rows saying the same thing is two rows that
- * can disagree after the next import.
+ * The case that shapes the whole table is the one where the other game is not
+ * ours. Every IGDB game that names a parent is a type this catalogue does not
+ * import — DLC, mods, packs, ports — so a rule requiring both ends to be here
+ * meant a game could never list its own add-ons. The other side is a name, and
+ * a link only when there is somewhere to link to.
  */
 class IgdbRelationsTest extends TestCase
 {
@@ -45,46 +46,76 @@ class IgdbRelationsTest extends TestCase
         return $game;
     }
 
-    public function test_a_dlc_learns_which_game_it_belongs_to(): void
+    /**
+     * The point of the reshape: Hades lists its soundtrack whether or not the
+     * soundtrack has a page. 17,580 pieces of DLC belong to games we hold and
+     * none of them is imported as a page.
+     */
+    public function test_a_game_lists_dlc_we_do_not_carry(): void
     {
-        $base = $this->ourGame('Hades', 100);
-        $dlc = $this->ourGame('Hades Soundtrack', 101);
+        $hades = $this->ourGame('Hades', 100);
+
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
+        $this->raw(101, ['name' => 'Hades Original Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
+
+        $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
+
+        $this->assertDatabaseHas('game_relations', [
+            'game_id' => $hades->id,
+            'relation' => 'has_dlc',
+            'other_name' => 'Hades Original Soundtrack',
+            'other_game_id' => null,
+        ]);
+
+        $this->getJson('/api/v1/games/hades')
+            ->assertOk()
+            ->assertJsonPath('related.DLC.0.name', 'Hades Original Soundtrack')
+            ->assertJsonPath('related.DLC.0.slug', null);
+    }
+
+    /** When we do carry it, the same row becomes a link. */
+    public function test_the_other_side_becomes_a_link_when_we_have_it(): void
+    {
+        $this->ourGame('Hades', 100);
+        $this->ourGame('Hades Soundtrack', 101);
 
         $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
         $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
 
-        $this->assertDatabaseHas('game_relations', [
-            'game_id' => $dlc->id, 'related_game_id' => $base->id, 'relation' => 'dlc_of',
-        ]);
+        $this->getJson('/api/v1/games/hades')
+            ->assertOk()
+            ->assertJsonPath('related.DLC.0.slug', 'hades-soundtrack');
     }
 
-    /**
-     * Both ends state it. One row is the answer — the other statement must
-     * land on the same row rather than beside it.
-     */
-    public function test_both_directions_of_the_same_fact_make_one_row(): void
+    /** Each side gets its own row, and each says the fact its own way. */
+    public function test_each_side_reads_the_fact_from_its_own_side(): void
     {
         $this->ourGame('Hades', 100);
         $this->ourGame('Hades Soundtrack', 101);
 
-        $this->raw(100, ['name' => 'Hades', 'game_type' => 0, 'dlcs' => [101]]);
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
         $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
-        $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
+        $this->artisan('igdb:relations', ['--apply' => true]);
 
-        $this->assertSame(1, DB::table('game_relations')->count());
+        $this->getJson('/api/v1/games/hades-soundtrack')
+            ->assertOk()
+            ->assertJsonPath('related.DLC for.0.name', 'Hades');
+
+        $this->getJson('/api/v1/games/hades')
+            ->assertOk()
+            ->assertJsonPath('related.DLC.0.name', 'Hades Soundtrack');
     }
 
     /**
      * `parent_game` is not "this is DLC".
      *
      * It is IGDB's general "derived from", set on DLC, remasters, ports and
-     * expansions alike — and taking it to mean DLC put "DLC for Metroid Prime"
+     * episodes alike — and taking it to mean DLC put "DLC for Metroid Prime"
      * on the Metroid Prime Remastered page, beside the correct "Remaster of"
-     * line that came from the other end of the same fact. What it means is on
-     * the child's `game_type`.
+     * line. What it means is on the child's `game_type`.
      */
     public function test_a_parent_pointer_is_named_by_what_the_child_is(): void
     {
@@ -97,16 +128,32 @@ class IgdbRelationsTest extends TestCase
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
 
         $this->assertDatabaseHas('game_relations', ['relation' => 'remaster_of']);
+        $this->assertDatabaseHas('game_relations', ['relation' => 'remastered_as']);
         $this->assertDatabaseMissing('game_relations', ['relation' => 'dlc_of']);
-        $this->assertSame(1, DB::table('game_relations')->count());
     }
 
-    /** A relation to a game we do not carry is a link nobody could follow. */
-    public function test_a_relation_to_a_game_we_do_not_have_is_dropped(): void
+    /** Both statements of one fact make one row per side, never two per side. */
+    public function test_a_fact_stated_from_both_ends_is_not_written_twice(): void
     {
         $this->ourGame('Hades', 100);
+        $this->ourGame('Hades Soundtrack', 101);
 
-        $this->raw(100, ['name' => 'Hades', 'dlcs' => [999]]);
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0, 'dlcs' => [101]]);
+        $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
+
+        $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
+
+        $this->assertSame(2, DB::table('game_relations')->count(), 'one row per side, no more');
+    }
+
+    /** A relation where neither game is ours belongs on nobody's page. */
+    public function test_a_relation_between_two_games_we_do_not_have_is_dropped(): void
+    {
+        $this->ourGame('Something Else', 100);
+
+        $this->raw(100, ['name' => 'Something Else', 'game_type' => 0]);
+        $this->raw(200, ['name' => 'Their Game', 'game_type' => 0]);
+        $this->raw(201, ['name' => 'Their DLC', 'game_type' => 1, 'parent_game' => 200]);
 
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
 
@@ -120,71 +167,63 @@ class IgdbRelationsTest extends TestCase
         $this->ourGame('The Remaster', 101);
         $this->ourGame('The Port', 102);
 
-        $this->raw(100, ['name' => 'Original', 'remasters' => [101], 'ports' => [102]]);
-        $this->raw(101, ['name' => 'The Remaster']);
-        $this->raw(102, ['name' => 'The Port']);
+        $this->raw(100, ['name' => 'Original', 'game_type' => 0, 'remasters' => [101], 'ports' => [102]]);
+        $this->raw(101, ['name' => 'The Remaster', 'game_type' => 9]);
+        $this->raw(102, ['name' => 'The Port', 'game_type' => 11]);
 
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
 
-        $this->assertDatabaseHas('game_relations', ['relation' => 'remaster_of']);
-        $this->assertDatabaseHas('game_relations', ['relation' => 'port_of']);
+        $this->assertDatabaseHas('game_relations', ['relation' => 'remastered_as']);
+        $this->assertDatabaseHas('game_relations', ['relation' => 'ported_as']);
     }
 
-    /**
-     * The same row reads differently from each end: "DLC for Hades" on the
-     * add-on's page, "DLC" on Hades' own.
-     */
-    public function test_the_page_reads_the_row_from_both_ends(): void
+    /** The ones a reader can click lead the shelf. */
+    public function test_the_ones_with_a_page_come_first(): void
     {
         $this->ourGame('Hades', 100);
-        $this->ourGame('Hades Soundtrack', 101);
+        $this->ourGame('Carried DLC', 102);
 
         $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
-        $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
+        $this->raw(101, ['name' => 'Uncarried DLC', 'game_type' => 1, 'parent_game' => 100]);
+        $this->raw(102, ['name' => 'Carried DLC', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations', ['--apply' => true]);
 
-        $this->getJson('/api/v1/games/hades-soundtrack')
-            ->assertOk()
-            ->assertJsonPath('part_of.DLC for.0.name', 'Hades');
-
         $this->getJson('/api/v1/games/hades')
             ->assertOk()
-            ->assertJsonPath('parts.DLC.0.name', 'Hades Soundtrack');
-    }
-
-    /**
-     * The shape of a field must not depend on whether there is anything in it.
-     * PHP's empty array encodes as `[]`, so these three were objects on games
-     * with relations and arrays on games without.
-     */
-    public function test_the_keyed_fields_stay_objects_when_empty(): void
-    {
-        $this->ourGame('Lonely Game', 100);
-        $this->raw(100, ['name' => 'Lonely Game']);
-
-        $body = $this->getJson('/api/v1/games/lonely-game')->assertOk()->getContent();
-
-        $this->assertStringContainsString('"part_of":{}', $body);
-        $this->assertStringContainsString('"parts":{}', $body);
-        $this->assertStringContainsString('"links":{}', $body);
+            ->assertJsonPath('related.DLC.0.name', 'Carried DLC');
     }
 
     /** A game does not relate to itself, however IGDB spells it. */
     public function test_a_game_is_not_related_to_itself(): void
     {
         $this->ourGame('Odd Game', 100);
-        $this->raw(100, ['name' => 'Odd Game', 'parent_game' => 100]);
+        $this->raw(100, ['name' => 'Odd Game', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();
 
         $this->assertSame(0, DB::table('game_relations')->count());
     }
 
+    /**
+     * The shape of a field must not depend on whether there is anything in it.
+     * PHP's empty array encodes as `[]`, so these were objects on games with
+     * relations and arrays on games without.
+     */
+    public function test_the_keyed_fields_stay_objects_when_empty(): void
+    {
+        $this->ourGame('Lonely Game', 100);
+        $this->raw(100, ['name' => 'Lonely Game', 'game_type' => 0]);
+
+        $body = $this->getJson('/api/v1/games/lonely-game')->assertOk()->getContent();
+
+        $this->assertStringContainsString('"related":{}', $body);
+        $this->assertStringContainsString('"links":{}', $body);
+    }
+
     public function test_without_apply_nothing_is_written(): void
     {
         $this->ourGame('Hades', 100);
-        $this->ourGame('Hades Soundtrack', 101);
         $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
         $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
@@ -199,9 +238,8 @@ class IgdbRelationsTest extends TestCase
     public function test_a_second_run_adds_nothing(): void
     {
         $this->ourGame('Hades', 100);
-        $this->ourGame('Hades Soundtrack', 101);
-        $this->raw(100, ['name' => 'Hades', 'dlcs' => [101]]);
-        $this->raw(101, ['name' => 'Hades Soundtrack', 'parent_game' => 100]);
+        $this->raw(100, ['name' => 'Hades', 'game_type' => 0]);
+        $this->raw(101, ['name' => 'Hades Soundtrack', 'game_type' => 1, 'parent_game' => 100]);
 
         $this->artisan('igdb:relations', ['--apply' => true]);
         $this->artisan('igdb:relations', ['--apply' => true])->assertSuccessful();

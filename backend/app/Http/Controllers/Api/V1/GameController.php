@@ -42,39 +42,38 @@ class GameController extends Controller
     /**
      * Related games, grouped under the words a page would use.
      *
-     * The same row reads differently from each end — "DLC for Hades" on the
-     * add-on's page, "DLC" on Hades' own — so the labels come in with the side
-     * being rendered rather than being guessed here.
+     * `slug` is null for most of them and that is the normal case, not a gap:
+     * DLC, mods and packs are not imported as pages, so the other side is a
+     * name the page prints rather than a link it offers. The ones we do carry
+     * come with everything needed to draw a card.
      *
      * @param  Collection<int, GameRelation>  $rows
-     * @param  string  $side  which end of the row to show: `related` or `game`
-     * @param  array<string, string>  $labels
      * @return array<string, array<int, array<string, mixed>>>
      */
-    private function relations($rows, string $side, array $labels): array
+    private function relations($rows): array
     {
         $out = [];
 
         foreach ($rows as $row) {
-            $other = $row->{$side};
-
-            if (! $other) {
-                continue;
-            }
-
-            $label = $labels[$row->relation] ?? $row->relation;
+            $label = GameRelation::label($row->relation);
+            $other = $row->other;
 
             $out[$label][] = [
-                'name' => $other->name,
-                'slug' => $other->slug,
-                'cover_url' => $other->cover_url,
-                'released' => $other->released?->format('Y-m-d'),
+                'name' => $other?->name ?? $row->other_name,
+                'slug' => $other?->slug,
+                'cover_url' => $other?->cover_url,
+                'released' => $other?->released?->format('Y-m-d'),
             ];
         }
 
         /* A game can hold a hundred DLC rows; the page shows a shelf, not a
-           catalogue, and the rest are a click away on the search. */
-        return array_map(fn ($games) => array_slice($games, 0, 24), $out);
+           catalogue. The ones with a page of their own lead, since those are
+           the ones a reader can do something with. */
+        return array_map(function ($games) {
+            usort($games, fn ($a, $b) => ($b['slug'] !== null) <=> ($a['slug'] !== null));
+
+            return array_slice($games, 0, 24);
+        }, $out);
     }
 
     /**
@@ -268,8 +267,7 @@ class GameController extends Controller
             ->with([
                 'studios:id,name,slug,logo_url,games_count',
                 'links:id,game_id,kind,service,url',
-                'partOf.related:id,name,slug,cover_url,released',
-                'parts.game:id,name,slug,cover_url,released',
+                'relations.other:id,name,slug,cover_url,released',
             ])
             ->first();
 
@@ -364,11 +362,9 @@ class GameController extends Controller
                 ])->values()->all())
                 ->all()),
 
-            /* Both directions of the same rows: what this game belongs to, and
-               what belongs to it. A DLC page names its game; the game's page
-               names its DLC. */
-            'part_of' => $this->keyed($this->relations($game->partOf, 'related', GameRelation::LABELS)),
-            'parts' => $this->keyed($this->relations($game->parts, 'game', GameRelation::REVERSE_LABELS)),
+            /* Both directions in one list, grouped under the words a page uses:
+               a DLC page names its game, and the game's page names its DLC. */
+            'related' => $this->keyed($this->relations($game->relations)),
         ];
     }
 

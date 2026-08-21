@@ -2,25 +2,29 @@
 
 namespace App\Console\Commands;
 
+use App\Models\GameRelation;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
- * What a game is part of.
+ * What a game is part of, and what is part of it.
  *
- * 54,783 of IGDB's games name a parent, and today a DLC page on this site does
- * not know the game it belongs to, a remaster does not know its original, and
- * a bundle does not know what is in it. The reader has to search for the other
- * one by name.
+ * Every row hangs on one of our games and names whatever is on the other side.
+ * The other side is a link only when this catalogue happens to have it — which
+ * for DLC it almost never does, because DLC is not imported as pages and 17,580
+ * pieces of it belong to games we do hold. A name in a list is the answer there:
+ * Hades' page says what its add-ons are called, and links the ones that have
+ * somewhere to link to.
  *
- * Every row is written in one direction and read in both. IGDB states these
- * from both ends — a game lists its `dlcs` and each of those names it as
- * `parent_game` — so writing both would be two rows that can disagree with
- * each other after the next pull. The child points at the parent; asking what
- * a parent has is a query on the other column, which the index is for.
+ * Each fact is written twice, once from each side that we hold. "This is DLC
+ * for Hades" and "Hades has this DLC" are two different statements, only one of
+ * them exists when one game is missing, and writing both makes a page's query
+ * the whole story: `where game_id = ?`.
  *
- * A relation to a game we do not carry is dropped rather than kept: the whole
- * point is a link the reader can follow.
+ * `parent_game` is IGDB's general "derived from", set on DLC, remasters, ports
+ * and episodes alike — what it means is on the child's `game_type`, never
+ * assumed.
  */
 class IgdbRelations extends Command
 {
@@ -30,37 +34,7 @@ class IgdbRelations extends Command
 
     protected $description = 'Uvozi veze medju igrama (DLC, remaster, port, bundle, izdanje)';
 
-    /**
-     * The field on their game payload, and what the game holding it is.
-     *
-     * Read as "<this game> is the <relation> of <the game named>". `dlcs` and
-     * friends point the other way — a game lists what belongs to *it* — so
-     * those are written from the named game's side, which is what `inverse`
-     * marks.
-     */
-    private const FIELDS = [
-        'version_parent' => ['relation' => 'edition_of', 'inverse' => false],
-        'dlcs' => ['relation' => 'dlc_of', 'inverse' => true],
-        'expansions' => ['relation' => 'expansion_of', 'inverse' => true],
-        'standalone_expansions' => ['relation' => 'expansion_of', 'inverse' => true],
-        'remakes' => ['relation' => 'remake_of', 'inverse' => true],
-        'remasters' => ['relation' => 'remaster_of', 'inverse' => true],
-        'ports' => ['relation' => 'port_of', 'inverse' => true],
-        'expanded_games' => ['relation' => 'expanded_from', 'inverse' => true],
-        'bundles' => ['relation' => 'in_bundle', 'inverse' => false],
-    ];
-
-    /**
-     * What a `parent_game` pointer actually means, read off the child's type.
-     *
-     * `parent_game` is not "this is DLC" — it is IGDB's general "this is
-     * derived from that", and it is set on DLC, remasters, ports, expansions
-     * and episodes alike. Taking it to mean DLC put "DLC for Metroid Prime" on
-     * the Metroid Prime Remastered page, beside the correct "Remaster of" line
-     * that came from the other end of the same fact.
-     *
-     * The child's `game_type` is what says which it is.
-     */
+    /** What a `parent_game` pointer means, read off the child's type. */
     private const PARENT_BY_TYPE = [
         1 => 'dlc_of',
         2 => 'expansion_of',
@@ -76,6 +50,18 @@ class IgdbRelations extends Command
         14 => 'update_of',
     ];
 
+    /** Lists on a game naming what belongs to it, and what that makes them. */
+    private const CHILD_LISTS = [
+        'dlcs' => 'has_dlc',
+        'expansions' => 'has_expansion',
+        'standalone_expansions' => 'has_expansion',
+        'remakes' => 'remade_as',
+        'remasters' => 'remastered_as',
+        'ports' => 'ported_as',
+        'expanded_games' => 'expanded_into',
+        'bundles' => 'in_bundle',
+    ];
+
     public function handle(): int
     {
         $ours = $this->ourGames();
@@ -88,32 +74,43 @@ class IgdbRelations extends Command
 
         $apply = (bool) $this->option('apply');
 
-        $this->line('  Citam veze…');
-        $relations = $this->read($ours);
+        $this->line('  Citam nazive igara…');
+        $names = $this->names();
 
-        if ($relations === []) {
-            $this->warn('  Nema nijedne veze gdje su obje igre nase.');
+        $this->line('  Citam veze…');
+        $rows = $this->read($ours, $names);
+
+        if ($rows === []) {
+            $this->warn('  Nema nijedne veze.');
 
             return self::SUCCESS;
         }
 
-        $written = $apply ? $this->write($relations) : count($relations);
+        $written = $apply ? $this->write($rows) : count($rows);
 
         $this->newLine();
         $this->line(sprintf('  %s %s veza.', $apply ? 'Upisano:' : 'Bilo bi upisano:', number_format($written)));
 
+        $linked = 0;
         $counts = [];
-        foreach ($relations as [$_, $__, $relation]) {
-            $counts[$relation] = ($counts[$relation] ?? 0) + 1;
+        foreach ($rows as $row) {
+            $counts[$row['relation']] = ($counts[$row['relation']] ?? 0) + 1;
+            $linked += $row['other_game_id'] === null ? 0 : 1;
         }
         arsort($counts);
 
         $this->table(
             ['veza', 'broj'],
-            array_map(fn ($r, $n) => [$r, number_format($n)], array_keys($counts), $counts),
+            array_map(fn ($r, $n) => [GameRelation::label($r), number_format($n)], array_keys($counts), $counts),
         );
 
+        $this->line(sprintf(
+            '  %s vodi na nasu stranicu, %s je samo naziv (igra nije u katalogu).',
+            number_format($linked), number_format(count($rows) - $linked),
+        ));
+
         if (! $apply) {
+            $this->newLine();
             $this->warn('  Nista nije upisano. Dodaj --apply da se sacuva.');
         }
 
@@ -132,46 +129,96 @@ class IgdbRelations extends Command
         return $out;
     }
 
-    /** @return array<string, array{0: int, 1: int, 2: string}> keyed to dedupe */
-    private function read(array $ours): array
+    /**
+     * Every IGDB game's name, so the other side of a relation can be printed
+     * even when we do not carry it.
+     *
+     * 372,828 short strings — about 25 MB, against a query per relation.
+     *
+     * @return array<int, string>
+     */
+    private function names(): array
     {
         $out = [];
 
         DB::table('igdb_raw')
             ->where('endpoint', 'games')
             ->orderBy('igdb_id')
-            ->chunk(20000, function ($rows) use (&$out, $ours) {
+            ->chunk(20000, function ($rows) use (&$out) {
                 foreach ($rows as $row) {
                     $p = json_decode($row->payload, true) ?: [];
-                    $self = $ours[(int) ($p['id'] ?? 0)] ?? null;
 
-                    if ($self === null) {
-                        continue;
+                    if (! empty($p['name'])) {
+                        $out[(int) $p['id']] = (string) $p['name'];
+                    }
+                }
+            });
+
+        return $out;
+    }
+
+    /** @return array<string, array<string, mixed>> keyed to dedupe */
+    private function read(array $ours, array $names): array
+    {
+        $out = [];
+
+        $add = function (?int $ourGameId, string $relation, int $otherIgdb) use (&$out, $ours, $names) {
+            if ($ourGameId === null || ! isset($names[$otherIgdb])) {
+                return;
+            }
+
+            $otherOurs = $ours[$otherIgdb] ?? null;
+
+            if ($otherOurs === $ourGameId) {
+                return;   // a game is not related to itself
+            }
+
+            $out[$ourGameId.'|'.$relation.'|'.$otherIgdb] = [
+                'game_id' => $ourGameId,
+                'relation' => $relation,
+                'other_igdb_id' => $otherIgdb,
+                'other_name' => Str::limit($names[$otherIgdb], 500, ''),
+                'other_game_id' => $otherOurs,
+            ];
+        };
+
+        DB::table('igdb_raw')
+            ->where('endpoint', 'games')
+            ->orderBy('igdb_id')
+            ->chunk(20000, function ($rows) use ($add, $ours) {
+                foreach ($rows as $row) {
+                    $p = json_decode($row->payload, true) ?: [];
+                    $igdbId = (int) ($p['id'] ?? 0);
+                    $self = $ours[$igdbId] ?? null;
+
+                    /* The parent pointer, named by what this game is. Written
+                       from our side if we hold this game, and from the parent's
+                       side if we hold that — which is the case that lets Hades
+                       list DLC we do not carry. */
+                    $parent = (int) ($p['parent_game'] ?? 0);
+                    $relation = self::PARENT_BY_TYPE[(int) ($p['game_type'] ?? -1)] ?? null;
+
+                    if ($parent > 0 && $relation !== null) {
+                        $add($self, $relation, $parent);
+                        $add($ours[$parent] ?? null, GameRelation::reverse($relation), $igdbId);
                     }
 
-                    /* The generic parent pointer, named by what this game is. */
-                    $parent = $ours[(int) ($p['parent_game'] ?? 0)] ?? null;
-                    $named = self::PARENT_BY_TYPE[(int) ($p['game_type'] ?? -1)] ?? null;
-
-                    if ($parent !== null && $named !== null && $parent !== $self) {
-                        $out[$self.'|'.$parent.'|'.$named] = [$self, $parent, $named];
+                    if (! empty($p['version_parent'])) {
+                        $versionParent = (int) $p['version_parent'];
+                        $add($self, 'edition_of', $versionParent);
+                        $add($ours[$versionParent] ?? null, 'has_edition', $igdbId);
                     }
 
-                    foreach (self::FIELDS as $field => $rule) {
+                    foreach (self::CHILD_LISTS as $field => $forward) {
                         foreach ((array) ($p[$field] ?? []) as $other) {
-                            $otherId = $ours[(int) $other] ?? null;
+                            $otherId = (int) $other;
 
-                            if ($otherId === null || $otherId === $self) {
+                            if ($otherId <= 0) {
                                 continue;
                             }
 
-                            /* `dlcs` names the children, so the row belongs to
-                               the child pointing back — which is the same row
-                               that game's own `parent_game` would produce. The
-                               key below is what stops it being written twice. */
-                            [$game, $related] = $rule['inverse'] ? [$otherId, $self] : [$self, $otherId];
-
-                            $out[$game.'|'.$related.'|'.$rule['relation']] = [$game, $related, $rule['relation']];
+                            $add($self, $forward, $otherId);
+                            $add($ours[$otherId] ?? null, GameRelation::reverse($forward), $igdbId);
                         }
                     }
                 }
@@ -180,23 +227,17 @@ class IgdbRelations extends Command
         return $out;
     }
 
-    private function write(array $relations): int
+    private function write(array $rows): int
     {
         $batch = [];
         $written = 0;
         $size = max(1, (int) $this->option('chunk'));
-        $bar = $this->output->createProgressBar(count($relations));
+        $bar = $this->output->createProgressBar(count($rows));
 
-        foreach ($relations as [$game, $related, $relation]) {
+        foreach ($rows as $row) {
             $bar->advance();
 
-            $batch[] = [
-                'game_id' => $game,
-                'related_game_id' => $related,
-                'relation' => $relation,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+            $batch[] = $row + ['created_at' => now(), 'updated_at' => now()];
             $written++;
 
             if (count($batch) >= $size) {

@@ -112,16 +112,16 @@ class Game extends Model
         return $this->hasMany(GameLink::class);
     }
 
-    /** What this game belongs to: the game it is DLC for, a remaster of, in a bundle with. */
-    public function partOf(): HasMany
+    /**
+     * What this game is beside other games — both directions.
+     *
+     * Every row hangs on this game and names the other side, so one relation
+     * covers "DLC for Hades" and "Hades has this DLC" alike; which of the two
+     * a row is, is in its `relation`.
+     */
+    public function relations(): HasMany
     {
         return $this->hasMany(GameRelation::class, 'game_id');
-    }
-
-    /** And the other direction — what belongs to it. */
-    public function parts(): HasMany
-    {
-        return $this->hasMany(GameRelation::class, 'related_game_id');
     }
 
     public function userGames()
