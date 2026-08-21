@@ -360,13 +360,19 @@ function ReleaseHistory({ years }: { years: Record<string, number> }) {
                 </span>
             }
         >
+            {/* Bars, capped in width.
+
+                `flex-1` alone gave a studio with six years six blocks two
+                hundred pixels wide, each at full height because each year held
+                one release — which is not a chart, it is six red rectangles.
+                A bar has a bar's width whether there are six of them or forty. */}
             <div className="flex items-end gap-[3px] h-[92px]">
                 {entries.map(([year, count]) => (
                     <span
                         key={year}
                         title={`${year}: ${count} ${count === 1 ? "release" : "releases"}`}
-                        className="relative flex-1 min-w-[3px] rounded-t-[2px] bg-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:bg-[var(--accent)] transition-colors"
-                        style={{ height: `${Math.max(6, (count / peak) * 100)}%` }}
+                        className="relative flex-1 min-w-[3px] max-w-[22px] rounded-t-[2px] bg-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:bg-[var(--accent)] transition-colors"
+                        style={{ height: `${Math.max(8, (count / peak) * 100)}%` }}
                     />
                 ))}
             </div>
@@ -390,20 +396,34 @@ function ReleaseHistory({ years }: { years: Record<string, number> }) {
 function StudioFigures({ studio, years }: { studio: Studio; years: Record<string, number> }) {
     const seasons = Object.keys(years ?? {}).sort();
 
+    /* A studio that made and published all of its own work read "6 games,
+       6 developed, 6 published" — the same number three times, which tells a
+       reader nothing they did not have from the first one. The split is only
+       shown where there is one. */
+    const selfPublished =
+        studio.developed_count === studio.games_count &&
+        studio.published_count === studio.games_count;
+
     const figures = [
         { label: "Games", value: studio.games_count },
-        { label: "Developed", value: studio.developed_count },
-        { label: "Published", value: studio.published_count },
+        ...(selfPublished ? [] : [
+            { label: "Developed", value: studio.developed_count },
+            { label: "Published", value: studio.published_count },
+        ]),
         { label: "Ported", value: studio.ported_count ?? 0 },
+        { label: "Worked on", value: studio.supported_count ?? 0 },
     ].filter((f) => f.value > 0);
 
     if (figures.length === 0) return null;
 
     return (
         <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/30 p-4 sm:min-w-[210px]">
-            <div className="grid grid-cols-2 gap-x-5 gap-y-3">
+            {/* Flowing, not a fixed two-column grid. Three figures in two
+                columns left a hole where a fourth would be, which reads as a
+                number that failed to load. */}
+            <div className="flex flex-wrap gap-x-6 gap-y-3">
                 {figures.map((figure) => (
-                    <div key={figure.label}>
+                    <div key={figure.label} className="min-w-[74px]">
                         <p className="font-display text-[22px] font-black leading-none tabular-nums text-white">
                             {figure.value.toLocaleString()}
                         </p>
