@@ -84,6 +84,12 @@ class IgdbPull extends Command
            is Steam's peak players and which is IGDB's want-to-play. */
         'popularity_types',
         'popularity_primitives',
+
+        /* Three more numbered-to-named tables. Without them a game's status is
+           "8", a website is "type 2" and a store link is "source 14". */
+        'game_statuses',
+        'website_types',
+        'external_game_sources',
         'screenshots',
         'websites',
         'external_games',
