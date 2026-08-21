@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
-import { Trophy, Zap, Star, Library, CheckCircle2, Crown, Search, X, ChevronRight, TrendingUp, TrendingDown, Minus, Medal, Award, BadgeCheck, Flame, MessageSquare, BookOpen, Gamepad2, Clock3, ShieldCheck } from "lucide-react";
+import { Trophy, Zap, Star, Library, CheckCircle2, Search, X, ChevronRight, TrendingUp, TrendingDown, Minus, BadgeCheck, Flame, MessageSquare, BookOpen, Gamepad2, Clock3, ShieldCheck } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import Avatar from "@/components/ui/Avatar";
@@ -83,12 +83,19 @@ interface Payload {
     rising: { position: number; username: string; name: string; avatar_url: string | null; gain: number; xp: number }[];
 }
 
-/** Podium metal — gold, silver, bronze, and nothing for the rest. */
-const METAL: Record<number, { color: string; icon: LucideIcon }> = {
-    1: { color: "#f0b429", icon: Crown },
-    2: { color: "#cbd5e1", icon: Medal },
-    3: { color: "#c2703f", icon: Award },
-};
+/**
+ * First place gets a colour. Second and third get a position.
+ *
+ * This was gold, silver and bronze, each painting nine things at once — the
+ * border, the background gradient, the rank disc and its edge, the numeral, an
+ * icon above it, the ring around the avatar, the rank title and the figure.
+ * Three foreign palettes on a site whose accent is crimson, and with one colour
+ * on everything in a card, nothing in it was emphasised.
+ *
+ * One metal, on one element. The other two places are told by their number and
+ * their size, which is what a ranking is.
+ */
+const GOLD = "#f0b429";
 
 function Trend({ value }: { value: number | null }) {
     if (value === null) {
@@ -113,62 +120,60 @@ function Trend({ value }: { value: number | null }) {
 /* ── podium ───────────────────────────────────────────────────────────── */
 
 function PodiumCard({ entry, place }: { entry: Entry; place: 1 | 2 | 3 }) {
-    const metal = METAL[place];
-    const Icon = metal.icon;
     const first = place === 1;
 
     return (
         <Link
             href={`/profile/${entry.username}`}
-            className={`group relative flex items-center gap-4 rounded-[14px] border overflow-hidden transition-transform duration-300 hover:-translate-y-0.5 ${
-                first ? "p-5 lg:-mt-4" : "p-4"
+            className={`group relative flex items-center gap-4 overflow-hidden rounded-[14px] border bg-[var(--surface-1)] transition-colors duration-200 ${
+                first
+                    ? "p-5 border-[color-mix(in_srgb,#f0b429_38%,transparent)] hover:border-[color-mix(in_srgb,#f0b429_60%,transparent)]"
+                    : "p-4 border-white/[0.07] hover:border-white/20"
             }`}
-            style={{
-                borderColor: `color-mix(in srgb, ${metal.color} ${first ? 45 : 24}%, transparent)`,
-                background: `linear-gradient(135deg, color-mix(in srgb, ${metal.color} ${first ? 14 : 7}%, var(--surface-1)), var(--surface-1) 70%)`,
-            }}
         >
+            {/* The rank as a numeral in the corner of the card, ghosted, at the
+                size a scoreboard uses. It was a disc with a crown balanced on
+                top — an icon saying "first" beside a number saying "1". */}
             <span
-                className="relative shrink-0 flex items-center justify-center rounded-full"
+                aria-hidden
+                className="pointer-events-none absolute -right-1 -top-4 font-numeric leading-none select-none"
                 style={{
-                    width: first ? 52 : 44,
-                    height: first ? 52 : 44,
-                    background: `color-mix(in srgb, ${metal.color} 16%, transparent)`,
-                    border: `1px solid color-mix(in srgb, ${metal.color} 40%, transparent)`,
+                    fontSize: first ? 108 : 84,
+                    color: first ? `color-mix(in srgb, ${GOLD} 18%, transparent)` : "rgba(255,255,255,0.05)",
                 }}
             >
-                <span className="font-numeric" style={{ color: metal.color, fontSize: first ? 22 : 18 }}>
-                    {place}
-                </span>
-                <Icon
-                    className="absolute -top-2.5 left-1/2 -translate-x-1/2"
-                    style={{ color: metal.color, width: first ? 20 : 15, height: first ? 20 : 15 }}
-                />
+                {place}
             </span>
 
             <span className="relative shrink-0">
-                <span
-                    className="block rounded-full p-[2px]"
-                    style={{ background: `linear-gradient(135deg, ${metal.color}, transparent 70%)` }}
-                >
-                    <Avatar src={entry.avatar_url} alt={entry.username} size={first ? "lg" : "md"} />
-                </span>
+                <Avatar src={entry.avatar_url} alt={entry.username} size={first ? "lg" : "md"} />
             </span>
 
-            <span className="min-w-0 flex-1">
+            <span className="relative min-w-0 flex-1">
                 <span className="flex items-center gap-1.5">
-                    <span className={`font-display font-black text-white truncate ${first ? "text-[18px]" : "text-[15px]"}`}>
+                    <span className={`truncate font-display font-black text-white ${first ? "text-[18px]" : "text-[15px]"}`}>
                         {entry.name}
                     </span>
                     {entry.verified && <BadgeCheck className="w-3.5 h-3.5 shrink-0 text-[var(--accent)]" />}
                 </span>
+
                 {entry.rank_title && (
-                    <span className="mt-0.5 flex items-center gap-1.5 font-display text-[10.5px] font-bold uppercase tracking-[0.1em]" style={{ color: metal.color }}>
-                        <ShieldCheck className="w-3 h-3" /> {entry.rank_title}
+                    <span className="mt-1 block font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+                        {entry.rank_title}
                     </span>
                 )}
-                <span className="mt-1.5 block font-numeric" style={{ color: metal.color, fontSize: first ? 22 : 18 }}>
-                    {entry.value.toLocaleString("en-US")} <span className="text-[11px] text-white/35">{entry.label}</span>
+
+                {/* The figure is what the page is for, so it is the biggest
+                    thing under the name — and gold only where gold means
+                    something. */}
+                <span
+                    className="mt-2 block font-numeric leading-none"
+                    style={{ color: first ? GOLD : "#ffffff", fontSize: first ? 30 : 24 }}
+                >
+                    {entry.value.toLocaleString("en-US")}
+                    <span className="ml-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
+                        {entry.label}
+                    </span>
                 </span>
             </span>
         </Link>
@@ -431,9 +436,14 @@ export default function LeaderboardClient() {
                             {[...Array(3)].map((_, i) => <div key={i} className="h-[112px] rounded-[14px] bg-white/[0.04] animate-pulse" />)}
                         </div>
                     ) : podium.length === 3 ? (
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-center">
-                            <PodiumCard entry={podium[1]} place={2} />
+                        /* First place takes the room, second and third share the
+                           rest — a podium is told by size. It used to be three
+                           equal columns with the winner nudged up sixteen
+                           pixels, which is too little to read as a step and
+                           enough to break the row. */
+                        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1.35fr_1fr_1fr] items-stretch">
                             <PodiumCard entry={podium[0]} place={1} />
+                            <PodiumCard entry={podium[1]} place={2} />
                             <PodiumCard entry={podium[2]} place={3} />
                         </div>
                     ) : null}
@@ -471,22 +481,20 @@ export default function LeaderboardClient() {
                                 nobody can read without dragging. Same data,
                                 same order, stacked. */}
                             <ul className="md:hidden divide-y divide-white/[0.05]">
-                                {rows.map((e) => {
-                                    const metal = METAL[e.position];
-                                    const Icon = metal?.icon;
-
-                                    return (
+                                {rows.map((e) => (
                                         <li key={e.username}>
                                             <Link
                                                 href={`/profile/${e.username}`}
                                                 className="flex items-center gap-3 px-4 py-3 active:bg-white/[0.03] transition-colors"
-                                                style={metal ? { background: `color-mix(in srgb, ${metal.color} 5%, transparent)` } : undefined}
                                             >
-                                                <span className="w-7 shrink-0 inline-flex items-center gap-1">
-                                                    {Icon && <Icon className="w-3.5 h-3.5" style={{ color: metal.color }} />}
+                                                {/* The same three people are in
+                                                    the podium overhead. Tinting
+                                                    their rows and hanging a medal
+                                                    on each said it a third time. */}
+                                                <span className="w-7 shrink-0">
                                                     <span
                                                         className="font-display text-[13px] font-black tabular-nums"
-                                                        style={{ color: metal?.color ?? "rgba(255,255,255,0.3)" }}
+                                                        style={{ color: e.position === 1 ? GOLD : "rgba(255,255,255,0.3)" }}
                                                     >
                                                         {e.position}
                                                     </span>
@@ -520,8 +528,7 @@ export default function LeaderboardClient() {
                                                 </span>
                                             </Link>
                                         </li>
-                                    );
-                                })}
+                                ))}
                             </ul>
 
                             <div className="hidden md:block overflow-x-auto">
@@ -543,25 +550,17 @@ export default function LeaderboardClient() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {rows.map((e) => {
-                                            const metal = METAL[e.position];
-                                            const Icon = metal?.icon;
-
-                                            return (
+                                        {rows.map((e) => (
                                                 <tr
                                                     key={e.username}
                                                     className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors"
-                                                    style={metal ? { background: `color-mix(in srgb, ${metal.color} 5%, transparent)` } : undefined}
                                                 >
                                                     <td className="px-4 py-2.5">
-                                                        <span className="inline-flex items-center gap-1.5">
-                                                            {Icon && <Icon className="w-3.5 h-3.5" style={{ color: metal.color }} />}
-                                                            <span
-                                                                className="font-display text-[13px] font-black tabular-nums"
-                                                                style={{ color: metal?.color ?? "rgba(255,255,255,0.3)" }}
-                                                            >
-                                                                {e.position}
-                                                            </span>
+                                                        <span
+                                                            className="font-display text-[13px] font-black tabular-nums"
+                                                            style={{ color: e.position === 1 ? GOLD : "rgba(255,255,255,0.3)" }}
+                                                        >
+                                                            {e.position}
                                                         </span>
                                                     </td>
 
@@ -606,8 +605,7 @@ export default function LeaderboardClient() {
                                                         {e.reputation.toLocaleString("en-US")}
                                                     </td>
                                                 </tr>
-                                            );
-                                        })}
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>
