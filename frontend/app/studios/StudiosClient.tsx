@@ -228,7 +228,11 @@ export default function StudiosClient({
                     </p>
                 ) : (
                     <div
-                        className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 transition-opacity ${busy ? "opacity-50" : ""}`}
+                        /* `items-stretch` is the default and is what makes the
+                           figures line up along the bottom of every card in a
+                           row — without equal heights the last row sat short
+                           and the footers stepped. */
+                        className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 transition-opacity ${busy ? "opacity-50" : ""}`}
                     >
                         {studios.map((studio) => (
                             <StudioTile key={studio.slug} studio={studio} />
@@ -276,83 +280,118 @@ function initials(name: string): string {
         .join("");
 }
 
+/**
+ * One studio, as a card worth clicking.
+ *
+ * It was a small logo with three lines of grey text beside it, and the two
+ * numbers that make a studio interesting — what it made against what it put
+ * out — were set as a footnote. They lead now: a publisher with 400 published
+ * and 10 developed is a different thing from a studio with 400 developed, and
+ * the card should say which one you are looking at before you read a word.
+ */
 function StudioTile({ studio }: { studio: StudioCard }) {
+    const split = studio.developed_count > 0 && studio.published_count > 0;
+    const ended = studio.status && studio.status !== "active";
+
     return (
         <Link
             href={`/studios/${studio.slug}`}
-            className="group flex flex-col gap-3 rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-3.5 hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:bg-white/[0.04] transition-colors"
+            className="group relative flex flex-col overflow-hidden rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)] transition-colors hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
         >
-            {/* A light plate under the logo. These are transparent PNGs drawn
-                for white backgrounds, so on a dark tile the near-black
-                wordmarks — Square Enix, Activision, Hudson Soft — showed as an
-                empty square. The initials fallback keeps the page's own colours,
-                since nothing is being placed on it. */}
-            <span className={`flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-[10px] border ${
-                studio.logo_url
-                    ? "border-white/[0.10] bg-[#f2f3f5]"
-                    : "border-white/[0.07] bg-white/[0.04]"
-            }`}>
-                {studio.logo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        src={studio.logo_url}
-                        alt={studio.name}
-                        loading="lazy"
-                        className="h-full w-full object-contain p-1.5"
-                    />
-                ) : (
-                    <span className="font-display text-[15px] font-black text-white/30">
-                        {initials(studio.name) || <Building2 className="h-5 w-5" />}
-                    </span>
-                )}
-            </span>
+            {/* A glow that arrives on hover, from the corner the eye starts in.
+                The card is a link and looked like a paragraph. */}
+            <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                style={{ background: "radial-gradient(80% 120% at 0% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 62%)" }}
+            />
 
-            <span className="min-w-0">
-                <span className="flex items-start gap-2">
-                    <span className="block flex-1 font-display text-[13.5px] font-black leading-tight text-white line-clamp-2">
+            <span className="relative flex items-start gap-3 p-3.5">
+                {/* A light plate under the logo. These are transparent PNGs
+                    drawn for white backgrounds, so on a dark tile the near-black
+                    wordmarks — Square Enix, Activision, Hudson Soft — showed as
+                    an empty square. The initials fallback keeps the page's own
+                    colours, since nothing is being placed on it. */}
+                <span className={`flex h-[52px] w-[52px] shrink-0 items-center justify-center overflow-hidden rounded-[10px] border transition-transform duration-300 group-hover:scale-[1.04] ${
+                    studio.logo_url
+                        ? "border-white/[0.10] bg-[#f2f3f5]"
+                        : "border-white/[0.07] bg-white/[0.04]"
+                }`}>
+                    {studio.logo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                            src={studio.logo_url}
+                            alt={studio.name}
+                            loading="lazy"
+                            className="h-full w-full object-contain p-1.5"
+                        />
+                    ) : (
+                        <span className="font-display text-[15px] font-black text-white/30">
+                            {initials(studio.name) || <Building2 className="h-5 w-5" />}
+                        </span>
+                    )}
+                </span>
+
+                <span className="min-w-0 flex-1">
+                    <span className="block font-display text-[13.5px] font-black leading-tight text-white line-clamp-2 group-hover:text-[var(--accent-ink)] transition-colors">
                         {studio.name}
                     </span>
+
+                    <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-white/35">
+                        {studio.country && (
+                            <span className="inline-flex items-center gap-1">
+                                <MapPin className="h-3 w-3 text-white/20" />
+                                {studio.country.name}
+                            </span>
+                        )}
+                        {studio.founded && <span className="tabular-nums">since {studio.founded}</span>}
+                    </span>
+                </span>
+
+                <span className="flex shrink-0 flex-col items-end gap-1">
                     {studio.kind === "Solo Dev" && (
                         <span
                             title="One person"
-                            className="mt-0.5 inline-flex h-[17px] shrink-0 items-center rounded-[4px] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] px-1.5 font-display text-[8.5px] font-black uppercase tracking-[0.1em] text-[var(--accent)]"
+                            className="inline-flex h-[17px] items-center rounded-[4px] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] px-1.5 font-display text-[8.5px] font-black uppercase tracking-[0.1em] text-[var(--accent)]"
                         >
                             Solo
                         </span>
                     )}
-                </span>
-
-                {/* The split, not just the total. A studio with 400 published
-                    and 3 developed is a publisher, and "403 games" says neither.
-                    Only shown where both sides exist — a line of zeroes is
-                    noise. */}
-                <span className="mt-1.5 block text-[11.5px] tabular-nums text-white/45">
-                    {studio.developed_count > 0 && studio.published_count > 0 ? (
-                        <>
-                            {studio.developed_count.toLocaleString()} made
-                            <span className="mx-1 text-white/20">·</span>
-                            {studio.published_count.toLocaleString()} published
-                        </>
-                    ) : (
-                        <>{studio.games_count.toLocaleString()} {studio.games_count === 1 ? "game" : "games"}</>
-                    )}
-                </span>
-
-                <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-white/30">
-                    {studio.country && (
-                        <span className="inline-flex items-center gap-1">
-                            <MapPin className="h-3 w-3 text-white/20" />
-                            {studio.country.name}
-                        </span>
-                    )}
-                    {studio.founded && <span className="tabular-nums">since {studio.founded}</span>}
-                    {studio.status && studio.status !== "active" && (
-                        <span className="text-white/40">
-                            {studio.status === "defunct" ? "closed" : studio.status}
+                    {ended && (
+                        <span className="inline-flex h-[17px] items-center rounded-[4px] border border-white/[0.12] bg-white/[0.04] px-1.5 font-display text-[8.5px] font-black uppercase tracking-[0.1em] text-white/45">
+                            {studio.status === "defunct" ? "Closed" : studio.status}
                         </span>
                     )}
                 </span>
             </span>
+
+            {/* The figures, on their own ground at the foot of the card. Two
+                numbers with their words under them read as a fact; the same two
+                run together in a grey sentence read as a caption. */}
+            <span className="relative mt-auto flex items-stretch border-t border-white/[0.06] bg-black/25">
+                {split ? (
+                    <>
+                        <Figure value={studio.developed_count} label="Developed" />
+                        <span aria-hidden className="w-px bg-white/[0.06]" />
+                        <Figure value={studio.published_count} label="Published" />
+                    </>
+                ) : (
+                    <Figure value={studio.games_count} label={studio.games_count === 1 ? "Game" : "Games"} />
+                )}
+            </span>
         </Link>
+    );
+}
+
+function Figure({ value, label }: { value: number; label: string }) {
+    return (
+        <span className="flex-1 px-3.5 py-2.5">
+            <span className="block font-display text-[16px] font-black leading-none tabular-nums text-white">
+                {value.toLocaleString()}
+            </span>
+            <span className="mt-1 block font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-white/30">
+                {label}
+            </span>
+        </span>
     );
 }
