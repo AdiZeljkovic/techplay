@@ -98,11 +98,16 @@ class CacheService
      * The same arrangement for games, for the same reason.
      *
      * `games.show.v4.{slug}` was spelled out in four places across the observer
-     * and the controller — the exact shape that let the article key drift. It
-     * is v5 now because the payload gained the linked studios, and a reader
-     * holding a v4 copy would show a game page with nowhere to click.
+     * and the controller — the exact shape that let the article key drift.
+     *
+     * v5 added the linked studios; v6 added what the rewritten page draws —
+     * how long the game takes, its languages, its modes. The bump is not
+     * housekeeping: the page reads `languages.length` off the payload, so a
+     * reader served a v5 copy gets a crashed page rather than a section that
+     * is merely missing. Any change to the shape of the show payload changes
+     * this constant, in the same commit.
      */
-    public const GAME_VERSION = 'v5';
+    public const GAME_VERSION = 'v6';
 
     public static function gameShowKey(string $slug): string
     {

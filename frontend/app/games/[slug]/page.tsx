@@ -856,9 +856,18 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         )}
                     </Panel>
 
-                    <WaysToPlay modes={game.game_modes} perspectives={game.player_perspectives} multiplayer={game.multiplayer} />
+                    {/* `?? []` throughout, not out of habit: /games/* is also
+                        cached by nginx, which Laravel's cache version cannot
+                        reach, so a payload from before these fields existed can
+                        still arrive here. Missing sections are correct then;
+                        reading .length off undefined is a blank page. */}
+                    <WaysToPlay
+                        modes={game.game_modes ?? []}
+                        perspectives={game.player_perspectives ?? []}
+                        multiplayer={game.multiplayer ?? null}
+                    />
 
-                    {game.languages.length > 0 && (
+                    {(game.languages ?? []).length > 0 && (
                         <Panel title={`Languages (${game.languages.length})`} meta={<Languages className="w-4 h-4 text-white/25" />}>
                             <LanguageTable rows={game.languages} />
                         </Panel>
@@ -1045,7 +1054,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 {/* IGDB's own "games like this one", which is a better answer
                     than our genre overlap when it exists — so it leads, and the
                     genre-based row below stays for the games it has nothing on. */}
-                {game.similar_games.length > 0 && (
+                {(game.similar_games ?? []).length > 0 && (
                     <section>
                         <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-black uppercase tracking-[0.08em] text-white">
                             <Sparkles className="w-[18px] h-[18px] text-[var(--accent)]" /> Games like this
