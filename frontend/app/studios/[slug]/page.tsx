@@ -288,15 +288,24 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                             {studio.subsidiaries.length}
                         </span>
                     }>
-                        <div className="flex flex-wrap gap-2">
+                        {/* The site's own segmented-bar treatment, the one the
+                            leaderboard uses for its boards: an inset tray, and
+                            inside it items at one height in display caps. They
+                            were mixed-case links in outlined boxes, which is a
+                            different language from every other row of choices
+                            on the site. */}
+                        <div className="flex flex-wrap gap-1 rounded-[10px] border border-white/[0.07] bg-[var(--surface-1)] p-1">
                             {studio.subsidiaries.map((sub) => (
                                 <Link
                                     key={sub.slug}
                                     href={`/studios/${sub.slug}`}
-                                    className="inline-flex items-center gap-2 rounded-[9px] border border-white/[0.07] bg-white/[0.02] px-3 py-2 text-[13px] text-white/75 hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:text-white transition-colors"
+                                    className="group/sub inline-flex h-10 items-center gap-2 rounded-[8px] px-3 font-display text-[11px] font-bold uppercase tracking-[0.06em] text-white/50 transition-colors duration-200 hover:bg-[var(--accent)] hover:text-white"
                                 >
+                                    <Building2 className="h-3.5 w-3.5 text-white/25 transition-colors group-hover/sub:text-white/80" />
                                     {sub.name}
-                                    <span className="tabular-nums text-white/35">{sub.games_count}</span>
+                                    <span className="rounded-[4px] bg-white/[0.06] px-1.5 py-0.5 text-[10px] tabular-nums text-white/40 transition-colors group-hover/sub:bg-black/25 group-hover/sub:text-white/85">
+                                        {sub.games_count}
+                                    </span>
                                 </Link>
                             ))}
                         </div>
