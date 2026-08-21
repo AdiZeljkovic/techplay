@@ -49,6 +49,9 @@ class IgdbPull extends Command
            nothing to look at — 17,902 logos and 19,065 sites, both small. */
         'company_logos',
         'company_websites',
+        /* Active, defunct, or turned into somebody else — `status: 3` on its own
+           says none of that. */
+        'company_statuses',
         'covers',
         'game_videos',
         'age_ratings',
