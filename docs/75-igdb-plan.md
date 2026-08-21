@@ -196,8 +196,14 @@ jeste, pa ide kroz nju. Logo i sajt su id-jevi u `company_logos` i
 | 5 | Uvoz ~185.000 novih naslova (mjereno, v. odjeljak 7) | katalog na ~327k |
 | 6 | Kompanije + stranice studija + navigacija | nova SEO površina |
 | 7 | ~~Popularnost zamjenjuje `hype_score`~~ → **popularnost ide u katalog**, `hype_score` ostaje kalendaru (v. odjeljak 7) | stvarne brojke tamo gdje ih ima |
-| 8 | Nova stranica igre | |
-| 9 | Pripis IGDB-u na frontu | |
+| 8 | Nova stranica igre | ✅ vrijeme prelaska, jezici, načini igre, artwork, slične igre |
+| 9 | Pripis IGDB-u na frontu | ✅ na stranici igre, studija i baze |
+
+**Sve faze su izvedene 20–21.08.2026.** Katalog 142.110 → **332.128**, studija
+**56.911**, popularnost na **125.237** igara.
+
+Preostalo, i nije tehnički posao: **zamijeniti IGDB Client ID i Secret** u Twitch
+konzoli (v. odjeljak 0).
 
 **Faza 3 je kapija.** Ništa ne dodiruje cijelu bazu dok vlasnik ne vidi rezultat
 na hiljadu igara.
@@ -336,6 +342,48 @@ Play*; izašle → *24hr Peak Players*, pa *Visits*, pa *Want to Play*.
 
 Novo sortiranje `ordering=-popularity` na `/games` („Most Popular"), i stranica
 igre dobija percentil s imenom mjere uz njega.
+
+### Faze 8 i 9 — šta je stranica dobila
+
+`igdb:details` puni ono čemu u tabeli nije bilo mjesta. Popunjeno:
+
+| polje | igara |
+|---|---|
+| similar_games | 236.818 |
+| game_modes | 216.413 |
+| screenshots | 177.116 |
+| languages | 176.662 |
+| artworks | 151.024 |
+| player_perspectives | 120.092 |
+| age_ratings | 50.903 |
+| multiplayer | 12.259 |
+| time_to_beat | 6.614 |
+
+Odluke koje nisu očigledne iz koda:
+
+- **Sekunde se čuvaju, sati se prikazuju.** IGDB daje sekunde; to je jedina
+  preciznost koju izvor ima i vrijedi je držati u bazi, a na stranici je
+  „oko 24 sata" odgovor a „86.400 sekundi" zagonetka.
+- **Broj igrača stoji uz vrijeme prelaska.** „24 sata" od četvorice i od četiri
+  hiljade nisu ista tvrdnja.
+- **„Ways to play" nabraja šta igra ima**, ne crta kvačice i krstiće:
+  multiplayer zastavice se upisuju samo kad su tačne, pa odsutna znači
+  *nepoznato*, ne *nema*.
+- **Dobne oznake idu kao `"ESRB Rating"`, ne `"ESRB"`** — `GameController` bira
+  ESRB unos po tačno tom nizu, a 8.391 postojeća oznaka je tako i napisana.
+- **Datumi po regiji su izostavljeni.** IGDB-ova `regions` tabela ima tri reda,
+  a `release_dates` pokazuju na id-jeve daleko iznad njih; polje bi bilo
+  „region 8" — broj koji glumi mjesto.
+- **Artwork je odvojena galerija** od screenshotova.
+
+**Ključ keša se mijenja s oblikom odgovora.** `games.show` je sada `v6`: v5 je
+dodao studije, v6 ono što nova stranica crta. Stranica čita `languages.length`
+s odgovora, pa keširana v5 kopija nije sekcija koja fali nego **pad stranice**.
+Uz to `?? []` na frontu, jer `/games/*` kešira i nginx, do kojeg Laravelova
+verzija ključa ne dopire.
+
+**Faza 9:** `DataAttribution` na dnu stranica koje su iz tih podataka i građene
+— igra, studio, baza igara. Ne u podnožju do kojeg niko ne skrola.
 
 ---
 

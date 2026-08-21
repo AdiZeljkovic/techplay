@@ -44,14 +44,29 @@
 
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
-| `games` | Kanonska TechPlay baza (08/2026 sanacija — nema više RAWG/Moby imena) | id, slug, name, released, release_precision, rating, cover_url, description, genres (TEXT[]), platforms (TEXT[]), tags (TEXT[]), developers (TEXT[]), publishers (TEXT[]), screenshots (json), videos (json — traileri, puni se ručno/agregatorom), alt_titles (json), age_ratings (json), website, series_key, series_name, import_payload (arhiva sirovog Moby payloada — ne izlaže se u API), match_key, hype_score, is_editorial, locked_fields, views |
-| `game_tombstones` | Obrisane igre → API vraća **410** (adult purge) | slug, name, reason, deleted_at |
-| `game_companies` | Izdavači/developeri | id, name, slug, moby_id |
-| `game_external_ids` | Vanjski IDevi — provenance | game_id, provider (mobygames/steam/...), external_id |
+| `games` | Kanonska TechPlay baza (08/2026 sanacija — nema više RAWG/Moby imena) | id, slug, name, released, release_precision, rating, cover_url, description, genres (TEXT[]), platforms (TEXT[]), tags (TEXT[]), developers (TEXT[]), publishers (TEXT[]), screenshots (json), videos (json — traileri, puni se ručno/agregatorom), alt_titles (json), age_ratings (json), website, series_key, series_name, import_payload (arhiva sirovog Moby payloada — ne izlaže se u API), match_key, hype_score, is_editorial, locked_fields, views — **+ iz IGDB-a 08/2026:** popularity (0–10.000, percentil **unutar svoje mjere**, u baznim poenima jer je stotinu koraka bilo pregrubo), popularity_metric, popularity_raw, time_to_beat (json, **sekunde**), game_modes (TEXT[]), player_perspectives (TEXT[]), multiplayer (json), languages (json), artworks (json), similar_games (json, riješeno na **naše** slugove) |
+| `game_tombstones` | Obrisane igre → API vraća **410** (adult purge). **60.981 zapis** — IGDB uvoz ih provjerava, inače bi ih uskrsnuo | slug, name, reason, deleted_at |
+| `studios` | Studiji i izdavači kao vlastiti entitet (08/2026, IGDB). **56.911**, od toga **31.536** `indexable` (≥2 igre ili logo/opis) — ostali imaju stranicu ali nose `noindex, follow` | id, igdb_id (unique), name, slug, description, logo_url, country (ISO 3166-1 **broj**; ime iz `config/countries.php`), founded, website, parent_id, games_count, developed_count, published_count, indexable |
+| `game_studio` | Veza igra↔studio, **278.354** reda | game_id, studio_id, **role** (`developer` \| `publisher`) — uloga je dio jedinstvenosti, jer je ista firma često oboje |
+| `game_external_ids` | Vanjski IDevi — provenance. Jedinstveno na `(provider, external_id)` — jedna IGDB igra pripada jednoj našoj, i to je otkrilo **4.062 duplikata** u našem katalogu | game_id, provider (igdb/steam/...), external_id |
+| `igdb_raw` | Staging cijele IGDB baze, **8,16 mil. zapisa** po 30 endpointa. Nije za čitanje iz aplikacije — samo `igdb:*` komande | endpoint, igdb_id, payload (jsonb), fetched_at; unique `(endpoint, igdb_id)` |
+| `igdb_game_keys` | Normalizovani IGDB naslovi za spajanje. **Namjerno odvojeno** od `games.match_key`, koji mora ostati NULL za sve što agregator ne drži | igdb_id (PK), match_key, release_year, name |
 | `game_ratings` | User ocjene | game_id, user_id, rating (0-10), review_text |
 | `user_games` | Korisnička biblioteka | user_id, game_id, status (playing/completed/wishlist/dropped/backlog), progress, hours_played, last_played_at (pravi Continue Playing signal — pišu ga upsert status=playing, Steam sync i presence), is_favorite, showcase_order, platform, started_at, completed_at, **from_backlog** (je li završena igra prošla kroz backlog), **playtime_minutes**, **playtime_source** (`steam` \| `discord` \| `presence` \| `manual` \| null — bez izvora UI kaže "not tracked", ne "0h") |
 | `game_lists` | Custom liste igara | id, user_id, name, slug, is_public |
 | `game_list_items` | Stavke u listama | list_id, game_id, position, notes |
+
+**Uklonjeno 21.08.2026:** `game_companies` i `game_company` — ista zamisao
+građena za MobyGames, penzionisan u rekonstrukciji 08/2026. Nula redova u obje,
+`moby_company_id` NOT NULL (dakle ništa iz IGDB-a ne bi ni stalo), i nijedan
+čitalac osim modela koji ih deklariše. Zamijenjene su `studios` / `game_studio`;
+`down()` migracije ih vraća.
+
+**Dvije stvari koje IGDB uvoz ne smije dirati**, obje tihe ako se prekrše:
+`games.match_key` ostaje **NULL** za sve što agregator ne drži (ne-null znači
+„agregator je vlasnik" i nosi `GameMerger::candidates`, `Notability::rescore` i
+`StoreSync` usvajanje), a `game_tombstones` se **provjerava** prije stvaranja
+igre.
 
 ### Forum
 
