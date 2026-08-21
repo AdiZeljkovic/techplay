@@ -165,7 +165,10 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                     <Link href="/studios" className="hover:text-white transition-colors">Studios</Link>
                 </nav>
 
-                <header className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
+                {/* `items-start` keeps the logo level with the title; the
+                    figures block opts out of it with `self-end` so it finishes
+                    where the description does. */}
+                <header className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6 sm:flex-wrap lg:flex-nowrap">
                     {/* On a light plate, not on the page's own black.
 
                         These are transparent PNGs drawn for white backgrounds —
@@ -421,7 +424,14 @@ function StudioFigures({ studio, years }: { studio: Studio; years: Record<string
     if (figures.length === 0) return null;
 
     return (
-        <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/45 backdrop-blur-sm p-4 sm:min-w-[210px]">
+        /* Bottom-right, level with the end of the description.
+
+           The header row aligns its children to the top, which left this block
+           floating beside the first two lines with the rest of the text running
+           on under it. `self-end` sets it on the same baseline the paragraph
+           finishes on; `ml-auto` keeps it in the corner when the description is
+           short enough not to push it there. */
+        <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/45 backdrop-blur-sm p-4 sm:ml-auto sm:self-end sm:min-w-[210px]">
             {/* Flowing, not a fixed two-column grid. Three figures in two
                 columns left a hole where a fourth would be, which reads as a
                 number that failed to load. */}
