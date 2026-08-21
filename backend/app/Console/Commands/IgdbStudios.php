@@ -133,7 +133,16 @@ class IgdbStudios extends Command
                         continue;
                     }
 
-                    foreach (['developer' => 'developer', 'publisher' => 'publisher'] as $flag => $role) {
+                    /* Porting and supporting are here now, and kept apart from
+                       the other two: Virtuos did not make the game, it brought
+                       it to the Switch. Folding that into "developed" would put
+                       four hundred games it did not write on its page. */
+                    foreach ([
+                        'developer' => 'developer',
+                        'publisher' => 'publisher',
+                        'porting' => 'porting',
+                        'supporting' => 'supporting',
+                    ] as $flag => $role) {
                         if (! empty($p[$flag])) {
                             $roles[$company][$game][] = $role;
                             $wanted[$company] = true;
@@ -283,15 +292,17 @@ class IgdbStudios extends Command
             $byIgdb[(int) $igdbId] = (int) $id;
         }
 
+        $kinds = $this->kinds();
         $changed = 0;
 
         DB::table('igdb_raw')
             ->where('endpoint', 'companies')
             ->orderBy('igdb_id')
-            ->chunk(5000, function ($rows) use ($byIgdb, &$changed) {
+            ->chunk(5000, function ($rows) use ($byIgdb, $kinds, &$changed) {
                 foreach ($rows as $row) {
                     $p = json_decode($row->payload, true) ?: [];
-                    $id = $byIgdb[(int) ($p['id'] ?? 0)] ?? null;
+                    $igdbId = (int) ($p['id'] ?? 0);
+                    $id = $byIgdb[$igdbId] ?? null;
 
                     if ($id === null) {
                         continue;
@@ -300,12 +311,54 @@ class IgdbStudios extends Command
                     $changed += DB::table('studios')->where('id', $id)->update([
                         'status' => $this->statuses[(int) ($p['status'] ?? 0)] ?? 'active',
                         'changed_at' => $this->stamp($p['change_date'] ?? null),
+                        'kind' => $kinds[$igdbId] ?? null,
                         'updated_at' => now(),
                     ]);
                 }
             });
 
         $this->line('  '.number_format($changed).' studija osvjezeno.');
+    }
+
+    /**
+     * What kind of company each one is.
+     *
+     * From `company_type_histories`, which carries no dates despite the name —
+     * a company and a type, nothing more. Five types, and the one that matters
+     * to a reader is Solo Dev: a game made by one person is a different thing
+     * from one made by four hundred.
+     *
+     * @return array<int, string> their company id => type name
+     */
+    private function kinds(): array
+    {
+        $names = [];
+
+        foreach (DB::table('igdb_raw')->where('endpoint', 'company_types')->get() as $row) {
+            $p = json_decode($row->payload, true) ?: [];
+
+            if (! empty($p['name'])) {
+                $names[(int) $p['id']] = (string) $p['name'];
+            }
+        }
+
+        if ($names === []) {
+            return [];
+        }
+
+        $out = [];
+
+        foreach (DB::table('igdb_raw')->where('endpoint', 'company_type_histories')->get() as $row) {
+            $p = json_decode($row->payload, true) ?: [];
+            $company = (int) ($p['company'] ?? 0);
+            $kind = $names[(int) ($p['company_type'] ?? 0)] ?? null;
+
+            if ($company > 0 && $kind !== null) {
+                $out[$company] = $kind;
+            }
+        }
+
+        return $out;
     }
 
     /**
@@ -463,6 +516,8 @@ class IgdbStudios extends Command
             update studios set
                 developed_count = (select count(*) from game_studio where studio_id = studios.id and role = ?),
                 published_count = (select count(*) from game_studio where studio_id = studios.id and role = ?),
+                ported_count = (select count(*) from game_studio where studio_id = studios.id and role = ?),
+                supported_count = (select count(*) from game_studio where studio_id = studios.id and role = ?),
                 games_count = (select count(distinct game_id) from game_studio where studio_id = studios.id),
                 indexable = (
                     (select count(distinct game_id) from game_studio where studio_id = studios.id) >= 2
@@ -470,7 +525,7 @@ class IgdbStudios extends Command
                     or logo_url is not null
                 ),
                 updated_at = ?
-        ', ['developer', 'publisher', now()]);
+        ', ['developer', 'publisher', 'porting', 'supporting', now()]);
 
         $total = DB::table('studios')->count();
         $indexable = DB::table('studios')->where('indexable', true)->count();

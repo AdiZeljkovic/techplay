@@ -29,13 +29,18 @@ interface Studio {
     status: "active" | "defunct" | "merged" | "renamed" | null;
     changed_at: string | null;
     became: { name: string; slug: string } | null;
+    kind: string | null;
     games_count: number;
     developed_count: number;
     published_count: number;
+    ported_count: number;
+    supported_count: number;
     parent: { name: string; slug: string } | null;
     subsidiaries: { name: string; slug: string; logo_url: string | null; games_count: number }[];
     developed: StudioGame[];
     published: StudioGame[];
+    ported: StudioGame[];
+    supported: StudioGame[];
 }
 
 interface Envelope {
@@ -144,6 +149,15 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                                 {studio.name}
                             </h1>
                             <StatusBadge status={studio.status} />
+                            {/* Only Solo Dev earns a badge. "Main Company" is
+                                what a reader assumes of any studio, and 5,011
+                                of them carry it — a label on all of those says
+                                nothing about any of them. */}
+                            {studio.kind === "Solo Dev" && (
+                                <span className="inline-flex h-[22px] items-center rounded-[5px] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] px-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-[var(--accent)]">
+                                    Solo dev
+                                </span>
+                            )}
                         </div>
 
                         <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-white/50">
@@ -239,7 +253,14 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                 <GameShelf title="Developed" games={studio.developed} total={studio.developed_count} />
                 <GameShelf title="Published" games={studio.published} total={studio.published_count} />
 
-                {studio.developed.length === 0 && studio.published.length === 0 && (
+                {/* Below the two above, and never merged into them: a porting
+                    house did not write the game, and 2,410 studios in the
+                    catalogue have no other kind of credit at all. */}
+                <GameShelf title="Ported" games={studio.ported ?? []} total={studio.ported_count ?? 0} />
+                <GameShelf title="Worked on" games={studio.supported ?? []} total={studio.supported_count ?? 0} />
+
+                {studio.developed.length === 0 && studio.published.length === 0 &&
+                 (studio.ported ?? []).length === 0 && (studio.supported ?? []).length === 0 && (
                     <p className="mt-10 text-[14px] text-white/40">
                         No games from this studio are in the database yet.
                     </p>

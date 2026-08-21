@@ -73,7 +73,7 @@ interface GameStudio {
     slug: string;
     logo_url: string | null;
     games_count: number;
-    role: "developer" | "publisher";
+    role: "developer" | "publisher" | "porting" | "supporting";
 }
 
 interface GameDetail {
@@ -703,6 +703,44 @@ function LanguageTable({ rows }: { rows: GameLanguage[] }) {
     );
 }
 
+/**
+ * A credit that exists only as a studio.
+ *
+ * `developers` and `publishers` are name arrays covering the whole catalogue,
+ * which is why those two rows fall back to plain text. Porting and support have
+ * no such column and never will — they are not who the game is by — so these
+ * rows exist only where the studio does, and are always links.
+ */
+function StudioRow({
+    label,
+    studios,
+    role,
+}: {
+    label: string;
+    studios: GameStudio[];
+    role: "porting" | "supporting";
+}) {
+    const credited = (studios ?? []).filter((s) => s.role === role);
+
+    if (credited.length === 0) return null;
+
+    return (
+        <div>
+            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">{label}</p>
+            <p className="mt-1 text-[13px] font-medium text-white/85">
+                {credited.map((studio, index) => (
+                    <span key={studio.slug}>
+                        {index > 0 && ", "}
+                        <Link href={`/studios/${studio.slug}`} className="hover:text-[var(--accent)] transition-colors">
+                            {studio.name}
+                        </Link>
+                    </span>
+                ))}
+            </p>
+        </div>
+    );
+}
+
 function AttributeGrid({ groups }: { groups: Record<string, string[]> }) {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -1131,6 +1169,13 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 "Unknown" row is a shrug, so absence stays silent. */}
                             <CompanyRow label="Developer" names={game.developers} studios={game.studios} role="developer" />
                             <CompanyRow label="Publisher" names={game.publishers} studios={game.studios} role="publisher" />
+
+                            {/* Credits that are not authorship, and were
+                                invisible until now: the studio that brought a
+                                game to another platform, and the ones that
+                                worked on it without its name being theirs. */}
+                            <StudioRow label="Ported by" studios={game.studios} role="porting" />
+                            <StudioRow label="Also worked on it" studios={game.studios} role="supporting" />
                             {released && (
                                 <div>
                                     <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Released</p>

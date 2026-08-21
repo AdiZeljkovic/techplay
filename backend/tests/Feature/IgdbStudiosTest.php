@@ -119,17 +119,55 @@ class IgdbStudiosTest extends TestCase
         $this->assertSame(2, $studio->games_count);
     }
 
-    /** Porting and support are real credits but not whose game it is. */
-    public function test_porting_and_support_credits_are_not_written(): void
+    /**
+     * Porting and supporting are real credits and not authorship.
+     *
+     * Virtuos did not make the game, it brought it to the Switch — folding that
+     * into "developed" would put four hundred games it did not write on its
+     * page, so the two get their own counts and their own shelves.
+     */
+    public function test_porting_and_support_are_credited_without_becoming_authorship(): void
     {
-        $this->ourGame('Dishonored', 100);
+        $game = $this->ourGame('Dishonored', 100);
 
         $this->raw('companies', 10, ['name' => 'A Porting House', 'slug' => 'porting-house']);
         $this->raw('involved_companies', 20, ['game' => 100, 'company' => 10, 'porting' => true, 'supporting' => true]);
 
         $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
 
-        $this->assertSame(0, Studio::count());
+        $studio = Studio::where('igdb_id', 10)->first();
+
+        $this->assertNotNull($studio, 'a studio that only ports still made something');
+        $this->assertTrue($studio->ported->contains($game));
+        $this->assertSame(1, $studio->ported_count);
+        $this->assertSame(1, $studio->supported_count);
+        $this->assertSame(0, $studio->developed_count, 'porting is not developing');
+        $this->assertSame(0, $studio->published_count);
+        $this->assertSame(1, $studio->games_count, 'it did work on one game');
+
+        $this->getJson('/api/v1/studios/porting-house')
+            ->assertOk()
+            ->assertJsonPath('data.ported.0.name', 'Dishonored')
+            ->assertJsonCount(0, 'data.developed');
+    }
+
+    /** Solo Dev is the one a reader feels: one person, not four hundred. */
+    public function test_a_studio_carries_what_kind_of_company_it_is(): void
+    {
+        $this->ourGame('A Small Game', 100);
+
+        $this->raw('company_types', 5, ['name' => 'Solo Dev']);
+        $this->raw('company_type_histories', 1, ['company' => 10, 'company_type' => 5]);
+        $this->raw('companies', 10, ['name' => 'One Person', 'slug' => 'one-person']);
+        $this->raw('involved_companies', 20, ['game' => 100, 'company' => 10, 'developer' => true]);
+
+        $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
+
+        $this->assertSame('Solo Dev', Studio::where('igdb_id', 10)->value('kind'));
+
+        $this->getJson('/api/v1/studios/one-person')
+            ->assertOk()
+            ->assertJsonPath('data.kind', 'Solo Dev');
     }
 
     /**

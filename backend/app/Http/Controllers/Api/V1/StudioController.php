@@ -105,9 +105,16 @@ class StudioController extends Controller
             'status' => $studio->status,
             'changed_at' => $studio->changed_at?->format('Y-m-d'),
             'became' => $studio->became ? ['name' => $studio->became->name, 'slug' => $studio->became->slug] : null,
+            /* Main Company, Division, Subsidiary, Holding Company or Solo Dev.
+               The last is the one a reader feels — a game made by one person is
+               a different thing from one made by four hundred. */
+            'kind' => $studio->kind,
+
             'games_count' => $studio->games_count,
             'developed_count' => $studio->developed_count,
             'published_count' => $studio->published_count,
+            'ported_count' => $studio->ported_count,
+            'supported_count' => $studio->supported_count,
             'parent' => $studio->parent ? ['name' => $studio->parent->name, 'slug' => $studio->parent->slug] : null,
             'subsidiaries' => $studio->subsidiaries()
                 ->orderByDesc('games_count')
@@ -120,6 +127,12 @@ class StudioController extends Controller
                for, and the 1994 shovelware can wait for the full list. */
             'developed' => $this->games($studio, 'developer'),
             'published' => $this->games($studio, 'publisher'),
+
+            /* Kept off the two above on purpose. Virtuos did not make the game,
+               it brought it to the Switch — folding that into "developed" would
+               put four hundred games it did not write on its page. */
+            'ported' => $this->games($studio, 'porting'),
+            'supported' => $this->games($studio, 'supporting'),
         ];
     }
 

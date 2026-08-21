@@ -22,8 +22,9 @@ class Studio extends Model
     protected $fillable = [
         'igdb_id', 'name', 'slug', 'description', 'logo_url',
         'country', 'founded', 'website', 'parent_id',
-        'status', 'changed_at', 'became_studio_id',
-        'games_count', 'developed_count', 'published_count', 'indexable',
+        'status', 'changed_at', 'became_studio_id', 'kind',
+        'games_count', 'developed_count', 'published_count',
+        'ported_count', 'supported_count', 'indexable',
     ];
 
     protected $casts = [
@@ -35,6 +36,8 @@ class Studio extends Model
         'games_count' => 'integer',
         'developed_count' => 'integer',
         'published_count' => 'integer',
+        'ported_count' => 'integer',
+        'supported_count' => 'integer',
     ];
 
     public function games(): BelongsToMany
@@ -50,6 +53,18 @@ class Studio extends Model
     public function published(): BelongsToMany
     {
         return $this->belongsToMany(Game::class)->wherePivot('role', 'publisher');
+    }
+
+    /** Brought somebody else's game to another platform. */
+    public function ported(): BelongsToMany
+    {
+        return $this->belongsToMany(Game::class)->wherePivot('role', 'porting');
+    }
+
+    /** Worked on it without being the studio whose game it is. */
+    public function supported(): BelongsToMany
+    {
+        return $this->belongsToMany(Game::class)->wherePivot('role', 'supporting');
     }
 
     public function parent(): BelongsTo
