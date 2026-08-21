@@ -41,6 +41,8 @@ interface Studio {
     published: StudioGame[];
     ported: StudioGame[];
     supported: StudioGame[];
+    /** Year → releases that year, over everything it shipped. */
+    years: Record<string, number>;
 }
 
 interface Envelope {
@@ -107,6 +109,16 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
     const studio = envelope.data;
     const founded = studio.founded ? new Date(studio.founded).getFullYear() : null;
 
+    /* A studio that publishes its own games was listing the same titles under
+       both headings — six games printed twice, which is true and is not two
+       facts. Split by which side of the pair each game is actually on. */
+    const publishedSlugs = new Set((studio.published ?? []).map((g) => g.slug));
+    const developedSlugs = new Set((studio.developed ?? []).map((g) => g.slug));
+
+    const both = (studio.developed ?? []).filter((g) => publishedSlugs.has(g.slug));
+    const developedOnly = (studio.developed ?? []).filter((g) => !publishedSlugs.has(g.slug));
+    const publishedOnly = (studio.published ?? []).filter((g) => !developedSlugs.has(g.slug));
+
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -134,12 +146,19 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                 </nav>
 
                 <header className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6">
-                    <span className="flex h-[92px] w-[92px] shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-white/[0.08] bg-white/[0.04]">
+                    {/* On a light plate, not on the page's own black.
+
+                        These are transparent PNGs drawn for white backgrounds —
+                        Square Enix, Activision, Hudson Soft and a dozen others
+                        are near-black wordmarks, and on a dark tile they showed
+                        as an empty square. A logo nobody can see is worse than
+                        no logo, because the space is spent either way. */}
+                    <span className="flex h-[92px] w-[92px] shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-white/[0.10] bg-[#f2f3f5]">
                         {studio.logo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={studio.logo_url} alt={studio.name} className="h-full w-full object-contain p-3" />
                         ) : (
-                            <Building2 className="h-8 w-8 text-white/20" />
+                            <Building2 className="h-8 w-8 text-black/25" />
                         )}
                     </span>
 
@@ -250,12 +269,18 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                     </section>
                 )}
 
-                <GameShelf title="Developed" games={studio.developed} total={studio.developed_count} />
-                <GameShelf title="Published" games={studio.published} total={studio.published_count} />
+                <ReleaseHistory years={studio.years ?? {}} />
 
-                {/* Below the two above, and never merged into them: a porting
-                    house did not write the game, and 2,410 studios in the
-                    catalogue have no other kind of credit at all. */}
+                {/* A studio that publishes its own work had the same six games
+                    printed twice, once under each heading. Which is true, and
+                    is not two facts. */}
+                <GameShelf title="Developed & published" games={both} total={both.length} />
+                <GameShelf title={both.length > 0 ? "Developed for others" : "Developed"} games={developedOnly} total={developedOnly.length} />
+                <GameShelf title={both.length > 0 ? "Published for others" : "Published"} games={publishedOnly} total={publishedOnly.length} />
+
+                {/* Never merged into those: a porting house did not write the
+                    game, and 719 studios in the catalogue have no other kind of
+                    credit at all. */}
                 <GameShelf title="Ported" games={studio.ported ?? []} total={studio.ported_count ?? 0} />
                 <GameShelf title="Worked on" games={studio.supported ?? []} total={studio.supported_count ?? 0} />
 
@@ -273,6 +298,58 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
 }
 
 /* ─── pieces ─────────────────────────────────────────────────────────────── */
+
+/**
+ * A studio's output, year by year.
+ *
+ * The page ended after two shelves of covers, which says what a studio made but
+ * nothing about the shape of its life — whether it shipped steadily for twenty
+ * years or everything it has in one burst and then stopped. Bars answer that at
+ * a glance in the space a sentence would take.
+ *
+ * Counted over everything it shipped, not over the shelves above, which stop at
+ * forty-eight.
+ */
+function ReleaseHistory({ years }: { years: Record<string, number> }) {
+    const entries = Object.entries(years ?? {}).sort(([a], [b]) => Number(a) - Number(b));
+
+    /* Two bars is a pair of numbers, not a history. */
+    if (entries.length < 3) return null;
+
+    const peak = Math.max(...entries.map(([, count]) => count));
+    const first = entries[0][0];
+    const last = entries[entries.length - 1][0];
+    const total = entries.reduce((sum, [, count]) => sum + count, 0);
+
+    return (
+        <section className="mt-9">
+            <SectionTitle>
+                Releases by year
+                <span className="ml-2 font-normal normal-case tracking-normal text-white/25">
+                    {total.toLocaleString()} across {first}–{last}
+                </span>
+            </SectionTitle>
+
+            <div className="rounded-[12px] border border-white/[0.07] bg-white/[0.02] px-4 pt-4 pb-3">
+                <div className="flex items-end gap-[3px] h-[92px]">
+                    {entries.map(([year, count]) => (
+                        <span
+                            key={year}
+                            title={`${year}: ${count} ${count === 1 ? "release" : "releases"}`}
+                            className="group relative flex-1 min-w-[3px] rounded-t-[2px] bg-[color-mix(in_srgb,var(--accent)_55%,transparent)] hover:bg-[var(--accent)] transition-colors"
+                            style={{ height: `${Math.max(6, (count / peak) * 100)}%` }}
+                        />
+                    ))}
+                </div>
+                <div className="mt-2 flex justify-between font-display text-[10px] font-bold tabular-nums text-white/25">
+                    <span>{first}</span>
+                    <span className="text-white/35">peak {peak} in one year</span>
+                    <span>{last}</span>
+                </div>
+            </div>
+        </section>
+    );
+}
 
 /** How a studio's ending reads in a sentence. */
 const ENDED: Record<string, string> = {

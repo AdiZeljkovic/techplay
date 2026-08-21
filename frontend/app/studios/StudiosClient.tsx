@@ -15,6 +15,8 @@ export interface StudioCard {
     logo_url: string | null;
     country: { code: number; alpha2: string; name: string } | null;
     founded: string | null;
+    kind: string | null;
+    status: string | null;
     games_count: number;
     developed_count: number;
     published_count: number;
@@ -216,7 +218,16 @@ function StudioTile({ studio }: { studio: StudioCard }) {
             href={`/studios/${studio.slug}`}
             className="group flex flex-col gap-3 rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-3.5 hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)] hover:bg-white/[0.04] transition-colors"
         >
-            <span className="flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-[10px] border border-white/[0.07] bg-white/[0.04]">
+            {/* A light plate under the logo. These are transparent PNGs drawn
+                for white backgrounds, so on a dark tile the near-black
+                wordmarks — Square Enix, Activision, Hudson Soft — showed as an
+                empty square. The initials fallback keeps the page's own colours,
+                since nothing is being placed on it. */}
+            <span className={`flex h-[54px] w-[54px] items-center justify-center overflow-hidden rounded-[10px] border ${
+                studio.logo_url
+                    ? "border-white/[0.10] bg-[#f2f3f5]"
+                    : "border-white/[0.07] bg-white/[0.04]"
+            }`}>
                 {studio.logo_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -233,18 +244,47 @@ function StudioTile({ studio }: { studio: StudioCard }) {
             </span>
 
             <span className="min-w-0">
-                <span className="block font-display text-[13.5px] font-black leading-tight text-white line-clamp-2">
-                    {studio.name}
+                <span className="flex items-start gap-2">
+                    <span className="block flex-1 font-display text-[13.5px] font-black leading-tight text-white line-clamp-2">
+                        {studio.name}
+                    </span>
+                    {studio.kind === "Solo Dev" && (
+                        <span
+                            title="One person"
+                            className="mt-0.5 inline-flex h-[17px] shrink-0 items-center rounded-[4px] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] px-1.5 font-display text-[8.5px] font-black uppercase tracking-[0.1em] text-[var(--accent)]"
+                        >
+                            Solo
+                        </span>
+                    )}
                 </span>
 
-                <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-white/45">
-                    <span className="tabular-nums">
-                        {studio.games_count.toLocaleString()} {studio.games_count === 1 ? "game" : "games"}
-                    </span>
+                {/* The split, not just the total. A studio with 400 published
+                    and 3 developed is a publisher, and "403 games" says neither.
+                    Only shown where both sides exist — a line of zeroes is
+                    noise. */}
+                <span className="mt-1.5 block text-[11.5px] tabular-nums text-white/45">
+                    {studio.developed_count > 0 && studio.published_count > 0 ? (
+                        <>
+                            {studio.developed_count.toLocaleString()} made
+                            <span className="mx-1 text-white/20">·</span>
+                            {studio.published_count.toLocaleString()} published
+                        </>
+                    ) : (
+                        <>{studio.games_count.toLocaleString()} {studio.games_count === 1 ? "game" : "games"}</>
+                    )}
+                </span>
+
+                <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-white/30">
                     {studio.country && (
                         <span className="inline-flex items-center gap-1">
-                            <MapPin className="h-3 w-3 text-white/25" />
+                            <MapPin className="h-3 w-3 text-white/20" />
                             {studio.country.name}
+                        </span>
+                    )}
+                    {studio.founded && <span className="tabular-nums">since {studio.founded}</span>}
+                    {studio.status && studio.status !== "active" && (
+                        <span className="text-white/40">
+                            {studio.status === "defunct" ? "closed" : studio.status}
                         </span>
                     )}
                 </span>

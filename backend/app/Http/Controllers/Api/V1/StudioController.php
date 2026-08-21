@@ -125,6 +125,12 @@ class StudioController extends Controller
             /* The two lists apart, which is the whole reason the role is on the
                pivot. Newest first: a studio's recent work is what a reader came
                for, and the 1994 shovelware can wait for the full list. */
+            /* A studio's own releases, by the year they came out. Computed over
+               everything it shipped rather than the shelves, which stop at 48 —
+               a studio with a thirty-year run should not have its history cut
+               off at whatever fits on screen. */
+            'years' => $this->keyed($this->releaseYears($studio)),
+
             'developed' => $this->games($studio, 'developer'),
             'published' => $this->games($studio, 'publisher'),
 
@@ -134,6 +140,48 @@ class StudioController extends Controller
             'ported' => $this->games($studio, 'porting'),
             'supported' => $this->games($studio, 'supporting'),
         ];
+    }
+
+    /**
+     * A keyed map that stays a map when it is empty.
+     *
+     * PHP's empty array encodes as `[]`, so `years` would be an object on a
+     * studio with releases and an array on one without — the shape of a field
+     * depending on whether there was anything to put in it.
+     */
+    private function keyed(array $map): object
+    {
+        return (object) $map;
+    }
+
+    /**
+     * How many games this studio shipped in each year it shipped any.
+     *
+     * Distinct games, not credits: a title it both made and published is one
+     * release, and counting it twice would draw a studio twice its real size.
+     *
+     * @return array<string, int>
+     */
+    private function releaseYears(Studio $studio): array
+    {
+        $rows = $studio->games()
+            ->whereNotNull('games.released')
+            ->distinct()
+            ->pluck('games.released');
+
+        $years = [];
+
+        foreach ($rows as $released) {
+            $year = substr((string) $released, 0, 4);
+
+            if ($year !== '' && $year !== '0000') {
+                $years[$year] = ($years[$year] ?? 0) + 1;
+            }
+        }
+
+        ksort($years);
+
+        return $years;
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -203,6 +251,10 @@ class StudioController extends Controller
             'logo_url' => $studio->logo_url,
             'country' => $this->country($studio->country),
             'founded' => $studio->founded?->format('Y'),
+            /* The card shows a "Solo" mark and says when a studio has closed —
+               both are on the row already, so neither costs a second query. */
+            'kind' => $studio->kind,
+            'status' => $studio->status,
             'games_count' => $studio->games_count,
             'developed_count' => $studio->developed_count,
             'published_count' => $studio->published_count,

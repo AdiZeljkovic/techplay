@@ -142,6 +142,38 @@ class StudioApiTest extends TestCase
             ->assertJsonPath('data.country', null);
     }
 
+    /**
+     * A studio's releases, year by year — over everything it shipped, not over
+     * the shelf, which stops at 48. And a game it both made and published is
+     * one release: counting the credit twice would draw a studio twice its
+     * real size.
+     */
+    public function test_the_years_count_releases_not_credits(): void
+    {
+        $studio = $this->studio('Supergiant Games', ['games_count' => 2]);
+        $hades = $this->game('Hades', '2018-12-06');
+        $pyre = $this->game('Pyre', '2017-07-25');
+
+        foreach ([$hades, $pyre] as $game) {
+            $studio->games()->attach($game->id, ['role' => 'developer']);
+            $studio->games()->attach($game->id, ['role' => 'publisher']);
+        }
+
+        $years = $this->getJson('/api/v1/studios/supergiant-games')->assertOk()->json('data.years');
+
+        $this->assertSame(['2017' => 1, '2018' => 1], $years, 'made and published is one release, not two');
+    }
+
+    /** The shape of a field must not depend on whether there is anything in it. */
+    public function test_years_stays_an_object_when_empty(): void
+    {
+        $this->studio('Quiet Studio');
+
+        $body = $this->getJson('/api/v1/studios/quiet-studio')->assertOk()->getContent();
+
+        $this->assertStringContainsString('"years":{}', $body);
+    }
+
     public function test_an_unknown_studio_is_a_404(): void
     {
         $this->getJson('/api/v1/studios/nobody-here')->assertNotFound();
