@@ -1019,12 +1019,17 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-            {/* ── hero — the calendar page's matte treatment, one language across the site ── */}
-            <div className="relative overflow-hidden border-b border-white/[0.07]">
+            {/* ── hero — the calendar page's matte treatment, one language across the site ──
+
+                The clipping belongs to the art, not to the hero. `overflow-hidden`
+                on this element cut off the "Save to a list" dropdown the moment
+                the buttons moved up here: the panel opened inside a box that
+                hides anything past its edge, so it rendered and was invisible. */}
+            <div className="relative border-b border-white/[0.07]">
                 {heroArt && (
-                    <>
+                    <span aria-hidden className="absolute inset-0 overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={heroArt} alt="" aria-hidden
+                        <img src={heroArt} alt=""
                             className={`absolute inset-0 w-full h-full object-cover ${
                                 heroIsCover ? "opacity-[0.22] blur-[10px] scale-[1.08]" : "opacity-[0.45]"
                             }`} />
@@ -1032,9 +1037,9 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             read at the top while the text sits on solid ground
                             at the bottom; a single flat overlay either drowns
                             the art or leaves the type unreadable over it. */}
-                        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/85 to-[var(--surface-0)]/35" />
-                        <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/90 via-transparent to-[var(--surface-0)]/60" />
-                    </>
+                        <span className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/85 to-[var(--surface-0)]/35" />
+                        <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/90 via-transparent to-[var(--surface-0)]/60" />
+                    </span>
                 )}
 
                 <div className="relative z-10 container-page pt-6 pb-8">

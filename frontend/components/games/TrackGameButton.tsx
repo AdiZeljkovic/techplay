@@ -105,7 +105,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
         }
         return (
             <a href="/login" className="w-full flex items-center justify-center gap-2 py-3 rounded-[var(--radius-card)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
-                <Plus className="w-4 h-4" /> Track This Game
+                <Plus className="w-4 h-4" /> Add to Collection
             </a>
         );
     }
@@ -172,7 +172,7 @@ export default function TrackGameButton({ slug, gameName, variant = "full", wrap
                 <button onClick={() => setOpen((v) => !v)} disabled={busy}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-[var(--radius-card)] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold text-[13px] uppercase tracking-wider transition-colors">
                     {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                    Track This Game
+                    Add to Collection
                 </button>
             )}
 
