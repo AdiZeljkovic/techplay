@@ -7,7 +7,7 @@ import { fetchContent } from "@/lib/fetchContent";
 import {
     Calendar, Star, Globe, Gamepad2, ChevronLeft, Tag, Info,
     Layers, Shield, Newspaper, Users, Cpu, Package, Eye,
-    Clock, Languages, Check, Sparkles, ShoppingBag, ExternalLink,
+    Clock, Languages, Check, Sparkles, ShoppingBag, ExternalLink, ChevronDown,
 } from "lucide-react";
 import GameScreenshotsLightbox from "@/components/games/GameScreenshotsLightbox";
 import GameCountdownTimer from "@/components/games/GameCountdownTimer";
@@ -397,6 +397,117 @@ function CompanyRow({
                     );
                 })}
             </p>
+        </div>
+    );
+}
+
+/**
+ * Who made it, directly under the title.
+ *
+ * It was three panels down in a facts list, which is a strange place for the
+ * thing a reader checks right after the name. Links where the studio has a page
+ * and plain text where it does not, same rule as everywhere else.
+ */
+function HeroCredits({ game }: { game: GameDetail }) {
+    const by = (names: string[], role: "developer" | "publisher") => {
+        if (names.length === 0) return null;
+
+        const linkable = new Map(
+            (game.studios ?? []).filter((s) => s.role === role).map((s) => [s.name.toLowerCase(), s.slug]),
+        );
+
+        return names.slice(0, 3).map((name, index) => {
+            const slug = linkable.get(name.toLowerCase());
+
+            return (
+                <span key={name}>
+                    {index > 0 && ", "}
+                    {slug ? (
+                        <Link href={`/studios/${slug}`} className="text-white/85 hover:text-[var(--accent)] transition-colors">
+                            {name}
+                        </Link>
+                    ) : (
+                        <span className="text-white/85">{name}</span>
+                    )}
+                </span>
+            );
+        });
+    };
+
+    const developers = by(game.developers ?? [], "developer");
+    const publishers = by(game.publishers ?? [], "publisher");
+
+    if (!developers && !publishers) return null;
+
+    return (
+        <p className="mt-2.5 text-[13.5px] text-white/40">
+            {developers && <>by {developers}</>}
+            {developers && publishers && <span className="mx-2 text-white/20">·</span>}
+            {publishers && <>published by {publishers}</>}
+        </p>
+    );
+}
+
+/**
+ * Every score this page holds, together and at a size worth reading.
+ *
+ * They were four small chips in a row of metadata — on a page whose whole job
+ * is to answer "is this any good". The reader's own average leads because it is
+ * ours; the critics follow with the outlet named, since 94 from OpenCritic and
+ * 94 from Metacritic are not the same claim.
+ */
+function ScoreStack({ game }: { game: GameDetail }) {
+    const critics = [
+        game.critic_scores?.opencritic?.score != null && {
+            label: "OpenCritic",
+            value: String(game.critic_scores.opencritic.score),
+            tone: criticTone(game.critic_scores.opencritic.score),
+            href: game.critic_scores.opencritic.url,
+        },
+        game.critic_scores?.metacritic?.score != null && {
+            label: "Metacritic",
+            value: String(game.critic_scores.metacritic.score),
+            tone: criticTone(game.critic_scores.metacritic.score),
+            href: game.critic_scores.metacritic.url,
+        },
+    ].filter(Boolean) as { label: string; value: string; tone: string; href?: string | null }[];
+
+    const readers = Number(game.rating) > 0 ? Number(game.rating) : null;
+    const house = game.techplay_score;
+
+    if (!readers && !house && critics.length === 0) return null;
+
+    return (
+        <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/40 backdrop-blur-sm p-4 md:min-w-[196px]">
+            {readers !== null && (
+                <div className="pb-3.5 border-b border-white/[0.07]">
+                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.14em] text-white/35">
+                        Reader score
+                    </p>
+                    <p className="mt-1 flex items-baseline gap-1.5">
+                        <span className="font-display text-[38px] font-black leading-none tabular-nums text-white">
+                            {readers.toFixed(1)}
+                        </span>
+                        <span className="font-display text-[13px] font-bold text-white/30">/ {game.rating_top ?? 10}</span>
+                    </p>
+                    {game.ratings_count > 0 && (
+                        <p className="mt-1 text-[11.5px] text-white/35 tabular-nums">
+                            {game.ratings_count.toLocaleString()} {game.ratings_count === 1 ? "vote" : "votes"}
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {(house !== null || critics.length > 0) && (
+                <div className={`flex flex-wrap gap-2 ${readers !== null ? "pt-3.5" : ""}`}>
+                    {house !== null && (
+                        <ScoreChip label="TechPlay" value={house.toFixed(1)} tone="bg-[var(--accent)]" />
+                    )}
+                    {critics.map((critic) => (
+                        <ScoreChip key={critic.label} {...critic} />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -844,8 +955,17 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
      * and there it gets a blur: an upscale that is obviously deliberate reads
      * as a backdrop, while a sharp one reads as a mistake.
      */
-    const heroArt = screenshots[0]?.image ?? game.cover_url;
-    const heroIsCover = !screenshots[0]?.image;
+    /**
+     * The backdrop, in order of how well it survives being stretched wide.
+     *
+     * Key art is drawn landscape and made to be a background — that is what
+     * `artworks` is, and 151,024 games now have one. A screenshot is the next
+     * best thing. The cover is last and gets blurred: it is portrait box art
+     * roughly 310x440, and across a full-width band it is upscaled past four
+     * times and cropped to a strip.
+     */
+    const heroArt = artworks[0]?.image ?? screenshots[0]?.image ?? game.cover_url;
+    const heroIsCover = !artworks[0]?.image && !screenshots[0]?.image;
 
     const series     = (bundle.series ?? []).filter((g) => g.slug !== slug);
     const suggested  = bundle.suggested ?? [];
@@ -905,101 +1025,104 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={heroArt} alt="" aria-hidden
-                            className={`absolute inset-0 w-full h-full object-cover opacity-[0.3] ${
-                                heroIsCover ? "blur-[3px] scale-[1.04]" : ""
+                            className={`absolute inset-0 w-full h-full object-cover ${
+                                heroIsCover ? "opacity-[0.22] blur-[10px] scale-[1.08]" : "opacity-[0.45]"
                             }`} />
-                        <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] via-[var(--surface-0)]/85 to-transparent" />
-                        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
+                        {/* Two scrims, not one. The vertical fade lets the art
+                            read at the top while the text sits on solid ground
+                            at the bottom; a single flat overlay either drowns
+                            the art or leaves the type unreadable over it. */}
+                        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/85 to-[var(--surface-0)]/35" />
+                        <span aria-hidden className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)]/90 via-transparent to-[var(--surface-0)]/60" />
                     </>
                 )}
 
-                <div className="relative z-10 container-page py-10">
+                <div className="relative z-10 container-page pt-6 pb-8">
                     <Link href="/games"
                         className="inline-flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/45 hover:text-white transition-colors">
                         <ChevronLeft className="w-3.5 h-3.5" /> Games database
                     </Link>
 
-                    {game.genres.length > 0 && (
-                        <div className="mt-4 flex flex-wrap gap-1.5">
-                            {game.genres.map((g) => (
-                                <span key={g} className="rounded-[5px] bg-[var(--accent)] px-2 py-0.5 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">
-                                    {g}
-                                </span>
-                            ))}
+                    <div className="mt-6 flex flex-col md:flex-row md:items-end gap-6 lg:gap-8">
+                        {/* The box art, which this page never showed. It is the
+                            one image a reader recognises the game by, and it was
+                            reachable only as a blurred smear behind the title. */}
+                        {game.cover_url && (
+                            <span className="relative block w-[152px] md:w-[190px] shrink-0 aspect-[3/4] rounded-[12px] overflow-hidden border border-white/[0.12] shadow-[0_18px_50px_-12px_rgba(0,0,0,0.9)]">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={game.cover_url} alt={`${game.name} cover art`}
+                                    className="w-full h-full object-cover" />
+                            </span>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                            {game.genres.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5">
+                                    {game.genres.slice(0, 4).map((g) => (
+                                        <span key={g} className="rounded-[5px] bg-[var(--accent)] px-2 py-0.5 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">
+                                            {g}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            <h1 className="mt-3 font-display font-black text-white tracking-tight leading-[0.94] text-[34px] md:text-[50px]">
+                                {game.name}
+                            </h1>
+
+                            {/* Who made it, right under the name — the credit a
+                                reader looks for first, and it was three panels
+                                down in a facts list. */}
+                            <HeroCredits game={game} />
+
+                            <div className="mt-3.5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px]">
+                                {released && (
+                                    <span className="inline-flex items-center gap-2 text-white/75">
+                                        <Calendar className="w-4 h-4 text-[var(--accent)]" />
+                                        <span className="font-display font-bold text-white">{released}</span>
+                                    </span>
+                                )}
+                                {game.esrb_rating && (
+                                    <span className={`inline-flex items-center gap-1.5 rounded-[5px] px-2 py-0.5 ${ESRB_COLORS[game.esrb_rating.name] ?? "bg-white/20"}`}>
+                                        <Shield className="w-3.5 h-3.5 text-white/85" />
+                                        <span className="font-display text-[10px] font-black uppercase tracking-[0.08em] text-white">{game.esrb_rating.name}</span>
+                                    </span>
+                                )}
+                                {game.views > 0 && (
+                                    <span className="inline-flex items-center gap-1.5 text-white/35">
+                                        <Eye className="w-3.5 h-3.5" />
+                                        <span className="font-display text-[11px] font-bold tabular-nums">{game.views.toLocaleString()}</span>
+                                    </span>
+                                )}
+                            </div>
+
+                            {game.platforms.length > 0 && (
+                                <div className="mt-3.5 flex flex-wrap items-center gap-1.5">
+                                    {game.platforms.slice(0, 10).map((p) => (
+                                        <span key={p} className="inline-flex h-[24px] items-center rounded-[6px] border border-white/[0.09] bg-black/35 px-2 font-display text-[10.5px] font-bold text-white/70">
+                                            {p}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="mt-5 flex flex-col sm:flex-row gap-2.5 sm:max-w-[440px]">
+                                <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
+                                <AddToListButton slug={slug} gameName={game.name} />
+                            </div>
                         </div>
-                    )}
 
-                    <h1 className="mt-3 font-display font-black text-white tracking-tight leading-[0.92] text-[38px] md:text-[54px] max-w-[900px]">
-                        {game.name}
-                    </h1>
-
-                    <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-                        {released && (
-                            <span className="inline-flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-[var(--accent)]" />
-                                <span className="font-display text-[15px] font-black text-white">{released}</span>
-                            </span>
-                        )}
-                        {game.rating > 0 && (
-                            <span className="inline-flex items-center gap-2">
-                                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                                <span className="font-display text-[15px] font-black text-white tabular-nums">{Number(game.rating).toFixed(1)}</span>
-                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/40">
-                                    / {game.rating_top ?? 10}{game.ratings_count > 0 && ` · ${game.ratings_count.toLocaleString()} votes`}
-                                </span>
-                            </span>
-                        )}
-                        {game.esrb_rating && (
-                            <span className={`inline-flex items-center gap-1.5 rounded-[5px] px-2 py-0.5 ${ESRB_COLORS[game.esrb_rating.name] ?? "bg-white/30/90"}`}>
-                                <Shield className="w-3.5 h-3.5 text-white/85" />
-                                <span className="font-display text-[10px] font-black uppercase tracking-[0.08em] text-white">{game.esrb_rating.name}</span>
-                            </span>
-                        )}
-                        {game.views > 0 && (
-                            <span className="inline-flex items-center gap-1.5 text-white/35">
-                                <Eye className="w-3.5 h-3.5" />
-                                <span className="font-display text-[11px] font-bold tabular-nums">{game.views.toLocaleString()}</span>
-                            </span>
-                        )}
+                        {/* The scores as a block of their own. They were a line
+                            of small chips lost among the metadata, on a page
+                            whose whole job is to answer "is this any good". */}
+                        <ScoreStack game={game} />
                     </div>
-
-                    {(game.techplay_score !== null
-                        || game.critic_scores?.opencritic?.score != null
-                        || game.critic_scores?.metacritic?.score != null) && (
-                        <div className="mt-5 flex flex-wrap items-center gap-2.5">
-                            {game.techplay_score !== null && (
-                                <ScoreChip label="TechPlay" value={game.techplay_score.toFixed(1)} tone="bg-[var(--accent)]" />
-                            )}
-                            {game.critic_scores?.opencritic?.score != null && (
-                                <ScoreChip
-                                    label="OpenCritic"
-                                    value={String(game.critic_scores.opencritic.score)}
-                                    tone={criticTone(game.critic_scores.opencritic.score)}
-                                    href={game.critic_scores.opencritic.url}
-                                />
-                            )}
-                            {game.critic_scores?.metacritic?.score != null && (
-                                <ScoreChip
-                                    label="Metacritic"
-                                    value={String(game.critic_scores.metacritic.score)}
-                                    tone={criticTone(game.critic_scores.metacritic.score)}
-                                    href={game.critic_scores.metacritic.url}
-                                />
-                            )}
-                        </div>
-                    )}
 
                     {isUpcoming && game.released && (
                         <div className="mt-6">
                             <GameCountdownTimer targetDate={game.released} />
                         </div>
                     )}
-
-                    {/* The actions, where a phone can reach them. */}
-                    <div className="xl:hidden mt-5 space-y-2.5">
-                        <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
-                        <AddToListButton slug={slug} gameName={game.name} />
-                    </div>
                 </div>
             </div>
 
@@ -1009,7 +1132,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 of them — an empty row of dashes would be worse than silence. */}
             <TimeToBeat times={game.time_to_beat} />
 
-            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+            {/* No `items-start` here, deliberately.
+
+                The sidebar below is `sticky`, and with `items-start` its grid
+                cell is only as tall as its own content — so it had nothing to
+                stick within and simply stopped, leaving two thousand pixels of
+                empty black beside the main column. Stretched cells give it the
+                runway the whole page scroll long. */}
+            <div className="container-page py-6 grid grid-cols-1 xl:grid-cols-12 gap-5">
                 {/* ── main column ── */}
                 <div className="xl:col-span-8 min-w-0 space-y-5">
 
@@ -1035,15 +1165,38 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </Panel>
                     )}
 
-                    {screenshots.length > 0 && (
-                        <Panel title={`Screenshots (${screenshots.length})`}>
-                            <GameScreenshotsLightbox screenshots={screenshots} wrapperClassName="" />
-                        </Panel>
-                    )}
-
-                    {artworks.length > 0 && (
-                        <Panel title={`Artwork (${artworks.length})`}>
-                            <GameScreenshotsLightbox screenshots={artworks} wrapperClassName="" />
+                    {/* One gallery, not two panels of the same thing stacked.
+                        Screenshots and key art are different pictures, so they
+                        keep their own headings — but under one roof, where a
+                        reader looking at pictures stays looking at pictures. */}
+                    {(screenshots.length > 0 || artworks.length > 0) && (
+                        <Panel title="Gallery" meta={
+                            <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                                {screenshots.length + artworks.length}
+                            </span>
+                        }>
+                            <div className="space-y-4">
+                                {screenshots.length > 0 && (
+                                    <div>
+                                        {artworks.length > 0 && (
+                                            <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/30">
+                                                Screenshots
+                                            </p>
+                                        )}
+                                        <GameScreenshotsLightbox screenshots={screenshots} wrapperClassName="" />
+                                    </div>
+                                )}
+                                {artworks.length > 0 && (
+                                    <div>
+                                        {screenshots.length > 0 && (
+                                            <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/30">
+                                                Key art
+                                            </p>
+                                        )}
+                                        <GameScreenshotsLightbox screenshots={artworks} wrapperClassName="" />
+                                    </div>
+                                )}
+                            </div>
                         </Panel>
                     )}
 
@@ -1070,9 +1223,25 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
                     <RelatedShelves groups={game.related ?? {}} />
 
+                    {/* Folded away. It is a twelve-row table that answers a
+                        question most readers never ask, and open it took as
+                        much of the page as the trailer. The count is in the
+                        summary so somebody who does ask can see it is worth
+                        opening. */}
                     {(game.languages ?? []).length > 0 && (
-                        <Panel title={`Languages (${game.languages.length})`} meta={<Languages className="w-4 h-4 text-white/25" />}>
-                            <LanguageTable rows={game.languages} />
+                        <Panel title="Languages" padding="none">
+                            <details className="group">
+                                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3.5 text-[13px] text-white/60 hover:text-white/85 transition-colors">
+                                    <span className="inline-flex items-center gap-2">
+                                        <Languages className="w-4 h-4 text-white/25" />
+                                        {game.languages.length} languages, with audio, subtitles and interface
+                                    </span>
+                                    <ChevronDown className="w-4 h-4 text-white/30 transition-transform group-open:rotate-180" />
+                                </summary>
+                                <div className="px-4 pb-4">
+                                    <LanguageTable rows={game.languages} />
+                                </div>
+                            </details>
                         </Panel>
                     )}
 
@@ -1151,7 +1320,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 </div>
 
                 {/* ── sidebar ── */}
-                <div className="xl:col-span-4 min-w-0 space-y-5 xl:sticky xl:top-[92px]">
+                <div className="xl:col-span-4 min-w-0 space-y-5 xl:sticky xl:top-[92px] xl:self-start">
                     <Panel title="Your collection" className="hidden xl:block">
                         <div className="space-y-2.5">
                             <TrackGameButton slug={slug} gameName={game.name} variant="full" released={game.released} />
@@ -1269,14 +1438,21 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-black uppercase tracking-[0.08em] text-white">
                             <Sparkles className="w-[18px] h-[18px] text-[var(--accent)]" /> Games like this
                         </h2>
-                        <div className="flex flex-wrap gap-2">
-                            {game.similar_games.slice(0, 12).map((similar) => (
-                                <Link
-                                    key={similar.slug}
-                                    href={`/games/${similar.slug}`}
-                                    className="inline-flex h-[34px] items-center rounded-[9px] border border-white/[0.07] bg-white/[0.02] px-3.5 text-[13px] text-white/75 hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:text-white transition-colors"
-                                >
-                                    {similar.name}
+                        {/* Covers, not text chips. A row of grey pills under a
+                            heading about games reads as a tag list, and it sat
+                            directly above a shelf of real cards doing the same
+                            job better. */}
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5">
+                            {game.similar_games.slice(0, 8).map((similar) => (
+                                <Link key={similar.slug} href={`/games/${similar.slug}`} className="group block">
+                                    <span className="relative block h-[150px] overflow-hidden rounded-[9px] border border-white/[0.07] bg-white/[0.02] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
+                                        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" />
+                                        <span className="absolute inset-x-0 bottom-0 p-2">
+                                            <span className="block font-display text-[11px] font-black leading-tight text-white line-clamp-3">
+                                                {similar.name}
+                                            </span>
+                                        </span>
+                                    </span>
                                 </Link>
                             ))}
                         </div>
