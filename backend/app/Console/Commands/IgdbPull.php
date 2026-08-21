@@ -52,6 +52,7 @@ class IgdbPull extends Command
         /* Active, defunct, or turned into somebody else — `status: 3` on its own
            says none of that. */
         'company_statuses',
+        'company_type_histories',
         'covers',
         'game_videos',
         'age_ratings',
