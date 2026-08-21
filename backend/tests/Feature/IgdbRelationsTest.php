@@ -129,6 +129,23 @@ class IgdbRelationsTest extends TestCase
             ->assertJsonPath('parts.DLC.0.name', 'Hades Soundtrack');
     }
 
+    /**
+     * The shape of a field must not depend on whether there is anything in it.
+     * PHP's empty array encodes as `[]`, so these three were objects on games
+     * with relations and arrays on games without.
+     */
+    public function test_the_keyed_fields_stay_objects_when_empty(): void
+    {
+        $this->ourGame('Lonely Game', 100);
+        $this->raw(100, ['name' => 'Lonely Game']);
+
+        $body = $this->getJson('/api/v1/games/lonely-game')->assertOk()->getContent();
+
+        $this->assertStringContainsString('"part_of":{}', $body);
+        $this->assertStringContainsString('"parts":{}', $body);
+        $this->assertStringContainsString('"links":{}', $body);
+    }
+
     /** A game does not relate to itself, however IGDB spells it. */
     public function test_a_game_is_not_related_to_itself(): void
     {

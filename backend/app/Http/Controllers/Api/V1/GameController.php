@@ -78,6 +78,19 @@ class GameController extends Controller
     }
 
     /**
+     * A keyed map that stays a map when it is empty.
+     *
+     * PHP's empty array encodes as `[]`, so a field that is an object on every
+     * game with relations became an array on every game without — the shape of
+     * the field depending on whether there was anything to put in it. Clients
+     * should not have to handle both.
+     */
+    private function keyed(array $map): object
+    {
+        return (object) $map;
+    }
+
+    /**
      * IGDB's seconds as hours, rounded the way a person would say them.
      *
      * `count` comes along because "24 hours, from 3 people" and "24 hours, from
@@ -343,19 +356,19 @@ class GameController extends Controller
 
             /* Grouped by what the link is for, because "where to buy it" and
                "where its people are" are two different rows on the page. */
-            'links' => $game->links
+            'links' => $this->keyed($game->links
                 ->groupBy('kind')
                 ->map(fn ($group) => $group->map(fn ($link) => [
                     'service' => $link->service,
                     'url' => $link->url,
                 ])->values()->all())
-                ->all(),
+                ->all()),
 
             /* Both directions of the same rows: what this game belongs to, and
                what belongs to it. A DLC page names its game; the game's page
                names its DLC. */
-            'part_of' => $this->relations($game->partOf, 'related', GameRelation::LABELS),
-            'parts' => $this->relations($game->parts, 'game', GameRelation::REVERSE_LABELS),
+            'part_of' => $this->keyed($this->relations($game->partOf, 'related', GameRelation::LABELS)),
+            'parts' => $this->keyed($this->relations($game->parts, 'game', GameRelation::REVERSE_LABELS)),
         ];
     }
 
