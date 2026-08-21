@@ -22,14 +22,13 @@ class Studio extends Model
     protected $fillable = [
         'igdb_id', 'name', 'slug', 'description', 'logo_url',
         'country', 'founded', 'website', 'parent_id',
-        'status', 'changed_at', 'became_studio_id', 'employees',
+        'status', 'changed_at', 'became_studio_id',
         'games_count', 'developed_count', 'published_count', 'indexable',
     ];
 
     protected $casts = [
         'founded' => 'date',
         'changed_at' => 'date',
-        'employees' => 'integer',
         'indexable' => 'boolean',
         'igdb_id' => 'integer',
         'country' => 'integer',

@@ -207,7 +207,10 @@ class IgdbStudios extends Command
                         'website' => $this->firstSite($p['websites'] ?? [], $sites),
                         'status' => $this->statuses[(int) ($p['status'] ?? 0)] ?? 'active',
                         'changed_at' => $this->stamp($p['change_date'] ?? null),
-                        'employees' => isset($p['company_size']) ? (int) $p['company_size'] : null,
+                        /* `company_size` is not written: its values run 1 to 8
+                           and IGDB names none of them, so it is a size band
+                           nobody can read, not a headcount. It said Sega had
+                           seven staff. */
                         /* Parents and successors are other studios, which do not
                            all exist yet while this batch is being written. Both
                            are joined up in a second pass. */
@@ -297,7 +300,6 @@ class IgdbStudios extends Command
                     $changed += DB::table('studios')->where('id', $id)->update([
                         'status' => $this->statuses[(int) ($p['status'] ?? 0)] ?? 'active',
                         'changed_at' => $this->stamp($p['change_date'] ?? null),
-                        'employees' => isset($p['company_size']) ? (int) $p['company_size'] : null,
                         'updated_at' => now(),
                     ]);
                 }

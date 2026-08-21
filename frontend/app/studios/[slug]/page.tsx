@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Building2, MapPin, CalendarDays, Globe, Gamepad2, Users } from "lucide-react";
+import { Building2, MapPin, CalendarDays, Globe, Gamepad2 } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import DataAttribution from "@/components/games/DataAttribution";
@@ -29,7 +29,6 @@ interface Studio {
     status: "active" | "defunct" | "merged" | "renamed" | null;
     changed_at: string | null;
     became: { name: string; slug: string } | null;
-    employees: number | null;
     games_count: number;
     developed_count: number;
     published_count: number;
@@ -163,12 +162,6 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                                 <span className="inline-flex items-center gap-1.5">
                                     <CalendarDays className="h-3.5 w-3.5 text-white/30" />
                                     Founded {founded}
-                                </span>
-                            )}
-                            {studio.employees && (
-                                <span className="inline-flex items-center gap-1.5">
-                                    <Users className="h-3.5 w-3.5 text-white/30" />
-                                    <span className="tabular-nums">{studio.employees.toLocaleString()}</span> staff
                                 </span>
                             )}
                             {studio.website && (

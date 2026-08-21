@@ -105,7 +105,6 @@ class StudioController extends Controller
             'status' => $studio->status,
             'changed_at' => $studio->changed_at?->format('Y-m-d'),
             'became' => $studio->became ? ['name' => $studio->became->name, 'slug' => $studio->became->slug] : null,
-            'employees' => $studio->employees,
             'games_count' => $studio->games_count,
             'developed_count' => $studio->developed_count,
             'published_count' => $studio->published_count,

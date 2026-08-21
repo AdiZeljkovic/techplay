@@ -239,15 +239,12 @@ class IgdbStudiosTest extends TestCase
     public function test_a_studio_with_no_status_is_recorded_as_active(): void
     {
         $this->ourGame('Dishonored', 100);
-        $this->raw('companies', 10, ['name' => 'Arkane Studios', 'slug' => 'arkane', 'company_size' => 180]);
+        $this->raw('companies', 10, ['name' => 'Arkane Studios', 'slug' => 'arkane']);
         $this->raw('involved_companies', 20, ['game' => 100, 'company' => 10, 'developer' => true]);
 
         $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
 
-        $studio = Studio::where('igdb_id', 10)->first();
-
-        $this->assertSame('active', $studio->status);
-        $this->assertSame(180, $studio->employees);
+        $this->assertSame('active', Studio::where('igdb_id', 10)->value('status'));
     }
 
     /** Without --apply it is a report and nothing more. */
@@ -284,15 +281,12 @@ class IgdbStudiosTest extends TestCase
 
         /* The studio closes, and IGDB is pulled again. */
         DB::table('igdb_raw')->where('endpoint', 'companies')->where('igdb_id', 10)->update([
-            'payload' => json_encode(['id' => 10, 'name' => 'Arkane Studios', 'slug' => 'arkane', 'status' => 1, 'company_size' => 90]),
+            'payload' => json_encode(['id' => 10, 'name' => 'Arkane Studios', 'slug' => 'arkane', 'status' => 1]),
         ]);
 
         $this->artisan('igdb:studios', ['--apply' => true])->assertSuccessful();
 
-        $studio = Studio::where('igdb_id', 10)->first();
-
-        $this->assertSame('defunct', $studio->status);
-        $this->assertSame(90, $studio->employees);
+        $this->assertSame('defunct', Studio::where('igdb_id', 10)->value('status'));
     }
 
     /** Running it twice does not double the studios or the links. */
