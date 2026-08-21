@@ -542,9 +542,6 @@ export default function ProfileHero({
                                                 <Play className="w-3.5 h-3.5" />
                                                 {hero.continue_playing ? `Continue ${hero.continue_playing.name}` : "Find your first game"}
                                             </Link>
-                                            <Link href={`/wrapped/${hero.username}`} className={MENU_ITEM}>
-                                                <Sparkles className="w-3.5 h-3.5" /> Your Wrapped
-                                            </Link>
                                             <Link href="/settings" className={MENU_ITEM}>
                                                 <ShieldCheck className="w-3.5 h-3.5" /> Privacy settings
                                             </Link>

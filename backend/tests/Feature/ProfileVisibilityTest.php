@@ -109,7 +109,6 @@ class ProfileVisibilityTest extends TestCase
             "/api/v1/users/{$user->username}/activity",
             "/api/v1/users/{$user->username}/steam-achievements",
             "/api/v1/users/{$user->username}/recognitions",
-            "/api/v1/users/{$user->username}/wrapped/2026",
         ] as $url) {
             $this->getJson($url)->assertStatus(403);
         }

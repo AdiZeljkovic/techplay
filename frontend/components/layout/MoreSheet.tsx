@@ -54,7 +54,6 @@ const COMMUNITY: Row[] = [
 const TOOLS: Row[] = [
     { name: "WoW Analyzer", href: "/wow-analyzer", icon: ShieldHalf, description: "Character readiness check" },
     { name: "Backlog Advisor", href: "/backlog-advisor", icon: Compass, description: "What should you play next?" },
-    { name: "Gaming Wrapped", href: "/wrapped", icon: Sparkles, description: "Your year in gaming, shareable" },
     { name: "GTA 6 Hub", href: "/gta6", icon: MapPinned, description: "Map, characters, vehicles, weapons" },
     { name: "The Last Disc", href: "/last-disc", icon: Disc3, description: "Open letter: keep physical games" },
 ];

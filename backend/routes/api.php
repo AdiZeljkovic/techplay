@@ -86,7 +86,6 @@ use App\Http\Controllers\Api\V1\UserWowCharactersController;
 use App\Http\Controllers\Api\V1\VerificationController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Controllers\Api\V1\WowAnalyzerController;
-use App\Http\Controllers\Api\V1\WrappedController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -522,7 +521,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/users/{username}/taste-match', [TasteMatchController::class, 'show']);
 
         // Public Profile
-        Route::get('/users/{username}/wrapped/{year}', [WrappedController::class, 'show']);
         Route::get('/users/{username}/collection', [GameCollectionController::class, 'index']);
         Route::get('/users/{username}/collection-goals', [CollectionGoalController::class, 'index']);
         Route::get('/users/{username}/achievements', [AchievementController::class, 'index']);
