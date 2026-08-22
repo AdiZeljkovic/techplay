@@ -105,8 +105,33 @@ export default function SettingsClient() {
      * server just rendered.
      */
     useEffect(() => {
-        const wanted = new URLSearchParams(window.location.search).get("section");
+        const params = new URLSearchParams(window.location.search);
+
+        const wanted = params.get("section");
         if (wanted && SECTIONS.some((s) => s.id === wanted)) setSection(wanted as SectionId);
+
+        /*
+         * What came back from Steam.
+         *
+         * The callback has always ended by redirecting here with one of these
+         * two flags, and nothing has ever read either — so a reader who linked
+         * their account returned to an unchanged page and a reader whose link
+         * failed returned to the same unchanged page. Both looked like a button
+         * that does nothing. The flags are cleared once read, so a refresh does
+         * not announce it twice.
+         */
+        if (params.get("steam_connected")) {
+            toast.success("Steam connected — your library is importing now.");
+        } else if (params.get("steam_error")) {
+            toast.error("Steam couldn't confirm that sign-in. Please try again.");
+        }
+
+        if (params.has("steam_connected") || params.has("steam_error")) {
+            params.delete("steam_connected");
+            params.delete("steam_error");
+            const rest = params.toString();
+            window.history.replaceState(null, "", rest ? `/settings?${rest}` : "/settings");
+        }
     }, []);
 
     /** Switching sections rewrites the address, so a refresh or a shared link

@@ -20,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ConnectedAccountController extends Controller
@@ -93,7 +94,7 @@ class ConnectedAccountController extends Controller
     {
         // Validate the OpenID response
         if (! $this->verifySteamOpenId($request)) {
-            return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_error=1');
+            return redirect(config('app.frontend_url').'/settings?section=connections&steam_error=1');
         }
 
         // Extract Steam64 ID from claimed_id URL
@@ -102,7 +103,7 @@ class ConnectedAccountController extends Controller
         $steamId = $m[1] ?? null;
 
         if (! $steamId) {
-            return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_error=1');
+            return redirect(config('app.frontend_url').'/settings?section=connections&steam_error=1');
         }
 
         // Identify the user from the single-use handle. `pull` reads and
@@ -114,7 +115,7 @@ class ConnectedAccountController extends Controller
 
         $user = $userId ? User::find($userId) : null;
         if (! $user) {
-            return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_error=1');
+            return redirect(config('app.frontend_url').'/settings?section=connections&steam_error=1');
         }
 
         // Get display name from Steam
@@ -141,7 +142,7 @@ class ConnectedAccountController extends Controller
         } catch (\Throwable) {
         }
 
-        return redirect(config('app.frontend_url').'/settings?tab=platforms&steam_connected=1');
+        return redirect(config('app.frontend_url').'/settings?section=connections&steam_connected=1');
     }
 
     /**
@@ -417,13 +418,69 @@ class ConnectedAccountController extends Controller
     /**
      * Verify Steam OpenID 2.0 response by sending it back to Steam.
      */
+    /**
+     * Ask Steam whether the assertion it just sent us is really its own.
+     *
+     * This has never once returned true. `$request->all()` was handing back
+     * `openid_claimed_id`, `openid_sig`, `openid_signed` — PHP rewrites a dot
+     * in a query-string key to an underscore, and has since forever — while
+     * check_authentication requires every field echoed back under the exact
+     * name Steam sent it with. The one key that kept its dot was the
+     * `openid.mode` this method set itself, so Steam received a payload with
+     * no recognisable OpenID fields in it and answered is_valid:false. Every
+     * attempt redirected to steam_error=1, which nothing on the frontend
+     * displayed, so linking Steam looked like a button that did nothing.
+     *
+     * `parse_str()` is no escape: it performs the same substitution. The raw
+     * query string has to be split by hand.
+     */
     private function verifySteamOpenId(Request $request): bool
     {
-        $params = $request->all();
+        $params = [];
+
+        foreach (explode('&', (string) $request->server('QUERY_STRING')) as $pair) {
+            if ($pair === '') {
+                continue;
+            }
+
+            [$key, $value] = array_pad(explode('=', $pair, 2), 2, '');
+            $key = urldecode($key);
+
+            // Only the assertion goes back. `state` is ours, not Steam's.
+            if (str_starts_with($key, 'openid.')) {
+                $params[$key] = urldecode($value);
+            }
+        }
+
+        if (! isset($params['openid.sig'], $params['openid.signed'])) {
+            Log::warning('Steam OpenID callback carried no signature.', ['keys' => array_keys($params)]);
+
+            return false;
+        }
+
         $params['openid.mode'] = 'check_authentication';
 
-        $response = Http::asForm()->post('https://steamcommunity.com/openid/login', $params);
+        try {
+            $response = Http::asForm()
+                ->timeout(10)
+                ->post('https://steamcommunity.com/openid/login', $params);
+        } catch (\Throwable $e) {
+            Log::warning('Steam OpenID verification could not reach Steam.', ['error' => $e->getMessage()]);
 
-        return str_contains($response->body(), 'is_valid:true');
+            return false;
+        }
+
+        $valid = str_contains($response->body(), 'is_valid:true');
+
+        if (! $valid) {
+            // Silence here is what hid this for months: three attempts across
+            // two weeks, all 302, and not one line in the log to say why.
+            Log::warning('Steam OpenID assertion rejected by Steam.', [
+                'status' => $response->status(),
+                'body' => Str::limit($response->body(), 200),
+            ]);
+        }
+
+        return $valid;
     }
 }
