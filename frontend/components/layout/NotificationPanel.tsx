@@ -165,9 +165,12 @@ export default function NotificationPanel({ unreadCount, onCountRefresh, variant
                 }
                 title="Notifications"
             >
+                {/* Only the bell swings. The badge is pinned to the button, so
+                    it stays put and the count remains readable while the bell
+                    moves under it. */}
                 {asSheet
-                    ? <BellMark className="w-[22px] h-[22px]" active={unreadCount > 0} />
-                    : <Bell className="w-5 h-5" />}
+                    ? <BellMark className={`w-[22px] h-[22px] ${unreadCount > 0 ? "tp-bell-ring" : ""}`} active={unreadCount > 0} />
+                    : <Bell className={`w-5 h-5 ${unreadCount > 0 ? "tp-bell-ring" : ""}`} />}
                 {unreadCount > 0 && (
                     <span className={
                         asSheet

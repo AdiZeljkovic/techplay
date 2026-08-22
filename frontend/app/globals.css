@@ -954,8 +954,32 @@ body.tp-navigating .tp-page {
   animation: tp-reward-moment 0.42s var(--ease-hud) forwards;
 }
 
+/* The bell rings while something is waiting to be read.
+   A gesture rather than a loop: three quarters of the cycle is spent perfectly
+   still, then six decaying swings and back to rest. A bell that never stops
+   moving stops meaning anything, and it would drag the eye off whatever the
+   reader came to the page for.
+   It hangs from its crown, so that is where it pivots — a bell rotating about
+   its middle reads as a wobbling icon, not a bell. */
+@keyframes tp-bell-ring {
+  0%, 72%, 94%, 100% { transform: rotate(0deg); }
+  75%  { transform: rotate(12deg); }
+  78%  { transform: rotate(-10deg); }
+  81%  { transform: rotate(7deg); }
+  84%  { transform: rotate(-5deg); }
+  87%  { transform: rotate(3deg); }
+  90%  { transform: rotate(-2deg); }
+}
+.tp-bell-ring {
+  animation: tp-bell-ring 4.5s ease-in-out infinite;
+  transform-origin: 50% 15%;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tp-fade-up { animation: none; opacity: 1; transform: none; }
+  /* The badge already carries the count; the movement was the flourish. */
+  .tp-bell-ring { animation: none; }
   /* The chip still has to leave, or it stacks up in the corner forever —
      so it keeps its timing and loses its movement. */
   .tp-reward-chip { animation: tp-reward-chip 2.6s linear forwards; transform: none; }
