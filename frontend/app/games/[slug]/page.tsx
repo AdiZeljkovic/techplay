@@ -1042,6 +1042,27 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
     const trailerYt  = trailer ? youtubeId(trailer) : null;
     const { details, sysreq } = groupAttributes(game.attributes);
 
+    /**
+     * Whether this page has earned an advertisement.
+     *
+     * The catalogue is 332,128 games and 116,087 of them carry fewer than 200
+     * characters of description — 26,886 carry none at all. Measured on
+     * /games/avalon-remake: 1,666 characters of visible text, nearly all of it
+     * navigation, with perhaps a hundred that belong to the game. An ad on a
+     * page like that is what Google's policies call scaled content, and on
+     * 21 Aug 2026 this account was placed under an ad serving limit.
+     *
+     * So the slot is earned rather than automatic. A thin page keeps every
+     * other feature it has — it simply stops carrying advertising until it has
+     * something to say. Those pages barely filled anyway; what they cost was
+     * the quality signal across the other 216,041.
+     */
+    const adWorthy = (game.description ?? "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .length >= 200;
+
     /* ── JSON-LD ─────────────────────────────────────────────────────────────── */
     const structuredData: Record<string, unknown> = {
         "@context":          "https://schema.org",
@@ -1557,8 +1578,10 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
                 {/* Below the game itself and its two recommendation rows,
                     above the forum threads: past everything the reader came
-                    for, still on the page rather than under its footer. */}
-                <DisplayAd minHeight={110} />
+                    for, still on the page rather than under its footer — and
+                    only where the page carries enough of its own to justify
+                    one. See `adWorthy` above. */}
+                {adWorthy && <DisplayAd minHeight={110} />}
 
                 <GameForumThreads gameSlug={slug} />
 
