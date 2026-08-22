@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
+import PlatformMark from "@/components/games/PlatformMark";
 import { useState } from "react";
 import { Loader2, Link2, Link2Off, RefreshCw, CheckCircle2, Clock, AlertCircle, Shield, X, Eye, EyeOff } from "lucide-react";
 
@@ -41,12 +42,11 @@ const PROVIDERS: {
         color: "#1b2838",
         iconBg: "#171a21",
         connectMode: "redirect",
-        logo: (
-            <svg viewBox="0 0 233 233" className="w-6 h-6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="116.5" cy="116.5" r="116.5" fill="#1B2838"/>
-                <path d="M116.5 28C68.1 28 28 68.1 28 116.5c0 43.5 30.7 79.9 71.7 88.5l26.4-65.3a27.3 27.3 0 01-6.1.7c-15.1 0-27.3-12.2-27.3-27.3s12.2-27.3 27.3-27.3 27.3 12.2 27.3 27.3c0 .8 0 1.5-.1 2.3l-64.2 26.6c2.4 6.6 6.5 12.5 11.9 17l65.8-27.3a27.3 27.3 0 003.8-13.3c0-15.1-12.2-27.3-27.3-27.3zM87.3 144.7l-12.2 5.1c2.3 4.6 6.5 8.2 11.7 9.7 10.6 3 21.5-3.2 24.5-13.8 3-10.6-3.2-21.5-13.8-24.5-5.5-1.5-11.1-.7-15.7 2.1l12.6 5.2a9.1 9.1 0 11-7.1 16.2z" fill="white"/>
-            </svg>
-        ),
+        // Drawn from the shared mark rather than a second tracing of it. The
+        // path that used to sit here drew the disc and the valve as one filled
+        // shape, which reads as a white blob wherever it is not sitting on
+        // Steam's own dark circle.
+        logo: <PlatformMark platform="steam" size={24} className="text-white" />,
     },
     {
         id: "xbox",
