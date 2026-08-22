@@ -107,12 +107,30 @@ function AvatarRing({
 
 /* ── buttons ──────────────────────────────────────────────────────────── */
 
-const BTN =
-    "inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[8px] border font-display text-[11.5px] font-bold uppercase tracking-[0.08em] transition-colors duration-300 disabled:opacity-60";
+/**
+ * The shape without its padding, because an icon-only button has to set its own.
+ *
+ * `${BTN} w-9 px-0` looked like it worked and did not: Tailwind resolves two
+ * padding utilities by their order in the generated stylesheet, not by their
+ * order in the class attribute, so `px-4` won and a 36px-wide button had 32px
+ * of padding. The icon was squeezed to a 4px sliver — which is why the caret
+ * looked missing and the old "…" looked faint. Nothing overrides anything here.
+ */
+const BTN_BASE =
+    "inline-flex items-center justify-center gap-2 h-10 rounded-[8px] border font-display text-[11.5px] font-bold uppercase tracking-[0.08em] transition-colors duration-300 disabled:opacity-60";
 
-const BTN_GHOST = `${BTN} border-white/[0.14] bg-black/30 backdrop-blur-sm text-white hover:bg-white/[0.09] hover:border-white/30`;
+const SKIN_GHOST = "border-white/[0.14] bg-black/30 backdrop-blur-sm text-white hover:bg-white/[0.09] hover:border-white/30";
 
-const BTN_PRIMARY = `${BTN} border-transparent bg-[var(--accent)] text-white hover:brightness-110`;
+const SKIN_PRIMARY = "border-transparent bg-[var(--accent)] text-white hover:brightness-110";
+
+const BTN_GHOST = `${BTN_BASE} px-4 ${SKIN_GHOST}`;
+
+const BTN_PRIMARY = `${BTN_BASE} px-4 ${SKIN_PRIMARY}`;
+
+/** Square, and the icon inside is never allowed to shrink. */
+const BTN_ICON_GHOST = `${BTN_BASE} w-10 ${SKIN_GHOST}`;
+
+const BTN_ICON_PRIMARY = `${BTN_BASE} w-10 ${SKIN_PRIMARY}`;
 
 /** The visitor's relationship button — one control, five states. */
 function FriendAction({ status, busy, onAdd }: { status: FriendStatus; busy: boolean; onAdd: () => void }) {
@@ -186,16 +204,20 @@ function MoreMenu({
                 aria-label={label}
                 aria-haspopup="menu"
                 aria-expanded={open}
-                className={
-                    before
-                        ? `${BTN_PRIMARY} w-9 px-0 rounded-l-none border-l border-black/25`
-                        : `${BTN_GHOST} w-10 px-0`
-                }
+                className={before ? `${BTN_ICON_PRIMARY} rounded-l-none` : BTN_ICON_GHOST}
+                /* The seam between the two halves, so the caret reads as its own
+                   control rather than dead space at the end of the button.
+                   Inline because the skin already sets `border-transparent`, and
+                   two border-colour utilities would be back to arguing about
+                   stylesheet order — the argument that hid the caret. */
+                style={before ? { borderLeftColor: "rgba(0,0,0,0.28)" } : undefined}
             >
                 {before ? (
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                        className={`w-4 h-4 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                    />
                 ) : (
-                    <MoreHorizontal className="w-4 h-4" />
+                    <MoreHorizontal className="w-4 h-4 shrink-0" />
                 )}
             </button>
 
@@ -570,7 +592,7 @@ export default function ProfileHero({
                                      * gives it a whole panel of its own, six inches below. */
                                     <MoreMenu
                                         before={
-                                            <Link href="/settings" className={`${BTN_PRIMARY} rounded-r-none pr-3.5`}>
+                                            <Link href="/settings" className={`${BTN_PRIMARY} rounded-r-none`}>
                                                 <Pencil className="w-3.5 h-3.5" /> Edit profile
                                             </Link>
                                         }
