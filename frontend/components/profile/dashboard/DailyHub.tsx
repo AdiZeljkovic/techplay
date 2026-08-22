@@ -39,8 +39,10 @@ export default function DailyHub({ onOpenTab }: Props) {
             </header>
 
             <div className="flex-1 p-4 space-y-3.5">
-                {/* The frame the day sits in. */}
-                <SeasonBanner />
+                {/* The frame the day sits in. Pressing it opens Progression,
+                    where the same season stands full size — the row is the
+                    trailer, not a dead label. */}
+                <SeasonBanner onOpen={() => onOpenTab("progression")} />
 
                 {/* The one thing that expires tonight. */}
                 <DailyStreakWidget />

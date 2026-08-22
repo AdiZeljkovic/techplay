@@ -1,9 +1,9 @@
 "use client";
 
 import useSWR from "swr";
-import Link from "next/link";
-import { Clock, Sparkles } from "lucide-react";
+import { Zap, Coins } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
+import StatIcon from "@/components/home-dashboard/StatIcon";
 
 interface Season {
   id: number;
@@ -17,10 +17,31 @@ interface Season {
   cover_image: string | null;
 }
 
+interface Props {
+  /** Opens the tab that carries the full season panel, if the host has one. */
+  onOpen?: () => void;
+}
+
 const fetcher = (url: string) =>
   fetch(url).then((r) => (r.ok ? r.json().then((j) => j.data) : null));
 
-export default function SeasonBanner() {
+/**
+ * The season, compressed to one row of Today.
+ *
+ * It used to draw a lucide sparkle in a tinted square, which is the icon a
+ * season gets when nobody has drawn one — and one had been drawn: the same
+ * crate the full panel over on Progression stands behind, and the same object
+ * the streak row beside this one already uses. Two surfaces describing the same
+ * season should not disagree about what it looks like, so this one now borrows
+ * the panel's whole vocabulary: the crate, the accent seam along the top, the
+ * bloom out of the icon's corner, and boosts drawn as instrument bays rather
+ * than two coloured words stacked in a corner.
+ *
+ * The name gets its own line for the same reason a name usually does — on a
+ * quarter-width panel "Summer of Gaming 2026" was arriving as "Summer of
+ * Gaming 20…" while a sparkle held 36 pixels beside it.
+ */
+export default function SeasonBanner({ onOpen }: Props) {
   const { data: season } = useSWR<Season | null>(
     `${getApiUrl()}/seasons/active`,
     fetcher,
@@ -29,55 +50,108 @@ export default function SeasonBanner() {
 
   if (!season) return null;
 
-  const hasMultiplier = season.xp_multiplier > 1 || season.bounty_multiplier > 1;
+  // The API answers in fractional days, and this printed the float once —
+  // "38.75770886099537d left" was on every dashboard. A countdown is read at a
+  // glance; the decimals were never information.
+  const days = season.days_remaining !== null ? Math.max(0, Math.floor(season.days_remaining)) : null;
+  const ending = days !== null && days <= 7;
+
+  const boosts = [
+    season.xp_multiplier > 1 ? { icon: Zap, value: `${season.xp_multiplier}×`, unit: "XP", tint: "var(--accent-ink)" } : null,
+    season.bounty_multiplier > 1 ? { icon: Coins, value: `${season.bounty_multiplier}×`, unit: "Bounty", tint: "#fbbf24" } : null,
+  ].filter(Boolean) as { icon: typeof Zap; value: string; unit: string; tint: string }[];
+
+  const Frame = onOpen ? "button" : "div";
 
   return (
-    <div
-      className="relative overflow-hidden rounded-[var(--radius-panel)] border border-[var(--accent)]/20 bg-gradient-to-r from-[var(--accent)]/10 to-transparent px-5 py-4 flex items-center gap-4"
-      style={season.cover_image ? { backgroundImage: `url(${season.cover_image})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
+    <Frame
+      {...(onOpen ? { onClick: onOpen, type: "button" as const } : {})}
+      className={`group relative w-full overflow-hidden rounded-[var(--radius-card)] border text-left transition-colors duration-300 ${
+        onOpen ? "hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]" : ""
+      }`}
+      style={{
+        background: "var(--surface-1)",
+        borderColor: "color-mix(in srgb, var(--accent) 30%, transparent)",
+      }}
     >
-      {season.cover_image && <div className="absolute inset-0 bg-black/60" />}
+      {/* the ground: a bloom out of the crate's corner */}
+      <span
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: "radial-gradient(70% 140% at 12% 0%, color-mix(in srgb, var(--accent) 17%, transparent), transparent 66%)" }}
+      />
 
-      <div className="relative z-10 flex items-center gap-3 flex-1 min-w-0">
-        <div className="w-9 h-9 rounded-[var(--radius-card)] bg-[var(--accent)]/20 border border-[var(--accent)]/30 flex items-center justify-center shrink-0">
-          <Sparkles className="w-4 h-4 text-[var(--accent)]" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-xs font-bold text-[var(--accent)] uppercase tracking-wider mb-0.5">
-            Active Season
-          </p>
-          <p className="text-sm font-black text-white truncate">{season.name}</p>
-        </div>
-      </div>
+      {/* A season may ship art. Full-bleed behind the text it only made the
+          name harder to read, so it washes in from the right instead and stops
+          before it reaches anything that has to be legible. */}
+      {season.cover_image && (
+        <span
+          aria-hidden
+          className="absolute inset-y-0 right-0 w-1/2 pointer-events-none opacity-30 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${season.cover_image})`,
+            maskImage: "linear-gradient(90deg, transparent, #000 85%)",
+            WebkitMaskImage: "linear-gradient(90deg, transparent, #000 85%)",
+          }}
+        />
+      )}
 
-      <div className="relative z-10 flex items-center gap-3 shrink-0">
-        {hasMultiplier && (
-          <div className="hidden sm:flex flex-col items-end">
-            {season.xp_multiplier > 1 && (
-              <span className="text-[11px] font-bold text-blue-400">
-                {season.xp_multiplier}× XP
-              </span>
-            )}
-            {season.bounty_multiplier > 1 && (
-              <span className="text-[11px] font-bold text-yellow-400">
-                {season.bounty_multiplier}× Bounty
-              </span>
-            )}
-          </div>
-        )}
-        {season.days_remaining !== null && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] bg-black/30 border border-white/10">
-            <Clock className="w-3.5 h-3.5 text-white/45" />
-            {/* The API answers in fractional days, and this printed the
-                float — "38.75770886099537d left" was on every dashboard. A
-                countdown is read at a glance; the decimals were never
-                information. */}
-            <span className="text-xs font-bold text-white tabular-nums">
-              {Math.max(0, Math.floor(season.days_remaining))}d left
+      {/* the accent rule along the top edge — the season's own seam, the same
+          one the full panel wears */}
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[2px]"
+        style={{ background: "linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 20%, transparent) 65%, transparent)" }}
+      />
+
+      <div className="relative z-10 flex items-start gap-3.5 p-3.5">
+        <StatIcon src="/images/profile/v2-season.webp" size={46} idle="pulse" className="mt-0.5" />
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline justify-between gap-3">
+            <span className="font-display text-[9px] font-black uppercase tracking-[0.2em] text-[var(--accent)]">
+              Active season
             </span>
+            {days !== null && (
+              <span className="shrink-0 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35">
+                <span
+                  className="font-black tabular-nums text-[12px]"
+                  style={{ color: ending ? "var(--accent-ink)" : "rgba(255,255,255,0.8)" }}
+                >
+                  {days}
+                </span>{" "}
+                {days === 1 ? "day left" : "days left"}
+              </span>
+            )}
           </div>
-        )}
+
+          <p className="mt-1.5 font-display text-[14.5px] font-black uppercase tracking-[-0.01em] leading-tight text-white truncate">
+            {season.name}
+          </p>
+
+          {/* Boosts as instrument bays, not two coloured words: a multiplier is
+              a reading, and it is drawn the way every other figure on this
+              profile is drawn — a figure and its unit. */}
+          {boosts.length > 0 && (
+            <div
+              className="mt-2.5 inline-flex items-stretch gap-px rounded-[8px] overflow-hidden"
+              style={{ background: "var(--line)" }}
+            >
+              {boosts.map(({ icon: Icon, value, unit, tint }) => (
+                <span key={unit} className="flex items-center gap-1.5 px-2.5 py-1.5" style={{ background: "var(--surface-2)" }}>
+                  <Icon className="w-3 h-3 shrink-0" style={{ color: tint }} strokeWidth={1.8} />
+                  <span className="font-display text-[11.5px] font-black tabular-nums leading-none" style={{ color: tint }}>
+                    {value}
+                  </span>
+                  <span className="font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/35 leading-none">
+                    {unit}
+                  </span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Frame>
   );
 }
