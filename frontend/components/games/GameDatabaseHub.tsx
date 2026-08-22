@@ -11,7 +11,7 @@ import DataAttribution from "@/components/games/DataAttribution";
 import Sheet from "@/components/ui/Sheet";
 import {
     Search, Star, Shuffle, SlidersHorizontal, ArrowDownWideNarrow, Check, Flame, Heart, Clock,
-    ChevronDown, Gamepad2, Loader2, X, CalendarDays,
+    ChevronDown, Gamepad2, Loader2, X, CalendarDays, Sparkles,
 } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -57,11 +57,24 @@ const compact = (n: number) =>
 
 /* ── the shelves at the top ───────────────────────────────────────────── */
 
+/**
+ * One mark each, in the site's own accent.
+ *
+ * These were illustrations, and next to the home page's quick links — two
+ * objects apiece, drawn in the house crimson — they were loud in two separate
+ * ways. "Top Rated" carried five things at once: a shield, a star, a podium
+ * block with a 1 on it, a controller and a spray of sparkles. And all four were
+ * drawn in a pure bright red that is not the colour this site uses anywhere
+ * else, so the row sat slightly outside its own page.
+ *
+ * A single line mark says the same thing at a glance and inherits the accent
+ * rather than approximating it.
+ */
 const SHELVES = [
-    { key: "-rating", art: "/images/games/shelf-top-rated.webp", title: "Top Rated", line: "The highest scored games in the catalogue." },
-    { key: "-released", art: "/images/games/shelf-recently-added.webp", title: "Recently Added", line: "The newest arrivals in our database." },
-    { key: "upcoming", art: "/images/games/shelf-upcoming.webp", title: "Upcoming Releases", line: "What is still to come, on every platform." },
-    { key: "platforms", art: "/images/games/shelf-platforms.webp", title: "Explore by Platform", line: "Browse across every console and generation." },
+    { key: "-rating", icon: Star, title: "Top Rated", line: "The highest scored games in the catalogue." },
+    { key: "-released", icon: Sparkles, title: "Recently Added", line: "The newest arrivals in our database." },
+    { key: "upcoming", icon: CalendarDays, title: "Upcoming Releases", line: "What is still to come, on every platform." },
+    { key: "platforms", icon: Gamepad2, title: "Explore by Platform", line: "Browse across every console and generation." },
 ];
 
 function Shelf({ shelf, active, onPick }: { shelf: typeof SHELVES[number]; active: boolean; onPick: () => void }) {
@@ -75,22 +88,13 @@ function Shelf({ shelf, active, onPick }: { shelf: typeof SHELVES[number]; activ
                     : "border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)]"
             }`}
         >
-            {/* The neon art IS the icon — no box, no tint; the art carries its
-                own glow, exactly as the homepage's quick links do.
-
-                Square, and drawn to a square. It used to be h-9 w-auto over
-                four canvases of four different shapes — 211x280 next to
-                280x231 — so each icon came out a different size and the row
-                read as four drawings that had wandered in separately. The
-                files are trimmed to their own art and centred on a 256 square
-                at the same fill the quick links use, so the two rows are one
-                family. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-                src={shelf.art}
-                alt=""
+            {/* One mark, at the size the illustrations occupied, in the accent
+                rather than in a red of its own. A light stroke: at 40px a heavy
+                one reads as a filled shape. */}
+            <shelf.icon
                 aria-hidden
-                className={`w-14 h-14 object-contain select-none pointer-events-none transition-transform duration-200 ${
+                strokeWidth={1.3}
+                className={`w-10 h-10 text-[var(--accent)] select-none pointer-events-none transition-transform duration-200 ${
                     active ? "scale-110" : "group-hover:scale-105"
                 }`}
             />
