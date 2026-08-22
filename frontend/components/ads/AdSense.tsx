@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { AD_CLIENT, adsAllowedHere } from "./config";
 
 /**
  * The three AdSense units, and the rules that come with them.
@@ -32,7 +33,7 @@ import { usePathname } from "next/navigation";
  *    pathname is part of the key, so every route gets its own element.
  */
 
-const CLIENT = "ca-pub-7427807317921666";
+const CLIENT = AD_CLIENT;
 
 const SLOTS = {
     inFeed: "1379142765",
@@ -125,13 +126,22 @@ function AdSlot({
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
+    /*
+     * Off entirely anywhere but techplay.gg — see ./config. `blocked` starts
+     * false so the first client render matches what the server sent; the
+     * effect then collapses the reserved space on hosts that get no ads, which
+     * is a layout shift nobody but a developer will ever see.
+     */
+    const [blocked, setBlocked] = useState(false);
+    useEffect(() => { setBlocked(!adsAllowedHere()); }, []);
+
     useEffect(() => {
         pushed.current = false;
     }, [pathname]);
 
     useEffect(() => {
         const el = host.current;
-        if (!el) return;
+        if (!el || blocked) return;
 
         const fill = () => {
             if (pushed.current || el.offsetWidth === 0) return;
@@ -168,13 +178,13 @@ function AdSlot({
         return () => { io.disconnect(); mo?.disconnect(); };
         // `mounted` belongs here: the <ins> does not exist on the first pass,
         // so without it the observers would be wired to an empty host.
-    }, [pathname, consent, mounted]);
+    }, [pathname, consent, mounted, blocked]);
 
     // A new route means a new element and an undecided slot.
     useEffect(() => { setFilled(false); }, [pathname]);
 
     return (
-        <div ref={host} className={className} key={pathname} style={{ minHeight }}>
+        <div ref={host} className={className} key={pathname} style={{ minHeight: blocked ? 0 : minHeight }}>
             {/* The label appears only once an ad actually arrives. AdSense
                 leaves the slot empty when it has nothing to serve, and a word
                 reading "Advertisement" over 250px of nothing is worse than no
@@ -185,7 +195,7 @@ function AdSlot({
                     Advertisement
                 </p>
             )}
-            {mounted && <ins
+            {mounted && !blocked && <ins
                 key={pathname}
                 className="adsbygoogle block"
                 style={{ display: "block", minHeight, ...(layout === "in-article" ? { textAlign: "center" } : null) }}

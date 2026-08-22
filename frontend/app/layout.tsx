@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Sans } from "next/font/google";
 
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
@@ -13,6 +12,7 @@ import { MobileMenuProvider } from "@/context/MobileMenuContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
 import GlobalSeo from "@/components/seo/GlobalSeo";
 import ConsentAwareAnalytics from "@/components/analytics/ConsentAwareAnalytics";
+import AdSenseScript from "@/components/ads/AdSenseScript";
 import { Toaster } from "react-hot-toast";
 import RewardFeed from "@/components/ui/RewardFeed";
 
@@ -269,12 +269,12 @@ export default async function RootLayout({
         {/* Analytics loaded conditionally based on user cookie consent */}
         <ConsentAwareAnalytics />
 
-        {/* AdSense Auto Ads — afterInteractive so it runs after React hydration, not during */}
-        <Script
-            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7427807317921666"
-            strategy="afterInteractive"
-            crossOrigin="anonymous"
-        />
+        {/* AdSense — afterInteractive, and only on techplay.gg itself. It used
+            to load unconditionally, so a local dev session or the origin opened
+            by its bare IP billed real impressions to the account; AdSense was
+            reporting `127.0.0.1` and `46.224.110.57` as sites. The host can
+            only be read in the browser, hence the client component. */}
+        <AdSenseScript />
 
         <SwrDefaults>
         <SiteSettingsProvider initialSettings={settings}>
