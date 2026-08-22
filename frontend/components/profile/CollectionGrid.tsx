@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Segmented from "@/components/ui/Segmented";
 import { ShelfMark, FinishMark, PileMark, WishMark } from "./ShelfMarks";
+import PlatformMark from "@/components/games/PlatformMark";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -283,8 +284,13 @@ function GameCard({
                         {entry.game?.name}
                     </span>
 
-                    {/* the facts worth carrying on a cover */}
-                    {(hours > 0 || (entry.status === "playing" && progress > 0)) && (
+                    {/* The facts worth carrying on a cover — and, at the far
+                        end of the same line, where the entry came from. A
+                        library can arrive from three places and until now
+                        every imported entry looked identical once it landed.
+                        Provenance sits with playtime because they answer the
+                        same kind of question about a game you already own. */}
+                    {(hours > 0 || entry.platform || (entry.status === "playing" && progress > 0)) && (
                         <span className="mt-1.5 flex items-center gap-2 font-display text-[9.5px] font-bold tabular-nums text-white/50">
                             {hours > 0 && (
                                 <span className="inline-flex items-center gap-1">
@@ -294,6 +300,7 @@ function GameCard({
                             {entry.status === "playing" && progress > 0 && (
                                 <span style={{ color: meta.color }}>{progress}%</span>
                             )}
+                            <PlatformMark platform={entry.platform} className="ml-auto opacity-80" />
                         </span>
                     )}
 
@@ -522,7 +529,10 @@ function FeaturedCard({ entry }: { entry: CollectionEntry }) {
                 <span className="flex items-center gap-2.5 min-w-0">
                     <span className="font-display text-[20px] font-black text-white leading-none truncate">{entry.game?.name}</span>
                     {entry.platform && (
-                        <span className="shrink-0 inline-flex items-center h-[20px] px-2 rounded-[5px] bg-white/[0.12] font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/80">
+                        <span className="shrink-0 inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[5px] bg-white/[0.12] font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/80">
+                            {/* The mark first, the word after it. This view has
+                                the room the cover does not, so it says both. */}
+                            <PlatformMark platform={entry.platform} size={10} />
                             {entry.platform}
                         </span>
                     )}

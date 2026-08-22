@@ -112,6 +112,12 @@ class SyncSteamLibrary implements ShouldQueue
                         'user_id' => $account->user_id,
                         'game_id' => $game->id,
                         'status' => $status,
+                        // Where it came from. The Xbox and PlayStation imports
+                        // have always written this and Steam never did, so a
+                        // shelf built from Steam had 191 entries that could not
+                        // say where they arrived from — and the card had no way
+                        // to wear a mark.
+                        'platform' => 'Steam',
                         'hours_played' => $hoursPlayed,
                         'playtime_minutes' => $minutesPlayed,
                         'playtime_source' => 'steam',
