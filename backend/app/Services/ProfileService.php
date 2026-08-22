@@ -48,6 +48,8 @@ class ProfileService
         return [
             'games_count' => (int) $byStatus->sum(),
             'playing_count' => (int) ($byStatus['playing'] ?? 0),
+            // Played once, not playing now, and never claimed to be finished.
+            'played_count' => (int) ($byStatus['played'] ?? 0),
             'backlog_count' => (int) ($byStatus['backlog'] ?? 0),
             'completed_count' => (int) ($byStatus['completed'] ?? 0),
             'wishlist_count' => (int) ($byStatus['wishlist'] ?? 0),

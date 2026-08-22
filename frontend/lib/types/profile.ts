@@ -254,6 +254,7 @@ export interface ProfileStats {
     // Game collection counts (Phase 1 — default 0 until populated)
     games_count?: number;
     playing_count?: number;
+    played_count?: number;
     backlog_count?: number;
     completed_count?: number;
     wishlist_count?: number;
@@ -395,7 +396,7 @@ export interface GamerDna {
     franchises: string[];
 }
 
-export type CollectionStatus = "playing" | "backlog" | "completed" | "wishlist" | "dropped";
+export type CollectionStatus = "playing" | "played" | "backlog" | "completed" | "wishlist" | "dropped";
 
 export interface CollectionEntry {
     id: number;

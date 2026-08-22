@@ -98,7 +98,19 @@ class SyncXboxLibrary implements ShouldQueue
                 UserGame::create([
                     'user_id' => $account->user_id,
                     'game_id' => $game->id,
-                    'status' => $lastPlayed && $lastPlayed->gt(now()->subDays(14)) ? 'playing' : 'backlog',
+                    /*
+                     * Xbox reports no total playtime, but a title history
+                     * entry carries a last-played date — and a date is proof
+                     * enough that the game was played. This used to file
+                     * anything older than a fortnight as backlog, which is the
+                     * same mistake the Steam import made: "unplayed" claimed
+                     * about games with years of history behind them.
+                     */
+                    'status' => match (true) {
+                        $lastPlayed && $lastPlayed->gt(now()->subDays(14)) => 'playing',
+                        (bool) $lastPlayed => 'played',
+                        default => 'backlog',
+                    },
                     'platform' => 'Xbox',
                     'progress' => min(100, max(0, $progressPct)),
                     'completed_at' => null,

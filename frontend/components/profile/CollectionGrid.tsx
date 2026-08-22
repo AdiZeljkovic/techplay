@@ -31,13 +31,17 @@ const PAGE_SIZE = 24;
  */
 const STATUS: Record<string, { label: string; color: string }> = {
     playing: { label: "Playing", color: "#34d399" },
+    // Played, set down, never claimed finished — the bucket a library
+    // import can honestly fill. Amber sits between the green of an active
+    // game and the blue of one not started.
+    played: { label: "Played", color: "#fbbf24" },
     backlog: { label: "Backlog", color: "#60a5fa" },
     completed: { label: "Completed", color: "#22c55e" },
     wishlist: { label: "Wishlist", color: "#f472b6" },
     dropped: { label: "Dropped", color: "#9ca3af" },
 };
 
-const STATUS_OPTIONS: CollectionStatus[] = ["playing", "backlog", "completed", "wishlist", "dropped"];
+const STATUS_OPTIONS: CollectionStatus[] = ["playing", "played", "backlog", "completed", "wishlist", "dropped"];
 
 /** How the shelf can be ordered. The API keeps the same names. */
 const SORTS = [
@@ -74,6 +78,7 @@ function useDebounced<T>(value: T, ms: number): T {
 const FILTERS: { id: string; label: string; countKey?: keyof NonNullable<UserProfile["stats"]> }[] = [
     { id: "all", label: "All", countKey: "games_count" },
     { id: "playing", label: "Playing", countKey: "playing_count" },
+    { id: "played", label: "Played", countKey: "played_count" },
     { id: "backlog", label: "Backlog", countKey: "backlog_count" },
     { id: "completed", label: "Completed", countKey: "completed_count" },
     { id: "wishlist", label: "Wishlist", countKey: "wishlist_count" },

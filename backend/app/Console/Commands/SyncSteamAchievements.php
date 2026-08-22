@@ -25,7 +25,7 @@ class SyncSteamAchievements extends Command
 {
     protected $signature = 'games:sync-steam-achievements
         {--user= : Only this user id}
-        {--apps=6 : How many games per user per run}';
+        {--apps=20 : How many games per user per run}';
 
     protected $description = 'Pull Steam achievements for connected accounts into steam_achievements';
 

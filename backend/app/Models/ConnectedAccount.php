@@ -8,6 +8,17 @@ use Illuminate\Support\Facades\Crypt;
 
 class ConnectedAccount extends Model
 {
+    /**
+     * The set the column used to enforce, plus the one it refused.
+     *
+     * `expired` is PlayStation's: the refresh token aged out and only the
+     * reader can renew it, so the weekly re-sync leaves those alone rather
+     * than retrying a thing that cannot succeed. It lived in the code and in
+     * the settings screen for months while the database rejected it — the list
+     * lives here now, beside the code that assigns it.
+     */
+    public const SYNC_STATUSES = ['idle', 'pending', 'syncing', 'done', 'error', 'expired'];
+
     protected $fillable = [
         'user_id',
         'provider',

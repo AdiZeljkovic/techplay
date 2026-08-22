@@ -76,6 +76,20 @@ Schedule::command('users:prune-unverified')
 // Steam achievements for connected accounts — the chronicle reads what you actually earn.
 Schedule::command('games:sync-steam-achievements')->dailyAt('05:00')->withoutOverlapping(180)->onFailure($reportFailure('games:sync-steam-achievements'));
 
+// PLATFORMS: the libraries themselves — games, hours, statuses.
+//
+// Presence was polled every two minutes and achievements nightly, but the
+// shelf everything else is derived from only moved when somebody pressed
+// Re-sync by hand, so a library linked in August still read as August in
+// December. Weekly, because a library is not fast-moving and each Steam sync
+// now costs one call per played game. Wednesday keeps it clear of Monday,
+// which already carries releases:sync, releases:merge and the reputation
+// snapshot.
+Schedule::command('platforms:resync')
+    ->weeklyOn(3, '04:00')
+    ->withoutOverlapping(180)
+    ->onFailure($reportFailure('platforms:resync'));
+
 // EDITORIAL: Auto-publish scheduled articles every minute
 Schedule::command('articles:publish-scheduled')->everyMinute()->withoutOverlapping(5)->onFailure($reportFailure('articles:publish-scheduled'));
 

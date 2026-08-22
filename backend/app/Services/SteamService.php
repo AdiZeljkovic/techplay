@@ -79,10 +79,20 @@ class SteamService
      */
     public function getPlayerAchievements(string $steamId, int $appId): array
     {
+        // `l` is not optional in practice. Without a language Steam answers
+        // with the bare api name, `achieved` and `unlocktime` and nothing
+        // else — which is why the first real import stored 448 achievements
+        // with a null display_name and null description apiece, and the
+        // profile panel had 448 blank rows to draw. Asking for a language is
+        // what makes Steam send the words.
+        //
+        // Icons are a different endpoint (GetSchemaForGame) and still arrive
+        // null from here; that is a separate call, not a missing parameter.
         $response = Http::timeout(10)->get("{$this->baseUrl}/ISteamUserStats/GetPlayerAchievements/v1/", [
             'key' => $this->apiKey,
             'steamid' => $steamId,
             'appid' => $appId,
+            'l' => 'english',
         ]);
 
         if (! $response->ok() || $response->json('playerstats.success') !== true) {

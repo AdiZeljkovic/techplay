@@ -7,7 +7,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UserGame extends Model
 {
-    public const STATUSES = ['playing', 'backlog', 'completed', 'wishlist', 'dropped'];
+    /**
+     * `played` exists because a Steam import has no honest bucket without it.
+     *
+     * The library arrives with lifetime playtime and nothing else: it does not
+     * say whether a game was finished, abandoned, or simply set down. The
+     * import used to answer "recently played? then playing, otherwise
+     * backlog", which put 1,602 hours of Lord of the Rings Online under
+     * "haven't started" — and filled the Backlog Advisor, whose whole job is
+     * to pick from the unplayed pile, with games already played to death.
+     *
+     * `completed` would claim a finish nobody reported, `dropped` an
+     * abandonment, `playing` a session happening now. `played` claims only the
+     * one thing the platform actually told us.
+     */
+    public const STATUSES = ['playing', 'played', 'backlog', 'completed', 'wishlist', 'dropped'];
 
     protected $fillable = [
         'user_id',

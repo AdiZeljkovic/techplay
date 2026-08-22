@@ -78,7 +78,12 @@ class SyncPlayStationLibrary implements ShouldQueue
                 // 100% of the trophies is the closest thing PSN has to "I
                 // finished this", and it is only a guess for a shelf that is
                 // still empty here.
-                $status = $title['progress'] >= 100 ? 'completed' : 'playing';
+                //
+                // Everything short of that used to be filed as `playing`,
+                // which claimed the reader was in the middle of every game
+                // they had ever earned a single trophy in. Trophies prove the
+                // game was played and nothing more, so that is what it says.
+                $status = $title['progress'] >= 100 ? 'completed' : 'played';
 
                 if ($existing) {
                     $existing->update(['progress' => max((int) $existing->progress, (int) $title['progress'])]);
