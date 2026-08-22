@@ -265,16 +265,25 @@ function GameCard({
                     {meta.label}
                 </span>
 
-                {/* the two marks you can set, stacked top-right */}
+                {/* Top-right: where it came from, then the two marks you can
+                    set. Provenance leads because it is on every card and the
+                    other two are occasional — and it sits up here rather than
+                    on the playtime line, where at 11px over cover art it was
+                    too small to read as anything. */}
                 <span className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5">
+                    {entry.platform && (
+                        <span className="w-[26px] h-[26px] rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center">
+                            <PlatformMark platform={entry.platform} size={15} className="text-white/90" />
+                        </span>
+                    )}
                     {entry.is_favorite && (
-                        <span className="w-[22px] h-[22px] rounded-full bg-black/55 backdrop-blur-md flex items-center justify-center" title="Favorite">
-                            <Heart className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <span className="w-[26px] h-[26px] rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center" title="Favorite">
+                            <Heart className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                         </span>
                     )}
                     {pinned && (
-                        <span className="w-[22px] h-[22px] rounded-full bg-black/55 backdrop-blur-md flex items-center justify-center" title="Pinned to showcase">
-                            <Pin className="w-3 h-3 text-[var(--accent)] fill-[var(--accent)]" />
+                        <span className="w-[26px] h-[26px] rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center" title="Pinned to showcase">
+                            <Pin className="w-3.5 h-3.5 text-[var(--accent)] fill-[var(--accent)]" />
                         </span>
                     )}
                 </span>
@@ -284,13 +293,8 @@ function GameCard({
                         {entry.game?.name}
                     </span>
 
-                    {/* The facts worth carrying on a cover — and, at the far
-                        end of the same line, where the entry came from. A
-                        library can arrive from three places and until now
-                        every imported entry looked identical once it landed.
-                        Provenance sits with playtime because they answer the
-                        same kind of question about a game you already own. */}
-                    {(hours > 0 || entry.platform || (entry.status === "playing" && progress > 0)) && (
+                    {/* the facts worth carrying on a cover */}
+                    {(hours > 0 || (entry.status === "playing" && progress > 0)) && (
                         <span className="mt-1.5 flex items-center gap-2 font-display text-[9.5px] font-bold tabular-nums text-white/50">
                             {hours > 0 && (
                                 <span className="inline-flex items-center gap-1">
@@ -300,7 +304,6 @@ function GameCard({
                             {entry.status === "playing" && progress > 0 && (
                                 <span style={{ color: meta.color }}>{progress}%</span>
                             )}
-                            <PlatformMark platform={entry.platform} className="ml-auto opacity-80" />
                         </span>
                     )}
 
