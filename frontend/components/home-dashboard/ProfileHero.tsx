@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-    User as UserIcon, MapPin, CalendarDays, Pencil, ExternalLink, Check, BadgeCheck, MoreHorizontal,
-    Play, Sparkles, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare, Share2 } from "lucide-react";
+    User as UserIcon, MapPin, CalendarDays, Pencil, Link2, Check, BadgeCheck, MoreHorizontal,
+    ChevronDown, ShieldCheck, LinkIcon, UserPlus, Clock, MessageSquare, Share2 } from "lucide-react";
 import type { HeroModel } from "@/lib/hero";
 import type { FriendStatus } from "@/lib/types/profile";
 import { rankTier } from "@/lib/ranks";
@@ -144,8 +144,23 @@ function FriendAction({ status, busy, onAdd }: { status: FriendStatus; busy: boo
     );
 }
 
-/** The overflow — everything that matters but doesn't deserve a button. */
-function MoreMenu({ children }: { children: React.ReactNode }) {
+/**
+ * The overflow — everything that matters but doesn't deserve a button.
+ *
+ * With `before` it stops being a lone "…" and becomes the second half of a
+ * split control: the button on the left does the one obvious thing, the caret
+ * beside it opens the rest. The owner's row used to be three separate controls
+ * — a primary, a ghost that led back to the page it was already on, and this —
+ * which is three decisions for a person who wanted to change their name.
+ */
+function MoreMenu({
+    before,
+    label = "More profile actions",
+    children }: {
+    before?: React.ReactNode;
+    label?: string;
+    children: React.ReactNode;
+}) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -154,25 +169,41 @@ function MoreMenu({ children }: { children: React.ReactNode }) {
         const close = (e: MouseEvent) => {
             if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
         };
+        const escape = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
         document.addEventListener("mousedown", close);
-        return () => document.removeEventListener("mousedown", close);
+        document.addEventListener("keydown", escape);
+        return () => {
+            document.removeEventListener("mousedown", close);
+            document.removeEventListener("keydown", escape);
+        };
     }, [open]);
 
     return (
-        <div ref={ref} className="relative">
+        <div ref={ref} className="relative inline-flex">
+            {before}
             <button
                 onClick={() => setOpen((v) => !v)}
-                aria-label="More profile actions"
+                aria-label={label}
+                aria-haspopup="menu"
                 aria-expanded={open}
-                className={`${BTN_GHOST} w-10 px-0`}
+                className={
+                    before
+                        ? `${BTN_PRIMARY} w-9 px-0 rounded-l-none border-l border-black/25`
+                        : `${BTN_GHOST} w-10 px-0`
+                }
             >
-                <MoreHorizontal className="w-4 h-4" />
+                {before ? (
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+                ) : (
+                    <MoreHorizontal className="w-4 h-4" />
+                )}
             </button>
 
             {open && (
                 <div
+                    role="menu"
                     onClick={() => setOpen(false)}
-                    className="absolute left-0 top-full mt-2 z-50 min-w-[230px] p-1.5 rounded-[12px] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.85)]"
+                    className="absolute left-0 top-full mt-2 z-50 min-w-[236px] p-1.5 rounded-[12px] border border-[var(--line-strong)] bg-[var(--surface-1)] shadow-[0_24px_48px_-12px_rgba(0,0,0,0.85)]"
                 >
                     {children}
                 </div>
@@ -183,6 +214,10 @@ function MoreMenu({ children }: { children: React.ReactNode }) {
 
 const MENU_ITEM =
     "w-full flex items-center gap-2.5 px-2.5 h-9 rounded-[8px] text-[12px] font-semibold text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:bg-[var(--fill-2)] transition-colors duration-150";
+
+/** Two items under a word beat four items under nothing. */
+const MENU_LABEL =
+    "px-2.5 pt-2 pb-1 font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/25";
 
 /* ── the record strip ─────────────────────────────────────────────────── */
 
@@ -416,8 +451,12 @@ export default function ProfileHero({
         <div className="space-y-4">
             {/* ── identity: no card at all — the banner dissolves into the
                 page, feathered on every edge so no border is ever visible ── */}
-            <section className="relative overflow-hidden">
-                <div aria-hidden className="absolute inset-0">
+            {/* `overflow-hidden` belongs to the backdrop, not the section: it is
+                there to crop the cover image, but on the section it also cropped
+                the overflow menu, which opens downward past the bottom edge. The
+                menu was rendering the whole time — you just could not see it. */}
+            <section className="relative z-20">
+                <div aria-hidden className="absolute inset-0 overflow-hidden">
                     {backdrop ? (
                         <>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -520,33 +559,38 @@ export default function ProfileHero({
                             {/* actions live with the identity, mockup-style */}
                             <div className="mt-4 flex flex-wrap items-center gap-2.5">
                                 {isOwnProfile ? (
-                                    <>
-                                        <Link href="/settings" className={BTN_PRIMARY}>
-                                            <Pencil className="w-3.5 h-3.5" /> Edit profile
-                                        </Link>
-                                        <Link href={base} className={BTN_GHOST}>
-                                            View public profile <ExternalLink className="w-3.5 h-3.5" />
-                                        </Link>
-                                        <MoreMenu>
-                                            <button onClick={() => setSharing(true)} className={MENU_ITEM}>
-                                                <Share2 className="w-3.5 h-3.5" /> Share card
-                                            </button>
-                                            <button onClick={share} className={MENU_ITEM}>
-                                                <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
-                                            </button>
-                                            <Link
-                                                href={hero.continue_playing ? `/games/${hero.continue_playing.slug}` : "/games"}
-                                                prefetch={false}
-                                                className={MENU_ITEM}
-                                            >
-                                                <Play className="w-3.5 h-3.5" />
-                                                {hero.continue_playing ? `Continue ${hero.continue_playing.name}` : "Find your first game"}
+                                    /* One control for the owner.
+                                     *
+                                     * There were three: Edit profile, a ghost that led to
+                                     * `/profile/{you}` — this very page, since your own
+                                     * Overview *is* the dashboard — and an overflow. Two of
+                                     * the three only ever ended in settings, so the button
+                                     * goes there and the caret opens the specific sections.
+                                     * "Continue playing" left the menu because the dashboard
+                                     * gives it a whole panel of its own, six inches below. */
+                                    <MoreMenu
+                                        before={
+                                            <Link href="/settings" className={`${BTN_PRIMARY} rounded-r-none pr-3.5`}>
+                                                <Pencil className="w-3.5 h-3.5" /> Edit profile
                                             </Link>
-                                            <Link href="/settings" className={MENU_ITEM}>
-                                                <ShieldCheck className="w-3.5 h-3.5" /> Privacy settings
-                                            </Link>
-                                        </MoreMenu>
-                                    </>
+                                        }
+                                    >
+                                        <p className={MENU_LABEL}>Manage</p>
+                                        <Link href="/settings?section=connections" className={MENU_ITEM}>
+                                            <Link2 className="w-3.5 h-3.5" /> Connected platforms
+                                        </Link>
+                                        <Link href="/settings?section=privacy" className={MENU_ITEM}>
+                                            <ShieldCheck className="w-3.5 h-3.5" /> Privacy &amp; visibility
+                                        </Link>
+
+                                        <p className={MENU_LABEL}>Share</p>
+                                        <button onClick={() => setSharing(true)} className={MENU_ITEM}>
+                                            <Share2 className="w-3.5 h-3.5" /> Share card
+                                        </button>
+                                        <button onClick={share} className={MENU_ITEM}>
+                                            <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
+                                        </button>
+                                    </MoreMenu>
                                 ) : viewerSignedIn ? (
                                     <>
                                         <FriendAction status={friendStatus} busy={friendActionBusy} onAdd={() => onAddFriend?.()} />

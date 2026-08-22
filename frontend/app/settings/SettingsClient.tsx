@@ -93,6 +93,29 @@ export default function SettingsClient() {
 
     const [saving, setSaving] = useState(false);
     const [section, setSection] = useState<SectionId>("profile");
+
+    /**
+     * The section is addressable. Until now it was not, so every link into
+     * settings landed on Profile no matter what it was pointing at — which is
+     * why "Connect platforms" on the profile hero needs this to exist.
+     *
+     * Read after mount rather than through useSearchParams: this route is
+     * prerendered, and reading the query during render would either force the
+     * whole page dynamic or hand the client a different section than the
+     * server just rendered.
+     */
+    useEffect(() => {
+        const wanted = new URLSearchParams(window.location.search).get("section");
+        if (wanted && SECTIONS.some((s) => s.id === wanted)) setSection(wanted as SectionId);
+    }, []);
+
+    /** Switching sections rewrites the address, so a refresh or a shared link
+     *  comes back to the same place. replaceState, not a navigation — the page
+     *  is already here and re-running the route would drop the form state. */
+    const openSection = (id: SectionId) => {
+        setSection(id);
+        window.history.replaceState(null, "", id === "profile" ? "/settings" : `/settings?section=${id}`);
+    };
     const [isExporting, setIsExporting] = useState(false);
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
@@ -351,7 +374,7 @@ export default function SettingsClient() {
                                 return (
                                     <button
                                         key={id}
-                                        onClick={() => setSection(id)}
+                                        onClick={() => openSection(id)}
                                         aria-current={on ? "page" : undefined}
                                         className={`group/nav shrink-0 flex items-center gap-3 h-11 px-3.5 rounded-[9px] font-display text-[11px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-colors duration-300 ${
                                             on
