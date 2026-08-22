@@ -105,6 +105,17 @@ function AvatarRing({
     );
 }
 
+/** How each platform key is spelled to a reader. */
+const PLATFORM_LABEL: Record<string, string> = {
+    steam: "Steam",
+    epic: "Epic",
+    psn: "PSN",
+    xbox: "Xbox",
+    discord: "Discord",
+    pc: "PC",
+    switch: "Switch",
+};
+
 /* ── buttons ──────────────────────────────────────────────────────────── */
 
 /**
@@ -575,6 +586,28 @@ export default function ProfileHero({
                                             <CalendarDays className="w-3.5 h-3.5 text-white/35" /> Member since {hero.joined}
                                         </span>
                                     )}
+                                </p>
+                            )}
+
+                            {/* Where they play, under who they are.
+                                `toPlatforms` in lib/hero.ts has been building
+                                this list since the hero was written and nothing
+                                drew it — and neither profile endpoint sent
+                                `gamertags` either, so it was empty on both
+                                sides of the wire. */}
+                            {hero.platforms.length > 0 && (
+                                <p className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                                    {hero.platforms.map(({ key, handle }) => (
+                                        <span
+                                            key={key}
+                                            className="inline-flex items-center gap-1.5 h-[22px] max-w-full px-2.5 rounded-[6px] bg-black/30 border border-white/[0.12]"
+                                        >
+                                            <span className="font-display text-[8.5px] font-black uppercase tracking-[0.14em] text-white/35 shrink-0">
+                                                {PLATFORM_LABEL[key] ?? key}
+                                            </span>
+                                            <span className="text-[11.5px] font-semibold text-white/70 truncate">{handle}</span>
+                                        </span>
+                                    ))}
                                 </p>
                             )}
 

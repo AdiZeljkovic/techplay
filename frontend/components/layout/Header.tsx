@@ -804,7 +804,9 @@ interface HeaderUser {
 
 const MENU_LINKS = [
     { name: "My Profile", href: "/profile/me", icon: User },
-    { name: "My Lists",   href: "/lists",      icon: Bookmark },
+    // Not "/lists" — that is the community directory, and until 22 Aug 2026
+    // it was a 404 as well. Your own lists are a tab on your own profile.
+    { name: "My Lists",   href: "/profile/me?tab=lists", icon: Bookmark },
     { name: "Social Hub", href: "/social",    icon: Users },
     { name: "Settings",   href: "/settings",   icon: Settings },
 ];
@@ -931,7 +933,7 @@ function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
                             {MENU_LINKS.map(({ name: label, href, icon: Icon }) => (
                                 <Link
                                     key={label}
-                                    href={href === "/profile/me" ? profileHref : href}
+                                    href={href.startsWith("/profile/me") ? href.replace("/profile/me", profileHref) : href}
                                     className="group/row flex items-center gap-3 px-2.5 py-2 rounded-[var(--radius-inner)] text-[13px] font-medium text-[var(--ink-low)] hover:text-[var(--ink-hi)] hover:bg-[var(--fill-2)] transition-colors duration-150"
                                 >
                                     <Icon className="w-4 h-4 shrink-0 text-[var(--ink-faint)] group-hover/row:text-[var(--accent)] transition-colors duration-150" />

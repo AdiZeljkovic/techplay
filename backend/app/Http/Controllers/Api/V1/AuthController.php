@@ -402,7 +402,19 @@ class AuthController extends Controller
         $presence = Presence::where('user_id', $user->id)->where('is_active', true)->first();
 
         return [
-            'user' => (new PublicUserResource($user))->resolve(),
+            'user' => (new PublicUserResource($user))->resolve() + [
+                // Platform handles belong to a profile, not to every place a
+                // PublicUserResource turns up — a comment author does not need
+                // to carry somebody's PSN id — so they are merged in here
+                // rather than added to the resource.
+                //
+                // The hero has mapped `user.gamertags` into platform chips
+                // since it was written and neither profile endpoint sent the
+                // key, so five accounts have handles saved that no page has
+                // ever shown. Empty entries are dropped: a field cleared in
+                // the admin panel should not mint a chip with no handle in it.
+                'gamertags' => array_filter((array) ($user->gamertags ?? [])),
+            ],
             'achievements' => $allAchievements,
             // The five the reader chose, from any source they have. Empty until
             // they arrange one — the page falls back to recent unlocks, so a

@@ -96,7 +96,15 @@ class DashboardController extends Controller
                     || $user->isStaff(),
                 'member_since' => $user->created_at?->format('M Y'),
                 // the handles themselves, not just which platforms exist — the
-                // hero prints them under each platform mark
+                // hero prints them under each platform mark.
+                //
+                // These two comments described a field that was not here. The
+                // hero has been mapping `user.gamertags` into platform chips
+                // since it was written, both endpoints answered without the
+                // key, and five accounts have handles saved that no surface has
+                // ever shown. Empty entries are dropped so a blank box in the
+                // admin panel does not mint a chip with no handle in it.
+                'gamertags' => array_filter((array) ($user->gamertags ?? [])),
                 // a bought avatar frame has to actually show up on the avatar
                 'frame' => UserCustomization::where('user_customizations.user_id', $user->id)
                     ->where('user_customizations.is_equipped', true)

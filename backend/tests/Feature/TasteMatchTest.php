@@ -119,6 +119,35 @@ class TasteMatchTest extends TestCase
         $this->actingAs($viewer)->getJson('/api/v1/users/hidden/taste-match')->assertStatus(403);
     }
 
+    /**
+     * The way a browser actually asks.
+     *
+     * Every other test here signs in with actingAs(), which sets the *default*
+     * guard — and this route is public, so no middleware resolves anything.
+     * A real reader arrives with a bearer token, which only the sanctum guard
+     * reads, and the controller was calling a bare $request->user(): null for
+     * everyone, 401 for everyone, while the suite stayed green because
+     * actingAs() had quietly answered the question the wrong way.
+     *
+     * So this one carries a real token in a real header. It fails against the
+     * old controller and passes against the one that asks the sanctum guard.
+     */
+    public function test_a_bearer_token_is_a_signed_in_reader(): void
+    {
+        $viewer = User::factory()->create();
+        $target = User::factory()->create(['username' => 'neighbour']);
+
+        $this->shelve($viewer, [$this->game('c1', ['RPG']), $this->game('c2', ['RPG']), $this->game('c3', ['RPG'])]);
+        $this->shelve($target, [$this->game('d1', ['RPG']), $this->game('d2', ['RPG']), $this->game('d3', ['RPG'])]);
+
+        $token = $viewer->createToken('browser')->plainTextToken;
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/users/neighbour/taste-match')
+            ->assertOk()
+            ->assertJsonPath('data.comparable', true);
+    }
+
     public function test_comparing_yourself_is_not_a_comparison(): void
     {
         $user = User::factory()->create(['username' => 'adi']);

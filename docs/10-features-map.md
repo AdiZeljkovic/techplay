@@ -1416,3 +1416,93 @@ Posljedice koje API stvarno provodi:
 
 Ovo je nedostajuća funkcionalnost, ne rupa — ali izgleda kao da postoji, pa je
 bolje da piše.
+
+---
+
+## Pregled profila, 22.08.2026
+
+Sve mjereno na živom serveru s pravom prijavljenom sesijom (privremeni token,
+obrisan poslije), 33 GET endpointa, dva korisnika — prijatelj i ne-prijatelj.
+
+### Popravljeno
+
+**Taste Match je bio mrtav za sve.** `TasteMatchController@show` je čitao goli
+`$request->user()` na **javnoj** ruti, gdje je zadani guard `web` — Bearer token
+tu nikad ne stigne do kontrolera. Endpoint je svakome vraćao
+`401 "Sign in to compare libraries."`, i prijavljenom. Komponenta se crta samo
+na tuđem profilu pa je greška padala tiho. Sada `Auth::guard('sanctum')->user()`,
+kao `LeaderboardController` i `AuthController@show`, koji tu zamku već nose
+opisanu u komentaru.
+
+Ono što ovo čini vrijednim pamćenja: **test paket je grešku maskirao.**
+`test_comparing_yourself_is_not_a_comparison` koristi `actingAs()`, koji
+postavlja *zadani* guard, pa je u testu `$request->user()` radio dok u produkciji
+nije. Novi test `test_a_bearer_token_is_a_signed_in_reader` nosi pravi token u
+pravom `Authorization` headeru — pada na starom kontroleru, prolazi na novom.
+Provjereno u oba smjera.
+
+**`/lists` je bio 404.** `app/lists/` je sadržavao samo `[username]/[slug]`, a
+dva mjesta su vodila na indeks koji nikad nije napravljen: „My Lists" u
+korisničkom meniju (dakle svakom prijavljenom korisniku) i „View all" na
+zajedničkoj traci. Sada:
+
+- `app/lists/page.tsx` + `ListsClient.tsx` — direktorij javnih lista, ISR 600 s,
+  puni se iz `/game-lists/discover` (kapa 20, bez paginacije na backendu).
+- „My Lists" vodi na `/profile/{ti}?tab=lists`, jer tvoje liste žive tamo.
+  Header sada preslikava sve što počinje s `/profile/me`, ne samo tačan pogodak.
+
+Direktorij je trenutno **prazan i to je ispravno**: od tri liste u bazi jedna je
+javna i objavljena, ali `discover` traži i da vlasnik ima javan profil, a adi je
+`friends`. Prazno stanje je zato dizajnirano, ne slučajno.
+
+**Platform chips su bili mrtvi na dva sloja.** `toPlatforms()` i
+`HeroModel.platforms` u `lib/hero.ts` računaju se u oba builder-a otkad hero
+postoji, a `ProfileHero` ih nije crtao nigdje — i nijedan od dva profila
+endpointa nije ni slao `gamertags` (jedino GDPR izvoz), dok pet naloga ima
+upisane rukovate. U `DashboardController` su čak stajala **dva komentara koja
+opisuju polje kojeg nema**. Sada:
+
+- `/me/dashboard` i `/users/{username}` šalju `gamertags` (prazne stavke
+  odbačene). Na profilu je polje umetnuto **pored** `PublicUserResource`, ne u
+  njega — taj resurs nosi i autore komentara i foruma, kojima tuđi PSN id ne
+  treba.
+- `ProfileHero` crta chipove ispod imena, u redoslijedu koji `PLATFORM_ORDER`
+  već propisuje.
+- Zaključani payload ide drugom granom, pa privatan profil i dalje ne odaje
+  ništa.
+
+### Ostavljeno namjerno
+
+**Opremljena kozmetika se ne može skinuti.** Backend ima `unequip` i radi; jedini
+pozivalac na frontu je `LoyaltyCustomization.tsx`, komponentu **niko ne uvozi**.
+Živi Rewards ekran kupuje (`purchase.path` → `/customizations/{id}/acquire`) i
+oprema, ali skidanja nema — jednom postavljen okvir ili tema može se samo
+zamijeniti drugom, nikad vratiti na zadano. Odgođeno na zahtjev vlasnika.
+
+### Provjereno i zdravo
+
+Svih 51 API putanja koje profil zove postoje. Od 33 GET-a svi 200 osim gornje
+greške i tri `405` koja su **ispravna** — `me/trophy-case`, `me/collection-goals`
+i `journal/sessions` su PUT/POST-only, front ih tako i zove.
+
+Privatnost drži: ne-prijatelj dobija 403 na svih deset agregata `friends`-only
+profila, neprijavljen isto; zaključani payload nosi samo nivo, XP i mjesec
+učlanjenja. OG kartica (`/og/profile`) crta prave korisnike, vraća 404 za
+izmišljene i s privatnog profila ne odaje ništa preko toga.
+
+Sedam tabova u traci = sedam koje stranica renderuje; stari nazivi (`collection`,
+`journal`, `activity`, `forum`) se preslikavaju. `/me/dashboard` se poklapa sa
+svojim TypeScript tipom u oba smjera. U 59 komponenti profila nema nijednog
+dugmeta bez akcije, nijednog praznog `onClick`, nijednog TODO-a.
+
+**Siročad (mrtav kod, bezopasan):** `DistributionBars`, `HexBadge`,
+`UpcomingReleasesWidget` (zamijenio ga `UpcomingForYouRow`). Četvrto,
+`LoyaltyCustomization`, nije samo mrtav kod — nosi jedino skidanje kozmetike.
+
+### Van profila, viđeno usput
+
+22.08. u 08:52 PostgreSQL se restartovao; oko 70 zahtjeva je palo u tom prozoru
+(„the database system is shutting down" → „Connection refused"). Prolazno, baza
+je poslije zdrava. Groq je 21.08. dvaput odbio ugašen model — to je WoW analyzer.
+Odlazna pošta je i dalje mrtva: `MAIL_HOST=mail.support.techplay.gg` nema DNS
+zapis.
