@@ -6,6 +6,7 @@ use App\Models\ConnectedAccount;
 use App\Models\UserGame;
 use App\Services\GameMatchingService;
 use App\Services\PlayStationService;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -97,6 +98,12 @@ class SyncPlayStationLibrary implements ShouldQueue
                     'status' => $status,
                     'progress' => (int) $title['progress'],
                     'platform' => 'PlayStation',
+                    // Sony reports when the title was last touched even though
+                    // it reports no playtime, and the timeline is built from
+                    // dates rather than hours.
+                    'last_played_at' => ! empty($title['last_played'])
+                        ? Carbon::parse($title['last_played'])
+                        : null,
                     // No playtime: Sony does not report one, and a zero here
                     // would read as "played for no time at all".
                     'playtime_source' => null,

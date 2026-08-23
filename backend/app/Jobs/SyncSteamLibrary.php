@@ -52,6 +52,32 @@ class SyncSteamLibrary implements ShouldQueue
                 $minutesPlayed = (int) ($steamGame['playtime_forever'] ?? 0);
                 $hoursPlayed = (int) round($minutesPlayed / 60);
 
+                /*
+                 * When it was last opened, from Steam rather than from us.
+                 *
+                 * `last_played_at` used to be set to `now()` for anything in
+                 * the recently-played list and null for everything else, which
+                 * threw away a date Steam sends with every game: 114 of 215 in
+                 * a real library carry one, spanning 2016 to 2026. Games never
+                 * launched carry a zero, which stays null.
+                 */
+                $lastPlayed = (int) ($steamGame['rtime_last_played'] ?? 0);
+                $lastPlayedAt = $lastPlayed > 0 ? Carbon::createFromTimestamp($lastPlayed) : null;
+
+                /*
+                 * Where the hours were spent. Steam splits them by device and
+                 * we dropped the split every time — including the Deck figure,
+                 * which is the one nothing else on the web will show a reader.
+                 * Zeroes are left out so a row carries only what happened.
+                 */
+                $devices = array_filter([
+                    'windows' => (int) ($steamGame['playtime_windows_forever'] ?? 0),
+                    'mac' => (int) ($steamGame['playtime_mac_forever'] ?? 0),
+                    'linux' => (int) ($steamGame['playtime_linux_forever'] ?? 0),
+                    'deck' => (int) ($steamGame['playtime_deck_forever'] ?? 0),
+                    'offline' => (int) ($steamGame['playtime_disconnected'] ?? 0),
+                ]);
+
                 $game = $matcher->matchSteamGame($appId, $name);
 
                 if (! $game) {
@@ -77,11 +103,14 @@ class SyncSteamLibrary implements ShouldQueue
                     // Only update playtime — never overwrite a user-set status.
                     // Steam reports lifetime playtime, so it wins over any
                     // session total we accumulated ourselves.
+                    // array_filter() drops nulls, so a game Steam has no date
+                    // for leaves whatever is already recorded alone.
                     $existingEntry->update(array_filter([
                         'hours_played' => max($existingEntry->hours_played, $hoursPlayed),
                         'playtime_minutes' => max((int) $existingEntry->playtime_minutes, $minutesPlayed),
                         'playtime_source' => 'steam',
-                        'last_played_at' => $isRecent ? now() : null,
+                        'last_played_at' => $lastPlayedAt,
+                        'device_playtime' => $devices ?: null,
                     ]));
 
                     $existingEntry->forceFill(['playtime_seen_minutes' => $minutesPlayed])->save();
@@ -121,7 +150,8 @@ class SyncSteamLibrary implements ShouldQueue
                         'hours_played' => $hoursPlayed,
                         'playtime_minutes' => $minutesPlayed,
                         'playtime_source' => 'steam',
-                        'last_played_at' => $isRecent ? now() : null,
+                        'device_playtime' => $devices ?: null,
+                        'last_played_at' => $lastPlayedAt,
                         // The baseline, not a session. A first sync sees a
                         // lifetime total, and offering "you played for 300
                         // hours yesterday" would be worse than offering

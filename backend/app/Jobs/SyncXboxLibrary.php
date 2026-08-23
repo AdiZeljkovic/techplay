@@ -113,6 +113,10 @@ class SyncXboxLibrary implements ShouldQueue
                     },
                     'platform' => 'Xbox',
                     'progress' => min(100, max(0, $progressPct)),
+                    // The date was already read to decide the status above and
+                    // then thrown away; the timeline is built out of exactly
+                    // this, so it is kept.
+                    'last_played_at' => $lastPlayed,
                     'completed_at' => null,
                 ]);
             }

@@ -35,6 +35,9 @@ class UserGame extends Model
         'started_at',
         'completed_at',
         'last_played_at',
+        // Minutes per device, as Steam splits them: windows, mac, linux, deck,
+        // offline. Only the non-zero ones are stored.
+        'device_playtime',
         // Set by the controller on a backlog→completed transition; never
         // accepted from request input (the update validator whitelists fields).
         'from_backlog',
@@ -60,6 +63,7 @@ class UserGame extends Model
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
         'last_played_at' => 'datetime',
+        'device_playtime' => 'array',
     ];
 
     public function user(): BelongsTo
