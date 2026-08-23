@@ -5,6 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
+import Image from "next/image";
 import { Trophy, Pin, X, Loader2, Search, Check } from "lucide-react";
 import { getStorageUrl } from "@/lib/imageUrl";
 import type { TrophyCaseItem } from "@/lib/types/profile";
@@ -51,11 +52,14 @@ function Slot({ item, onClear }: { item: TrophyCaseItem; onClear?: () => void })
 
             <span className="relative w-14 h-14 mb-3 flex items-center justify-center">
                 {item.icon ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    // next/image, not a plain tag: this art is 533×640 and
+                    // half a megabyte, and five of them stand in the case.
+                    <Image
                         src={iconSrc(item)}
                         alt=""
                         aria-hidden
+                        width={128}
+                        height={128}
                         className="w-14 h-14 object-contain drop-shadow-[0_3px_10px_rgba(0,0,0,0.6)]"
                     />
                 ) : (
@@ -190,8 +194,7 @@ function Picker({
                             >
                                 <span className="w-9 h-9 shrink-0 flex items-center justify-center">
                                     {item.icon ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={iconSrc(item)} alt="" aria-hidden className="w-9 h-9 object-contain" />
+                                        <Image src={iconSrc(item)} alt="" aria-hidden width={80} height={80} className="w-9 h-9 object-contain" />
                                     ) : (
                                         <Trophy className="w-4 h-4 text-white/30" />
                                     )}

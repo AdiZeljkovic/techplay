@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import useSWR from "swr";
+import Image from "next/image";
 import axios from "@/lib/axios";
 import {
     Trophy, Lock, Search, X, Sparkles, Award, ChevronDown, Star,
@@ -190,16 +191,34 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
                     : "border-white/[0.05] bg-white/[0.012] hover:border-white/[0.11]"
             }`}
         >
-            {/* The mark IS the icon: line art at a light stroke, no plate under
-                it, in the achievement's own colour. It carries what the badge
-                is about; the finished artwork runs at full size in the rail
-                and the trophy case, where it is legible. */}
-            <span className="relative w-10 h-10 shrink-0 flex items-center justify-center">
-                <Mark
-                    className={`w-[27px] h-[27px] transition-transform duration-300 group-hover:scale-110 ${a.is_unlocked ? "" : "opacity-60"}`}
-                    strokeWidth={1.5}
-                    style={{ color: a.is_unlocked ? (rarity?.color ?? "var(--accent-ink)") : "rgba(255,255,255,0.22)" }}
-                />
+            {/* The artwork, where the artwork belongs.
+            
+                This drew a lucide category mark instead, on the reasoning that
+                a painted badge is illegible at 40px. The real cost was heavier
+                and unstated: the art is 533×640 at roughly half a megabyte
+                apiece, drawn through a plain <img> that bypasses Next's
+                resizer — sixty-seven of them in one grid is thirty megabytes
+                to draw thumbnails with. Asked for at 112px through next/image
+                it is a few kilobytes each, so the badges somebody drew can be
+                on the page they are about. The mark stays as the fallback for
+                the one achievement with no artwork. */}
+            <span className="relative w-12 h-12 shrink-0 flex items-center justify-center">
+                {a.icon_path ? (
+                    <Image
+                        src={getStorageUrl(a.icon_path)}
+                        alt=""
+                        aria-hidden
+                        width={112}
+                        height={112}
+                        className={`w-full h-full object-contain transition-transform duration-300 group-hover:scale-110 ${a.is_unlocked ? "" : "grayscale opacity-40"}`}
+                    />
+                ) : (
+                    <Mark
+                        className={`w-[27px] h-[27px] transition-transform duration-300 group-hover:scale-110 ${a.is_unlocked ? "" : "opacity-60"}`}
+                        strokeWidth={1.5}
+                        style={{ color: a.is_unlocked ? (rarity?.color ?? "var(--accent-ink)") : "rgba(255,255,255,0.22)" }}
+                    />
+                )}
                 {!a.is_unlocked && (
                     <span className="absolute -bottom-0.5 -right-0.5 w-[15px] h-[15px] rounded-full bg-[var(--surface-2)] border border-white/[0.09] flex items-center justify-center">
                         <Lock className="w-2 h-2 text-white/35" />
@@ -274,12 +293,12 @@ function MiniRow({ a }: { a: AchievementEntry }) {
         <div className="flex items-center gap-3">
             <span className="w-[34px] h-[48px] shrink-0 flex items-center justify-center">
                 {a.icon_path ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                         src={getStorageUrl(a.icon_path)}
                         alt=""
                         aria-hidden
-                        loading="lazy"
+                        width={72}
+                        height={96}
                         className={`w-full h-full object-contain ${a.is_unlocked ? "" : "grayscale opacity-35"}`}
                     />
                 ) : (
@@ -354,8 +373,8 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
                     <div className="flex flex-col items-center text-center py-1">
                         <span className="w-[72px] h-[102px] flex items-center justify-center mb-3">
                             {rarest.icon_path ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={getStorageUrl(rarest.icon_path)} alt="" aria-hidden className="w-full h-full object-contain" />
+                                 
+                                <Image src={getStorageUrl(rarest.icon_path)} alt="" aria-hidden width={160} height={192} className="w-full h-full object-contain" />
                             ) : (
                                 <Trophy className="w-7 h-7" style={{ color: RARITY.epic.color }} />
                             )}

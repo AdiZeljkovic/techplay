@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Trophy } from "lucide-react";
 import type { DashboardAchievement } from "@/lib/types/dashboard";
 import { getStorageUrl } from "@/lib/imageUrl";
@@ -47,12 +48,16 @@ function Medallion({ achievement, size = 66 }: { achievement: DashboardAchieveme
             //
             // No drop shadow either: the art already carries its own glow, and
             // a coloured one underneath read as a smear on the panel floor.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            //
+            // Through next/image rather than a plain tag: the source art is
+            // 533×640 at around half a megabyte, and ten of them on the
+            // dashboard was five megabytes to fill a 66px rail.
+            <Image
                 src={icon}
                 alt=""
                 aria-hidden
-                loading="lazy"
+                width={size * 2}
+                height={size * 2}
                 className="block w-full h-full object-contain"
             />
         );
