@@ -148,8 +148,27 @@ export interface GamerDnaPayload {
     eras: DnaEra[];
     fingerprint: DnaAxis[];
     collection: {
-        total: number; playing: number; completed: number; backlog: number;
+        total: number; playing: number; played: number; completed: number; backlog: number;
         wishlist: number; dropped: number; favorites: number; completion_rate: number;
+    };
+    /**
+     * What the shelf did, rather than what it holds.
+     *
+     * `median_hours` and not an average: one MMO drags a mean far enough to
+     * describe nobody. `devices` reports its own coverage because Steam only
+     * began attributing playtime to a machine partway through.
+     */
+    play: {
+        hours: number;
+        games_played: number;
+        median_hours: number | null;
+        deepest: { slug: string; name: string; cover_url: string | null; hours: number; share: number } | null;
+        devices: { minutes: Record<string, number>; placed_hours: number; total_hours: number };
+        span: { from: number; to: number; years_active: number } | null;
+    };
+    /** Steam's own achievements — what happened inside the games. */
+    platform_achievements: {
+        total: number; earned: number; games: number; perfected: number; rate: number;
     };
     contribution: { label: string; value: number; target: number; percent: number }[];
     badges: { items: { id: number; name: string; icon_path?: string; points: number }[]; more: number };

@@ -9,6 +9,7 @@ import {
     Flame, CalendarDays, Timer, Layers, Heart, Hourglass, Scale, Ghost, Users, type LucideIcon,
 } from "lucide-react";
 import Panel from "@/components/ui/Panel";
+import DnaPlaySection from "./DnaPlaySection";
 import EmptyState from "@/components/ui/EmptyState";
 import ShareCard from "./ShareCard";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -860,6 +861,13 @@ export default function GamerDnaPanel({ username }: { username: string }) {
 
             {/* ── who you are ── */}
             <IdentityCard data={dna} />
+
+            {/* Directly under the identity, because it is the evidence for it.
+                Everything else on this page is derived from how many games the
+                shelf holds and what status each carries; this is the only
+                section that reads the hours, the years and what the platform
+                recorded inside the games themselves. */}
+            <DnaPlaySection play={dna.play} platform={dna.platform_achievements} />
 
             {/* ── the figures that are only yours ── */}
             <MilestoneStrip m={milestones} />
