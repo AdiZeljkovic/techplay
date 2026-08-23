@@ -39,6 +39,25 @@ class SyncSteamLibrary implements ShouldQueue
         try {
             $steamId = $account->provider_user_id;
             $ownedGames = $steam->getOwnedGames($steamId);
+
+            /*
+             * Steam answered, but declined to say what is in there.
+             *
+             * A library kept private returns an empty `response` object with a
+             * 200, which is indistinguishable from an empty library unless you
+             * look for `game_count`. Without that check the job wrote "done"
+             * after three seconds and the reader was told "Synced" over an
+             * empty shelf — the one state where the fix belongs entirely to
+             * them and nothing on the page said so.
+             */
+            if ($ownedGames === null) {
+                $account->update([
+                    'sync_status' => 'private',
+                    'sync_error' => 'Steam is not sharing your games. Open Steam → Profile → Edit Profile → Privacy Settings and set "Game details" to Public, then sync again.',
+                ]);
+
+                return;
+            }
             $recentAppIds = collect($steam->getRecentlyPlayedGames($steamId))
                 ->pluck('appid')
                 ->flip();

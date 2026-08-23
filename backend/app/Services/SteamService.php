@@ -19,7 +19,23 @@ class SteamService
     /**
      * All games owned by a Steam user, with playtime in minutes.
      */
-    public function getOwnedGames(string $steamId): array
+    /**
+     * The library, or null when Steam declines to say.
+     *
+     * Steam answers a refusal with `{"response":{}}` and a genuinely empty
+     * library with `{"response":{"game_count":0,"games":[]}}` — a 200 either
+     * way. This used to read `response.games` with `[]` as the default, which
+     * flattened the two into the same answer: an account whose Game details
+     * privacy is not public synced in three seconds, wrote nothing, and was
+     * marked done. The reader was told "Synced" and shown an empty shelf,
+     * with no hint that the fix was one setting on their side.
+     *
+     * The tell is the whole object being empty. Steam sends `game_count` with
+     * every real answer and `games` with every non-empty one — an account that
+     * owns nothing still gets `{"game_count":0}` — so `{}` and only `{}` means
+     * refused. Null travels up so the caller can say which happened.
+     */
+    public function getOwnedGames(string $steamId): ?array
     {
         $response = Http::timeout(15)->get("{$this->baseUrl}/IPlayerService/GetOwnedGames/v1/", [
             'key' => $this->apiKey,
@@ -31,10 +47,18 @@ class SteamService
         if (! $response->ok()) {
             Log::warning("Steam GetOwnedGames failed for {$steamId}", ['status' => $response->status()]);
 
-            return [];
+            return null;
         }
 
-        return $response->json('response.games', []);
+        $payload = $response->json('response');
+
+        if (! is_array($payload) || $payload === []) {
+            Log::info("Steam withheld the library for {$steamId} — game details are not public");
+
+            return null;
+        }
+
+        return $payload['games'] ?? [];
     }
 
     /**

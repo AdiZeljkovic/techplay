@@ -12,7 +12,7 @@ interface ConnectedAccount {
     provider: string;
     display_name: string | null;
     /** 'expired' is PlayStation's own: the token aged out and only the reader can renew it. */
-    sync_status: "idle" | "pending" | "syncing" | "done" | "error" | "expired";
+    sync_status: "idle" | "pending" | "syncing" | "done" | "error" | "expired" | "private";
     sync_error?: string | null;
     last_synced_at: string | null;
     visibility: string;
@@ -98,6 +98,16 @@ function syncStatusBadge(status: ConnectedAccount["sync_status"], lastSynced: st
             return (
                 <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-400">
                     <AlertCircle className="w-3.5 h-3.5" /> Connection expired — reconnect
+                </span>
+            );
+        // Steam answered and told us nothing: the account's Game details are
+        // private. Not an error — nothing broke, and reconnecting will not
+        // help — but the opposite of "Synced", which is what it used to say
+        // over an empty shelf. The instruction is in `sync_error`, below.
+        case "private":
+            return (
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-amber-400">
+                    <EyeOff className="w-3.5 h-3.5" /> Library is private
                 </span>
             );
         case "error":

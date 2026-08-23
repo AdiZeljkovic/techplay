@@ -67,7 +67,9 @@ class SyncSteamAchievements extends Command
         $apps = collect($steam->getRecentlyPlayedGames($steamId))->pluck('appid');
 
         if ($apps->isEmpty() || ! DB::table('steam_achievements')->where('user_id', $userId)->exists()) {
-            $owned = collect($steam->getOwnedGames($steamId))
+            // Null when Steam withholds the library; an empty collection
+            // here means the same thing to this command — nothing to widen to.
+            $owned = collect($steam->getOwnedGames($steamId) ?? [])
                 ->sortByDesc('playtime_forever')
                 ->pluck('appid');
             $apps = $apps->concat($owned)->unique();

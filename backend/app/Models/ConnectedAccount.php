@@ -17,7 +17,14 @@ class ConnectedAccount extends Model
      * the settings screen for months while the database rejected it — the list
      * lives here now, beside the code that assigns it.
      */
-    public const SYNC_STATUSES = ['idle', 'pending', 'syncing', 'done', 'error', 'expired'];
+    /**
+     * `private` is Steam answering with a 200 and no library: the account's
+     * Game details are not public. It is not an error — nothing failed on
+     * our side and retrying changes nothing until the reader flips one
+     * setting — and it is emphatically not `done`, which is how it read
+     * for the first account it happened to.
+     */
+    public const SYNC_STATUSES = ['idle', 'pending', 'syncing', 'done', 'error', 'expired', 'private'];
 
     protected $fillable = [
         'user_id',
