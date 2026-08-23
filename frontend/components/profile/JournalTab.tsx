@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { BookOpen, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers , Image as ImageIcon } from "lucide-react";
+import { BookOpen, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers, Trophy, Sparkles, Image as ImageIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import SessionSuggestions from "./SessionSuggestions";
@@ -777,6 +777,37 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
             })),
     ].sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""));
 
+    /* ── the two strips ───────────────────────────────────────────────────
+     *
+     * The diary counts what you wrote down. The timeline counts what you
+     * finished — and it reads the finished list, which carries the hours the
+     * platform reported, so it has something to say to a reader who imported
+     * a library and has never typed a session in their life.
+     */
+    const rated = finished.filter((e) => (e.rating ?? 0) > 0);
+    const completedCount = finished.filter((e) => e.completed).length;
+    const rescued = finished.filter((e) => e.from_backlog).length;
+    const finishedHours = finished.reduce((sum, e) => sum + (e.hours ?? 0), 0);
+    const avgRating = rated.length
+        ? (rated.reduce((sum, e) => sum + (e.rating ?? 0), 0) / rated.length).toFixed(1)
+        : null;
+
+    const DIARY_BAYS = [
+        [Clock3, "Hours played", `${hours}`, "var(--xp-bright)", s.minutes > 0 ? hhmm(s.minutes) : null],
+        [BookOpen, "Sessions", `${sessionCount}`, "var(--accent-ink)", null],
+        [Gamepad2, "Games", `${s.games}`, "#34d399", null],
+        [CalendarDays, "Days logged", `${s.days}`, "#60a5fa", null],
+        [Flame, "Streak", `${s.current_streak}`, "#f97316", s.current_streak > 0 ? "days running" : "log today"],
+    ] as const;
+
+    const TIMELINE_BAYS = [
+        [Trophy, "Finished", `${completedCount}`, "#22c55e", null],
+        [Clock3, "Hours on them", `${finishedHours}`, "var(--xp-bright)", finishedHours > 0 ? "reported by the platform" : null],
+        [Layers, "Out of the backlog", `${rescued}`, "#60a5fa", rescued > 0 ? "started, then finished" : null],
+        [Star, "Reviews", `${rated.length}`, "#f59e0b", null],
+        [Sparkles, "Average score", avgRating ?? "—", "var(--accent-ink)", avgRating ? "out of 10" : "rate one to see this"],
+    ] as const;
+
     return (
         <div className="space-y-4">
             {/* ── summary strip ──
@@ -792,16 +823,18 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                 style={{ borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)" }}
             >
                 <div
-                    className={`grid grid-cols-2 md:grid-cols-3 gap-px ${s.busiest_month ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}
+                    className={`grid grid-cols-2 md:grid-cols-3 gap-px ${view === "timeline" ? "lg:grid-cols-5" : s.busiest_month ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}
                     style={{ background: "var(--line)" }}
                 >
-                    {([
-                        [Clock3, "Hours played", `${hours}`, "var(--xp-bright)", s.minutes > 0 ? hhmm(s.minutes) : null],
-                        [BookOpen, "Sessions", `${sessionCount}`, "var(--accent-ink)", null],
-                        [Gamepad2, "Games", `${s.games}`, "#34d399", null],
-                        [CalendarDays, "Days logged", `${s.days}`, "#60a5fa", null],
-                        [Flame, "Streak", `${s.current_streak}`, "#f97316", s.current_streak > 0 ? "days running" : "log today"],
-                    ] as const).map(([Icon, label, value, tint, sub]) => (
+                    {/* The two views ask different questions, so they get
+                        different answers. This strip used to be the diary's
+                        alone and was drawn over the timeline as well, which
+                        meant a page about what you have finished opened with
+                        sessions logged, days logged and a logging streak —
+                        three zeroes for anyone who imported a library rather
+                        than typing it in, above a list of real finished games.
+                        The timeline reads the finished list itself. */}
+                    {(view === "timeline" ? TIMELINE_BAYS : DIARY_BAYS).map(([Icon, label, value, tint, sub]) => (
                         <div key={label} className="group/bay flex items-center gap-3.5 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
                             <span className="shrink-0 w-10 h-10 flex items-center justify-center" style={{ color: tint }}>
                                 <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
