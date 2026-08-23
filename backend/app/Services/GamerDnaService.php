@@ -97,6 +97,12 @@ class GamerDnaService
         $counts = [
             'total' => $entries->count(),
             'playing' => $entries->where('status', 'playing')->count(),
+            // `played` arrived with the library imports and this never counted
+            // it, so on a shelf of 191 the statuses summed to 92 and ninety-nine
+            // games — 3,104 hours of them — were invisible to every figure
+            // below. Worse than missing: it made a reader who had played most
+            // of their shelf read as somebody who only buys.
+            'played' => $entries->where('status', 'played')->count(),
             'completed' => $entries->where('status', 'completed')->count(),
             'backlog' => $entries->where('status', 'backlog')->count(),
             'wishlist' => $entries->where('status', 'wishlist')->count(),
@@ -106,7 +112,7 @@ class GamerDnaService
 
         // Owned = everything the player actually has, wishlist excluded. It's
         // the denominator for completion; a wishlist can't be finished.
-        $owned = $counts['playing'] + $counts['completed'] + $counts['backlog'] + $counts['dropped'];
+        $owned = $counts['playing'] + $counts['played'] + $counts['completed'] + $counts['backlog'] + $counts['dropped'];
         $completionRate = $owned > 0 ? $counts['completed'] / $owned : 0.0;
 
         // Genre mix comes from the chronicle when it knows the player —
@@ -121,8 +127,12 @@ class GamerDnaService
         $achievementsTotal = Achievement::where('is_hidden', false)->count();
         $achievementsOwned = $user->achievements()->count();
 
+        // What the shelf did, not just what it holds.
+        $play = $this->play($entries);
+        $platform = $this->platformAchievements($user);
+
         $score = $this->score($user, $counts, $completionRate, $reviews, $lists, $achievementsOwned, $achievementsTotal);
-        $identity = $this->identity($fingerprint, $counts, $genres, $completionRate, $reviews, $user);
+        $identity = $this->identity($fingerprint, $counts, $genres, $completionRate, $reviews, $user, $play, $platform);
 
         return [
             'identity' => $identity + ['tier' => $this->tier($score['value'])],
@@ -132,6 +142,10 @@ class GamerDnaService
             'eras' => $eras,
             'fingerprint' => $fingerprint,
             'collection' => $counts + ['completion_rate' => (int) round($completionRate * 100)],
+            // Hours, depth, devices and the years behind them.
+            'play' => $play,
+            // What the platform says about how far games get pushed.
+            'platform_achievements' => $platform,
             'contribution' => $this->contribution($user, $counts),
             'badges' => $this->badges($user),
             'setup' => $this->setup($user),
@@ -325,6 +339,106 @@ class GamerDnaService
                 'display_name' => $u->display_name,
                 'avatar_url' => $u->avatar_url ?? null,
             ])->values()->all();
+    }
+
+    /**
+     * The hours themselves, which this had never once looked at.
+     *
+     * Everything else here is derived from how many games a shelf holds and
+     * what status each carries. None of it knew that 3,104 hours sat on that
+     * shelf, that one game held 1,602 of them, or that the record ran back to
+     * 2016 — so a reader who had played most of their library was described as
+     * somebody who buys games and does not play them.
+     *
+     * Median rather than average for depth: one MMO drags a mean far enough to
+     * describe nobody.
+     */
+    private function play(Collection $entries): array
+    {
+        $withTime = $entries->filter(fn (UserGame $e) => (int) ($e->playtime_minutes ?? 0) > 0);
+        $minutes = (int) $withTime->sum('playtime_minutes');
+
+        $median = $this->median($withTime->map(fn (UserGame $e) => (int) $e->playtime_minutes)->values()->all());
+        $deepest = $withTime->sortByDesc('playtime_minutes')->first();
+
+        // Where the hours went. Partial by nature: Steam only began
+        // attributing playtime to a device partway through, so this covers
+        // less than the total and reports both figures rather than letting the
+        // gap read as missing games.
+        $devices = [];
+        foreach ($entries as $entry) {
+            foreach ((array) ($entry->device_playtime ?? []) as $device => $mins) {
+                $devices[$device] = ($devices[$device] ?? 0) + (int) $mins;
+            }
+        }
+        arsort($devices);
+        $placed = array_sum(array_diff_key($devices, ['offline' => true]));
+
+        $years = $entries
+            ->filter(fn (UserGame $e) => $e->last_played_at !== null)
+            ->map(fn (UserGame $e) => (int) $e->last_played_at->format('Y'))
+            ->unique()->sort()->values();
+
+        return [
+            'hours' => (int) round($minutes / 60),
+            'games_played' => $withTime->count(),
+            'median_hours' => $median === null ? null : round($median / 60, 1),
+            'deepest' => $deepest && $deepest->game ? [
+                'slug' => $deepest->game->slug,
+                'name' => $deepest->game->name,
+                'cover_url' => $deepest->game->cover_url,
+                'hours' => (int) round((int) $deepest->playtime_minutes / 60),
+                // What share of a whole shelf's hours one game took.
+                'share' => $minutes > 0 ? (int) round((int) $deepest->playtime_minutes / $minutes * 100) : 0,
+            ] : null,
+            'devices' => [
+                'minutes' => $devices,
+                'placed_hours' => (int) round($placed / 60),
+                'total_hours' => (int) round($minutes / 60),
+            ],
+            'span' => $years->isEmpty() ? null : [
+                'from' => (int) $years->first(),
+                'to' => (int) $years->last(),
+                'years_active' => $years->count(),
+            ],
+        ];
+    }
+
+    /**
+     * Platform achievements, as a measure of how far a player pushes a game.
+     *
+     * Our own badges say what somebody did on this site. Steam's say what they
+     * did inside the games — 5,177 of them on a real account, 937 earned — and
+     * nothing here had ever read them.
+     */
+    private function platformAchievements(User $user): array
+    {
+        $row = DB::table('steam_achievements')
+            ->where('user_id', $user->id)
+            ->selectRaw('count(*) as total_count, sum(case when achieved then 1 else 0 end) as earned_count, count(distinct game_id) as games_count')
+            ->first();
+
+        $total = (int) ($row->total_count ?? 0);
+        $earned = (int) ($row->earned_count ?? 0);
+
+        // Games taken all the way — the strongest completionist signal a
+        // platform gives, and one a shelf status can only guess at.
+        $perfected = $total === 0 ? 0 : DB::table('steam_achievements')
+            ->where('user_id', $user->id)
+            ->whereNotNull('game_id')
+            ->selectRaw('game_id')
+            ->groupBy('game_id')
+            ->havingRaw('count(*) = sum(case when achieved then 1 else 0 end)')
+            ->get()
+            ->count();
+
+        return [
+            'total' => $total,
+            'earned' => $earned,
+            'games' => (int) ($row->games_count ?? 0),
+            'perfected' => $perfected,
+            'rate' => $total > 0 ? (int) round($earned / $total * 100) : 0,
+        ];
     }
 
     /**
@@ -646,34 +760,100 @@ class GamerDnaService
      * applies, and the three strongest win — so the label moves as the
      * collection does instead of settling on the same generic trio.
      */
-    private function identity(array $fingerprint, array $counts, array $genres, float $completionRate, int $reviews, User $user): array
+    private function identity(array $fingerprint, array $counts, array $genres, float $completionRate, int $reviews, User $user, array $play = [], array $platform = []): array
     {
         $axis = fn (string $key) => collect($fingerprint)->firstWhere('key', $key)['value'] ?? 50;
+
+        $hours = (int) ($play['hours'] ?? 0);
+        $median = (float) ($play['median_hours'] ?? 0);
+        $deepShare = (int) ($play['deepest']['share'] ?? 0);
+        $yearsActive = (int) ($play['span']['years_active'] ?? 0);
+
+        /*
+         * An axis picks a side, and only when it has one.
+         *
+         * These used to be eight separate candidates scored straight off the
+         * axis value, so a neutral 50 handed both ends the same 50 — and a
+         * profile came out as "Story-Driven, Systems Thinker, Social Player",
+         * naming a reader and their opposite in the same breath. Worse, three
+         * ties at 50 outranked every trait that was actually measured.
+         *
+         * A side is only claimed past a lean of eight points, and it scores by
+         * how far it leans rather than by where it sits, so a genuine 70 beats
+         * a shrug at 52 instead of losing to it.
+         */
+        $lean = function (string $key, array $low, array $high) use ($axis): array {
+            $value = $axis($key);
+            $distance = abs($value - 50);
+
+            if ($distance < 8) {
+                return [$low[0], 0, $low[1]];
+            }
+
+            [$name, $line] = $value < 50 ? $low : $high;
+
+            return [$name, min(100, (int) round($distance * 2)), $line];
+        };
 
         $candidates = [
             ['Completionist', $completionRate * 100, 'you leave nothing unfinished'],
             ['Explorer', count($genres) >= 6 ? 60 + count($genres) * 3 : count($genres) * 8, 'you try everything that lands in front of you'],
-            ['Story-Driven', 100 - $axis('focus'), 'you play for the story first'],
-            ['Systems Thinker', $axis('focus'), 'you want to know how the machine underneath works'],
-            ['Social Player', $axis('social'), 'you are at your best in company'],
-            ['Lone Wolf', 100 - $axis('social'), 'you would rather play alone'],
-            ['Competitor', 100 - $axis('intensity'), 'you play to win'],
-            ['Chill Player', $axis('intensity'), 'you play to unwind'],
-            ['Retro Soul', 100 - $axis('era'), 'the older titles still suit you best'],
-            ['Collector', $counts['total'] >= 50 ? min(100, $counts['total'] / 2) : $counts['total'], 'your shelf grows faster than you can play it'],
+            $lean('focus',
+                ['Story-Driven', 'you play for the story first'],
+                ['Systems Thinker', 'you want to know how the machine underneath works']),
+            $lean('social',
+                ['Lone Wolf', 'you would rather play alone'],
+                ['Social Player', 'you are at your best in company']),
+            $lean('intensity',
+                ['Competitor', 'you play to win'],
+                ['Chill Player', 'you play to unwind']),
+            // Era is a lean like the rest. Scored straight, an empty shelf sat
+            // at a neutral 50 and came back "Retro Soul" — a taste attributed
+            // to somebody who owns nothing.
+            $lean('era',
+                ['Retro Soul', 'the older titles still suit you best'],
+                ['Current', 'you play what is out now']),
+            // Collector is about the *unplayed* pile, not the size of a
+            // shelf. It used to rank on total games, so a reader with 3,104
+            // hours behind them was called somebody who buys and does not
+            // play, on the strength of owning a lot.
+            ['Collector', $counts['backlog'] >= 50 ? min(100, $counts['backlog'] / 2) : $counts['backlog'], 'your shelf grows faster than you can play it'],
+            // Measured from hours rather than inferred from genre words.
+            ['Devotee', $deepShare >= 40 ? min(100, $deepShare + 20) : 0, 'one world holds most of your hours'],
+            ['Marathoner', $median >= 8 ? min(100, (int) round($median * 4)) : 0, 'you settle into a game rather than sample it'],
+            ['Veteran', $yearsActive >= 5 ? min(100, $yearsActive * 9) : 0, 'you have been at this for the better part of a decade'],
+            ['Achievement Hunter', (int) ($platform['perfected'] ?? 0) >= 1
+                ? min(100, 40 + (int) ($platform['perfected'] ?? 0) * 12)
+                : min(60, (int) ($platform['rate'] ?? 0)), 'you take games all the way to the last trophy'],
             ['Critic', min(100, $reviews * 18), 'you have an opinion, not just a save file'],
             ['Community Pillar', min(100, ($user->forum_reputation ?? 0) / 5), 'the forum would not be the same without you'],
         ];
 
         usort($candidates, fn ($a, $b) => $b[1] <=> $a[1]);
-        $top = array_slice($candidates, 0, 3);
+        // Nothing that scored zero gets named. An axis with no lean, or a
+        // trait with no evidence behind it, has not earned a sentence.
+        $top = array_slice(array_values(array_filter($candidates, fn ($c) => $c[1] > 0)), 0, 3);
 
         return [
             'traits' => array_column($top, 0),
-            'blurb' => $counts['total'] === 0
+            // Built from however many traits earned a place — it used to
+            // index [0], [1] and [2] blind, which is fine while eight
+            // candidates all score above zero and fatal the moment they do
+            // not. "i" is Bosnian for "and", and had been sitting in the
+            // middle of an English sentence on every profile.
+            'blurb' => $counts['total'] === 0 || $top === []
                 ? 'Add a few games to your collection and your DNA starts to take shape.'
-                : ucfirst($top[0][2]).', '.$top[1][2].' i '.$top[2][2].'.',
+                : $this->sentence(array_column($top, 2)),
         ];
+    }
+
+    /** "A, B and C" — or "A and B", or just "A". */
+    private function sentence(array $parts): string
+    {
+        $parts = array_values(array_filter($parts));
+        $last = array_pop($parts);
+
+        return ucfirst($parts === [] ? $last : implode(', ', $parts).' and '.$last).'.';
     }
 
     private function tier(int $score): string

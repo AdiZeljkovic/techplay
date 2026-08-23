@@ -109,7 +109,17 @@ class GamerDnaTest extends TestCase
             $this->assertGreaterThanOrEqual(0, $axis['value']);
             $this->assertLessThanOrEqual(100, $axis['value']);
         }
-        $this->assertCount(3, $data['identity']['traits']);
+        // No traits, and that is the correction.
+        //
+        // This used to assert three of them for a profile holding nothing,
+        // which is what it got: the axes sat at a neutral 50, both ends of
+        // each scored 50, and the top three came back as "Story-Driven,
+        // Systems Thinker, Social Player" — a reader described alongside their
+        // own opposite, on the strength of no games at all. A trait is claimed
+        // now only where something leans, so an empty shelf gets the sentence
+        // that invites one instead of an invented personality.
+        $this->assertSame([], $data['identity']['traits']);
+        $this->assertStringContainsString('Add a few games', $data['identity']['blurb']);
     }
 
     public function test_the_dna_score_is_the_sum_of_its_published_breakdown(): void
