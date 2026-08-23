@@ -24,7 +24,7 @@ class DiscordIntegrationController extends Controller
             'user' => [
                 'username' => $user->username,
                 'name' => $user->name,
-                'rank' => $user->rank?->name ?? 'Newbie',
+                'rank' => $user->rank?->name ?? 'Newcomer',
                 'xp' => $user->xp,
             ],
             'rank_id' => $user->rank_id,

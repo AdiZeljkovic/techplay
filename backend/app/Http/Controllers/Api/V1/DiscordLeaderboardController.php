@@ -25,7 +25,7 @@ class DiscordLeaderboardController extends Controller
                 'username' => $user->username,
                 'name' => $user->display_name ?? $user->username,
                 'xp' => $user->xp,
-                'rank_title' => $user->rank?->name ?? 'Newbie',
+                'rank_title' => $user->rank?->name ?? 'Newcomer',
             ];
         });
 

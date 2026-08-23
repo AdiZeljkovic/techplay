@@ -69,7 +69,9 @@ async function handleProfile(interaction: ChatInputCommandInteraction, api: ApiS
     const embed = buffy.createProfileEmbed({
         username: userData.user.username,
         displayName: userData.user.name || userData.user.username,
-        rank: userData.user.rank || 'Newbie',
+        // The ladder's floor. It said 'Newbie' — a rung that stopped existing
+        // when the two rank tables were merged on 24.08.2026.
+        rank: userData.user.rank || 'Newcomer',
         xp: userData.user.xp || 0,
         position: position > 0 ? position : undefined,
         avatarUrl: targetUser.displayAvatarURL(),

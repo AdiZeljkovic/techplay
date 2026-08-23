@@ -44,10 +44,16 @@ class RankSeeder extends Seeder
             ['name' => 'Eternal', 'min_xp' => 500000, 'color' => '#651fff'], // Ultimate Rank
         ];
 
-        // Insignia artwork lives in storage/app/public/ranks and is named after
-        // the rank, so the ladder and its images can never drift apart.
+        // Insignia artwork is named after the rank, so the ladder and its
+        // images can never drift apart.
+        //
+        // It writes `/ranks/*.webp` — served by the frontend — and not the
+        // storage disk's `ranks/*.png` it used to. Both resolve, and having
+        // both is how the table ended up describing its own artwork two ways;
+        // the migration of 24.08.2026 settled on the webp set, and a seeder
+        // that disagreed would undo that on the next `migrate:fresh --seed`.
         foreach ($ranks as $rank) {
-            $rank['icon'] = 'ranks/'.strtolower($rank['name']).'.png';
+            $rank['icon'] = '/ranks/'.strtolower($rank['name']).'.webp';
             Rank::updateOrCreate(['name' => $rank['name']], $rank);
         }
     }
