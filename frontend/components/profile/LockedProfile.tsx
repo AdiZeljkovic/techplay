@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Lock, User as UserIcon, UserPlus, Clock, Check, CalendarDays } from "lucide-react";
+import { Lock, User as UserIcon, UserPlus, Clock, Check, CalendarDays, ShieldCheck } from "lucide-react";
 import type { FriendStatus } from "@/lib/types/profile";
+import { PROFILE_TABS } from "@/lib/profileTabs";
 import { LevelCrest, RankEmblem } from "@/components/home-dashboard/RankInsignia";
 
 interface Props {
@@ -21,9 +22,20 @@ interface Props {
 }
 
 /**
- * A friends-only profile, seen by someone who isn't a friend yet. It is a
- * doorway, not a dead end: identity and standing stay visible so there is a
- * reason to send the request — everything they own, play or wrote does not.
+ * A friends-only profile, seen by somebody who is not a friend yet.
+ *
+ * A doorway rather than a dead end: identity and standing stay visible so there
+ * is a reason to knock, and everything they own, play or wrote does not.
+ *
+ * It used to be one centred card floating in the middle of an empty page —
+ * avatar, name, a paragraph, a button — which reads as an error state rather
+ * than a person. Someone arriving here followed a link to a profile and was
+ * shown a notice. It keeps the real profile's shape now: the same header band
+ * the open version has, and under it the sections that exist, named and shut,
+ * so the request being asked for has something behind it.
+ *
+ * Nothing here invents content. The shut panels carry a label and a lock, never
+ * a blurred number somebody might read as a fact.
  */
 export default function LockedProfile({
     username,
@@ -39,91 +51,138 @@ export default function LockedProfile({
     busy,
     onAddFriend,
 }: Props) {
+    const action = !viewerSignedIn ? (
+        <Link
+            href="/login"
+            className="btn-command inline-flex items-center gap-2 px-5 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300"
+        >
+            <UserPlus className="w-4 h-4" /> Sign in to send a request
+        </Link>
+    ) : friendStatus === "pending" ? (
+        <span className="inline-flex items-center gap-2 px-5 h-11 rounded-[8px] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] font-display text-[11px] font-bold uppercase tracking-wider">
+            <Clock className="w-4 h-4" /> Request sent
+        </span>
+    ) : friendStatus === "incoming" ? (
+        <Link
+            href="/friends"
+            className="btn-command inline-flex items-center gap-2 px-5 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300"
+        >
+            <Check className="w-4 h-4" /> Respond to their request
+        </Link>
+    ) : (
+        <button
+            onClick={onAddFriend}
+            disabled={busy}
+            className="btn-command inline-flex items-center gap-2 px-5 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 disabled:opacity-60"
+        >
+            <UserPlus className="w-4 h-4" /> {busy ? "Sending…" : "Add friend"}
+        </button>
+    );
+
     return (
-        <div className="container-page py-8">
-            <section className="relative rounded-[var(--radius-panel)] overflow-hidden bg-[var(--surface-1)] border border-[var(--line)]">
-                {/* the cover still sets the tone — heavily veiled, never readable as content */}
+        <div className="container-page py-8 space-y-5">
+            {/* ── the header band, same shape the open profile uses ── */}
+            <section className="relative overflow-hidden">
                 <div aria-hidden className="absolute inset-0 overflow-hidden">
                     {coverImage && (
+                        // Their picture sets the tone and is never readable as
+                        // content — veiled on purpose, not for want of the file.
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={coverImage} alt="" className="w-full h-full object-cover opacity-20 blur-xl scale-110" />
+                        <img src={coverImage} alt="" className="w-full h-full object-cover opacity-25 blur-2xl scale-110" />
                     )}
-                    <span className="absolute inset-0 bg-gradient-to-b from-[color-mix(in_srgb,var(--surface-1)_75%,transparent)] to-[var(--surface-1)]" />
-                    <span className="absolute inset-0 bg-hud-grid opacity-30" />
+                    <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] from-[6%] via-[color-mix(in_srgb,var(--surface-0)_62%,transparent)] via-[48%] to-[color-mix(in_srgb,var(--surface-0)_28%,transparent)]" />
+                    <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
                 </div>
 
-                <div className="relative px-6 py-12 md:py-16 flex flex-col items-center text-center">
-                    <div className="relative">
-                        <span className="block w-[112px] h-[112px] rounded-full overflow-hidden border-2 border-[var(--line-strong)] bg-[var(--surface-2)]">
-                            {avatarUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="w-full h-full flex items-center justify-center">
-                                    <UserIcon className="w-10 h-10 text-[var(--ink-faint)]" />
+                <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
+                    <div className="flex items-start gap-4 md:gap-7 flex-1 min-w-0">
+                        <span className="relative shrink-0">
+                            <span className="block w-[92px] h-[92px] md:w-[104px] md:h-[104px] rounded-full p-[2px]" style={{ background: "var(--line-strong)" }}>
+                                <span className="block w-full h-full rounded-full p-[3px] bg-[var(--surface-0)]">
+                                    {avatarUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={avatarUrl} alt={displayName} className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                        <span className="w-full h-full rounded-full bg-white/[0.05] flex items-center justify-center text-white/25">
+                                            <UserIcon className="w-9 h-9" />
+                                        </span>
+                                    )}
                                 </span>
-                            )}
-                        </span>
-                        <span className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-[var(--surface-0)] border border-[var(--line-strong)] flex items-center justify-center">
-                            <Lock className="w-4 h-4 text-[var(--ink-low)]" />
-                        </span>
-                    </div>
-
-                    <h1 className="mt-5 font-display text-[26px] md:text-[32px] font-black text-[var(--ink-hi)] leading-none">
-                        {displayName}
-                    </h1>
-                    <p className="mt-1.5 text-[12px] text-[var(--ink-faint)]">@{username}</p>
-
-                    <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-                        <LevelCrest level={level} size={54} />
-                        {rankName && <RankEmblem name={rankName} color={rankColor} />}
-                        {joinedAt && (
-                            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--ink-faint)]">
-                                <CalendarDays className="w-3.5 h-3.5" /> Member since {joinedAt}
                             </span>
-                        )}
-                    </div>
-
-                    <div className="mt-8 max-w-[440px]">
-                        <p className="font-display text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
-                            This profile is friends only
-                        </p>
-                        <p className="mt-2 text-[13px] leading-relaxed text-[var(--ink-low)]">
-                            {displayName} keeps their collection, stats and activity for friends. Send a request — once
-                            it&apos;s accepted, the full profile opens up.
-                        </p>
-                    </div>
-
-                    <div className="mt-6">
-                        {!viewerSignedIn ? (
-                            <Link
-                                href="/login"
-                                className="btn-command inline-flex items-center gap-2 px-6 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
-                            >
-                                <UserPlus className="w-4 h-4" /> Sign In To Send A Request
-                            </Link>
-                        ) : friendStatus === "pending" ? (
-                            <span className="inline-flex items-center gap-2 px-6 h-11 rounded-[var(--radius-card)] bg-[var(--fill-2)] border border-[var(--line-strong)] text-[var(--ink-low)] font-display text-[11px] font-bold uppercase tracking-wider">
-                                <Clock className="w-4 h-4" /> Request Sent
+                            <span className="absolute -bottom-0.5 -right-0.5 w-8 h-8 rounded-full bg-[var(--surface-0)] border border-[var(--line-strong)] flex items-center justify-center">
+                                <Lock className="w-3.5 h-3.5 text-white/45" />
                             </span>
-                        ) : friendStatus === "incoming" ? (
-                            <Link
-                                href="/friends"
-                                className="btn-command inline-flex items-center gap-2 px-6 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)]"
-                            >
-                                <Check className="w-4 h-4" /> Respond To Their Request
-                            </Link>
-                        ) : (
-                            <button
-                                onClick={onAddFriend}
-                                disabled={busy}
-                                className="btn-command inline-flex items-center gap-2 px-6 h-11 bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300 shadow-[var(--glow-accent)] disabled:opacity-60"
-                            >
-                                <UserPlus className="w-4 h-4" /> {busy ? "Sending…" : "Add Friend"}
-                            </button>
-                        )}
+                        </span>
+
+                        <div className="min-w-0 flex-1 pt-1">
+                            <span className="inline-flex items-center gap-1.5 h-[21px] px-2.5 rounded-[6px] bg-white/[0.06] border border-white/[0.09] font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/45">
+                                <Lock className="w-3 h-3" /> Friends only
+                            </span>
+
+                            <h1 className="mt-2.5 font-display text-[24px] md:text-[38px] font-black text-white leading-none truncate">
+                                {displayName}
+                            </h1>
+                            <p className="mt-1.5 text-[13px] font-semibold text-white/45">@{username}</p>
+
+                            <div className="mt-4 flex flex-wrap items-center gap-3">
+                                <LevelCrest level={level} size={44} />
+                                {rankName && <RankEmblem name={rankName} color={rankColor} />}
+                                {joinedAt && (
+                                    <span className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
+                                        <CalendarDays className="w-3.5 h-3.5" /> Member since {joinedAt}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
                     </div>
+
+                    {/* The one action, where the profile's own actions live. */}
+                    <div className="shrink-0">{action}</div>
                 </div>
+            </section>
+
+            {/* ── what is behind the door ──
+
+                Named and shut. A visitor followed a link to somebody's profile;
+                telling them "this is private" answers a question they did not
+                ask, while showing which rooms exist answers the one they did. */}
+            <section
+                className="rounded-[var(--radius-panel)] border overflow-hidden"
+                style={{ borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
+            >
+                <header className="px-5 md:px-6 py-4 border-b border-white/[0.07] flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h2 className="font-display text-[12px] font-black uppercase tracking-[0.15em] text-white">
+                        {displayName} keeps this for friends
+                    </h2>
+                    <p className="text-[12px] text-white/35">Accepted requests open all of it at once.</p>
+                </header>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-px" style={{ background: "var(--line)" }}>
+                    {PROFILE_TABS.filter((t) => !t.ownOnly && t.id !== "overview").map(({ id, label, icon: Icon }) => (
+                        <div key={id} className="group flex items-center gap-3.5 px-5 py-5" style={{ background: "var(--surface-2)" }}>
+                            <span className="relative shrink-0 w-10 h-10 flex items-center justify-center">
+                                <Icon className="w-[22px] h-[22px] text-white/[0.14]" strokeWidth={1.5} />
+                                <Lock className="absolute -bottom-0.5 -right-0.5 w-3 h-3 text-white/25" />
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block font-display text-[11.5px] font-bold uppercase tracking-[0.1em] text-white/45 truncate">
+                                    {label}
+                                </span>
+                                <span className="mt-1 block font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/[0.18]">
+                                    Locked
+                                </span>
+                            </span>
+                        </div>
+                    ))}
+                </div>
+
+                <p className="px-5 md:px-6 py-4 border-t border-white/[0.07] flex items-start gap-2.5 text-[12px] leading-relaxed text-white/30">
+                    <ShieldCheck className="w-4 h-4 mt-[1px] shrink-0 text-white/20" />
+                    <span>
+                        Their name, level and rank stay visible to everyone — a private profile is not a hidden one.
+                        Everything they own, play or wrote is held back until a request is accepted.
+                    </span>
+                </p>
             </section>
         </div>
     );
