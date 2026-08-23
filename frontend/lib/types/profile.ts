@@ -63,6 +63,34 @@ export interface JournalPayload {
         slug: string; name: string; cover_url: string | null;
         completed_at: string | null; hours: number; from_backlog: boolean;
     }[];
+    /**
+     * The years behind a player, assembled from dates rather than from logged
+     * sessions — so an imported library has a history without anyone having
+     * typed a diary entry.
+     *
+     * `hours_held` is the hours those games hold in total. It is not hours
+     * played in that year: Steam reports one lifetime figure per game and
+     * never says when any of it happened, so a year's real measure is its
+     * unlocks, each of which carries the moment it happened.
+     */
+    history: {
+        span: { from: number; to: number } | null;
+        totals: { hours: number; games_with_time: number; unlocks: number };
+        devices: {
+            minutes: Record<string, number>;
+            attributed_hours: number;
+            total_hours: number;
+        };
+        years: {
+            year: number;
+            games_left_off: number;
+            hours_held: number;
+            unlocks: number;
+            unlock_games: number;
+            games: { slug: string; name: string; cover_url: string | null; hours: number; status: string; platform: string | null }[];
+            finished: { slug: string; name: string; cover_url: string | null }[];
+        }[];
+    };
     reviews: {
         id: number; rating: number; review: string | null;
         created_at: string | null; game: JournalGameRef;

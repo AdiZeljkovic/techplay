@@ -5,10 +5,11 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { BookOpen, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers, Trophy, Sparkles, Image as ImageIcon } from "lucide-react";
+import { BookOpen, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers, Image as ImageIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import SessionSuggestions from "./SessionSuggestions";
+import PlayHistory from "./PlayHistory";
 import { useCountUp } from "@/hooks/useCountUp";
 import type { JournalPayload, PlaySession } from "@/lib/types/profile";
 
@@ -777,21 +778,9 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
             })),
     ].sort((a, b) => (b.at ?? "").localeCompare(a.at ?? ""));
 
-    /* ── the two strips ───────────────────────────────────────────────────
-     *
-     * The diary counts what you wrote down. The timeline counts what you
-     * finished — and it reads the finished list, which carries the hours the
-     * platform reported, so it has something to say to a reader who imported
-     * a library and has never typed a session in their life.
-     */
-    const rated = finished.filter((e) => (e.rating ?? 0) > 0);
-    const completedCount = finished.filter((e) => e.completed).length;
-    const rescued = finished.filter((e) => e.from_backlog).length;
-    const finishedHours = finished.reduce((sum, e) => sum + (e.hours ?? 0), 0);
-    const avgRating = rated.length
-        ? (rated.reduce((sum, e) => sum + (e.rating ?? 0), 0) / rated.length).toFixed(1)
-        : null;
-
+    /* The diary counts what a reader wrote down, and only the diary shows it.
+       The timeline's own figures moved into PlayHistory, which reads dates the
+       platforms report rather than sessions nobody typed. */
     const DIARY_BAYS = [
         [Clock3, "Hours played", `${hours}`, "var(--xp-bright)", s.minutes > 0 ? hhmm(s.minutes) : null],
         [BookOpen, "Sessions", `${sessionCount}`, "var(--accent-ink)", null],
@@ -800,17 +789,15 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
         [Flame, "Streak", `${s.current_streak}`, "#f97316", s.current_streak > 0 ? "days running" : "log today"],
     ] as const;
 
-    const TIMELINE_BAYS = [
-        [Trophy, "Finished", `${completedCount}`, "#22c55e", null],
-        [Clock3, "Hours on them", `${finishedHours}`, "var(--xp-bright)", finishedHours > 0 ? "reported by the platform" : null],
-        [Layers, "Out of the backlog", `${rescued}`, "#60a5fa", rescued > 0 ? "started, then finished" : null],
-        [Star, "Reviews", `${rated.length}`, "#f59e0b", null],
-        [Sparkles, "Average score", avgRating ?? "—", "var(--accent-ink)", avgRating ? "out of 10" : "rate one to see this"],
-    ] as const;
 
     return (
         <div className="space-y-4">
-            {/* ── summary strip ──
+            {/* The timeline is its own thing now: years assembled from dates
+                the platforms report, rather than a strip counting diary
+                entries a reader who imported a library has never written. */}
+            {view === "timeline" && journal.history && <PlayHistory history={journal.history} />}
+
+            {/* ── the diary's summary strip ──
 
                 Equal bays with hairlines between them, and the marks drawn as
                 marks: unplated line art in the reading's own colour, the way
@@ -818,12 +805,12 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                 spread six readings across the full page with justify-between
                 and put a 16px glyph inside a tinted box, which at that width
                 left the boxes as the only thing you saw. */}
-            <div
+            {view === "diary" && <div
                 className="rounded-[var(--radius-panel)] border overflow-hidden"
                 style={{ borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)" }}
             >
                 <div
-                    className={`grid grid-cols-2 md:grid-cols-3 gap-px ${view === "timeline" ? "lg:grid-cols-5" : s.busiest_month ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}
+                    className={`grid grid-cols-2 md:grid-cols-3 gap-px ${s.busiest_month ? "lg:grid-cols-6" : "lg:grid-cols-5"}`}
                     style={{ background: "var(--line)" }}
                 >
                     {/* The two views ask different questions, so they get
@@ -834,7 +821,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                         three zeroes for anyone who imported a library rather
                         than typing it in, above a list of real finished games.
                         The timeline reads the finished list itself. */}
-                    {(view === "timeline" ? TIMELINE_BAYS : DIARY_BAYS).map(([Icon, label, value, tint, sub]) => (
+                    {DIARY_BAYS.map(([Icon, label, value, tint, sub]) => (
                         <div key={label} className="group/bay flex items-center gap-3.5 min-w-0 px-5 py-4" style={{ background: "var(--surface-2)" }}>
                             <span className="shrink-0 w-10 h-10 flex items-center justify-center" style={{ color: tint }}>
                                 <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
@@ -860,7 +847,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                         </div>
                     )}
                 </div>
-            </div>
+            </div>}
 
             {/* The year, first. It is the one object here that shows a habit
                 rather than an entry, and it was buried under the session list
