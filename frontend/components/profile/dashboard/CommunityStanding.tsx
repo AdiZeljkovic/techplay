@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Box, TrendingUp, TrendingDown, Award, Lightbulb, Users, Sprout } from "lucide-react";
-import HexMedal from "./HexMedal";
+import { TrendingUp, TrendingDown, Award, Lightbulb, Users, Sprout } from "lucide-react";
+import { RankInsigniaMark } from "@/components/home-dashboard/RankInsignia";
 import Sparkline from "./Sparkline";
 import type { Recognition, ReputationData } from "@/lib/types/profile";
 
@@ -31,11 +31,23 @@ export default function CommunityStanding({ reputation, recognitions = [] }: {
 
     return (
         <div className="space-y-5">
-            {/* Standing level + percentile */}
+            {/* Standing level + percentile.
+
+                The medal here was a hex plate with lucide's cardboard-box
+                glyph inside it — a placeholder sitting on a site that owns a
+                commissioned insignia set and draws it everywhere else. Each
+                Standing tier now carries one of those emblems, sent with the
+                tier so the ladder has a single definition; `RankInsigniaMark`
+                falls back to a plain medal in the tier colour when a tier has
+                no artwork. The emblems carry no lettering, so the name beside
+                one is what says which ladder it belongs to. */}
             <div className="flex items-center gap-4">
-                <HexMedal size={72} color={reputation.tier_color}>
-                    <Box className="w-7 h-7" strokeWidth={2.2} />
-                </HexMedal>
+                <RankInsigniaMark
+                    icon={reputation.tier_icon ?? null}
+                    color={reputation.tier_color}
+                    name={reputation.tier}
+                    size={72}
+                />
                 <div className="flex-1 min-w-0">
                     <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-0.5">Community Standing</div>
                     <div className="text-lg font-black text-white leading-tight">

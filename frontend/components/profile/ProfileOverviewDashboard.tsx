@@ -8,8 +8,6 @@ import CollectionSnapshot from "./dashboard/CollectionSnapshot";
 import CustomLists from "./dashboard/CustomLists";
 import TrophyCase from "./dashboard/TrophyCase";
 import RigCard from "./dashboard/RigCard";
-import ActivityFeed from "./ActivityFeed";
-import ForumActivityTab from "./ForumActivityTab";
 import ShowcaseStrip from "./dashboard/ShowcaseStrip";
 import GiveRecognitionButton from "@/components/profile/GiveRecognitionButton";
 import CommunityStanding from "./dashboard/CommunityStanding";
@@ -47,19 +45,23 @@ interface Props {
  * collection counts, achievements, lists, DNA, cosmetics, daily missions. A
  * visitor arrived at a table of contents instead of a reason.
  *
- * What survives is what has no other home: the showcase, the case the owner
- * arranged, the standing, the rig, the wall and the two feeds. Collection and
- * lists stay as bare strips — a glance and a way through, without the frame
- * that made them look like destinations.
+ * What survives is what has no other home: the player card, the taste match,
+ * the showcase, the case the owner arranged, the standing, the rig and the
+ * wall. Collection and lists stay as bare strips — a glance and a way
+ * through, without the frame that made them look like destinations.
  *
- * Forum Activity stays its own block on purpose. Watched and bookmarked
- * threads are a tool — places to go back to — and folding them into the
- * activity feed would turn "where I left off" into "what already happened".
+ * Recent Activity is gone (24.08.2026). Every line in it — commented on,
+ * rated, added a game — points at a page that already exists, so a stranger's
+ * profile ended on a list of things they did somewhere else. The wall is the
+ * last block now, because it is the one a visitor can write in.
+ *
+ * Note on `isOwnProfile`: the page returns DashboardHome before it reaches
+ * this component when you are looking at your own Overview, so the prop is
+ * always false here and every branch guarded on it is unreachable. Left in
+ * place rather than torn out, but nothing behind one of those guards ships.
  *
  * Empty-state rules, unchanged:
  *  - Visitors never see an empty card; sections without data don't render.
- *  - The owner gets one "level up your profile" checklist instead of a page
- *    full of empty frames.
  */
 export default function ProfileOverviewDashboard({
     userData, stats, achievements = [], isOwnProfile,
@@ -171,16 +173,18 @@ export default function ProfileOverviewDashboard({
                     </div>
                 )}
 
-                {/* The one thing a visitor can actually do, above the reading. */}
+                {/* The one thing a visitor can actually do, and now the last
+                    thing on the page.
+
+                    Recent Activity used to sit below it: "commented on…",
+                    "rated…", "added a game" — a log of events that each
+                    already have a page of their own, ending a stranger's
+                    profile on a list of things they did somewhere else. What
+                    a visitor came to read is above; the wall is where they
+                    answer. */}
                 <SectionCard title="Profile Wall">
                     <CommentsSection commentableId={userData.id} commentableType="profile" />
                 </SectionCard>
-
-                <SectionCard title="Recent Activity">
-                    <ActivityFeed username={userData.username} compact />
-                </SectionCard>
-
-                {isOwnProfile && <ForumActivityTab isOwnProfile={isOwnProfile} />}
             </div>
 
             {/* === SIDEBAR === */}

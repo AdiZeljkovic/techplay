@@ -189,6 +189,10 @@ Izmjereno prije izmjene: od 53 naloga 51 je `public`, biblioteku ima **jedan** (
 - **`Progression` je `ownOnly`.** Posjetiocu je renderovao samo `SeasonPanel`, koji čita globalni `/seasons/active` — identična slika na svih 53 profila. Vraća se kad sezona dobije standing po igraču. Redirect za owner-only tabove sada čita `PROFILE_TABS`, ne hardkodovan `"rewards"`.
 - **Kopija u treće lice na tuđem profilu:** Library hintovi, prazna stanja Diary/Timeline/Steam achievementa i "Add your first game" na `CollectionLedger` — sve je govorilo posjetiocu da uradi nešto s policom koja nije njegova.
 - **SEO opis nosi brojke** (`describe()` u `app/profile/[username]/layout.tsx`) umjesto "Check out X's gaming profile" na svih 53 naloga. Zaključan profil dobija samo ime.
+- **Recent Activity je uklonjen** (24.08.2026). Svaki red u njemu — "commented on", "rated", "added a game" — pokazuje na stranicu koja već postoji, pa je tuđi profil završavao spiskom stvari koje je taj neko uradio negdje drugdje. Profile Wall je sada zadnji blok. `ActivityFeed` komponenta ostaje, samo je ovdje niko ne zove.
+- **Community Standing nosi insignije.** Bio je heksagon s lucide `<Box>` glifom — kartonska kutija na sajtu koji ima naručen set rank ikonica. Svaki Standing tier sada imenuje jednu (`tier_icon`, iz `config/ranking.php`), crta ih `RankInsigniaMark`, a fallback je obična pločica u boji tiera. Set namjerno preskače `newcomer`/`player`/`rookie`/`bronze` — to su XP rankovi koje skoro svi nose, pa bi se ista ikonica pojavila dvaput na istom ekranu (hero + sidebar). Imena ljestvica ostaju odvojena; ikonice nemaju natpis.
+
+**Nađeno usput, nije dirano:** `ProfileOverviewDashboard` renderuje se **samo posjetiocu** — stranica vrati `DashboardHome` prije njega kad gledaš svoj Overview. Sve `{isOwnProfile && ...}` grane u njemu (ProfileChecklist, DailyHub ×2) su mrtve. `LoyaltyCustomization.tsx` se ne renderuje nigdje.
 
 ---
 

@@ -24,12 +24,12 @@ class ProfileService
     private const DEFAULT_WEIGHTS = ['post' => 5, 'comment' => 2, 'thread' => 10];
 
     private const DEFAULT_TIERS = [
-        ['name' => 'Rookie', 'min' => 0, 'color' => '#9CA3AF'],
-        ['name' => 'Contributor', 'min' => 2000, 'color' => '#4ADE80'],
-        ['name' => 'Regular', 'min' => 5000, 'color' => '#60A5FA'],
-        ['name' => 'Veteran', 'min' => 10000, 'color' => '#A78BFA'],
-        ['name' => 'Elite', 'min' => 20000, 'color' => '#FBBF24'],
-        ['name' => 'Legend', 'min' => 40000, 'color' => '#DC143C'],
+        ['name' => 'Rookie', 'min' => 0, 'color' => '#9CA3AF', 'icon' => '/ranks/silver.webp'],
+        ['name' => 'Contributor', 'min' => 2000, 'color' => '#4ADE80', 'icon' => '/ranks/gold.webp'],
+        ['name' => 'Regular', 'min' => 5000, 'color' => '#60A5FA', 'icon' => '/ranks/platinum.webp'],
+        ['name' => 'Veteran', 'min' => 10000, 'color' => '#A78BFA', 'icon' => '/ranks/diamond.webp'],
+        ['name' => 'Elite', 'min' => 20000, 'color' => '#FBBF24', 'icon' => '/ranks/master.webp'],
+        ['name' => 'Legend', 'min' => 40000, 'color' => '#DC143C', 'icon' => '/ranks/grandmaster.webp'],
     ];
 
     /**
@@ -415,7 +415,7 @@ class ProfileService
         });
 
         // Community ranking tier + division.
-        [$tierName, $tierColor, $division] = $this->rankingTier($rep);
+        [$tierName, $tierColor, $division, $tierIcon] = $this->rankingTier($rep);
 
         // Monthly contribution (current month-to-date).
         $weights = config('ranking.contribution_weights') ?: self::DEFAULT_WEIGHTS;
@@ -456,6 +456,7 @@ class ProfileService
             'percentile' => $percentile,
             'tier' => $tierName,
             'tier_color' => $tierColor,
+            'tier_icon' => $tierIcon,
             'division' => $division,
             'history' => $history,
             'monthly_contribution' => $contribution,
@@ -464,9 +465,15 @@ class ProfileService
     }
 
     /**
-     * Resolve a reputation value to a tier name, color, and Roman division (III→I).
+     * Resolve a reputation value to a tier name, color, Roman division (III→I)
+     * and the tier's insignia.
      *
-     * @return array{0:string,1:string,2:string}
+     * The icon is nullable because a config cache written before the artwork
+     * was assigned will hand back tiers without the key — the card falls back
+     * to a plain medal in the tier colour rather than rendering a broken
+     * image, which is what a `?? null` is for here.
+     *
+     * @return array{0:string,1:string,2:string,3:?string}
      */
     public function rankingTier(int $rep): array
     {
@@ -485,7 +492,7 @@ class ProfileService
         $frac = $band > 0 ? ($rep - $current['min']) / $band : 1;
         $division = ['III', 'II', 'I'][min(2, max(0, (int) floor($frac * 3)))];
 
-        return [$current['name'], $current['color'], $division];
+        return [$current['name'], $current['color'], $division, $current['icon'] ?? null];
     }
 
     /**

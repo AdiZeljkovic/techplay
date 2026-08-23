@@ -483,6 +483,8 @@ export interface ReputationData {
     percentile: number;
     tier: string;
     tier_color: string;
+    /** The tier's insignia. Null on a config cache written before the artwork. */
+    tier_icon?: string | null;
     division: string;
     history?: number[];
     monthly_contribution: number;
