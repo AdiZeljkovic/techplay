@@ -237,7 +237,7 @@ function ProfilePageInner() {
                             collectionSnapshot={profile.collection_snapshot}
                             playingNow={profile.playing_now}
                             showcase={profile.showcase}
-                            reputation={profile.reputation}
+                            standing={profile.standing}
                             recognitions={profile.recognitions}
                             lists={profile.lists}
                             trophyCase={profile.trophy_case}

@@ -15,7 +15,7 @@ import ProfileChecklist from "./dashboard/ProfileChecklist";
 import DailyHub from "./dashboard/DailyHub";
 import PlayerCard from "./PlayerCard";
 import TasteMatch from "./TasteMatch";
-import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, ReputationData, Recognition, GameListPreview, CollectionSnapshotTile, TrophyCaseItem, PlayerCard as PlayerCardData } from "@/lib/types/profile";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, StandingData, Recognition, GameListPreview, CollectionSnapshotTile, TrophyCaseItem, PlayerCard as PlayerCardData } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -26,7 +26,7 @@ interface Props {
     collectionSnapshot?: CollectionSnapshotTile[];
     playingNow?: PlayingNowGame[];
     showcase?: PlayingNowGame[];
-    reputation?: ReputationData;
+    standing?: StandingData;
     recognitions?: Recognition[];
     lists?: GameListPreview[];
     trophyCase?: TrophyCaseItem[];
@@ -66,7 +66,7 @@ interface Props {
 export default function ProfileOverviewDashboard({
     userData, stats, achievements = [], isOwnProfile,
     collectionSnapshot = [], playingNow = [], showcase = [],
-    reputation, recognitions = [], lists = [], trophyCase = [], discord,
+    standing, recognitions = [], lists = [], trophyCase = [], discord,
     connectedAccounts = [], playerCard = null,
     onOpenTab = () => {} }: Props) {
     const nonZeroBuckets = collectionSnapshot.filter((t) => t.count > 0);
@@ -189,10 +189,11 @@ export default function ProfileOverviewDashboard({
 
             {/* === SIDEBAR === */}
             <div className="space-y-6 min-w-0">
-                {/* Community Standing (reputation + ranking + recognitions) */}
-                {reputation && (
+                {/* Community Standing — the XP rank, where it places, and what the
+                    community handed over directly. */}
+                {standing && (
                     <SectionCard title="Community Standing" material="instrument">
-                        <CommunityStanding reputation={reputation} recognitions={recognitions} />
+                        <CommunityStanding standing={standing} recognitions={recognitions} />
                         {!isOwnProfile && <GiveRecognitionButton username={userData.username} />}
                     </SectionCard>
                 )}

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Customization;
 use App\Models\Friendship;
 use App\Models\GameList;
+use App\Models\Rank;
 use App\Models\ReputationSnapshot;
 use App\Models\User;
 use App\Models\UserCustomization;
@@ -22,15 +23,6 @@ class ProfileService
 {
     /** Fallbacks used when config is unavailable (e.g. stale config cache during deploy). */
     private const DEFAULT_WEIGHTS = ['post' => 5, 'comment' => 2, 'thread' => 10];
-
-    private const DEFAULT_TIERS = [
-        ['name' => 'Rookie', 'min' => 0, 'color' => '#9CA3AF', 'icon' => '/ranks/silver.webp'],
-        ['name' => 'Contributor', 'min' => 2000, 'color' => '#4ADE80', 'icon' => '/ranks/gold.webp'],
-        ['name' => 'Regular', 'min' => 5000, 'color' => '#60A5FA', 'icon' => '/ranks/platinum.webp'],
-        ['name' => 'Veteran', 'min' => 10000, 'color' => '#A78BFA', 'icon' => '/ranks/diamond.webp'],
-        ['name' => 'Elite', 'min' => 20000, 'color' => '#FBBF24', 'icon' => '/ranks/master.webp'],
-        ['name' => 'Legend', 'min' => 40000, 'color' => '#DC143C', 'icon' => '/ranks/grandmaster.webp'],
-    ];
 
     /**
      * Counts per status + favorites + total. Single grouped query.
@@ -397,25 +389,52 @@ class ProfileService
     }
 
     /**
-     * Reputation & Power data: current reputation, month-over-month delta,
-     * community percentile, ranking tier/division, and monthly contribution.
+     * Where this player stands, on the one ladder the site actually has.
+     *
+     * This block used to run a ladder of its own: six Community Standing tiers
+     * split into three divisions each, driven by `forum_reputation`. Two
+     * things were wrong with it, and both were measurable.
+     *
+     * It was calibrated for a community thirty times this one. The first
+     * promotion sat at 2,000 reputation; reputation moves by ±1 per forum vote
+     * and +10 per accepted solution, and the site record is 68 across 53
+     * accounts, two of which have any at all. Every profile read
+     * "Rookie III · Top 100% of the community" — a ladder nobody had climbed
+     * a single rung of, and could not.
+     *
+     * And four of its six names — Rookie, Veteran, Elite, Legend — are also XP
+     * rank names, so a reader saw "Noob" in the hero and "Rookie III" in the
+     * sidebar and reasonably concluded something was broken. Nothing was; they
+     * were two ladders wearing each other's words.
+     *
+     * So the card shows the XP rank, which is the ladder that moves: XP is
+     * awarded for comments, games added, games completed, reviews and Discord
+     * messages, and ten accounts have some. Reputation stays in the payload
+     * because it is real and the leaderboard ranks by it — it is simply no
+     * longer dressed as a rank.
      */
     public function reputation(User $user): array
     {
         $rep = (int) ($user->forum_reputation ?? 0);
+        $xp = (int) ($user->xp ?? 0);
 
-        // Percentile — "Top X%" of the community by reputation. Cached per
-        // reputation value (1h): previously this ran two full-table scans on
-        // EVERY profile view.
-        $percentile = Cache::remember("reputation.percentile.v1.{$rep}", 3600, function () use ($rep) {
+        // Percentile — "Top X%" of the community, by the ladder on display.
+        // Cached per XP value (1h): this is two full-table scans, and it runs
+        // on every profile view.
+        $percentile = Cache::remember("standing.percentile.v1.{$xp}", 3600, function () use ($xp) {
             $total = User::count();
-            $higher = User::where('forum_reputation', '>', $rep)->count();
+            $higher = User::where('xp', '>', $xp)->count();
 
             return $total > 0 ? max(1, (int) ceil((($higher + 1) / $total) * 100)) : 100;
         });
 
-        // Community ranking tier + division.
-        [$tierName, $tierColor, $division, $tierIcon] = $this->rankingTier($rep);
+        $rank = $user->loadMissing('rank')->rank;
+
+        // The next band up, for the rail beneath the insignia. Null at the top
+        // of the ladder, where there is nothing left to fill toward.
+        $nextRank = $rank
+            ? Rank::where('min_xp', '>', $rank->min_xp)->orderBy('min_xp')->first()
+            : Rank::orderBy('min_xp')->first();
 
         // Monthly contribution (current month-to-date).
         $weights = config('ranking.contribution_weights') ?: self::DEFAULT_WEIGHTS;
@@ -429,6 +448,7 @@ class ProfileService
         $lastPeriod = now()->subMonth()->format('Y-m');
         $snap = ReputationSnapshot::where('user_id', $user->id)->where('period', $lastPeriod)->first();
         $repDelta = ($snap && $snap->reputation > 0) ? (int) round((($rep - $snap->reputation) / $snap->reputation) * 100) : null;
+        $xpDelta = ($snap && $snap->xp > 0) ? (int) round((($xp - $snap->xp) / $snap->xp) * 100) : null;
         $contribDelta = ($snap && $snap->contribution_points > 0) ? (int) round((($contribution - $snap->contribution_points) / $snap->contribution_points) * 100) : null;
 
         // Sparkline series — last 6 monthly snapshots + the current value.
@@ -439,60 +459,44 @@ class ProfileService
         // baseline writes to this same table with a period like `2026-W32`,
         // which sorts after `2026-08` as a string — so the series was mixing
         // two cadences. Months only, newest six, then back into reading order.
+        //
+        // It plots XP now, not reputation: the line has to be the same
+        // quantity as the figure above it. `xp` has been snapshotted weekly and
+        // monthly since July, so the series has real history from day one.
         $history = ReputationSnapshot::where('user_id', $user->id)
             ->where('period', 'not like', '%W%')
             ->orderByDesc('period')
             ->limit(6)
-            ->pluck('reputation')
+            ->pluck('xp')
             ->reverse()
             ->map(fn ($v) => (int) $v)
-            ->push($rep)
+            ->push($xp)
             ->values()
             ->all();
 
         return [
-            'reputation' => $rep,
-            'reputation_delta_percent' => $repDelta,
+            // The ladder on display: the same rank the hero draws, because
+            // there is only one.
+            'rank' => $rank ? [
+                'name' => $rank->name,
+                'color' => $rank->color,
+                'icon' => $rank->icon,
+                'min_xp' => (int) $rank->min_xp,
+            ] : null,
+            'next_rank' => $nextRank ? [
+                'name' => $nextRank->name,
+                'min_xp' => (int) $nextRank->min_xp,
+            ] : null,
+            'xp' => $xp,
+            'xp_delta_percent' => $xpDelta,
             'percentile' => $percentile,
-            'tier' => $tierName,
-            'tier_color' => $tierColor,
-            'tier_icon' => $tierIcon,
-            'division' => $division,
             'history' => $history,
             'monthly_contribution' => $contribution,
             'monthly_contribution_delta_percent' => $contribDelta,
+            // Kept, no longer a ladder. The leaderboard still ranks by it.
+            'reputation' => $rep,
+            'reputation_delta_percent' => $repDelta,
         ];
-    }
-
-    /**
-     * Resolve a reputation value to a tier name, color, Roman division (III→I)
-     * and the tier's insignia.
-     *
-     * The icon is nullable because a config cache written before the artwork
-     * was assigned will hand back tiers without the key — the card falls back
-     * to a plain medal in the tier colour rather than rendering a broken
-     * image, which is what a `?? null` is for here.
-     *
-     * @return array{0:string,1:string,2:string,3:?string}
-     */
-    public function rankingTier(int $rep): array
-    {
-        $tiers = config('ranking.tiers') ?: self::DEFAULT_TIERS;
-        $current = $tiers[0];
-        $nextMin = null;
-
-        foreach ($tiers as $i => $tier) {
-            if ($rep >= $tier['min']) {
-                $current = $tier;
-                $nextMin = $tiers[$i + 1]['min'] ?? null;
-            }
-        }
-
-        $band = $nextMin !== null ? ($nextMin - $current['min']) : max(1, $current['min']);
-        $frac = $band > 0 ? ($rep - $current['min']) / $band : 1;
-        $division = ['III', 'II', 'I'][min(2, max(0, (int) floor($frac * 3)))];
-
-        return [$current['name'], $current['color'], $division, $current['icon'] ?? null];
     }
 
     /**

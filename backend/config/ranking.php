@@ -1,34 +1,29 @@
 <?php
 
 /**
- * Community Standing levels, driven by forum reputation. Each band is split
- * into three divisions (III lowest → I highest), e.g. "Contributor II".
+ * There was a second ladder here.
  *
- * Deliberately NOT metal names — Bronze/Silver/Gold belongs exclusively to
- * the XP Rank ladder so users can tell the two progressions apart. The names
- * still stand apart; the artwork below is shared, which is a different thing.
+ * Six "Community Standing" tiers driven by forum reputation, each split into
+ * three divisions — Rookie III up to Legend I. It was removed on 24.08.2026
+ * because it was never a ladder in practice, only in shape:
  *
- * Each tier carries an insignia from the site's commissioned rank set. The
- * card that draws this was showing a hex plate with a cardboard-box glyph
- * inside it — a lucide placeholder standing in for artwork we already own.
- * The emblems carry no lettering, so an emblem is not a claim about which
- * ladder it belongs to; the tier name beside it is.
+ *   its first promotion sat at 2,000 reputation, and reputation moves ±1 per
+ *   forum vote and +10 per accepted solution. The site record is 68, across 53
+ *   accounts, of which two have any at all. Every profile on the site read
+ *   "Rookie III · Top 100% of the community" — no rung had ever been climbed,
+ *   and none could be at that calibration;
  *
- * The six chosen skip `newcomer`, `player`, `rookie` and `bronze`, which are
- * the XP ranks nearly every account on the site currently wears — those are
- * the four most likely to end up on screen twice, once in the hero and once
- * in this card.
+ *   and four of its six names — Rookie, Veteran, Elite, Legend — are also XP
+ *   rank names, so a reader saw "Noob" in the hero and "Rookie III" in the
+ *   sidebar of the same profile and reported a bug. There was no bug. There
+ *   were two ladders wearing each other's words.
+ *
+ * The site has one progression that moves — XP → level and rank — and the
+ * Standing card draws that now. Reputation is still counted, still ranks the
+ * leaderboard, and is no longer dressed as a rank. If the forum ever fills,
+ * a ladder can come back with thresholds set from numbers that exist.
  */
 return [
-    'tiers' => [
-        ['name' => 'Rookie', 'min' => 0, 'color' => '#9CA3AF', 'icon' => '/ranks/silver.webp'],
-        ['name' => 'Contributor', 'min' => 2000, 'color' => '#4ADE80', 'icon' => '/ranks/gold.webp'],
-        ['name' => 'Regular', 'min' => 5000, 'color' => '#60A5FA', 'icon' => '/ranks/platinum.webp'],
-        ['name' => 'Veteran', 'min' => 10000, 'color' => '#A78BFA', 'icon' => '/ranks/diamond.webp'],
-        ['name' => 'Elite', 'min' => 20000, 'color' => '#FBBF24', 'icon' => '/ranks/master.webp'],
-        ['name' => 'Legend', 'min' => 40000, 'color' => '#FC4100', 'icon' => '/ranks/grandmaster.webp'],
-    ],
-
     // Weights used to compute a user's monthly contribution score.
     'contribution_weights' => [
         'post' => 5,

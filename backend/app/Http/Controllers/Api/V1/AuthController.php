@@ -483,7 +483,11 @@ class AuthController extends Controller
             'player_card' => $profileService->playerCard($user),
             // Phase 2 — reputation, ranking, recognitions
             // (recognitions cached giver-agnostic; viewer overlay is applied in show())
-            'reputation' => $profileService->reputation($user),
+            // Where this player stands on the one ladder the site has.
+            // Named `standing` because that is what it is now: it used to
+            // carry a reputation tier ladder of its own, whose names
+            // collided with the XP ranks four times over.
+            'standing' => $profileService->reputation($user),
             'recognitions' => $profileService->recognitions($user, null),
             // Phase 4 — public custom lists
             'lists' => $profileService->publicLists($user),

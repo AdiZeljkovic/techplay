@@ -477,18 +477,29 @@ export interface CollectionEntry {
     } | null;
 }
 
-export interface ReputationData {
-    reputation: number;
-    reputation_delta_percent: number | null;
+/**
+ * Where a player stands on the site's one ladder.
+ *
+ * Was `ReputationData`, and carried a Standing tier + division of its own —
+ * a second ladder on forum reputation whose names collided with the XP ranks
+ * and whose first promotion nobody on the site had ever reached.
+ */
+export interface StandingData {
+    /** The XP rank — the same one the hero draws. */
+    rank: { name: string; color: string | null; icon: string | null; min_xp: number } | null;
+    /** The next band up. Null at the top of the ladder. */
+    next_rank: { name: string; min_xp: number } | null;
+    xp: number;
+    xp_delta_percent: number | null;
+    /** Top X% of the community, by XP. */
     percentile: number;
-    tier: string;
-    tier_color: string;
-    /** The tier's insignia. Null on a config cache written before the artwork. */
-    tier_icon?: string | null;
-    division: string;
+    /** XP over the last six months, ending on today's value. */
     history?: number[];
     monthly_contribution: number;
     monthly_contribution_delta_percent: number | null;
+    /** Still counted, still ranks the leaderboard — no longer a ladder. */
+    reputation: number;
+    reputation_delta_percent: number | null;
 }
 
 export interface CollectionSnapshotTile {
@@ -658,7 +669,7 @@ export interface UserProfile {
        platforms_genres plus a favourites query, computed on every public
        profile view and read by nothing. `player_card` took its place. */
     player_card?: PlayerCard;
-    reputation?: ReputationData;
+    standing?: StandingData;
     recognitions?: Recognition[];
     lists?: GameListPreview[];
     customization?: CustomizationData;
