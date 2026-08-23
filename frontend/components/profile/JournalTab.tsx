@@ -891,8 +891,13 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                 />
             )}
 
+            {/* The rail is the diary's. "Where the hours went" is built from
+                logged sessions and "Gaming Moments" from what was attached to
+                them, so on the timeline they were two empty panels beside a
+                history the reader did not write — and they took a third of the
+                width to say nothing. Without them the timeline uses all of it. */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-                <div className="xl:col-span-8 min-w-0 space-y-4">
+                <div className={`min-w-0 space-y-4 ${view === "diary" ? "xl:col-span-8" : "xl:col-span-12"}`}>
                     {view === "diary" && (
                         <Panel
                             title="Sessions"
@@ -983,8 +988,8 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                     )}
                 </div>
 
-                {/* ── sidebar ── */}
-                <aside className="xl:col-span-4 min-w-0 space-y-4">
+                {/* ── the diary's rail ── */}
+                {view === "diary" && <aside className="xl:col-span-4 min-w-0 space-y-4">
                     <Panel title="Where the hours went" material="instrument">
                         {journal.per_game.length === 0 ? (
                             <EmptyState variant="compact" title="No sessions yet" />
@@ -1026,7 +1031,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                             );
                         })()}
                     </Panel>
-                </aside>
+                </aside>}
             </div>
         </div>
     );
