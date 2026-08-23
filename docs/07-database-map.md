@@ -20,12 +20,19 @@
 | `users` | Korisnici | id, username, email, password, xp, rank_id, discord_id, discord_username, streak, steam_id, paypal_*, **profile_visibility**, **active_days_count** |
 | `personal_access_tokens` | Sanctum tokeni | id, tokenable_id, token, abilities |
 | `connected_accounts` | Steam/Discord/BNet linkovi | user_id, provider, provider_id |
-| `ranks` | XP rangovi | id, name, xp_required, color, icon |
+| `ranks` | XP rangovi — **20 redova, 20 pragova** (24.08.2026) | id, name, **min_xp**, color, icon |
 | `friendships` | Prijatelji | id, user_id, friend_id, status (pending/accepted/blocked) |
 | `presences` | Što korisnik igra | id, user_id, game_id, game_name, started_at |
-| `reputation_snapshots` | Snapshot reputacije | id, user_id, xp, rank_id, snapshotted_at |
+| `reputation_snapshots` | Snapshot reputacije **i XP-a**, mjesečno (`YYYY-MM`) i sedmično (`YYYY-Wnn`) | id, user_id, **period**, reputation, **xp**, contribution_points |
 | `user_recognitions` | Recognition između korisnika | id, from_user_id, to_user_id, type, message |
 | `user_customizations` | Profile customizacija | user_id, avatar_frame, banner, badges, itd. |
+
+
+**`ranks` — spojeno 24.08.2026.** Tabela je bila seedana dvaput pod dva imenika, pa je imala **25 redova za 20 prečki**: Noob/Newcomer na 0, Newbie/Player na 100, Legendary/Legend na 45k, Radiant/Global Elite na 150k, God of Gaming/Eternal na 500k. Ništa nije pucalo — samo je "sljedeći rang" odlučivao redoslijed redova, pa je čitalac s 98 XP dobijao "2 XP do Player" dok je red pored njega na istom pragu bio Newbie.
+
+Kanonska ljestvica je ona koju opisuju `RankSeeder` i `LevelService::ANCHORS` (Newcomer → Eternal); stara imena su penzionisana, 51 nalog premješten (50 Noob→Newcomer, 1 Newbie→Player). Ikonice su svedene na jednu konvenciju — **`/ranks/*.webp`** koje servira frontend, a ne `ranks/*.png` sa storage diska; obje su se resolvale (`getStorageUrl` grana po početnoj kosoj crti), zbog čega niko nije primijetio da tabela svoj art opisuje na dva načina. Seeder sada piše isto, inače bi sljedeći `migrate:fresh --seed` vratio drugu konvenciju. Migracija: `2026_08_24_000001_merge_duplicate_ranks`; backup u `storage/app/backups/ranks-2026-08-24.sql` + `users-rank_id-2026-08-24.csv`. Testovi: `tests/Feature/RankLadderIsSingleTest.php`.
+
+Zaostalo: `storage/app/public/ranks/*.png` više nema čitaoca, nisu brisani.
 
 ### Content
 
