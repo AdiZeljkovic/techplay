@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import Image from "next/image";
+import SteamAchievementList from "./SteamAchievementList";
 import axios from "@/lib/axios";
 import {
     Trophy, Lock, Search, X, Sparkles, Award, ChevronDown, Star,
@@ -446,6 +447,10 @@ export default function AchievementsTab({ username }: { username: string }) {
         { revalidateOnFocus: false }
     );
 
+    /* Ours or the platform's. Steam brings 5,177 rows against our 67, so
+       merging the two lists would bury the badges this page is about
+       seventy-seven to one — they share the controls, not the list. */
+    const [source, setSource] = useState<"site" | "steam">("site");
     const [filter, setFilter] = useState<FilterId>("all");
     const [category, setCategory] = useState<string>("all");
     const [sort, setSort] = useState<SortId>("default");
@@ -541,12 +546,35 @@ export default function AchievementsTab({ username }: { username: string }) {
         ...(payload.rarity_available ? [{ id: "rare" as FilterId, label: "Rare", count: counts.rare }] : []),
     ];
 
+    const sourceSwitch = (
+        <Segmented
+            ariaLabel="Achievement source"
+            value={source}
+            onChange={(id) => setSource(id as "site" | "steam")}
+            className="w-full mb-4"
+            items={[
+                { id: "site", label: "TechPlay", count: payload.total },
+                { id: "steam", label: "Steam" },
+            ]}
+        />
+    );
+
+    if (source === "steam") {
+        return (
+            <div>
+                {sourceSwitch}
+                <SteamAchievementList username={username} />
+            </div>
+        );
+    }
+
     return (
         // No items-start: the two columns stretch to the taller of them, so
         // the shelf can push its Load more down to the rail's floor instead of
         // stopping halfway up with a screen of nothing under it.
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
             <div className="xl:col-span-9 min-w-0 flex flex-col">
+                {sourceSwitch}
                 <ScoreStrip data={payload} />
 
                 {/* ── controls ──

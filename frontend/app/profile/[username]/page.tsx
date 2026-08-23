@@ -10,8 +10,6 @@ import { User, Gamepad2, Trophy, ListChecks, Flame } from "lucide-react";
 import toast from "react-hot-toast";
 import ProgressionTab from "@/components/profile/ProgressionTab";
 import AchievementsTab from "@/components/profile/AchievementsTab";
-import SectionCard from "@/components/profile/dashboard/SectionCard";
-import SteamAchievements from "@/components/profile/dashboard/SteamAchievements";
 import RewardsStore from "@/components/profile/RewardsStore";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHero from "@/components/home-dashboard/ProfileHero";
@@ -246,15 +244,12 @@ function ProfilePageInner() {
                         <ProgressionTab username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
+                    {/* Steam used to hang below this in a section of its own,
+                        with its own hundred-row panel and no controls. It is a
+                        source inside the tab now, sharing the same All /
+                        Unlocked / Locked bar the badges use. */}
                     {activeTab === "achievements" && (
-                        <div className="space-y-5">
-                            <AchievementsTab username={userData.username} />
-                            {/* Platform unlocks under the same roof as ours,
-                                rather than in a section of their own. */}
-                            <SectionCard title="Steam Achievements">
-                                <SteamAchievements username={userData.username} />
-                            </SectionCard>
-                        </div>
+                        <AchievementsTab username={userData.username} />
                     )}
 
                     {activeTab === "rewards" && isOwnProfile && (
