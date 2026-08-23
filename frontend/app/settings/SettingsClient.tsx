@@ -9,10 +9,11 @@ import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import {
     Loader2, Save, User, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2, Eye, Globe, Users, Check,
-    Bell, MapPin, Quote, ImageIcon, type LucideIcon,
+    Bell, MapPin, Quote, type LucideIcon,
 } from "lucide-react";
 import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
 import ProfilePreviewCard from "@/components/settings/ProfilePreviewCard";
+import ImageDropzone from "@/components/settings/ImageDropzone";
 import ProfileCompletionWidget from "@/components/home-dashboard/ProfileCompletionWidget";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
@@ -243,22 +244,6 @@ export default function SettingsClient() {
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setAvatarFile(file);
-            setAvatarPreview(URL.createObjectURL(file));
-        }
-    };
-
-    const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setCoverFile(file);
-            setCoverPreview(URL.createObjectURL(file));
-        }
-    };
-
     const handleSave = async () => {
         setSaving(true);
         try {
@@ -372,20 +357,42 @@ export default function SettingsClient() {
     return (
         <div className="min-h-screen pt-24 pb-12">
             <div className="container-page">
-                <header className="mb-6">
-                    <h1 className="font-display text-3xl md:text-4xl font-black uppercase tracking-tight leading-none">
-                        <span className="text-white">Account </span>
-                        <span className="text-[var(--accent)]">Settings</span>
-                    </h1>
-                    <p className="mt-2 text-[13px] text-white/40">
-                        Signed in as <span className="font-semibold text-white/70">{user.username}</span> · {user.email}
-                    </p>
-                </header>
+                {/* The account, rather than the word "Settings".
+                
+                    This was a page title in the same treatment every other page
+                    uses, with the identity demoted to a grey line under it and
+                    the completion widget dropped full-width above the content —
+                    so the first thing on a page about your account was a heading
+                    and a progress bar, and the account itself was a footnote.
+                    The avatar anchors it now and the two facts that matter sit
+                    beside it. */}
+                <header className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-4">
+                    <span className="shrink-0 w-[54px] h-[54px] rounded-full p-[2px]" style={{ background: "var(--accent)" }}>
+                        <span className="block w-full h-full rounded-full p-[2.5px] bg-[var(--surface-0)]">
+                            {avatarPreview ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={avatarPreview} alt="" aria-hidden className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                                <span className="w-full h-full rounded-full bg-white/[0.06] flex items-center justify-center text-white/25">
+                                    <User className="w-6 h-6" />
+                                </span>
+                            )}
+                        </span>
+                    </span>
 
-                {/* What's still missing — every step here is actionable on this page */}
-                <div className="mb-6">
-                    <ProfileCompletionWidget />
-                </div>
+                    <div className="min-w-0">
+                        <h1 className="font-display text-[26px] md:text-[32px] font-black uppercase tracking-tight leading-none text-white truncate">
+                            {user.display_name || user.username}
+                        </h1>
+                        <p className="mt-1.5 text-[12.5px] text-white/35 truncate">
+                            @{user.username} · {user.email}
+                        </p>
+                    </div>
+
+                    <div className="ml-auto w-full sm:w-auto sm:min-w-[280px]">
+                        <ProfileCompletionWidget />
+                    </div>
+                </header>
 
                 {/* A rail rather than a chip bar. Settings are navigated, not
                     browsed: you arrive knowing which one you came for, and a
@@ -394,7 +401,7 @@ export default function SettingsClient() {
                 <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-5 items-start">
                     <nav className="lg:sticky lg:top-24" aria-label="Settings sections">
                         <div className="flex lg:flex-col gap-1 overflow-x-auto scrollbar-none">
-                            {SECTIONS.map(({ id, label, icon: Icon }) => {
+                            {SECTIONS.map(({ id, label, icon: Icon, blurb }) => {
                                 const on = id === section;
 
                                 return (
@@ -402,7 +409,7 @@ export default function SettingsClient() {
                                         key={id}
                                         onClick={() => openSection(id)}
                                         aria-current={on ? "page" : undefined}
-                                        className={`group/nav shrink-0 flex items-center gap-3 h-11 px-3.5 rounded-[9px] font-display text-[11px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-colors duration-300 ${
+                                        className={`group/nav shrink-0 flex items-center gap-3 lg:h-auto lg:py-2.5 h-11 px-3.5 rounded-[9px] text-left font-display text-[11px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-colors duration-300 ${
                                             on
                                                 ? "bg-[var(--accent)]/[0.12] text-[var(--accent-ink)]"
                                                 : "text-white/40 hover:text-white hover:bg-white/[0.04]"
@@ -412,7 +419,16 @@ export default function SettingsClient() {
                                             className="w-[19px] h-[19px] shrink-0 transition-transform duration-300 group-hover/nav:scale-110"
                                             strokeWidth={1.6}
                                         />
-                                        {label}
+                                        <span className="min-w-0">
+                                            <span className="block truncate">{label}</span>
+                                            {/* Every section already carried a
+                                                blurb and only the panel header
+                                                ever showed it — which is the one
+                                                place you have already arrived. */}
+                                            <span className={`hidden lg:block mt-0.5 font-display text-[9px] font-medium normal-case tracking-normal truncate ${on ? "text-[var(--accent-ink)]/50" : "text-white/20"}`}>
+                                                {blurb}
+                                            </span>
+                                        </span>
                                     </button>
                                 );
                             })}
@@ -438,46 +454,60 @@ export default function SettingsClient() {
                                 />
 
                                 <Section title="Who you are" blurb={current.blurb}>
-                                    <div className="space-y-5 max-w-xl">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Two columns where a field is short and one
+                                        where it is not. This was a single
+                                        max-w-xl strip, so on any wide screen the
+                                        form occupied a third of the page and the
+                                        rest was empty — which is most of what
+                                        made it read as unfinished. */}
+                                    <div className="space-y-5">
+                                        {/* The three that fit on one line, on one
+                                            line. Two of them are read-only, so
+                                            leaving them stacked full-width gave
+                                            the most space on the page to the two
+                                            fields nobody can edit. */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                                             <Field label="Username" hint="Cannot be changed">
                                                 <Input value={user.username} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
                                             </Field>
                                             <Field label="Email" hint="Cannot be changed here">
                                                 <Input value={user.email} disabled className="opacity-50 cursor-not-allowed bg-[var(--surface-2)]" />
                                             </Field>
+                                            <Field label="Display name" hint={`Falls back to ${user.username}`}>
+                                                <Input
+                                                    value={displayName}
+                                                    onChange={(e) => setDisplayName(e.target.value)}
+                                                    placeholder={user.username}
+                                                    maxLength={50}
+                                                />
+                                            </Field>
                                         </div>
 
-                                        <Field label="Display name" hint={`Falls back to ${user.username}`}>
-                                            <Input
-                                                value={displayName}
-                                                onChange={(e) => setDisplayName(e.target.value)}
-                                                placeholder={user.username}
-                                                maxLength={50}
-                                            />
-                                        </Field>
+                                        {/* Tagline is the wider of the two — it is
+                                            a sentence, and Location is a place. */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-4">
+                                            <Field label="Tagline" hint={`${tagline.length}/120`}>
+                                                <Input
+                                                    value={tagline}
+                                                    onChange={(e) => setTagline(e.target.value.slice(0, 120))}
+                                                    placeholder="One line, under your name on your profile"
+                                                />
+                                                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
+                                                    <Quote className="w-3 h-3" /> Shown on your profile header, above your bio.
+                                                </p>
+                                            </Field>
 
-                                        <Field label="Tagline" hint={`${tagline.length}/120`}>
-                                            <Input
-                                                value={tagline}
-                                                onChange={(e) => setTagline(e.target.value.slice(0, 120))}
-                                                placeholder="One line, under your name on your profile"
-                                            />
-                                            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
-                                                <Quote className="w-3 h-3" /> Shown on your profile header, above your bio.
-                                            </p>
-                                        </Field>
-
-                                        <Field label="Location" hint={`${location.length}/100`}>
-                                            <Input
-                                                value={location}
-                                                onChange={(e) => setLocation(e.target.value.slice(0, 100))}
-                                                placeholder="Sarajevo, BA"
-                                            />
-                                            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
-                                                <MapPin className="w-3 h-3" /> Optional, and public.
-                                            </p>
-                                        </Field>
+                                            <Field label="Location" hint={`${location.length}/100`}>
+                                                <Input
+                                                    value={location}
+                                                    onChange={(e) => setLocation(e.target.value.slice(0, 100))}
+                                                    placeholder="Sarajevo, BA"
+                                                />
+                                                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
+                                                    <MapPin className="w-3 h-3" /> Optional, and public.
+                                                </p>
+                                            </Field>
+                                        </div>
 
                                         <Field label="Bio" hint={`${bio.length}/500`}>
                                             <Textarea
@@ -491,61 +521,30 @@ export default function SettingsClient() {
                                 </Section>
 
                                 <Section title="Pictures" blurb="The portrait and the banner behind it">
-                                    <div className="space-y-6 max-w-xl">
-                                        <div>
-                                            <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-3">Avatar</p>
-                                            <div className="flex items-center gap-5">
-                                                <div className="w-20 h-20 shrink-0 rounded-full overflow-hidden border-2 border-[var(--line)] bg-[var(--surface-2)]">
-                                                    {avatarPreview ? (
-                                                        // eslint-disable-next-line @next/next/no-img-element
-                                                        <img src={avatarPreview} alt="" aria-hidden className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <span className="w-full h-full flex items-center justify-center text-white/30"><User className="w-8 h-8" /></span>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={handleFileChange}
-                                                        className="block w-full text-sm text-white/35 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--accent)] file:text-white hover:file:brightness-110 cursor-pointer"
-                                                    />
-                                                    <p className="text-[11px] text-white/30 mt-2">JPG, PNG or WEBP. Max 2MB.</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    {/* Two dropzones rather than two browser
+                                        file buttons — see ImageDropzone. Side
+                                        by side on a wide screen: they are one
+                                        decision about how the header looks, and
+                                        stacking them in a narrow column made
+                                        the page longer without making it
+                                        clearer. */}
+                                    <div className="grid grid-cols-1 xl:grid-cols-[220px_minmax(0,1fr)] gap-6 xl:gap-8">
+                                        <ImageDropzone
+                                            shape="avatar"
+                                            label="Avatar"
+                                            preview={avatarPreview}
+                                            hint="JPG, PNG or WEBP. Max 2 MB."
+                                            onFile={(file) => { setAvatarFile(file); setAvatarPreview(URL.createObjectURL(file)); }}
+                                        />
 
-                                        <div className="pt-5 border-t border-white/[0.07]">
-                                            <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-3">Cover</p>
-                                            <div className="relative aspect-[4/1] rounded-[var(--radius-card)] overflow-hidden border border-[var(--line)] bg-[var(--surface-2)]">
-                                                {coverPreview ? (
-                                                    // eslint-disable-next-line @next/next/no-img-element
-                                                    <img src={coverPreview} alt="" aria-hidden className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <span className="w-full h-full flex items-center justify-center gap-2 text-white/25 text-[12px]">
-                                                        <ImageIcon className="w-4 h-4" /> No cover image
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="mt-3 flex items-center gap-3">
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleCoverChange}
-                                                    className="block w-full text-sm text-white/35 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--accent)] file:text-white hover:file:brightness-110 cursor-pointer"
-                                                />
-                                                {coverPreview && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => { setCoverFile(null); setCoverPreview(null); }}
-                                                        className="text-[11px] font-bold text-red-400 hover:text-red-300 whitespace-nowrap"
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <p className="text-[11px] text-white/30 mt-2">Recommended 1920×480. Max 5MB.</p>
-                                        </div>
+                                        <ImageDropzone
+                                            shape="cover"
+                                            label="Cover"
+                                            preview={coverPreview}
+                                            hint="Recommended 1920×480. Max 5 MB."
+                                            onFile={(file) => { setCoverFile(file); setCoverPreview(URL.createObjectURL(file)); }}
+                                            onClear={() => { setCoverFile(null); setCoverPreview(null); }}
+                                        />
                                     </div>
                                 </Section>
 
