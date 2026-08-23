@@ -416,6 +416,10 @@ function StatCell({
 function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
     const total = stats?.games_count ?? 0;
     const completed = stats?.completed_count ?? 0;
+    // Played games left the backlog when `played` arrived, and the ledger did
+    // not follow them — a hundred of them simply stopped being counted
+    // anywhere on this strip while Backlog appeared to have shrunk for free.
+    const played = stats?.played_count ?? 0;
     const backlog = stats?.backlog_count ?? 0;
     const wishlist = stats?.wishlist_count ?? 0;
     const added = stats?.games_added_this_month ?? 0;
@@ -443,7 +447,7 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
                 shows through between cells that each paint their own face, so
                 the seams stay correct however the cells wrap. */}
             <div
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-px"
                 style={{ background: "var(--line)" }}
             >
                 <StatCell
@@ -454,6 +458,8 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
                     sub={added > 0 ? <span className="font-display text-[11px] font-bold tabular-nums text-emerald-400">+{added} this month</span> : null}
                 />
                 <StatCell icon={FinishMark} label="Completed" value={completed} tint={STATUS.completed.color} sub={pct(share(completed))} />
+                {/* Between finished and not started, which is where they are. */}
+                <StatCell icon={ShelfMark} label="Played" value={played} tint={STATUS.played.color} sub={pct(share(played))} />
                 <StatCell icon={PileMark} label="Backlog" value={backlog} tint={STATUS.backlog.color} sub={pct(share(backlog))} />
                 <StatCell icon={WishMark} label="Wishlist" value={wishlist} tint={STATUS.wishlist.color} sub={pct(share(wishlist))} />
 
