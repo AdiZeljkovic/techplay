@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Customization;
 use App\Models\Friendship;
 use App\Models\GameList;
-use App\Models\Rank;
 use App\Models\ReputationSnapshot;
 use App\Models\User;
 use App\Models\UserCustomization;
@@ -432,9 +431,12 @@ class ProfileService
 
         // The next band up, for the rail beneath the insignia. Null at the top
         // of the ladder, where there is nothing left to fill toward.
-        $nextRank = $rank
-            ? Rank::where('min_xp', '>', $rank->min_xp)->orderBy('min_xp')->first()
-            : Rank::orderBy('min_xp')->first();
+        //
+        // The model's own method, not a second query shaped like it: the hero
+        // calls this one, and two definitions of "next rank" on one screen is
+        // how they end up disagreeing. It keys off xp rather than off the
+        // current rank's floor, so a stale `rank_id` cannot strand a reader.
+        $nextRank = $user->nextRank();
 
         // Monthly contribution (current month-to-date).
         $weights = config('ranking.contribution_weights') ?: self::DEFAULT_WEIGHTS;
