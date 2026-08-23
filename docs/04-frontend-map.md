@@ -179,6 +179,17 @@ Jedna komponenta servira svaki profil. Nema više odvojenog "dashboarda" i "prof
 
 Obrisano: `ProfileHeader.tsx`, `ProfileTabs.tsx`, `OwnProfileShell.tsx`.
 
+### Javni profil — šta posjetilac vidi (23.08.2026)
+
+Izmjereno prije izmjene: od 53 naloga 51 je `public`, biblioteku ima **jedan** (191 igara), sljedeći ima 2 — prazan profil je pravilo, ne rub. Posjetiočev Overview je otvarao showcase i policu ("šta posjeduje"), a nijedan broj na stranici nije razlikovao policu popunjenu u jedno popodne od devet godina igranja.
+
+- **`PlayerCard`** (`components/profile/PlayerCard.tsx`) je prvi blok posjetiočevog Overviewa: sati, `playing since`, platformski achievementi i najigranija igra s udjelom. Podaci iz novog `player_card` ključa. Ne crta se na tvom profilu niti na praznoj polici — nula izgleda kao mjerenje, a odsustvo nije.
+- **`TasteMatch`** je pomjeren s dna `?tab=stats` na vrh Overviewa. Sam se gasi za odjavljenog čitaoca i na vlastitom profilu; više se ne renderuje na Gamer DNA tabu (bio bi isti panel dvaput).
+- **Hero traka ima dvije verzije.** Vlasnik zadržava `Streak` i `Level N+1 loot` — to su kuke, a kuka radi samo na onom ko može reagovati. Posjetilac umjesto njih dobija `Playing since` (`hero.playing_since`, iz `player_card.span.from`).
+- **`Progression` je `ownOnly`.** Posjetiocu je renderovao samo `SeasonPanel`, koji čita globalni `/seasons/active` — identična slika na svih 53 profila. Vraća se kad sezona dobije standing po igraču. Redirect za owner-only tabove sada čita `PROFILE_TABS`, ne hardkodovan `"rewards"`.
+- **Kopija u treće lice na tuđem profilu:** Library hintovi, prazna stanja Diary/Timeline/Steam achievementa i "Add your first game" na `CollectionLedger` — sve je govorilo posjetiocu da uradi nešto s policom koja nije njegova.
+- **SEO opis nosi brojke** (`describe()` u `app/profile/[username]/layout.tsx`) umjesto "Check out X's gaming profile" na svih 53 naloga. Zaključan profil dobija samo ime.
+
 ---
 
 ## Auth — jedan izvor istine (08/2026)

@@ -440,7 +440,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
 
 /* ── the tab ──────────────────────────────────────────────────────────── */
 
-export default function AchievementsTab({ username }: { username: string }) {
+export default function AchievementsTab({ username, isOwnProfile = false }: { username: string; isOwnProfile?: boolean }) {
     const { data, isLoading } = useSWR<{ data: AchievementsPayload }>(
         `/users/${username}/achievements`,
         fetcher,
@@ -563,7 +563,7 @@ export default function AchievementsTab({ username }: { username: string }) {
         return (
             <div>
                 {sourceSwitch}
-                <SteamAchievementList username={username} />
+                <SteamAchievementList username={username} isOwnProfile={isOwnProfile} />
             </div>
         );
     }

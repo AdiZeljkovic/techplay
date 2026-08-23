@@ -8,15 +8,25 @@ import JournalTab, { type JournalView } from "./JournalTab";
 
 type LibraryView = "shelf" | JournalView;
 
-const VIEWS: { id: LibraryView; label: string; icon: typeof LayoutGrid; hint: string }[] = [
-    { id: "shelf", label: "Shelf", icon: LayoutGrid, hint: "Everything you own, by status" },
-    { id: "diary", label: "Diary", icon: BookOpen, hint: "What you played, and when" },
-    { id: "timeline", label: "Timeline", icon: History, hint: "What you finished, and what you said" },
+/**
+ * Two voices, because the page has two readers.
+ *
+ * "Everything you own" is the right sentence on your own library and the
+ * wrong one on somebody else's, where it addressed the visitor about a shelf
+ * that was not theirs. The owner keeps the second person; a visitor is told
+ * whose shelf they are reading.
+ */
+const VIEWS = (who: string | null): { id: LibraryView; label: string; icon: typeof LayoutGrid; hint: string }[] => [
+    { id: "shelf", label: "Shelf", icon: LayoutGrid, hint: who ? `Everything ${who} owns, by status` : "Everything you own, by status" },
+    { id: "diary", label: "Diary", icon: BookOpen, hint: who ? `What ${who} played, and when` : "What you played, and when" },
+    { id: "timeline", label: "Timeline", icon: History, hint: who ? `What ${who} finished, and what they said` : "What you finished, and what you said" },
 ];
 
 interface Props {
     username: string;
     isOwnProfile: boolean;
+    /** Whose shelf this is, for a visitor's copy. Falls back to the username. */
+    displayName?: string | null;
 }
 
 /**
@@ -33,7 +43,7 @@ interface Props {
  * already names the section, and a reader sharing their library means the
  * library, not the particular way they were looking at it.
  */
-export default function LibraryTab({ username, isOwnProfile }: Props) {
+export default function LibraryTab({ username, isOwnProfile, displayName = null }: Props) {
     const [view, setView] = useState<LibraryView>("shelf");
 
     // A game handed from the shelf to the diary. Held here because it crosses
@@ -54,7 +64,7 @@ export default function LibraryTab({ username, isOwnProfile }: Props) {
                 ariaLabel="Library views"
                 value={view}
                 onChange={(id) => setView(id as LibraryView)}
-                items={VIEWS.map(({ id, label, icon, hint }) => ({ id, label, icon, title: hint }))}
+                items={VIEWS(isOwnProfile ? null : displayName || username).map(({ id, label, icon, hint }) => ({ id, label, icon, title: hint }))}
             />
 
             {view === "shelf" ? (

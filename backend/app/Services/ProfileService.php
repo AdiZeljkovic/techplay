@@ -9,6 +9,7 @@ use App\Models\ReputationSnapshot;
 use App\Models\User;
 use App\Models\UserCustomization;
 use App\Models\UserGame;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -324,35 +325,74 @@ class ProfileService
     }
 
     /**
-     * Gamer DNA — favorite genres/platforms (from collection), playstyle tags
-     * (user-set), and favorite franchises (favorited games' series names).
+     * The player card — how serious this person is, in four numbers.
+     *
+     * A visitor arrives asking one question the counters never answered: is
+     * this a shelf somebody filled once, or years of playing? Hours, the span
+     * they cover, the one game that took the largest share of them, and what
+     * the platforms certified. The status counts already on the page say what
+     * is owned; none of them says what was *played*.
+     *
+     * Aggregates only. The same figures exist on the Gamer DNA tab, but that
+     * page loads the whole shelf to derive them — 191 rows with their games —
+     * and this ships on every public profile view, so it asks the database for
+     * sums instead of rows. Years come back as timestamps and are formatted in
+     * PHP: `extract(year from ...)` is Postgres-only and the suite is SQLite.
+     *
+     * @return array{hours:int,games_played:int,span:?array{from:int,to:int},deepest:?array,achievements:?array}
      */
-    public function gamerDna(User $user, ?array $pg = null): array
+    public function playerCard(User $user): array
     {
-        // Reuse an already-computed platforms/genres breakdown when the caller
-        // has one (AuthController@show) instead of re-running the aggregation.
-        $pg = $pg ?? $this->platformsAndGenres($user, 4);
-        $pg = [
-            'genres' => array_slice($pg['genres'], 0, 4),
-            'platforms' => array_slice($pg['platforms'], 0, 4),
-        ];
+        $play = UserGame::where('user_id', $user->id)
+            ->where('playtime_minutes', '>', 0)
+            ->selectRaw('coalesce(sum(playtime_minutes), 0) as minutes, count(*) as games')
+            ->first();
 
-        $franchises = UserGame::where('user_id', $user->id)
-            ->where('is_favorite', true)
-            ->with(['game:id,series_name'])
-            ->get()
-            ->map(fn (UserGame $ug) => $ug->game?->series_name)
-            ->filter()
-            ->unique()
-            ->take(5)
-            ->values()
-            ->all();
+        $minutes = (int) ($play->minutes ?? 0);
+
+        $span = UserGame::where('user_id', $user->id)
+            ->whereNotNull('last_played_at')
+            ->selectRaw('min(last_played_at) as first_at, max(last_played_at) as last_at')
+            ->first();
+
+        $deepest = $minutes === 0 ? null : UserGame::where('user_id', $user->id)
+            ->where('playtime_minutes', '>', 0)
+            ->with(['game:id,slug,name,cover_url'])
+            ->orderByDesc('playtime_minutes')
+            ->first();
+
+        // Steam is the only source that certifies anything today; PSN and Xbox
+        // land in the same table when they arrive, so the key is neutral.
+        $ach = DB::table('steam_achievements')
+            ->where('user_id', $user->id)
+            ->selectRaw('count(*) as total_count, sum(case when achieved then 1 else 0 end) as earned_count')
+            ->first();
+
+        $total = (int) ($ach->total_count ?? 0);
+        $earned = (int) ($ach->earned_count ?? 0);
 
         return [
-            'genres' => $pg['genres'],
-            'platforms' => $pg['platforms'],
-            'playstyle' => $user->playstyle_tags ?? [],
-            'franchises' => $franchises,
+            'hours' => (int) round($minutes / 60),
+            'games_played' => (int) ($play->games ?? 0),
+            'span' => $span?->first_at ? [
+                'from' => (int) Carbon::parse($span->first_at)->format('Y'),
+                'to' => (int) Carbon::parse($span->last_at)->format('Y'),
+            ] : null,
+            'deepest' => $deepest?->game ? [
+                'slug' => $deepest->game->slug,
+                'name' => $deepest->game->name,
+                'cover_url' => $deepest->game->cover_url,
+                'hours' => (int) round((int) $deepest->playtime_minutes / 60),
+                // What share of a whole shelf's hours one game took.
+                'share' => (int) round((int) $deepest->playtime_minutes / $minutes * 100),
+            ] : null,
+            // Null rather than zeroes: nobody has connected a platform, which
+            // is a different statement from having earned nothing.
+            'achievements' => $total === 0 ? null : [
+                'total' => $total,
+                'earned' => $earned,
+                'rate' => (int) round($earned / $total * 100),
+            ],
         ];
     }
 

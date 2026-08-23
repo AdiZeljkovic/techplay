@@ -21,7 +21,6 @@ import DashboardHome from "@/components/home-dashboard/DashboardHome";
 import LibraryTab from "@/components/profile/LibraryTab";
 import ListsTab from "@/components/profile/ListsTab";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
-import TasteMatch from "@/components/profile/TasteMatch";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
 import { PROFILE_TABS, LEGACY_TABS, type ProfileTab } from "@/lib/profileTabs";
 import { heroFromProfile } from "@/lib/hero";
@@ -51,9 +50,12 @@ function ProfilePageInner() {
     const wanted: ProfileTab = VALID_TABS.includes(tabParam) ? tabParam : "overview";
     // Owner-only sections are not on a visitor's tab strip, so a link to one
     // has to land somewhere rather than on a page with a strip and nothing
-    // under it. This is the only such section.
+    // under it. Read from the same table the strip filters on: this used to
+    // name "rewards" directly, and the day a second section became owner-only
+    // the strip hid it while the body still rendered it.
     const viewerIsOwner = !!currentUser?.username && currentUser.username === username;
-    const activeTab: ProfileTab = wanted === "rewards" && !viewerIsOwner ? "overview" : wanted;
+    const ownerOnly = PROFILE_TABS.some((t) => t.id === wanted && t.ownOnly);
+    const activeTab: ProfileTab = ownerOnly && !viewerIsOwner ? "overview" : wanted;
 
     // Optimistic override — the payload's friend_status is the source of truth
     // until the viewer acts on this page.
@@ -241,15 +243,16 @@ function ProfilePageInner() {
                             trophyCase={profile.trophy_case}
                             discord={profile.discord}
                             connectedAccounts={profile.connected_accounts}
+                            playerCard={profile.player_card}
                             onOpenTab={(t) => setActiveTab(t as ProfileTab)}
                         />
                     )}
 
                     {activeTab === "library" && (
-                        <LibraryTab username={userData.username} isOwnProfile={isOwnProfile} />
+                        <LibraryTab username={userData.username} isOwnProfile={isOwnProfile} displayName={userData.display_name} />
                     )}
 
-                    {activeTab === "progression" && (
+                    {activeTab === "progression" && isOwnProfile && (
                         <ProgressionTab username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
@@ -258,7 +261,7 @@ function ProfilePageInner() {
                         source inside the tab now, sharing the same All /
                         Unlocked / Locked bar the badges use. */}
                     {activeTab === "achievements" && (
-                        <AchievementsTab username={userData.username} />
+                        <AchievementsTab username={userData.username} isOwnProfile={isOwnProfile} />
                     )}
 
                     {activeTab === "rewards" && isOwnProfile && (
@@ -271,10 +274,12 @@ function ProfilePageInner() {
 
                     {activeTab === "stats" && (
                         <div className="space-y-4">
-                            {/* The only part of a stranger's analytics that
-                                answers the question they arrived with. Draws
-                                nothing on your own page. */}
-                            <TasteMatch username={userData.username} displayName={userData.display_name || userData.username} />
+                            {/* Taste match used to lead this tab. It is the one
+                                thing here aimed at the reader rather than at
+                                the subject, and it now opens the Overview —
+                                where a visitor lands — instead of waiting at
+                                the bottom of the last tab. Drawing it in both
+                                places would be the same panel twice. */}
                             <GamerDnaPanel username={userData.username} />
                         </div>
                     )}

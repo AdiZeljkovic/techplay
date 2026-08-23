@@ -436,11 +436,18 @@ export interface PlatformsGenres {
     total: number;
 }
 
-export interface GamerDna {
-    genres: DistributionStat[];
-    platforms: DistributionStat[];
-    playstyle: string[];
-    franchises: string[];
+/**
+ * How serious a player is, in four figures — the question a visitor arrives
+ * with and the status counts never answered.
+ */
+export interface PlayerCard {
+    hours: number;
+    games_played: number;
+    /** First and last year anything was played. Null when nothing is dated. */
+    span: { from: number; to: number } | null;
+    deepest: { slug: string; name: string; cover_url: string | null; hours: number; share: number } | null;
+    /** Null when no platform is connected — different from having earned none. */
+    achievements: { total: number; earned: number; rate: number } | null;
 }
 
 export type CollectionStatus = "playing" | "played" | "backlog" | "completed" | "wishlist" | "dropped";
@@ -645,8 +652,10 @@ export interface UserProfile {
     platforms_genres?: PlatformsGenres;
     /* xbox_profile, milestones, is_premium and premium_tier used to arrive here
        too, and no component has ever read one of them — they were built for
-       panels that were never wired. */
-    gamer_dna?: GamerDna;
+       panels that were never wired. `gamer_dna` was a fourth: a duplicate of
+       platforms_genres plus a favourites query, computed on every public
+       profile view and read by nothing. `player_card` took its place. */
+    player_card?: PlayerCard;
     reputation?: ReputationData;
     recognitions?: Recognition[];
     lists?: GameListPreview[];

@@ -412,8 +412,8 @@ function StatCell({
     );
 }
 
-/** The shelf's headline figures, plus how much of it you've actually finished. */
-function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
+/** The shelf's headline figures, plus how much of it has actually been finished. */
+function CollectionLedger({ stats, isOwnProfile }: { stats?: UserProfile["stats"]; isOwnProfile: boolean }) {
     const total = stats?.games_count ?? 0;
     const completed = stats?.completed_count ?? 0;
     // Played games left the backlog when `played` arrived, and the ledger did
@@ -473,7 +473,13 @@ function CollectionLedger({ stats }: { stats?: UserProfile["stats"] }) {
                             Completion rate
                         </span>
                         <span className="block mt-1 text-[12px] font-semibold text-white">
-                            {total === 0 ? "Add your first game" : rate >= 50 ? "Great progress" : rate >= 20 ? "Chipping away" : "Plenty left to play"}
+                            {/* An empty shelf prompts its owner and reports to
+                                everybody else — "Add your first game" told a
+                                visitor to do something to a shelf that is not
+                                theirs. */}
+                            {total === 0
+                                ? (isOwnProfile ? "Add your first game" : "Nothing on the shelf yet")
+                                : rate >= 50 ? "Great progress" : rate >= 20 ? "Chipping away" : "Plenty left to play"}
                         </span>
                     </span>
                 </div>
@@ -699,7 +705,7 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
 
     return (
         <div className="space-y-5">
-            <CollectionLedger stats={stats} />
+            <CollectionLedger stats={stats} isOwnProfile={isOwnProfile} />
 
             {/* shelf on the left, the reading of it on the right */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">

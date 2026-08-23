@@ -335,6 +335,13 @@ export default function ProfileHero({
     // repeating them here would be the same numbers twice in one screen. The
     // strip carries the library record, and ends on the hook: how far to the
     // next level's loot crate.
+    //
+    // The last two cells are hooks, and a hook only works on the person who
+    // can act on it. A visitor was being shown a stranger's daily streak and
+    // how much XP that stranger needs for their next crate — two numbers you
+    // cannot do anything with, in the two most prominent positions on the
+    // strip. They are replaced by the one fact about a player that a shelf
+    // count cannot give: how long they have been at it.
     const cells: StripCell[] = [
         {
             label: "Games",
@@ -365,30 +372,42 @@ export default function ProfileHero({
             ),
             icon: <StatIcon src="/images/profile/v2-achievements.webp" />,
             href: `${base}?tab=achievements` },
-        {
-            label: "Streak",
-            value: (
-                <>
-                    {hero.streak_days}
-                    <span className="text-[13px] text-white/35"> {hero.streak_days === 1 ? "day" : "days"}</span>
-                </>
-            ),
-            icon: (
-                <StatIcon
-                    src="/images/profile/v2-streak.webp"
-                    active={hero.streak_days > 0}
-                    idle="flicker"
-                />
-            ) },
-        {
-            label: `Level ${hero.level + 1} loot`,
-            value: (
-                <span className="text-[var(--xp-bright)]">
-                    {levelToGoShown.toLocaleString()} <span className="text-[13px] text-white/35">XP to go</span>
-                </span>
-            ),
-            icon: <StatIcon src="/images/profile/v2-loot.webp" size={64} idle="pulse" />,
-            href: `${base}?tab=stats` },
+        ...(isOwnProfile
+            ? [
+                {
+                    label: "Streak",
+                    value: (
+                        <>
+                            {hero.streak_days}
+                            <span className="text-[13px] text-white/35"> {hero.streak_days === 1 ? "day" : "days"}</span>
+                        </>
+                    ),
+                    icon: (
+                        <StatIcon
+                            src="/images/profile/v2-streak.webp"
+                            active={hero.streak_days > 0}
+                            idle="flicker"
+                        />
+                    ) },
+                {
+                    label: `Level ${hero.level + 1} loot`,
+                    value: (
+                        <span className="text-[var(--xp-bright)]">
+                            {levelToGoShown.toLocaleString()} <span className="text-[13px] text-white/35">XP to go</span>
+                        </span>
+                    ),
+                    icon: <StatIcon src="/images/profile/v2-loot.webp" size={64} idle="pulse" />,
+                    href: `${base}?tab=stats` },
+            ]
+            : hero.playing_since
+                ? [
+                    {
+                        label: "Playing since",
+                        value: hero.playing_since,
+                        icon: <StatIcon src="/images/profile/v2-season.webp" />,
+                        href: `${base}?tab=library` },
+                ]
+                : []),
     ];
 
     return (

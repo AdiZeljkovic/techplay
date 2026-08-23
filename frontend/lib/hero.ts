@@ -39,6 +39,13 @@ export interface HeroModel {
     /** Visible achievement catalog size; null when the payload can't say. */
     achievements_total: number | null;
     stats: { games: number; completed: number; reviews: number; achievements: number; hours: number };
+    /**
+     * The first year anything on this shelf was played. A visitor's deck ends
+     * on it, because "since 2016" is the one figure that separates a shelf
+     * somebody filled last week from nine years of playing. Null when nothing
+     * carries a date — most shelves.
+     */
+    playing_since: number | null;
     /** Used behind the identity when no cover image is set. */
     backdrop_fallback: string | null;
     /** Drives the owner's primary CTA; visitors get a friend action instead. */
@@ -101,6 +108,9 @@ export function heroFromDashboard(data: DashboardData): HeroModel {
             achievements: stats.achievements_count,
             hours: stats.hours_played,
         },
+        // Your own deck ends on the loot crate, not on a year — the dashboard
+        // payload has no reason to carry one.
+        playing_since: null,
         bounty: data.stats.bounty_balance ?? null,
         backdrop_fallback: firstPlaying?.cover_url ?? data.favorites[0]?.cover_url ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,
@@ -148,6 +158,7 @@ export function heroFromProfile(profile: UserProfile): HeroModel {
             achievements: stats.achievements_count,
             hours: stats.hours_played ?? 0,
         },
+        playing_since: profile.player_card?.span?.from ?? null,
         bounty: stats.bounty_balance ?? null,
         backdrop_fallback: firstPlaying?.cover_url ?? profile.showcase?.[0]?.cover_url ?? null,
         continue_playing: firstPlaying ? { slug: firstPlaying.slug, name: firstPlaying.name } : null,

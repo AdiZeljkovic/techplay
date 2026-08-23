@@ -169,6 +169,15 @@ Uz tri bloka otišla su i tri upita po izgradnji profila. Nedavna aktivnost na p
 dolazi iz `/users/{u}/activity`, koji overview zove sam — drugi izvor je samo garantovao
 da se ta dva mogu razići.
 
+**Nastavak 23.08.2026:** `gamer_dna` je bio peti takav blok — kopija `platforms_genres`
+plus upit nad favoritima, računat na svaki pregled javnog profila, a u cijelom frontendu
+nije imao nijednog čitaoca (samo deklaraciju tipa). Zamijenjen je `player_card`
+(`ProfileService::playerCard()`): sati, `span`, najigranija igra s udjelom i platformski
+achievementi. Tri agregatna upita — namjerno ne poziva `GamerDnaService`, koji iste
+brojke izvodi tako što učita cijelu policu. Godine se vraćaju kao timestamp i formatiraju
+u PHP-u: `extract(year from ...)` je Postgres-only, a suite je SQLite.
+Testovi: `tests/Feature/PublicProfilePlayerCardTest.php`.
+
 **Bug: dva različita upita dijelila su isti ključ keša.**
 `AuthController` je keširao `Achievement::where('is_hidden', false)->get()`, a
 `AchievementController` `Achievement::all()` — **oba pod `achievements.catalog.v2`**, na

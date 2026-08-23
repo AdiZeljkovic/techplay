@@ -8,6 +8,36 @@ interface ProfileHead {
     user?: { username?: string; display_name?: string | null };
     is_private?: boolean;
     can_view?: boolean;
+    stats?: { games_count?: number; achievements_count?: number } | null;
+    player_card?: { hours?: number; span?: { from: number; to: number } | null } | null;
+}
+
+/**
+ * What a search result should say about a player.
+ *
+ * "Check out X's gaming profile on TechPlay.gg" was true of all fifty-three
+ * accounts and told a reader nothing about any of them — the same sentence in
+ * every snippet, which is the shape of a page with no content. The numbers
+ * were already in the payload this function fetches; they just never reached
+ * the description. Each clause appears only if it has something behind it, so
+ * an empty profile gets the short form rather than a row of zeroes.
+ */
+function describe(name: string, profile: ProfileHead | null): string {
+    const parts: string[] = [];
+    const games = profile?.stats?.games_count ?? 0;
+    const hours = profile?.player_card?.hours ?? 0;
+    const span = profile?.player_card?.span;
+    const achievements = profile?.stats?.achievements_count ?? 0;
+
+    if (games > 0) parts.push(`${games.toLocaleString()} ${games === 1 ? "game" : "games"}`);
+    if (hours > 0) parts.push(`${hours.toLocaleString()} hours played`);
+    if (achievements > 0) parts.push(`${achievements.toLocaleString()} achievements`);
+
+    if (parts.length === 0) return `${name}'s gaming profile on TechPlay — collection, achievements and activity.`;
+
+    const since = span ? `, playing since ${span.from}` : "";
+
+    return `${name} on TechPlay: ${parts.join(", ")}${since}.`;
 }
 
 /**
@@ -53,21 +83,25 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     // and a locked door in the search results is a worse result than none.
     const hidden = lookup.state !== "found" || profile?.can_view === false;
 
+    // A locked profile's numbers are not the crawler's business either — it
+    // gets the name and nothing more.
+    const description = hidden ? `${name} on TechPlay.gg` : describe(name, profile);
+
     return {
         title: `${name}'s Profile`,
-        description: `Check out ${name}'s gaming profile on TechPlay.gg`,
+        description,
         robots: hidden ? { index: false, follow: false } : undefined,
         alternates: { canonical: `${APP_URL}/profile/${username}` },
         openGraph: {
             title: `${name} on TechPlay`,
-            description: `Check out ${name}'s gaming profile on TechPlay.gg`,
+            description,
             images: [{ url: ogImage, width: 1200, height: 630, alt: `${name}'s TechPlay profile` }],
             type: "profile",
         },
         twitter: {
             card: "summary_large_image",
             title: `${name} on TechPlay`,
-            description: `Check out ${name}'s gaming profile on TechPlay.gg`,
+            description,
             images: [ogImage],
         },
     };

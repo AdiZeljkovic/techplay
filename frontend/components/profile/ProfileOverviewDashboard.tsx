@@ -15,7 +15,9 @@ import GiveRecognitionButton from "@/components/profile/GiveRecognitionButton";
 import CommunityStanding from "./dashboard/CommunityStanding";
 import ProfileChecklist from "./dashboard/ProfileChecklist";
 import DailyHub from "./dashboard/DailyHub";
-import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, ReputationData, Recognition, GameListPreview, CollectionSnapshotTile, TrophyCaseItem } from "@/lib/types/profile";
+import PlayerCard from "./PlayerCard";
+import TasteMatch from "./TasteMatch";
+import type { ProfileUser, ProfileStats, Achievement, PlayingNowGame, ReputationData, Recognition, GameListPreview, CollectionSnapshotTile, TrophyCaseItem, PlayerCard as PlayerCardData } from "@/lib/types/profile";
 
 interface Props {
     userData: ProfileUser;
@@ -32,6 +34,8 @@ interface Props {
     trophyCase?: TrophyCaseItem[];
     discord?: { member: boolean; since: string | null } | null;
     connectedAccounts?: string[];
+    /** Hours, span, deepest game, certified achievements. Absent on old payloads. */
+    playerCard?: PlayerCardData | null;
     onOpenTab?: (tab: string) => void;
 }
 
@@ -61,7 +65,7 @@ export default function ProfileOverviewDashboard({
     userData, stats, achievements = [], isOwnProfile,
     collectionSnapshot = [], playingNow = [], showcase = [],
     reputation, recognitions = [], lists = [], trophyCase = [], discord,
-    connectedAccounts = [],
+    connectedAccounts = [], playerCard = null,
     onOpenTab = () => {} }: Props) {
     const nonZeroBuckets = collectionSnapshot.filter((t) => t.count > 0);
 
@@ -106,6 +110,22 @@ export default function ProfileOverviewDashboard({
                         steamConnected={connectedAccounts.includes("steam")}
                         onOpenTab={onOpenTab}
                     />
+                )}
+
+                {/* Who this is, before what they own. Draws nothing on an
+                    empty shelf, and nothing on your own page — you know how
+                    many hours you have put in. */}
+                {!isOwnProfile && playerCard && (
+                    <PlayerCard card={playerCard} platforms={connectedAccounts} />
+                )}
+
+                {/* The question a visitor actually arrived with, answered where
+                    they arrive. It spent its life at the bottom of the last
+                    tab — the one place on the profile nobody reaches by
+                    accident. Draws nothing for a signed-out reader or on your
+                    own page. */}
+                {!isOwnProfile && (
+                    <TasteMatch username={userData.username} displayName={userData.display_name || userData.username} />
                 )}
 
                 {/* Showcase — the visual centrepiece (user pins take priority) */}

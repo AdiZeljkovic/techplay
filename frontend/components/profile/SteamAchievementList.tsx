@@ -49,7 +49,7 @@ const dayLabel = (iso: string) =>
  * not make, so every `icon_url` here is null — the cover is both true and more
  * useful, since a Steam achievement means nothing without the game it is in.
  */
-export default function SteamAchievementList({ username }: { username: string }) {
+export default function SteamAchievementList({ username, isOwnProfile = false }: { username: string; isOwnProfile?: boolean }) {
     const [status, setStatus] = useState<SteamStatus>("unlocked");
     const [query, setQuery] = useState("");
     const [game, setGame] = useState("0");
@@ -76,7 +76,9 @@ export default function SteamAchievementList({ username }: { username: string })
             <EmptyState
                 icon={<Gamepad2 className="w-[18px] h-[18px]" />}
                 title="No Steam achievements yet"
-                body="Connect Steam in settings and they arrive with your library."
+                // Only the owner can act on this. A visitor was being told to
+                // connect Steam to see somebody else's unlocks.
+                body={isOwnProfile ? "Connect Steam in settings and they arrive with your library." : "This player has not connected Steam."}
             />
         );
     }

@@ -475,8 +475,12 @@ class AuthController extends Controller
             // Also the Collection tab's Platforms panel, which is why it
             // travels rather than staying a local: one aggregation, two
             // readers.
-            'platforms_genres' => $platformsGenres = $profileService->platformsAndGenres($user),
-            'gamer_dna' => $profileService->gamerDna($user, $platformsGenres),
+            'platforms_genres' => $profileService->platformsAndGenres($user),
+            // How serious this person is, in four numbers. `gamer_dna` used to
+            // sit here — a second copy of platforms/genres plus a favourites
+            // query, computed on every public profile view and read by no
+            // component on the site since the day it was added.
+            'player_card' => $profileService->playerCard($user),
             // Phase 2 — reputation, ranking, recognitions
             // (recognitions cached giver-agnostic; viewer overlay is applied in show())
             'reputation' => $profileService->reputation($user),

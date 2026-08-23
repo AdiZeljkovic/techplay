@@ -963,14 +963,14 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                     {view === "timeline" && (
                         <Panel
                             title="Finished"
-                            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Games, and your verdict on them</span>}
+                            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">{journal?.is_owner ? "Games, and your verdict on them" : "Games, and the verdict on them"}</span>}
                             bodyClassName="p-4"
                         >
                             {finished.length === 0 ? (
                                 <EmptyState
                                     icon={<Star className="w-[18px] h-[18px]" />}
                                     title="Nothing finished yet"
-                                    body="Mark a game completed in your collection, or rate one, and it lands here."
+                                    body={journal?.is_owner ? "Mark a game completed in your collection, or rate one, and it lands here." : undefined}
                                 />
                             ) : (
                                 <div className="space-y-5">

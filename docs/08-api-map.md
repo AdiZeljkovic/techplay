@@ -154,7 +154,7 @@
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
-| GET | `/users/{username}` | AuthController::show | - | Javni profil |
+| GET | `/users/{username}` | AuthController::show | - | Javni profil. Nosi `player_card` (sati, `span`, najigranija igra s udjelom, platformski achievementi) — zamijenio mrtvi `gamer_dna` 23.08.2026 |
 | GET | `/users/{username}/activity` | ActivityController::index | - | Aktivnost korisnika |
 | GET | `/users/{username}/recognitions` | RecognitionController::index | - | Recognitions |
 | GET | `/users/{username}/steam-achievements` | SteamAchievementController::index | - | Steam achievementi |

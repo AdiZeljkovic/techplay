@@ -36,7 +36,14 @@ export const PROFILE_TABS: {
     // The season and its quests: the run you are on. Achievements are what
     // the run leaves behind, which is a different question and a different
     // visit — one is a to-do list with a deadline, the other a cabinet.
-    { id: "progression", label: "Progression", icon: Flame },
+    //
+    // Owner-only, because to a visitor it was empty: the quest board is the
+    // owner's, and what remained — the season banner — comes from
+    // /seasons/active, one global row. Every profile on the site drew the
+    // identical panel, so the tab told you nothing about the person whose
+    // name was above it. It comes back for visitors when a season carries a
+    // per-player standing worth reading.
+    { id: "progression", label: "Progression", icon: Flame, ownOnly: true },
     { id: "achievements", label: "Achievements", icon: Trophy },
     // Its own destination rather than the third lens inside Progression: it is
     // the only part of the loop you *do* something in, and it was the one part
