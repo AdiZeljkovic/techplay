@@ -18,7 +18,15 @@ class OpenXblService
             'Accept' => 'application/json',
         ])->baseUrl(config('services.openxbl.base_url', 'https://xbl.io/api/v2'))
             ->timeout(30)
-            ->retry(2, 2000);
+            /*
+             * `throw: false`, because every method below ends a failed call
+             * with `if (! $response->successful()) return null` — and none of
+             * those lines could be reached. Laravel's retry() raises a
+             * RequestException once the attempts are spent, so an Xbox outage
+             * came back as a 500 from our own API rather than as the null each
+             * caller was written to handle.
+             */
+            ->retry(2, 2000, throw: false);
     }
 
     /**
@@ -68,6 +76,20 @@ class OpenXblService
             'gamertag' => $settings->get('Gamertag'),
             'gamerscore' => (int) $settings->get('Gamerscore', 0),
             'avatar' => $settings->get('GameDisplayPicRaw'),
+            /*
+             * The bio, which ownership verification reads and this method
+             * never returned.
+             *
+             * `xboxVerifyConfirm` asked for `bio` in an array built from three
+             * keys, got the empty-string default every time, and told the
+             * reader Xbox had not published their change yet — a sentence that
+             * would have been false forever. Somebody could paste the code,
+             * wait a day and try again, and it could not pass.
+             *
+             * Xbox sends it back with a trailing carriage return, so it is
+             * trimmed here rather than at the one place that compares it.
+             */
+            'bio' => trim((string) $settings->get('Bio', '')),
         ];
     }
 

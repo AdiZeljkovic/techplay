@@ -326,6 +326,14 @@ class ConnectedAccountController extends Controller
         }
 
         $summary = $xbl->playerSummary($account->provider_user_id);
+
+        // Xbox itself is unreachable — a different answer from "the code is
+        // not there", and one the reader can do nothing about by editing
+        // their bio again.
+        if ($summary === null) {
+            return $this->error("Couldn't reach Xbox just now. Try again in a moment.", 503);
+        }
+
         $bio = (string) data_get($summary, 'bio', '');
 
         if (! str_contains(strtoupper($bio), $code)) {
