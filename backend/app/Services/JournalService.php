@@ -219,7 +219,9 @@ class JournalService
             ->values();
 
         $rows = $years->map(function (string $year) use ($byYear, $unlocks, $unlockGames, $finished) {
-            $games = ($byYear[$year] ?? collect())->take(12);
+            // Enough to fill a full-width row on a wide screen; the view
+            // shows what fits and counts the rest.
+            $games = ($byYear[$year] ?? collect())->sortByDesc('hours_played')->take(24);
 
             return [
                 'year' => (int) $year,

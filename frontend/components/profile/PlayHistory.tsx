@@ -69,22 +69,29 @@ function Ridge({ years, peak }: { years: Year[]; peak: number }) {
     );
 }
 
-/** Covers ranked by the hours they hold: the year's defining game is biggest. */
-function Covers({ year }: { year: Year }) {
+/**
+ * Covers ranked by the hours they hold, flowing across the full width.
+ *
+ * They used to cap at seven and sit in a narrow column with the year's meta
+ * stacked above them, which on a wide screen left the right half of the page
+ * empty and made a decade look like a sidebar. A year is a band now: its
+ * figures hold a fixed column on the left, the games run out beside them and
+ * use whatever room the screen has.
+ */
+function Covers({ year, feature }: { year: Year; feature: boolean }) {
     const ranked = [...year.games].filter((g) => g.cover_url).sort((a, b) => b.hours - a.hours);
 
     if (!ranked.length) return null;
 
-    const shown = ranked.slice(0, 7);
+    const shown = ranked.slice(0, feature ? 16 : 12);
     const rest = year.games_left_off - shown.length;
 
     return (
-        <div className="mt-3.5 flex flex-wrap items-end gap-2">
+        <div className="flex flex-wrap items-end gap-2">
             {shown.map((g, i) => {
-                // First is the year's headline, the next two are supporting,
-                // the rest are the crowd. Size carries the ranking so the eye
-                // does the sorting instead of the reader.
-                const width = i === 0 ? 96 : i < 3 ? 68 : 50;
+                // The year's defining game is bigger and wears its name; on a
+                // slow year nothing is worth featuring, so they stay level.
+                const width = feature && i === 0 ? 104 : feature && i < 3 ? 72 : 56;
 
                 return (
                     <Link
@@ -101,7 +108,7 @@ function Covers({ year }: { year: Year }) {
                             loading="lazy"
                             className="w-full h-full object-cover group-hover:scale-[1.07] transition-transform duration-500 ease-[var(--ease-hud)]"
                         />
-                        {i === 0 && (
+                        {feature && i === 0 ? (
                             <>
                                 <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
                                 <span className="absolute inset-x-0 bottom-0 p-1.5">
@@ -115,18 +122,17 @@ function Covers({ year }: { year: Year }) {
                                     )}
                                 </span>
                             </>
-                        )}
-                        {i > 0 && g.hours > 0 && (
+                        ) : g.hours > 0 ? (
                             <span className="absolute inset-x-0 bottom-0 px-1 py-[3px] bg-black/75 font-display text-[8.5px] font-black tabular-nums text-white/80 text-center">
                                 {g.hours.toLocaleString()}h
                             </span>
-                        )}
+                        ) : null}
                     </Link>
                 );
             })}
 
             {rest > 0 && (
-                <span className="w-[50px] aspect-[3/4] rounded-[8px] border border-dashed border-white/[0.14] flex items-center justify-center font-display text-[11px] font-black tabular-nums text-white/25">
+                <span className="w-[56px] aspect-[3/4] rounded-[8px] border border-dashed border-white/[0.14] flex items-center justify-center font-display text-[11px] font-black tabular-nums text-white/25">
                     +{rest}
                 </span>
             )}
@@ -161,48 +167,56 @@ function YearBlock({ year, peak }: { year: Year; peak: number }) {
                 a plain dot on a slow one. */}
             <span
                 aria-hidden
-                className="absolute left-[9px] top-[6px] w-[13px] h-[13px] rounded-full border-2 border-[var(--surface-0)]"
+                className="absolute left-[9px] top-[8px] w-[13px] h-[13px] rounded-full border-2 border-[var(--surface-0)]"
                 style={{
                     background: share > 0 ? "var(--accent)" : "rgba(255,255,255,0.2)",
                     boxShadow: share > 0.6 ? "0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent)" : undefined,
                 }}
             />
 
-            <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <h3
-                    className="font-display font-black tabular-nums leading-none text-white"
-                    style={{ fontSize: share > 0.6 ? 34 : 26 }}
-                >
-                    {year.year}
-                </h3>
+            {/* A band, not a stack. The figures hold a fixed column and the
+                games run out beside them for as far as the screen allows —
+                stacked, they left the right half of a wide page empty and made
+                ten years read as a narrow list down one edge. */}
+            <div className="flex flex-col lg:flex-row lg:items-start gap-x-6 gap-y-3">
+                <header className="lg:w-[168px] shrink-0">
+                    <h3
+                        className="font-display font-black tabular-nums leading-none text-white"
+                        style={{ fontSize: share > 0.6 ? 38 : 28 }}
+                    >
+                        {year.year}
+                    </h3>
 
-                <span className="flex items-baseline gap-4 font-display text-[10px] font-bold uppercase tracking-[0.13em] tabular-nums">
-                    {year.unlocks > 0 && (
-                        <span className="text-amber-400/90">
-                            {year.unlocks} <span className="text-white/25">unlocked in {year.unlock_games}</span>
-                        </span>
+                    <div className="mt-2 flex lg:flex-col flex-wrap items-baseline lg:items-start gap-x-4 gap-y-1 font-display text-[10px] font-bold uppercase tracking-[0.13em] tabular-nums">
+                        {year.unlocks > 0 && (
+                            <span className="text-amber-400/90">
+                                {year.unlocks} <span className="text-white/25">unlocked in {year.unlock_games}</span>
+                            </span>
+                        )}
+                        {year.games_left_off > 0 && (
+                            <span className="text-white/35">
+                                {year.games_left_off} <span className="text-white/20">set down</span>
+                            </span>
+                        )}
+                        {year.hours_held > 0 && (
+                            <span className="text-white/[0.22]">
+                                {year.hours_held.toLocaleString()} h <span className="text-white/[0.15]">held</span>
+                            </span>
+                        )}
+                    </div>
+
+                    {year.finished.length > 0 && (
+                        <p className="mt-2.5 inline-flex items-start gap-1.5 py-1 px-2 rounded-[5px] bg-emerald-500/[0.14] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-emerald-400 leading-snug">
+                            <Flame className="w-3 h-3 mt-[1px] shrink-0" />
+                            <span>Finished {year.finished.map((f) => f.name).join(", ")}</span>
+                        </p>
                     )}
-                    {year.games_left_off > 0 && (
-                        <span className="text-white/35">
-                            {year.games_left_off} <span className="text-white/20">set down</span>
-                        </span>
-                    )}
-                </span>
+                </header>
 
-                {year.finished.length > 0 && (
-                    <span className="inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[5px] bg-emerald-500/[0.14] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-emerald-400">
-                        <Flame className="w-3 h-3" /> Finished {year.finished.map((f) => f.name).join(", ")}
-                    </span>
-                )}
-            </header>
-
-            <Covers year={year} />
-
-            {year.hours_held > 0 && (
-                <p className="mt-2.5 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/[0.18]">
-                    {year.hours_held.toLocaleString()} h held by those games
-                </p>
-            )}
+                <div className="min-w-0 flex-1">
+                    <Covers year={year} feature={share > 0.35} />
+                </div>
+            </div>
         </section>
     );
 }
