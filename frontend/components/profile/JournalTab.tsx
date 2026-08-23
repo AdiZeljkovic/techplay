@@ -854,15 +854,24 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                 where you only found it by scrolling past everything it
                 summarises. Full width because fifty-three weeks of cells want
                 it, and the column it used to sit in was cutting them off. */}
-            {view === "diary" && (
+            {/* Sessions Steam already noticed, first.
+                
+                When one is waiting it is the only thing on this page a reader
+                can act on — and it used to sit under two panels that were
+                empty precisely because nobody had acted on it yet. Nodding
+                beats writing. */}
+            {journal.is_owner && view === "diary" && <SessionSuggestions onLogged={mutate} />}
+
+            {/* Fifty-three weeks of empty cells say nothing at all, so the
+                calendar keeps out of the way until a single session exists to
+                put in it. */}
+            {view === "diary" && journal.calendar.length > 0 && (
                 <Panel
                     title="Gaming Calendar"
                     material="lit"
                     meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Last 12 months</span>}
                 >
-                    {journal.calendar.length === 0 ? (
-                        <EmptyState variant="compact" title="Nothing logged yet" />
-                    ) : (
+                    {(
                         <>
                             <CalendarHeat calendar={journal.calendar} />
                             <p className="mt-4 flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/25">
@@ -877,10 +886,6 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                 </Panel>
             )}
 
-            {/* Sessions Steam already noticed, above the form that asks you to
-                type one in. Nodding beats writing. */}
-            {journal.is_owner && view === "diary" && <SessionSuggestions onLogged={mutate} />}
-
             {showComposer && (
                 <SessionComposer
                     key={editing?.id ?? prefill?.slug ?? "new"}
@@ -891,13 +896,16 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                 />
             )}
 
-            {/* The rail is the diary's. "Where the hours went" is built from
-                logged sessions and "Gaming Moments" from what was attached to
-                them, so on the timeline they were two empty panels beside a
-                history the reader did not write — and they took a third of the
-                width to say nothing. Without them the timeline uses all of it. */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-                <div className={`min-w-0 space-y-4 ${view === "diary" ? "xl:col-span-8" : "xl:col-span-12"}`}>
+            {/* The rail is gone from both views, and neither missed it.
+            
+                "Where the hours went" ranked games by logged session minutes —
+                a question the timeline now answers properly, with the hours
+                the platform reports rather than the ones nobody typed. And
+                "Gaming Moments" gathered the moments already drawn inside each
+                session row above it, so it showed the same pictures twice or,
+                far more often, said "No moments yet" beside a diary that had
+                no sessions to attach one to. */}
+            <div className="min-w-0 space-y-4">
                     {view === "diary" && (
                         <Panel
                             title="Sessions"
@@ -988,51 +996,6 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                     )}
                 </div>
 
-                {/* ── the diary's rail ── */}
-                {view === "diary" && <aside className="xl:col-span-4 min-w-0 space-y-4">
-                    <Panel title="Where the hours went" material="instrument">
-                        {journal.per_game.length === 0 ? (
-                            <EmptyState variant="compact" title="No sessions yet" />
-                        ) : (
-                            <div className="space-y-3">
-                                {journal.per_game.map((row) => (
-                                    <div key={row.game.slug}>
-                                        <div className="flex items-center justify-between gap-2 mb-1.5">
-                                            <Link href={`/games/${row.game.slug}`} className="text-[12.5px] font-semibold text-white/75 truncate hover:text-[var(--accent)] transition-colors">
-                                                {row.game.name}
-                                            </Link>
-                                            <span className="shrink-0 font-display text-[11px] font-black tabular-nums text-white/45">{hhmm(row.minutes)}</span>
-                                        </div>
-                                        <span className="block h-[5px] rounded-full bg-[var(--track)] overflow-hidden">
-                                            <span
-                                                className="block h-full rounded-full transition-[width] duration-700 ease-[var(--ease-hud)]"
-                                                style={{ width: `${row.percent}%`, background: "linear-gradient(90deg, var(--xp-deep), var(--xp-bright))" }}
-                                            />
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </Panel>
-
-                    <Panel title="Gaming Moments">
-                        {(() => {
-                            const moments = journal.sessions.flatMap((s) => s.moments).slice(0, 9);
-                            return moments.length === 0 ? (
-                                <EmptyState
-                                    variant="compact"
-                                    title="No moments yet"
-                                    body={journal.is_owner ? "Attach a screenshot or a clip link to any session." : undefined}
-                                />
-                            ) : (
-                                <div className="flex flex-wrap gap-2">
-                                    {moments.map((m) => <MomentTile key={m.id} moment={m} canEdit={journal.sessions.some((s) => s.can_edit)} onRemoved={() => mutate()} />)}
-                                </div>
-                            );
-                        })()}
-                    </Panel>
-                </aside>}
-            </div>
         </div>
     );
 }
