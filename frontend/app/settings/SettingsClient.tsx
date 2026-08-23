@@ -12,6 +12,7 @@ import {
     Bell, MapPin, Quote, ImageIcon, type LucideIcon,
 } from "lucide-react";
 import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
+import ProfilePreviewCard from "@/components/settings/ProfilePreviewCard";
 import ProfileCompletionWidget from "@/components/home-dashboard/ProfileCompletionWidget";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
@@ -421,6 +422,21 @@ export default function SettingsClient() {
                     <div className="min-w-0 space-y-5">
                         {section === "profile" && (
                             <>
+                                {/* The thing being edited, above the boxes that
+                                    edit it. Six fields existed to change this
+                                    one object and none of them showed it, so
+                                    the only way to see a change was to save it
+                                    and go looking. */}
+                                <ProfilePreviewCard
+                                    username={user.username}
+                                    displayName={displayName}
+                                    tagline={tagline}
+                                    location={location}
+                                    bio={bio}
+                                    avatarUrl={avatarPreview}
+                                    coverUrl={coverPreview}
+                                />
+
                                 <Section title="Who you are" blurb={current.blurb}>
                                     <div className="space-y-5 max-w-xl">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
