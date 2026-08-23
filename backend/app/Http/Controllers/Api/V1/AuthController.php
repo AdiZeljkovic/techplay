@@ -279,6 +279,26 @@ class AuthController extends Controller
                 'level' => app(LevelService::class)->forXp($user->xp),
                 'xp' => $user->xp ?? 0,
                 'joined_at' => $user->created_at->format('M Y'),
+                /*
+                 * Three totals, and no fourth.
+                 *
+                 * A private profile already publishes a level, a rank and the
+                 * date somebody joined — measures of how much, carrying nothing
+                 * about what. These are the same kind of fact: how many games,
+                 * how many hours, how many badges. None of them names a title,
+                 * a session or an opinion, which is what the setting is for.
+                 *
+                 * They are here because a doorway needs a reason to knock at
+                 * it. "This profile is private" tells a visitor nothing about
+                 * whether the person behind it is worth adding.
+                 *
+                 * The privacy copy in settings was updated in the same change:
+                 * somebody choosing friends-only is told these stay visible,
+                 * rather than finding out from a stranger's screenshot.
+                 */
+                'games_count' => UserGame::where('user_id', $user->id)->whereNot('status', 'wishlist')->count(),
+                'hours_played' => (int) round((int) UserGame::where('user_id', $user->id)->sum('playtime_minutes') / 60),
+                'achievements_count' => $user->achievements()->count(),
             ],
             'is_private' => true,
             'can_view' => false,

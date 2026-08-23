@@ -37,7 +37,7 @@ class ProfileVisibilityTest extends TestCase
             ->assertJsonStructure(['stats' => ['games_count', 'hours_played', 'friends_count']]);
     }
 
-    public function test_a_stranger_gets_the_locked_teaser_not_the_aggregates(): void
+    public function test_a_stranger_gets_identity_and_totals_but_nothing_named(): void
     {
         $user = $this->privateUser();
 
@@ -47,13 +47,23 @@ class ProfileVisibilityTest extends TestCase
             ->assertJsonPath('is_private', true)
             ->assertJsonPath('user.username', 'hermit')
             // identity and standing survive — that's the point of the doorway
-            ->assertJsonStructure(['user' => ['avatar_url', 'rank'], 'stats' => ['level', 'joined_at']])
+            // identity, standing, and three totals: how many games, how many
+            // hours, how many badges. Each says how much and none says what,
+            // which is the line the setting actually draws — and a doorway
+            // needs a reason to knock at it.
+            ->assertJsonStructure([
+                'user' => ['avatar_url', 'rank'],
+                'stats' => ['level', 'joined_at', 'games_count', 'hours_played', 'achievements_count'],
+            ])
             // …everything they own, play or wrote does not
             ->assertJsonMissingPath('collection_snapshot')
             ->assertJsonMissingPath('playing_now')
             ->assertJsonMissingPath('achievements')
             ->assertJsonMissingPath('recent_threads')
-            ->assertJsonMissingPath('stats.games_count');
+            // The totals are aggregates; nothing here names a title.
+            ->assertJsonMissingPath('stats.completed_count')
+            ->assertJsonMissingPath('stats.backlog_count')
+            ->assertJsonMissingPath('showcase');
     }
 
     public function test_an_accepted_friend_sees_the_whole_profile(): void

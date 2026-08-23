@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Lock, User as UserIcon, UserPlus, Clock, Check, CalendarDays, ShieldCheck } from "lucide-react";
+import { Lock, User as UserIcon, UserPlus, Clock, Clock3, Check, CalendarDays, ShieldCheck, Library, Trophy } from "lucide-react";
 import type { FriendStatus } from "@/lib/types/profile";
 import { PROFILE_TABS } from "@/lib/profileTabs";
 import { xpForLevel } from "@/lib/level";
@@ -20,6 +20,10 @@ interface Props {
     rankMinXp: number;
     xp: number;
     joinedAt: string | null;
+    /** How much, never what: totals a private profile keeps public. */
+    gamesCount: number;
+    hoursPlayed: number;
+    achievementsCount: number;
     friendStatus: FriendStatus;
     viewerSignedIn: boolean;
     busy: boolean;
@@ -54,6 +58,9 @@ export default function LockedProfile({
     rankMinXp,
     xp,
     joinedAt,
+    gamesCount,
+    hoursPlayed,
+    achievementsCount,
     friendStatus,
     viewerSignedIn,
     busy,
@@ -97,8 +104,16 @@ export default function LockedProfile({
 
     return (
         <div className="container-page py-8 space-y-5">
-            {/* ── the header band, same shape the open profile uses ── */}
-            <section className="relative overflow-hidden">
+            {/* ── the header band, same shape the open profile uses ──
+
+                Framed, unlike the open one. There the header dissolves into a
+                page that continues below it; here it is the page, and an
+                unbordered band floating on empty ground read as something that
+                had failed to load. */}
+            <section
+                className="relative overflow-hidden rounded-[var(--radius-panel)] border"
+                style={{ borderColor: "var(--line-strong)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)" }}
+            >
                 {/* The cover, as a cover.
                 
                     It used to be pushed to a quarter opacity behind a 2xl blur
@@ -114,10 +129,10 @@ export default function LockedProfile({
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={coverImage} alt="" className="w-full h-full object-cover" />
                     )}
-                    <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] from-[4%] via-[color-mix(in_srgb,var(--surface-0)_55%,transparent)] via-[45%] to-[color-mix(in_srgb,var(--surface-0)_20%,transparent)]" />
-                    <span className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[var(--surface-0)] to-transparent" />
-                    <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
-                    <span className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[var(--surface-0)] to-transparent" />
+                    <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-1)] from-[4%] via-[color-mix(in_srgb,var(--surface-1)_55%,transparent)] via-[45%] to-[color-mix(in_srgb,var(--surface-1)_20%,transparent)]" />
+                    <span className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[var(--surface-1)] to-transparent" />
+                    <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[var(--surface-1)] to-transparent" />
+                    <span className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[var(--surface-1)] to-transparent" />
                 </div>
 
                 <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
@@ -180,6 +195,34 @@ export default function LockedProfile({
                                 the level it belongs to. */}
                             <div className="mt-4 max-w-[420px]">
                                 <XpRail percent={bandPercent} />
+                            </div>
+
+                            {/* How much, never what.
+                            
+                                A level and a rank were already public, and
+                                these are the same kind of fact — none of them
+                                names a game, a session or an opinion, which is
+                                the line the setting actually draws. Without
+                                them the page asks a visitor to send a request
+                                on the strength of a name. */}
+                            <div className="mt-5 flex flex-wrap items-center gap-x-7 gap-y-3">
+                                {([
+                                    [Library, "Games", gamesCount.toLocaleString()],
+                                    [Clock3, "Hours", hoursPlayed.toLocaleString()],
+                                    [Trophy, "Achievements", achievementsCount.toLocaleString()],
+                                ] as const).map(([Icon, label, value]) => (
+                                    <span key={label} className="inline-flex items-center gap-2.5">
+                                        <Icon className="w-4 h-4 shrink-0 text-white/25" strokeWidth={1.7} />
+                                        <span>
+                                            <span className="block font-display text-[17px] font-black tabular-nums leading-none text-white">
+                                                {value}
+                                            </span>
+                                            <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/25">
+                                                {label}
+                                            </span>
+                                        </span>
+                                    </span>
+                                ))}
                             </div>
                         </div>
                     </div>

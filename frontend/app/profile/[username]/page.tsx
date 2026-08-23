@@ -182,6 +182,9 @@ function ProfilePageInner() {
                     rankMinXp={userData.rank?.min_xp ?? 0}
                     xp={stats?.xp ?? userData.xp ?? 0}
                     joinedAt={stats?.joined_at ?? null}
+                    gamesCount={stats?.games_count ?? 0}
+                    hoursPlayed={stats?.hours_played ?? 0}
+                    achievementsCount={stats?.achievements_count ?? 0}
                     friendStatus={friendStatus}
                     viewerSignedIn={!!currentUser}
                     busy={loadingAction}

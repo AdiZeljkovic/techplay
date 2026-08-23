@@ -33,7 +33,7 @@ const VISIBILITY_OPTIONS: { id: Visibility; label: string; description: string; 
     {
         id: "friends",
         label: "Friends only",
-        description: "Only accepted friends see your collection, stats and activity. Everyone else gets your name, level and rank — and a way to send a friend request.",
+        description: "Only accepted friends see which games you own, what you played and anything you wrote. Everyone else still sees your name, level, rank, and three totals — how many games, how many hours, how many achievements — plus a way to send a friend request.",
         icon: Users,
     },
 ];
