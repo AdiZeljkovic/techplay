@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserGame;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Everything the journal knows how to say about a player, derived from their
@@ -157,6 +158,126 @@ class JournalService
             ->take($limit)
             ->values()
             ->all();
+    }
+
+    /**
+     * The years a player has behind them, built only from dates that are real.
+     *
+     * Three dated sources, and they agree on nothing by accident: when a game
+     * was last opened (`rtime_last_played`, kept since 23 Aug 2026 — 102 games
+     * on a real library, 2016 to 2026), when each achievement was unlocked
+     * (937 of them, to the minute), and when something was finished.
+     *
+     * What this deliberately does not report is hours per year. Steam gives one
+     * lifetime total per game and nothing time-sliced, so attributing it to the
+     * year the game was last opened invents a year that never happened: on the
+     * library this was written against, 2024 would read as 1,616 hours, of
+     * which 1,602 belong to an MMO played across five years and closed that
+     * one. Achievements are the honest measure of a year, because each carries
+     * the moment it happened. `hours_held` is offered beside the games — the
+     * hours those particular games hold, which is a different claim and is
+     * labelled as one.
+     */
+    public function history(User $user): array
+    {
+        $entries = UserGame::where('user_id', $user->id)
+            ->whereNotNull('last_played_at')
+            ->with('game:id,slug,name,cover_url')
+            ->orderByDesc('last_played_at')
+            ->get()
+            ->filter(fn (UserGame $ug) => $ug->game !== null);
+
+        // Grouped in PHP rather than SQL: date formatting is the one place
+        // Postgres and the SQLite the suite runs on refuse to agree, and one
+        // reader's unlocks are a few thousand rows at most.
+        $unlockRows = DB::table('steam_achievements')
+            ->where('user_id', $user->id)
+            ->where('achieved', true)
+            ->whereNotNull('achieved_at')
+            ->get(['achieved_at', 'game_id'])
+            ->groupBy(fn ($row) => Carbon::parse($row->achieved_at)->format('Y'));
+
+        $unlocks = $unlockRows->map(fn ($rows) => $rows->count());
+        $unlockGames = $unlockRows->map(fn ($rows) => $rows->pluck('game_id')->filter()->unique()->count());
+
+        $finished = UserGame::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->whereNotNull('completed_at')
+            ->with('game:id,slug,name,cover_url')
+            ->get()
+            ->filter(fn (UserGame $ug) => $ug->game !== null)
+            ->groupBy(fn (UserGame $ug) => $ug->completed_at->format('Y'));
+
+        $byYear = $entries->groupBy(fn (UserGame $ug) => $ug->last_played_at->format('Y'));
+
+        // Every year that any of the three sources knows about, newest first.
+        $years = collect($byYear->keys())
+            ->merge($unlocks->keys())
+            ->merge($finished->keys())
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        $rows = $years->map(function (string $year) use ($byYear, $unlocks, $unlockGames, $finished) {
+            $games = ($byYear[$year] ?? collect())->take(12);
+
+            return [
+                'year' => (int) $year,
+                'games_left_off' => ($byYear[$year] ?? collect())->count(),
+                // The hours those games hold in total — not hours played that
+                // year, which nothing can tell us.
+                'hours_held' => (int) ($byYear[$year] ?? collect())->sum('hours_played'),
+                'unlocks' => (int) ($unlocks[$year] ?? 0),
+                'unlock_games' => (int) ($unlockGames[$year] ?? 0),
+                'games' => $games->map(fn (UserGame $ug) => [
+                    'slug' => $ug->game->slug,
+                    'name' => $ug->game->name,
+                    'cover_url' => $ug->game->cover_url,
+                    'hours' => (int) ($ug->hours_played ?? 0),
+                    'status' => $ug->status,
+                    'platform' => $ug->platform,
+                ])->values()->all(),
+                'finished' => ($finished[$year] ?? collect())->map(fn (UserGame $ug) => [
+                    'slug' => $ug->game->slug,
+                    'name' => $ug->game->name,
+                    'cover_url' => $ug->game->cover_url,
+                ])->values()->all(),
+            ];
+        });
+
+        // Minutes per device, summed across the shelf. Partial by nature:
+        // Steam only began attributing playtime to a device a few years in, so
+        // older hours belong to no machine. The frontend says so rather than
+        // letting the gap read as missing games.
+        $devices = [];
+        foreach ($entries->merge(UserGame::where('user_id', $user->id)->whereNotNull('device_playtime')->get()) as $ug) {
+            foreach ((array) ($ug->device_playtime ?? []) as $device => $minutes) {
+                $devices[$device] = ($devices[$device] ?? 0) + (int) $minutes;
+            }
+        }
+        arsort($devices);
+
+        $totalMinutes = (int) UserGame::where('user_id', $user->id)->sum('playtime_minutes');
+        $attributed = array_sum(array_diff_key($devices, ['offline' => true]));
+
+        return [
+            'years' => $rows->all(),
+            'span' => $years->isEmpty() ? null : [
+                'from' => (int) $years->last(),
+                'to' => (int) $years->first(),
+            ],
+            'totals' => [
+                'hours' => (int) round($totalMinutes / 60),
+                'games_with_time' => UserGame::where('user_id', $user->id)->where('playtime_minutes', '>', 0)->count(),
+                'unlocks' => (int) $unlocks->sum(),
+            ],
+            'devices' => [
+                'minutes' => $devices,
+                // What Steam could place, against everything it counted.
+                'attributed_hours' => (int) round($attributed / 60),
+                'total_hours' => (int) round($totalMinutes / 60),
+            ],
+        ];
     }
 
     /**

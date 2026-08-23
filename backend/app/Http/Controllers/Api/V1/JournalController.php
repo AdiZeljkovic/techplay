@@ -73,6 +73,10 @@ class JournalController extends Controller
             'calendar' => $journal->calendar($sessions),
             'per_game' => $journal->perGame($sessions),
             'completed_timeline' => $journal->completedTimeline($user),
+            // The years behind them, from dates rather than from logged
+            // sessions — so a reader who imported a library and never wrote a
+            // diary entry still has a history to look at.
+            'history' => $journal->history($user),
             'reviews' => $journal->reviews($user),
             'moods' => PlaySession::MOODS,
             'is_owner' => $isOwner,
