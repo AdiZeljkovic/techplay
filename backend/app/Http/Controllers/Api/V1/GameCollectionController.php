@@ -433,6 +433,12 @@ class GameCollectionController extends Controller
             'progress' => $ug->progress,
             'hours_played' => $ug->hours_played,
             'platform' => $ug->platform,
+            // Which stores reported this game, as opposed to the reader's own
+            // word for where they play it. The card's marks are provenance, so
+            // they read this — `platform` was set by whichever importer got
+            // there first and never revisited, which is how 243 hours of
+            // Morrowind came to sit under an Xbox mark.
+            'sources' => $ug->sources ?? [],
             'started_at' => $ug->started_at,
             'completed_at' => $ug->completed_at,
             // when it entered the shelf, distinct from the last edit — the

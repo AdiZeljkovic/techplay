@@ -130,6 +130,11 @@ class SyncSteamLibrary implements ShouldQueue
                         'playtime_source' => 'steam',
                         'last_played_at' => $lastPlayedAt,
                         'device_playtime' => $devices ?: null,
+                        // Steam reported it, whoever created the row. This is
+                        // the path that used to leave Morrowind's 243 hours
+                        // under an Xbox mark, because `platform` was set by
+                        // whichever importer arrived first and never revisited.
+                        'sources' => UserGame::withSource($existingEntry->sources, 'steam'),
                     ]));
 
                     $existingEntry->forceFill(['playtime_seen_minutes' => $minutesPlayed])->save();
@@ -171,6 +176,7 @@ class SyncSteamLibrary implements ShouldQueue
                         'playtime_source' => 'steam',
                         'device_playtime' => $devices ?: null,
                         'last_played_at' => $lastPlayedAt,
+                        'sources' => ['steam'],
                         // The baseline, not a session. A first sync sees a
                         // lifetime total, and offering "you played for 300
                         // hours yesterday" would be worse than offering

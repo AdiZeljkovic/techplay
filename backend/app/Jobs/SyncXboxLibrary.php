@@ -89,9 +89,43 @@ class SyncXboxLibrary implements ShouldQueue
                     ->where('game_id', $game->id)
                     ->first();
 
+                /*
+                 * Xbox reports no playtime, so the first version of this
+                 * skipped an existing row outright — and with it the two
+                 * things Xbox *does* keep current. A library imported once
+                 * then sat frozen: the last-played date never moved again and
+                 * achievement progress never caught up, so a game finished
+                 * last week still read as it did on the day it was linked.
+                 *
+                 * The reader's own status is still theirs. Everything written
+                 * below is a measurement, not a decision.
+                 */
                 if ($existingEntry) {
-                    // Never overwrite a user-set status; nothing else to merge
-                    // (Xbox exposes no total playtime).
+                    $update = [
+                        'sources' => UserGame::withSource($existingEntry->sources, 'xbox'),
+                    ];
+
+                    // Never walk a date backwards: Steam may have set a later
+                    // one for the same game on another store.
+                    if ($lastPlayed && (! $existingEntry->last_played_at || $lastPlayed->gt($existingEntry->last_played_at))) {
+                        $update['last_played_at'] = $lastPlayed;
+                    }
+
+                    if ($progressPct > (int) $existingEntry->progress) {
+                        $update['progress'] = min(100, $progressPct);
+                    }
+
+                    // Every achievement in the game, which is the same reading
+                    // the Steam import takes as "finished". A status the reader
+                    // chose stays theirs — only the three the importers assign
+                    // are promoted.
+                    if ($progressPct >= 100 && in_array($existingEntry->status, ['playing', 'played', 'backlog'], true)) {
+                        $update['status'] = 'completed';
+                        $update['completed_at'] = $existingEntry->completed_at ?? $lastPlayed ?? now();
+                    }
+
+                    $existingEntry->update($update);
+
                     continue;
                 }
 
@@ -107,17 +141,24 @@ class SyncXboxLibrary implements ShouldQueue
                      * about games with years of history behind them.
                      */
                     'status' => match (true) {
+                        // Every achievement earned is the strongest thing Xbox
+                        // says about finishing, and the same reading the Steam
+                        // import takes.
+                        $progressPct >= 100 => 'completed',
                         $lastPlayed && $lastPlayed->gt(now()->subDays(14)) => 'playing',
                         (bool) $lastPlayed => 'played',
                         default => 'backlog',
                     },
+                    // The reader's label, which they may edit. Which store
+                    // reported it is `sources`, below.
                     'platform' => 'Xbox',
+                    'sources' => ['xbox'],
                     'progress' => min(100, max(0, $progressPct)),
                     // The date was already read to decide the status above and
                     // then thrown away; the timeline is built out of exactly
                     // this, so it is kept.
                     'last_played_at' => $lastPlayed,
-                    'completed_at' => null,
+                    'completed_at' => $progressPct >= 100 ? ($lastPlayed ?? now()) : null,
                 ]);
             }
 

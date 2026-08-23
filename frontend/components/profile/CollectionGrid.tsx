@@ -227,6 +227,7 @@ function GameCard({
     onLog?: (game: { slug: string; name: string; cover_url: string | null }) => void;
 }) {
     const meta = STATUS[entry.status] ?? STATUS.backlog;
+    const marks = sourceMarks(entry);
     const pinned = entry.showcase_order != null;
     const hours = entry.hours_played ?? 0;
     const progress = entry.progress ?? 0;
@@ -271,11 +272,15 @@ function GameCard({
                     on the playtime line, where at 11px over cover art it was
                     too small to read as anything. */}
                 <span className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5">
-                    {entry.platform && (
-                        <span className="w-[26px] h-[26px] rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center">
-                            <PlatformMark platform={entry.platform} size={15} className="text-white/90" />
+                    {/* Every store that reported it, not just the one that got
+                        here first. A game really can be on two, and reading
+                        `platform` put an Xbox mark over Steam's hours on 37
+                        rows — Morrowind at 243 of them. */}
+                    {marks.map((mark) => (
+                        <span key={mark} className="w-[26px] h-[26px] rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center">
+                            <PlatformMark platform={mark} size={15} className="text-white/90" />
                         </span>
-                    )}
+                    ))}
                     {entry.is_favorite && (
                         <span className="w-[26px] h-[26px] rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center" title="Favorite">
                             <Heart className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
@@ -502,8 +507,27 @@ function CollectionLedger({ stats, isOwnProfile }: { stats?: UserProfile["stats"
  * other. Two cells of a 3:4 grid make one 3:4 card, so at double size it is
  * the same object, and every edge on the shelf lines up.
  */
+/**
+ * The stores that reported a game, for the marks on its card.
+ *
+ * `platform` is the reader's own free-text label and was also being stamped by
+ * whichever importer arrived first — so a row the Xbox import created and the
+ * Steam import later filled with hours kept an Xbox mark over Steam's numbers,
+ * 37 of them on the live shelf. Provenance now travels as its own set;
+ * `platform` is the fallback for a row imported before that existed, or one
+ * whose owner typed their own answer.
+ */
+function sourceMarks(entry: CollectionEntry): string[] {
+    const sources = entry.sources ?? [];
+
+    if (sources.length > 0) return sources;
+
+    return entry.platform ? [entry.platform] : [];
+}
+
 function FeaturedCard({ entry }: { entry: CollectionEntry }) {
     const meta = STATUS[entry.status] ?? STATUS.backlog;
+    const marks = sourceMarks(entry);
     const pinned = entry.showcase_order != null;
     const genres = (entry.game?.genres ?? []).slice(0, 2).join(" · ");
     const progress = entry.progress ?? 0;
@@ -543,14 +567,14 @@ function FeaturedCard({ entry }: { entry: CollectionEntry }) {
             <span className="relative p-4">
                 <span className="flex items-center gap-2.5 min-w-0">
                     <span className="font-display text-[20px] font-black text-white leading-none truncate">{entry.game?.name}</span>
-                    {entry.platform && (
-                        <span className="shrink-0 inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[5px] bg-white/[0.12] font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/80">
+                    {marks.map((mark) => (
+                        <span key={mark} className="shrink-0 inline-flex items-center gap-1.5 h-[20px] px-2 rounded-[5px] bg-white/[0.12] font-display text-[9px] font-black uppercase tracking-[0.1em] text-white/80">
                             {/* The mark first, the word after it. This view has
                                 the room the cover does not, so it says both. */}
-                            <PlatformMark platform={entry.platform} size={10} />
-                            {entry.platform}
+                            <PlatformMark platform={mark} size={10} />
+                            {mark}
                         </span>
-                    )}
+                    ))}
                 </span>
 
                 {genres && <span className="block mt-1.5 text-[12px] text-white/50 truncate">{genres}</span>}

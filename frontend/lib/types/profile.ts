@@ -459,7 +459,10 @@ export interface CollectionEntry {
     showcase_order?: number | null;
     progress: number;
     hours_played: number;
+    /** The reader's own label for where they play it. Free text, editable. */
     platform: string | null;
+    /** Which stores reported it — provenance, which is what the marks mean. */
+    sources?: string[];
     started_at: string | null;
     completed_at: string | null;
     /** When it entered the shelf — distinct from the last edit. */

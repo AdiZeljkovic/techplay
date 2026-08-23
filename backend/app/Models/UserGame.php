@@ -31,7 +31,11 @@ class UserGame extends Model
         'showcase_order',
         'progress',
         'hours_played',
+        // The reader's own word for where they play it — free text they can
+        // edit. Which stores *reported* the game is `sources`, and conflating
+        // the two is how 37 rows came to wear an Xbox mark over Steam's hours.
         'platform',
+        'sources',
         'started_at',
         'completed_at',
         'last_played_at',
@@ -64,6 +68,7 @@ class UserGame extends Model
         'completed_at' => 'datetime',
         'last_played_at' => 'datetime',
         'device_playtime' => 'array',
+        'sources' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -74,5 +79,24 @@ class UserGame extends Model
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
+    }
+
+    /**
+     * Note that a store reported this game, without forgetting the others.
+     *
+     * Both importers need exactly this and neither should write the array by
+     * hand: a game really can be on two stores, and the one that arrives
+     * second must not erase the first. Returns the merged set so a caller can
+     * put it straight into a create().
+     *
+     * @param  array<int,string>  $existing
+     * @return array<int,string>
+     */
+    public static function withSource(?array $existing, string $provider): array
+    {
+        $sources = array_values(array_unique(array_merge($existing ?? [], [$provider])));
+        sort($sources);
+
+        return $sources;
     }
 }
