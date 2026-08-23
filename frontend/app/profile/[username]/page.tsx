@@ -179,6 +179,7 @@ function ProfilePageInner() {
                     rankColor={userData.rank?.color ?? null}
                     // The struck insignia, same as the open profile wears.
                     rankIcon={userData.rank?.icon ? getStorageUrl(userData.rank.icon) : null}
+                    frame={(userData as { frame?: string | null }).frame ?? null}
                     rankMinXp={userData.rank?.min_xp ?? 0}
                     xp={stats?.xp ?? userData.xp ?? 0}
                     joinedAt={stats?.joined_at ?? null}

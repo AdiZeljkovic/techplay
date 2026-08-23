@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Lock, User as UserIcon, UserPlus, Clock, Clock3, Check, CalendarDays, ShieldCheck, Library, Trophy } from "lucide-react";
+import { Lock, UserPlus, Clock, Clock3, Check, CalendarDays, ShieldCheck, Library, Trophy } from "lucide-react";
 import type { FriendStatus } from "@/lib/types/profile";
 import { PROFILE_TABS } from "@/lib/profileTabs";
+import AvatarRing from "@/components/profile/AvatarRing";
 import { xpForLevel } from "@/lib/level";
 import { RankInsigniaMark, XpRail } from "@/components/home-dashboard/RankInsignia";
 
@@ -17,6 +18,8 @@ interface Props {
     rankColor: string | null;
     /** The struck insignia the open profile wears, not a stand-in for it. */
     rankIcon: string | null;
+    /** An equipped cosmetic ring, if they bought one. */
+    frame: string | null;
     rankMinXp: number;
     xp: number;
     joinedAt: string | null;
@@ -55,6 +58,7 @@ export default function LockedProfile({
     rankName,
     rankColor,
     rankIcon,
+    frame,
     rankMinXp,
     xp,
     joinedAt,
@@ -137,20 +141,20 @@ export default function LockedProfile({
 
                 <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
                     <div className="flex items-start gap-4 md:gap-7 flex-1 min-w-0">
+                        {/* The same ring the open profile wears — the armoured
+                            frame with its crest, or the cosmetic somebody paid
+                            for. It was a plain grey circle here, which made the
+                            one page where a stranger judges a profile the one
+                            page where it wore nothing. */}
                         <span className="relative shrink-0">
-                            <span className="block w-[92px] h-[92px] md:w-[104px] md:h-[104px] rounded-full p-[2px]" style={{ background: "var(--line-strong)" }}>
-                                <span className="block w-full h-full rounded-full p-[3px] bg-[var(--surface-0)]">
-                                    {avatarUrl ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={avatarUrl} alt={displayName} className="w-full h-full rounded-full object-cover" />
-                                    ) : (
-                                        <span className="w-full h-full rounded-full bg-white/[0.05] flex items-center justify-center text-white/25">
-                                            <UserIcon className="w-9 h-9" />
-                                        </span>
-                                    )}
-                                </span>
-                            </span>
-                            <span className="absolute -bottom-0.5 -right-0.5 w-8 h-8 rounded-full bg-[var(--surface-0)] border border-[var(--line-strong)] flex items-center justify-center">
+                            <AvatarRing
+                                src={avatarUrl}
+                                alt={displayName}
+                                frame={frame}
+                                online={false}
+                                className="w-[104px] h-[104px] md:w-[124px] md:h-[124px]"
+                            />
+                            <span className="absolute bottom-0 right-0 z-30 w-8 h-8 rounded-full bg-[var(--surface-1)] border border-[var(--line-strong)] flex items-center justify-center">
                                 <Lock className="w-3.5 h-3.5 text-white/45" />
                             </span>
                         </span>

@@ -12,6 +12,7 @@ use App\Models\GameRating;
 use App\Models\Order;
 use App\Models\Presence;
 use App\Models\User;
+use App\Models\UserCustomization;
 use App\Models\UserGame;
 use App\Services\AchievementService;
 use App\Services\LevelService;
@@ -268,6 +269,14 @@ class AuthController extends Controller
                 'cover_image' => $user->coverImageUrl(),
                 'created_at' => $user->created_at,
                 'xp' => $user->xp ?? 0,
+                // A bought frame is worn, not owned in private — the same
+                // reasoning the rank insignia goes out under. It carries no
+                // information about the shelf behind it.
+                'frame' => UserCustomization::where('user_customizations.user_id', $user->id)
+                    ->where('user_customizations.is_equipped', true)
+                    ->join('customizations', 'customizations.id', '=', 'user_customizations.customization_id')
+                    ->where('customizations.type', 'frame')
+                    ->value('customizations.value'),
                 'rank' => $user->rank ? [
                     'name' => $user->rank->name,
                     'min_xp' => $user->rank->min_xp,
