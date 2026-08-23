@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Lock, User as UserIcon, UserPlus, Clock, Check, CalendarDays, ShieldCheck } from "lucide-react";
 import type { FriendStatus } from "@/lib/types/profile";
 import { PROFILE_TABS } from "@/lib/profileTabs";
-import { LevelCrest, RankEmblem } from "@/components/home-dashboard/RankInsignia";
+import { xpForLevel } from "@/lib/level";
+import { RankInsigniaMark, XpRail } from "@/components/home-dashboard/RankInsignia";
 
 interface Props {
     username: string;
@@ -14,6 +15,10 @@ interface Props {
     level: number;
     rankName: string | null;
     rankColor: string | null;
+    /** The struck insignia the open profile wears, not a stand-in for it. */
+    rankIcon: string | null;
+    rankMinXp: number;
+    xp: number;
     joinedAt: string | null;
     friendStatus: FriendStatus;
     viewerSignedIn: boolean;
@@ -45,12 +50,23 @@ export default function LockedProfile({
     level,
     rankName,
     rankColor,
+    rankIcon,
+    rankMinXp,
+    xp,
     joinedAt,
     friendStatus,
     viewerSignedIn,
     busy,
     onAddFriend,
 }: Props) {
+    // Where they sit inside their own rank band, not across the whole ladder:
+    // the same reading the open profile's gauge takes.
+    const nextAt = xpForLevel(level + 1);
+    const bandFloor = Math.max(rankMinXp, xpForLevel(level));
+    const bandPercent = nextAt > bandFloor
+        ? Math.max(0, Math.min(100, Math.round(((xp - bandFloor) / (nextAt - bandFloor)) * 100)))
+        : 0;
+
     const action = !viewerSignedIn ? (
         <Link
             href="/login"
@@ -83,15 +99,25 @@ export default function LockedProfile({
         <div className="container-page py-8 space-y-5">
             {/* ── the header band, same shape the open profile uses ── */}
             <section className="relative overflow-hidden">
+                {/* The cover, as a cover.
+                
+                    It used to be pushed to a quarter opacity behind a 2xl blur
+                    — hidden rather than veiled, on the reasoning that nothing
+                    private should be readable. But the API hands it to every
+                    visitor by design: a banner is part of the identity a
+                    private profile keeps public, alongside the name and the
+                    rank. What is withheld is the collection, not the wallpaper.
+                    It carries the same feathering the open profile uses, so the
+                    two headers are the same object in two states. */}
                 <div aria-hidden className="absolute inset-0 overflow-hidden">
                     {coverImage && (
-                        // Their picture sets the tone and is never readable as
-                        // content — veiled on purpose, not for want of the file.
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={coverImage} alt="" className="w-full h-full object-cover opacity-25 blur-2xl scale-110" />
+                        <img src={coverImage} alt="" className="w-full h-full object-cover" />
                     )}
-                    <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] from-[6%] via-[color-mix(in_srgb,var(--surface-0)_62%,transparent)] via-[48%] to-[color-mix(in_srgb,var(--surface-0)_28%,transparent)]" />
+                    <span className="absolute inset-0 bg-gradient-to-r from-[var(--surface-0)] from-[4%] via-[color-mix(in_srgb,var(--surface-0)_55%,transparent)] via-[45%] to-[color-mix(in_srgb,var(--surface-0)_20%,transparent)]" />
+                    <span className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[var(--surface-0)] to-transparent" />
                     <span className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
+                    <span className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[var(--surface-0)] to-transparent" />
                 </div>
 
                 <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
@@ -124,14 +150,36 @@ export default function LockedProfile({
                             </h1>
                             <p className="mt-1.5 text-[13px] font-semibold text-white/45">@{username}</p>
 
-                            <div className="mt-4 flex flex-wrap items-center gap-3">
-                                <LevelCrest level={level} size={44} />
-                                {rankName && <RankEmblem name={rankName} color={rankColor} />}
+                            {/* Standing, drawn with the objects the open
+                                profile already owns — the struck insignia and
+                                the XP rail — rather than a plainer stand-in.
+                                It is the same person at the same rank; there is
+                                no reason for their crest to look different
+                                because a visitor has not been let in. */}
+                            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+                                <span className="flex items-center gap-3">
+                                    <RankInsigniaMark icon={rankIcon} color={rankColor} name={rankName} size={52} />
+                                    <span>
+                                        <span className="block font-display text-[13px] font-black uppercase tracking-[0.06em] text-white leading-none">
+                                            {rankName ?? `Level ${level}`}
+                                        </span>
+                                        <span className="mt-1.5 block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">
+                                            Level {level} · {xp.toLocaleString()} XP
+                                        </span>
+                                    </span>
+                                </span>
+
                                 {joinedAt && (
                                     <span className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
                                         <CalendarDays className="w-3.5 h-3.5" /> Member since {joinedAt}
                                     </span>
                                 )}
+                            </div>
+
+                            {/* How far through the band they are — public, like
+                                the level it belongs to. */}
+                            <div className="mt-4 max-w-[420px]">
+                                <XpRail percent={bandPercent} />
                             </div>
                         </div>
                     </div>

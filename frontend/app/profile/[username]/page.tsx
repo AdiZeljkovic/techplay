@@ -10,6 +10,7 @@ import { User, Gamepad2, Trophy, ListChecks, Flame } from "lucide-react";
 import toast from "react-hot-toast";
 import ProgressionTab from "@/components/profile/ProgressionTab";
 import AchievementsTab from "@/components/profile/AchievementsTab";
+import { getStorageUrl } from "@/lib/imageUrl";
 import RewardsStore from "@/components/profile/RewardsStore";
 import { SendMessageModal } from "@/components/messaging/SendMessageModal";
 import ProfileHero from "@/components/home-dashboard/ProfileHero";
@@ -176,6 +177,10 @@ function ProfilePageInner() {
                     level={stats?.level ?? 1}
                     rankName={userData.rank?.name ?? null}
                     rankColor={userData.rank?.color ?? null}
+                    // The struck insignia, same as the open profile wears.
+                    rankIcon={userData.rank?.icon ? getStorageUrl(userData.rank.icon) : null}
+                    rankMinXp={userData.rank?.min_xp ?? 0}
+                    xp={stats?.xp ?? userData.xp ?? 0}
                     joinedAt={stats?.joined_at ?? null}
                     friendStatus={friendStatus}
                     viewerSignedIn={!!currentUser}
