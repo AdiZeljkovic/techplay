@@ -14,6 +14,8 @@ interface StreakInfo {
   claimed_today: boolean;
   last_claim: string | null;
   next_bounty: number;
+  /** Alive, unclaimed, and gone at local midnight. */
+  at_risk?: boolean;
 }
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data as StreakInfo);
@@ -68,8 +70,21 @@ export default function DailyStreakWidget() {
       />
 
       <div className="flex-1 min-w-0">
+        {/* Three things worth saying, and only one of them at a time.
+            "Ends tonight" is the state a reader can still act on, and it only
+            appears once the API says the streak is alive and unclaimed —
+            which it could not say at all until it stopped reading the stored
+            count as though a missed day had lowered it. */}
         <Readout
-          label={claimed ? "Streak · back tomorrow" : `Streak · +${streak.next_bounty} waiting`}
+          label={
+            claimed
+              ? "Streak · back tomorrow"
+              : streak.at_risk
+                ? `Streak · ends tonight · +${streak.next_bounty}`
+                : days === 0
+                  ? `Start a streak · +${streak.next_bounty}`
+                  : `Streak · +${streak.next_bounty} waiting`
+          }
           value={days}
           unit={days === 1 ? "day" : "days"}
           size="sm"

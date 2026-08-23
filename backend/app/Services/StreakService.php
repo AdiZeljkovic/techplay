@@ -75,13 +75,46 @@ class StreakService
         });
     }
 
+    /**
+     * What the widget is allowed to say.
+     *
+     * This used to read `daily_streak` straight off the row, which is only the
+     * count as of the last claim — nothing lowers it when a day is missed,
+     * because `claim()` does that on the way past. So a streak that died four
+     * days ago still announced itself as seven days long and still promised
+     * the seven-day reward, right up until the claim that quietly reset it to
+     * one and paid the first-day rate. The number was wrong and the promise
+     * was wrong, and the only honest moment was the one after you pressed it.
+     *
+     * Aliveness is the same rule `claim()` applies: a streak survives while
+     * its last claim was today or yesterday, in the reader's timezone.
+     */
     public function info(User $user): array
     {
+        $last = $user->last_daily_claim;
+        $claimedToday = $last !== null && $last->isToday();
+
+        // copy(): startOfDay() mutates, and this instance is also what reports
+        // `last_claim` below.
+        $alive = $last !== null
+            && $last->copy()->startOfDay()->gte(now()->subDay()->startOfDay());
+
+        $streak = $alive ? (int) ($user->daily_streak ?? 0) : 0;
+
+        // What the next claim actually awards — it continues a live streak and
+        // starts a new one otherwise. Same arithmetic claim() uses, so the
+        // figure offered is the figure paid.
+        $nextStreak = $alive ? $streak + 1 : 1;
+        $bonus = min(($nextStreak - 1) * self::STREAK_BONUS_PER_DAY, self::MAX_STREAK_BONUS);
+
         return [
-            'streak' => $user->daily_streak ?? 0,
-            'claimed_today' => $user->last_daily_claim && $user->last_daily_claim->isToday(),
-            'last_claim' => $user->last_daily_claim?->toIso8601String(),
-            'next_bounty' => self::BASE_BOUNTY + min(($user->daily_streak ?? 0) * self::STREAK_BONUS_PER_DAY, self::MAX_STREAK_BONUS),
+            'streak' => $streak,
+            'claimed_today' => $claimedToday,
+            'last_claim' => $last?->toIso8601String(),
+            'next_bounty' => self::BASE_BOUNTY + $bonus,
+            // Alive, unclaimed, and gone at local midnight — the one state
+            // worth saying out loud, and the reason somebody comes back.
+            'at_risk' => $alive && ! $claimedToday,
         ];
     }
 }
