@@ -194,6 +194,22 @@ Izmjereno prije izmjene: od 53 naloga 51 je `public`, biblioteku ima **jedan** (
 
   Sada kartica crta XP rank: ista insignija koju crta hero, plus ono što hero ne može reći — percentil po XP-u, koliko XP-a do sljedećeg ranga, i priznanja. Sparkline crta XP (kolona `reputation_snapshots.xp` postoji od 07/2026, pa historija ima podatke odmah), ne reputaciju — linija mora biti ista veličina kao broj iznad nje. Payload ključ je `reputation` → **`standing`**, tip `ReputationData` → `StandingData`. Reputacija ostaje broj u kartici (samo kad je > 0) i i dalje rangira leaderboard. `config/ranking.php` je izgubio `tiers`, zadržao `contribution_weights`.
 
+### Povezane platforme — dokle se stiglo (24.08.2026)
+
+| Platforma | Uvoz biblioteke | Šta daje |
+|---|---|---|
+| Steam | ✅ | sati, podjela po uređaju, zadnje igrano, achievementi (imena, ikone, datumi), completed iz 100% |
+| Xbox | ✅ | zadnje igrano, progres %, completed iz 100%, gamerscore — **bez sati** (Microsoft ih ne izlaže) |
+| PlayStation | ✅ (upaljen 24.08.) | igre s trofejima, progres — bez sati |
+| GOG | ✅ (novo) | **samo šta posjeduješ** — bez sati, bez datuma, bez achievementa; sve ulazi kao `backlog` |
+| Epic / Ubisoft / Battle.net / EA | ❌ nemoguće | vidi dolje |
+
+**Zašto Epic, Ubisoft i Battle.net ne mogu.** Epic Account Services ima tačno četiri scope-a — `basic_profile`, `friends_list`, `presence`, `offline_access` — i nijedan ne daje entitlements. Ubisoft nema javni API uopšte. Battle.net ima `openid`, `wow.profile`, `sc2.profile`, `d3.profile`; pojam „biblioteka" kod njih ne postoji (BattleNetAuthController koji imamo sinhronizuje WoW likove, ne igre). Sve što to ipak čita autentifikuje se **kao njihov launcher** s korisničkim kredencijalima — ne tražimo to od čitalaca. Umjesto toga, `AddGameModal` sad ima polje **Platform** s `datalist` prijedlozima (Epic Games, Ubisoft Connect, Battle.net, EA app, Nintendo, PC, Itch.io) i slobodnim unosom.
+
+**GOG ide istim putem kao PSN**: nema OAuth programa za treće strane, pa se koristi tok koji koristi GOG Galaxy klijent — čitalac se prijavi na GOG-ovoj stranici i zalijepi `code` iz adresne trake. `GogService` nosi Galaxyjev client_id (javan, u svakom open-source GOG alatu), a cijela integracija je iza `GOG_ENABLED` prekidača kao i PSN.
+
+**Discord Rich Presence je proradio tako što je bot upaljen.** Kod je odavno napisan — bot ima `GuildPresences` intent, sluša `PresenceUpdate`, šalje na `/discord/presence`, a `presences.source` odavno prima `discord`. Bot jednostavno **nije bio pokrenut**: kod je stajao u `/var/www/techplay/discord` a PM2 je vrtio samo frontend. Sad je pod PM2 (`techplay-bot`, `pm2 save` odrađen). Presence hvata **svaki launcher** — Epic, GOG, Ubisoft, EA — bez ijednog njihovog API-ja. Uslov: korisnik mora povezati Discord; trenutno to **niko nije uradio** (0 od 54), pa se još ništa ne prikazuje.
+
 **Nađeno usput, nije dirano:** `ProfileOverviewDashboard` renderuje se **samo posjetiocu** — stranica vrati `DashboardHome` prije njega kad gledaš svoj Overview. Sve `{isOwnProfile && ...}` grane u njemu (ProfileChecklist, DailyHub ×2) su mrtve. `LoyaltyCustomization.tsx` se ne renderuje nigdje.
 
 ---

@@ -158,6 +158,7 @@
 | GET | `/users/{username}/activity` | ActivityController::index | - | Aktivnost korisnika |
 | GET | `/users/{username}/recognitions` | RecognitionController::index | - | Recognitions |
 | GET | `/users/{username}/steam-achievements` | SteamAchievementController::index | - | Steam achievementi |
+| POST | `/connected-accounts/gog/connect` | ConnectedAccountController::gogConnect | ✓ | GOG uvoz (24.08.2026). Bez OAuth-a za treće strane — čitalac zalijepi `code` iz adresne trake, kao npsso kod PSN-a. Iza `GOG_ENABLED`; ugašen vraća **503**. GOG daje samo šta posjeduješ — sve ulazi kao `backlog` |
 | GET | `/users/{username}/collection` | GameCollectionController::index | - | Biblioteka igara |
 | GET | `/users/{username}/lists` | GameListController::index | - | Custom liste |
 | GET | `/users/{username}/wrapped/{year}` | WrappedController::show | - | Annual wrapped |

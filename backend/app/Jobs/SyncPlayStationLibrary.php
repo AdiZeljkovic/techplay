@@ -87,7 +87,11 @@ class SyncPlayStationLibrary implements ShouldQueue
                 $status = $title['progress'] >= 100 ? 'completed' : 'played';
 
                 if ($existing) {
-                    $existing->update(['progress' => max((int) $existing->progress, (int) $title['progress'])]);
+                    $existing->update([
+                        'progress' => max((int) $existing->progress, (int) $title['progress']),
+                        // Sony reported it, whoever created the row.
+                        'sources' => UserGame::withSource($existing->sources, 'playstation'),
+                    ]);
 
                     continue;
                 }
@@ -98,6 +102,7 @@ class SyncPlayStationLibrary implements ShouldQueue
                     'status' => $status,
                     'progress' => (int) $title['progress'],
                     'platform' => 'PlayStation',
+                    'sources' => ['playstation'],
                     // Sony reports when the title was last touched even though
                     // it reports no playtime, and the timeline is built from
                     // dates rather than hours.

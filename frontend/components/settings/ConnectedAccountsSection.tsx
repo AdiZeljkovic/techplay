@@ -30,7 +30,7 @@ const PROVIDERS: {
     description: string;
     color: string;
     iconBg: string;
-    connectMode?: "redirect" | "gamertag" | "npsso";
+    connectMode?: "redirect" | "gamertag" | "npsso" | "gogcode";
     /** Said plainly on the card, because it is not obvious and it matters. */
     caveat?: string;
     logo: React.ReactNode;
@@ -73,6 +73,20 @@ const PROVIDERS: {
         logo: (
             <svg viewBox="0 0 24 24" className="w-6 h-6" fill="#5B8BF7" xmlns="http://www.w3.org/2000/svg">
                 <path d="M8.985 2.596v17.548l3.915 1.261V6.688c0-.69.304-1.151.794-.991.636.181.76.814.76 1.505v5.876c2.441 1.193 4.362-.002 4.362-3.153 0-3.237-1.126-4.675-4.438-5.827-1.307-.448-3.728-1.186-5.393-1.502zm4.656 16.242l6.296-2.275c.715-.258.826-.625.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.499v-2.385l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.06 1.472 1.588 2.072-.473.601-1.622 1.03-1.622 1.03l-8.536 3.079v-2.276zM1.807 18.867c-1.9-.535-2.213-1.65-1.348-2.29.802-.594 2.16-1.04 2.16-1.04l5.626-2.003v2.286l-4.05 1.45c-.715.257-.826.62-.246.813.586.192 1.637.14 2.352-.117l1.944-.705v2.045c-.124.02-.26.04-.386.06-1.939.318-4.004.187-6.052-.5z"/>
+            </svg>
+        ),
+    },
+    {
+        id: "gog",
+        name: "GOG",
+        description: "Import everything you own on GOG",
+        color: "#8A2BE2",
+        iconBg: "#4b1a7a",
+        connectMode: "gogcode",
+        caveat: "GOG has no sign-in for other sites either, so this needs a code you copy from the address bar. GOG reports what you own and nothing else — no playtime, no achievements.",
+        logo: (
+            <svg viewBox="0 0 48 24" className="w-7 h-6" fill="#C084FC" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.4 4.8C4.6 4.8 2 7.6 2 12s2.6 7.2 6.4 7.2h5.2v-7.6H9.1v2.8h1.7v2H8.6c-2 0-3.2-1.5-3.2-4.4s1.2-4.4 3.2-4.4h5V4.8H8.4zm14 0C18.6 4.8 16 7.6 16 12s2.6 7.2 6.4 7.2h1.9c3.8 0 6.4-2.8 6.4-7.2s-2.6-7.2-6.4-7.2h-1.9zm.2 2.8h1.5c2 0 3.2 1.5 3.2 4.4s-1.2 4.4-3.2 4.4h-1.5c-2 0-3.2-1.5-3.2-4.4s1.2-4.4 3.2-4.4zm16.2-2.8C35 4.8 32.4 7.6 32.4 12s2.6 7.2 6.4 7.2H44v-7.6h-4.5v2.8h1.7v2H39c-2 0-3.2-1.5-3.2-4.4s1.2-4.4 3.2-4.4h5V4.8h-5.2z"/>
             </svg>
         ),
     },
@@ -133,6 +147,8 @@ export default function ConnectedAccountsSection() {
     const [gamertag, setGamertag] = useState("");
     const [npssoOpen, setNpssoOpen] = useState(false);
     const [npsso, setNpsso] = useState("");
+    const [gogOpen, setGogOpen] = useState(false);
+    const [gogCode, setGogCode] = useState("");
     const [verifying, setVerifying] = useState<number | null>(null);
     const [verifyCode, setVerifyCode] = useState<string | null>(null);
 
@@ -152,6 +168,35 @@ export default function ConnectedAccountsSection() {
         } catch (err: unknown) {
             const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
             toast.error(message ?? "Couldn't connect to PlayStation.");
+        } finally {
+            setConnecting(null);
+        }
+    }
+
+    async function handleGogConnect() {
+        const code = gogCode.trim();
+
+        // A pasted URL is the likelier mistake than a pasted code — people
+        // copy the address bar, not the fragment of it we asked for. Pull the
+        // code out rather than refusing a reader who did the sensible thing.
+        const fromUrl = code.match(/[?&]code=([^&\s]+)/);
+        const value = fromUrl ? decodeURIComponent(fromUrl[1]) : code;
+
+        if (value.length < 10) {
+            toast.error("That doesn't look like a GOG code.");
+            return;
+        }
+
+        setConnecting("gog");
+        try {
+            const res = await axios.post("/connected-accounts/gog/connect", { code: value });
+            toast.success(res.data?.message ?? "Connected.");
+            setGogOpen(false);
+            setGogCode("");
+            mutate();
+        } catch (err: unknown) {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Couldn't connect to GOG.");
         } finally {
             setConnecting(null);
         }
@@ -359,6 +404,11 @@ export default function ConnectedAccountsSection() {
                                         Disconnect
                                     </button>
                                 </>
+                            ) : provider.connectMode === "gogcode" ? (
+                                <button onClick={() => setGogOpen(true)}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
+                                    <Link2 className="w-3.5 h-3.5" /> Connect
+                                </button>
                             ) : provider.connectMode === "npsso" ? (
                                 <button onClick={() => setNpssoOpen(true)}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
@@ -448,6 +498,56 @@ export default function ConnectedAccountsSection() {
                             className="flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60"
                         >
                             {connecting === "playstation" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ── GOG: the code out of the address bar ── */}
+            {gogOpen && (
+                <div className="rounded-[var(--radius-card)] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[var(--surface-1)] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <p className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">Connect GOG</p>
+                            <p className="mt-2 text-[12px] text-white/45 leading-relaxed max-w-[560px]">
+                                GOG runs no sign-in for other sites, so this works the way the GOG Galaxy app does.{" "}
+                                <a
+                                    href="https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=client2"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[var(--accent)] hover:underline"
+                                >
+                                    Open this sign-in page
+                                </a>
+                                , log in, and you will land on a blank page. Copy its whole address — or just the{" "}
+                                <span className="text-white/70">code=</span> part — and paste it here.
+                            </p>
+                            <p className="mt-2 text-[11px] text-white/25 leading-relaxed max-w-[560px]">
+                                The code works once and expires quickly. GOG tells us what you own and nothing more — no
+                                playtime, no achievements — so those games land on your shelf as backlog.
+                            </p>
+                        </div>
+                        <button onClick={() => { setGogOpen(false); setGogCode(""); }} className="text-white/30 hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                        <input
+                            autoFocus
+                            value={gogCode}
+                            onChange={(e) => setGogCode(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") handleGogConnect(); }}
+                            placeholder="Paste the address, or just the code"
+                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                        />
+                        <button
+                            onClick={handleGogConnect}
+                            disabled={connecting === "gog"}
+                            className="flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60"
+                        >
+                            {connecting === "gog" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
                             Connect
                         </button>
                     </div>

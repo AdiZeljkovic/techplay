@@ -37,6 +37,16 @@ const PATHS: Record<string, { d: string; box: string; label: string }> = {
         box: "0 0 24 24",
         d: "M8.985 2.596v17.548l3.915 1.261V6.688c0-.69.304-1.151.794-.991.636.181.76.814.76 1.505v5.876c2.441 1.193 4.362-.002 4.362-3.153 0-3.237-1.126-4.675-4.438-5.827-1.307-.448-3.728-1.186-5.393-1.502zm4.656 16.242l6.296-2.275c.715-.258.826-.625.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.499v-2.385l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.06 1.472 1.588 2.072-.473.601-1.622 1.03-1.622 1.03l-8.536 3.079v-2.276zM1.807 18.867c-1.9-.535-2.213-1.65-1.348-2.29.802-.594 2.16-1.04 2.16-1.04l5.626-2.003v2.286l-4.05 1.45c-.715.257-.826.62-.246.813.586.192 1.637.14 2.352-.117l1.944-.705v2.045c-.124.02-.26.04-.386.06-1.939.318-4.004.187-6.052-.5z",
     },
+    /*
+     * GOG's mark is a wordmark, not a glyph — there is no single shape that
+     * reads as "GOG" the way the Steam disc or the PlayStation column do. So
+     * this draws the letters, which is what GOG itself puts on a button.
+     */
+    gog: {
+        label: "GOG",
+        box: "0 0 48 24",
+        d: "M8.4 4.8C4.6 4.8 2 7.6 2 12s2.6 7.2 6.4 7.2h5.2v-7.6H9.1v2.8h1.7v2H8.6c-2 0-3.2-1.5-3.2-4.4s1.2-4.4 3.2-4.4h5V4.8H8.4zm14 0C18.6 4.8 16 7.6 16 12s2.6 7.2 6.4 7.2h1.9c3.8 0 6.4-2.8 6.4-7.2s-2.6-7.2-6.4-7.2h-1.9zm.2 2.8h1.5c2 0 3.2 1.5 3.2 4.4s-1.2 4.4-3.2 4.4h-1.5c-2 0-3.2-1.5-3.2-4.4s1.2-4.4 3.2-4.4zm16.2-2.8C35 4.8 32.4 7.6 32.4 12s2.6 7.2 6.4 7.2H44v-7.6h-4.5v2.8h1.7v2H39c-2 0-3.2-1.5-3.2-4.4s1.2-4.4 3.2-4.4h5V4.8h-5.2z",
+    },
 };
 
 /**
@@ -51,6 +61,7 @@ function resolve(platform: string | null | undefined) {
     if (value.includes("steam")) return PATHS.steam;
     if (value.includes("xbox")) return PATHS.xbox;
     if (value.includes("playstation") || value.startsWith("ps")) return PATHS.playstation;
+    if (value.includes("gog")) return PATHS.gog;
 
     return null;
 }

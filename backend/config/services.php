@@ -173,6 +173,13 @@ return [
         'api_key' => env('RAWG_API_KEY'),
     ],
 
+    'gog' => [
+        // Same switch, same reason as PSN below it: GOG has no third-party
+        // OAuth programme, so the integration uses the flow the Galaxy client
+        // uses and can stop working without notice. Off unless switched on.
+        'enabled' => env('GOG_ENABLED', false),
+    ],
+
     'openxbl' => [
         'api_key' => env('OPENXBL_API_KEY'),
         'base_url' => 'https://xbl.io/api/v2',

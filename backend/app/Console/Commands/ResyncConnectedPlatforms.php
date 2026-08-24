@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\SyncGogLibrary;
 use App\Jobs\SyncPlayStationLibrary;
 use App\Jobs\SyncSteamLibrary;
 use App\Jobs\SyncXboxLibrary;
@@ -26,7 +27,7 @@ class ResyncConnectedPlatforms extends Command
 {
     protected $signature = 'platforms:resync
         {--user= : Only this user id}
-        {--provider= : Only steam, xbox or playstation}
+        {--provider= : Only steam, xbox, playstation or gog}
         {--force : Ignore the freshness window and re-sync everything}';
 
     protected $description = 'Queue a library re-sync for connected platform accounts';
@@ -78,6 +79,7 @@ class ResyncConnectedPlatforms extends Command
             $job = match ($account->provider) {
                 'steam' => SyncSteamLibrary::dispatch($account->id),
                 'xbox' => SyncXboxLibrary::dispatch($account->id),
+                'gog' => SyncGogLibrary::dispatch($account->id),
                 'playstation' => SyncPlayStationLibrary::dispatch($account->id),
                 default => null,
             };

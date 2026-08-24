@@ -326,6 +326,9 @@ Route::prefix('v1')->group(function () {
             Route::middleware('throttle:20,1')->post('/xbox/verify/confirm', [ConnectedAccountController::class, 'xboxVerifyConfirm']);
             // Sony offers no consent screen, so the reader pastes their own npsso.
             Route::middleware('throttle:6,1')->post('/playstation/connect', [ConnectedAccountController::class, 'playstationConnect']);
+            // GOG has no consent screen either — the reader pastes the `code`
+            // out of the address bar after signing in on GOG's own page.
+            Route::middleware('throttle:6,1')->post('/gog/connect', [ConnectedAccountController::class, 'gogConnect']);
             Route::post('/{id}/sync', [ConnectedAccountController::class, 'sync']);
             Route::patch('/{id}/visibility', [ConnectedAccountController::class, 'visibility']);
             Route::delete('/{id}', [ConnectedAccountController::class, 'destroy']);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncGogLibrary;
 use App\Jobs\SyncPlayStationLibrary;
 use App\Jobs\SyncSteamLibrary;
 use App\Jobs\SyncXboxLibrary;
@@ -10,6 +11,7 @@ use App\Models\ConnectedAccount;
 use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\FunnelAnalytics;
+use App\Services\GogService;
 use App\Services\OpenXblService;
 use App\Services\PlayStationService;
 use App\Services\PresenceService;
@@ -277,6 +279,76 @@ class ConnectedAccountController extends Controller
         return $this->success(
             ['online_id' => $profile['online_id']],
             "Connected as {$profile['online_id']} — importing your trophies now."
+        );
+    }
+
+    /**
+     * POST /connected-accounts/gog/connect — a code out of the address bar.
+     *
+     * GOG has no OAuth programme for third parties, so this is the flow the
+     * Galaxy client uses: the reader signs in on GOG's own page, lands on a
+     * blank success page, and copies the `code=` out of the URL. Exactly the
+     * shape the PlayStation link already has, for exactly the same reason —
+     * there is no consent screen to send them to.
+     */
+    public function gogConnect(Request $request, GogService $gog): JsonResponse
+    {
+        if (! $gog->enabled()) {
+            return $this->error('GOG linking is switched off right now.', 503);
+        }
+
+        $data = $request->validate([
+            // GOG's codes have been a fixed length for years; loose bounds so
+            // a format change does not lock everybody out before we notice.
+            'code' => 'required|string|min:10|max:256',
+        ]);
+
+        $tokens = $gog->exchangeCode(trim($data['code']));
+
+        if (! $tokens) {
+            return $this->error(
+                "That code didn't work. It can only be used once and expires quickly — open the GOG sign-in link again and copy a fresh one.",
+                422,
+            );
+        }
+
+        $gogUserId = $tokens['user_id'];
+
+        if (! $gogUserId) {
+            return $this->error("Signed in, but GOG didn't say who you are. Try again in a minute.", 502);
+        }
+
+        $takenByAnother = ConnectedAccount::where('provider', 'gog')
+            ->where('provider_user_id', $gogUserId)
+            ->where('user_id', '!=', $request->user()->id)
+            ->exists();
+
+        if ($takenByAnother) {
+            return $this->error('That GOG account is already linked to another TechPlay account.', 409);
+        }
+
+        $account = ConnectedAccount::updateOrCreate(
+            ['user_id' => $request->user()->id, 'provider' => 'gog'],
+            [
+                'provider_user_id' => $gogUserId,
+                'access_token' => $tokens['access_token'],
+                'refresh_token' => $tokens['refresh_token'],
+                'token_expires_at' => now()->addSeconds($tokens['expires_in']),
+                'sync_status' => 'pending',
+                'visibility' => 'public',
+            ]
+        );
+
+        SyncGogLibrary::dispatch($account->id)->onQueue('default');
+
+        try {
+            app(AchievementService::class)->check($request->user(), ['connected_accounts']);
+        } catch (\Throwable) {
+        }
+
+        return $this->success(
+            ['login_url' => GogService::LOGIN_URL],
+            'Connected — importing your GOG library now.',
         );
     }
 

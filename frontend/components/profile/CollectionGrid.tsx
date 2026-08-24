@@ -62,6 +62,23 @@ const SEARCHABLE_FROM = 8;
 /** The shelf's one grid. The featured tile spans two of these cells each way. */
 const SHELF_GRID = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3";
 
+/**
+ * Launchers a reader has to name themselves.
+ *
+ * Steam, Xbox, PlayStation and GOG import their own libraries and stamp their
+ * own provenance. These four cannot: Epic's OAuth offers profile, friends and
+ * presence and no scope for entitlements; Ubisoft publishes no third-party API
+ * at all; Battle.net's scopes are per-game profiles with no notion of a
+ * library; EA has nothing public either. Every tool that reads those libraries
+ * authenticates as the launcher itself with the reader's own credentials,
+ * which is not something to ask anybody for.
+ *
+ * So the honest answer is a field. Free text underneath — somebody's shelf may
+ * hold a Switch cartridge or a GameCube disc, and no list we write will
+ * anticipate that.
+ */
+const UNIMPORTABLE_LAUNCHERS = ["Epic Games", "Ubisoft Connect", "Battle.net", "EA app", "Nintendo", "PC", "Itch.io"];
+
 /** Holds a value still until it stops changing — one request per word, not per key. */
 function useDebounced<T>(value: T, ms: number): T {
     const [held, setHeld] = useState(value);
@@ -958,6 +975,7 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
 function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () => void }) {
     const [term, setTerm] = useState("");
     const [status, setStatus] = useState<CollectionStatus>("backlog");
+    const [platform, setPlatform] = useState("");
     const [adding, setAdding] = useState<string | null>(null);
 
     const { data, isLoading } = useSWR(
@@ -969,7 +987,12 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
     const add = async (slug: string) => {
         setAdding(slug);
         try {
-            await axios.put(`/collection/games/${slug}`, { status });
+            await axios.put(`/collection/games/${slug}`, {
+                status,
+                // Only when they said one. An empty string would set the label
+                // to nothing, which is not the same as leaving it unset.
+                ...(platform.trim() ? { platform: platform.trim() } : {}),
+            });
             toast.success("Added to collection");
             onAdded();
         } catch {
@@ -1020,6 +1043,26 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                             </select>
                             <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
                         </span>
+                    </div>
+
+                    {/* Where you play it. The four stores that import their own
+                        libraries fill this in themselves; this is for the ones
+                        that cannot, and for a shelf that holds cartridges. */}
+                    <div>
+                        <label htmlFor="add-platform" className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35 mb-1.5">
+                            Platform <span className="text-white/20">— optional</span>
+                        </label>
+                        <input
+                            id="add-platform"
+                            list="tp-launchers"
+                            value={platform}
+                            onChange={(e) => setPlatform(e.target.value)}
+                            placeholder="Epic Games, Ubisoft Connect, Switch…"
+                            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-[8px] px-3 h-9 text-[12.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
+                        />
+                        <datalist id="tp-launchers">
+                            {UNIMPORTABLE_LAUNCHERS.map((l) => <option key={l} value={l} />)}
+                        </datalist>
                     </div>
 
                     <div className="max-h-[45vh] overflow-y-auto -mx-1 px-1">
