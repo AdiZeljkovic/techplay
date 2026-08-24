@@ -18,6 +18,17 @@ class XpService
 
     public const XP_GAME_REVIEW = 10;
 
+    /**
+     * A message in the Discord server.
+     *
+     * Worth more than a comment on the site looks odd until you notice the
+     * daily cap governs both: at 15 a message on a 60-second cooldown, seven
+     * messages reach the ceiling and the eighth pays nothing. Before this ran
+     * through here it was uncapped, and a talkative evening was worth more XP
+     * than a year of finishing games.
+     */
+    public const XP_DISCORD_MESSAGE = 15;
+
     public const DAILY_XP_CAP = 100;
 
     public const COMMENT_COOLDOWN_SECONDS = 60;

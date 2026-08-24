@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\DiscordDailyController;
 use App\Http\Controllers\Api\V1\DiscordGiftController;
 use App\Http\Controllers\Api\V1\DiscordIntegrationController;
 use App\Http\Controllers\Api\V1\DiscordLeaderboardController;
+use App\Http\Controllers\Api\V1\DiscordLibraryController;
 use App\Http\Controllers\Api\V1\DiscordMembershipController;
 use App\Http\Controllers\Api\V1\DiscordSubscriptionController;
 use App\Http\Controllers\Api\V1\DiscordXpController;
@@ -128,6 +129,14 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['throttle:300,1', 'discord.bot'])->prefix('discord')->group(function () {
         // User & XP
         Route::get('/user/{discordId}', [DiscordIntegrationController::class, 'getUser']);
+        // The ladder itself, so the bot builds its role map from the table
+        // rather than from a list written down a second time.
+        Route::get('/ranks', [DiscordIntegrationController::class, 'ranks']);
+        // What the bot can say about a shelf. Each refuses a private profile,
+        // because a library read out in a channel is still a library read.
+        Route::get('/library/{discordId}', [DiscordLibraryController::class, 'library']);
+        Route::get('/match/{discordId}/{otherDiscordId}', [DiscordLibraryController::class, 'match']);
+        Route::get('/backlog/{discordId}', [DiscordLibraryController::class, 'backlog']);
         Route::post('/xp', [DiscordXpController::class, 'addXp']);
         // Presence from Discord Rich Presence (bot reports game activity)
         Route::post('/presence', [PresenceController::class, 'discordUpdate']);

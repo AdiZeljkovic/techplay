@@ -95,6 +95,34 @@ export class PollingService {
         }
     }
 
+    /**
+     * Announce one item the moment the site publishes it.
+     *
+     * The poll below is the fallback now, not the mechanism. Four feeds every
+     * sixty seconds is 5,760 requests a day for something that happens a few
+     * times a day, and it still arrived up to a minute late. The site knows
+     * exactly when an article goes out, so it says so.
+     *
+     * The id is recorded either way, so an item pushed here is not posted a
+     * second time when the poll next runs.
+     */
+    public async announce(type: string, item: { id: number; title: string; slug: string; excerpt?: string; featured_image_url?: string }): Promise<boolean> {
+        const feed = this.feeds.find(f => f.type === type);
+
+        if (!feed) {
+            console.warn(`⚠️ [PollingService] no feed named "${type}"`);
+            return false;
+        }
+
+        const posted = await this.postToChannel([item], feed);
+
+        if (posted && item.id > feed.lastCheckedId) {
+            feed.lastCheckedId = item.id;
+        }
+
+        return posted;
+    }
+
     private async checkAllFeeds() {
         for (const feed of this.feeds) {
             await this.checkFeed(feed);

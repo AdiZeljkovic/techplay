@@ -236,42 +236,109 @@ export class BuffyService {
     // PROFILE EMBED
     // ═══════════════════════════════════════════════════════════════════
 
+    /**
+     * A player, as the site knows one today.
+     *
+     * This card used to be Rank, XP, Position and Progress — which was the
+     * whole of a profile when TechPlay was a news site with a rank ladder
+     * bolted on. Since then a profile grew a library, the hours behind it,
+     * achievements and the year somebody started playing, and the bot kept
+     * drawing the January card.
+     *
+     * Every figure appears only if there is something behind it. An account
+     * with no shelf gets the rank and the XP rail and nothing else — a row of
+     * zeroes reads as a measurement, and an absence is not one.
+     */
     public createProfileEmbed(data: {
         username: string;
         displayName: string;
         rank: string;
+        rankColor?: string | null;
+        rankMinXp?: number;
+        nextRank?: string | null;
+        nextRankMinXp?: number | null;
+        level?: number;
         xp: number;
-        nextRankXp?: number;
         position?: number;
-        joinedAt?: string;
-        streak?: number;
         avatarUrl?: string;
+        profileUrl?: string;
+        games?: number;
+        completed?: number;
+        achievements?: number;
+        hours?: number;
+        gamesPlayed?: number;
+        since?: number | null;
+        deepest?: { name: string; hours: number; share: number } | null;
+        platformAchievements?: { earned: number; total: number; rate: number } | null;
     }): EmbedBuilder {
-        const progress = data.nextRankXp
-            ? Math.round((data.xp / data.nextRankXp) * 100)
-            : 100;
-
-        const progressBar = this.createProgressBar(progress);
+        const floor = data.rankMinXp ?? 0;
+        const ceiling = data.nextRankMinXp ?? null;
+        const across = ceiling !== null && ceiling > floor
+            ? Math.min(100, Math.max(0, Math.round(((data.xp - floor) / (ceiling - floor)) * 100)))
+            : null;
 
         const embed = new EmbedBuilder()
-            .setTitle(`📜 ${data.displayName}'s Profile`)
-            .setDescription(`*"Ah yes, let me consult the ancient records..."*`)
-            .addFields(
-                { name: '🏅 Rank', value: data.rank, inline: true },
-                { name: '⭐ XP', value: data.xp.toLocaleString(), inline: true },
-                { name: '🏆 Position', value: data.position ? `#${data.position}` : 'Unranked', inline: true },
-                { name: '📊 Progress to Next Rank', value: `${progressBar} ${progress}%`, inline: false },
-            )
-            .setColor(BuffyService.COLORS.PRIMARY)
+            .setTitle(`${data.displayName}`)
+            .setColor(this.hexToInt(data.rankColor) ?? BuffyService.COLORS.PRIMARY)
             .setThumbnail(data.avatarUrl || BuffyService.AVATAR_URL)
             .setFooter({ text: BuffyService.FOOTER_TEXT })
             .setTimestamp();
 
-        if (data.streak && data.streak > 0) {
-            embed.addFields({ name: '🔥 Daily Streak', value: `${data.streak} days`, inline: true });
+        if (data.profileUrl) embed.setURL(data.profileUrl);
+
+        const standing = [
+            `**${data.rank}**${data.level ? ` · Level ${data.level}` : ''}`,
+            `${data.xp.toLocaleString()} XP${data.position ? ` · #${data.position} on the ladder` : ''}`,
+        ];
+
+        if (across !== null && data.nextRank && ceiling !== null) {
+            standing.push(`${this.createProgressBar(across)} ${(ceiling - data.xp).toLocaleString()} XP to ${data.nextRank}`);
+        }
+
+        embed.setDescription(standing.join('\n'));
+
+        // The library, when there is one.
+        if (data.games && data.games > 0) {
+            const shelf = [`**${data.games.toLocaleString()}** games`];
+            if (data.completed) shelf.push(`**${data.completed}** finished`);
+            if (data.achievements) shelf.push(`**${data.achievements}** achievements`);
+            embed.addFields({ name: '🎮 Library', value: shelf.join(' · '), inline: false });
+        }
+
+        // The hours, which is the figure a rank cannot give.
+        if (data.hours && data.hours > 0) {
+            const played = [`**${data.hours.toLocaleString()} h** across ${data.gamesPlayed ?? 0} games`];
+            if (data.since) played.push(`playing since **${data.since}**`);
+            embed.addFields({ name: '⏱️ Time played', value: played.join(' · '), inline: false });
+        }
+
+        if (data.deepest) {
+            embed.addFields({
+                name: '🏔️ Most played',
+                value: `**${data.deepest.name}** — ${data.deepest.hours.toLocaleString()} h (${data.deepest.share}% of everything)`,
+                inline: false,
+            });
+        }
+
+        if (data.platformAchievements && data.platformAchievements.total > 0) {
+            const pa = data.platformAchievements;
+            embed.addFields({
+                name: '🏆 Platform achievements',
+                value: `**${pa.earned.toLocaleString()}** of ${pa.total.toLocaleString()} (${pa.rate}%)`,
+                inline: false,
+            });
         }
 
         return embed;
+    }
+
+    /** `#FC4100` as Discord wants it. Null for anything that is not a hex colour. */
+    private hexToInt(hex?: string | null): number | null {
+        if (!hex) return null;
+        const clean = hex.replace('#', '');
+        if (!/^[0-9a-fA-F]{6}$/.test(clean)) return null;
+
+        return parseInt(clean, 16);
     }
 
     private createProgressBar(percentage: number): string {
@@ -343,23 +410,50 @@ export class BuffyService {
 
     public createHelpEmbed(): EmbedBuilder {
         return new EmbedBuilder()
-            .setTitle(`🦉 Professor Buffy's Command Guide`)
+            .setTitle(`🦉 What I can do`)
             .setDescription(
-                `*Greetings, young gamer! Here are the commands at your disposal:*\n\n` +
-                `**📊 Profile & Stats**\n` +
-                `\`/profile\` - View your TechPlay profile\n` +
-                `\`/profile @user\` - View someone else's profile\n` +
-                `\`/leaderboard\` - See the top 10 members\n` +
-                `\`/stats\` - Server statistics\n\n` +
-                `**🎁 Rewards**\n` +
-                `\`/daily\` - Claim your daily XP bonus\n` +
-                `\`/trivia\` - Start a trivia question for XP\n\n` +
-                `**🔗 Account**\n` +
-                `\`/link\` - Link your TechPlay account\n\n` +
-                `**📚 Information**\n` +
-                `\`/tip\` - Get a random gaming/tech tip\n` +
-                `\`/help\` - Show this help message\n\n` +
-                `*Earn XP by chatting, and climb the ranks!* 🚀`
+                `**🎮 You and your games**
+` +
+                `\`/profile\` — rank, hours, library, achievements
+` +
+                `\`/library\` — a shelf, filterable by status
+` +
+                `\`/backlog\` — three things to play out of what you own
+` +
+                `\`/match @someone\` — how much your taste overlaps
+
+` +
+                `**🔍 The catalogue**
+` +
+                `\`/game\` — look up any of 332,000 games (suggests as you type)
+` +
+                `\`/search\` — find an article
+` +
+                `\`/latest\` — what just went up
+
+` +
+                `**🏆 Standing**
+` +
+                `\`/leaderboard\` — the top of the ladder
+` +
+                `\`/daily\` — claim your daily XP
+` +
+                `\`/stats\` — server figures
+
+` +
+                `**🔗 Account**
+` +
+                `\`/link\` — connect TechPlay, and what that gets you
+` +
+                `\`/sync\` — get your rank role
+
+` +
+                `**📚 Also**
+` +
+                `\`/forum\` · \`/giveaways\` · \`/techplay\` · \`/subscribe\` · \`/gift\` · \`/tip\`
+
+` +
+                `*Talking here earns XP on the same ladder as the site — but only once you've linked.*`
             )
             .setColor(BuffyService.COLORS.PRIMARY)
             .setThumbnail(BuffyService.AVATAR_URL)
@@ -385,17 +479,27 @@ export class BuffyService {
             .setTimestamp();
     }
 
+    /**
+     * The one message most members will ever see from this bot.
+     *
+     * A hundred and fifty-three people are in this server and not one had
+     * linked an account — not because linking is hard, but because nothing
+     * ever said what it was for. "Your Discord isn't linked" is a fact about
+     * a database row; it is not a reason. So this leads with what linking
+     * gets you and puts the instructions underneath.
+     */
     public createNotLinkedEmbed(): EmbedBuilder {
         return new EmbedBuilder()
-            .setTitle(`🔗 Account Not Linked`)
+            .setTitle(`🔗 Link your account and this starts working`)
             .setDescription(
-                `*Professor Buffy checks his records...*\n\n` +
-                `Your Discord isn't linked to a TechPlay account yet!\n\n` +
-                `**How to link:**\n` +
-                `1. Visit [techplay.gg](https://techplay.gg)\n` +
-                `2. Go to Settings → Connected Accounts\n` +
-                `3. Click "Connect Discord"\n\n` +
-                `Or use \`/link\` for instructions!`
+                `Right now I know your Discord name and nothing else. Link a TechPlay account and:\n\n` +
+                `🏅 **Your rank becomes a role here**, kept current as you climb\n` +
+                `⭐ **Talking here earns XP** on the same ladder as the site\n` +
+                `🎮 **\`/profile\` and \`/library\`** start answering about you — hours, shelf, achievements\n` +
+                `🤝 **\`/match\`** compares your taste with anyone else who has linked\n` +
+                `🎯 **Whatever you're playing** shows on your profile by itself\n\n` +
+                `**Takes about twenty seconds:**\n` +
+                `[Open your settings](https://techplay.gg/settings?section=connections) → **Connect Discord** → run \`/sync\` here.`
             )
             .setColor(BuffyService.COLORS.WARNING)
             .setThumbnail(BuffyService.AVATAR_URL)
@@ -483,60 +587,6 @@ export class BuffyService {
                 `${message}`
             )
             .setColor(BuffyService.COLORS.ERROR)
-            .setThumbnail(BuffyService.AVATAR_URL)
-            .setFooter({ text: BuffyService.FOOTER_TEXT })
-            .setTimestamp();
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // CHALLENGE/DUEL EMBEDS
-    // ═══════════════════════════════════════════════════════════════════
-
-    public createChallengeEmbed(challengerName: string, opponentName: string): EmbedBuilder {
-        return new EmbedBuilder()
-            .setTitle(`⚔️ Trivia Duel Challenge!`)
-            .setDescription(
-                `*Professor Buffy announces a battle of wits!*\n\n` +
-                `**${challengerName}** has challenged **${opponentName}** to a trivia duel!\n\n` +
-                `${opponentName}, do you accept? You have 60 seconds to respond!\n\n` +
-                `🟢 React with ✅ to accept\n` +
-                `🔴 React with ❌ to decline`
-            )
-            .setColor(BuffyService.COLORS.WARNING)
-            .setThumbnail(BuffyService.AVATAR_URL)
-            .setFooter({ text: BuffyService.FOOTER_TEXT })
-            .setTimestamp();
-    }
-
-    public createDuelQuestionEmbed(question: string, category: string, questionNum: number, totalQuestions: number): EmbedBuilder {
-        return new EmbedBuilder()
-            .setTitle(`⚔️ Duel Question ${questionNum}/${totalQuestions}`)
-            .setDescription(
-                `**Category:** ${category}\n\n` +
-                `**${question}**\n\n` +
-                `*First to answer correctly gets the point!*`
-            )
-            .setColor(BuffyService.COLORS.PRIMARY)
-            .setThumbnail(BuffyService.AVATAR_URL)
-            .setFooter({ text: `${BuffyService.FOOTER_TEXT} • Type your answer!` })
-            .setTimestamp();
-    }
-
-    public createDuelResultEmbed(winnerName: string | null, player1: string, player1Score: number, player2: string, player2Score: number, xpReward: number): EmbedBuilder {
-        const resultText = winnerName
-            ? `🏆 **${winnerName}** wins the duel and earns **${xpReward} XP**!`
-            : `🤝 It's a **tie**! Both players earn **${Math.floor(xpReward / 2)} XP**!`;
-
-        return new EmbedBuilder()
-            .setTitle(`⚔️ Duel Complete!`)
-            .setDescription(
-                `*Professor Buffy tallies the scores...*\n\n` +
-                `**${player1}**: ${player1Score} points\n` +
-                `**${player2}**: ${player2Score} points\n\n` +
-                `${resultText}\n\n` +
-                `*A battle well fought!*`
-            )
-            .setColor(BuffyService.COLORS.XP)
             .setThumbnail(BuffyService.AVATAR_URL)
             .setFooter({ text: BuffyService.FOOTER_TEXT })
             .setTimestamp();

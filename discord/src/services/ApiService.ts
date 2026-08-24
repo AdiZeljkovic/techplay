@@ -187,6 +187,64 @@ export class ApiService {
     /**
      * Fetches user by Discord ID
      */
+    /**
+     * The rank ladder, so the bot's role map is the site's table rather than
+     * a second copy of it. Fetched once and cached by the caller — twenty
+     * rungs that change about once a year.
+     */
+    public async getRanks(): Promise<{ name: string; min_xp: number; color: string | null }[]> {
+        try {
+            const response = await this.client.get('/discord/ranks');
+            return response.data?.ranks ?? [];
+        } catch (error) {
+            console.error('[ApiService] Failed to fetch the rank ladder:', error instanceof Error ? error.message : 'Unknown error');
+            return [];
+        }
+    }
+
+    /** Somebody's shelf, optionally narrowed to one status. */
+    public async getLibrary(discordId: string, status?: string | null): Promise<any | null> {
+        try {
+            const suffix = status ? `?status=${encodeURIComponent(status)}` : '';
+            const response = await this.client.get(`/discord/library/${discordId}${suffix}`);
+            return response.data;
+        } catch (error) {
+            return this.quiet(error, `library for ${discordId}`);
+        }
+    }
+
+    /** How much two shelves overlap. */
+    public async getMatch(discordId: string, otherDiscordId: string): Promise<any | null> {
+        try {
+            const response = await this.client.get(`/discord/match/${discordId}/${otherDiscordId}`);
+            return response.data;
+        } catch (error) {
+            // The refusals here are answers, not failures: not linked, private,
+            // or comparing yourself. The caller needs to tell them apart.
+            if (axios.isAxiosError(error) && error.response) {
+                return { error: error.response.status, ...(error.response.data as object) };
+            }
+            return this.quiet(error, 'taste match');
+        }
+    }
+
+    /** Three things out of the backlog they already own. */
+    public async getBacklogPicks(discordId: string): Promise<any | null> {
+        try {
+            const response = await this.client.get(`/discord/backlog/${discordId}`);
+            return response.data;
+        } catch (error) {
+            return this.quiet(error, `backlog for ${discordId}`);
+        }
+    }
+
+    /** A 404 means "not linked", which is ordinary and not worth a log line. */
+    private quiet(error: unknown, what: string): null {
+        if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+        console.error(`[ApiService] Failed to fetch ${what}:`, error instanceof Error ? error.message : 'Unknown error');
+        return null;
+    }
+
     public async getUserByDiscordId(discordId: string): Promise<any | null> {
         try {
             const response = await this.client.get(`/discord/user/${discordId}`);

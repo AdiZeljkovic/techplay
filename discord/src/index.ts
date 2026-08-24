@@ -1,16 +1,15 @@
 import { Client, GatewayIntentBits, Events, REST, Routes } from 'discord.js';
 import { config } from './config';
 import { commands } from './commands/definitions';
-import { handleCommand } from './handlers/commands';
-import { setupWelcome, setupModeration, setupChallengeReactions, setupPresenceTracking, setupGuildMembership } from './handlers/events';
+import { handleCommand, handleAutocomplete } from './handlers/commands';
+import { setupWelcome, setupModeration, setupPresenceTracking, setupGuildMembership } from './handlers/events';
 import { PollingService } from './services/PollingService';
+import { PublishListener } from './services/PublishListener';
 import { ServerStatsService } from './services/ServerStatsService';
 import { XpService } from './services/XpService';
 import { StatusService } from './services/StatusService';
-import { TriviaService } from './services/TriviaService';
 import { RecapService } from './services/RecapService';
 import { SubscriptionService } from './services/SubscriptionService';
-import { ChallengeService } from './services/ChallengeService';
 
 console.log('🦉 Starting Professor Buffy (TechPlay Bot)...');
 
@@ -71,17 +70,15 @@ client.once(Events.ClientReady, async (readyClient) => {
     const statusService = new StatusService(client);
     statusService.start();
 
-    const triviaService = TriviaService.getInstance(client);
-    triviaService.start();
+    // The site knocks here the moment it publishes; the poll above is the
+    // fallback for anything that knock misses.
+    new PublishListener(pollingService, config.botSecret, config.publishPort).start();
 
     const recapService = new RecapService(client);
     recapService.start();
 
     const subscriptionService = SubscriptionService.getInstance(client);
     subscriptionService.start();
-
-    const challengeService = ChallengeService.getInstance(client);
-    challengeService.start();
 
     console.log('\n✅ All services started successfully!');
 });
@@ -96,9 +93,6 @@ setupWelcome(client);
 // Auto-moderation (bad word filter)
 setupModeration(client);
 
-// Challenge acceptance via reactions
-setupChallengeReactions(client);
-
 // Discord Rich Presence → TechPlay "Playing Now"
 setupPresenceTracking(client);
 
@@ -110,6 +104,13 @@ setupGuildMembership(client);
 // ═══════════════════════════════════════════════════════════════════════════════
 
 client.on(Events.InteractionCreate, async (interaction) => {
+    // Autocomplete arrives on the same event as a command and must answer
+    // within three seconds — Discord shows nothing at all if it is late.
+    if (interaction.isAutocomplete()) {
+        await handleAutocomplete(interaction);
+        return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
     await handleCommand(interaction, client);
 });

@@ -3,7 +3,6 @@ import { ApiService } from '../services/ApiService';
 import axios from 'axios';
 import { config } from '../config';
 import { BuffyService } from '../services/BuffyService';
-import { ChallengeService } from '../services/ChallengeService';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Comprehensive bad word filter for gaming community
@@ -166,28 +165,3 @@ export function setupPresenceTracking(client: Client) {
     console.log('🎮 Presence tracking handler registered');
 }
 
-/**
- * Sets up challenge acceptance via message reactions (✅ / ❌).
- */
-export function setupChallengeReactions(client: Client) {
-    client.on(Events.MessageReactionAdd, async (reaction, user) => {
-        if (user.bot) return;
-
-        const challengeService = ChallengeService.getInstance();
-        const pending = challengeService.getPendingChallenge(reaction.message.channelId);
-
-        if (!pending || pending.opponentId !== user.id) return;
-
-        const channel = reaction.message.channel;
-        if (!channel.isTextBased() || channel.isDMBased()) return;
-
-        if (reaction.emoji.name === '✅') {
-            await challengeService.acceptChallenge(user.id, reaction.message.channelId);
-        } else if (reaction.emoji.name === '❌') {
-            await challengeService.declineChallenge(user.id, reaction.message.channelId);
-            await (channel as TextChannel).send(`❌ **${pending.opponentName}** declined the challenge.`);
-        }
-    });
-
-    console.log('⚔️ Challenge reaction handler registered');
-}

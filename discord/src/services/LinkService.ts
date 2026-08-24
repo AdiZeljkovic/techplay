@@ -1,85 +1,130 @@
-import { CommandInteraction, GuildMember } from 'discord.js';
+import { CommandInteraction, GuildMember, MessageFlags, Role } from 'discord.js';
 import { ApiService } from './ApiService';
 
+/**
+ * Ties a Discord member to their TechPlay account, and their rank to a role.
+ *
+ * The map between the two used to be written here by hand:
+ *
+ *     Newbie, Gamer, Pro Gamer, Elite, Legend
+ *
+ * "Gamer" and "Pro Gamer" have never existed in the rank table. "Newbie" and
+ * "Noob" were retired on 24 Aug 2026 when two seeded ladders were merged. Of
+ * the five, two still matched anything — so /sync could assign the correct
+ * role for two rungs out of twenty, and silently did nothing for the rest.
+ *
+ * The ladder now comes from /discord/ranks, which reads the same table the
+ * site promotes people against. A second copy of a list is a list that drifts.
+ */
 export class LinkService {
     private api: ApiService;
 
-    // Map TechPlay Rank Name -> Discord Role Name
-    private readonly rankRoleMap: { [key: string]: string } = {
-        'Newbie': 'Newbie',
-        'Gamer': 'Gamer',
-        'Pro Gamer': 'Pro Gamer',
-        'Elite': 'Elite',
-        'Legend': 'Legend',
-        // Staff Roles
-        'Admin': 'Admin',
-        'Moderator': 'Moderator',
-        'Editor': 'Editor'
-    };
+    /** Roles that are ours to manage. Anything else on a member is left alone. */
+    private static ladder: string[] | null = null;
 
     constructor() {
         this.api = ApiService.getInstance();
     }
 
     public async handleLinkCommand(interaction: CommandInteraction) {
-        // Instruction to link via website
         await interaction.reply({
-            content: `🔗 **Connect your account!**\n\nTo link your Discord, simply go to your [Profile Settings](https://techplay.gg/settings) on the website and click "Connect Discord Account".\n\nAfter connecting, run \`/sync\` here to get your roles!`,
-            ephemeral: true
+            content:
+                `🔗 **Link your TechPlay account**\n\n` +
+                `Open [your settings](https://techplay.gg/settings?section=connections) and press **Connect Discord**. Then run \`/sync\` here.\n\n` +
+                `**What linking gets you**\n` +
+                `• Your rank role in this server, kept current as you climb\n` +
+                `• XP for talking here, counted toward the same ladder as the site\n` +
+                `• \`/profile\`, \`/library\` and \`/match\` start answering about you\n` +
+                `• Whatever you are playing shows on your profile automatically`,
+            flags: MessageFlags.Ephemeral,
         });
     }
 
     public async handleSyncCommand(interaction: CommandInteraction) {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-        const discordId = interaction.user.id;
-        const data = await this.api.getUserByDiscordId(discordId);
+        const data = await this.api.getUserByDiscordId(interaction.user.id);
 
-        if (data && data.user) {
-            const user = data.user;
-            const rankName = user.rank;
-
-            // Assign Rank roles
-            await this.syncRoles(interaction.member as GuildMember, rankName);
-
-            // Assign Achievement roles
-            if (data.achievements && Array.isArray(data.achievements)) {
-                for (const achievement of data.achievements) {
-                    await this.syncRoleByName(interaction.member as GuildMember, achievement);
-                }
-            }
-
-            await interaction.editReply(`✅ **Synced!**\nConnected to: **${user.name}** (@${user.username})\nRank: **${rankName}**\nXP: **${user.xp}**`);
-        } else {
+        if (!data || !data.user) {
             await interaction.editReply({
-                content: `❌ **Not Linked!**\nWe couldn't find a TechPlay account connected to this Discord ID.\n\nPlease go to [TechPlay Profile Settings](https://techplay.gg/settings) and connect your Discord account.`
+                content:
+                    `❌ **Not linked yet.**\n\n` +
+                    `Open [your settings](https://techplay.gg/settings?section=connections) and press **Connect Discord**, then run \`/sync\` again.`,
             });
+            return;
         }
+
+        const user = data.user;
+        const member = interaction.member as GuildMember;
+        const result = await this.syncRankRole(member, user.rank);
+
+        const lines = [
+            `✅ **Synced** — ${user.name} (@${user.username})`,
+            `Rank **${user.rank}** · ${Number(user.xp).toLocaleString()} XP · Level ${user.level}`,
+        ];
+
+        if (result === 'assigned') lines.push(`Role **${user.rank}** is yours.`);
+        // A rung with no role in this server is worth saying out loud: silence
+        // here is what hid the broken map for months.
+        if (result === 'missing') lines.push(`⚠️ There is no **${user.rank}** role in this server yet — ask a moderator to add one.`);
+
+        await interaction.editReply({ content: lines.join('\n') });
     }
 
-    private async syncRoles(member: GuildMember, rankName: string) {
-        if (!rankName) return;
+    /**
+     * Give the member the role for their rank, and take away the ones for
+     * rungs they have passed or not reached.
+     *
+     * Only roles named in the ladder are touched. Somebody's Booster, staff or
+     * ping roles are none of this method's business.
+     */
+    private async syncRankRole(member: GuildMember, rankName: string): Promise<'assigned' | 'missing' | 'skipped'> {
+        if (!member || !rankName) return 'skipped';
 
-        const roleName = this.rankRoleMap[rankName];
-        if (!roleName) return;
+        const ladder = await this.ladderNames();
+        if (ladder.length === 0) return 'skipped';
 
-        await this.syncRoleByName(member, roleName);
-    }
+        const managed = new Set(ladder.map(n => n.toLowerCase()));
+        const wanted = rankName.toLowerCase();
 
-    private async syncRoleByName(member: GuildMember, roleName: string) {
-        // Find role in guild
-        const role = member.guild.roles.cache.find(r => r.name.toLowerCase() === roleName.toLowerCase());
+        const stale = member.roles.cache.filter(
+            (r: Role) => managed.has(r.name.toLowerCase()) && r.name.toLowerCase() !== wanted,
+        );
 
-        if (role) {
+        for (const role of stale.values()) {
             try {
-                // Check if user already has it
-                if (!member.roles.cache.has(role.id)) {
-                    await member.roles.add(role);
-                    console.log(`Assigned role ${roleName} to ${member.user.tag}`);
-                }
-            } catch (error) {
-                console.error(`Failed to assign role ${roleName}:`, error);
+                await member.roles.remove(role);
+            } catch {
+                // A role above the bot in the hierarchy cannot be removed.
+                // Not fatal, and not worth failing the whole sync over.
             }
         }
+
+        const role = member.guild.roles.cache.find(r => r.name.toLowerCase() === wanted);
+
+        if (!role) return 'missing';
+
+        if (member.roles.cache.has(role.id)) return 'assigned';
+
+        try {
+            await member.roles.add(role);
+            return 'assigned';
+        } catch (error) {
+            console.error(`[LinkService] could not assign ${rankName}:`, error);
+            return 'missing';
+        }
+    }
+
+    /** The ladder, fetched once per process. It changes about once a year. */
+    private async ladderNames(): Promise<string[]> {
+        if (LinkService.ladder) return LinkService.ladder;
+
+        const ranks = await this.api.getRanks();
+
+        if (ranks.length > 0) {
+            LinkService.ladder = ranks.map(r => r.name);
+        }
+
+        return LinkService.ladder ?? [];
     }
 }

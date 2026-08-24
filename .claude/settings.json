@@ -23,7 +23,19 @@
       "Bash(node \"C:/Users/adize/AppData/Local/Temp/runner2.js\")",
       "Bash(node \"C:/Users/adize/AppData/Local/Temp/runner3.js\")",
       "Bash(node \"C:/Users/adize/AppData/Local/Temp/runner4.js\")",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(grep -oE \"\\\\`?/[a-z0-9/_{}\\\\$-]+\\\\`?\" src/services/ApiService.ts)",
+      "Bash(grep -vE \"^/\\\\*|^//\")",
+      "Bash(awk '{print $1, $2}')",
+      "Bash(python -c ' *)",
+      "Bash(grep -rnE \"'[0-9]{17,20}'\" src/)",
+      "Bash(curl -s \"https://opentdb.com/api_category.php\")",
+      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/rm_trivia.py\")",
+      "Bash(vendor/bin/pint app/Services/XpService.php app/Http/Controllers/Api/V1/DiscordXpController.php)",
+      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/profile_embed.py\")",
+      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/new_cmds.py\")",
+      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/new_handlers.py\")",
+      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/roles_cmd.py\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\.claude\\plans",

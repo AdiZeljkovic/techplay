@@ -3,28 +3,33 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Rank;
 use App\Models\User;
-use App\Services\AchievementService;
+use App\Services\XpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class DiscordXpController extends Controller
 {
-    protected AchievementService $achievements;
-
-    public function __construct(AchievementService $achievements)
-    {
-        $this->achievements = $achievements;
-    }
+    public function __construct(protected XpService $xp) {}
 
     /**
-     * Handle XP updates from Discord Bot.
-     * Expects: { "discord_id": "123", "xp": 15, "username": "optional_fallback" }
+     * XP earned by talking in the Discord server.
+     *
+     * This used to be its own little economy. It incremented `users.xp`
+     * directly — past `XpService`, and therefore past the site's 100-a-day
+     * cap, past the season multiplier, past the reward ledger. The only limit
+     * was 100 per request, and the bot pays 15 a message on a 60-second
+     * cooldown: 900 an hour, 21,600 a day if somebody keeps talking. Against
+     * a comment on the site worth 10 and a finished game worth 15, chat
+     * outpaid everything else on the platform by two orders of magnitude —
+     * and XP is the one ladder the profile now measures standing by.
+     *
+     * So it goes through the same door as every other award. The cap, the
+     * multiplier, the rank check and the achievement check are all one
+     * implementation now, and Discord is simply another action type.
      */
     public function addXp(Request $request)
     {
-        // SECURITY: Verify bot token - REQUIRED for production
         $botSecret = config('services.discord.bot_secret');
         if (! $botSecret || ! hash_equals($botSecret, (string) $request->header('X-Discord-Bot-Token'))) {
             Log::warning('Discord XP: Unauthorized request', [
@@ -38,8 +43,7 @@ class DiscordXpController extends Controller
         $discordId = $request->input('discord_id');
         $xpAmount = (int) $request->input('xp', 0);
 
-        // Validate: discord_id required, xp must be positive and reasonable (max 100 per request)
-        if (! $discordId || $xpAmount <= 0 || $xpAmount > 100) {
+        if (! $discordId || $xpAmount <= 0 || $xpAmount > XpService::XP_DISCORD_MESSAGE) {
             return response()->json(['message' => 'Invalid data'], 400);
         }
 
@@ -49,35 +53,28 @@ class DiscordXpController extends Controller
             return response()->json(['message' => 'User not linked'], 404);
         }
 
-        // Add XP
-        $oldXp = $user->xp;
-        $user->increment('xp', $xpAmount);
-        $user->refresh(); // Refresh to get updated xp value
+        $before = (int) $user->xp;
+        $beforeRank = $user->rank_id;
 
-        // Check for Rank Up
-        $newRank = Rank::where('min_xp', '<=', $user->xp)
-            ->orderBy('min_xp', 'desc')
-            ->first();
+        $this->xp->awardXp($user, $xpAmount, 'discord_message');
 
-        $rankUp = false;
-        if ($newRank && $newRank->id !== $user->rank_id) {
-            $user->update(['rank_id' => $newRank->id]);
-            $rankUp = true;
-        }
+        $user->refresh();
 
-        // Check for XP-based achievements
-        $unlockedAchievements = $this->achievements->checkXpAchievements($user);
+        $awarded = (int) $user->xp - $before;
+        $rankUp = $user->rank_id !== $beforeRank;
 
         return response()->json([
-            'message' => 'XP Added',
-            'new_xp' => $user->xp,
+            'message' => $awarded > 0 ? 'XP Added' : 'Daily cap reached',
+            // What actually landed, not what was asked for — the cap and the
+            // season multiplier both move it, and the bot announces this
+            // number to a channel.
+            'xp_awarded' => $awarded,
+            'new_xp' => (int) $user->xp,
             'rank_up' => $rankUp,
-            'new_rank' => $rankUp ? $newRank->name : null,
-            'achievements_unlocked' => array_map(fn ($a) => [
-                'name' => $a->name,
-                'description' => $a->description,
-                'icon' => $a->versionedIconPath(),
-            ], $unlockedAchievements),
+            'new_rank' => $rankUp ? $user->fresh('rank')->rank?->name : null,
+            // Achievements are checked inside awardXp now; the bot reads them
+            // from the profile rather than from this reply.
+            'achievements_unlocked' => [],
         ]);
     }
 }

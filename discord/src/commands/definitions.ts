@@ -43,15 +43,56 @@ export const commands = [
         options: [
             {
                 name: 'name',
-                description: 'Game name to search for',
+                description: 'Start typing — the catalogue suggests as you go',
                 type: ApplicationCommandOptionType.String,
+                required: true,
+                // 332,000 games. Typing a title blind and hoping for an exact
+                // match is not a search, it is a guess.
+                autocomplete: true,
+            }
+        ]
+    },
+    {
+        name: 'library',
+        description: '📚 See a shelf — yours, or someone else\'s',
+        options: [
+            {
+                name: 'user',
+                description: 'Whose shelf (leave empty for yours)',
+                type: ApplicationCommandOptionType.User,
+                required: false,
+            },
+            {
+                name: 'status',
+                description: 'Narrow it down',
+                type: ApplicationCommandOptionType.String,
+                required: false,
+                choices: [
+                    { name: 'Playing', value: 'playing' },
+                    { name: 'Played', value: 'played' },
+                    { name: 'Backlog', value: 'backlog' },
+                    { name: 'Completed', value: 'completed' },
+                    { name: 'Wishlist', value: 'wishlist' },
+                    { name: 'Dropped', value: 'dropped' },
+                ],
+            }
+        ]
+    },
+    {
+        name: 'match',
+        description: '🤝 How much your taste overlaps with someone else\'s',
+        options: [
+            {
+                name: 'user',
+                description: 'Who to compare with',
+                type: ApplicationCommandOptionType.User,
                 required: true,
             }
         ]
     },
     {
-        name: 'trivia',
-        description: '🧠 Start a tech trivia question (win XP!)',
+        name: 'backlog',
+        description: '🎯 Three things to play next, out of what you already own',
     },
     {
         name: 'daily',
@@ -131,18 +172,6 @@ export const commands = [
         ]
     },
     {
-        name: 'challenge',
-        description: '⚔️ Challenge another user to a trivia duel',
-        options: [
-            {
-                name: 'user',
-                description: 'The user to challenge',
-                type: ApplicationCommandOptionType.User,
-                required: true,
-            }
-        ]
-    },
-    {
         name: 'admin',
         description: '⚙️ Admin tools for TechPlay',
         default_member_permissions: PermissionFlagsBits.Administrator.toString(),
@@ -156,6 +185,19 @@ export const commands = [
                 name: 'recap',
                 description: 'Manually trigger the weekly recap post',
                 type: ApplicationCommandOptionType.Subcommand,
+            },
+            {
+                name: 'roles',
+                description: 'Line the rank roles up with the ladder',
+                type: ApplicationCommandOptionType.Subcommand,
+                options: [
+                    {
+                        name: 'apply',
+                        description: 'Actually make the changes (default: just show them)',
+                        type: ApplicationCommandOptionType.Boolean,
+                        required: false,
+                    }
+                ]
             },
             {
                 name: 'xp',

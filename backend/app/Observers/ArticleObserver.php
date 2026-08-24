@@ -11,6 +11,7 @@ use App\Notifications\WishlistGameReviewedNotification;
 use App\Services\BountyService;
 use App\Services\CacheService;
 use App\Services\ContentGameLinker;
+use App\Services\DiscordAnnouncer;
 use App\Services\QuestService;
 use App\Services\RevalidationService;
 use App\Services\SanitizationService;
@@ -109,6 +110,12 @@ class ArticleObserver
 
         $this->regenerateNewsSitemap();
         $this->pingSearchEngines($article->slug, $categoryPath);
+
+        // The Discord bot polled four feeds every minute to notice this — a
+        // request every fifteen seconds, all day, to catch a handful of
+        // publishes. It is told directly now; the poll stayed as the net that
+        // catches whatever this knock misses.
+        app(DiscordAnnouncer::class)->published($article, $this->discordFeed($article->category->type ?? null));
 
         // Notify wishlisted users when a review is published.
         if ($article->game_id && $article->review_score && in_array($article->category->type, ['review', 'reviews'])) {
@@ -235,6 +242,24 @@ class ArticleObserver
             'guide' => 'guides',
             'guides' => 'guides',
             default => null,
+        };
+    }
+
+    /**
+     * Which of the bot's four feeds an article belongs to.
+     *
+     * Deliberately not getCategoryPath(): that answers with a URL segment, and
+     * tech articles live under /hardware while the feed that carries them is
+     * called `tech`. Two questions, two answers.
+     */
+    protected function discordFeed(?string $categoryType): string
+    {
+        return match ($categoryType) {
+            'news' => 'news',
+            'review', 'reviews' => 'reviews',
+            'tech', 'hardware' => 'tech',
+            'guide', 'guides' => 'guides',
+            default => '',
         };
     }
 

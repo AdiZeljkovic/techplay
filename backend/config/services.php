@@ -104,6 +104,9 @@ return [
     ],
 
     'discord' => [
+        // Where the bot listens for a publish. Localhost — it runs on this
+        // machine, so this never crosses the network.
+        'publish_url' => env('DISCORD_PUBLISH_URL', 'http://127.0.0.1:8099/publish'),
         'client_id' => env('DISCORD_CLIENT_ID'),
         'client_secret' => env('DISCORD_CLIENT_SECRET'),
         // Must be the API callback route, and must match the redirect URI

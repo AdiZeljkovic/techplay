@@ -203,3 +203,31 @@ npm run dev    # ts-node src/index.ts
 npm run build  # tsc
 npm start      # node dist/index.js
 ```
+
+
+---
+
+## Obnova 24.08.2026 — bot je stigao u današnji TechPlay
+
+Bot je napisan u januaru 2026, kad je TechPlay bio portal s vijestima i rank ljestvicom. Sve ispod je izmjereno prije nego dirano.
+
+### Uklonjeno
+- **`/trivia` i `/challenge`** — `TriviaService` i `ChallengeService` obrisani. `/trivia` je vukao opentdb kategoriju **18 = Science: Computers** (dueli su koristili 15 = Video Games), pitanja o HTML-u na gaming serveru.
+
+### Popravljeno
+- **XP ekonomija.** `DiscordXpController` je radio `$user->increment('xp')` direktno — mimo `XpService`, dakle mimo dnevnog limita od 100, mimo sezonskog množioca i ledgera. Jedina granica bila je 100 po zahtjevu; bot plaća 15 po poruci sa 60 s pauze = **900/sat, 21.600/dan**. Sad ide kroz `XpService` s tipom akcije `discord_message`, ceiling je `XP_DISCORD_MESSAGE` (15), i odgovor vraća **koliko je stvarno palo** (`xp_awarded`), jer bot taj broj objavljuje u kanal.
+- **Rank → rola.** `LinkService` je imao ručnu mapu od pet imena (Newbie, Gamer, Pro Gamer, Elite, Legend); „Gamer" i „Pro Gamer" nikad nisu postojali u `ranks`, a Noob/Newbie su penzionisani 24.08. Mapa se sada gradi iz **`GET /discord/ranks`**. `/sync` uz to **skida** role za rangove koje si prošao i javlja kad rola za tvoj rang ne postoji u serveru — tišina je ono što je krilo pokvarenu mapu.
+- **`ephemeral: true` → `MessageFlags.Ephemeral`** na 12 mjesta (deprecirano, puca u discord.js v15).
+
+### Novo
+- **`GET /discord/ranks`** — ljestvica, da mapa rola ima jedan izvor.
+- **`GET /discord/user/{id}`** proširen: player card (sati, span, najigranija, platformski achievementi), brojači police, level, sljedeći rang, `profile_url`. Ranije je vraćao četiri polja.
+- **`DiscordLibraryController`**: `/discord/library/{id}`, `/discord/match/{id}/{other}`, `/discord/backlog/{id}`. Svaki odbija privatan profil.
+- **Komande:** `/library`, `/match`, `/backlog`; `/game` dobio **autocomplete** (katalog od 332.000 naslova se do sada kucao naslijepo).
+- **`/profile`** crta player card umjesto Rank/XP/Position/Progress iz januara.
+- **Push umjesto ankete.** `PublishListener` sluša na **127.0.0.1:8099**, `ArticleObserver` ga kucne preko `DiscordAnnouncer` na objavu. Anketa je ostala kao mreža, interval 60 s → 600 s: **5.760 → 576 zahtjeva dnevno**.
+- **`createNotLinkedEmbed`** vodi s tim **šta povezivanje donosi**, ne s tim da red u bazi ne postoji. Od 153 člana servera nijedan nije bio povezan — ne zato što je teško, nego što nigdje nije pisalo čemu služi.
+
+### Ostalo neriješeno
+- Role u serveru su i dalje stara ljestvica s tipfelerima: `Rokie`, `Challener`, `Legendary`, `Global Elite`, `God Of Gaming`, `Noob`, `Newbie`; `Apex` ne postoji. `/sync` sada **kaže** kad rola fali, ali ih ne pravi — preimenovanje je ručni posao u Discordu.
+- `RECAP_CHANNEL_ID` nije postavljen, pa `RecapService` nema gdje pisati.
