@@ -1,0 +1,240 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+/**
+ * An Epic library, through the launcher's own door.
+ *
+ * Epic Account Services — the OAuth a website is invited to use — offers four
+ * scopes: `basic_profile`, `friends_list`, `presence` and `offline_access`.
+ * None of them returns what somebody owns. There is no entitlements scope, no
+ * developer programme that grants one, and no public catalogue of a person's
+ * library. Checked against Epic's own documentation before this was written.
+ *
+ * So this is the flow Legendary and Heroic use: the Epic Games Launcher's own
+ * client credentials, published in every one of those projects, and a code the
+ * reader fetches from Epic while signed in. The same trade already made twice
+ * on this site — Sony's mobile app for PlayStation, Galaxy's client for GOG —
+ * made a third time, deliberately, and behind a flag that turns it off without
+ * a deploy.
+ *
+ * Verified live before a line of this shipped: the redirect page answers 200,
+ * the token endpoint accepts these credentials and rejects only a bad code
+ * (`authorization_code_not_found`), and the library service answers 401
+ * without a token. Everything below therefore fails soft and says which half
+ * broke.
+ *
+ * What Epic gives is a list and a name. No playtime — Epic keeps none a third
+ * party may read — no last-played date, and no achievements outside EOS. So an
+ * Epic import fills the shelf and writes no measurement it did not make.
+ */
+class EpicService
+{
+    /** The Epic Games Launcher's own client. Public knowledge, not a secret of ours. */
+    private const CLIENT_ID = '34a02cf8f4414e29b15921876da36f9a';
+
+    private const CLIENT_SECRET = 'daafbccc737745039dffe53d94fc76cf';
+
+    private const OAUTH_BASE = 'https://account-public-service-prod03.ol.epicgames.com/account/api/oauth';
+
+    private const LAUNCHER_BASE = 'https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/public';
+
+    private const CATALOG_BASE = 'https://catalog-public-service-prod06.ol.epicgames.com/catalog/api/shared';
+
+    /**
+     * Epic answers this with a JSON `authorizationCode` for whoever is signed
+     * in. Handed to the frontend so the URL lives in exactly one place.
+     */
+    public const CODE_URL = 'https://www.epicgames.com/id/api/redirect?clientId='.self::CLIENT_ID.'&responseType=code';
+
+    /** The launcher's user agent. Epic's services are choosier without it. */
+    private const USER_AGENT = 'UELauncher/11.0.1-14907503+++Portal+Release-Live Windows/10.0.19041.1.256.64bit';
+
+    public function enabled(): bool
+    {
+        return (bool) config('services.epic.enabled', false);
+    }
+
+    /**
+     * @return array{access_token:string, refresh_token:?string, expires_in:int, account_id:?string, display_name:?string}|null
+     */
+    public function exchangeCode(string $code): ?array
+    {
+        return $this->token(['grant_type' => 'authorization_code', 'code' => $code]);
+    }
+
+    /**
+     * @return array{access_token:string, refresh_token:?string, expires_in:int, account_id:?string, display_name:?string}|null
+     */
+    public function refresh(string $refreshToken): ?array
+    {
+        return $this->token(['grant_type' => 'refresh_token', 'refresh_token' => $refreshToken]);
+    }
+
+    /**
+     * Everything the account owns on Windows, or null when Epic refuses.
+     *
+     * Null and an empty list are different answers and the caller must be able
+     * to tell them apart — the Steam import learned that the hard way, where a
+     * withheld library and an empty one arrived identically and the reader was
+     * told "Synced" over an empty shelf.
+     *
+     * The list is artifacts, not games: engine builds, plugins and DLC come
+     * back alongside them. Sorting that out needs the catalogue, so it happens
+     * in titlesFor() rather than here.
+     *
+     * @return array<int,array{appName:string,namespace:string,catalogItemId:string}>|null
+     */
+    public function ownedArtifacts(string $accessToken): ?array
+    {
+        $response = $this->client($accessToken)->get(self::LAUNCHER_BASE.'/assets/Windows');
+
+        if (! $response->successful()) {
+            $this->note('assets refused', ['status' => $response->status()]);
+
+            return null;
+        }
+
+        $records = $response->json();
+
+        if (! is_array($records)) {
+            $this->note('assets came back in an unfamiliar shape');
+
+            return null;
+        }
+
+        $out = [];
+
+        foreach ($records as $record) {
+            if (empty($record['namespace']) || empty($record['catalogItemId'])) {
+                continue;
+            }
+
+            $out[] = [
+                'appName' => (string) ($record['appName'] ?? ''),
+                'namespace' => (string) $record['namespace'],
+                'catalogItemId' => (string) $record['catalogItemId'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Artifacts to game titles.
+     *
+     * The catalogue is asked per namespace and takes several ids at once, so a
+     * library costs roughly one call per publisher rather than one per item.
+     * Only entries the catalogue files under `games` survive: Epic hands back
+     * engine builds, plugins, soundtracks and DLC in the same list, and a
+     * shelf is games.
+     *
+     * @param  array<int,array{appName:string,namespace:string,catalogItemId:string}>  $artifacts
+     * @return array<int,array{id:string,title:string}>
+     */
+    public function titlesFor(string $accessToken, array $artifacts): array
+    {
+        $byNamespace = [];
+
+        foreach ($artifacts as $artifact) {
+            $byNamespace[$artifact['namespace']][] = $artifact['catalogItemId'];
+        }
+
+        $titles = [];
+
+        foreach ($byNamespace as $namespace => $ids) {
+            foreach (array_chunk(array_unique($ids), 30) as $batch) {
+                $response = $this->client($accessToken)->get(
+                    self::CATALOG_BASE.'/namespace/'.rawurlencode($namespace).'/bulk/items',
+                    ['id' => $batch, 'country' => 'US', 'locale' => 'en', 'includeDLCDetails' => 'false'],
+                );
+
+                if (! $response->successful()) {
+                    $this->note('catalogue lookup failed', ['namespace' => $namespace, 'status' => $response->status()]);
+
+                    continue;
+                }
+
+                foreach ((array) $response->json() as $id => $item) {
+                    if (! $this->isGame($item)) {
+                        continue;
+                    }
+
+                    $titles[] = ['id' => (string) $id, 'title' => (string) $item['title']];
+                }
+            }
+        }
+
+        return $titles;
+    }
+
+    /**
+     * Is this catalogue entry a game somebody plays?
+     *
+     * Two tells, and both are needed. `categories` carries a `games` path for
+     * base games, and `mainGameItem` is present on anything that hangs off
+     * one — which is how a season pass and a soundtrack are told from the game
+     * they belong to.
+     */
+    private function isGame(mixed $item): bool
+    {
+        if (! is_array($item) || empty($item['title'])) {
+            return false;
+        }
+
+        if (! empty($item['mainGameItem'])) {
+            return false;
+        }
+
+        $paths = array_column((array) ($item['categories'] ?? []), 'path');
+
+        return in_array('games', $paths, true) && ! in_array('addons', $paths, true);
+    }
+
+    /**
+     * @param  array<string,string>  $grant
+     * @return array{access_token:string, refresh_token:?string, expires_in:int, account_id:?string, display_name:?string}|null
+     */
+    private function token(array $grant): ?array
+    {
+        $response = Http::asForm()
+            ->withBasicAuth(self::CLIENT_ID, self::CLIENT_SECRET)
+            ->withHeaders(['User-Agent' => self::USER_AGENT])
+            ->timeout(20)
+            ->retry(2, 1500, throw: false)
+            ->post(self::OAUTH_BASE.'/token', $grant);
+
+        if (! $response->successful() || ! $response->json('access_token')) {
+            $this->note('token exchange rejected', [
+                'status' => $response->status(),
+                'error' => $response->json('errorCode'),
+            ]);
+
+            return null;
+        }
+
+        return [
+            'access_token' => (string) $response->json('access_token'),
+            'refresh_token' => $response->json('refresh_token'),
+            'expires_in' => (int) ($response->json('expires_in') ?? 7200),
+            'account_id' => $response->json('account_id'),
+            'display_name' => $response->json('displayName'),
+        ];
+    }
+
+    private function client(string $accessToken)
+    {
+        return Http::withToken($accessToken)
+            ->withHeaders(['User-Agent' => self::USER_AGENT])
+            ->timeout(25)
+            ->retry(2, 1500, throw: false);
+    }
+
+    private function note(string $message, array $context = []): void
+    {
+        Log::info("Epic: {$message}", $context);
+    }
+}

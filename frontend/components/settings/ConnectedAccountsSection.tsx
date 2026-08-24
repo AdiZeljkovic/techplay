@@ -30,7 +30,7 @@ const PROVIDERS: {
     description: string;
     color: string;
     iconBg: string;
-    connectMode?: "redirect" | "gamertag" | "npsso" | "gogcode";
+    connectMode?: "redirect" | "gamertag" | "npsso" | "gogcode" | "epiccode";
     /** Said plainly on the card, because it is not obvious and it matters. */
     caveat?: string;
     logo: React.ReactNode;
@@ -73,6 +73,20 @@ const PROVIDERS: {
         logo: (
             <svg viewBox="0 0 24 24" className="w-6 h-6" fill="#5B8BF7" xmlns="http://www.w3.org/2000/svg">
                 <path d="M8.985 2.596v17.548l3.915 1.261V6.688c0-.69.304-1.151.794-.991.636.181.76.814.76 1.505v5.876c2.441 1.193 4.362-.002 4.362-3.153 0-3.237-1.126-4.675-4.438-5.827-1.307-.448-3.728-1.186-5.393-1.502zm4.656 16.242l6.296-2.275c.715-.258.826-.625.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.499v-2.385l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.06 1.472 1.588 2.072-.473.601-1.622 1.03-1.622 1.03l-8.536 3.079v-2.276zM1.807 18.867c-1.9-.535-2.213-1.65-1.348-2.29.802-.594 2.16-1.04 2.16-1.04l5.626-2.003v2.286l-4.05 1.45c-.715.257-.826.62-.246.813.586.192 1.637.14 2.352-.117l1.944-.705v2.045c-.124.02-.26.04-.386.06-1.939.318-4.004.187-6.052-.5z"/>
+            </svg>
+        ),
+    },
+    {
+        id: "epic",
+        name: "Epic Games",
+        description: "Import everything you own on the Epic Games Store",
+        color: "#2A2A2A",
+        iconBg: "#121212",
+        connectMode: "epiccode",
+        caveat: "Epic's sign-in for other sites cannot see what you own, so this needs a code you fetch yourself. Epic reports what you own and its name \u2014 no playtime, no achievements.",
+        logo: (
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="#E8E8E8" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.537 0C2.165 0 1.66.506 1.66 1.878v14.31c0 .2.007.376.02.52.014.144.027.27.06.4.022.12.062.238.11.352.04.115.105.223.195.323.09.106.2.203.325.293.13.09.28.175.45.256.17.08.36.16.57.24l7.99 3.34c.4.17.7.28.92.35.22.06.42.1.6.1.18 0 .38-.04.6-.1.22-.07.52-.18.92-.35l7.99-3.34c.21-.08.4-.16.57-.24.17-.08.32-.166.45-.256.125-.09.235-.187.325-.293.09-.1.155-.208.195-.323.048-.114.088-.232.11-.352.033-.13.046-.256.06-.4.013-.144.02-.32.02-.52V1.878C23.14.506 22.635 0 21.263 0zm12.95 4.25c1.126 0 2.056.33 2.783.99l-.94 1.32c-.55-.44-1.16-.66-1.83-.66-.66 0-1.2.24-1.63.71-.42.47-.63 1.08-.63 1.83v.02c0 .78.22 1.4.66 1.87.44.47 1.01.7 1.71.7.6 0 1.11-.15 1.53-.44v-1.05h-1.63V7.99h3.4v3.55c-.79.68-1.85 1.02-3.18 1.02-1.24 0-2.26-.38-3.06-1.15-.8-.77-1.2-1.75-1.2-2.95v-.02c0-1.17.4-2.15 1.2-2.94.8-.79 1.79-1.19 2.98-1.19zM6.16 4.4h4.87v1.64H7.94v1.5h2.74v1.63H7.94v1.55h3.13v1.64H6.16zm-1.74 10.13h.9v3.4h2.14v.83H4.42zm5.9 0h.83l1.84 4.23h-.94l-.39-.96h-1.86l-.39.96h-.92zm5.03 0h1.73c1.03 0 1.63.6 1.63 1.47v.01c0 .98-.77 1.5-1.72 1.5h-.71v1.25h-.93zm.93.83v1.32h.72c.47 0 .75-.28.75-.65v-.01c0-.42-.3-.65-.77-.65zm-5.53.15-.58 1.42h1.17z"/>
             </svg>
         ),
     },
@@ -149,6 +163,8 @@ export default function ConnectedAccountsSection() {
     const [npsso, setNpsso] = useState("");
     const [gogOpen, setGogOpen] = useState(false);
     const [gogCode, setGogCode] = useState("");
+    const [epicOpen, setEpicOpen] = useState(false);
+    const [epicCode, setEpicCode] = useState("");
     const [verifying, setVerifying] = useState<number | null>(null);
     const [verifyCode, setVerifyCode] = useState<string | null>(null);
 
@@ -168,6 +184,34 @@ export default function ConnectedAccountsSection() {
         } catch (err: unknown) {
             const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
             toast.error(message ?? "Couldn't connect to PlayStation.");
+        } finally {
+            setConnecting(null);
+        }
+    }
+
+    async function handleEpicConnect() {
+        const raw = epicCode.trim();
+
+        // Epic answers the link with a JSON body, so the likeliest paste is the
+        // whole thing rather than the value inside it. Take either.
+        const fromJson = raw.match(/"authorizationCode"\s*:\s*"([^"]+)"/);
+        const value = fromJson ? fromJson[1] : raw.replace(/^"|"$/g, "");
+
+        if (value.length < 10) {
+            toast.error("That doesn't look like an Epic code.");
+            return;
+        }
+
+        setConnecting("epic");
+        try {
+            const res = await axios.post("/connected-accounts/epic/connect", { code: value });
+            toast.success(res.data?.message ?? "Connected.");
+            setEpicOpen(false);
+            setEpicCode("");
+            mutate();
+        } catch (err: unknown) {
+            const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+            toast.error(message ?? "Couldn't connect to Epic.");
         } finally {
             setConnecting(null);
         }
@@ -404,6 +448,11 @@ export default function ConnectedAccountsSection() {
                                         Disconnect
                                     </button>
                                 </>
+                            ) : provider.connectMode === "epiccode" ? (
+                                <button onClick={() => setEpicOpen(true)}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
+                                    <Link2 className="w-3.5 h-3.5" /> Connect
+                                </button>
                             ) : provider.connectMode === "gogcode" ? (
                                 <button onClick={() => setGogOpen(true)}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
@@ -498,6 +547,56 @@ export default function ConnectedAccountsSection() {
                             className="flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60"
                         >
                             {connecting === "playstation" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
+                            Connect
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Epic: the code Epic hands out while you are signed in ── */}
+            {epicOpen && (
+                <div className="rounded-[var(--radius-card)] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[var(--surface-1)] p-4">
+                    <div className="flex items-start justify-between gap-3">
+                        <div>
+                            <p className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">Connect Epic Games</p>
+                            <p className="mt-2 text-[12px] text-white/45 leading-relaxed max-w-[560px]">
+                                Epic&apos;s sign-in for other sites can see your name and friends but not what you own, so this
+                                works the way the Epic launcher does. Sign in to Epic in this browser, then{" "}
+                                <a
+                                    href="https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[var(--accent)] hover:underline"
+                                >
+                                    open this page
+                                </a>{" "}
+                                — it answers with a short line of text. Paste the whole thing here.
+                            </p>
+                            <p className="mt-2 text-[11px] text-white/25 leading-relaxed max-w-[560px]">
+                                The code works once and expires in minutes. Epic tells us what you own and what it is called
+                                — no playtime, no achievements — so those games land on your shelf as backlog.
+                            </p>
+                        </div>
+                        <button onClick={() => { setEpicOpen(false); setEpicCode(""); }} className="text-white/30 hover:text-white transition-colors">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                        <input
+                            autoFocus
+                            value={epicCode}
+                            onChange={(e) => setEpicCode(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") handleEpicConnect(); }}
+                            placeholder="Paste what that page returned"
+                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                        />
+                        <button
+                            onClick={handleEpicConnect}
+                            disabled={connecting === "epic"}
+                            className="flex items-center gap-1.5 h-10 px-4 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60"
+                        >
+                            {connecting === "epic" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2 className="w-3.5 h-3.5" />}
                             Connect
                         </button>
                     </div>

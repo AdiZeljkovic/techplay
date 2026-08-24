@@ -65,19 +65,17 @@ const SHELF_GRID = "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-
 /**
  * Launchers a reader has to name themselves.
  *
- * Steam, Xbox, PlayStation and GOG import their own libraries and stamp their
- * own provenance. These four cannot: Epic's OAuth offers profile, friends and
- * presence and no scope for entitlements; Ubisoft publishes no third-party API
- * at all; Battle.net's scopes are per-game profiles with no notion of a
- * library; EA has nothing public either. Every tool that reads those libraries
- * authenticates as the launcher itself with the reader's own credentials,
- * which is not something to ask anybody for.
+ * Steam, Xbox, PlayStation, GOG and Epic import their own libraries and stamp
+ * their own provenance. These cannot: Ubisoft publishes no third-party API at
+ * all; Battle.net's scopes are per-game profiles with no notion of a library —
+ * the OAuth we already have there syncs WoW characters, because that is all
+ * Blizzard exposes; EA has nothing public either.
  *
  * So the honest answer is a field. Free text underneath — somebody's shelf may
  * hold a Switch cartridge or a GameCube disc, and no list we write will
  * anticipate that.
  */
-const UNIMPORTABLE_LAUNCHERS = ["Epic Games", "Ubisoft Connect", "Battle.net", "EA app", "Nintendo", "PC", "Itch.io"];
+const UNIMPORTABLE_LAUNCHERS = ["Ubisoft Connect", "Battle.net", "EA app", "Nintendo", "PC", "Itch.io"];
 
 /** Holds a value still until it stops changing — one request per word, not per key. */
 function useDebounced<T>(value: T, ms: number): T {
@@ -1057,7 +1055,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                             list="tp-launchers"
                             value={platform}
                             onChange={(e) => setPlatform(e.target.value)}
-                            placeholder="Epic Games, Ubisoft Connect, Switch…"
+                            placeholder="Ubisoft Connect, Battle.net, Switch…"
                             className="w-full bg-white/[0.04] border border-white/[0.1] rounded-[8px] px-3 h-9 text-[12.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
                         />
                         <datalist id="tp-launchers">

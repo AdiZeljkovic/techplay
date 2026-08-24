@@ -329,6 +329,9 @@ Route::prefix('v1')->group(function () {
             // GOG has no consent screen either — the reader pastes the `code`
             // out of the address bar after signing in on GOG's own page.
             Route::middleware('throttle:6,1')->post('/gog/connect', [ConnectedAccountController::class, 'gogConnect']);
+            // Epic offers no entitlements scope, so the reader pastes the code
+            // Epic hands them while signed in.
+            Route::middleware('throttle:6,1')->post('/epic/connect', [ConnectedAccountController::class, 'epicConnect']);
             Route::post('/{id}/sync', [ConnectedAccountController::class, 'sync']);
             Route::patch('/{id}/visibility', [ConnectedAccountController::class, 'visibility']);
             Route::delete('/{id}', [ConnectedAccountController::class, 'destroy']);

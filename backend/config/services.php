@@ -173,6 +173,13 @@ return [
         'api_key' => env('RAWG_API_KEY'),
     ],
 
+    'epic' => [
+        // Same switch, same reason. Epic Account Services has no entitlements
+        // scope, so the import uses the launcher's own flow and can stop
+        // working without notice. Off unless switched on.
+        'enabled' => env('EPIC_ENABLED', false),
+    ],
+
     'gog' => [
         // Same switch, same reason as PSN below it: GOG has no third-party
         // OAuth programme, so the integration uses the flow the Galaxy client

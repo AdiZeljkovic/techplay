@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncEpicLibrary;
 use App\Jobs\SyncGogLibrary;
 use App\Jobs\SyncPlayStationLibrary;
 use App\Jobs\SyncSteamLibrary;
@@ -10,6 +11,7 @@ use App\Jobs\SyncXboxLibrary;
 use App\Models\ConnectedAccount;
 use App\Models\User;
 use App\Services\AchievementService;
+use App\Services\EpicService;
 use App\Services\FunnelAnalytics;
 use App\Services\GogService;
 use App\Services\OpenXblService;
@@ -279,6 +281,73 @@ class ConnectedAccountController extends Controller
         return $this->success(
             ['online_id' => $profile['online_id']],
             "Connected as {$profile['online_id']} — importing your trophies now."
+        );
+    }
+
+    /**
+     * POST /connected-accounts/epic/connect — a code Epic hands out to whoever
+     * is signed in.
+     *
+     * Epic Account Services, the OAuth a website may use, has no entitlements
+     * scope — checked against Epic's own docs. So this is the launcher's flow,
+     * the way Legendary and Heroic do it: the reader opens a page Epic answers
+     * with a JSON authorizationCode and pastes it here.
+     */
+    public function epicConnect(Request $request, EpicService $epic): JsonResponse
+    {
+        if (! $epic->enabled()) {
+            return $this->error('Epic linking is switched off right now.', 503);
+        }
+
+        $data = $request->validate([
+            'code' => 'required|string|min:10|max:256',
+        ]);
+
+        $tokens = $epic->exchangeCode(trim($data['code']));
+
+        if (! $tokens) {
+            return $this->error(
+                "That code didn't work. Epic's codes are single-use and expire in minutes — open the link again and copy a fresh one.",
+                422,
+            );
+        }
+
+        if (! $tokens['account_id']) {
+            return $this->error("Signed in, but Epic didn't say who you are. Try again in a minute.", 502);
+        }
+
+        $takenByAnother = ConnectedAccount::where('provider', 'epic')
+            ->where('provider_user_id', $tokens['account_id'])
+            ->where('user_id', '!=', $request->user()->id)
+            ->exists();
+
+        if ($takenByAnother) {
+            return $this->error('That Epic account is already linked to another TechPlay account.', 409);
+        }
+
+        $account = ConnectedAccount::updateOrCreate(
+            ['user_id' => $request->user()->id, 'provider' => 'epic'],
+            [
+                'provider_user_id' => $tokens['account_id'],
+                'display_name' => $tokens['display_name'],
+                'access_token' => $tokens['access_token'],
+                'refresh_token' => $tokens['refresh_token'],
+                'token_expires_at' => now()->addSeconds($tokens['expires_in']),
+                'sync_status' => 'pending',
+                'visibility' => 'public',
+            ]
+        );
+
+        SyncEpicLibrary::dispatch($account->id)->onQueue('default');
+
+        try {
+            app(AchievementService::class)->check($request->user(), ['connected_accounts']);
+        } catch (\Throwable) {
+        }
+
+        return $this->success(
+            ['display_name' => $tokens['display_name']],
+            'Connected — importing your Epic library now.',
         );
     }
 

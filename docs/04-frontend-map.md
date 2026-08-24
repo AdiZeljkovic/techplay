@@ -202,9 +202,12 @@ Izmjereno prije izmjene: od 53 naloga 51 je `public`, biblioteku ima **jedan** (
 | Xbox | ✅ | zadnje igrano, progres %, completed iz 100%, gamerscore — **bez sati** (Microsoft ih ne izlaže) |
 | PlayStation | ✅ (upaljen 24.08.) | igre s trofejima, progres — bez sati |
 | GOG | ✅ (novo) | **samo šta posjeduješ** — bez sati, bez datuma, bez achievementa; sve ulazi kao `backlog` |
-| Epic / Ubisoft / Battle.net / EA | ❌ nemoguće | vidi dolje |
+| Epic Games | ✅ (novo) | **samo šta posjeduješ** + ime — bez sati, datuma i achievementa; sve ulazi kao `backlog` |
+| Ubisoft / Battle.net / EA | ❌ | vidi dolje |
 
-**Zašto Epic, Ubisoft i Battle.net ne mogu.** Epic Account Services ima tačno četiri scope-a — `basic_profile`, `friends_list`, `presence`, `offline_access` — i nijedan ne daje entitlements. Ubisoft nema javni API uopšte. Battle.net ima `openid`, `wow.profile`, `sc2.profile`, `d3.profile`; pojam „biblioteka" kod njih ne postoji (BattleNetAuthController koji imamo sinhronizuje WoW likove, ne igre). Sve što to ipak čita autentifikuje se **kao njihov launcher** s korisničkim kredencijalima — ne tražimo to od čitalaca. Umjesto toga, `AddGameModal` sad ima polje **Platform** s `datalist` prijedlozima (Epic Games, Ubisoft Connect, Battle.net, EA app, Nintendo, PC, Itch.io) i slobodnim unosom.
+**Epic ide istim putem kao PSN i GOG.** Epic Account Services — OAuth koji sajt smije koristiti — ima tačno četiri scope-a (`basic_profile`, `friends_list`, `presence`, `offline_access`) i nijedan ne vraća šta neko posjeduje. Zato `EpicService` koristi tok Epic Games Launchera (kredencijali javni u Legendary/Heroic): korisnik otvori Epicov `/id/api/redirect`, dobije `authorizationCode` i zalijepi ga. Provjereno uživo prije pisanja — redirect 200, token endpoint prihvata kredencijale i odbija samo kod, library servis 401 bez tokena. Epicova lista su **artefakti**, ne igre: engine buildovi, pluginovi, soundtrackovi i DLC stižu u istom nizu, pa katalog odlučuje šta je igra (`categories` sadrži `games`, a `mainGameItem` prazan). Iza `EPIC_ENABLED`.
+
+**Zašto Ubisoft i Battle.net i dalje ne mogu.** Ubisoft nema javni API uopšte. Battle.net ima `openid`, `wow.profile`, `sc2.profile`, `d3.profile`; pojam „biblioteka" kod njih ne postoji (BattleNetAuthController koji imamo sinhronizuje WoW likove, ne igre). Sve što to ipak čita autentifikuje se **kao njihov launcher** s korisničkim kredencijalima — ne tražimo to od čitalaca. Za njih `AddGameModal` ima polje **Platform** s `datalist` prijedlozima (Ubisoft Connect, Battle.net, EA app, Nintendo, PC, Itch.io) i slobodnim unosom.
 
 **GOG ide istim putem kao PSN**: nema OAuth programa za treće strane, pa se koristi tok koji koristi GOG Galaxy klijent — čitalac se prijavi na GOG-ovoj stranici i zalijepi `code` iz adresne trake. `GogService` nosi Galaxyjev client_id (javan, u svakom open-source GOG alatu), a cijela integracija je iza `GOG_ENABLED` prekidača kao i PSN.
 
