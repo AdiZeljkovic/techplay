@@ -37,8 +37,18 @@ export class ContentUnavailable extends Error {
     }
 }
 
-/** Gone for good — the caller should render a 404. */
-const MEANS_MISSING = [404, 410];
+/**
+ * Nothing here for this reader — the caller should render a 404.
+ *
+ * 403 belongs with the other two. It used to fall through to the throw below
+ * and surface as a 500, so a list somebody had set to private answered with a
+ * server error page: a crash, on a page that was working exactly as intended.
+ *
+ * And a 404 is the better answer anyway. Telling a stranger "this exists but
+ * you may not see it" confirms that it exists, which is half of what was
+ * being kept from them.
+ */
+const MEANS_MISSING = [403, 404, 410];
 
 /** One retry, after a short pause, for the blip that caused this in the first place. */
 const RETRY_AFTER_MS = 300;

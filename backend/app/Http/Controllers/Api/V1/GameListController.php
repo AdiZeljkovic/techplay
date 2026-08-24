@@ -79,13 +79,7 @@ class GameListController extends Controller
             return $this->forbidden('This list is not available.');
         }
 
-        // The by-slug twin has always honoured profile privacy; this one did
-        // not, so the same list was 403 at /users/{name}/lists/{slug} and 200
-        // at /game-lists/{id} — with the owner's identity attached.
-        if ($viewerId !== $list->user_id && $list->user && $this->profileHidden($list->user)) {
-            return $this->forbidden('This list is not available.');
-        }
-
+        // Published is published — see the note in showBySlug().
         $this->markLiked($list, $viewerId);
 
         return $this->success($this->presentList($list, true));
@@ -111,12 +105,23 @@ class GameListController extends Controller
             return $this->forbidden($list->is_draft ? 'This list is still a draft.' : 'This list is private.');
         }
 
-        // A friends-only profile locks its lists too — the profile-level
-        // setting is the stronger intent.
-        if ($this->profileHidden($user)) {
-            return $this->error('This profile is private.', 403);
-        }
-
+        /*
+         * A published list stays published, whatever the profile says.
+         *
+         * This used to refuse when the author's profile was friends-only, and
+         * the reasoning — "the profile-level setting is the stronger intent" —
+         * had it backwards. Profile visibility hides *aggregates*: the shelf,
+         * the stats, the activity, the directory of somebody's lists. It has
+         * never unpublished a forum post, a comment or a review, because those
+         * were deliberately put on a public page.
+         *
+         * A list with `is_public` ticked and `is_draft` cleared is exactly
+         * that deliberate act. XLBanana47 published one, opened it, and got an
+         * error page — on a thing he had just chosen to share.
+         *
+         * What stays hidden is index(): "show me everything this person has
+         * made" is the aggregate, and that is still refused.
+         */
         $this->markLiked($list, $viewerId);
 
         return $this->success($this->presentList($list, true));
@@ -330,12 +335,7 @@ class GameListController extends Controller
             return $this->forbidden('This list is not available.');
         }
 
-        // Same profile-privacy gap as show(): this returned the commenters'
-        // identities on a hidden profile's list.
-        if ($viewerId !== $list->user_id && $list->user && $this->profileHidden($list->user)) {
-            return $this->forbidden('This list is not available.');
-        }
-
+        // Comments belong to the list, and the list is published.
         $comments = GameListComment::where('game_list_id', $list->id)
             ->with('user:id,username,display_name,avatar_url')
             ->oldest()

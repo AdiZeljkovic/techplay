@@ -35,7 +35,9 @@
       "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/profile_embed.py\")",
       "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/new_cmds.py\")",
       "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/new_handlers.py\")",
-      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/roles_cmd.py\")"
+      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/roles_cmd.py\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://techplay.gg/lists/Jebaim/nema-ovoga\")",
+      "Bash(vendor/bin/pint app/Http/Controllers/Api/V1/GameListController.php)"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\.claude\\plans",
