@@ -43,7 +43,10 @@
       "Bash(vendor/bin/pint app/Models/Game.php)",
       "Bash(php -l app/Models/Game.php)",
       "Bash(php -l app/Console/Commands/LinkContentToGames.php)",
-      "Bash(vendor/bin/pint database/migrations/2026_08_26_000001_add_link_name_to_games.php)"
+      "Bash(vendor/bin/pint database/migrations/2026_08_26_000001_add_link_name_to_games.php)",
+      "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/splitforad.py\")",
+      "Bash(ssh -i ~/.ssh/techplay_deploy -o StrictHostKeyChecking=no root@46.224.110.57 \"curl -s -H 'Host: api-beta.techplay.gg' 'http://127.0.0.1:8000/api/v1/news/gamescom-2026-biggest-announcements-trailers-and-release-dates-from-opening-night-live' | python3 -c \\\\\" *)",
+      "Bash(node -e ' *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\.claude\\plans",

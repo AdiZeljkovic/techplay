@@ -58,13 +58,34 @@ export const ARTICLE_PROSE = `prose prose-invert max-w-none break-words
     [&_.fb-post]:mx-auto [&_.fb-post]:my-8`;
 
 /**
+ * Block elements a paragraph can be *inside*.
+ *
+ * A `</p>` within one of these is not a gap between paragraphs — it is a cell
+ * in a table or an item in a list, and cutting there tears the element in two.
+ */
+const CONTAINERS = 'table|thead|tbody|tfoot|tr|td|th|ul|ol|li|dl|blockquote|figure|pre|aside|details';
+
+const BOUNDARY = new RegExp(`<(/?)(?:${CONTAINERS})\\b[^>]*>|</p\\s*>`, 'gi');
+
+/**
  * Cut an article body in two so an ad can sit between the halves.
  *
  * AdSense's in-article unit is only allowed between paragraphs of running
  * text, and the only way to get there when the body arrives as one HTML blob
- * is to split the blob. The cut lands on a `</p>` boundary, never inside a
- * heading, a list or a table — anywhere else and the ad would appear mid
- * sentence or, worse, inside an element it would break.
+ * is to split the blob.
+ *
+ * The cut has to land between top-level paragraphs, and this used to take any
+ * `</p>` at all. Tables are made of paragraphs: the editor writes
+ * `<td><p>Silent Hill: Townfall</p></td>`, so a release-date table of
+ * twenty-four rows carries forty-eight of them. On the Gamescom 2026 piece
+ * that was 48 of the body's 64 — the halfway mark landed inside the table, the
+ * ad was dropped into the middle of it, and everything after the cut lost its
+ * `<table>` wrapper and rendered as a column of loose text.
+ *
+ * So the scan tracks whether it is inside a block element and only counts the
+ * paragraph ends that are not. A body that is mostly table now reads as the
+ * handful of paragraphs it actually is, and comes back uncut when that is
+ * fewer than `minParagraphs`.
  *
  * Short pieces come back untouched. A news item of four paragraphs with an ad
  * halfway through is an ad with an article around it, which is both a bad read
@@ -76,9 +97,23 @@ export function splitForAd(html: string, minParagraphs = 6): [string, string | n
     if (!html) return [html, null];
 
     const ends: number[] = [];
-    const close = /<\/p>/gi;
+    let depth = 0;
+
+    BOUNDARY.lastIndex = 0;
     let match: RegExpExecArray | null;
-    while ((match = close.exec(html)) !== null) ends.push(match.index + match[0].length);
+
+    while ((match = BOUNDARY.exec(html)) !== null) {
+        const isParagraphEnd = match[1] === undefined;
+
+        if (isParagraphEnd) {
+            if (depth === 0) ends.push(match.index + match[0].length);
+            continue;
+        }
+
+        // A stray closing tag must not drive the depth negative — malformed
+        // markup would then make every later `</p>` look top-level again.
+        depth = match[1] === '/' ? Math.max(0, depth - 1) : depth + 1;
+    }
 
     if (ends.length < minParagraphs) return [html, null];
 
