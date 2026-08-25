@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\PostgresArray;
+use App\Services\ContentGameLinker;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,10 @@ class Game extends Model
 {
     protected $fillable = [
         'slug',
+        // The comparable form of the name, kept in step by the model itself —
+        // see the booted() hook below. Fillable so an importer that writes a
+        // name and a link_name together is not fighting the hook.
+        'link_name',
         'name',
         'released',
         'rating',
@@ -79,6 +84,24 @@ class Game extends Model
     ];
 
     /** Where this game is sold, one row per store that lists it. */
+    /**
+     * `link_name` is the name reduced to what a headline is matched against.
+     *
+     * Derived here rather than in a migration or an importer, because there
+     * are four writers of `games.name` — the store aggregator, the IGDB
+     * import, Filament and the collection auto-create — and a value that four
+     * places have to remember to set is a value that will drift.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $game) {
+            if ($game->isDirty('name')) {
+                $key = app(ContentGameLinker::class)->comparable((string) $game->name);
+                $game->link_name = $key === '' ? null : $key;
+            }
+        });
+    }
+
     public function storeLinks(): HasMany
     {
         return $this->hasMany(GameStoreLink::class);

@@ -62,24 +62,52 @@ class AuthorizationHolesTest extends TestCase
 
     /* ── profile privacy ──────────────────────────────────────────────── */
 
-    public function test_a_hidden_profiles_list_is_not_readable_by_id(): void
+    public function test_a_hidden_profiles_unpublished_list_is_not_readable_by_id(): void
     {
         $owner = User::factory()->create(['profile_visibility' => User::VISIBILITY_FRIENDS]);
 
-        $list = GameList::create([
+        $private = GameList::create([
             'user_id' => $owner->id,
             'name' => 'My quiet favourites',
             'slug' => 'my-quiet-favourites',
+            'is_public' => false,
+            'is_draft' => false,
+        ]);
+
+        // The hole this test was written for: the same list answered 403 at
+        // /users/{name}/lists/{slug} and 200 here, with the owner's username
+        // and avatar attached. Both doors agree now.
+        $this->getJson("/api/v1/game-lists/{$private->id}")->assertStatus(403);
+        $this->getJson("/api/v1/game-lists/{$private->id}/comments")->assertStatus(403);
+
+        $this->actingAs($owner)->getJson("/api/v1/game-lists/{$private->id}")->assertOk();
+    }
+
+    public function test_a_published_list_opens_by_either_door_whatever_the_profile_says(): void
+    {
+        $owner = User::factory()->create([
+            'username' => 'quietauthor',
+            'profile_visibility' => User::VISIBILITY_FRIENDS,
+        ]);
+
+        $published = GameList::create([
+            'user_id' => $owner->id,
+            'name' => 'Hidden Gems',
+            'slug' => 'hidden-gems',
             'is_public' => true,
             'is_draft' => false,
         ]);
 
-        // 403 at /users/{name}/lists/{slug} but 200 here, with the owner's
-        // username and avatar attached.
-        $this->getJson("/api/v1/game-lists/{$list->id}")->assertStatus(403);
-        $this->getJson("/api/v1/game-lists/{$list->id}/comments")->assertStatus(403);
+        // This used to be 403 on both, on the reasoning that a friends-only
+        // profile is the stronger intent. It is not: profile visibility hides
+        // aggregates — the shelf, the stats, the directory of someone's lists
+        // — and has never unpublished a thing its owner chose to publish.
+        // Somebody ticked "public", opened their own list, and got an error.
+        $this->getJson("/api/v1/game-lists/{$published->id}")->assertOk();
+        $this->getJson('/api/v1/users/quietauthor/lists/hidden-gems')->assertOk();
 
-        $this->actingAs($owner)->getJson("/api/v1/game-lists/{$list->id}")->assertOk();
+        // The aggregate stays shut.
+        $this->getJson('/api/v1/users/quietauthor/lists')->assertStatus(403);
     }
 
     public function test_presence_respects_profile_privacy(): void
