@@ -54,6 +54,15 @@ export default function ReviewWall({ reviews }: { reviews: Article[] }) {
                                 <h3 className="font-display text-[14px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                     {review.title}
                                 </h3>
+                                {/* A headline and a number say a game was judged but not
+                                    what the verdict was about. Same treatment as Hidden
+                                    Gems, which also had a card of title and score with
+                                    empty room under it. */}
+                                {review.excerpt && (
+                                    <p className="mt-1.5 text-[11px] leading-[1.45] text-[var(--ink-low)] line-clamp-3">
+                                        {review.excerpt}
+                                    </p>
+                                )}
                                 {/* meta left, verdict right — same deck row as Discover Games */}
                                 <div className="mt-auto pt-3 flex items-center justify-between gap-2">
                                     <span className="flex items-center gap-2 min-w-0 text-[11px] text-[var(--ink-low)]">
