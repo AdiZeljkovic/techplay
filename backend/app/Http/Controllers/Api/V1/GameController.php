@@ -10,6 +10,7 @@ use App\Models\GameRelation;
 use App\Services\CacheService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\SanitizationService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -714,42 +715,78 @@ class GameController extends Controller
     /**
      * GET /games/on-this-day — notable games released on today's date in past years.
      */
+    /**
+     * Gaming history for today, and for tomorrow.
+     *
+     * The panel drew four games and left half its box empty, which was the
+     * limit and not the material: on 26 August, 51 games in the catalogue
+     * clear the bar, and 41 do on the 27th. So it carries both days now — what
+     * launched on this date in earlier years, and what launched on tomorrow's.
+     *
+     * Within each day the best-rated are chosen and then ordered by year,
+     * because the panel draws a timeline and a timeline that runs 2013, 2014,
+     * 2021, 2012 reads as a fault rather than as a sequence.
+     */
     public function onThisDay()
     {
         $today = now();
+        $tomorrow = $today->copy()->addDay();
 
-        $payload = Cache::remember("games.on_this_day.v1.{$today->format('m-d')}", 86400, function () use ($today) {
-            $q = Game::query()
-                ->whereNotNull('description')
-                ->whereNotNull('cover_url')
-                ->whereNotNull('released')
-                ->whereYear('released', '<', $today->year)
-                ->where('rating', '>=', 7);
+        return response()->json([
+            'date' => $today->format('F j'),
+            // Kept as `results` rather than nested under `today`: this is the
+            // shape the panel and its tests already read.
+            'results' => $this->anniversaries($today, 5),
+            'tomorrow' => [
+                'date' => $tomorrow->format('F j'),
+                'results' => $this->anniversaries($tomorrow, 4),
+            ],
+        ])->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+    }
 
-            if (DB::getDriverName() === 'pgsql') {
-                $q->whereRaw('EXTRACT(MONTH FROM released) = ? AND EXTRACT(DAY FROM released) = ?', [$today->month, $today->day]);
-            } else {
-                $q->whereRaw("strftime('%m-%d', released) = ?", [$today->format('m-d')]);
+    /**
+     * The best-rated games released on one calendar date in earlier years.
+     *
+     * `$on` carries the year the reader is in, which is what makes "years ago"
+     * true on 31 December when tomorrow belongs to the next one.
+     */
+    private function anniversaries(Carbon $on, int $limit): array
+    {
+        return Cache::remember(
+            "games.on_this_day.v2.{$on->format('m-d')}.{$limit}",
+            86400,
+            function () use ($on, $limit) {
+                $q = Game::query()
+                    ->whereNotNull('description')
+                    ->whereNotNull('cover_url')
+                    ->whereNotNull('released')
+                    ->whereYear('released', '<', $on->year)
+                    ->where('rating', '>=', 7);
+
+                if (DB::getDriverName() === 'pgsql') {
+                    $q->whereRaw('EXTRACT(MONTH FROM released) = ? AND EXTRACT(DAY FROM released) = ?', [$on->month, $on->day]);
+                } else {
+                    $q->whereRaw("strftime('%m-%d', released) = ?", [$on->format('m-d')]);
+                }
+
+                return $q->orderByDesc('rating')
+                    ->limit($limit)
+                    ->get(['slug', 'name', 'cover_url', 'rating', 'released', 'genres'])
+                    // Chosen by rating, shown by year: the panel is a timeline.
+                    ->sortByDesc(fn ($g) => $g->released)
+                    ->map(fn ($g) => [
+                        'slug' => $g->slug,
+                        'name' => $g->name,
+                        'cover_url' => $g->cover_url,
+                        'rating' => (float) $g->rating,
+                        'released' => $g->released?->toDateString(),
+                        'genres' => array_slice((array) $g->genres, 0, 2),
+                        'years_ago' => $on->year - (int) $g->released->format('Y'),
+                    ])
+                    ->values()
+                    ->all();
             }
-
-            return $q->orderByDesc('rating')
-                ->limit(6)
-                ->get(['slug', 'name', 'cover_url', 'rating', 'released', 'genres'])
-                ->map(fn ($g) => [
-                    'slug' => $g->slug,
-                    'name' => $g->name,
-                    'cover_url' => $g->cover_url,
-                    'rating' => (float) $g->rating,
-                    'released' => $g->released?->toDateString(),
-                    'genres' => array_slice((array) $g->genres, 0, 2),
-                    'years_ago' => $today->year - (int) $g->released->format('Y'),
-                ])
-                ->values()
-                ->all();
-        });
-
-        return response()->json(['results' => $payload, 'date' => $today->format('F j')])
-            ->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+        );
     }
 
     /**

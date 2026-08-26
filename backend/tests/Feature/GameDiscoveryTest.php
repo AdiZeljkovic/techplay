@@ -97,6 +97,43 @@ class GameDiscoveryTest extends TestCase
         $this->assertSame(9, $results[array_search($match->slug, $slugs, true)]['years_ago']);
     }
 
+    public function test_on_this_day_also_carries_tomorrow(): void
+    {
+        $today = now();
+        $tomorrow = $today->copy()->addDay();
+
+        $this->makeGame(['slug' => 'today-anniversary', 'released' => $today->copy()->subYears(5)->toDateString()]);
+        $this->makeGame(['slug' => 'tomorrow-anniversary', 'released' => $tomorrow->copy()->subYears(8)->toDateString()]);
+
+        // The panel drew four games and left half its box empty. The material
+        // was never the limit — 51 games clear the bar on 26 August alone.
+        $response = $this->getJson('/api/v1/games/on-this-day')->assertOk();
+
+        $this->assertContains('today-anniversary', array_column($response->json('results'), 'slug'));
+        $this->assertContains('tomorrow-anniversary', array_column($response->json('tomorrow.results'), 'slug'));
+        $this->assertSame($tomorrow->format('F j'), $response->json('tomorrow.date'));
+
+        // Each day answers for itself: today's list must not carry tomorrow's.
+        $this->assertNotContains('tomorrow-anniversary', array_column($response->json('results'), 'slug'));
+    }
+
+    public function test_each_day_reads_down_the_years(): void
+    {
+        $today = now();
+
+        // Deliberately created out of order and with the older game rated
+        // higher, so a list ordered by rating would come back 2010 then 2020.
+        $this->makeGame(['slug' => 'older-but-better', 'rating' => 9.5, 'released' => $today->copy()->subYears(16)->toDateString()]);
+        $this->makeGame(['slug' => 'newer', 'rating' => 8.0, 'released' => $today->copy()->subYears(6)->toDateString()]);
+
+        $slugs = array_column($this->getJson('/api/v1/games/on-this-day')->json('results'), 'slug');
+
+        // The panel draws a timeline, and one that runs 2013, 2014, 2021, 2012
+        // reads as a fault rather than a sequence. Best chosen, newest shown
+        // first.
+        $this->assertSame(['newer', 'older-but-better'], $slugs);
+    }
+
     public function test_on_this_day_excludes_games_released_today(): void
     {
         $this->makeGame(['slug' => 'released-today', 'released' => now()->toDateString()]);
