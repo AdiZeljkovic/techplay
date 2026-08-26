@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
-import { Trophy, MessageCircle, Award, Flame, Plus } from "lucide-react";
+import { MessageCircle, Award, Flame, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import useSWR from "swr";
 import axios from "@/lib/axios";
@@ -23,24 +23,12 @@ interface ActiveThread {
     category?: { name: string; slug: string };
 }
 
-interface LeaderboardEntry {
-    position: number;
-    username: string;
-    name: string;
-    avatar_url?: string;
-    value: number;
-    label: string;
-}
-
 /** The quiet button under a sidebar list — command shape, no accent fill. */
 const QUIET_ACTION =
     "btn-command btn-command-quiet mt-4 flex items-center justify-center gap-2 h-9 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors";
 
 export default function ForumSidebar() {
     const { user } = useAuth();
-
-    const { data: leaderboardResponse } = useSWR("/leaderboard?type=reputation", fetcher);
-    const topContributors: LeaderboardEntry[] = leaderboardResponse?.data?.entries?.slice(0, 5) ?? [];
 
     const { data: activeThreads } = useSWR<ActiveThread[]>("/forum/active", fetcher);
 
@@ -158,48 +146,6 @@ export default function ForumSidebar() {
                     </div>
                 </Panel>
             )}
-
-            {/* ── who carries the boards ── */}
-            <Panel title="Top contributors">
-                {topContributors.length === 0 ? (
-                    <div className="space-y-2.5">
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className="h-11 rounded-[var(--radius-card)] bg-white/[0.03] animate-pulse" />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="divide-y divide-white/[0.05] -my-1">
-                        {topContributors.map((entry) => {
-                            const src = getAvatarSrc(entry.avatar_url);
-                            return (
-                                <Link key={entry.username} href={`/profile/${entry.username}`} className="group flex items-center gap-3 py-2.5">
-                                    <span className="w-9 h-9 shrink-0 rounded-full overflow-hidden bg-[var(--accent-soft)] flex items-center justify-center">
-                                        {src ? (
-                                            <Image src={src} alt={entry.username} width={36} height={36} className="object-cover w-full h-full" />
-                                        ) : (
-                                            <span className="font-display text-[13px] font-black text-[var(--accent)]">
-                                                {entry.username.charAt(0).toUpperCase()}
-                                            </span>
-                                        )}
-                                    </span>
-                                    <div className="min-w-0">
-                                        <p className="font-display text-[12.5px] font-black text-white truncate leading-tight group-hover:text-[var(--accent)] transition-colors">
-                                            {entry.name || entry.username}
-                                        </p>
-                                        <p className="mt-0.5 text-[11px] text-white/25 tabular-nums">
-                                            {entry.value.toLocaleString()} rep
-                                        </p>
-                                    </div>
-                                </Link>
-                            );
-                        })}
-                    </div>
-                )}
-
-                <Link href="/leaderboard" className={QUIET_ACTION}>
-                    <Trophy className="w-3.5 h-3.5" /> View leaderboard
-                </Link>
-            </Panel>
 
             {/* ── what is being said right now ── */}
             <Panel title="Latest posts">
