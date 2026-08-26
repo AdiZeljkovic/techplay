@@ -435,9 +435,17 @@ export default function GameDatabaseHub({
                         )}
                     </div>
 
-                    {/* quick ways in, for the 86% of the catalogue that has no rating */}
+                    {/* Quick ways in, for the 86% of the catalogue that has no
+                        rating. Every platform family, not the top four by count:
+                        the facet holds six, and cutting at four dropped
+                        PlayStation — fifth with 38,932 games, 1,219 behind Xbox.
+                        A game database offering PC, Nintendo, Mobile and Xbox
+                        but not PlayStation reads as broken whatever the counts
+                        say, and the order shifts the moment one overtakes the
+                        other. The row wraps on desktop and scrolls on a phone,
+                        so it has room for all of them. */}
                     <div className="mt-4 md:mt-6 flex flex-nowrap md:flex-wrap items-center justify-start md:justify-center gap-2 md:gap-2.5 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide snap-x scroll-pl-4 md:scroll-pl-0">
-                        {facets?.platforms.slice(0, 4).map((p) => {
+                        {facets?.platforms.map((p) => {
                             const on = platform === p.label;
                             // The mark wears its brand colour at rest. On the
                             // selected chip the ground is already accent, and a
