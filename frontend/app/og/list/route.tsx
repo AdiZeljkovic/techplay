@@ -200,7 +200,7 @@ export async function GET(req: NextRequest) {
                     <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 20, letterSpacing: 4, color: ACCENT, fontWeight: 700 }}>
                         <div style={{ display: "flex" }}>GAME LIST</div>
                         <div style={{ display: "flex", width: 6, height: 6, borderRadius: 3, background: ACCENT }} />
-                        <div style={{ display: "flex", color: "rgba(255,255,255,0.45)", letterSpacing: 2 }}>{count} GAMES</div>
+                        <div style={{ display: "flex", color: "rgba(255,255,255,0.45)", letterSpacing: 2 }}>{count} {count === 1 ? "GAME" : "GAMES"}</div>
                     </div>
 
                     <div
