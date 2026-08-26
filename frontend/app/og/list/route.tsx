@@ -7,6 +7,12 @@ export const runtime = "edge";
 // server-side fetches), falling back to the public API URL.
 const API = (process.env.NEXT_PRIVATE_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://api.techplay.gg/api/v1").replace(/\/$/, "");
 
+/** The board's own gradient, hot at the top — same scale as TierBoard. */
+const TIER_TONE: Record<string, string> = {
+    S: "#E8536F", A: "#E2894A", B: "#D4AC42",
+    C: "#6DB566", D: "#5C9BC9", F: "#9A93A3",
+};
+
 const ACCENT = "#DC143C";
 
 /**
@@ -29,6 +35,9 @@ export async function GET(req: NextRequest) {
     let owner = username;
     let count = 0;
     let covers: string[] = [];
+    let listType = "";
+    /** For a tier list the arrangement is the whole point, so the card draws the board. */
+    let board: { tier: string; covers: string[] }[] = [];
 
     try {
         const res = await fetch(
@@ -47,10 +56,27 @@ export async function GET(req: NextRequest) {
             name = list.name || name;
             owner = list.user?.display_name || list.user?.username || username;
             count = list.items_count ?? list.items?.length ?? 0;
-            covers = (list.items ?? [])
-                .map((i: { game?: { cover_url?: string } }) => i?.game?.cover_url)
+            listType = list.list_type ?? "";
+
+            type Row = { tier?: string | null; position?: number; game?: { cover_url?: string } };
+            const rows: Row[] = list.items ?? [];
+
+            covers = rows
+                .map((i) => i?.game?.cover_url)
                 .filter((src: unknown): src is string => typeof src === "string" && src.startsWith("http"))
                 .slice(0, 5);
+
+            if (listType === "tier") {
+                board = ["S", "A", "B", "C", "D", "F"].map((tier) => ({
+                    tier,
+                    covers: rows
+                        .filter((r) => r.tier === tier)
+                        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+                        .map((r) => r.game?.cover_url)
+                        .filter((src: unknown): src is string => typeof src === "string" && src.startsWith("http"))
+                        .slice(0, 9),
+                }));
+            }
         }
     } catch {
         // A card with the name and the byline still beats no card at all.
@@ -69,7 +95,58 @@ export async function GET(req: NextRequest) {
                     position: "relative",
                 }}
             >
-                {/* The covers are the list. They lead, in the order they were ranked. */}
+                {/* A tier list's card is the board.
+                    It used to be the same row of covers every list gets, which
+                    shows what is in the list and hides the only thing a tier
+                    list is: where each game landed. The letters and the S→F
+                    gradient are what makes it readable in a Discord preview. */}
+                {listType === "tier" ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, height: 300 }}>
+                        {board.map((row) => (
+                            <div key={row.tier} style={{ display: "flex", height: 46 }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        width: 56,
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        background: TIER_TONE[row.tier],
+                                        borderRadius: "6px 0 0 6px",
+                                        color: "#12070A",
+                                        fontSize: 26,
+                                        fontWeight: 900,
+                                    }}
+                                >
+                                    {row.tier}
+                                </div>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        flex: 1,
+                                        gap: 4,
+                                        padding: 4,
+                                        background: "rgba(255,255,255,0.035)",
+                                        borderRadius: "0 6px 6px 0",
+                                        alignItems: "center",
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    {row.covers.map((src, i) => (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            key={i}
+                                            src={src}
+                                            alt=""
+                                            width={28}
+                                            height={38}
+                                            style={{ objectFit: "cover", borderRadius: 3, width: 28, height: 38 }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
                 <div style={{ display: "flex", gap: 18, height: 300 }}>
                     {covers.length > 0
                         ? covers.map((src, i) => (
@@ -112,6 +189,7 @@ export async function GET(req: NextRequest) {
                             <div style={{ display: "flex", width: "100%", height: 300, borderRadius: 12, border: "2px solid rgba(255,255,255,0.12)" }} />
                         )}
                 </div>
+                )}
 
                 <div style={{ display: "flex", flexDirection: "column", marginTop: "auto" }}>
                     {/* Every child here is an element. Satori — the renderer
