@@ -255,6 +255,62 @@ class GameListController extends Controller
     }
 
     /**
+     * Auth: add several games at once.
+     * POST /game-lists/{id}/items/bulk  { slugs: [...] }
+     *
+     * Four of the first seven lists on this site were empty. A starter names
+     * the list and picks its shape and then leaves the author in front of a
+     * search box — and somebody with 280 games in their library should not have
+     * to hunt for their own games in a catalogue of 332,455.
+     *
+     * Adds what fits and says what did not, rather than refusing the whole
+     * batch because the last one crossed a Top 10's ceiling.
+     */
+    public function addItems(Request $request, int $id)
+    {
+        $list = GameList::where('user_id', $request->user()->id)->findOrFail($id);
+
+        $data = $request->validate([
+            'slugs' => ['required', 'array', 'min:1', 'max:100'],
+            'slugs.*' => ['string'],
+        ]);
+
+        $existing = GameListItem::where('game_list_id', $list->id)->pluck('game_id')->all();
+        $position = (int) GameListItem::where('game_list_id', $list->id)->max('position');
+
+        $room = $list->itemLimit() === null
+            ? PHP_INT_MAX
+            : max(0, $list->itemLimit() - count($existing));
+
+        $games = Game::whereIn('slug', $data['slugs'])
+            ->whereNotIn('id', $existing)
+            ->get(['id']);
+
+        $added = 0;
+        foreach ($games as $game) {
+            if ($added >= $room) {
+                break;
+            }
+
+            GameListItem::create([
+                'game_list_id' => $list->id,
+                'game_id' => $game->id,
+                'position' => ++$position,
+            ]);
+            $added++;
+        }
+
+        $list->load(['items.game:id,slug,name,released,rating,cover_url,platforms'])->loadCount('items');
+
+        $skipped = count($data['slugs']) - $added;
+        $message = $skipped > 0
+            ? "Added {$added}. {$skipped} skipped — already on the list, or past its limit."
+            : "Added {$added}.";
+
+        return $this->success($this->presentList($list, true), $message);
+    }
+
+    /**
      * Auth: remove an item from a list.
      * DELETE /game-lists/{id}/items/{itemId}
      */

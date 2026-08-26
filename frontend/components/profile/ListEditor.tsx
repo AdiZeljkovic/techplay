@@ -10,6 +10,7 @@ import Panel from "@/components/ui/Panel";
 import type { GameListDetail, GameListItemEntry, GameListPreview, ListType, Tier } from "@/lib/types/profile";
 import Select from "@/components/ui/Select";
 import TierBoard from "@/components/profile/TierBoard";
+import LibraryPicker from "@/components/profile/LibraryPicker";
 import ImageDropzone from "@/components/settings/ImageDropzone";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -161,6 +162,17 @@ export default function ListEditor({
             mutate();
         } catch (err: any) {
             toast.error(err?.response?.data?.message ?? "Couldn't add that game.");
+        }
+    };
+
+    /** A batch from the library — one request, and the server says what fitted. */
+    const addFromLibrary = async (slugs: string[]) => {
+        try {
+            const res = await axios.post(`${key}/items/bulk`, { slugs });
+            toast.success(res.data?.message ?? "Added.");
+            mutate();
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? "Couldn't add those.");
         }
     };
 
@@ -342,6 +354,18 @@ export default function ListEditor({
                     are set once; the ranking is the reason you came back. */}
                 <div className="xl:col-span-8 min-w-0 space-y-5">
                     <GameSearch onAdd={addGame} disabled={full} limitLabel={full ? `This list holds ${limit}` : undefined} />
+
+                    {/* The other way in. Searching the catalogue is right for a
+                        game you do not own; for the 280 you do, it is the wrong
+                        question. */}
+                    {!full && (
+                        <LibraryPicker
+                            username={username}
+                            taken={new Set(items.map((i) => i.game?.slug).filter(Boolean) as string[])}
+                            room={limit === null ? null : Math.max(0, limit - items.length)}
+                            onAdd={addFromLibrary}
+                        />
+                    )}
 
                     <Panel
                         title="The ranking"

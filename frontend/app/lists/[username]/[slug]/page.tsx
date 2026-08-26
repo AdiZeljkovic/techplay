@@ -185,6 +185,7 @@ export default async function GameListPage({ params }: Props) {
                     <ListSocialBar
                         listId={list.id}
                         ownerUsername={owner?.username ?? username}
+                        slug={slug}
                         initialLikes={list.likes_count ?? 0}
                         allowComments={list.allow_comments ?? true}
                     />

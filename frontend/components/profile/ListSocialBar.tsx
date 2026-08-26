@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Heart, MessageSquare, Send, Trash2, Loader2, Share2, Check } from "lucide-react";
+import { Heart, MessageSquare, Send, Trash2, Loader2, Share2, Check, ImageDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import Avatar from "@/components/ui/Avatar";
 import { timeAgo } from "@/lib/timeAgo";
@@ -21,11 +21,14 @@ const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 export default function ListSocialBar({
     listId,
     ownerUsername,
+    slug,
     initialLikes,
     allowComments,
 }: {
     listId: number;
     ownerUsername: string;
+    /** Needed to point at the list's own card image. */
+    slug: string;
     initialLikes: number;
     allowComments: boolean;
 }) {
@@ -120,6 +123,20 @@ export default function ListSocialBar({
                     {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
                     {copied ? "Copied" : "Share"}
                 </button>
+
+                {/* A ranking is made to be posted, and a link is not what gets
+                    posted — the picture is. This is the same 1200×630 card the
+                    social preview uses, which for a tier list draws the board
+                    itself, handed over as a file instead of a meta tag. */}
+                <a
+                    href={`/og/list?username=${encodeURIComponent(ownerUsername)}&slug=${encodeURIComponent(slug)}`}
+                    download={`${slug}.png`}
+                    title="Download this list as an image"
+                    className="inline-flex items-center gap-2 h-10 px-4 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] text-white font-display text-[11px] font-bold uppercase tracking-[0.08em] transition-colors"
+                >
+                    <ImageDown className="w-4 h-4" />
+                    Image
+                </a>
             </div>
 
             {open && allowComments && (

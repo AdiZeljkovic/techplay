@@ -375,6 +375,7 @@ Route::prefix('v1')->group(function () {
             Route::delete('/game-lists/{id}', [GameListController::class, 'destroy']);
             Route::post('/game-lists/{id}/cover', [GameListController::class, 'uploadCover']);
             Route::post('/game-lists/{id}/items', [GameListController::class, 'addItem']);
+            Route::post('/game-lists/{id}/items/bulk', [GameListController::class, 'addItems']);
             Route::delete('/game-lists/{id}/items/{itemId}', [GameListController::class, 'removeItem']);
             Route::put('/game-lists/{id}/reorder', [GameListController::class, 'reorder']);
             Route::put('/game-lists/{id}/items/{itemId}', [GameListController::class, 'updateItem']);
