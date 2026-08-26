@@ -14,7 +14,6 @@ import {
 import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
 import ProfilePreviewCard from "@/components/settings/ProfilePreviewCard";
 import ImageDropzone from "@/components/settings/ImageDropzone";
-import ProfileCompletionWidget from "@/components/home-dashboard/ProfileCompletionWidget";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import { AnimatePresence, motion } from "framer-motion";
@@ -366,32 +365,21 @@ export default function SettingsClient() {
                     and a progress bar, and the account itself was a footnote.
                     The avatar anchors it now and the two facts that matter sit
                     beside it. */}
-                <header className="mb-6 flex flex-wrap items-center gap-x-5 gap-y-4">
-                    <span className="shrink-0 w-[54px] h-[54px] rounded-full p-[2px]" style={{ background: "var(--accent)" }}>
-                        <span className="block w-full h-full rounded-full p-[2.5px] bg-[var(--surface-0)]">
-                            {avatarPreview ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={avatarPreview} alt="" aria-hidden className="w-full h-full rounded-full object-cover" />
-                            ) : (
-                                <span className="w-full h-full rounded-full bg-white/[0.06] flex items-center justify-center text-white/25">
-                                    <User className="w-6 h-6" />
-                                </span>
-                            )}
-                        </span>
-                    </span>
+                {/* The page's name, and the one fact about the account that
+                    is not on show anywhere else in it.
 
-                    <div className="min-w-0">
-                        <h1 className="font-display text-[26px] md:text-[32px] font-black uppercase tracking-tight leading-none text-white truncate">
-                            {user.display_name || user.username}
-                        </h1>
-                        <p className="mt-1.5 text-[12.5px] text-white/35 truncate">
-                            @{user.username} · {user.email}
-                        </p>
-                    </div>
-
-                    <div className="ml-auto w-full sm:w-auto sm:min-w-[280px]">
-                        <ProfileCompletionWidget />
-                    </div>
+                    What stood here was an avatar, a display name and a handle —
+                    all three drawn again by the preview card a few centimetres
+                    below, which is the thing actually being edited. Beside them
+                    sat a completion ring listing "add a tagline", "pick
+                    playstyle tags", next to the very fields that set them. */}
+                <header className="mb-6">
+                    <h1 className="font-display text-[26px] md:text-[32px] font-black uppercase tracking-tight leading-none text-white">
+                        Settings
+                    </h1>
+                    <p className="mt-1.5 text-[12.5px] text-white/35 truncate">
+                        Signed in as {user.email}
+                    </p>
                 </header>
 
                 {/* A rail rather than a chip bar. Settings are navigated, not
