@@ -5,7 +5,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Eye, MessageSquare, AlertTriangle, Heart, Gamepad2, Trophy, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Eye, MessageSquare, Heart, Gamepad2, Trophy, ChevronUp, ChevronDown } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import type { GameListDetail, GameListItemEntry, GameListPreview, ListType, Tier } from "@/lib/types/profile";
 import Select from "@/components/ui/Select";
@@ -94,7 +94,7 @@ export default function ListEditor({
         tags: [] as string[],
         is_public: true,
         allow_comments: true,
-        has_spoilers: false });
+    });
     const [tagDraft, setTagDraft] = useState("");
     const [saving, setSaving] = useState<"draft" | "publish" | null>(null);
     const [items, setItems] = useState<GameListItemEntry[]>([]);
@@ -119,8 +119,7 @@ export default function ListEditor({
             category: list.category ?? "",
             tags: list.tags ?? [],
             is_public: list.is_public ?? true,
-            allow_comments: list.allow_comments ?? true,
-            has_spoilers: list.has_spoilers ?? false });
+            allow_comments: list.allow_comments ?? true });
         setCover(list.cover_image ?? null);
     }, [list]);
 
@@ -622,17 +621,10 @@ export default function ListEditor({
                             on={form.allow_comments}
                             onChange={(v) => setForm((f) => ({ ...f, allow_comments: v }))}
                         />
-                        <Toggle
-                            icon={<AlertTriangle className="w-4 h-4" />}
-                            title="Spoiler warning"
-                            body="Mark list as containing spoilers"
-                            on={form.has_spoilers}
-                            onChange={(v) => setForm((f) => ({ ...f, has_spoilers: v }))}
-                        />
                     </Panel>
 
                     <Panel title="Public preview" bodyClassName="p-4">
-                        <PreviewCard form={form} list={list} items={items} username={username} />
+                        <PreviewCard form={form} cover={cover} list={list} items={items} username={username} />
                     </Panel>
 
                     <CommunityInspiration />
@@ -646,22 +638,27 @@ export default function ListEditor({
 
 function PreviewCard({
     form,
+    cover,
     list,
     items,
     username }: {
-    form: { name: string; description: string; list_type: ListType; has_spoilers: boolean };
+    form: { name: string; description: string; list_type: ListType };
+    /** The list's own artwork, so the preview shows what will actually publish. */
+    cover: string | null;
     list: GameListDetail;
     items: GameListItemEntry[];
     username: string;
 }) {
-    const cover = items[0]?.game?.cover_url ?? null;
+    // Same order of preference the published page uses: the author's artwork
+    // first, the top game's cover only as a stand-in.
+    const art = cover ?? items[0]?.game?.cover_url ?? null;
     const typeLabel = TYPES.find((t) => t.id === form.list_type)?.label;
 
     return (
         <div className="relative rounded-[12px] overflow-hidden border border-white/[0.07] bg-[var(--surface-1)] min-h-[190px] flex flex-col justify-end">
-            {cover ? (
+            {art ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={cover} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-70" />
+                <img src={art} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-70" />
             ) : (
                 <span aria-hidden className="absolute inset-0 bg-white/[0.03]" />
             )}
@@ -671,11 +668,6 @@ function PreviewCard({
                 {typeLabel && form.list_type !== "custom" && (
                     <span className="inline-flex items-center h-[20px] px-2 rounded-[4px] bg-[var(--accent)] font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-white">
                         {typeLabel}
-                    </span>
-                )}
-                {form.has_spoilers && (
-                    <span className="inline-flex items-center gap-1 h-[20px] px-2 rounded-[4px] bg-amber-500/20 border border-amber-500/40 font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-amber-400">
-                        <AlertTriangle className="w-2.5 h-2.5" /> Spoilers
                     </span>
                 )}
             </span>

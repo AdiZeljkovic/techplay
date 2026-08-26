@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Gamepad2, ListChecks, Star, AlertTriangle } from "lucide-react";
+import { Gamepad2, ListChecks, Star } from "lucide-react";
 import { getApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import ListSocialBar from "@/components/profile/ListSocialBar";
@@ -142,11 +142,6 @@ export default async function GameListPage({ params }: Props) {
                         {typeLabel && list.list_type !== "custom" && (
                             <span className="inline-flex items-center h-[20px] px-2 rounded-[4px] bg-[var(--accent)] font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-white">
                                 {typeLabel}
-                            </span>
-                        )}
-                        {list.has_spoilers && (
-                            <span className="inline-flex items-center gap-1 h-[20px] px-2 rounded-[4px] bg-amber-500/20 border border-amber-500/40 font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-amber-400">
-                                <AlertTriangle className="w-2.5 h-2.5" /> Contains spoilers
                             </span>
                         )}
                     </div>

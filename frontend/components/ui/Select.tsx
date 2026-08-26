@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 
 /**
@@ -21,6 +22,12 @@ import { Check, ChevronDown } from "lucide-react";
  *
  * `name` renders a hidden input, so a plain `<form>` reading FormData still
  * finds the value.
+ *
+ * The menu is drawn through a portal rather than inside the trigger. An
+ * absolutely-positioned panel is clipped by any ancestor that hides its
+ * overflow, and `Panel` — the enclosure most of this site's forms are built
+ * from — does exactly that: the category picker on the list editor showed two
+ * rows and a scrollbar, cut off at the panel's own edge.
  */
 
 export interface SelectOption {
@@ -64,6 +71,8 @@ export default function Select({
 }: SelectProps) {
     const [open, setOpen] = useState(false);
     const [active, setActive] = useState(0);
+    /** Where the portalled menu sits, in viewport coordinates. */
+    const [box, setBox] = useState<{ top: number; left: number; width: number; drop: "down" | "up" } | null>(null);
 
     const wrapRef = useRef<HTMLDivElement>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
@@ -92,11 +101,57 @@ export default function Select({
         if (!open) return;
 
         const away = (e: PointerEvent) => {
-            if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+            const t = e.target as Node;
+            // The menu lives on document.body now, so containment has to be
+            // asked of both halves of the control.
+            if (wrapRef.current?.contains(t) || listRef.current?.contains(t)) return;
+            setOpen(false);
         };
         document.addEventListener("pointerdown", away);
         return () => document.removeEventListener("pointerdown", away);
     }, [open]);
+
+    /**
+     * Measure the trigger and place the menu against it.
+     *
+     * Layout effect, so the panel is positioned in the same frame it appears —
+     * measuring after paint puts it at the top-left corner for one frame first.
+     *
+     * Scroll is listened for in the capture phase because the page's scroller
+     * is often an inner element, not the window, and a menu that stays behind
+     * while its trigger moves is worse than one that is clipped.
+     */
+    useLayoutEffect(() => {
+        if (!open) { setBox(null); return; }
+
+        const place = () => {
+            const el = triggerRef.current;
+            if (!el) return;
+
+            const r = el.getBoundingClientRect();
+            const below = window.innerHeight - r.bottom;
+
+            // 280px is the menu's own ceiling. With less room under the trigger
+            // than over it, the panel opens upward instead of scrolling inside
+            // a sliver.
+            const up = below < Math.min(280, r.top);
+
+            setBox({
+                top: up ? r.top - 6 : r.bottom + 6,
+                left: align === "end" ? r.right : r.left,
+                width: r.width,
+                drop: up ? "up" : "down",
+            });
+        };
+
+        place();
+        window.addEventListener("scroll", place, true);
+        window.addEventListener("resize", place);
+        return () => {
+            window.removeEventListener("scroll", place, true);
+            window.removeEventListener("resize", place);
+        };
+    }, [open, align]);
 
     /* Keep the active row in sight when the arrows walk past the fold. */
     useEffect(() => {
@@ -214,7 +269,7 @@ export default function Select({
                 />
             </button>
 
-            {open && (
+            {open && box && createPortal(
                 <div
                     ref={listRef}
                     id={`${id}-list`}
@@ -222,9 +277,15 @@ export default function Select({
                     aria-label={ariaLabel}
                     aria-activedescendant={`${id}-opt-${active}`}
                     tabIndex={-1}
-                    className={`absolute z-30 mt-1.5 min-w-full max-h-[280px] overflow-y-auto rounded-[10px] border border-white/[0.1] bg-[var(--surface-2)] p-1 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.8)] ${
-                        align === "end" ? "right-0" : "left-0"
-                    } ${menuClassName}`}
+                    style={{
+                        position: "fixed",
+                        top: box.drop === "down" ? box.top : undefined,
+                        bottom: box.drop === "up" ? window.innerHeight - box.top : undefined,
+                        left: align === "end" ? undefined : box.left,
+                        right: align === "end" ? window.innerWidth - box.left : undefined,
+                        minWidth: box.width,
+                    }}
+                    className={`z-[60] max-h-[280px] overflow-y-auto rounded-[10px] border border-white/[0.1] bg-[var(--surface-2)] p-1 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.8)] ${menuClassName}`}
                 >
                     {options.map((o, i) => {
                         const isSelected = o.value === value;
@@ -255,7 +316,8 @@ export default function Select({
                     {options.length === 0 && (
                         <p className="px-2.5 py-3 text-[12.5px] text-white/30">Nothing to choose from.</p>
                     )}
-                </div>
+                </div>,
+                document.body,
             )}
         </div>
     );
