@@ -8,11 +8,27 @@ import RingMeter from "@/components/ui/RingMeter";
 import { useCountUp } from "@/hooks/useCountUp";
 import type { BacklogSuggestion, DashboardStats } from "@/lib/types/dashboard";
 
-/** One shelf state: the dot's colour is the same one it owns in the bar. */
+/**
+ * The three shelf states, in the order the bar draws them.
+ *
+ * Playing and Completed used to be #34d399 and #22c55e — two greens a shade
+ * apart, sitting in a bar that put one at each end, so the panel read as green,
+ * blue, green and the key told you nothing. They are separated by meaning now,
+ * out of the project's own tokens:
+ *
+ *   completed — success, the same green as the ring, because "% cleared" and
+ *               this segment are one fact told twice
+ *   playing   — warning amber, the colour a thing in flight wears
+ *   backlog   — plain white at low alpha: it is 88 of 95 items here, and a
+ *               loud colour on that share turns the bar into one block
+ *
+ * Order matters as much as hue: earned on the left, still to come on the
+ * right, so the bar fills the way a progress bar is read.
+ */
 const SHELF = [
-    { label: "Playing", tone: "#34d399", key: "playing_count" },
-    { label: "Backlog", tone: "#60a5fa", key: "backlog_count" },
-    { label: "Completed", tone: "#22c55e", key: "completed_count" },
+    { label: "Completed", tone: "var(--success)", key: "completed_count" },
+    { label: "Playing", tone: "var(--warning)", key: "playing_count" },
+    { label: "Backlog", tone: "rgba(255,255,255,0.26)", key: "backlog_count" },
 ] as const;
 
 export default function BacklogProgressCard({
@@ -69,15 +85,15 @@ export default function BacklogProgressCard({
                 different things about which mattered. One table now, keyed to
                 the bar by colour. */}
             <div className="flex items-center gap-5 rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-4">
-                <RingMeter value={ringValue} size={104} strokeWidth={8} glow>
-                    <span className="font-display text-[22px] font-black text-[var(--accent)] tabular-nums leading-none">{ringValue}%</span>
+                <RingMeter value={ringValue} size={104} strokeWidth={8} color="var(--success)">
+                    <span className="font-display text-[22px] font-black tabular-nums leading-none" style={{ color: "var(--success)" }}>{ringValue}%</span>
                     <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/40">Cleared</span>
                 </RingMeter>
 
                 <dl className="flex-1 min-w-0 divide-y divide-white/[0.05]">
                     {SHELF.map(({ label, tone, key }) => (
                         <div key={label} className="flex items-center gap-2.5 py-[7px] first:pt-0 last:pb-0">
-                            <span aria-hidden className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: tone }} />
+                            <span aria-hidden className="w-[3px] h-[15px] rounded-full shrink-0" style={{ background: tone }} />
                             <dt className="flex-1 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/40">{label}</dt>
                             <dd className="font-display text-[17px] font-black tabular-nums leading-none text-white">{stats[key]}</dd>
                         </div>
@@ -90,14 +106,21 @@ export default function BacklogProgressCard({
                 waiting got a row of counters and then empty panel down to the
                 button. */}
             <div className="mt-4">
-                <div className="flex h-[10px] rounded-full overflow-hidden bg-[var(--track)]">
+                <div className="flex h-[10px] gap-[2px] rounded-full overflow-hidden bg-[var(--track)]">
                     {SHELF.map(({ label, tone, key }) =>
                         stats[key] > 0 ? (
                             <span
                                 key={label}
                                 title={`${label}: ${stats[key]}`}
                                 className="transition-[width] duration-700 ease-[var(--ease-hud)]"
-                                style={{ width: `${(stats[key] / Math.max(1, total)) * 100}%`, background: tone }}
+                                style={{
+                                    width: `${(stats[key] / Math.max(1, total)) * 100}%`,
+                                    // Two games out of ninety-five is 2% of the
+                                    // rail. Without a floor it is a hairline and
+                                    // the shelf state it stands for looks empty.
+                                    minWidth: 6,
+                                    background: tone,
+                                }}
                             />
                         ) : null
                     )}
