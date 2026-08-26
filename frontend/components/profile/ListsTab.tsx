@@ -7,7 +7,7 @@ import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import {
     List as ListIcon, Plus, Heart, MessageSquare, Lock, FileEdit, AlertTriangle, Pencil, Trash2, Loader2, Gamepad2,
-    Trophy, CalendarDays, Skull, Gem, FilePlus, } from "lucide-react";
+    Trophy, CalendarDays, Skull, Gem, Rows3, } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import Segmented from "@/components/ui/Segmented";
 import ListEditor, { CommunityInspiration } from "./ListEditor";
@@ -56,7 +56,10 @@ const STARTERS: {
     { key: "comfort", name: "Comfort Games", type: "custom", blurb: "The ones you go back to", icon: Heart, tint: "#f472b6" },
     { key: "shame", name: "Hall of Shame", type: "custom", blurb: "Bought, never finished", icon: Skull, tint: "#9ca3af" },
     { key: "hidden", name: "Hidden Gems", type: "custom", blurb: "What nobody else played", icon: Gem, tint: "#a855f7" },
-    { key: "blank", name: "Untitled list", type: "custom", blurb: "Start from nothing", icon: FilePlus, tint: "#60a5fa" },
+    // Took the "Untitled list" slot. That one asked the reader to invent both
+    // a name and a shape — which is the thing this panel exists to spare them
+    // — and every starter here is renameable anyway, so nothing was lost.
+    { key: "tier", name: "Tier List", type: "tier", blurb: "Sort them S to F", icon: Rows3, tint: "#22d3ee" },
 ];
 
 /** State a list can be in, and how the bar counts them. */
