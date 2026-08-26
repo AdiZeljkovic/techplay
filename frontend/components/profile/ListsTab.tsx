@@ -22,6 +22,7 @@ const TYPE_LABEL: Record<ListType, string> = {
     top100: "Top 100",
     genre: "Genre",
     custom: "Ranking",
+    tier: "Tier list",
 };
 
 interface Props {

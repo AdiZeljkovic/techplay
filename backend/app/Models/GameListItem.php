@@ -11,6 +11,9 @@ class GameListItem extends Model
         'game_list_id',
         'game_id',
         'position',
+        // Which rung on a tier list. Null everywhere else, and on a tier list
+        // it means "added to the board, not placed yet".
+        'tier',
         'note',
         'score',
     ];

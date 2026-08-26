@@ -240,10 +240,24 @@ class GameListController extends Controller
     public function reorder(Request $request, int $id)
     {
         $list = GameList::where('user_id', $request->user()->id)->findOrFail($id);
-        $data = $request->validate(['item_ids' => ['required', 'array'], 'item_ids.*' => ['integer']]);
+        $data = $request->validate([
+            'item_ids' => ['required', 'array'],
+            'item_ids.*' => ['integer'],
+            // A tier board reorders one rung at a time, so the ids that arrive
+            // are that rung's — and passing it also moves anything dragged in
+            // from another rung in the same request.
+            'tier' => ['sometimes', 'nullable', Rule::in(GameList::TIERS)],
+        ]);
+
+        $tier = $request->has('tier') ? $data['tier'] ?? null : false;
 
         foreach ($data['item_ids'] as $pos => $itemId) {
-            GameListItem::where('game_list_id', $list->id)->where('id', $itemId)->update(['position' => $pos]);
+            $fields = ['position' => $pos];
+            if ($tier !== false) {
+                $fields['tier'] = $tier;
+            }
+
+            GameListItem::where('game_list_id', $list->id)->where('id', $itemId)->update($fields);
         }
 
         return $this->success(null, 'Reordered');
@@ -263,7 +277,22 @@ class GameListController extends Controller
             // 1.0–10.0 with one decimal — a ranking's own scale, deliberately
             // not the 1–5 stars used for official game ratings.
             'score' => ['nullable', 'numeric', 'min:1', 'max:10'],
+            // Which rung, on a board that has rungs. Null puts it back in the
+            // unranked tray, which is a real move and not a missing value.
+            'tier' => ['sometimes', 'nullable', Rule::in(GameList::TIERS)],
         ]);
+
+        if (array_key_exists('tier', $data) && ! $list->isTierList()) {
+            return $this->error('Only a tier list has tiers.', 422);
+        }
+
+        // Landing on a rung means landing at the end of it, not on top of
+        // whoever is already there.
+        if (! empty($data['tier']) && $data['tier'] !== $item->tier) {
+            $data['position'] = (int) GameListItem::where('game_list_id', $list->id)
+                ->where('tier', $data['tier'])
+                ->max('position') + 1;
+        }
 
         $item->fill($data)->save();
 
@@ -491,6 +520,7 @@ class GameListController extends Controller
             $data['items'] = $list->items->map(fn ($it) => [
                 'id' => $it->id,
                 'position' => $it->position,
+                'tier' => $it->tier,
                 'note' => $it->note,
                 'score' => $it->score !== null ? (float) $it->score : null,
                 'game' => $it->game ? [

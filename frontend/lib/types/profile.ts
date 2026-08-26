@@ -529,7 +529,19 @@ export interface Milestone {
     completed: boolean;
 }
 
-export type ListType = "top10" | "top25" | "top100" | "genre" | "custom";
+export type ListType = "top10" | "top25" | "top100" | "genre" | "custom" | "tier";
+
+/**
+ * The rungs of a tier list, best first.
+ *
+ * Fixed, and mirrored from GameList::TIERS. The letters are the format — S
+ * above A comes from the Japanese 秀 (shū, "excellent") sitting above a
+ * standard A–F report card, and it reached gaming through fighting-game
+ * forums in the nineties.
+ */
+export const TIERS = ["S", "A", "B", "C", "D", "F"] as const;
+
+export type Tier = (typeof TIERS)[number];
 
 export interface GameListPreview {
     id: number;
@@ -564,6 +576,8 @@ export interface GameListComment {
 export interface GameListItemEntry {
     id: number;
     position: number;
+    /** Which rung, on a tier list. Null is the unranked tray, not a missing value. */
+    tier?: Tier | null;
     note?: string | null;
     /** 1.0–10.0, the ranking's own scale — not the 1–5 game rating. */
     score?: number | null;

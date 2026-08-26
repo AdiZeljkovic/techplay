@@ -11,6 +11,8 @@ const TYPE_LABEL: Partial<Record<ListType, string>> = {
     top25: "Top 25",
     top100: "Top 100",
     genre: "Genre",
+    // The badge that tells a browser this one is a board, not a running order.
+    tier: "Tier list",
 };
 
 /**

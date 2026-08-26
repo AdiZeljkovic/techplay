@@ -6,6 +6,7 @@ import { getApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import ListSocialBar from "@/components/profile/ListSocialBar";
 import type { GameListDetail } from "@/lib/types/profile";
+import TierBoard from "@/components/profile/TierBoard";
 
 type Props = { params: Promise<{ username: string; slug: string }> };
 
@@ -20,6 +21,7 @@ const TYPE_LABEL: Record<string, string> = {
     top100: "Top 100",
     genre: "Genre List",
     custom: "Ranking",
+    tier: "Tier List",
 };
 
 async function fetchList(username: string, slug: string): Promise<GameListDetail | null> {
@@ -75,7 +77,12 @@ export default async function GameListPage({ params }: Props) {
     // A genre list is a set, not a ranking — giving its first three a podium
     // would invent a claim its author never made. And a podium needs a list
     // under it: three cards over two rows is a podium that ate the list.
-    const ranked = list.list_type !== "genre";
+    const isTier = list.list_type === "tier";
+
+    // Neither a genre list nor a tier list is a running order: one is a set,
+    // the other groups equals. A podium on either invents a claim its author
+    // never made.
+    const ranked = list.list_type !== "genre" && !isTier;
     const podium = ranked && items.length >= 6 ? items.slice(0, 3) : [];
     const rest = items.slice(podium.length);
 
@@ -160,6 +167,8 @@ export default async function GameListPage({ params }: Props) {
                         <Gamepad2 className="w-10 h-10" />
                         <p className="text-[14px]">This list is empty — for now.</p>
                     </div>
+                ) : isTier ? (
+                    <TierBoard items={items} />
                 ) : (
                     <>
                         {/* The top of a ranking is the whole argument. It was

@@ -7,8 +7,9 @@ import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Eye, MessageSquare, AlertTriangle, Heart, Gamepad2, Trophy, ChevronUp, ChevronDown } from "lucide-react";
 import Panel from "@/components/ui/Panel";
-import type { GameListDetail, GameListItemEntry, GameListPreview, ListType } from "@/lib/types/profile";
+import type { GameListDetail, GameListItemEntry, GameListPreview, ListType, Tier } from "@/lib/types/profile";
 import Select from "@/components/ui/Select";
+import TierBoard from "@/components/profile/TierBoard";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -18,6 +19,7 @@ const TYPES: { id: ListType; label: string; limit: number | null }[] = [
     { id: "top100", label: "Top 100", limit: 100 },
     { id: "genre", label: "Genre List", limit: null },
     { id: "custom", label: "Custom Ranking", limit: null },
+    { id: "tier", label: "Tier List (S–F)", limit: null },
 ];
 
 const CATEGORIES = ["RPG", "Action", "Adventure", "Shooter", "Strategy", "Horror", "Indie", "Sports", "Racing", "Simulation"];
@@ -170,6 +172,23 @@ export default function ListEditor({
         }
     };
 
+    /**
+     * Put a game on a rung, or send it back to the tray.
+     *
+     * Optimistic, because a tier list is made by moving twenty cards in a
+     * minute and a card that waits for the network before it lands makes the
+     * board feel broken.
+     */
+    const assignTier = async (itemId: number, tier: Tier | null) => {
+        setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, tier } : i)));
+        try {
+            await axios.put(`${key}/items/${itemId}`, { tier });
+        } catch {
+            toast.error("Couldn't move that one.");
+            mutate();
+        }
+    };
+
     /** Note and score save on blur — one request per field, not per keystroke. */
     const saveItem = async (itemId: number, payload: { note?: string | null; score?: number | null }) => {
         try {
@@ -310,6 +329,15 @@ export default function ListEditor({
                                     ))}
                                 </ul>
                             </div>
+                        ) : form.list_type === "tier" ? (
+                            /* A tier list is not a running order, so it does not
+                               get the ranked rows — the board is the editor. */
+                            <TierBoard
+                                items={items}
+                                editable
+                                onAssign={assignTier}
+                                onRemove={removeItem}
+                            />
                         ) : (
                             <div className="space-y-1.5">
                                 {items.map((item, i) => (
