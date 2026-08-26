@@ -324,9 +324,45 @@ export default function SocialClient() {
     const [busy, setBusy] = useState<number | null>(null);
 
     const fileInput = useRef<HTMLInputElement>(null);
-    const bottomRef = useRef<HTMLDivElement>(null);
-    /* Which conversation has already been dropped at its newest message. */
-    const openedAtEnd = useRef<number | null>(null);
+    const listRef = useRef<HTMLDivElement | null>(null);
+    /**
+     * Is the reader at the end, and so following what arrives?
+     *
+     * True until they scroll up to read back, true again the moment they
+     * return to the bottom. Opening a conversation counts as being at the end:
+     * a fresh list sits at scrollTop 0, which the near-bottom test would
+     * otherwise call "scrolled away" and refuse to follow.
+     */
+    const stick = useRef(true);
+
+    const pin = useCallback(() => {
+        const list = listRef.current;
+        if (list) list.scrollTop = list.scrollHeight;
+    }, []);
+
+    /**
+     * A fresh list element — first open, a switch, a back navigation that
+     * remounted the page — starts at the newest message.
+     *
+     * This lives on the node rather than in an effect because the effect
+     * cannot tell a remount from a re-render: it used to track "which
+     * conversation has been dropped at its end" in a ref, and a remount kept
+     * the ref while replacing the DOM, so coming back to a chat landed on its
+     * oldest message with nothing to say it had not already been handled.
+     */
+    const attachList = useCallback((node: HTMLDivElement | null) => {
+        listRef.current = node;
+        if (!node) return;
+        stick.current = true;
+        pin();
+    }, [pin]);
+
+    /** The reader decides: scrolling up stops the follow, returning resumes it. */
+    const onListScroll = useCallback(() => {
+        const list = listRef.current;
+        if (!list) return;
+        stick.current = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+    }, []);
 
     const { data: hub, mutate: mutateHub } = useSWR<SocialHubPayload>(user ? "/social" : null, fetcher);
     const { data: conversations, mutate: mutateList } = useSWR<ConversationRow[]>(
@@ -364,8 +400,19 @@ export default function SocialClient() {
             const res = await axios.get(`/conversations/${activeId}/messages`, { params: { before_id: oldest.id } });
             const batch: ChatMessage[] = res.data?.data?.messages ?? [];
 
+            // Older messages go in above what is on screen, which pushes the
+            // line being read down the list and out of view. Measure first,
+            // then give back exactly what was inserted, so the reader stays on
+            // the message they stopped at.
+            const list = listRef.current;
+            const before = list?.scrollHeight ?? 0;
+
             setOlder((prev) => [...batch, ...prev]);
             setOlderDone(!res.data?.data?.has_more);
+
+            requestAnimationFrame(() => {
+                if (list) list.scrollTop += list.scrollHeight - before;
+            });
         } catch {
             toast.error("Couldn't load older messages.");
         } finally {
@@ -403,38 +450,34 @@ export default function SocialClient() {
         }
     }, [conversations, activeId]);
 
+    /* Switching conversation is arriving at one, not reading it: follow again. */
+    useEffect(() => { stick.current = true; }, [activeId]);
+
+    /* A message landed — ours or theirs. Follow it only if they are at the end,
+       so nobody reading history gets yanked away from it. */
     useEffect(() => {
-        const list = bottomRef.current?.parentElement;
-        if (!list || !activeId) return;
+        if (stick.current) pin();
+    }, [thread?.messages?.length, activeId, pin]);
 
-        /*
-         * Opening a conversation lands on its newest message.
-         *
-         * The rule below — follow only if the reader is already at the end —
-         * is right for a thread being read, and wrong for one being opened:
-         * a fresh list sits at scrollTop 0, which is never "near the bottom",
-         * so every conversation opened at its oldest message and the reader
-         * had to scroll down through the whole history to find out what had
-         * just been said.
-         *
-         * Once per conversation, then, jump. Twice in practice: avatars and
-         * images finish loading after the first jump and grow the list under
-         * it, so the next frame corrects for what arrived late.
-         */
-        if (openedAtEnd.current !== activeId) {
-            if ((thread?.messages?.length ?? 0) === 0) return;   // nothing to jump to yet
-            openedAtEnd.current = activeId;
-            list.scrollTop = list.scrollHeight;
-            requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
-            return;
-        }
+    /**
+     * Late content moves the end.
+     *
+     * Avatars and attachments finish decoding well after the frame that drew
+     * them, and each one grows the list under a reader who was pinned to its
+     * bottom a moment ago. The old code allowed for this with a single
+     * requestAnimationFrame, which is one frame — nowhere near long enough for
+     * an image off the network.
+     *
+     * `load` does not bubble, so this listens in the capture phase.
+     */
+    useEffect(() => {
+        const list = listRef.current;
+        if (!list) return;
 
-        // Reading, not arriving: follow a new message only if they are already
-        // at the end, so nobody gets yanked away from what they were reading —
-        // and scroll the message list, not the document.
-        const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
-        if (nearBottom) list.scrollTop = list.scrollHeight;
-    }, [thread?.messages?.length, activeId]);
+        const settle = () => { if (stick.current) pin(); };
+        list.addEventListener("load", settle, true);
+        return () => list.removeEventListener("load", settle, true);
+    }, [activeId, pin]);
 
     /* Live delivery: the open thread listens on its own channel, and the
        viewer's personal channel keeps the list and badges honest. */
@@ -480,6 +523,9 @@ export default function SocialClient() {
 
     const send = async (image?: File) => {
         if (!activeId || (!draft.trim() && !image)) return;
+        // Your own message is always what you want to see, even if you were
+        // reading back through the history when you typed it.
+        stick.current = true;
         setSending(true);
         try {
             if (image) {
@@ -887,7 +933,11 @@ export default function SocialClient() {
                                                 )}
                                             </div>
 
-                                            <div className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3">
+                                            <div
+                                                ref={attachList}
+                                                onScroll={onListScroll}
+                                                className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3"
+                                            >
                                                 {/* Fifty messages used to be the whole of any
                                                     conversation — there was no way to ask for
                                                     what came before. */}
@@ -930,7 +980,6 @@ export default function SocialClient() {
                                                         );
                                                     })
                                                 )}
-                                                <div ref={bottomRef} />
                                             </div>
 
                                             <div className="p-3 border-t border-white/[0.07]">
