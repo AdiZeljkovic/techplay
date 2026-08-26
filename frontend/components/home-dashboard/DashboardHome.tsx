@@ -3,7 +3,6 @@
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import DashboardSkeleton from "./DashboardSkeleton";
-import CommunityListsRail from "./CommunityListsRail";
 import ProfileHero from "./ProfileHero";
 import FavoriteGamesRail from "./FavoriteGamesRail";
 import ContinuePlayingCard from "./ContinuePlayingCard";
@@ -149,12 +148,6 @@ export default function DashboardHome({ user }: DashboardHomeProps) {
                         <BacklogProgressCard stats={data.stats} suggestion={data.backlog_suggestion} />
                     </div>
                 )}
-
-                {/* What other people ranked — the last band, because it is the
-                    one about somebody else. */}
-                <div className="tp-fade-up tp-d6">
-                    <CommunityListsRail />
-                </div>
             </div>
         </main>
     );

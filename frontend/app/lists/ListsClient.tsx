@@ -101,7 +101,16 @@ function ListCard({ list }: { list: GameListPreview }) {
     );
 }
 
-export default function ListsClient({ initialLists }: { initialLists: GameListPreview[] }) {
+export default function ListsClient({
+    initialLists,
+    heading,
+    blurb,
+}: {
+    initialLists: GameListPreview[];
+    /** A tag page reuses this shell and says which tag it is showing. */
+    heading?: string;
+    blurb?: string;
+}) {
     const { user } = useAuth();
     const lists = initialLists;
 
@@ -123,14 +132,19 @@ export default function ListsClient({ initialLists }: { initialLists: GameListPr
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
                 <div className="relative z-10 container-page py-5 md:py-12 text-center">
-                    <h1 className="font-display font-black tracking-tight text-[28px] md:text-[58px] leading-none">
-                        <span className="text-white">GAME </span>
-                        <span className="text-[var(--accent)]">LISTS</span>
+                    <h1 className="font-display font-black tracking-tight text-[28px] md:text-[58px] leading-none uppercase">
+                        {heading ? (
+                            <span className="text-[var(--accent)]">{heading}</span>
+                        ) : (
+                            <>
+                                <span className="text-white">GAME </span>
+                                <span className="text-[var(--accent)]">LISTS</span>
+                            </>
+                        )}
                     </h1>
 
                     <p className="hidden md:block mt-3 max-w-[680px] mx-auto text-[13px] text-white/45">
-                        Rankings people made — Top 10s, Top 100s and genre lists, with the games in the order
-                        somebody put them.
+                        {blurb ?? "Rankings people made — Top 10s, Top 100s and genre lists, with the games in the order somebody put them."}
                     </p>
 
                     <Link

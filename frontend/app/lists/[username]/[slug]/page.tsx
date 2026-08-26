@@ -173,10 +173,17 @@ export default async function GameListPage({ params }: Props) {
                         </span>
                         {(list.tags?.length ?? 0) > 0 && (
                             <span className="flex flex-wrap gap-1.5">
+                                {/* A tag that leads nowhere is decoration. Each
+                                    one is a door to every other list wearing
+                                    it, which is what the field was for. */}
                                 {list.tags!.map((t) => (
-                                    <span key={t} className="inline-flex items-center h-[20px] px-2.5 rounded-full bg-white/[0.05] text-[10px] font-bold text-white/45">
+                                    <Link
+                                        key={t}
+                                        href={`/lists/tag/${encodeURIComponent(t)}`}
+                                        className="inline-flex items-center h-[20px] px-2.5 rounded-full bg-white/[0.05] hover:bg-[var(--accent-soft)] border border-transparent hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)] text-[10px] font-bold text-white/45 hover:text-[var(--accent)] transition-colors"
+                                    >
                                         {t}
-                                    </span>
+                                    </Link>
                                 ))}
                             </span>
                         )}

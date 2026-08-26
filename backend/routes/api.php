@@ -525,6 +525,7 @@ Route::prefix('v1')->group(function () {
 
         // Custom Game Lists (Public read)
         Route::get('/game-lists/discover', [GameListController::class, 'discover']);
+        Route::get('/game-lists/tags', [GameListController::class, 'tags']);
         Route::get('/game-lists/{id}', [GameListController::class, 'show'])->whereNumber('id');
         Route::get('/game-lists/{id}/comments', [GameListController::class, 'comments'])->whereNumber('id');
 

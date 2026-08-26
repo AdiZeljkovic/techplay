@@ -14,6 +14,7 @@ use App\Services\SanitizationService;
 use App\Traits\ApiResponse;
 use App\Traits\ProfilePrivacy;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -396,9 +397,29 @@ class GameListController extends Controller
     {
         $limit = min(20, max(1, (int) $request->query('limit', 6)));
 
+        // A tag that leads nowhere is not a tag, it is decoration — and one
+        // list of seven bothered to carry any. Filtering by it is what turns
+        // the field into navigation.
+        $tag = trim((string) $request->query('tag', ''));
+
         $lists = GameList::query()
             ->where('is_public', true)
             ->where('is_draft', false)
+            ->when($tag !== '', function ($q) use ($tag) {
+                // `tags` is a json column, and the match is done on its text
+                // form — anchored to the quoted element, which is why "rpg"
+                // does not also answer for "rpg-likes".
+                //
+                // Two dialects: production is Postgres, where the cast is
+                // explicit and ILIKE does the case-insensitive part; the test
+                // suite is SQLite, which has neither and compares LIKE without
+                // case anyway.
+                if (DB::getDriverName() === 'pgsql') {
+                    $q->whereRaw('tags::text ILIKE ?', ['%"'.$tag.'"%']);
+                } else {
+                    $q->whereRaw('tags LIKE ?', ['%"'.$tag.'"%']);
+                }
+            })
             // A user who hid their profile still had every public list of
             // theirs surfaced here, with username and avatar attached.
             ->whereHas('user', fn ($q) => $q->where('profile_visibility', 'public'))
@@ -411,6 +432,41 @@ class GameListController extends Controller
             ->get();
 
         return $this->success($lists->map(fn ($l) => $this->presentList($l)));
+    }
+
+    /**
+     * Public: every tag carried by a list somebody can actually open, counted.
+     * GET /game-lists/tags
+     *
+     * Read from the lists rather than kept in a table of its own: a tag exists
+     * exactly as long as a published list wears it, and a directory of tags
+     * that outlive their lists is a directory of dead ends.
+     */
+    public function tags()
+    {
+        $rows = GameList::query()
+            ->where('is_public', true)
+            ->where('is_draft', false)
+            ->whereHas('user', fn ($q) => $q->where('profile_visibility', 'public'))
+            ->has('items')
+            ->pluck('tags');
+
+        $counts = [];
+        foreach ($rows as $tags) {
+            foreach ((array) $tags as $tag) {
+                $tag = trim((string) $tag);
+                if ($tag === '') {
+                    continue;
+                }
+                $counts[$tag] = ($counts[$tag] ?? 0) + 1;
+            }
+        }
+
+        arsort($counts);
+
+        return $this->success(
+            collect($counts)->map(fn ($count, $tag) => ['tag' => $tag, 'count' => $count])->values()
+        );
     }
 
     /**
