@@ -189,7 +189,10 @@ function SupportCheckoutContent() {
 
                     {/* Right Column: Summary Sticky */}
                     <div className="lg:col-span-4">
-                        <div className="sticky top-10">
+                        {/* 96px, not 40px: the fixed header is 56px on a phone
+                            and 72px from md up, so the order summary was
+                            sticking behind it. */}
+                        <div className="sticky top-24">
                             <div className="bg-[var(--surface-1)]/50 backdrop-blur-md border border-white/10 rounded-[2rem] p-6 shadow-2xl">
                                 <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
                                     <Coins className="w-5 h-5 text-[var(--accent)]" />

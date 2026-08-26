@@ -288,7 +288,9 @@ export default function GiveawayHub() {
                 </div>
 
                 {/* ── right rail ── */}
-                <aside className="space-y-4 xl:sticky xl:top-4">
+                {/* 96px clears the 72px fixed header — same reason as the rail
+                    in SectionHub, which had the identical offset. */}
+                <aside className="space-y-4 xl:sticky xl:top-24">
                     <Panel title="How it works">
                         <ol className="space-y-3">
                             {[

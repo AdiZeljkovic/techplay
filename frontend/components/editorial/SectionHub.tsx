@@ -437,7 +437,11 @@ export default function SectionHub({
                 </div>
 
                 {/* ── rail ── */}
-                <aside className="space-y-4 xl:sticky xl:top-4">
+                {/* top-24 (96px), not top-4: the header is fixed and 72px tall
+                    from md up, so a rail that sticks 16px from the viewport top
+                    parks itself underneath it and loses its first entry. 96px is
+                    what the rest of the site's sticky rails already use. */}
+                <aside className="space-y-4 xl:sticky xl:top-24">
                     <Panel title="Most read">
                         {hub?.most_read.length ? (
                             <ol className="space-y-3">
