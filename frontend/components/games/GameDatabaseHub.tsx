@@ -269,6 +269,20 @@ export default function GameDatabaseHub({
     const foldedPage = useRef(0);
     useEffect(() => {
         if (!data?.results) return;
+
+        // Wait for the page that was actually asked for.
+        //
+        // Load more took two clicks. keepPreviousData hands back the previous
+        // page's rows while the new request is in flight, so this effect ran
+        // once against page one's data, found every id already on screen,
+        // appended nothing — and marked the new page folded. When the real rows
+        // arrived the guard below saw its own mark and skipped them. Clicking
+        // again advanced the counter, and what appeared was the page before it.
+        //
+        // SWR sets isLoading when there is no cached data for the current key,
+        // which is exactly the window in which `data` belongs to the old one.
+        if (isLoading) return;
+
         if (page === 1) {
             foldedPage.current = 1;
             setRows(data.results);
@@ -280,7 +294,7 @@ export default function GameDatabaseHub({
             const seen = new Set(prev.map((g) => g.id));
             return [...prev, ...data.results.filter((g) => !seen.has(g.id))];
         });
-    }, [data, page]);
+    }, [data, isLoading, page]);
 
     const reset = useCallback(() => {
         setTyped(""); setSearch(""); setGenre(""); setPlatform("");
