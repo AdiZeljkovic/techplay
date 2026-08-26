@@ -677,7 +677,10 @@ class GameController extends Controller
     {
         $today = now()->toDateString();
 
-        $payload = Cache::remember("games.hidden_gems.v2.{$today}", 86400, function () use ($today) {
+        // v3: the payload grew an excerpt. A cached answer outlives a deploy
+        // by up to a day, so a shape change has to change the key with it —
+        // otherwise the new code serves yesterday's fields.
+        $payload = Cache::remember("games.hidden_gems.v3.{$today}", 86400, function () use ($today) {
             $votes = 'ratings_count';
 
             return Game::query()
