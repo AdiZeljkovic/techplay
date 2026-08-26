@@ -11,7 +11,7 @@ import DataAttribution from "@/components/games/DataAttribution";
 import Sheet from "@/components/ui/Sheet";
 import {
     Search, Star, Shuffle, SlidersHorizontal, ArrowDownWideNarrow, Check, Flame, Heart, Clock,
-    ChevronDown, Gamepad2, Loader2, X, CalendarDays, Sparkles,
+    ChevronDown, Gamepad2, Loader2, X, CalendarDays, Sparkles, TrendingUp,
 } from "lucide-react";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
@@ -74,7 +74,14 @@ const SHELVES = [
     { key: "-rating", icon: Star, title: "Top Rated", line: "The highest scored games in the catalogue." },
     { key: "-released", icon: Sparkles, title: "Recently Added", line: "The newest arrivals in our database." },
     { key: "upcoming", icon: CalendarDays, title: "Upcoming Releases", line: "What is still to come, on every platform." },
-    { key: "platforms", icon: Gamepad2, title: "Explore by Platform", line: "Browse across every console and generation." },
+    // Was "Explore by Platform", which opened the filter drawer on the
+    // Platform group. Its three neighbours each apply a view and show you
+    // games; that one opened a panel and asked another question — and asked
+    // it about platforms, which the chip row directly above already answers
+    // for all six families. Most Popular is the view the row was missing:
+    // IGDB carries a popularity reading on 152,092 games and nothing on the
+    // page surfaced it.
+    { key: "-popularity", icon: TrendingUp, title: "Most Popular", line: "What people are actually playing right now." },
 ];
 
 function Shelf({ shelf, active, onPick }: { shelf: typeof SHELVES[number]; active: boolean; onPick: () => void }) {
@@ -491,12 +498,10 @@ export default function GameDatabaseHub({
                         shelf={shelf}
                         active={
                             shelf.key === "upcoming" ? status === "upcoming"
-                                : shelf.key === "platforms" ? Boolean(platform)
-                                    : status !== "upcoming" && sort === shelf.key
+                                : status !== "upcoming" && sort === shelf.key
                         }
                         onPick={() => change(() => {
                             if (shelf.key === "upcoming") { setStatus("upcoming"); setSort("released"); }
-                            else if (shelf.key === "platforms") { setRailOpen(true); setOpenGroup("Platform"); }
                             else { setStatus("all"); setSort(shelf.key); }
                         })}
                     />
