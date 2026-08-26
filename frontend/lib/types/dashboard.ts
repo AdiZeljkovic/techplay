@@ -46,6 +46,8 @@ export interface DashboardStats {
     /** Wallet, for the owner's daily hub. */
     bounty_balance?: number;
     playing_count: number;
+    /** Played, set down, not claimed finished — the bucket most of a Steam import lands in. */
+    played_count: number;
     backlog_count: number;
     completed_count: number;
     wishlist_count: number;

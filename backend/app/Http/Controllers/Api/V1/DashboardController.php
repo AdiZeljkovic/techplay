@@ -115,6 +115,8 @@ class DashboardController extends Controller
             'stats' => [
                 'games_count' => $counts['games_count'],
                 'playing_count' => $counts['playing_count'],
+                // Dropped here too — same omission as the profile payload.
+                'played_count' => $counts['played_count'],
                 'backlog_count' => $counts['backlog_count'],
                 'completed_count' => $counts['completed_count'],
                 'wishlist_count' => $counts['wishlist_count'],

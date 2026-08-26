@@ -26,7 +26,7 @@ class ProfileService
     /**
      * Counts per status + favorites + total. Single grouped query.
      *
-     * @return array{games_count:int,playing_count:int,backlog_count:int,completed_count:int,wishlist_count:int,dropped_count:int,favorites_count:int}
+     * @return array{games_count:int,playing_count:int,played_count:int,backlog_count:int,completed_count:int,wishlist_count:int,dropped_count:int,favorites_count:int}
      */
     public function collectionCounts(User $user): array
     {

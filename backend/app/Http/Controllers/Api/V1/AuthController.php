@@ -411,6 +411,11 @@ class AuthController extends Controller
             // Game collection counts (Phase 1).
             'games_count' => $collectionCounts['games_count'],
             'playing_count' => $collectionCounts['playing_count'],
+            // Computed since `played` was introduced and never sent: the
+            // library strip reads stats.played_count, got undefined, and drew
+            // a hard 0 under "Played" for everyone. 185 of adi's 280 games and
+            // 176 of XLBanana47's 396 sit in that bucket.
+            'played_count' => $collectionCounts['played_count'],
             'backlog_count' => $collectionCounts['backlog_count'],
             'completed_count' => $collectionCounts['completed_count'],
             'wishlist_count' => $collectionCounts['wishlist_count'],
