@@ -741,7 +741,23 @@ class GameController extends Controller
                 'date' => $tomorrow->format('F j'),
                 'results' => $this->anniversaries($tomorrow, 4),
             ],
-        ])->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+        ])
+            /*
+             * A minute in the browser, an hour at the edge.
+             *
+             * This said `max-age=3600` for both, and Cloudflare does not cache
+             * it at all (`cf-cache-status: DYNAMIC`) — so the only thing the
+             * hour bought was a returning reader holding yesterday's answer
+             * for an hour, with no way to ask for a new one short of a hard
+             * refresh. That is what happened the day this panel changed: the
+             * new markup arrived, the old JSON stayed, and the two days ran
+             * together as one unsorted list.
+             *
+             * `s-maxage` keeps the edge cache if it is ever turned on for this
+             * route, and `stale-while-revalidate` still hands over the old
+             * copy instantly while the new one is fetched.
+             */
+            ->header('Cache-Control', 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400');
     }
 
     /**

@@ -56,7 +56,9 @@
       "Bash(vendor/bin/pint app/Http/Controllers/Api/V1/GameController.php)",
       "Bash(php -l app/Http/Controllers/Api/V1/GameController.php)",
       "Bash(python \"C:/Users/adize/AppData/Local/Temp/claude/c--Users-adize-Documents-Projekti-TechPlay/82cf1723-b9f5-408e-bc03-38f20cfc3129/scratchpad/onthisday_ui.py\")",
-      "Bash(vendor/bin/pint tests/Feature/GameDiscoveryTest.php)"
+      "Bash(vendor/bin/pint tests/Feature/GameDiscoveryTest.php)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://techplay.gg/\")",
+      "Bash(curl -s \"https://api-beta.techplay.gg/api/v1/games/on-this-day\" -D /tmp/h.txt -o /tmp/otd.json)"
     ],
     "additionalDirectories": [
       "c:\\Users\\adize\\.claude\\plans",
