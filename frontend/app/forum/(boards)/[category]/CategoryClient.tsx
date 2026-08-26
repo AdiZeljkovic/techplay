@@ -12,6 +12,7 @@ import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/for
 import ListingPagination from "@/components/ui/ListingPagination";
 import { useRealTimeForum } from "@/hooks";
 import { useForumReads } from "@/hooks/useForumReads";
+import { usePagedList } from "@/hooks/usePagedList";
 import { decodeHtml } from "@/lib/decode";
 import { fmtStat, getCategoryIcon } from "@/lib/forum";
 
@@ -47,6 +48,13 @@ function CategoryThreadsPageInner({ initial }: { initial: CategoryData | null })
     const { user } = useAuth();
     const Icon = getCategoryIcon(categorySlug);
     const [page, setPage] = useState(1);
+    /** The pager sits under the table; a new page starts at its first row. */
+    const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
+
+    const goToPage = (next: number) => {
+        setPage(next);
+        scrollToTop();
+    };
     const [activeTag, setActiveTag] = useState<string | null>(searchParams.get("tag"));
     const [showRules, setShowRules] = useState(false);
 
@@ -183,7 +191,7 @@ function CategoryThreadsPageInner({ initial }: { initial: CategoryData | null })
 
             {sorted.length > 0 ? (
                 <>
-                    <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden">
+                    <div ref={listTop} className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden">
                         <ThreadRowHeader />
                         <div className="divide-y divide-[var(--line)]">
                             {sorted.map((thread) => (
@@ -201,8 +209,8 @@ function CategoryThreadsPageInner({ initial }: { initial: CategoryData | null })
                             <ListingPagination
                                 page={threads.current_page}
                                 lastPage={threads.last_page}
-                                onPrev={() => setPage((p) => Math.max(1, p - 1))}
-                                onNext={() => setPage((p) => Math.min(threads.last_page, p + 1))}
+                                onPrev={() => goToPage(Math.max(1, page - 1))}
+                                onNext={() => goToPage(Math.min(threads.last_page, page + 1))}
                                 prevDisabled={threads.current_page <= 1}
                                 nextDisabled={threads.current_page >= threads.last_page}
                             />

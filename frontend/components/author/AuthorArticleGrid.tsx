@@ -8,6 +8,7 @@ import NewsCard from "@/components/news/NewsCard";
 import ReviewCard from "@/components/reviews/ReviewCard";
 import ListingPagination from "@/components/ui/ListingPagination";
 import ListingEmptyState from "@/components/ui/ListingEmptyState";
+import { usePagedList } from "@/hooks/usePagedList";
 import type { Article, Review, AuthorStats } from "@/types";
 
 const fetcher = (url: string) => axios.get(url).then(r => r.data);
@@ -30,6 +31,13 @@ interface AuthorArticleGridProps {
 export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProps) {
     const [activeTab, setActiveTab] = useState<TabId>("all");
     const [page, setPage] = useState(1);
+    /** The pager sits under the grid; a new page starts at its top. */
+    const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
+
+    const goToPage = (next: number) => {
+        setPage(next);
+        scrollToTop();
+    };
 
     const params = new URLSearchParams({ page: String(page) });
     if (activeTab !== "all") params.set("type", activeTab);
@@ -55,7 +63,7 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
     }
 
     return (
-        <div className="container-page py-10">
+        <div ref={listTop} className="container-page py-10">
 
             {/* Tab filter */}
             <div className="flex flex-wrap gap-2 mb-8">
@@ -126,8 +134,8 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
                         <ListingPagination
                             page={page}
                             lastPage={lastPage}
-                            onPrev={() => setPage(p => Math.max(1, p - 1))}
-                            onNext={() => setPage(p => p + 1)}
+                            onPrev={() => goToPage(Math.max(1, page - 1))}
+                            onNext={() => goToPage(page + 1)}
                             prevDisabled={page <= 1}
                             nextDisabled={page >= lastPage}
                         />

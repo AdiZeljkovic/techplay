@@ -6,6 +6,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Search, Building2, Loader2, ArrowDownWideNarrow, Check, ChevronDown, MapPin, X } from "lucide-react";
 import DataAttribution from "@/components/games/DataAttribution";
+import { usePagedList } from "@/hooks/usePagedList";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -63,6 +64,13 @@ export default function StudiosClient({
     const [debounced, setDebounced] = useState("");
     const [sort, setSort] = useState<string>("games");
     const [page, setPage] = useState(1);
+    /** The pager sits under the grid; a new page starts at its top. */
+    const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
+
+    const goToPage = (next: number) => {
+        setPage(next);
+        scrollToTop();
+    };
     const [sortOpen, setSortOpen] = useState(false);
 
     useEffect(() => {
@@ -228,6 +236,7 @@ export default function StudiosClient({
                     </p>
                 ) : (
                     <div
+                        ref={listTop}
                         /* `items-stretch` is the default and is what makes the
                            figures line up along the bottom of every card in a
                            row — without equal heights the last row sat short
@@ -245,7 +254,7 @@ export default function StudiosClient({
                         <button
                             type="button"
                             disabled={page <= 1}
-                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            onClick={() => goToPage(Math.max(1, page - 1))}
                             className="h-[36px] px-4 rounded-[9px] border border-white/[0.08] bg-white/[0.03] text-[13px] text-white/75 disabled:opacity-30 hover:border-white/20 transition-colors"
                         >
                             Previous
@@ -256,7 +265,7 @@ export default function StudiosClient({
                         <button
                             type="button"
                             disabled={page >= pagination.last_page}
-                            onClick={() => setPage((p) => p + 1)}
+                            onClick={() => goToPage(page + 1)}
                             className="h-[36px] px-4 rounded-[9px] border border-white/[0.08] bg-white/[0.03] text-[13px] text-white/75 disabled:opacity-30 hover:border-white/20 transition-colors"
                         >
                             Next

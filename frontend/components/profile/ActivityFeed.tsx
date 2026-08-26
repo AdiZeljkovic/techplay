@@ -7,6 +7,7 @@ import axios from "@/lib/axios";
 import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, MessageCircle, Trophy, Gamepad2, ListChecks, Gift, Sparkles, Activity as ActivityIcon, Heart, CalendarClock } from "lucide-react";
 import type { ActivityItem } from "@/lib/types/profile";
+import { usePagedList } from "@/hooks/usePagedList";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -40,6 +41,13 @@ export default function ActivityFeed({ username, compact }: Props) {
     const [filter, setFilter] = useState("all");
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(6); // compact: grows via "Load More"
+    /** Only the full view pages; the compact one grows via Load More and stays put. */
+    const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
+
+    const goToPage = (next: number) => {
+        setPage(next);
+        scrollToTop();
+    };
 
     const perPage = compact ? limit : 15;
     const query = `category=${filter === "all" ? "" : filter}&page=${compact ? 1 : page}&per_page=${perPage}`;
@@ -53,7 +61,7 @@ export default function ActivityFeed({ username, compact }: Props) {
     const lastPage = data?.data?.last_page ?? 1;
 
     return (
-        <div>
+        <div ref={listTop}>
             {!compact && (
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar mb-5">
                     {FILTERS.map((f) => (
@@ -114,9 +122,9 @@ export default function ActivityFeed({ username, compact }: Props) {
             {/* Full: pagination */}
             {!compact && lastPage > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6">
-                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Prev</button>
+                    <button onClick={() => goToPage(Math.max(1, page - 1))} disabled={page <= 1} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Prev</button>
                     <span className="text-[11px] text-white/40 tabular-nums">{page} / {lastPage}</span>
-                    <button onClick={() => setPage((p) => Math.min(lastPage, p + 1))} disabled={page >= lastPage} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Next</button>
+                    <button onClick={() => goToPage(Math.min(lastPage, page + 1))} disabled={page >= lastPage} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Next</button>
                 </div>
             )}
         </div>

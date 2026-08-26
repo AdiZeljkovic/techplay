@@ -8,6 +8,7 @@ import { Search, X, ChevronDown, Lock, Gamepad2, Loader2 } from "lucide-react";
 import axios from "@/lib/axios";
 import EmptyState from "@/components/ui/EmptyState";
 import Segmented from "@/components/ui/Segmented";
+import { usePagedList } from "@/hooks/usePagedList";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data ?? r.data);
 
@@ -66,6 +67,14 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
     // narrow search on page four answers with nothing and looks broken.
     useEffect(() => { setPage(1); }, [status, debounced, game]);
 
+    /** The pager sits under the grid; a new page starts at its top. */
+    const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
+
+    const goToPage = (next: number) => {
+        setPage(next);
+        scrollToTop();
+    };
+
     const key = `/users/${username}/steam-achievements?status=${status}`
         + `&q=${encodeURIComponent(debounced)}&game=${game}&page=${page}&per_page=24`;
 
@@ -86,7 +95,7 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
     const games = data?.games ?? [];
 
     return (
-        <div className="space-y-4">
+        <div ref={listTop} className="space-y-4">
             <Segmented
                 ariaLabel="Filter Steam achievements"
                 value={status}
@@ -202,7 +211,7 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
             {data && data.meta.last_page > 1 && (
                 <div className="flex items-center justify-center gap-3 pt-1">
                     <button
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        onClick={() => goToPage(Math.max(1, page - 1))}
                         disabled={page <= 1}
                         className="h-8 px-3 rounded-[7px] border border-white/[0.09] bg-white/[0.03] font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/60 disabled:opacity-30 hover:border-white/25 transition-colors"
                     >
@@ -212,7 +221,7 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
                         {data.meta.page} / {data.meta.last_page}
                     </span>
                     <button
-                        onClick={() => setPage((p) => Math.min(data.meta.last_page, p + 1))}
+                        onClick={() => goToPage(Math.min(data.meta.last_page, page + 1))}
                         disabled={page >= data.meta.last_page}
                         className="h-8 px-3 rounded-[7px] border border-white/[0.09] bg-white/[0.03] font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/60 disabled:opacity-30 hover:border-white/25 transition-colors"
                     >

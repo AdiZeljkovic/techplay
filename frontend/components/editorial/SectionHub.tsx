@@ -8,6 +8,7 @@ import axios from "@/lib/axios";
 import { ArrowRight, Clock, User, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getStorageUrl } from "@/lib/imageUrl";
+import { usePagedList } from "@/hooks/usePagedList";
 import { SECTIONS, SectionKey } from "./sections";
 import { DisplayAd } from "@/components/ads/AdSense";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -134,6 +135,8 @@ export default function SectionHub({
     const pinned = Boolean(category);
 
     const [chosen, setChosen] = useState("all");
+    /** The pager sits under the list; turning a page returns to its top. */
+    const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
     const [page, setPage] = useState(1);
     const [email, setEmail] = useState("");
     const [subscribing, setSubscribing] = useState(false);
@@ -200,6 +203,11 @@ export default function SectionHub({
             ? label
             : `${label} — ${config.title}`;
 
+    const goToPage = (next: number) => {
+        setPage(next);
+        scrollToTop();
+    };
+
     // One pager, rendered at both ends of the list.
     const pager = pages && pages.last > 1 && (
         <span className="flex items-center gap-3">
@@ -207,10 +215,10 @@ export default function SectionHub({
                 {pages.total.toLocaleString()} · page {pages.current} of {pages.last}
             </span>
             <span className="flex items-center gap-1.5">
-                <PageButton disabled={page <= 1} onClick={() => setPage((p) => p - 1)} label="Previous page">
+                <PageButton disabled={page <= 1} onClick={() => goToPage(page - 1)} label="Previous page">
                     <ChevronLeft className="w-4 h-4" />
                 </PageButton>
-                <PageButton disabled={page >= pages.last} onClick={() => setPage((p) => p + 1)} label="Next page">
+                <PageButton disabled={page >= pages.last} onClick={() => goToPage(page + 1)} label="Next page">
                     <ChevronRight className="w-4 h-4" />
                 </PageButton>
             </span>
@@ -380,7 +388,7 @@ export default function SectionHub({
                     </div>
 
                     {/* ── the list ── */}
-                    <div className="mt-5 md:mt-7 flex items-center justify-between gap-4">
+                    <div ref={listTop} className="mt-5 md:mt-7 flex items-center justify-between gap-4">
                         <p className="flex items-center gap-2.5">
                             <span aria-hidden className="w-[3px] h-[15px] rounded bg-[var(--accent)]" />
                             <span className="font-display text-[13px] font-black uppercase tracking-[0.14em] text-white">
