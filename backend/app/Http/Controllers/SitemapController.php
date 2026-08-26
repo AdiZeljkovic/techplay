@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Game;
+use App\Models\GameList;
 use App\Models\Gta6Character;
 use App\Models\Guide;
 use App\Models\Product;
@@ -55,6 +56,12 @@ class SitemapController extends Controller
         }
         if (Product::where('is_active', true)->exists()) {
             $sitemaps[] = 'sitemap-products.xml';
+        }
+        // Lists were absent from every sitemap since the day they shipped, so
+        // the only pages on this site written by its members were the only ones
+        // Google was never told about.
+        if (GameList::where('is_public', true)->where('is_draft', false)->exists()) {
+            $sitemaps[] = 'sitemap-lists.xml';
         }
         if (Article::where('status', 'published')->whereBetween('published_at', [now()->subHours(48), now()])->exists()) {
             $sitemaps[] = 'sitemap-news.xml';
@@ -518,6 +525,45 @@ class SitemapController extends Controller
                     "{$this->frontendUrl}/studios/{$studio->slug}",
                     $studio->updated_at?->toIso8601String(),
                     'monthly',
+                    '0.6'
+                );
+            });
+
+        $xml .= '</urlset>';
+
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Published member lists.
+     *
+     * Only the ones a stranger can actually open: a draft or a private list
+     * answers 404 at its public URL, and a sitemap full of 404s is worse than
+     * one that never mentioned them.
+     *
+     * An empty list is left out too. It is a real page, but it is a page with
+     * nothing on it, and four of the first seven lists on this site were empty.
+     */
+    public function lists(): Response
+    {
+        $xml = $this->xmlHeader();
+
+        GameList::query()
+            ->where('is_public', true)
+            ->where('is_draft', false)
+            ->whereHas('items')
+            ->with('user:id,username')
+            ->select('id', 'user_id', 'slug', 'updated_at')
+            ->orderByDesc('updated_at')
+            ->each(function (GameList $list) use (&$xml) {
+                if (blank($list->user?->username) || blank($list->slug)) {
+                    return;
+                }
+
+                $xml .= $this->urlEntry(
+                    "{$this->frontendUrl}/lists/{$list->user->username}/{$list->slug}",
+                    $list->updated_at?->toIso8601String(),
+                    'weekly',
                     '0.6'
                 );
             });

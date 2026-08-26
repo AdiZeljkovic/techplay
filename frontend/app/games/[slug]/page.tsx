@@ -130,6 +130,15 @@ interface GameDetail {
     techplay_score: number | null;
     screenshots_count: number;
     views: number;
+    /** Member lists this game sits in — the widest door the site has to them. */
+    in_lists?: {
+        total: number;
+        items: {
+            name: string; slug: string; list_type: string;
+            items_count: number; likes_count: number;
+            username: string; display_name?: string | null;
+        }[];
+    } | null;
 }
 
 /** The screenshots endpoint serves Moby objects and aggregator URL strings alike. */
@@ -1361,6 +1370,60 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     {game.box_art.length > 0 && (
                         <Panel title="Box art" meta={<Package className="w-4 h-4 text-white/25" />}>
                             <BoxArtGallery art={game.box_art} />
+                        </Panel>
+                    )}
+
+                    {/* Somebody put this game in a ranking.
+                        332,455 game pages and not one of them said so — while
+                        the lists themselves were reachable from nowhere at all.
+                        This is the widest door the site has to them. */}
+                    {(game.in_lists?.total ?? 0) > 0 && (
+                        <Panel
+                            title="In member lists"
+                            meta={
+                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                                    {game.in_lists!.total}
+                                </span>
+                            }
+                        >
+                            <div className="space-y-1.5">
+                                {game.in_lists!.items.map((l) => (
+                                    <Link
+                                        key={`${l.username}/${l.slug}`}
+                                        href={`/lists/${l.username}/${l.slug}`}
+                                        className="group flex items-center gap-3 rounded-[8px] border border-white/[0.06] bg-white/[0.02] p-2.5 hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
+                                    >
+                                        <span
+                                            aria-hidden
+                                            className="shrink-0 w-[3px] self-stretch rounded-full"
+                                            style={{ background: l.list_type === "tier" ? "var(--accent)" : "var(--line-strong)" }}
+                                        />
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block font-display text-[12.5px] font-bold text-white/85 truncate group-hover:text-[var(--accent)] transition-colors">
+                                                {l.name}
+                                            </span>
+                                            <span className="mt-0.5 block text-[10.5px] text-white/35 truncate">
+                                                {l.display_name || l.username} · {l.items_count} {l.items_count === 1 ? "game" : "games"}
+                                                {l.list_type === "tier" ? " · tier list" : ""}
+                                            </span>
+                                        </span>
+                                        {l.likes_count > 0 && (
+                                            <span className="shrink-0 font-display text-[10.5px] font-bold tabular-nums text-white/30">
+                                                ♥ {l.likes_count}
+                                            </span>
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
+
+                            {game.in_lists!.total > game.in_lists!.items.length && (
+                                <Link
+                                    href="/lists"
+                                    className="mt-3 flex items-center justify-center gap-2 h-9 rounded-[8px] bg-white/[0.04] border border-white/[0.08] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 hover:text-white hover:bg-white/[0.08] transition-colors"
+                                >
+                                    Browse all game lists
+                                </Link>
+                            )}
                         </Panel>
                     )}
 

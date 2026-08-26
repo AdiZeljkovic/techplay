@@ -11,7 +11,7 @@ import { useCart } from "@/context/CartContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
 import {
-    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Mail, Users, Tag, ArrowRight, Bookmark, Settings, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, Sparkles, MapPinned, Disc3, ChevronLeft,
+    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Mail, Users, Tag, ArrowRight, Bookmark, Settings, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, MapPinned, Disc3, ListOrdered, ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -615,10 +615,15 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
         ] },
     {
         name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
-        activePaths: ["/wow-analyzer", "/backlog-advisor", "/gta6", "/last-disc"],
+        activePaths: ["/wow-analyzer", "/backlog-advisor", "/lists", "/gta6", "/last-disc"],
         children: [
             { name: "WoW Analyzer",    href: "/wow-analyzer",    icon: ShieldHalf, description: "Character readiness check" },
             { name: "Backlog Advisor", href: "/backlog-advisor", icon: Compass,    description: "What should you play next?" },
+            // The community directory. It has existed since June and was linked
+            // from nowhere — of 54 members, two had ever made a list, and four
+            // of the seven lists were empty. A page nobody can reach is a page
+            // nobody writes for.
+            { name: "Game Lists",      href: "/lists",           icon: ListOrdered, description: "Rankings and tier lists by the community" },
             { name: "GTA 6 Hub",       href: "/gta6",            icon: MapPinned,  description: "Map, characters, vehicles, weapons" },
             { name: "The Last Disc",   href: "/last-disc",       icon: Disc3,      description: "Open letter: keep physical games" },
         ] },

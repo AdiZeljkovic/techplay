@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SitemapController;
 use App\Models\Article;
 use App\Models\Game;
+use App\Models\GameList;
 use App\Models\GameRelation;
 use App\Services\CacheService;
 use App\Services\Chronicle\TasteProfileService;
@@ -263,6 +264,47 @@ class GameController extends Controller
     }
 
     /**
+     * Public, non-empty lists that hold this game — a few of them, and a total.
+     *
+     * Ordered by likes: on a game with a hundred lists behind it the three
+     * worth showing are the ones people agreed with, not the newest three.
+     */
+    private function listsContaining(Game $game): array
+    {
+        $base = GameList::query()
+            ->where('is_public', true)
+            ->where('is_draft', false)
+            ->whereHas('items', fn ($q) => $q->where('game_id', $game->id));
+
+        $total = (clone $base)->count();
+
+        if ($total === 0) {
+            return ['total' => 0, 'items' => []];
+        }
+
+        $lists = $base
+            ->withCount(['likes', 'items'])
+            ->with('user:id,username,display_name')
+            ->orderByDesc('likes_count')
+            ->orderByDesc('updated_at')
+            ->limit(3)
+            ->get();
+
+        return [
+            'total' => $total,
+            'items' => $lists->map(fn (GameList $l) => [
+                'name' => $l->name,
+                'slug' => $l->slug,
+                'list_type' => $l->list_type,
+                'items_count' => $l->items_count,
+                'likes_count' => $l->likes_count,
+                'username' => $l->user?->username,
+                'display_name' => $l->user?->display_name,
+            ])->all(),
+        ];
+    }
+
+    /**
      * Buffer game page views in Redis (flushed to views by
      * FlushViewCounters), throttled to one count per IP per 30 minutes.
      */
@@ -350,6 +392,13 @@ class GameController extends Controller
                 ? ($game->screenshots ?? [])
                 : (($game->screenshots ?? [])['screenshots'] ?? ($game->screenshots ?? [])['results'] ?? [])),
             'views' => (int) $game->views,
+
+            /* Member lists this game appears in.
+               A game page is the busiest surface on the site — 332,455 of them —
+               and until now none of them mentioned that somebody had put this
+               game in a ranking. The lists were unreachable from anywhere; this
+               is the widest door there is to them. */
+            'in_lists' => $this->listsContaining($game),
 
             /* Where this game stands, and by which measure — a percentile with
                no name beside it is a number nobody can check. Null for the 62%
