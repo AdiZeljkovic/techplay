@@ -8,6 +8,7 @@ import {
     Gift, Gem, Trophy, Users, Timer, ArrowRight, Lock, Check, Globe, Sparkles, Zap, LayoutGrid, History,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -229,19 +230,19 @@ export default function GiveawayHub() {
                             if (!options.length) return null;
 
                             return (
-                                <select
+                                <Select
                                     key={group.key}
                                     value={picked[group.key] ?? ""}
-                                    onChange={(e) => setPicked((p) => ({ ...p, [group.key]: e.target.value }))}
-                                    className="h-8 px-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.08] text-[11.5px] text-white/70 outline-none"
-                                >
-                                    <option value="" className="bg-[var(--surface-0)]">{group.label}</option>
-                                    {options.map((o) => (
-                                        <option key={o.value} value={o.value} className="bg-[var(--surface-0)]">
-                                            {o.label} ({o.count})
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={(v) => setPicked((p) => ({ ...p, [group.key]: v }))}
+                                    ariaLabel={group.label}
+                                    placeholder={group.label}
+                                    options={[
+                                        { value: "", label: group.label },
+                                        ...options.map((o) => ({ value: o.value, label: `${o.label} (${o.count})` })),
+                                    ]}
+                                    className="h-8 px-2.5 text-[11.5px]"
+                                    menuClassName="w-[210px]"
+                                />
                             );
                         })}
                     </div>

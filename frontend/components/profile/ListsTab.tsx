@@ -7,12 +7,12 @@ import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import {
     List as ListIcon, Plus, Heart, MessageSquare, Lock, FileEdit, AlertTriangle, Pencil, Trash2, Loader2, Gamepad2,
-    Trophy, CalendarDays, Skull, Gem, FilePlus, ChevronDown,
-} from "lucide-react";
+    Trophy, CalendarDays, Skull, Gem, FilePlus, } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import Segmented from "@/components/ui/Segmented";
 import ListEditor, { CommunityInspiration } from "./ListEditor";
 import type { GameListPreview, ListType } from "@/lib/types/profile";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -359,17 +359,15 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
 
                 {lists.length > 1 && (
                     <span className="relative shrink-0">
-                        <select
+                        <Select
                             value={sort}
-                            onChange={(e) => setSort(e.target.value as SortId)}
-                            aria-label="Order the lists"
-                            className="appearance-none h-9 pl-3 pr-8 rounded-[8px] bg-white/[0.03] border border-white/[0.09] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/70 hover:text-white focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] cursor-pointer transition-colors"
-                        >
-                            {SORTS.map((s) => (
-                                <option key={s.id} value={s.id} className="bg-[var(--surface-1)] normal-case">{s.label}</option>
-                            ))}
-                        </select>
-                        <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/35" />
+                            onChange={(v) => setSort(v as SortId)}
+                            ariaLabel="Order the lists"
+                            options={SORTS.map((s) => ({ value: s.id, label: s.label }))}
+                            className="h-9 px-3 font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/70"
+                            menuClassName="w-[180px]"
+                            align="end"
+                        />
                     </span>
                 )}
 

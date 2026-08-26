@@ -13,6 +13,7 @@ import {
     Search, Star, Shuffle, SlidersHorizontal, ArrowDownWideNarrow, Check, Flame, Heart, Clock,
     ChevronDown, Gamepad2, Loader2, X, CalendarDays, Sparkles, TrendingUp,
 } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -578,16 +579,17 @@ export default function GameDatabaseHub({
                                 <ArrowDownWideNarrow className="w-3.5 h-3.5" />
                                 {SORTS.find((s) => s.value === sort)?.label ?? "Sort"}
                             </button>
-                            <select
-                                value={sort}
-                                onChange={(e) => change(() => setSort(e.target.value))}
-                                aria-label="Sort games"
-                                className="hidden md:block h-8 px-2.5 rounded-[7px] bg-white/[0.05] border border-white/[0.08] text-[11.5px] text-white/70 outline-none"
-                            >
-                                {SORTS.map((s) => (
-                                    <option key={s.value} value={s.value} className="bg-[var(--surface-0)]">{s.label}</option>
-                                ))}
-                            </select>
+                            <span className="hidden md:block">
+                                <Select
+                                    value={sort}
+                                    onChange={(v) => change(() => setSort(v))}
+                                    ariaLabel="Sort games"
+                                    options={SORTS.map((s) => ({ value: s.value, label: s.label }))}
+                                    className="h-8 px-2.5 text-[11.5px]"
+                                    menuClassName="w-[170px]"
+                                    align="end"
+                                />
+                            </span>
                         </div>
                     </div>
 

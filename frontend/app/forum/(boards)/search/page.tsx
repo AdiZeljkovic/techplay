@@ -9,6 +9,7 @@ import { AlertTriangle, MessageSquare, Search, X } from "lucide-react";
 import ForumShell from "@/components/forum/ForumShell";
 import ThreadRow, { ThreadRowHeader, type ThreadRowData } from "@/components/forum/ThreadRow";
 import { decodeHtml } from "@/lib/decode";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url);
 
@@ -157,30 +158,34 @@ function ForumSearchResults() {
             {/* Without these the only way to narrow a search was to think of a
                 rarer word, which is guessing rather than searching. */}
             <div className="mb-5 flex flex-wrap items-center gap-2">
-                <select
-                    aria-label="Board"
+                <Select
+                    ariaLabel="Board"
                     value={boardDraft}
-                    onChange={(e) => { setBoardDraft(e.target.value); go({ category: e.target.value }); }}
-                    className="h-9 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-3 text-[12.5px] text-white outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
-                >
-                    <option value="">Every board</option>
-                    {boardOptions.map((b) => (
-                        <option key={b.slug} value={b.slug}>{b.name}</option>
-                    ))}
-                </select>
+                    onChange={(v) => { setBoardDraft(v); go({ category: v }); }}
+                    placeholder="Every board"
+                    options={[
+                        { value: "", label: "Every board" },
+                        ...boardOptions.map((b) => ({ value: b.slug, label: b.name })),
+                    ]}
+                    className="h-9 px-3 text-[12.5px]"
+                    menuClassName="w-[200px]"
+                />
 
-                <select
-                    aria-label="Posted within"
+                <Select
+                    ariaLabel="Posted within"
                     value={sinceDraft}
-                    onChange={(e) => { setSinceDraft(e.target.value); go({ since: e.target.value }); }}
-                    className="h-9 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-3 text-[12.5px] text-white outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
-                >
-                    <option value="">Any time</option>
-                    <option value="day">Past day</option>
-                    <option value="week">Past week</option>
-                    <option value="month">Past month</option>
-                    <option value="year">Past year</option>
-                </select>
+                    onChange={(v) => { setSinceDraft(v); go({ since: v }); }}
+                    placeholder="Any time"
+                    options={[
+                        { value: "", label: "Any time" },
+                        { value: "day", label: "Past day" },
+                        { value: "week", label: "Past week" },
+                        { value: "month", label: "Past month" },
+                        { value: "year", label: "Past year" },
+                    ]}
+                    className="h-9 px-3 text-[12.5px]"
+                    menuClassName="w-[160px]"
+                />
 
                 <input
                     aria-label="Posted by"

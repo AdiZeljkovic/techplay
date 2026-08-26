@@ -5,13 +5,14 @@ import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { BookOpen, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, ChevronDown, Layers, Image as ImageIcon } from "lucide-react";
+import { BookOpen, Clock3, Flame, CalendarDays, Gamepad2, Star, Loader2, Trash2, Pencil, Search, X, EyeOff, AlertTriangle, Users, Film, Check, Layers, Image as ImageIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import SessionSuggestions from "./SessionSuggestions";
 import PlayHistory from "./PlayHistory";
 import { useCountUp } from "@/hooks/useCountUp";
 import type { JournalPayload, PlaySession } from "@/lib/types/profile";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -328,11 +329,14 @@ function SessionComposer({
                     <div>
                         <span className={label}>Platform</span>
                         <div className="relative">
-                            <select value={draft.platform} onChange={(e) => set("platform", e.target.value)} className={`${field} appearance-none pr-8 cursor-pointer`}>
-                                <option value="">—</option>
-                                {PLATFORMS.map((p) => <option key={p} value={p}>{p}</option>)}
-                            </select>
-                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+                            <Select
+                                value={draft.platform}
+                                onChange={(v) => set("platform", v)}
+                                ariaLabel="Platform"
+                                placeholder="—"
+                                options={[{ value: "", label: "—" }, ...PLATFORMS.map((p) => ({ value: p, label: p }))]}
+                                className={field}
+                            />
                         </div>
                     </div>
                 </div>

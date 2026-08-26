@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef, type FormEvent } from "react";
-import { Send, CheckCircle2, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { Send, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
+import Select from "@/components/ui/Select";
 import { submitContactForm } from "./actions";
 
 /**
@@ -30,10 +31,21 @@ export default function ContactForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSent, setIsSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // The topic used to ride on the native select's own value. A listbox is not
+    // a form control, so it is held here and posted through a hidden input.
+    const [subject, setSubject] = useState("");
     const formRef = useRef<HTMLFormElement>(null);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+
+        // A hidden input is exempt from native validation, so the check the
+        // `required` attribute used to make happens here.
+        if (!subject) {
+            setError("Pick a subject so we know where to send this.");
+            return;
+        }
+
         setIsSubmitting(true);
         setError(null);
 
@@ -50,6 +62,7 @@ export default function ContactForm() {
             if (result.success) {
                 setIsSent(true);
                 formRef.current?.reset();
+                setSubject("");
             } else {
                 setError(result.message);
             }
@@ -104,21 +117,15 @@ export default function ContactForm() {
 
             <div>
                 <label htmlFor="subject" className={LABEL}>Subject</label>
-                <div className="relative">
-                    <select
-                        id="subject"
-                        name="subject"
-                        required
-                        defaultValue=""
-                        className="w-full h-10 pl-3 pr-9 rounded-[var(--radius-inner)] bg-[var(--surface-0)] border border-[var(--line)] text-[13px] text-[var(--ink-hi)] appearance-none focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-                    >
-                        <option value="" disabled>Select a topic…</option>
-                        {TOPICS.map(([value, label]) => (
-                            <option key={value} value={value}>{label}</option>
-                        ))}
-                    </select>
-                    <ChevronDown aria-hidden className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-faint)] pointer-events-none" />
-                </div>
+                <Select
+                    value={subject}
+                    onChange={setSubject}
+                    name="subject"
+                    ariaLabel="Subject"
+                    placeholder="Select a topic…"
+                    options={TOPICS.map(([value, label]) => ({ value, label }))}
+                    className="w-full h-10 px-3 text-[13px] bg-[var(--surface-0)]"
+                />
             </div>
 
             <div>

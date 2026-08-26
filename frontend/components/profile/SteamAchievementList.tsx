@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import useSWR from "swr";
-import { Search, X, ChevronDown, Lock, Gamepad2, Loader2 } from "lucide-react";
+import { Search, X, Lock, Gamepad2, Loader2 } from "lucide-react";
 import axios from "@/lib/axios";
 import EmptyState from "@/components/ui/EmptyState";
 import Segmented from "@/components/ui/Segmented";
 import { usePagedList } from "@/hooks/usePagedList";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data?.data ?? r.data);
 
@@ -125,17 +126,17 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
                 </div>
 
                 <div className="relative">
-                    <select
+                    <Select
                         value={game}
-                        onChange={(e) => setGame(e.target.value)}
-                        className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer max-w-[240px]"
-                    >
-                        <option value="0">All games ({games.length})</option>
-                        {games.map((g) => (
-                            <option key={g.id} value={g.id}>{g.name} — {g.achieved}/{g.total}</option>
-                        ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+                        onChange={setGame}
+                        ariaLabel="Filter by game"
+                        options={[
+                            { value: "0", label: `All games (${games.length})` },
+                            ...games.map((g) => ({ value: String(g.id), label: `${g.name} — ${g.achieved}/${g.total}` })),
+                        ]}
+                        className="h-8 px-3 text-[12px] max-w-[240px]"
+                        menuClassName="w-[280px]"
+                    />
                 </div>
 
                 {data && (

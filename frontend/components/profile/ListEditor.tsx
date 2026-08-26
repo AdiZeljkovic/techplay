@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { ArrowLeft, Rocket, Save, Search, Plus, X, GripVertical, Loader2, Eye, MessageSquare, AlertTriangle, Heart, Gamepad2, Trophy, ChevronUp, ChevronDown } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import type { GameListDetail, GameListItemEntry, GameListPreview, ListType } from "@/lib/types/profile";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -446,15 +447,14 @@ export default function ListEditor({
                         <label className="block">
                             <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">Category</span>
                             <div className="relative">
-                                <select
+                                <Select
                                     value={form.category}
-                                    onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-                                    className="w-full appearance-none h-10 pl-3 pr-8 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white focus:outline-none cursor-pointer"
-                                >
-                                    <option value="" className="bg-[var(--surface-1)]">Select category</option>
-                                    {CATEGORIES.map((c) => <option key={c} value={c} className="bg-[var(--surface-1)]">{c}</option>)}
-                                </select>
-                                <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/35" />
+                                    onChange={(v) => setForm((f) => ({ ...f, category: v }))}
+                                    ariaLabel="Category"
+                                    placeholder="Select category"
+                                    options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+                                    className="w-full h-10 px-3 text-[13px] text-white"
+                                />
                             </div>
                         </label>
 

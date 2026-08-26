@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { ComprehensiveWowAnalysis, UserWowCharacter } from "@/types";
+import Select from "@/components/ui/Select";
 
 interface FormData {
     character_name: string;
@@ -20,6 +21,9 @@ interface FormData {
 
 export default function WowAnalyzerClient() {
     const [isLoading, setIsLoading] = useState(false);
+    // Was an uncontrolled <select> reading its own value; a listbox needs the
+    // choice held here.
+    const [pickedCharacter, setPickedCharacter] = useState("");
     const [loadingStage, setLoadingStage] = useState<string>("");
     const [result, setResult] = useState<(ComprehensiveWowAnalysis & { id?: number }) | null>(null);
     const [myCharacters, setMyCharacters] = useState<UserWowCharacter[]>([]);
@@ -269,10 +273,11 @@ export default function WowAnalyzerClient() {
                                             <Star className="w-4 h-4" />
                                             Quick select (your characters)
                                         </label>
-                                        <select
-                                            onChange={(e) => {
-                                                const charId = parseInt(e.target.value);
-                                                const char = myCharacters.find(c => c.id === charId);
+                                        <Select
+                                            value={pickedCharacter}
+                                            onChange={(v) => {
+                                                setPickedCharacter(v);
+                                                const char = myCharacters.find(c => c.id === parseInt(v));
                                                 if (char) {
                                                     setValue('character_name', char.character_name);
                                                     setValue('realm_slug', char.realm_slug);
@@ -280,18 +285,16 @@ export default function WowAnalyzerClient() {
                                                     toast.success(`Selected ${char.character_name}`);
                                                 }
                                             }}
-                                            className="w-full px-4 py-4 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-purple-400 transition-colors cursor-pointer font-medium"
-                                            defaultValue=""
-                                        >
-                                            <option value="">-- Select a character --</option>
-                                            {myCharacters.map((char) => (
-                                                <option key={char.id} value={char.id}>
-                                                    {char.character_name} - {char.realm_slug} ({char.region.toUpperCase()})
-                                                    {char.is_main ? ' ⭐ Main' : ''}
-                                                    {char.item_level ? ` - ${char.item_level} iLvL` : ''}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            ariaLabel="Select a character"
+                                            placeholder="Select a character"
+                                            options={myCharacters.map((char) => ({
+                                                value: String(char.id),
+                                                label: `${char.character_name} - ${char.realm_slug} (${char.region.toUpperCase()})`
+                                                    + (char.is_main ? ' ⭐ Main' : '')
+                                                    + (char.item_level ? ` - ${char.item_level} iLvL` : ''),
+                                            }))}
+                                            className="w-full px-4 py-4 font-medium"
+                                        />
                                         <p className="text-xs text-[var(--text-secondary)] mt-3 flex items-center gap-2">
                                             <Sparkles className="w-3 h-3" />
                                             Select a character to auto-fill the form

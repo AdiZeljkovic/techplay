@@ -14,6 +14,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
 import Panel from "@/components/ui/Panel";
 import Segmented from "@/components/ui/Segmented";
+import Select from "@/components/ui/Select";
 import { useCountUp } from "@/hooks/useCountUp";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { timeAgo } from "@/lib/timeAgo";
@@ -613,28 +614,25 @@ export default function AchievementsTab({ username, isOwnProfile = false }: { us
                         )}
                     </div>
 
-                    <div className="relative">
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
-                        >
-                            <option value="all">All categories</option>
-                            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-                    </div>
+                    <Select
+                        value={category}
+                        onChange={setCategory}
+                        ariaLabel="Filter by category"
+                        options={[
+                            { value: "all", label: "All categories" },
+                            ...categories.map((c) => ({ value: c, label: c })),
+                        ]}
+                        className="h-8 px-3 text-[12px]"
+                    />
 
-                    <div className="relative">
-                        <select
-                            value={sort}
-                            onChange={(e) => setSort(e.target.value as SortId)}
-                            className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
-                        >
-                            {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-                    </div>
+                    <Select
+                        value={sort}
+                        onChange={(v) => setSort(v as SortId)}
+                        ariaLabel="Order achievements"
+                        options={SORTS.map((s) => ({ value: s.id, label: s.label }))}
+                        className="h-8 px-3 text-[12px]"
+                        align="end"
+                    />
                     </div>
                 </div>
 

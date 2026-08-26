@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import useSWR, { mutate as globalMutate } from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
-import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, ChevronDown, TrendingUp, TrendingDown, ShoppingBag , type LucideIcon } from "lucide-react";
+import { Coins, Award, Frame, Palette, Sparkles, Ticket, Package, Loader2, Check, Lock, HelpCircle, TrendingUp, TrendingDown, ShoppingBag , type LucideIcon } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import EmptyState from "@/components/ui/EmptyState";
 import Segmented from "@/components/ui/Segmented";
@@ -12,6 +12,7 @@ import { useCountUp } from "@/hooks/useCountUp";
 import { getStorageUrl } from "@/lib/imageUrl";
 import type {
     BountyWallet, StoreCatalog, StoreItem, StoreRarity } from "@/lib/types/profile";
+import Select from "@/components/ui/Select";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -585,14 +586,15 @@ export default function RewardsStore({ username, isOwnProfile }: { username: str
                     />
 
                     <div className="relative shrink-0">
-                        <select
+                        <Select
                             value={sort}
-                            onChange={(e) => setSort(e.target.value as SortId)}
-                            className="h-8 pl-3 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white/70 appearance-none focus:outline-none cursor-pointer"
-                        >
-                            {SORTS.map((s) => <option key={s.id} value={s.id}>Sort: {s.label}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
+                            onChange={(v) => setSort(v as SortId)}
+                            ariaLabel="Order the store"
+                            options={SORTS.map((s) => ({ value: s.id, label: `Sort: ${s.label}` }))}
+                            className="h-8 px-3 text-[12px]"
+                            menuClassName="w-[200px]"
+                            align="end"
+                        />
                     </div>
                 </div>
 

@@ -8,14 +8,14 @@ import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { differenceInDays, parseISO } from "date-fns";
 import {
-    Library, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, ChevronDown,
-    NotebookPen, ChevronDown as ChevronMore,
+    Library, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, NotebookPen, ChevronDown as ChevronMore,
 } from "lucide-react";
 import Segmented from "@/components/ui/Segmented";
 import { ShelfMark, FinishMark, PileMark, WishMark } from "./ShelfMarks";
 import PlatformMark from "@/components/games/PlatformMark";
 import EmptyState from "@/components/ui/EmptyState";
 import RingMeter from "@/components/ui/RingMeter";
+import Select from "@/components/ui/Select";
 import { useCountUp } from "@/hooks/useCountUp";
 import { RecentlyAdded, CollectionGoals, PlatformBreakdown } from "./CollectionSidebar";
 import type { CollectionEntry, CollectionStatus, UserProfile } from "@/lib/types/profile";
@@ -338,18 +338,15 @@ function GameCard({
             {/* owner controls slide up over the art */}
             {isOwnProfile && entry.game && (
                 <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-[var(--ease-hud)] bg-[var(--surface-1)]/97 backdrop-blur-sm border-t border-white/[0.09] p-2 flex items-center gap-1.5">
-                    <span className="relative flex-1 min-w-0">
-                        <select
+                    <span className="flex-1 min-w-0">
+                        <Select
                             value={entry.status}
-                            onChange={(ev) => onUpdate(entry.game!.slug, { status: ev.target.value })}
-                            aria-label="Change status"
-                            className="w-full appearance-none bg-white/[0.06] text-white font-display text-[9.5px] font-bold uppercase tracking-[0.08em] rounded-[6px] pl-2 pr-5 py-1.5 border border-white/[0.1] focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] cursor-pointer"
-                        >
-                            {STATUS_OPTIONS.map((s) => (
-                                <option key={s} value={s} className="bg-[var(--surface-1)] normal-case">{STATUS[s].label}</option>
-                            ))}
-                        </select>
-                        <ChevronDown aria-hidden className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-white/40" />
+                            onChange={(v) => onUpdate(entry.game!.slug, { status: v })}
+                            ariaLabel="Change status"
+                            options={STATUS_OPTIONS.map((s) => ({ value: s, label: STATUS[s].label }))}
+                            className="w-full px-2 py-1.5 bg-white/[0.06] font-display text-[9.5px] font-bold uppercase tracking-[0.08em] text-white"
+                            menuClassName="w-[150px]"
+                        />
                     </span>
 
                     <button
@@ -824,18 +821,16 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                         )}
                     </div>
 
-                    <span className="relative shrink-0">
-                        <select
+                    <span className="shrink-0">
+                        <Select
                             value={sort}
-                            onChange={(e) => setSort(e.target.value as SortId)}
-                            aria-label="Order the shelf"
-                            className="appearance-none h-9 pl-3 pr-8 rounded-[8px] bg-white/[0.03] border border-white/[0.09] font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/70 hover:text-white focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] cursor-pointer transition-colors"
-                        >
-                            {SORTS.map((s) => (
-                                <option key={s.id} value={s.id} className="bg-[var(--surface-1)] normal-case">{s.label}</option>
-                            ))}
-                        </select>
-                        <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/35" />
+                            onChange={(v) => setSort(v as SortId)}
+                            ariaLabel="Order the shelf"
+                            options={SORTS.map((s) => ({ value: s.id, label: s.label }))}
+                            className="h-9 px-3 font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/70"
+                            menuClassName="w-[180px]"
+                            align="end"
+                        />
                     </span>
 
                     {(search || sort !== "recent") && (
@@ -1028,18 +1023,16 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                                 className="w-full bg-white/[0.04] border border-white/[0.1] rounded-[8px] pl-9 pr-3 h-10 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
                             />
                         </div>
-                        <span className="relative">
-                            <select
+                        <span className="shrink-0">
+                            <Select
                                 value={status}
-                                onChange={(e) => setStatus(e.target.value as CollectionStatus)}
-                                aria-label="Status for added games"
-                                className="appearance-none bg-white/[0.04] border border-white/[0.1] rounded-[8px] pl-3 pr-7 h-10 font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white focus:outline-none cursor-pointer"
-                            >
-                                {STATUS_OPTIONS.map((s) => (
-                                    <option key={s} value={s} className="bg-[var(--surface-1)] normal-case">{STATUS[s].label}</option>
-                                ))}
-                            </select>
-                            <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40" />
+                                onChange={(v) => setStatus(v as CollectionStatus)}
+                                ariaLabel="Status for added games"
+                                options={STATUS_OPTIONS.map((s) => ({ value: s, label: STATUS[s].label }))}
+                                className="h-10 px-3 font-display text-[10.5px] font-bold uppercase tracking-[0.08em] text-white"
+                                menuClassName="w-[170px]"
+                                align="end"
+                            />
                         </span>
                     </div>
 

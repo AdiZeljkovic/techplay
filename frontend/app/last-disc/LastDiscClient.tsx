@@ -6,6 +6,7 @@ import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { Check, Loader2, PenLine, Globe2, Users, BarChart3 } from "lucide-react";
+import Select from "@/components/ui/Select";
 
 /**
  * When Sony stops producing physical discs for new PlayStation games.
@@ -418,17 +419,14 @@ export default function LastDiscClient() {
 
                                 <div>
                                     <label className={label} htmlFor="ld-country">Country <span className="text-white/25">(optional)</span></label>
-                                    <select
-                                        id="ld-country"
+                                    <Select
                                         value={form.country}
-                                        onChange={(e) => setForm({ ...form, country: e.target.value })}
+                                        onChange={(v) => setForm({ ...form, country: v })}
+                                        ariaLabel="Country"
+                                        placeholder="Select your country"
+                                        options={COUNTRIES.map(([code, name]) => ({ value: code, label: name }))}
                                         className={field}
-                                    >
-                                        <option value="" className="bg-[var(--surface-0)]">Select your country</option>
-                                        {COUNTRIES.map(([code, name]) => (
-                                            <option key={code} value={code} className="bg-[var(--surface-0)]">{name}</option>
-                                        ))}
-                                    </select>
+                                    />
                                 </div>
 
                                 <fieldset>
