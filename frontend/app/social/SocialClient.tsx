@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import axios from "@/lib/axios";
@@ -37,6 +37,41 @@ const TABS: { id: "all" | "direct" | "group"; label: string }[] = [
 
 const clock = (iso: string) =>
     new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+/**
+ * Five messages typed in one breath are one turn, not five.
+ *
+ * Every chat worth using groups them: Discord closes a group after an eight
+ * minute gap, Slack after five. The follow-ups drop the avatar, the name and
+ * the timestamp, and sit tight under the first — so the eye reads a person
+ * speaking rather than a stack of identical cards.
+ */
+const GROUP_WINDOW_MS = 5 * 60 * 1000;
+
+const sameTurn = (prev: ChatMessage | undefined, m: ChatMessage) =>
+    !!prev
+    && prev.is_mine === m.is_mine
+    && (prev.sender?.username ?? null) === (m.sender?.username ?? null)
+    && new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() < GROUP_WINDOW_MS;
+
+const dayOf = (iso: string) => new Date(iso).toDateString();
+
+/** "Today", "Yesterday", else the date — the divider every chat app puts between days. */
+const dayLabel = (iso: string) => {
+    const d = new Date(iso);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    if (d.toDateString() === today.toDateString()) return "Today";
+    if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+
+    return d.toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        ...(d.getFullYear() === today.getFullYear() ? {} : { year: "numeric" as const }),
+    });
+};
 
 /* ── group composer ───────────────────────────────────────────────────── */
 
@@ -139,9 +174,11 @@ function NewGroupModal({
 /* ── one message ──────────────────────────────────────────────────────── */
 
 function MessageBubble({
-    message, emoji, onReact, onDelete,
+    message, grouped, emoji, onReact, onDelete,
 }: {
     message: ChatMessage;
+    /** Same person, still inside the group window — so no avatar, no name, no time. */
+    grouped: boolean;
     emoji: string[];
     onReact: (id: number, emoji: string) => void;
     /** Only ever passed for your own messages — there was no unsend at all. */
@@ -149,72 +186,89 @@ function MessageBubble({
 }) {
     const [picking, setPicking] = useState(false);
     const mine = message.is_mine;
+    const hasText = Boolean(message.body?.trim());
 
     return (
-        <div className={`group/msg flex gap-2.5 ${mine ? "flex-row-reverse" : ""}`}>
-            {!mine && <Avatar src={message.sender?.avatar_url ?? null} alt={message.sender?.username ?? "?"} size="sm" />}
+        <div className={`group/msg flex gap-2.5 ${mine ? "flex-row-reverse" : ""} ${grouped ? "mt-[3px]" : "mt-4"}`}>
+            {/* The avatar column is held even when empty, so a follow-up lines
+                up under the message above it instead of sliding left. */}
+            {!mine && (
+                grouped
+                    ? <span aria-hidden className="w-8 shrink-0 pt-1 text-center font-display text-[9px] font-bold tabular-nums text-white/25 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                        {clock(message.created_at)}
+                    </span>
+                    : <Avatar src={message.sender?.avatar_url ?? null} alt={message.sender?.username ?? "?"} size="sm" />
+            )}
 
-            <div className={`min-w-0 max-w-[68%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
-                {!mine && (
-                    <span className="mb-1 flex items-center gap-2">
-                        <span className="text-[11.5px] font-bold text-white/70">{message.sender?.username}</span>
+            <div className={`relative min-w-0 max-w-[68%] ${mine ? "items-end" : "items-start"} flex flex-col`}>
+                {/* One heading per turn, not per message. */}
+                {!grouped && (
+                    <span className={`mb-1 flex items-center gap-2 ${mine ? "flex-row-reverse" : ""}`}>
+                        {!mine && <span className="text-[11.5px] font-bold text-white/70">{message.sender?.username}</span>}
                         <span className="font-display text-[9px] font-bold tabular-nums text-white/25">{clock(message.created_at)}</span>
                     </span>
                 )}
 
+                {/* A picture is not a sentence: it carries its own frame, so it
+                    is drawn on its own rather than padded inside a bubble that
+                    then draws a second border around it. */}
+                {message.attachment_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                        src={message.attachment_url}
+                        alt=""
+                        className={`max-h-[280px] max-w-full rounded-[14px] object-cover ${hasText ? "mb-1" : ""}`}
+                    />
+                )}
+
+                {hasText && (
+                    <span
+                        className={`rounded-[14px] px-3.5 py-2 text-[13px] leading-snug whitespace-pre-line break-words ${
+                            mine ? "bg-[var(--accent)] text-white" : "bg-white/[0.06] text-white/85"
+                        } ${grouped ? (mine ? "rounded-tr-[5px]" : "rounded-tl-[5px]") : ""}`}
+                    >
+                        {message.body}
+                    </span>
+                )}
+
+                {/* Reactions take room only when there are some. This row used
+                    to be drawn empty under every message, and the space it held
+                    is most of why five quick lines read as five paragraphs. */}
+                {message.reactions.length > 0 && (
+                    <span className={`mt-1 flex items-center gap-1.5 ${mine ? "flex-row-reverse" : ""}`}>
+                        {message.reactions.map((r) => (
+                            <button
+                                key={r.emoji}
+                                onClick={() => onReact(message.id, r.emoji)}
+                                className={`inline-flex items-center gap-1 h-[20px] px-1.5 rounded-full border text-[10px] transition-colors ${
+                                    r.mine
+                                        ? "border-[color-mix(in_srgb,var(--accent)_50%,transparent)] bg-[color-mix(in_srgb,var(--accent)_14%,transparent)]"
+                                        : "border-white/[0.09] bg-white/[0.03] hover:border-white/[0.2]"
+                                }`}
+                            >
+                                {r.emoji} <span className="font-display font-bold tabular-nums text-white/50">{r.count}</span>
+                            </button>
+                        ))}
+                    </span>
+                )}
+
+                {/* React and delete float beside the message instead of sitting
+                    under it, so they cost no height when nobody is hovering. */}
                 <span
-                    className={`relative rounded-[12px] px-3.5 py-2.5 text-[13px] leading-snug whitespace-pre-line break-words ${
-                        mine ? "bg-[var(--accent)] text-white" : "bg-white/[0.06] text-white/85"
+                    className={`absolute top-0 z-10 flex items-center gap-0.5 opacity-0 focus-within:opacity-100 group-hover/msg:opacity-100 transition-opacity ${
+                        mine ? "right-full mr-1.5 flex-row-reverse" : "left-full ml-1.5"
                     }`}
                 >
-                    {message.attachment_url && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                            src={message.attachment_url}
-                            alt=""
-                            className="mb-2 max-h-[240px] rounded-[8px] object-cover"
-                        />
-                    )}
-                    {message.body}
-                </span>
-
-                <span className={`mt-1 flex items-center gap-1.5 ${mine ? "flex-row-reverse" : ""}`}>
-                    {mine && <span className="font-display text-[9px] font-bold tabular-nums text-white/25">{clock(message.created_at)}</span>}
-
-                    {message.reactions.map((r) => (
-                        <button
-                            key={r.emoji}
-                            onClick={() => onReact(message.id, r.emoji)}
-                            className={`inline-flex items-center gap-1 h-[20px] px-1.5 rounded-full border text-[10px] transition-colors ${
-                                r.mine
-                                    ? "border-[color-mix(in_srgb,var(--accent)_50%,transparent)] bg-[color-mix(in_srgb,var(--accent)_14%,transparent)]"
-                                    : "border-white/[0.09] bg-white/[0.03] hover:border-white/[0.2]"
-                            }`}
-                        >
-                            {r.emoji} <span className="font-display font-bold tabular-nums text-white/50">{r.count}</span>
-                        </button>
-                    ))}
-
-                    {onDelete && (
-                        <button
-                            onClick={onDelete}
-                            title="Delete message"
-                            className="w-[20px] h-[20px] rounded-full flex items-center justify-center text-white/25 opacity-0 group-hover/msg:opacity-100 hover:text-red-400 transition-[opacity,color]"
-                        >
-                            <Trash2 className="w-3 h-3" />
-                        </button>
-                    )}
-
                     <span className="relative">
                         <button
                             onClick={() => setPicking((v) => !v)}
-                            className="w-[20px] h-[20px] rounded-full flex items-center justify-center text-white/25 opacity-0 group-hover/msg:opacity-100 hover:text-white transition-[opacity,color]"
+                            className="w-[22px] h-[22px] rounded-full flex items-center justify-center text-white/30 hover:text-white hover:bg-white/[0.08] transition-colors"
                             title="React"
                         >
                             <Sparkles className="w-3 h-3" />
                         </button>
                         {picking && (
-                            <span className="absolute z-20 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-0.5 p-1 rounded-[8px] border border-white/[0.12] bg-[var(--surface-2)] shadow-[0_10px_28px_rgba(0,0,0,0.6)]">
+                            <span className="absolute z-20 bottom-7 left-1/2 -translate-x-1/2 flex items-center gap-0.5 p-1 rounded-[8px] border border-white/[0.12] bg-[var(--surface-2)] shadow-[0_10px_28px_rgba(0,0,0,0.6)]">
                                 {emoji.map((e) => (
                                     <button
                                         key={e}
@@ -227,8 +281,31 @@ function MessageBubble({
                             </span>
                         )}
                     </span>
+
+                    {onDelete && (
+                        <button
+                            onClick={onDelete}
+                            title="Delete message"
+                            className="w-[22px] h-[22px] rounded-full flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-white/[0.08] transition-colors"
+                        >
+                            <Trash2 className="w-3 h-3" />
+                        </button>
+                    )}
                 </span>
             </div>
+        </div>
+    );
+}
+
+/** The date rule every chat draws between one day and the next. */
+function DayDivider({ iso }: { iso: string }) {
+    return (
+        <div className="flex items-center gap-3 pt-5 pb-1">
+            <span className="flex-1 h-px bg-white/[0.07]" />
+            <span className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/30">
+                {dayLabel(iso)}
+            </span>
+            <span className="flex-1 h-px bg-white/[0.07]" />
         </div>
     );
 }
@@ -810,7 +887,7 @@ export default function SocialClient() {
                                                 )}
                                             </div>
 
-                                            <div className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3 space-y-2.5">
+                                            <div className="flex-1 min-h-0 overflow-y-auto px-3.5 py-3">
                                                 {/* Fifty messages used to be the whole of any
                                                     conversation — there was no way to ask for
                                                     what came before. */}
@@ -833,15 +910,25 @@ export default function SocialClient() {
                                                         No messages yet — say something.
                                                     </p>
                                                 ) : (
-                                                    messages.map((m) => (
-                                                        <MessageBubble
-                                                            key={m.id}
-                                                            message={m}
-                                                            emoji={thread?.emoji ?? []}
-                                                            onReact={react}
-                                                            onDelete={m.is_mine ? () => deleteMessage(m.id) : undefined}
-                                                        />
-                                                    ))
+                                                    messages.map((m, i) => {
+                                                        const prev = messages[i - 1];
+                                                        const newDay = !prev || dayOf(prev.created_at) !== dayOf(m.created_at);
+
+                                                        return (
+                                                            <Fragment key={m.id}>
+                                                                {newDay && <DayDivider iso={m.created_at} />}
+                                                                <MessageBubble
+                                                                    message={m}
+                                                                    // A day rule breaks the turn: the first
+                                                                    // message under it always gets its heading.
+                                                                    grouped={!newDay && sameTurn(prev, m)}
+                                                                    emoji={thread?.emoji ?? []}
+                                                                    onReact={react}
+                                                                    onDelete={m.is_mine ? () => deleteMessage(m.id) : undefined}
+                                                                />
+                                                            </Fragment>
+                                                        );
+                                                    })
                                                 )}
                                                 <div ref={bottomRef} />
                                             </div>
