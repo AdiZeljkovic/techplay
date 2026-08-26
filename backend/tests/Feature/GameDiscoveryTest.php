@@ -74,6 +74,44 @@ class GameDiscoveryTest extends TestCase
         $this->assertSame(array_column($first, 'slug'), array_column($second, 'slug'));
     }
 
+    public function test_hidden_gems_carry_a_line_about_the_game(): void
+    {
+        $this->makeGame([
+            'slug' => 'wordy-gem',
+            'ratings_count' => 5,
+            'description' => '<p>The Array awaits.</p> Embark on a journey among the stars in Orion Drift. '
+                .'You and your fellow robots were once premier athletes, and now you forge a destiny together.',
+        ]);
+
+        $gem = collect($this->getJson('/api/v1/games/hidden-gems')->json('results'))
+            ->firstWhere('slug', 'wordy-gem');
+
+        $this->assertNotNull($gem);
+        // Markup stripped, whitespace collapsed, cut at a word boundary — a
+        // third of the catalogue's descriptions carry HTML and they average
+        // 642 characters.
+        $this->assertStringNotContainsString('<', $gem['excerpt']);
+        $this->assertStringStartsWith('The Array awaits. Embark', $gem['excerpt']);
+        $this->assertLessThanOrEqual(141, mb_strlen($gem['excerpt']));
+        $this->assertStringEndsWith('…', $gem['excerpt']);
+    }
+
+    public function test_every_gem_carries_an_excerpt(): void
+    {
+        $this->makeGame(['slug' => 'gem-one', 'ratings_count' => 4]);
+        $this->makeGame(['slug' => 'gem-two', 'ratings_count' => 6]);
+
+        $excerpts = array_column($this->getJson('/api/v1/games/hidden-gems')->json('results'), 'excerpt');
+
+        // The query already requires a description, so a card should never be
+        // handed an empty line to draw. This holds that door shut.
+        $this->assertNotEmpty($excerpts);
+
+        foreach ($excerpts as $excerpt) {
+            $this->assertNotSame('', $excerpt);
+        }
+    }
+
     public function test_on_this_day_matches_month_and_day_across_years(): void
     {
         $today = now();

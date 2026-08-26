@@ -15,6 +15,8 @@ interface GemGame {
     released: string | null;
     genres: string[];
     votes: number;
+    /** The opening of the description, cut at a word boundary by the API. */
+    excerpt?: string;
 }
 
 const fetcher = () => axios.get("/games/hidden-gems").then((r) => (r.data?.results ?? []) as GemGame[]);
@@ -45,7 +47,7 @@ export default function HiddenGems() {
             <div className="grid grid-cols-2 gap-3">
                 {!games &&
                     [0, 1, 2, 3].map((i) => (
-                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[168px] animate-pulse" />
+                        <div key={i} className="rounded-[var(--radius-card)] bg-[var(--fill-2)] h-[232px] animate-pulse" />
                     ))}
 
                 {games?.slice(0, 4).map((g) => (
@@ -81,9 +83,20 @@ export default function HiddenGems() {
                         <span aria-hidden className="h-[2px] bg-[var(--accent)] scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-[var(--ease-hud)]" />
 
                         <div className="flex-1 flex flex-col justify-between gap-2 p-3">
-                            <p className="font-display text-[12px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
-                                {g.name}
-                            </p>
+                            <div>
+                                <p className="font-display text-[12px] font-bold text-[var(--ink-hi)] leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors duration-300">
+                                    {g.name}
+                                </p>
+                                {/* A line about the game. These are titles
+                                    nobody has heard of by definition — a name
+                                    and a score give a reader no reason to
+                                    open one. */}
+                                {g.excerpt && (
+                                    <p className="mt-1.5 text-[11px] leading-[1.45] text-[var(--ink-low)] line-clamp-3">
+                                        {g.excerpt}
+                                    </p>
+                                )}
+                            </div>
                             <div className="flex items-center justify-between gap-2">
                                 <span className="text-[10px] uppercase tracking-wider text-[var(--ink-faint)] truncate">
                                     {[g.released ? new Date(g.released).getFullYear() : null, g.genres[0]].filter(Boolean).join(" · ")}

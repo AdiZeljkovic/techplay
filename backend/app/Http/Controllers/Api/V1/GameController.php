@@ -687,7 +687,7 @@ class GameController extends Controller
                 ->where('rating', '>=', 8)
                 ->orderByDesc('rating')
                 ->limit(800)
-                ->get(['slug', 'name', 'cover_url', 'rating', 'released', 'genres', DB::raw("{$votes} as votes")])
+                ->get(['slug', 'name', 'cover_url', 'rating', 'released', 'genres', 'description', DB::raw("{$votes} as votes")])
                 // enough votes to trust the score, then the least-known first
                 ->filter(fn ($g) => $g->votes !== null && $g->votes >= 3)
                 ->sortBy('votes')
@@ -703,18 +703,55 @@ class GameController extends Controller
                     'released' => $g->released?->toDateString(),
                     'genres' => array_slice((array) $g->genres, 0, 2),
                     'votes' => (int) $g->votes,
+                    // A line about the game. The card carried a name, a year
+                    // and a score and stopped there, which left the panel
+                    // short next to the anniversaries beside it — and left the
+                    // reader with no reason to click a game they have, by
+                    // definition, never heard of.
+                    'excerpt' => $this->firstSentences($g->description),
                 ])
                 ->values()
                 ->all();
         });
 
         return response()->json(['results' => $payload])
-            ->header('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+            // A minute in the browser, an hour at the edge — the same window
+            // the anniversaries panel uses, and for the same reason: this
+            // rotates once a day and an hour of browser cache only means a
+            // returning reader cannot see that it has.
+            ->header('Cache-Control', 'public, max-age=60, s-maxage=3600, stale-while-revalidate=86400');
     }
 
     /**
-     * GET /games/on-this-day — notable games released on today's date in past years.
+     * The opening of a game's description, ended like a sentence.
+     *
+     * A third of the catalogue's descriptions carry HTML and they average 642
+     * characters, so this strips the markup, collapses the whitespace and cuts
+     * at a word boundary rather than mid-word. The card clamps to two lines;
+     * this only has to be short enough not to ship a paragraph over the wire.
      */
+    private function firstSentences(?string $description, int $limit = 140): string
+    {
+        $text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $description)));
+
+        if ($text === '') {
+            return '';
+        }
+
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+
+        $cut = mb_substr($text, 0, $limit);
+        $lastSpace = mb_strrpos($cut, ' ');
+
+        if ($lastSpace !== false && $lastSpace > $limit * 0.6) {
+            $cut = mb_substr($cut, 0, $lastSpace);
+        }
+
+        return rtrim($cut, ' ,;:-–—').'…';
+    }
+
     /**
      * Gaming history for today, and for tomorrow.
      *
