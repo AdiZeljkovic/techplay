@@ -301,9 +301,16 @@ export default function SectionHub({
 
             <div className="container-page pb-4 md:pb-8 grid grid-cols-1 xl:grid-cols-[1fr_324px] gap-6 items-start">
                 <div className="min-w-0">
-                    {/* ── the lead story, now the full width of the column ── */}
-                    <div>
-                        {spotlight ? (
+                    {/* ── the lead story, now the full width of the column ──
+                        Drawn only when there is one. A category page suppresses
+                        its lead from page two on, so that it is not shown twice;
+                        the absence used to fall through to a placeholder that
+                        told the reader "Nothing published under this category
+                        yet" — on page 2 of 21, under a tab reading 268. The
+                        list below says when a filter is genuinely empty, and it
+                        says it truthfully. */}
+                    {spotlight && (
+                        <div>
                             <Link
                                 href={`${config.path}/${spotlight.slug}`}
                                 className="group relative block rounded-[14px] overflow-hidden border border-white/[0.07] min-h-[300px] lg:min-h-[380px]"
@@ -346,16 +353,8 @@ export default function SectionHub({
                                     </span>
                                 </span>
                             </Link>
-                        ) : (
-                            <div className="rounded-[14px] border border-dashed border-white/[0.09] min-h-[300px] lg:min-h-[380px] grid place-items-center px-6 text-center">
-                                <p className="text-[12.5px] text-white/30">
-                                    {pinned
-                                        ? "Nothing published under this category yet."
-                                        : "Nothing is flagged for the spotlight here yet."}
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* ── tab row, with real counts ── */}
                     {/* Same switcher the leaderboard uses: one enclosure, the
