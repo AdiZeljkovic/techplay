@@ -255,35 +255,44 @@ export default function SectionHub({
                 </div>
             ) : null}
 
-            <div className="container-page py-4 md:py-8 grid grid-cols-1 xl:grid-cols-[1fr_324px] gap-6 items-start">
-                <div className="min-w-0">
-                    {/* ── header: says what the page is, then gets out of the way ── */}
-                    <header className="relative pl-4 mb-4 md:mb-6">
-                        <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded bg-[var(--accent)]" />
+            {/* ── header: says what the page is, then gets out of the way ──
+                It sits above both columns rather than inside the left one.
+                While it was in the column, the rail opened level with the
+                heading and the lead image opened below it, so the two sides of
+                the page started at different heights. Out here the grid's first
+                row is the image and the rail, and they begin together — without
+                a hand-measured offset that the heading would outgrow the moment
+                a section name wrapped to two lines. */}
+            <div className="container-page pt-4 md:pt-8">
+                <header className="relative pl-4 mb-4 md:mb-6">
+                    <span aria-hidden className="absolute left-0 top-1 bottom-1 w-[3px] rounded bg-[var(--accent)]" />
 
-                        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-                            <div className="min-w-0">
-                                <h1 className="font-display text-[26px] md:text-[30px] font-bold tracking-tight leading-none text-white">
-                                    {heading}
-                                </h1>
-                                <p className="mt-2 text-[13px] text-white/50">
-                                    {pinned ? (
-                                        <>
-                                            Part of{" "}
-                                            <Link href={config.path} className="text-[var(--accent)] hover:brightness-110">
-                                                {config.title.toLowerCase()}
-                                            </Link>
-                                            .
-                                        </>
-                                    ) : (
-                                        config.line
-                                    )}
-                                </p>
-                            </div>
-
+                    <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                        <div className="min-w-0">
+                            <h1 className="font-display text-[26px] md:text-[30px] font-bold tracking-tight leading-none text-white">
+                                {heading}
+                            </h1>
+                            <p className="mt-2 text-[13px] text-white/50">
+                                {pinned ? (
+                                    <>
+                                        Part of{" "}
+                                        <Link href={config.path} className="text-[var(--accent)] hover:brightness-110">
+                                            {config.title.toLowerCase()}
+                                        </Link>
+                                        .
+                                    </>
+                                ) : (
+                                    config.line
+                                )}
+                            </p>
                         </div>
-                    </header>
 
+                    </div>
+                </header>
+            </div>
+
+            <div className="container-page pb-4 md:pb-8 grid grid-cols-1 xl:grid-cols-[1fr_324px] gap-6 items-start">
+                <div className="min-w-0">
                     {/* ── the lead story, now the full width of the column ── */}
                     <div>
                         {spotlight ? (
