@@ -373,6 +373,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/game-lists', [GameListController::class, 'store']);
             Route::put('/game-lists/{id}', [GameListController::class, 'update']);
             Route::delete('/game-lists/{id}', [GameListController::class, 'destroy']);
+            Route::post('/game-lists/{id}/cover', [GameListController::class, 'uploadCover']);
             Route::post('/game-lists/{id}/items', [GameListController::class, 'addItem']);
             Route::delete('/game-lists/{id}/items/{itemId}', [GameListController::class, 'removeItem']);
             Route::put('/game-lists/{id}/reorder', [GameListController::class, 'reorder']);

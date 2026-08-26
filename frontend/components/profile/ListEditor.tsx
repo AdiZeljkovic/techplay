@@ -10,6 +10,7 @@ import Panel from "@/components/ui/Panel";
 import type { GameListDetail, GameListItemEntry, GameListPreview, ListType, Tier } from "@/lib/types/profile";
 import Select from "@/components/ui/Select";
 import TierBoard from "@/components/profile/TierBoard";
+import ImageDropzone from "@/components/settings/ImageDropzone";
 
 const fetcher = (url: string) => axios.get(url).then((r) => r.data);
 
@@ -103,6 +104,8 @@ export default function ListEditor({
     // reorder read as broken even when it worked.
     const [dragging, setDragging] = useState<number | null>(null);
     const [over, setOver] = useState<number | null>(null);
+    /** The saved artwork's URL, kept here so the dropzone updates the moment it lands. */
+    const [cover, setCover] = useState<string | null>(null);
 
     // Adopt the server's copy once it lands, then let local edits win.
     const loaded = useRef(false);
@@ -118,6 +121,7 @@ export default function ListEditor({
             is_public: list.is_public ?? true,
             allow_comments: list.allow_comments ?? true,
             has_spoilers: list.has_spoilers ?? false });
+        setCover(list.cover_image ?? null);
     }, [list]);
 
     useEffect(() => {
@@ -170,6 +174,42 @@ export default function ListEditor({
             toast.error("Couldn't remove that game.");
             mutate();
         }
+    };
+
+    /**
+     * The list's own artwork.
+     *
+     * Sent to its own endpoint as multipart: a file cannot ride the PUT that
+     * saves the rest of the form, and taking the picture off is a different
+     * act from editing a name.
+     */
+    const [coverBusy, setCoverBusy] = useState(false);
+
+    const sendCover = async (body: FormData) => {
+        setCoverBusy(true);
+        try {
+            const res = await axios.post(`${key}/cover`, body, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+            setCover(res.data?.data?.cover_image ?? null);
+            mutate();
+        } catch (err: any) {
+            toast.error(err?.response?.data?.message ?? "Couldn't save that image.");
+        } finally {
+            setCoverBusy(false);
+        }
+    };
+
+    const uploadCover = (file: File) => {
+        const body = new FormData();
+        body.append("cover_image", file);
+        return sendCover(body);
+    };
+
+    const clearCover = () => {
+        const body = new FormData();
+        body.append("remove_cover", "1");
+        return sendCover(body);
     };
 
     /**
@@ -458,6 +498,26 @@ export default function ListEditor({
                 {/* ── right: what it is, and what it will look like ── */}
                 <aside className="xl:col-span-4 min-w-0 space-y-5">
                     <Panel title="Details" material="instrument" bodyClassName="p-4 space-y-4">
+                        {/* The picture the list is published under. Without one
+                            the page falls back to a strip of its game covers,
+                            which says "a list of games" and nothing about which
+                            list — "Hall of Shame" and "Comfort Games" holding the
+                            same four titles looked identical. */}
+                        <div>
+                            <span className="flex items-baseline justify-between font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
+                                <span>Featured image</span>
+                                {coverBusy && <Loader2 className="w-3 h-3 animate-spin text-white/35" />}
+                            </span>
+                            <ImageDropzone
+                                shape="cover"
+                                label="List artwork"
+                                hint="Wide image, up to 5 MB — JPG, PNG or WebP"
+                                preview={cover}
+                                onFile={uploadCover}
+                                onClear={cover ? clearCover : undefined}
+                            />
+                        </div>
+
                         <label className="block">
                             <span className="flex items-baseline justify-between font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
                                 <span>Short description</span>

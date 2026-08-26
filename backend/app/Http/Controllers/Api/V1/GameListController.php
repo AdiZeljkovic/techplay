@@ -193,6 +193,39 @@ class GameListController extends Controller
     }
 
     /**
+     * Auth: the list's own artwork.
+     * POST /game-lists/{id}/cover
+     *
+     * Its own endpoint rather than a field on update, because a file cannot
+     * ride a PUT with any browser's cooperation — and because clearing the
+     * image is a separate act from editing the name.
+     */
+    public function uploadCover(Request $request, int $id)
+    {
+        $list = GameList::where('user_id', $request->user()->id)->findOrFail($id);
+
+        $request->validate([
+            // A hero runs the full width of the page, so it is allowed to be
+            // larger than an avatar and smaller than a wallpaper.
+            'cover_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_cover' => ['nullable', 'boolean'],
+        ]);
+
+        if ($request->boolean('remove_cover')) {
+            $list->cover_image = null;
+        } elseif ($request->hasFile('cover_image')) {
+            $list->cover_image = $request->file('cover_image')->store('list-covers', 'public');
+        } else {
+            return $this->error('Send an image, or remove_cover=1.', 422);
+        }
+
+        $list->save();
+        $list->load(['items.game:id,slug,name,released,rating,cover_url,platforms'])->loadCount('items');
+
+        return $this->success($this->presentList($list, true), 'Cover updated');
+    }
+
+    /**
      * Auth: add a game to a list (by slug).
      * POST /game-lists/{id}/items
      */
@@ -504,6 +537,9 @@ class GameListController extends Controller
             'likes_count' => $list->likes_count ?? 0,
             'comments_count' => $list->comments_count ?? 0,
             'liked_by_me' => (bool) ($list->liked_by_me ?? false),
+            // The author's own artwork. `covers` stays: a list without one
+            // still needs a picture, and four game covers is a decent stand-in.
+            'cover_image' => $list->coverImageUrl(),
             'covers' => $covers,
             'updated_at' => $list->updated_at,
         ];

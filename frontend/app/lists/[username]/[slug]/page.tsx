@@ -88,15 +88,51 @@ export default async function GameListPage({ params }: Props) {
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
-            {/* ── hero ── */}
+            {/* ── hero ──
+                A published list is something somebody made and wants read, so
+                the top of the page is given to the thing they made it about.
+
+                Two backdrops, in order of what the author actually said:
+
+                Their own artwork runs sharp and full-bleed. It used to be that
+                the first game's cover was blurred to a quarter opacity behind
+                everything — which made every list on the site look like the same
+                list with a different name on it, and threw away the one picture
+                the author chose.
+
+                With no artwork, the game covers tile edge to edge instead. Six
+                covers say "this is a list of games" at a glance; one cover
+                blurred into mush says nothing at all. */}
             <div className="relative overflow-hidden border-b border-white/[0.07]">
-                {list.covers?.[0] && (
+                {list.cover_image ? (
                     <>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={list.covers[0]} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25 blur-sm scale-105" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/85 to-[var(--surface-0)]/55" />
+                        <img
+                            src={list.cover_image}
+                            alt=""
+                            aria-hidden
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        {/* Two stops rather than one: the text sits at the foot
+                            of the block, so that end goes nearly solid while the
+                            top keeps enough of the picture to be worth having. */}
+                        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/88 to-[var(--surface-0)]/35" />
+                        <span aria-hidden className="absolute inset-0 bg-[radial-gradient(120%_100%_at_50%_0%,transparent_35%,rgba(5,7,10,0.55))]" />
                     </>
-                )}
+                ) : (list.covers?.length ?? 0) > 0 ? (
+                    <>
+                        <span aria-hidden className="absolute inset-0 flex opacity-[0.22]">
+                            {[...list.covers, ...list.covers, ...list.covers].slice(0, 8).map((src, i) => (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img key={i} src={src} alt="" className="h-full flex-1 min-w-0 object-cover" />
+                            ))}
+                        </span>
+                        <span aria-hidden className="absolute inset-0 bg-gradient-to-t from-[var(--surface-0)] via-[var(--surface-0)]/90 to-[var(--surface-0)]/60" />
+                    </>
+                ) : null}
+
+                {/* The house rule, drawn across the seam. */}
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-60" />
 
                 <div className="relative z-10 container-page py-14 md:py-20">
                     <div className="flex flex-wrap items-center gap-2 mb-3">

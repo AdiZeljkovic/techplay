@@ -21,7 +21,18 @@ const TYPE_LABEL: Partial<Record<ListType, string>> = {
  * A list is a ranking, so the covers are laid in rank order left to right and
  * the first one is given the room — that is the pick the list is arguing for.
  */
-function CoverStrip({ covers, name }: { covers: string[]; name: string }) {
+function CoverStrip({ cover, covers, name }: { cover?: string | null; covers: string[]; name: string }) {
+    // The author's own artwork outranks a mosaic of what is inside. It is the
+    // one picture that says which list this is rather than what is in it.
+    if (cover) {
+        return (
+            <span className="relative block w-full h-[104px] rounded-[8px] overflow-hidden bg-white/[0.04]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={cover} alt={name} loading="lazy" className="w-full h-full object-cover" />
+            </span>
+        );
+    }
+
     const shown = (covers ?? []).slice(0, 4);
 
     if (shown.length === 0) {
@@ -62,7 +73,7 @@ function ListCard({ list }: { list: GameListPreview }) {
             href={`/lists/${author}/${list.slug}`}
             className="group flex flex-col gap-3 p-3 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
         >
-            <CoverStrip covers={list.covers} name={list.name} />
+            <CoverStrip cover={list.cover_image} covers={list.covers} name={list.name} />
 
             <span className="flex items-start justify-between gap-2.5">
                 <span className="min-w-0">

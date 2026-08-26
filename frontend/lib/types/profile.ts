@@ -561,6 +561,11 @@ export interface GameListPreview {
     likes_count?: number;
     comments_count?: number;
     liked_by_me?: boolean;
+    /**
+     * Artwork the author chose for this list. Null means they have not, and
+     * `covers` — the first few game covers — stands in.
+     */
+    cover_image?: string | null;
     covers: string[];
     updated_at?: string;
     user?: { username: string; display_name?: string; avatar_url?: string };

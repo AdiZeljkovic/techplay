@@ -121,7 +121,12 @@ function ListCard({
                     quarter width each read as one smeared photograph rather
                     than as four games. */}
                 <span className="relative flex gap-px h-[112px] bg-white/[0.06]">
-                    {covers.length === 0 ? (
+                    {list.cover_image ? (
+                        // The author's own artwork outranks the collage: it says
+                        // which list this is, not what is in it.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={list.cover_image} alt={list.name} loading="lazy" className="w-full h-full object-cover" />
+                    ) : covers.length === 0 ? (
                         <span className="w-full flex items-center justify-center bg-white/[0.03] text-white/15">
                             <Gamepad2 className="w-7 h-7" />
                         </span>

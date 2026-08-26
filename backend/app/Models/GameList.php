@@ -50,6 +50,25 @@ class GameList extends Model
      */
     public const TIERS = ['S', 'A', 'B', 'C', 'D', 'F'];
 
+    /**
+     * The list's own artwork, if its author gave it one.
+     *
+     * The column has existed since the lists tables were created and nothing
+     * ever wrote to it or read it — a list's picture was always a mosaic of the
+     * first four game covers, which says what is in the list and nothing about
+     * what the list is.
+     */
+    public function coverImageUrl(): ?string
+    {
+        if (blank($this->cover_image)) {
+            return null;
+        }
+
+        return str_starts_with($this->cover_image, 'http')
+            ? $this->cover_image
+            : asset('storage/'.$this->cover_image);
+    }
+
     /** A tier list ranks by rung, not by a single running order. */
     public function isTierList(): bool
     {
