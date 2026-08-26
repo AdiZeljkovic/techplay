@@ -197,8 +197,13 @@ function ProfilePageInner() {
         );
     }
 
-    // Your own Overview *is* the logged-in homepage — literally the same page,
-    // reachable at both / and /profile/{you}.
+    // Your own Overview, which is the closest thing the site has to a
+    // logged-in home.
+    //
+    // This used to say it was "literally the same page, reachable at both /
+    // and /profile/{you}". It is not: `/` renders HomeClient for everybody,
+    // signed in or not, and neither the page nor the middleware ever checks.
+    // Anything meant "for the logged-in homepage" has to land here instead.
     if (isOwnProfile && activeTab === "overview") {
         return (
             <div style={rootStyle}>
