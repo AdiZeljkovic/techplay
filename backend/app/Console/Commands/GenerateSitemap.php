@@ -58,6 +58,12 @@ class GenerateSitemap extends Command
             $sitemaps['sitemap-studios.xml'] = fn () => $sitemap->studios();
         }
 
+        // Same test the index applies, called through the same method so the
+        // two cannot drift apart.
+        if (SitemapController::hasPublishedLists()) {
+            $sitemaps['sitemap-lists.xml'] = fn () => $sitemap->lists();
+        }
+
         foreach ($sitemaps as $filename => $generator) {
             File::put("{$outputPath}/{$filename}", $generator()->getContent());
             $this->line("  ✓ {$filename}");

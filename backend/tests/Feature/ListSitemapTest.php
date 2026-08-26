@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\SitemapController;
 use App\Models\Game;
 use App\Models\GameList;
 use App\Models\GameListItem;
@@ -96,6 +97,28 @@ class ListSitemapTest extends TestCase
 
         $this->listWith([]);
 
+        $this->get('/sitemap.xml')->assertOk()->assertSee('sitemap-lists.xml', false);
+    }
+
+    /**
+     * The index naming a file the writer never produces is how
+     * sitemap-videos.xml outlived its own section — the comment in
+     * GenerateSitemap says so. Both sides call one method now; this holds them
+     * to it.
+     */
+    public function test_an_empty_published_list_makes_neither_side_promise_a_file(): void
+    {
+        $this->listWith([], withGame: false);
+
+        $this->assertFalse(SitemapController::hasPublishedLists());
+        $this->get('/sitemap.xml')->assertOk()->assertDontSee('sitemap-lists.xml', false);
+    }
+
+    public function test_a_list_with_a_game_makes_both_sides_promise_it(): void
+    {
+        $this->listWith([]);
+
+        $this->assertTrue(SitemapController::hasPublishedLists());
         $this->get('/sitemap.xml')->assertOk()->assertSee('sitemap-lists.xml', false);
     }
 }

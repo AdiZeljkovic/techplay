@@ -60,7 +60,7 @@ class SitemapController extends Controller
         // Lists were absent from every sitemap since the day they shipped, so
         // the only pages on this site written by its members were the only ones
         // Google was never told about.
-        if (GameList::where('is_public', true)->where('is_draft', false)->exists()) {
+        if (self::hasPublishedLists()) {
             $sitemaps[] = 'sitemap-lists.xml';
         }
         if (Article::where('status', 'published')->whereBetween('published_at', [now()->subHours(48), now()])->exists()) {
@@ -532,6 +532,21 @@ class SitemapController extends Controller
         $xml .= '</urlset>';
 
         return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Is there a single list worth naming in a sitemap?
+     *
+     * Shared with GenerateSitemap on purpose. The index and the writer have to
+     * agree exactly, or the index names a file nothing ever writes — which is
+     * how sitemap-videos.xml outlived its own section.
+     */
+    public static function hasPublishedLists(): bool
+    {
+        return GameList::where('is_public', true)
+            ->where('is_draft', false)
+            ->whereHas('items')
+            ->exists();
     }
 
     /**
