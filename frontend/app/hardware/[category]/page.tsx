@@ -112,7 +112,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Alt text the newsroom already writes, which never reached a share card.
     // Width and height need a migration — tracked separately.
     const images = imageUrl
-        ? [{ url: imageUrl, alt: article.featured_image_alt || article.title }]
+        ? [{
+            url: imageUrl,
+            alt: article.featured_image_alt || article.title,
+            // Declared so the card renders on the first share; see the news route.
+            ...(article.featured_image_width && article.featured_image_height
+                ? { width: article.featured_image_width, height: article.featured_image_height }
+                : {}),
+        }]
         : [];
 
     return {

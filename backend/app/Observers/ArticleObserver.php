@@ -14,6 +14,7 @@ use App\Services\ContentGameLinker;
 use App\Services\DiscordAnnouncer;
 use App\Services\QuestService;
 use App\Services\RevalidationService;
+use App\Services\ImageDimensionService;
 use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
@@ -37,6 +38,25 @@ class ArticleObserver
         if ($article->isDirty('content') && is_string($article->content)) {
             $article->content = app(SanitizationService::class)
                 ->sanitizeStaffContent($article->content);
+        }
+
+        /*
+         * Measure the cover the moment it changes, so a share card can declare
+         * its size without Facebook or X having to fetch the file first.
+         *
+         * On the very first share that fetch usually has not happened yet, and
+         * the card goes out with an empty frame — which is the share that
+         * counts, because a link normally goes out once. The upload pipeline
+         * already reads the width to build responsive sizes and then discards
+         * it; this keeps it.
+         *
+         * Only on change, and only from disk — no HTTP call in a save path.
+         */
+        if ($article->isDirty('featured_image_url')) {
+            $size = app(ImageDimensionService::class)->measure($article->featured_image_url);
+
+            $article->featured_image_width = $size[0] ?? null;
+            $article->featured_image_height = $size[1] ?? null;
         }
 
         // The content↔game spine: anything written about a game links to it

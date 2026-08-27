@@ -92,7 +92,14 @@ export async function generateMetadata(
         : null;
     // Alt text the newsroom already writes; width and height need a migration.
     const images = imageUrl
-        ? [{ url: imageUrl, alt: review.featured_image_alt || review.title }]
+        ? [{
+            url: imageUrl,
+            alt: review.featured_image_alt || review.title,
+            // Declared so the card renders on the first share; see the news route.
+            ...(review.featured_image_width && review.featured_image_height
+                ? { width: review.featured_image_width, height: review.featured_image_height }
+                : {}),
+        }]
         : [];
 
     return {

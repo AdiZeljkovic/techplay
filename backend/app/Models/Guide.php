@@ -19,6 +19,8 @@ class Guide extends Model
         'steps',
         'excerpt',
         'featured_image_url',
+        'featured_image_width',
+        'featured_image_height',
         'difficulty', // beginner, intermediate, advanced
         'author_id',
         'game_id',

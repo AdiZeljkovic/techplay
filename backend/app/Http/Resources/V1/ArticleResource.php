@@ -108,6 +108,19 @@ class ArticleResource extends JsonResource
              * the alt instead.
              */
             'featured_image_alt' => $this->featured_image_alt,
+            /*
+             * So a share card can be drawn without fetching the file first.
+             *
+             * Facebook and X read og:image:width and og:image:height to render
+             * immediately; without them they scrape and measure, and the first
+             * share of a piece often goes out with no image — which is the
+             * share that counts, because a link usually goes out once.
+             *
+             * Null until the backfill has seen the row; the page emits the
+             * image without a size in that case, exactly as it did before.
+             */
+            'featured_image_width' => $this->featured_image_width,
+            'featured_image_height' => $this->featured_image_height,
             'featured_video_url' => $this->featured_video_url ?: null,
             'published_at_human' => $this->published_at ? $this->published_at->diffForHumans() : null,
 

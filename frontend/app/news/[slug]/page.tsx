@@ -147,7 +147,19 @@ export async function generateMetadata(
      * own backend task rather than guessed at here.
      */
     const images = imageUrl
-        ? [{ url: imageUrl, alt: article.featured_image_alt || article.title }]
+        ? [{
+            url: imageUrl,
+            alt: article.featured_image_alt || article.title,
+            /*
+             * Facebook and X draw the card from these without fetching the
+             * file. Null until the image has been measured, and an og:image
+             * with no size is exactly what the site sent before — so an
+             * unmeasured cover loses nothing.
+             */
+            ...(article.featured_image_width && article.featured_image_height
+                ? { width: article.featured_image_width, height: article.featured_image_height }
+                : {}),
+        }]
         : [];
 
     return {

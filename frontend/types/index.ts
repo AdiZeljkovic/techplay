@@ -75,6 +75,9 @@ export interface Article {
     featured_video_url?: string | null;
     /** What the cover shows. Written in the admin's Media tab. */
     featured_image_alt?: string | null;
+    /** Null until the backfill or the observer has measured the file. */
+    featured_image_width?: number | null;
+    featured_image_height?: number | null;
     excerpt: string;
     content: string;
     category: Category; // Updated from string
@@ -151,6 +154,9 @@ export interface Review {
     featured_image_url?: string; // Optional helper mapping for reused components
     /** What the cover shows. Written in the admin's Media tab. */
     featured_image_alt?: string | null;
+    /** Null until the backfill or the observer has measured the file. */
+    featured_image_width?: number | null;
+    featured_image_height?: number | null;
     updated_at: string;
     /*
      * Dropped from `articles` on 18.08.2026: `seo_title` and `seo_description`
