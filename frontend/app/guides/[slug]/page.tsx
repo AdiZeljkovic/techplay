@@ -3,6 +3,7 @@ import GuideDetailView, { type Guide } from "@/components/guides/GuideDetailView
 import { Metadata } from "next";
 import { getServerApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 15 minutes (guides are more evergreen content)
@@ -52,7 +53,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
      * straight to the headline and the standfirst. Both ends are fixed now, so
      * an override set in the panel reaches the page.
      */
-    const seoTitle = guide.seo_title || `${guide.title} - TechPlay Guides`;
+    /*
+     * The fallback used to append "- TechPlay Guides", and the root layout
+     * then appended "| TechPlay" on top of it: "How to get Tidal Shadow in
+     * Genshin Impact (FULL GUIDE) - TechPlay Guides | TechPlay" — 921 px of
+     * title where Google shows about 600, a third of it the site name written
+     * twice, and the words that carry meaning cut off.
+     *
+     * The template adds the site name. Nothing else should.
+     */
+    const seoTitle = guide.seo_title || guide.title;
     const seoDescription = guide.seo_description || guide.excerpt || `Read our guide on ${guide.title}`;
 
     return {
@@ -83,10 +93,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
          * now, was the only thing on that screen wired to nothing: flipping it
          * wrote a column and this page kept emitting the default index,follow.
          */
-        robots: {
-            index: !guide.is_noindex,
-            follow: !guide.is_noindex,
-        },
+        robots: guide.is_noindex ? ROBOTS_NOINDEX : ROBOTS_INDEX,
     };
 }
 

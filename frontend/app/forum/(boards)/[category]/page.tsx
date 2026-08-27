@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getApiUrl, serverHeaders } from "@/lib/api";
 import CategoryClient, { type CategoryData } from "./CategoryClient";
+import { notFound } from "next/navigation";
 
 /**
  * A board, rendered on the server before the browser gets involved.
@@ -86,6 +87,16 @@ export default async function CategoryPage({
 }) {
     const { category } = await params;
     const initial = await loadBoard(category);
+
+    /*
+     * A board that does not exist is not a board with nothing in it.
+     *
+     * /forum/general and /forum/gaming-discussion are not categories on this
+     * site, and both answered 200 with no canonical — the same soft-404 the
+     * article routes have. Google reads 200 as "this page is fine", so a
+     * mistyped link from anywhere outside becomes a page in the index.
+     */
+    if (!initial?.category) notFound();
 
     return <CategoryClient initial={initial} />;
 }

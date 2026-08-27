@@ -6,6 +6,7 @@ import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 10 minutes (reviews change less frequently than news)
@@ -49,13 +50,24 @@ export async function generateMetadata(
     // Check if category
     const category = REVIEW_CATEGORIES.find(c => c.slug === slug);
     if (category) {
+        const title = `${category.label} Reviews - TechPlay`;
+        const description = category.label === "Latest"
+            ? "The freshest reviews hot off the press."
+            : `Browsing ${category.label} reviews.`;
+
+        // Same call the page makes; deduped by Next within the render.
+        const total = (await getInitialCategoryData(category.id))?.meta?.total;
+
         return {
-            title: `${category.label} Reviews - TechPlay`,
-            description: category.label === "Latest" ? "The freshest reviews hot off the press." : `Browsing ${category.label} reviews.`,
-            openGraph: {
-                title: `${category.label} Reviews - TechPlay`,
-                description: category.label === "Latest" ? "The freshest reviews hot off the press." : `Browsing ${category.label} reviews.`,
-            }
+            title,
+            description,
+            // Without this the page inherits `canonical: "/reviews"` from the
+            // section layout and disowns itself. See the news route for the
+            // full account.
+            alternates: { canonical: `${process.env.NEXT_PUBLIC_APP_URL}/reviews/${category.slug}` },
+            // Only a count we actually read demotes the page.
+            ...(total === 0 ? { robots: ROBOTS_NOINDEX } : {}),
+            openGraph: { title, description },
         };
     }
 
@@ -68,20 +80,26 @@ export async function generateMetadata(
     }
 
     const title = review.meta_title || review.title;
+    // Share cards take the real headline, not the sixty-character cut written
+    // for the search result. See the news route for the full account.
+    const socialTitle = review.title || title;
     // Construct a rich description with score
     const scoreStr = `Rating: ${review.rating}/10.`;
     const description = review.meta_description || review.summary || review.excerpt || `${scoreStr} Read our full review of ${review.item_name || review.title} on TechPlay.`;
-    const images = review.cover_image || review.featured_image_url
-        ? [(review.cover_image || review.featured_image_url)!.startsWith('http')
-            ? (review.cover_image || review.featured_image_url)!
-            : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${review.cover_image || review.featured_image_url}`]
+    const rawImage = review.cover_image || review.featured_image_url;
+    const imageUrl = rawImage
+        ? (rawImage.startsWith('http') ? rawImage : `${process.env.NEXT_PUBLIC_STORAGE_URL}/${rawImage}`)
+        : null;
+    // Alt text the newsroom already writes; width and height need a migration.
+    const images = imageUrl
+        ? [{ url: imageUrl, alt: review.featured_image_alt || review.title }]
         : [];
 
     return {
         title: title,
         description: description,
         openGraph: {
-            title: title,
+            title: socialTitle,
             description: description,
             url: review.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/reviews/${slug}`,
             siteName: 'TechPlay',
@@ -94,17 +112,14 @@ export async function generateMetadata(
         },
         twitter: {
             card: 'summary_large_image',
-            title: title,
+            title: socialTitle,
             description: description,
             images: images,
         },
         alternates: {
             canonical: review.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/reviews/${slug}`,
         },
-        robots: {
-            index: !review.is_noindex,
-            follow: !review.is_noindex,
-        }
+        robots: review.is_noindex ? ROBOTS_NOINDEX : ROBOTS_INDEX
     };
 }
 

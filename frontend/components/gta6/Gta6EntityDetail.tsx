@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { Gta6Entity } from "@/types";
-
-function resolveImage(image?: string | null): string | null {
-    if (!image) return null;
-    if (image.startsWith("http")) return image;
-    return `${process.env.NEXT_PUBLIC_STORAGE_URL}/${image}`;
-}
+import { resolveGta6Image } from "@/lib/gta6";
 
 interface MetaRow { label: string; value: string }
 
@@ -18,8 +13,8 @@ interface Props {
 }
 
 export default function Gta6EntityDetail({ entity, sectionLabel, sectionPath, meta }: Props) {
-    const hero = resolveImage(entity.image);
-    const gallery = (entity.gallery ?? []).map(resolveImage).filter(Boolean) as string[];
+    const hero = resolveGta6Image(entity.image);
+    const gallery = (entity.gallery ?? []).map(resolveGta6Image).filter(Boolean) as string[];
 
     return (
         <div className="min-h-screen bg-[var(--surface-0)]">

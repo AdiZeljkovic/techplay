@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans, Instrument_Sans } from "next/font/google";
 
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
+import { ROBOTS_INDEX } from "@/lib/seo";
 import "./globals.css";
 import AppShell from "@/components/layout/AppShell";
 import SwrDefaults from "@/components/providers/SwrDefaults";
@@ -99,12 +100,11 @@ export async function generateMetadata(): Promise<Metadata> {
       card: settings.seo_twitter_card_type || 'summary_large_image',
       site: settings.seo_social_twitter,
     },
-    robots: {
-      // Global default: allow indexing. Individual pages can override with their own noindex.
-      // seo_noindex_search should only apply to /search pages, not globally.
-      index: true,
-      follow: true,
-    },
+    // Global default: allow indexing, and allow the large image preview that
+    // Google Discover requires. Individual pages override with their own
+    // noindex; the directives themselves live in lib/seo.ts so the six files
+    // that emit a robots block cannot drift apart again.
+    robots: ROBOTS_INDEX,
     verification: {
       google: settings.seo_google_verification,
       yandex: settings.seo_yandex_verification,
@@ -203,9 +203,19 @@ export default async function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
 
         {/* Preconnect to production API — used for client-side data fetching on interactive pages */}
-        <link rel="preconnect" href="https://api.techplay.gg" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://api.techplay.gg" />
-        {/* dns-prefetch only for beta API (used server-side only, browser never connects directly) */}
+        {/*
+          * The only preconnect on the page used to point at api.techplay.gg,
+          * which does not resolve — nslookup returns NXDOMAIN. So the most
+          * expensive hint a page can give (DNS + TCP + TLS, spent up front)
+          * was spent on a lookup that can only time out, while the host that
+          * actually serves the site got the weakest hint instead.
+          *
+          * The browser does reach api-beta directly: the client axios baseURL
+          * is NEXT_PUBLIC_API_URL, and the homepage alone references 86 images
+          * on its /storage path. The comment that used to sit here claimed the
+          * opposite.
+          */}
+        <link rel="preconnect" href="https://api-beta.techplay.gg" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://api-beta.techplay.gg" />
 
         {/* Google Analytics — dns-prefetch only, preconnect not needed (afterInteractive) */}

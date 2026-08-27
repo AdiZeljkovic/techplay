@@ -48,7 +48,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const ogImage = `${APP_URL}/og/list?username=${encodeURIComponent(username)}&slug=${encodeURIComponent(slug)}`;
 
     return {
-        title: `${list.name} — a game list by ${owner} | TechPlay`,
+        // The root layout's template appends "| TechPlay"; writing it here too
+        // produced "… | TechPlay | TechPlay".
+        title: `${list.name} — a game list by ${owner}`,
         description,
         alternates: { canonical: `${APP_URL}/lists/${username}/${slug}` },
         openGraph: {

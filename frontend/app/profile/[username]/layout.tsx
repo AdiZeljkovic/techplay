@@ -118,9 +118,30 @@ export default async function ProfileLayout({
 
     // `me` resolves on the client against the stored session — the server has
     // no way to know who that is, so it is never checked here.
-    if (username !== "me" && (await loadProfile(username)).state === "missing") {
+    const lookup = username === "me" ? null : await loadProfile(username);
+
+    if (lookup?.state === "missing") {
         notFound();
     }
 
-    return <>{children}</>;
+    const profile = lookup?.state === "found" ? lookup.profile : null;
+    const name = profile?.user?.display_name || profile?.user?.username || username;
+
+    return (
+        <>
+            {/*
+              * The profile's primary heading.
+              *
+              * Everything on this page — the hero, the name, the level ring —
+              * is drawn on the client, so the server sent a document with no
+              * h1 at all. The name reached search engines only through the
+              * meta description, which is the one place it was already
+              * excellent ("281 games, 3,104 hours played"). The lookup above
+              * has the profile in hand either way, so the heading costs
+              * nothing and changes nothing visually.
+              */}
+            <h1 className="sr-only">{name} on TechPlay</h1>
+            {children}
+        </>
+    );
 }

@@ -14,11 +14,25 @@ export const metadata: Metadata = {
         url: "https://techplay.gg/last-disc/letter",
         type: "article",
         siteName: "TechPlay",
+        /*
+         * The page declared `summary_large_image` and sent no image at all, so
+         * the one artefact of this campaign anybody actually shares posted as
+         * a bare link. The campaign hero until /og/letter exists — it is
+         * 1983x793, wider than the 1.91:1 cards crop to, so the top and bottom
+         * are trimmed.
+         */
+        images: [{
+            url: "https://techplay.gg/images/last-disc/last-disc-hero.webp",
+            width: 1983,
+            height: 793,
+            alt: "A shattering PlayStation disc",
+        }],
     },
     twitter: {
         card: "summary_large_image",
         title: "Open Letter to Sony: digital is only bad when it's the only option",
         description: "The TechPlay community's open letter on physical PlayStation games.",
+        images: ["https://techplay.gg/images/last-disc/last-disc-hero.webp"],
     },
 };
 

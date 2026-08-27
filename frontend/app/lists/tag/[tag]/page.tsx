@@ -17,7 +17,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const label = pretty(tag);
 
     return {
-        title: `${label} game lists | TechPlay`,
+        // No layout between here and the root, so the root template appends
+        // "| TechPlay" on its own. Writing it here as well doubled it.
+        title: `${label} game lists`,
         description: `Rankings and tier lists tagged ${label}, made by the TechPlay community.`,
         alternates: { canonical: `/lists/tag/${tag}` },
         openGraph: {

@@ -181,6 +181,18 @@ export default function ForumPage() {
        index itself: the view switcher and the boards. */
     return (
         <div className="py-5">
+                        {/*
+                          * The page's primary heading, which it did not have.
+                          *
+                          * When the hero moved into the layout bar it took the
+                          * only h1 with it, so /forum served a document whose
+                          * strongest heading was a board group's h2. Read by a
+                          * screen reader or a crawler, the page announced
+                          * nothing about itself. Sized to sit with the switcher
+                          * rather than reintroduce the hero.
+                          */}
+                        <h1 className="sr-only">TechPlay Community Forum</h1>
+
                         <div className="flex flex-wrap items-center gap-3 mb-5">
                             {/* The leaderboard's switcher, so every hub on the
                                 site picks a view the same way. */}

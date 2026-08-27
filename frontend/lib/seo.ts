@@ -22,6 +22,33 @@ import { getServerApiUrl, serverHeaders } from '@/lib/api';
 function apiUrl(): string {
     return getServerApiUrl();
 }
+/**
+ * The robots directives a page that wants to be found should carry.
+ *
+ * `max-image-preview: large` is the one that matters most and the one the site
+ * did not have anywhere: without it a page is not eligible for Google Discover
+ * at all. That is a condition, not a preference — and everything else Discover
+ * asks for (images over 1200px, named authors, publish and modified dates, a
+ * valid news sitemap) was already in place, so one missing directive was
+ * holding the whole surface shut.
+ *
+ * The other two lift caps Google otherwise applies to how much of a snippet or
+ * video it will show.
+ *
+ * Exported rather than repeated because six files emit a robots block, and
+ * three of them had already drifted apart from each other.
+ */
+export const ROBOTS_INDEX = {
+    index: true,
+    follow: true,
+    'max-image-preview': 'large' as const,
+    'max-snippet': -1,
+    'max-video-preview': -1,
+};
+
+/** A page that asks not to be indexed has no use for preview directives. */
+export const ROBOTS_NOINDEX = { index: false, follow: false };
+
 const STORAGE_URL = process.env.NEXT_PUBLIC_STORAGE_URL || 'https://api-beta.techplay.gg/storage';
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg').replace(/\/$/, '');
 
@@ -205,9 +232,7 @@ export async function generatePageMetadata(
          * Articles never had this problem: their own pages build a robots block
          * from `article.is_noindex`. Only the static pages went through here.
          */
-        robots: pageSeo?.is_noindex
-            ? { index: false, follow: false }
-            : { index: true, follow: true },
+        robots: pageSeo?.is_noindex ? ROBOTS_NOINDEX : ROBOTS_INDEX,
         alternates: {
             canonical,
             languages: { 'x-default': canonical },

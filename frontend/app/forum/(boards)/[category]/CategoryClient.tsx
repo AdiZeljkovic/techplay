@@ -92,7 +92,18 @@ function CategoryThreadsPageInner({ initial }: { initial: CategoryData | null })
 
     if (isLoading) {
         return (
-            <ForumShell crumbs={[{ label: "Forum", href: "/forum" }]} title="Loading board…">
+            <ForumShell
+                crumbs={[{ label: "Forum", href: "/forum" }]}
+                /*
+                 * The board's name, not "Loading board…".
+                 *
+                 * This branch renders on the server too, so the placeholder was
+                 * landing in the HTML as the page's &lt;h1&gt; — /forum/hardware
+                 * told Google its primary heading was "Loading board…". The name
+                 * is already in `initial` either way.
+                 */
+                title={initial?.category?.name ?? "Board"}
+            >
                 <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] divide-y divide-[var(--line)]">
                     {[1, 2, 3, 4, 5].map((i) => (
                         <div key={i} className="flex items-center gap-3 px-3.5 py-3.5 animate-pulse">

@@ -6,6 +6,7 @@ import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
 
 // On-demand ISR - no automatic revalidation, only manual via /api/revalidate
 // Backend triggers revalidation when content is updated
@@ -55,12 +56,33 @@ export async function generateMetadata(
     // Check if category first
     const category = NEWS_CATEGORIES.find(c => c.slug === slug);
     if (category) {
+        const title = `${category.label} News - TechPlay`;
+        const description = `Latest news and updates from the ${category.label} world.`;
+
+        // The same call the page below makes, with the same options, so Next
+        // serves it from the render's fetch cache rather than asking twice.
+        const total = (await getInitialCategoryData(category.id))?.meta?.total;
+
         return {
-            title: `${category.label} News - TechPlay`,
-            description: `Latest news and updates from the ${category.label} world.`,
-            openGraph: {
-                title: `${category.label} News - TechPlay`,
-                description: `Latest news and updates from the ${category.label} world.` }
+            title,
+            description,
+            /*
+             * Without this the category inherits `canonical: "/news"` from the
+             * section layout — an explicit instruction to index the parent
+             * instead. All seventeen category pages on the site were doing
+             * that while the sitemap dutifully submitted them, so we asked
+             * Google to crawl seventeen URLs and told it to drop every one.
+             */
+            alternates: { canonical: `${process.env.NEXT_PUBLIC_APP_URL}/news/${category.slug}` },
+            /*
+             * A category with nothing in it is an empty archive, and the
+             * canonical above is what makes that visible — before it, Google
+             * ignored these pages anyway. Only a count we actually read counts:
+             * a failed fetch leaves the page indexable rather than quietly
+             * demoting a healthy category.
+             */
+            ...(total === 0 ? { robots: ROBOTS_NOINDEX } : {}),
+            openGraph: { title, description },
         };
     }
 
@@ -72,8 +94,26 @@ export async function generateMetadata(
             title: 'Article Not Found' };
     }
 
+    /*
+     * Two audiences, two lengths — and for months they shared one string.
+     *
+     * `meta_title` is cut to sixty characters, which is roughly what Google
+     * shows. That cut then went into og:title as well, so a share on Discord
+     * or Facebook posted a sentence that stopped mid-thought: "DLSS 5
+     * Announced: NVIDIA promises cinematic visuals in the". 117 of 629
+     * published articles carry a meta_title that is a truncation of their own
+     * headline, and every one of them shared that way.
+     *
+     * Nothing about a share card wants sixty characters. Facebook shows about
+     * 88, X about 70, Discord up to 256 — so the social pair takes the real
+     * headline and the real standfirst, and the search pair keeps the short
+     * form the editor wrote for it.
+     */
     const title = article.meta_title || article.title;
     const description = article.meta_description || article.excerpt || "Read more on TechPlay.";
+
+    const socialTitle = article.title || title;
+    const socialDescription = article.excerpt || article.meta_description || "Read more on TechPlay.";
 
     // Robust Image URL generation
     let imageUrl = article.featured_image_url;
@@ -96,14 +136,26 @@ export async function generateMetadata(
         }
     }
 
-    const images = imageUrl ? [imageUrl] : [];
+    /*
+     * The alt text the newsroom already writes — 628 of 629 published articles
+     * have one — and which never reached a share card, because the images
+     * array carried a bare URL.
+     *
+     * Width and height belong here too and are not available yet: the upload
+     * pipeline measures the image but stores nothing, so there are no columns
+     * to read. That needs a migration and a backfill, and is tracked as its
+     * own backend task rather than guessed at here.
+     */
+    const images = imageUrl
+        ? [{ url: imageUrl, alt: article.featured_image_alt || article.title }]
+        : [];
 
     return {
         title: title,
         description: description,
         openGraph: {
-            title: title,
-            description: description,
+            title: socialTitle,
+            description: socialDescription,
             url: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}`,
             siteName: 'TechPlay',
             type: 'article',
@@ -114,17 +166,15 @@ export async function generateMetadata(
             locale: 'en_US' },
         twitter: {
             card: 'summary_large_image',
-            title: title,
-            description: description,
+            title: socialTitle,
+            description: socialDescription,
             images: images },
         alternates: {
             canonical: article.canonical_url || `${process.env.NEXT_PUBLIC_APP_URL}/news/${slug}` },
         keywords: Array.isArray(article.tags) && article.tags.length > 0
             ? article.tags.join(', ')
             : (article.focus_keyword || undefined),
-        robots: {
-            index: !article.is_noindex,
-            follow: !article.is_noindex }
+        robots: article.is_noindex ? ROBOTS_NOINDEX : ROBOTS_INDEX
     };
 }
 
