@@ -32,3 +32,10 @@ Thumbs.db
 # ahead of the routes — FrankenPHP answers with any real file in public/ before
 # PHP is reached.
 /public/sitemap*.xml
+
+# The rule above only ever applied to files git was not already tracking, and
+# public/sitemap.xml had been committed before it was written — so every
+# `sitemap:generate` on the server left the working tree dirty and the next
+# `git pull` refused to run. Untracked here on 28.08.2026; the root .gitignore
+# already carried a one-off line for sitemap-news.xml, which is the same
+# papercut patched once for the one file that hurt first.
