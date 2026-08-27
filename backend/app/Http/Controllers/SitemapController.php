@@ -267,9 +267,28 @@ class SitemapController extends Controller
             $xml .= $this->urlEntry("{$this->frontendUrl}/news/{$cat}", null, 'daily', '0.6');
         }
 
-        // Review categories - URL format: /reviews/aaa-titles, DB slug: reviews-aaa-titles
-        $reviewCategories = ['aaa-titles', 'editors-choice', 'indie-gems', 'latest', 'retro'];
-        foreach ($reviewCategories as $cat) {
+        /*
+         * Review categories - URL format: /reviews/aaa-titles, DB slug:
+         * reviews-aaa-titles.
+         *
+         * `latest` is not a category at all: ReviewController treats
+         * `reviews-latest` as "every review, no extra filter", so nothing is
+         * ever assigned to it and counting rows against it returns zero. It
+         * showed 38 reviews while the count said none, and the first version of
+         * this filter dropped the page because of it.
+         *
+         * It is listed here rather than counted, and it earns its place from
+         * the section having any reviews at all.
+         */
+        $anyReview = collect($counts)->filter(
+            fn ($n, $slug) => str_starts_with((string) $slug, 'reviews-') && $n > 0
+        )->isNotEmpty();
+
+        if ($anyReview) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}/reviews/latest", null, 'daily', '0.6');
+        }
+
+        foreach (['aaa-titles', 'editors-choice', 'indie-gems', 'retro'] as $cat) {
             if (($counts["reviews-{$cat}"] ?? 0) < 1) {
                 continue;
             }

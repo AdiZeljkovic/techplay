@@ -128,6 +128,34 @@ class SitemapAndRobotsTest extends TestCase
         $this->assertStringNotContainsString('/reviews/retro', $body);
     }
 
+    /**
+     * /reviews/latest is not a category and counting rows against it says zero.
+     *
+     * ReviewController reads `reviews-latest` as "every review, no extra
+     * filter", so nothing is ever assigned to it. The page carries 38 reviews
+     * while the count reads none, and the first version of the emptiness filter
+     * dropped it out of the sitemap for exactly that reason.
+     */
+    public function test_reviews_latest_survives_although_nothing_is_filed_under_it(): void
+    {
+        $this->articleIn('reviews-aaa-titles', 'reviews');
+
+        $body = $this->get('/sitemap-categories.xml')->assertOk()->getContent();
+
+        $this->assertStringContainsString('/reviews/latest', $body);
+        $this->assertStringContainsString('/reviews/aaa-titles', $body);
+    }
+
+    /** With no reviews at all, even the catch-all has nothing to show. */
+    public function test_reviews_latest_goes_too_when_the_section_is_empty(): void
+    {
+        $this->articleIn('news-gaming', 'news');
+
+        $body = $this->get('/sitemap-categories.xml')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('/reviews/latest', $body);
+    }
+
     public function test_the_sitemap_index_lists_children_on_the_frontend_host(): void
     {
         config(['app.site_url' => 'https://techplay.gg']);
