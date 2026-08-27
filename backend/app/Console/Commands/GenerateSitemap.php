@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\SitemapController;
 use App\Models\Game;
+use App\Models\Product;
 use App\Models\Studio;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -80,9 +81,20 @@ class GenerateSitemap extends Command
                 'sitemap-categories.xml' => fn () => $sitemap->categories(),
                 'sitemap-hub.xml' => fn () => $sitemap->hub(),
                 'sitemap-guides.xml' => fn () => $sitemap->guides(),
-                'sitemap-products.xml' => fn () => $sitemap->products(),
                 'sitemap-news.xml' => fn () => $sitemap->news(),
             ];
+
+            /*
+             * Products only when there are any, which is the test index()
+             * applies. This command wrote the file unconditionally, so with
+             * zero active products it produced a sitemap containing nothing
+             * but /shop — a URL already in sitemap-pages.xml — and the index
+             * never mentioned it. Served, unreferenced, and maintained by
+             * nobody: the same shape as sitemap-videos.xml.
+             */
+            if (Product::where('is_active', true)->exists()) {
+                $sitemaps['sitemap-products.xml'] = fn () => $sitemap->products();
+            }
 
             // Same test the index applies, called through the same method so
             // the two cannot drift apart.

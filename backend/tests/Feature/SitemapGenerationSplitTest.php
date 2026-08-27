@@ -64,4 +64,27 @@ class SitemapGenerationSplitTest extends TestCase
     {
         $this->artisan('sitemap:generate --content --catalogue')->assertFailed();
     }
+
+    /**
+     * With no products, the file must not be written at all.
+     *
+     * index() lists sitemap-products.xml only when a product is active, and
+     * this command wrote it either way — so with an empty shop it produced a
+     * sitemap holding nothing but /shop, a URL already in sitemap-pages.xml,
+     * that the index never named. Served, unreferenced, maintained by nobody:
+     * the same shape as sitemap-videos.xml, which outlived its section for
+     * months for exactly this reason.
+     */
+    public function test_an_empty_shop_writes_no_products_sitemap(): void
+    {
+        $path = public_path('sitemap-products.xml');
+        File::delete($path);
+
+        $this->artisan('sitemap:generate --content')->assertSuccessful();
+
+        $this->assertFileDoesNotExist(
+            $path,
+            'a sitemap the index will never name should not be written'
+        );
+    }
 }
