@@ -143,7 +143,20 @@ class SitemapController extends Controller
             ['/games', 'weekly', '0.7'],
             ['/forum', 'hourly', '0.7'],
             ['/shop', 'weekly', '0.6'],
-            ['/giveaways', 'weekly', '0.6'],
+            /*
+             * /giveaways is not here on purpose.
+             *
+             * The page answers `noindex, nofollow` — it was the only one of the
+             * forty-four in this list that contradicted itself, asking Google to
+             * come and then turning it away on arrival. Of the two ways to
+             * settle that, the editorial call was to keep the page out of search
+             * rather than open it up.
+             *
+             * If that changes, remove the noindex on app/giveaways/page.tsx
+             * first and put the row back second — in that order, so there is
+             * never a moment where the sitemap is inviting a crawler to a
+             * closed door.
+             */
             ['/frontiers', 'weekly', '0.6'],
             ['/last-disc', 'weekly', '0.6'],
             ['/last-disc/letter', 'monthly', '0.5'],

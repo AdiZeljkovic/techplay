@@ -156,6 +156,25 @@ class SitemapAndRobotsTest extends TestCase
         $this->assertStringNotContainsString('/reviews/latest', $body);
     }
 
+    /**
+     * A sitemap must not invite a crawler to a page that turns it away.
+     *
+     * /giveaways answers `noindex, nofollow` and was the only one of the
+     * forty-four URLs in sitemap-pages.xml that contradicted itself. Checked
+     * against production, every other page there returns 200 and is
+     * indexable.
+     *
+     * If the page is ever opened to search, remove its noindex first and add
+     * the row back second, so there is never a window where the sitemap points
+     * at a closed door.
+     */
+    public function test_a_noindexed_page_is_not_offered_in_the_sitemap(): void
+    {
+        $body = $this->get('/sitemap-pages.xml')->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('/giveaways', $body);
+    }
+
     public function test_the_sitemap_index_lists_children_on_the_frontend_host(): void
     {
         config(['app.site_url' => 'https://techplay.gg']);
