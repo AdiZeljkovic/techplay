@@ -48,6 +48,8 @@ export interface User {
     profile_visibility?: "public" | "friends";
     /** Own account only — the API withholds both from anybody else. */
     email_notifications?: boolean;
+    /** May the site shelve a game because it saw you playing it? Own setting only. */
+    auto_add_played_games?: boolean;
     discord_linked?: boolean;
     cookie_preferences?: {
         necessary: boolean;

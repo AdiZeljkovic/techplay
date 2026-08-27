@@ -39,6 +39,10 @@ class UserResource extends JsonResource
                 $request->user()?->id === $this->id,
                 (bool) ($this->email_notifications ?? true)
             ),
+            'auto_add_played_games' => $this->when(
+                $request->user()?->id === $this->id,
+                (bool) ($this->auto_add_played_games ?? true)
+            ),
             'discord_linked' => $this->when(
                 $request->user()?->id === $this->id,
                 ! empty($this->discord_id)

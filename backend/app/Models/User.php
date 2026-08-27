@@ -75,6 +75,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'post_color',
         'profile_visibility',
         'email_notifications',
+        'auto_add_played_games',
     ];
 
     /** Only accepted friends may open the profile. */

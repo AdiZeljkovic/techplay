@@ -536,6 +536,9 @@ class AuthController extends Controller
             // since January and SendGiveawayReminders has been honouring it the
             // whole time; nothing ever let anybody set it.
             'email_notifications' => 'nullable|boolean',
+            // May the site shelve a game because it saw you playing it? Default
+            // on: without a library row there is nowhere to record the session.
+            'auto_add_played_games' => 'nullable|boolean',
         ]);
 
         // Handle Avatar Upload
@@ -566,6 +569,9 @@ class AuthController extends Controller
             'email_notifications' => $request->has('email_notifications')
                 ? $request->boolean('email_notifications')
                 : ($user->email_notifications ?? true),
+            'auto_add_played_games' => $request->has('auto_add_played_games')
+                ? $request->boolean('auto_add_played_games')
+                : ($user->auto_add_played_games ?? true),
         ]);
 
         // Going private has to evict the shared visitor cache immediately,

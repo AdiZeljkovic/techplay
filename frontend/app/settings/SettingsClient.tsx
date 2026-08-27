@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import {
-    Loader2, Save, User, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2, Eye, Globe, Users, Check,
+    Loader2, Save, User, Lock, CheckCircle, ShieldCheck, Download, Trash2, Link2, Eye, Globe, Users, Check, Gamepad2,
     Bell, MapPin, Quote, type LucideIcon,
 } from "lucide-react";
 import ConnectedAccountsSection from "@/components/settings/ConnectedAccountsSection";
@@ -169,6 +169,8 @@ export default function SettingsClient() {
     const [visibility, setVisibility] = useState<Visibility>((user?.profile_visibility as Visibility) || "public");
     const [savingVisibility, setSavingVisibility] = useState(false);
     const [emails, setEmails] = useState<boolean>(user?.email_notifications ?? true);
+    const [autoShelf, setAutoShelf] = useState<boolean>(user?.auto_add_played_games ?? true);
+    const [savingShelf, setSavingShelf] = useState(false);
     const [savingEmails, setSavingEmails] = useState(false);
 
     // Seed the form from the account once. This used to run during render on
@@ -185,6 +187,7 @@ export default function SettingsClient() {
         setLocation(user.location || "");
         setVisibility((user.profile_visibility as Visibility) || "public");
         setEmails(user.email_notifications ?? true);
+        setAutoShelf(user.auto_add_played_games ?? true);
         if (user.avatar_url) setAvatarPreview(user.avatar_url);
         if (user.cover_image) setCoverPreview(user.cover_image);
     }, [user]);
@@ -240,6 +243,28 @@ export default function SettingsClient() {
             toast.error("Could not save that.");
         } finally {
             setSavingEmails(false);
+        }
+    };
+
+    const handleShelfChange = async (next: boolean) => {
+        if (next === autoShelf || savingShelf) return;
+        const previous = autoShelf;
+        setAutoShelf(next);
+        setSavingShelf(true);
+        try {
+            const form = new FormData();
+            form.append("_method", "PUT");
+            form.append("auto_add_played_games", next ? "1" : "0");
+            const { data } = await axios.post("/user/profile", form, { headers: { "Content-Type": "multipart/form-data" } });
+            if (data?.user) updateUser(data.user);
+            toast.success(next
+                ? "We'll shelve what we see you play."
+                : "Off. Your library only changes when you change it.");
+        } catch {
+            setAutoShelf(previous);
+            toast.error("Could not save that.");
+        } finally {
+            setSavingShelf(false);
         }
     };
 
@@ -623,6 +648,35 @@ export default function SettingsClient() {
                                             <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white transition-transform duration-300 ${emails ? "translate-x-[21px]" : "translate-x-[3px]"}`} />
                                         </span>
                                     </button>
+
+                                    {/* Sits here rather than under Privacy: it is
+                                        about what the site does on your behalf,
+                                        which is the same question the switch
+                                        above answers. */}
+                                    <div className="mt-5 pt-5 border-t border-white/[0.07]">
+                                        <button
+                                            onClick={() => handleShelfChange(!autoShelf)}
+                                            disabled={savingShelf}
+                                            role="switch"
+                                            aria-checked={autoShelf}
+                                            className="w-full flex items-center gap-4 text-left disabled:opacity-60"
+                                        >
+                                            <span className={`shrink-0 ${autoShelf ? "text-[var(--accent)]" : "text-white/25"}`}>
+                                                <Gamepad2 className="w-5 h-5" strokeWidth={1.6} />
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="block text-[13px] font-semibold text-white">Shelve what I play</span>
+                                                <span className="block text-[11.5px] text-white/35 leading-snug">
+                                                    When Steam or Discord shows you playing something for more than a couple of
+                                                    minutes, add it to your library as Playing. This is also what lets your hours
+                                                    be counted — a game with no shelf entry has nowhere to record them.
+                                                </span>
+                                            </span>
+                                            <span className={`shrink-0 relative w-[42px] h-[24px] rounded-full transition-colors duration-300 ${autoShelf ? "bg-[var(--accent)]" : "bg-white/[0.12]"}`}>
+                                                <span className={`absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white transition-transform duration-300 ${autoShelf ? "translate-x-[21px]" : "translate-x-[3px]"}`} />
+                                            </span>
+                                        </button>
+                                    </div>
 
                                     <p className="mt-5 pt-5 border-t border-white/[0.07] text-[11.5px] text-white/30 leading-relaxed">
                                         Release reminders are set per game, on the calendar — the bell on any unreleased title.

@@ -142,6 +142,12 @@ class PresenceService
                 ->update(['last_played_at' => now()]);
         }
 
+        // Long enough to be play rather than a launcher flicker — put it on the
+        // shelf, so the session has somewhere to be recorded at all.
+        if ($game) {
+            $this->shelveIfPlaying($user, $game, $presence);
+        }
+
         broadcast(new PresenceUpdated(
             userId: $user->id,
             gameName: $presence->game_name,
@@ -179,6 +185,43 @@ class PresenceService
      * anything, and we will not invent library rows from a Discord status.
      * Steam's total is authoritative, so entries it owns are left untouched.
      */
+    /**
+     * Put a detected game on the shelf, once the session is long enough to mean it.
+     *
+     * Two minutes is the same threshold bankSession() already uses to tell play
+     * from a presence flicker, so a launcher opened and closed leaves nothing
+     * behind. Anything already in the library is left exactly as the member
+     * filed it — a game they marked `completed` does not get demoted to
+     * `playing` because they loaded it again.
+     *
+     * Without this there was nowhere to record a session: bankSession() writes
+     * minutes onto a UserGame row, and a game nobody had catalogued had none —
+     * so playing it registered as nothing at all.
+     */
+    private function shelveIfPlaying(User $user, Game $game, Presence $presence): void
+    {
+        if (! ($user->auto_add_played_games ?? true)) {
+            return;
+        }
+
+        if (! $presence->started_at
+            || $presence->started_at->diffInMinutes(now()) < self::MIN_SESSION_MINUTES) {
+            return;
+        }
+
+        UserGame::firstOrCreate(
+            ['user_id' => $user->id, 'game_id' => $game->id],
+            [
+                'status' => 'playing',
+                'last_played_at' => now(),
+                // The same ledger every store import writes to, so the shelf
+                // can say the site noticed this one rather than the member
+                // filing it.
+                'sources' => UserGame::withSource(null, $presence->source ?: 'presence'),
+            ]
+        );
+    }
+
     private function bankSession(User $user, Presence $presence): void
     {
         if (! $presence->game_id || ! $presence->started_at || ! $presence->is_active) {
@@ -194,6 +237,19 @@ class PresenceService
         $entry = UserGame::where('user_id', $user->id)
             ->where('game_id', $presence->game_id)
             ->first();
+
+        // A session on a game nobody catalogued used to be dropped here. It is
+        // the same call shelveIfPlaying makes during play; this covers the
+        // source that reports once and then goes quiet — Discord pushes on
+        // change, so a three-hour session can be a single message.
+        if (! $entry && ($user->auto_add_played_games ?? true)) {
+            $entry = UserGame::create([
+                'user_id' => $user->id,
+                'game_id' => $presence->game_id,
+                'status' => 'playing',
+                'sources' => UserGame::withSource(null, $presence->source ?: 'presence'),
+            ]);
+        }
 
         if (! $entry || $entry->playtime_source === 'steam') {
             return;
