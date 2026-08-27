@@ -22,11 +22,80 @@ class PresenceService
     /** Below this a "session" is a presence flicker, not play. */
     private const MIN_SESSION_MINUTES = 2;
 
-    public function set(User $user, string $gameName, string $source = 'manual'): Presence
+    /**
+     * Packaging words a storefront adds and a catalogue usually does not.
+     *
+     * Deliberately short. "Redux", "Remastered", "Enhanced", "Definitive",
+     * "Anniversary", "Director's Cut" and "HD" are all left out, because those
+     * are frequently their own product with their own catalogue entry — Metro
+     * 2033 and Metro 2033: Redux are two rows here, and collapsing them would
+     * credit the wrong game. What is stripped is only the wrapping: which box
+     * the same game shipped in.
+     */
+    private const PACKAGING = [
+        'complete edition',
+        'game of the year edition',
+        'goty edition',
+        'deluxe edition',
+        'ultimate edition',
+        'legendary edition',
+        'standard edition',
+        'gold edition',
+        'complete pack',
+    ];
+
+    /**
+     * The catalogue row a storefront's title refers to, if there is one.
+     *
+     * Steam reports what is printed on the store page — "Metro: Last Light
+     * Complete Edition" — and the catalogue holds "Metro: Last Light". The old
+     * lookup asked for an exact name or an exact slug and got neither, so the
+     * presence was stored with a null game_id: no session banked, no taste
+     * signal recorded, no link to the game.
+     *
+     * The full title is tried first and always. That ordering is what keeps a
+     * genuinely separate edition matching itself instead of being folded into
+     * its base game.
+     */
+    private function resolveGame(string $gameName): ?Game
     {
-        $game = Game::where('name', $gameName)
+        $exact = Game::whereRaw('LOWER(name) = ?', [mb_strtolower($gameName)])
             ->orWhere('slug', Str::slug($gameName))
             ->first();
+
+        if ($exact) {
+            return $exact;
+        }
+
+        $lower = mb_strtolower(trim($gameName));
+
+        foreach (self::PACKAGING as $suffix) {
+            if (! str_ends_with($lower, ' '.$suffix)) {
+                continue;
+            }
+
+            $trimmed = trim(mb_substr($gameName, 0, mb_strlen($gameName) - mb_strlen($suffix) - 1));
+            $trimmed = rtrim($trimmed, ' -–—:');
+
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $match = Game::whereRaw('LOWER(name) = ?', [mb_strtolower($trimmed)])
+                ->orWhere('slug', Str::slug($trimmed))
+                ->first();
+
+            if ($match) {
+                return $match;
+            }
+        }
+
+        return null;
+    }
+
+    public function set(User $user, string $gameName, string $source = 'manual'): Presence
+    {
+        $game = $this->resolveGame($gameName);
 
         $existing = Presence::where('user_id', $user->id)->first();
 
