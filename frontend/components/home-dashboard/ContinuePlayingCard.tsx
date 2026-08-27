@@ -17,9 +17,13 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
     // Playtime is only ever as good as the signal behind it — say what we
     // know, never a confident zero.
     const sub =
-        game?.playtime_source && game.hours_played > 0
-            ? `${game.hours_played}h played${game.progress > 0 ? ` · ${game.progress}%` : ""}`
-            : "Ready when you are";
+        game?.playtime_source && (game.hours_played ?? 0) > 0
+            ? `${game.hours_played}h played${(game.progress ?? 0) > 0 ? ` · ${game.progress}%` : ""}`
+            : game?.live
+                // A live game that is not on the shelf has no measured hours to
+                // report; saying so beats "Ready when you are" while it runs.
+                ? "Running now"
+                : "Ready when you are";
 
     return (
         <Panel title="Continue Playing" material="lit" padding="none" className="h-full flex flex-col" bodyClassName="flex-1 flex flex-col">
@@ -51,6 +55,21 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                             </span>
                         )}
                         <span aria-hidden className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+
+                        {/* Running right now, as reported by a connected store
+                            — not the shelf, which is a state somebody set once
+                            and may not have corrected since. */}
+                        {game.live && (
+                            <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 h-[21px] pl-1.5 pr-2.5 rounded-full bg-black/70 backdrop-blur-sm border border-emerald-400/40">
+                                <span aria-hidden className="relative flex w-1.5 h-1.5">
+                                    <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-70 motion-safe:animate-ping" />
+                                    <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                </span>
+                                <span className="font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-emerald-300">
+                                    Playing now
+                                </span>
+                            </span>
+                        )}
                     </Link>
 
                     {/* Title over button, not beside it. Side by side, the

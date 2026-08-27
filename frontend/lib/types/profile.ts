@@ -415,8 +415,10 @@ export interface PlayingNowGame {
     name: string;
     cover_url: string | null;
     platforms: string[];
-    progress: number;
-    hours_played: number;
+    /** Running right now, per the connected store — not a shelf state. */
+    live?: boolean;
+    progress: number | null;
+    hours_played: number | null;
     /**
      * Where the playtime came from. null means nothing measured it — show
      * a prompt to connect Steam or Discord rather than "0h played".

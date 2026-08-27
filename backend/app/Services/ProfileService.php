@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Customization;
 use App\Models\Friendship;
+use App\Models\Game;
 use App\Models\GameList;
+use App\Models\Presence;
 use App\Models\ReputationSnapshot;
 use App\Models\User;
 use App\Models\UserCustomization;
@@ -153,7 +155,72 @@ class ProfileService
     /**
      * The "Playing Now" rail — in-progress games with progress %.
      */
+    /**
+     * What to show under "Continue playing".
+     *
+     * The shelf alone was not it. `status = 'playing'` is a state somebody set
+     * once and rarely returns to correct — it sat four days stale on the
+     * account that surfaced this, listing two games while a third was running
+     * at that moment and Steam was reporting it by name.
+     *
+     * So the live presence leads, when there is one and the catalogue can say
+     * which game it is. It is not written into the library: presence is a fact
+     * about right now, and quietly moving titles between shelves — or adding
+     * one the member does not own, which is this very case — is not a thing to
+     * do behind their back.
+     *
+     * A game already on the shelf is not listed twice; it is promoted to the
+     * front and marked live.
+     */
     public function playingNow(User $user, int $limit = 6): array
+    {
+        $shelf = $this->shelfPlaying($user, $limit);
+
+        $presence = Presence::where('user_id', $user->id)
+            ->where('is_active', true)
+            ->whereNotNull('game_id')
+            ->first();
+
+        if (! $presence) {
+            return $shelf;
+        }
+
+        $live = null;
+        $rest = [];
+
+        foreach ($shelf as $row) {
+            if ($row['slug'] === $presence->game_slug) {
+                $live = ['live' => true] + $row;
+            } else {
+                $rest[] = ['live' => false] + $row;
+            }
+        }
+
+        if ($live === null) {
+            $game = Game::find($presence->game_id);
+
+            if (! $game) {
+                return $shelf;
+            }
+
+            $live = [
+                'live' => true,
+                'slug' => $game->slug,
+                'name' => $game->name,
+                'cover_url' => $game->cover_url,
+                'platforms' => $game->platforms ?? [],
+                // Not on the shelf, so there is nothing measured to report.
+                'progress' => null,
+                'hours_played' => null,
+                'playtime_source' => null,
+            ];
+        }
+
+        return array_slice(array_merge([$live], $rest), 0, $limit);
+    }
+
+    /** The shelf itself — everything the member marked as playing. */
+    private function shelfPlaying(User $user, int $limit): array
     {
         return UserGame::where('user_id', $user->id)
             ->where('status', 'playing')
