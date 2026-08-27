@@ -71,7 +71,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
         title: `${release.name} — release date, trailers and platforms`,
         description,
-        alternates: { canonical: `https://techplay.gg/calendar/${slug}` },
+        /*
+         * The game's own page is the canonical one, not this.
+         *
+         * /calendar/{slug} and /games/{slug} describe the same game from the
+         * same database row, and the calendar view is the thinner of the two:
+         * measured on duskfade, 1,764 visible characters against 2,700, an 82%
+         * word overlap, and 36 words of its own — most of them other games'
+         * names in a sidebar. /games/{slug} already carries the release date,
+         * the platforms, the trailer and a VideoGame block with datePublished
+         * and gamePlatform, so there is nothing here it does not say better.
+         *
+         * Both pages used to claim to be canonical. Nobody noticed because
+         * nothing links here and no sitemap mentions it — the duplicate was
+         * real but invisible. The fix that was nearly shipped instead was a
+         * sitemap submitting 2,924 of these, which would have made a hidden
+         * problem into a declared one.
+         */
+        alternates: { canonical: `https://techplay.gg/games/${slug}` },
         openGraph: {
             title: release.name,
             description,

@@ -335,6 +335,8 @@ class GameController extends Controller
                 'links:id,game_id,kind,service,url',
                 'relations.other:id,name,slug,cover_url,released',
             ])
+            // One subquery here saves the page two client requests per render.
+            ->withCount('threads')
             ->first();
 
         if (! $game) {
@@ -362,6 +364,20 @@ class GameController extends Controller
             'rating' => $game->rating,
             'rating_top' => 10,
             'ratings_count' => (int) $game->ratings_count,
+            /*
+             * So the page can decide not to ask.
+             *
+             * The game page fires two client calls on every render — one for
+             * forum threads, one for ratings — and in nine days Googlebot made
+             * 37,275 of them while rendering. 99% came back empty, because
+             * almost no game in a catalogue of 332,455 has either. That was 55%
+             * of everything Google spent on this site.
+             *
+             * A count in the payload the page already fetches costs one
+             * subquery and lets the client skip a request that has nothing to
+             * return.
+             */
+            'threads_count' => (int) ($game->threads_count ?? 0),
             'esrb_rating' => $esrb ? ['name' => $esrb['rating_name']] : null,
             'age_ratings' => $game->age_ratings ?? [],
             'attributes' => $game->attributes ?? [],

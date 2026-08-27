@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Storage;
 class ImageDimensionService
 {
     /**
-     * @return array{0:int,1:int}|null  width and height, or null when unreadable
+     * @return array{0:int,1:int}|null width and height, or null when unreadable
      */
     public function measure(?string $reference): ?array
     {

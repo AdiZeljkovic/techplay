@@ -15,6 +15,7 @@ import GameRating from "@/components/games/GameRating";
 import TrackGameButton from "@/components/games/TrackGameButton";
 import AddToListButton from "@/components/games/AddToListButton";
 import GameForumThreads from "@/components/games/GameForumThreads";
+import UpcomingRelease from "@/components/games/UpcomingRelease";
 import DataAttribution from "@/components/games/DataAttribution";
 import BoxArtGallery, { type BoxArt } from "@/components/games/BoxArtGallery";
 import TrailerPlayer from "@/components/games/TrailerPlayer";
@@ -88,6 +89,8 @@ interface GameDetail {
     rating: number;
     rating_top: number;
     ratings_count: number;
+    /** Forum threads about this game; zero means the page does not ask for the list. */
+    threads_count?: number;
     esrb_rating: { name: string } | null;
     age_ratings: AgeRating[];
     attributes: GameAttribute[];
@@ -1478,7 +1481,27 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </Panel>
                     )}
 
-                    <GameRating slug={slug} />
+                    {/*
+                      * The count comes from the payload this page already
+                      * fetched, so the widget can skip a request that would
+                      * return an empty list — which is what 99% of them did.
+                      */}
+                    {/*
+                      * The countdown and the reminder, which used to live only
+                      * on /calendar/{slug}. That page now points its canonical
+                      * here, so the function comes with it rather than being
+                      * lost to a metadata fix.
+                      *
+                      * Renders nothing for a game that has already shipped.
+                      */}
+                    <UpcomingRelease
+                        slug={slug}
+                        name={game.name}
+                        released={game.released}
+                        precision={game.release_precision}
+                    />
+
+                    <GameRating slug={slug} ratingsCount={game.ratings_count ?? 0} />
                 </div>
 
                 {/* ── sidebar ── */}
@@ -1646,7 +1669,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     one. See `adWorthy` above. */}
                 {adWorthy && <DisplayAd minHeight={110} />}
 
-                <GameForumThreads gameSlug={slug} />
+                <GameForumThreads gameSlug={slug} threadsCount={game.threads_count ?? 0} />
 
                 <DataAttribution className="mt-10 border-t border-white/[0.05] pt-5" />
             </div>

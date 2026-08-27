@@ -88,12 +88,14 @@ class SitemapController extends Controller
             ];
         });
 
-        // Game sitemaps — paginated, 50,000 URLs per file (Google limit)
-        // Must use the same filter as games() below, or the page count drifts
-        $gamesCount = Game::whereNotNull('description')->count();
+        // Game sitemaps — paginated, 50,000 URLs per file (Google limit).
+        // Game::indexable() is the single rule; it mirrors what the page
+        // itself will agree to index, so the sitemap stops submitting URLs
+        // that answer with noindex.
+        $gamesCount = Game::indexable()->count();
         if ($gamesCount > 0) {
             $gamePages = (int) ceil($gamesCount / 50000);
-            $gameLastmodRaw = Game::whereNotNull('description')->max('updated_at');
+            $gameLastmodRaw = Game::indexable()->max('updated_at');
             $gameLastmodStr = $gameLastmodRaw ? Carbon::parse($gameLastmodRaw)->toIso8601String() : now()->toIso8601String();
             for ($p = 1; $p <= $gamePages; $p++) {
                 $filename = "sitemap-games-{$p}.xml";
@@ -145,6 +147,18 @@ class SitemapController extends Controller
             ['/frontiers', 'weekly', '0.6'],
             ['/last-disc', 'weekly', '0.6'],
             ['/last-disc/letter', 'monthly', '0.5'],
+
+            /*
+             * The Tools menu, which was never submitted.
+             *
+             * All five entries are linked from the header and three of them
+             * appeared in no sitemap at all — including /wow-analyzer, which
+             * carries WebApplication, a five-question FAQPage and breadcrumbs,
+             * and is the best-marked single page on the site.
+             */
+            ['/wow-analyzer', 'monthly', '0.7'],
+            ['/backlog-advisor', 'monthly', '0.6'],
+            ['/lists', 'daily', '0.6'],
             ['/about', 'monthly', '0.5'],
             ['/contact', 'monthly', '0.5'],
             ['/impressum', 'yearly', '0.3'],
@@ -225,15 +239,40 @@ class SitemapController extends Controller
     {
         $xml = $this->xmlHeader();
 
-        // News categories - URL format: /news/gaming
+        /*
+         * How many published pieces each category actually holds.
+         *
+         * An archive with nothing in it is not worth a crawl, and submitting it
+         * is worse than silence: /reviews/retro, /hardware/benchmarks and
+         * /hardware/guides were all in this file with zero articles behind
+         * them, and the pages now answer noindex — so the sitemap was asking
+         * Google to fetch three URLs that turn it away on arrival.
+         *
+         * Counted rather than listed. When a category fills up it returns here
+         * on the next generation with nobody having to remember it.
+         */
+        $counts = Article::query()
+            ->where('status', 'published')
+            ->join('categories', 'categories.id', '=', 'articles.category_id')
+            ->selectRaw('categories.slug as slug, count(*) as total')
+            ->groupBy('categories.slug')
+            ->pluck('total', 'slug');
+
+        // News categories - URL format: /news/gaming, DB slug: news-gaming
         $newsCategories = ['gaming', 'pc', 'consoles', 'movies-tv', 'industry', 'e-sport', 'opinions', 'interviews'];
         foreach ($newsCategories as $cat) {
+            if (($counts["news-{$cat}"] ?? 0) < 1) {
+                continue;
+            }
             $xml .= $this->urlEntry("{$this->frontendUrl}/news/{$cat}", null, 'daily', '0.6');
         }
 
-        // Review categories - URL format: /reviews/aaa-titles
+        // Review categories - URL format: /reviews/aaa-titles, DB slug: reviews-aaa-titles
         $reviewCategories = ['aaa-titles', 'editors-choice', 'indie-gems', 'latest', 'retro'];
         foreach ($reviewCategories as $cat) {
+            if (($counts["reviews-{$cat}"] ?? 0) < 1) {
+                continue;
+            }
             $xml .= $this->urlEntry("{$this->frontendUrl}/reviews/{$cat}", null, 'daily', '0.6');
         }
 
@@ -248,8 +287,16 @@ class SitemapController extends Controller
         // which is what let them drift in the first place. Worth noting for
         // whoever moves a section next: this list and that one have to be
         // changed together.
-        $hardwareCategories = ['reviews', 'benchmarks', 'guides', 'news'];
-        foreach ($hardwareCategories as $cat) {
+        //
+        // The DB slug is not the URL segment here: /hardware/news is
+        // `tech-tech-news`, because the section's own prefix is `tech` and the
+        // category is called `tech-news`. Getting that wrong reads as an empty
+        // category and drops a page with 39 articles.
+        $hardwareCategories = ['reviews' => 'tech-reviews', 'benchmarks' => 'tech-benchmarks', 'guides' => 'tech-guides', 'news' => 'tech-tech-news'];
+        foreach ($hardwareCategories as $cat => $dbSlug) {
+            if (($counts[$dbSlug] ?? 0) < 1) {
+                continue;
+            }
             $xml .= $this->urlEntry("{$this->frontendUrl}/hardware/{$cat}", null, 'weekly', '0.6');
         }
 
@@ -468,7 +515,7 @@ class SitemapController extends Controller
         // began serving empty sitemaps for pages 4 and 5, which is exactly what
         // the pruning had just removed. A crawler holding an old URL would keep
         // fetching them and be told, with a 200, that they are still valid.
-        $total = Game::whereNotNull('description')->count();
+        $total = Game::indexable()->count();
         $lastPage = max(1, (int) ceil($total / $perPage));
 
         if ($page > $lastPage) {
@@ -477,7 +524,7 @@ class SitemapController extends Controller
 
         $xml = $this->xmlHeader();
 
-        Game::whereNotNull('description')
+        Game::indexable()
             ->select('slug', 'updated_at')
             ->orderBy('slug')
             ->offset(($page - 1) * $perPage)

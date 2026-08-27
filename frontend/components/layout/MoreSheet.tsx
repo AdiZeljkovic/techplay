@@ -192,11 +192,11 @@ function Footer({
     if (!user) {
         return (
             <div className="flex gap-2">
-                <Link href="/login" onClick={onClose}
+                <Link href="/login" rel="nofollow" onClick={onClose}
                     className="btn-command flex-1 flex items-center justify-center h-10 bg-[var(--accent)] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">
                     Sign in
                 </Link>
-                <Link href="/register" onClick={onClose}
+                <Link href="/register" rel="nofollow" onClick={onClose}
                     className="btn-command btn-command-quiet flex-1 flex items-center justify-center h-10 bg-white/[0.04] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/55 active:text-white transition-colors">
                     Register
                 </Link>

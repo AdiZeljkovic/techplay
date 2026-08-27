@@ -20,8 +20,26 @@ interface GameThread {
     category?: { name: string; slug: string };
 }
 
-export default function GameForumThreads({ gameSlug }: { gameSlug: string }) {
-    const { data: threads, isLoading } = useSWR<GameThread[]>(`/games/${gameSlug}/threads`, fetcher);
+/**
+ * @param threadsCount  How many threads the server says exist. Zero means the
+ *   request is not made at all — Googlebot alone asked this endpoint 18,835
+ *   times in nine days and 99% of the answers were two bytes, because almost
+ *   no game in a catalogue of 332,455 has a discussion. Together with the
+ *   ratings widget those calls were 55% of everything Google spent on the site.
+ */
+export default function GameForumThreads({
+    gameSlug,
+    threadsCount = 0,
+}: { gameSlug: string; threadsCount?: number }) {
+    const { data: threads, isLoading } = useSWR<GameThread[]>(
+        threadsCount > 0 ? `/games/${gameSlug}/threads` : null,
+        fetcher,
+    );
+
+    // Nothing to show, and nothing was asked for.
+    if (threadsCount === 0) {
+        return null;
+    }
 
     if (!isLoading && (!threads || threads.length === 0)) {
         return null;

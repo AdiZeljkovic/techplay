@@ -34,9 +34,21 @@ interface ReviewsResponse {
 
 interface Props {
     slug: string;
+    /** From the page payload; zero skips the list request entirely. */
+    ratingsCount?: number;
 }
 
-export default function GameRating({ slug }: Props) {
+/**
+ * @param ratingsCount  How many ratings the server says exist, from the payload
+ *   the page already fetched. Zero means the list is not requested: Googlebot
+ *   made 18,225 of those calls in nine days and 99% came back with an empty
+ *   aggregate, because almost no game in a catalogue of 332,455 has been rated.
+ *
+ *   The rating form is untouched — a reader can still be the first to rate, and
+ *   `fetchMyRating` only ever runs for a signed-in visitor, which a crawler is
+ *   not.
+ */
+export default function GameRating({ slug, ratingsCount = 0 }: Props) {
     const { user } = useAuth();
     const isAuthenticated = !!user;
     const [aggregate, setAggregate]     = useState<Aggregate | null>(null);
@@ -56,8 +68,8 @@ export default function GameRating({ slug }: Props) {
     const [isDraft, setIsDraft]               = useState(false);
 
     useEffect(() => {
-        fetchRatings(1);
-    }, [slug]);
+        if (ratingsCount > 0) fetchRatings(1);
+    }, [slug, ratingsCount]);
 
     useEffect(() => {
         if (isAuthenticated) fetchMyRating();

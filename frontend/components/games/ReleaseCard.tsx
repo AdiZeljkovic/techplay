@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Flame, Heart, Bell, BellRing, Gamepad2, Loader2, Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import PlatformIcon, { platformBrandColor } from "@/components/games/PlatformIcon";
+import { useReleaseReminder } from "@/hooks/useReleaseReminder";
 
 export interface ReleaseCardGame {
     slug: string;
@@ -89,6 +90,9 @@ export default function ReleaseCard({
 }) {
     const { user } = useAuth();
     const [busy, setBusy] = useState<"wishlist" | "reminder" | null>(null);
+    // The request, the toast and the failure message live in one place now;
+    // this file, CalendarClient and ReleaseClient each had their own copy.
+    const { toggle: remind } = useReleaseReminder(game.slug, onChanged);
 
     const act = async (kind: "wishlist" | "reminder") => {
         if (!user) return toast.error("Sign in to track releases.");
@@ -98,8 +102,7 @@ export default function ReleaseCard({
                 await axios.put(`/collection/games/${game.slug}`, { status: "wishlist" });
                 toast.success(`${game.name} wishlisted.`);
             } else {
-                const res = await axios.post(`/calendar/${game.slug}/reminder`);
-                toast.success(res.data?.message ?? "Reminder updated.");
+                await remind();
             }
             onChanged?.();
         } catch (e: unknown) {

@@ -66,8 +66,39 @@ class SitemapAndRobotsTest extends TestCase
         $this->assertStringNotContainsString('api-beta', $body);
     }
 
+    /**
+     * Seeds one published article into a category so it has something to be
+     * about.
+     *
+     * The DB slug is not the URL segment: /hardware/news is `tech-tech-news`,
+     * because the section prefix is `tech` and the category is called
+     * `tech-news`. Reading that wrong makes a category with 39 articles look
+     * empty.
+     */
+    private function articleIn(string $dbSlug, string $type): void
+    {
+        $category = Category::firstOrCreate(
+            ['slug' => $dbSlug],
+            ['name' => $dbSlug, 'type' => $type],
+        );
+
+        Article::create([
+            'title' => "Something in {$dbSlug}",
+            'slug' => "something-in-{$dbSlug}",
+            'status' => 'published',
+            'published_at' => now()->subHour(),
+            'category_id' => $category->id,
+            'author_id' => User::factory()->create()->id,
+            'content' => '<p>Body enough to be a story.</p>',
+        ]);
+    }
+
     public function test_the_category_sitemap_points_at_hardware_not_tech(): void
     {
+        foreach (['tech-reviews', 'tech-benchmarks', 'tech-guides', 'tech-tech-news'] as $dbSlug) {
+            $this->articleIn($dbSlug, 'tech');
+        }
+
         $body = $this->get('/sitemap-categories.xml')->assertOk()->getContent();
 
         foreach (['reviews', 'benchmarks', 'guides', 'news'] as $slug) {
@@ -75,6 +106,26 @@ class SitemapAndRobotsTest extends TestCase
         }
 
         $this->assertStringNotContainsString('/tech/', $body);
+    }
+
+    /**
+     * An archive with nothing in it is not worth submitting.
+     *
+     * /reviews/retro, /hardware/benchmarks and /hardware/guides were all in
+     * this file with zero articles behind them, and their pages answer
+     * noindex — so the sitemap was asking Google to fetch three URLs that turn
+     * it away on arrival. Counted rather than listed, so a category that fills
+     * up comes back on the next generation without anybody remembering it.
+     */
+    public function test_an_empty_category_is_not_submitted(): void
+    {
+        $this->articleIn('news-gaming', 'news');
+
+        $body = $this->get('/sitemap-categories.xml')->assertOk()->getContent();
+
+        $this->assertStringContainsString('/news/gaming', $body);
+        $this->assertStringNotContainsString('/news/consoles', $body);
+        $this->assertStringNotContainsString('/reviews/retro', $body);
     }
 
     public function test_the_sitemap_index_lists_children_on_the_frontend_host(): void

@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\Models\Article;
 use App\Models\Guide;
-use Illuminate\Console\Command;
 use App\Services\ImageDimensionService;
+use Illuminate\Console\Command;
 
 /**
  * Measures the images already published so their share cards can declare a size.
@@ -112,5 +112,4 @@ class BackfillImageDimensions extends Command
 
         return ['done' => $done, 'failed' => $failed];
     }
-
 }

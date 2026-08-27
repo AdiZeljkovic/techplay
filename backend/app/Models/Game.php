@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Casts\PostgresArray;
 use App\Services\ContentGameLinker;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -117,6 +118,52 @@ class Game extends Model
     public function studios(): BelongsToMany
     {
         return $this->belongsToMany(Studio::class)->withPivot('role');
+    }
+
+    /**
+     * Games whose page will actually let itself be indexed.
+     *
+     * app/games/[slug]/page.tsx emits `noindex` when the description, with its
+     * HTML stripped, is 50 characters or shorter. The sitemap was filtering on
+     * `whereNotNull('description')` instead, so it submitted 11,259 URLs that
+     * the page then refused — the same contradiction /giveaways had, a thousand
+     * times over, and paid for out of the crawl budget.
+     *
+     * The tags have to come off first: 112,554 descriptions contain markup, and
+     * 72 of them clear 50 characters only because of it.
+     *
+     * One scope rather than the condition written out at each call site. It was
+     * spelled four times in SitemapController with a comment warning that they
+     * must stay identical, which is how they drift.
+     */
+    public function scopeIndexable(Builder $query): Builder
+    {
+        // SQLite has no regexp_replace; the test suite only needs the length
+        // rule to behave, not the markup stripping.
+        if ($query->getConnection()->getDriverName() !== 'pgsql') {
+            return $query->whereNotNull('description')
+                ->whereRaw('length(description) > 50');
+        }
+
+        return $query->whereNotNull('description')
+            ->whereRaw("length(regexp_replace(description, '<[^>]+>', '', 'g')) > 50");
+    }
+
+    /**
+     * Forum threads written about this game.
+     *
+     * Exists so the game page can carry a `threads_count` and skip asking for
+     * a list that is almost always empty — Googlebot alone made 18,835 of
+     * those calls in nine days and 99% came back with nothing.
+     *
+     * Deliberately unfiltered by category visibility. The count decides only
+     * whether to ask; the endpoint still applies the viewer's audience rules.
+     * An over-count means one wasted request, which is today's behaviour; an
+     * under-count would hide real threads, and this cannot under-count.
+     */
+    public function threads(): HasMany
+    {
+        return $this->hasMany(Thread::class);
     }
 
     public function developedBy(): BelongsToMany

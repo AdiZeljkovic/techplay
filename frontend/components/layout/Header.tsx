@@ -1197,6 +1197,7 @@ export default function Header() {
                             <div className="hidden xl:flex items-center gap-3">
                                 <Link
                                     href="/login"
+                                    rel="nofollow"
                                     prefetch={false}
                                     className="text-[var(--ink-mid)] hover:text-white font-semibold transition-colors text-[13px] px-2"
                                 >
@@ -1204,6 +1205,7 @@ export default function Header() {
                                 </Link>
                                 <Link
                                     href="/register"
+                                    rel="nofollow"
                                     prefetch={false}
                                     className="inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white px-5 h-10 rounded-[var(--radius-card)] font-bold transition-colors text-[13px] leading-none"
                                 >

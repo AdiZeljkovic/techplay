@@ -110,8 +110,21 @@ class PlaytimeTrackingTest extends TestCase
         $this->assertSame('steam', $entry->playtime_source);
     }
 
-    /** Presence can name anything; we do not invent library rows from it. */
-    public function test_games_outside_the_collection_are_not_credited(): void
+    /**
+     * A real session shelves the game it was spent on.
+     *
+     * This test read the opposite until now — "presence can name anything; we
+     * do not invent library rows from it" — and it was correct when it was
+     * written. Commit 39afcbe4 changed the rule on purpose: an hour of Metro
+     * is evidence you own Metro, and asking a member to file it by hand after
+     * the fact is asking them to do the machine's work. That commit added
+     * PresenceShelvesGameTest for the new behaviour and left this one guarding
+     * the old, so the suite has been asserting both ever since.
+     *
+     * A flicker still leaves nothing behind; PresenceShelvesGameTest covers
+     * where that line falls.
+     */
+    public function test_a_played_game_is_shelved_even_when_it_was_not_in_the_collection(): void
     {
         $user = User::factory()->create(['username' => 'stranger2']);
         $game = Game::create(['slug' => 'untracked', 'name' => 'Untracked', 'rating' => 4]);
@@ -119,7 +132,10 @@ class PlaytimeTrackingTest extends TestCase
         $this->startedMinutesAgo($user, $game, 60);
         $this->service()->clear($user);
 
-        $this->assertSame(0, UserGame::where('user_id', $user->id)->count());
+        $entry = UserGame::where('user_id', $user->id)->where('game_id', $game->id)->first();
+
+        $this->assertNotNull($entry, 'an hour of play should put the game on the shelf');
+        $this->assertSame(60, $entry->playtime_minutes);
     }
 
     public function test_switching_games_banks_the_previous_session(): void
