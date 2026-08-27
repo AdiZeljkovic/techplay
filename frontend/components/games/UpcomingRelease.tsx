@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { BellRing, CalendarClock } from "lucide-react";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useReleaseReminder } from "@/hooks/useReleaseReminder";
@@ -38,9 +39,36 @@ export default function UpcomingRelease({
     const countdown = useCountdown(released);
     const { toggle, busy } = useReleaseReminder(slug);
 
-    if (!released || countdown.done) return null;
+    /*
+     * Whether a release is still ahead is decided from the date, not from the
+     * countdown.
+     *
+     * useCountdown starts at zero with done:true and only recalculates inside
+     * useEffect, which never runs on the server — so gating on `countdown.done`
+     * meant this block rendered nothing into the HTML at all. A reader with
+     * JavaScript saw it a moment later; a crawler never did, which defeats the
+     * point of moving release intent onto this page.
+     */
+    const upcoming = released !== null && new Date(released).getTime() > Date.now();
+
+    /*
+     * The digits wait for the client; the date does not.
+     *
+     * Server and client must agree on the first paint, and they cannot agree on
+     * a number that counts down. So the sentence a crawler needs renders on the
+     * server, and the ticking numbers appear once mounted.
+     */
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
+
+    if (!upcoming || !released) return null;
 
     const exact = !precision || precision === "day";
+    const spelled = new Date(released).toLocaleDateString("en-GB", {
+        day: exact ? "numeric" : undefined,
+        month: "long",
+        year: "numeric",
+    });
 
     return (
         <section
@@ -55,7 +83,16 @@ export default function UpcomingRelease({
                 {exact ? "Releases in" : "Expected"}
             </h2>
 
-            {exact ? (
+            {/*
+              * Always present, and the part that carries meaning without
+              * JavaScript: the date itself, in words.
+              */}
+            <p className="mt-2 text-[15px] text-white/75">
+                {spelled}
+                {!exact && <span className="text-white/35"> — exact date not announced</span>}
+            </p>
+
+            {exact && mounted ? (
                 <div className="mt-3 flex flex-wrap items-end gap-x-5 gap-y-2">
                     {([
                         ["days", countdown.days],
@@ -72,12 +109,7 @@ export default function UpcomingRelease({
                         </span>
                     ))}
                 </div>
-            ) : (
-                <p className="mt-2 text-[14px] text-white/70">
-                    {new Date(released).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}
-                    <span className="text-white/35"> — exact date not announced</span>
-                </p>
-            )}
+            ) : null}
 
             <button
                 type="button"
