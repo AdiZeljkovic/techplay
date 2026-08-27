@@ -99,8 +99,34 @@ Schedule::job(new PollSteamPresence)->everyTwoMinutes();
 // WISHLIST: Notify users when wishlisted games release today (runs at 09:00 daily)
 Schedule::command('wishlist:check-releases')->dailyAt('09:00')->onFailure($reportFailure('wishlist:check-releases'));
 
-// SEO: Regenerate XML sitemaps every 6 hours
-Schedule::command('sitemap:generate')->withoutOverlapping(30)->everySixHours()->onFailure($reportFailure('sitemap:generate'));
+/*
+ * Two speeds, because the two halves of the sitemap are nothing alike.
+ *
+ * The catalogue is 294,000 games and 32,000 studios and takes about half an
+ * hour. Everything else — articles, categories, pages, lists — is a few
+ * kilobytes and finishes in under a second. Running them together every six
+ * hours meant walking the whole catalogue to add one article: two hours of the
+ * day rewriting rows the aggregator touches once.
+ *
+ * Split, a published piece reaches sitemap-articles.xml within fifteen minutes
+ * instead of up to six, and the heavy pass runs once, at night, when nobody is
+ * reading.
+ *
+ * A breaking story does not wait for either: ArticleObserver writes
+ * sitemap-news.xml on publish and pings IndexNow in the same breath.
+ *
+ * Only the full run prunes retired files, so the nightly pass is also what
+ * keeps a dropped sitemap from being served forever.
+ */
+Schedule::command('sitemap:generate --content')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping(10)
+    ->onFailure($reportFailure('sitemap:generate --content'));
+
+Schedule::command('sitemap:generate')
+    ->dailyAt('03:30')
+    ->withoutOverlapping(90)
+    ->onFailure($reportFailure('sitemap:generate'));
 
 // New titles enter through the store aggregator below — RAWG, Moby and IGDB
 // are all retired, and the catalogue is TechPlay's own from here on.
