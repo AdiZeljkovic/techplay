@@ -44,12 +44,12 @@ class BackfillImageDimensions extends Command
         $apply = (bool) $this->option('apply');
         $limit = (int) $this->option('limit');
 
-        $articles = $this->run(
+        $articles = $this->measureTable(
             Article::query()->whereNotNull('featured_image_url')->whereNull('featured_image_width'),
             'featured_image_url', 'featured_image_width', 'featured_image_height', $apply, $limit
         );
 
-        $guides = $this->run(
+        $guides = $this->measureTable(
             Guide::query()->whereNotNull('featured_image_url')->whereNull('featured_image_width'),
             'featured_image_url', 'featured_image_width', 'featured_image_height', $apply, $limit
         );
@@ -75,7 +75,7 @@ class BackfillImageDimensions extends Command
     }
 
     /** @return array{done:int,failed:int} */
-    private function run($query, string $source, string $widthCol, string $heightCol, bool $apply, int $limit): array
+    private function measureTable($query, string $source, string $widthCol, string $heightCol, bool $apply, int $limit): array
     {
         $done = 0;
         $failed = 0;
