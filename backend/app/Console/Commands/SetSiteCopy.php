@@ -51,7 +51,15 @@ class SetSiteCopy extends Command
      */
     private const HOME_TITLE = 'TechPlay — One Game Library for PC, PlayStation & Xbox';
 
-    private const HOME_DESCRIPTION = 'Connect Steam, PlayStation and Xbox and every game you own lands in one library, with the hours you played. See your taste in numbers, and get a straight answer on what to play tonight.';
+    /*
+     * 145 characters, because the last sentence is the one worth keeping.
+     *
+     * At 185 Google cut it mid-clause — "...and get a straight answer" — and
+     * the promise the page is actually making went missing from the snippet.
+     * Nothing was added to make it shorter; two joins were tightened and the
+     * closing line came back whole.
+     */
+    private const HOME_DESCRIPTION = 'Connect Steam, PlayStation and Xbox: every game you own in one library, with the hours you played, and a straight answer on what to play tonight.';
 
     private const HOME_OG_TITLE = 'TechPlay — one library for everything you play';
 

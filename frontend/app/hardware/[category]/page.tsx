@@ -15,14 +15,6 @@ type Props = {
     params: Promise<{ category: string }>;
 };
 
-async function getSeoSettings() {
-    try {
-        const res = await fetch(`${getServerApiUrl()}/settings`, { next: { revalidate: 3600 } });
-        if (!res.ok) return {};
-        return res.json();
-    } catch { return {}; }
-}
-
 async function getInitialCategoryData(categoryId: string) {
     try {
         const params = new URLSearchParams({ page: '1', category: categoryId });
@@ -49,12 +41,6 @@ async function getArticle(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { category: slug } = await params;
     const categoryDef = HARDWARE_CATEGORIES.find(c => c.slug === slug);
-    const settings = await getSeoSettings();
-
-    const noindexCategories = settings.seo_noindex_categories === true ||
-        settings.seo_noindex_categories === '1' ||
-        settings.seo_noindex_categories === 'true';
-
     if (categoryDef) {
         const title = `${categoryDef.label} - Hardware Lab`;
         // Same call the page makes; deduped by Next within the render.
@@ -84,16 +70,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return {
             ...meta,
             /*
-             * Two reasons a hardware category may stay out of the index: the
-             * admin switch, which has always been read here, and an archive
-             * with nothing in it. Only a count we actually read demotes the
-             * page — a failed fetch leaves it indexable.
+             * An archive with nothing in it stays out of the index. Only a
+             * count we actually read demotes the page — a failed fetch leaves
+             * it indexable.
+             *
+             * A `seo_noindex_categories` setting used to be read here too, and
+             * it was the only reader: one boolean that would have hidden every
+             * hardware category at once, off in the database, with no field in
+             * the admin to turn it on. page_seo.is_noindex does the same job
+             * one page at a time, is on the category's own SEO tab, and now
+             * reaches all four sections rather than this one. Removed with the
+             * settings fetch it existed for — a request per render for a value
+             * nothing could set.
              */
-            ...(noindexCategories
-                ? { robots: { index: false, follow: true } }
-                : total === 0
-                    ? { robots: ROBOTS_NOINDEX }
-                    : {}),
+            ...(total === 0 ? { robots: ROBOTS_NOINDEX } : {}),
         };
     }
 
