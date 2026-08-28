@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { generatePageMetadata } from "@/lib/seo";
 import { getApiUrl, serverHeaders } from "@/lib/api";
 import CategoryClient, { type CategoryData } from "./CategoryClient";
 import { notFound } from "next/navigation";
@@ -65,19 +66,20 @@ export async function generateMetadata({
         data.category.description?.trim()
         || `${threads} ${threads === 1 ? "thread" : "threads"} in ${name} on the TechPlay community forum.`;
 
-    return {
+    /*
+     * Six of these boards have a `page_seo` row, and the titles in them are
+     * search titles rather than labels — /forum/consoles holds "Console &
+     * Peripheral Forums | PS5, Xbox, Switch Discussion" where this branch was
+     * emitting the single word "Consoles".
+     *
+     * The board's own name and description stay as the fallback, which is what
+     * the five boards without a row keep using, and they are good copy — the
+     * point is only that a row, where one exists, should win.
+     */
+    return generatePageMetadata(`/forum/${category}`, {
         title: name,
         description,
-        // Each board is its own page now. Everything under /forum used to
-        // declare /forum as its canonical, which tells Google to drop these
-        // URLs from the index entirely.
-        alternates: { canonical: `/forum/${category}` },
-        openGraph: {
-            title: `${name} — TechPlay Forum`,
-            description,
-            type: "website",
-        },
-    };
+    });
 }
 
 export default async function CategoryPage({

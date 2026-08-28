@@ -134,28 +134,51 @@ class CategoryResource extends Resource
                                 Forms\Components\Textarea::make('description')
                                     ->rows(3),
                             ]),
+                        /*
+                         * One SEO record per page, edited from either side.
+                         *
+                         * These five fields used to write to `seo_title`,
+                         * `seo_description`, `focus_keyword`, `canonical_url`
+                         * and `is_noindex` on `categories` — five columns that
+                         * nothing has ever read. A category page takes its
+                         * title, description, canonical and no-index switch
+                         * from the `page_seo` row for its path, the same table
+                         * every other page uses, so everything typed here went
+                         * nowhere. The copy that reached those columns shows
+                         * it was never checked: a template run once across all
+                         * 31 rows, leaving "Community Community Forum" and
+                         * "News News & Updates" behind.
+                         *
+                         * Rather than move editors to another screen, the tab
+                         * now reads and writes the `page_seo` row itself —
+                         * see EditCategory / CreateCategory. Same storage as
+                         * the Page SEO resource, so the two can never disagree.
+                         */
                         Tab::make('SEO')
                             ->icon('heroicon-o-magnifying-glass')
                             ->schema([
-                                Forms\Components\TextInput::make('seo_title')
+                                Forms\Components\Placeholder::make('page_seo_path')
+                                    ->label('Published at')
+                                    ->content(fn ($record) => $record?->seoPagePath()
+                                        ?? 'This category type has no public page, so it has no SEO record.')
+                                    ->columnSpanFull(),
+                                Forms\Components\TextInput::make('page_seo_title')
                                     ->label('SEO Title')
                                     ->maxLength(60)
                                     ->helperText('Optimalno 50–60 znakova')
                                     ->columnSpanFull(),
-                                Forms\Components\Textarea::make('seo_description')
+                                Forms\Components\Textarea::make('page_seo_description')
                                     ->label('Meta Description')
                                     ->maxLength(160)
                                     ->rows(3)
                                     ->helperText('Optimalno 120–160 znakova')
                                     ->columnSpanFull(),
-                                Forms\Components\TextInput::make('focus_keyword')
-                                    ->label('Focus Keyword')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('canonical_url')
+                                Forms\Components\TextInput::make('page_seo_canonical')
                                     ->label('Canonical URL')
                                     ->url()
-                                    ->maxLength(500),
-                                Forms\Components\Toggle::make('is_noindex')
+                                    ->maxLength(500)
+                                    ->helperText('Prazno znači stranica pokazuje na samu sebe.'),
+                                Forms\Components\Toggle::make('page_seo_noindex')
                                     ->label('NoIndex')
                                     ->helperText('Sakrij stranicu od pretraživača'),
                             ]),

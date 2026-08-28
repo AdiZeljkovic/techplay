@@ -6,7 +6,7 @@ import ReviewDetailView from "@/components/reviews/ReviewDetailView";
 import { REVIEW_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
-import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX, generatePageMetadata } from "@/lib/seo";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 10 minutes (reviews change less frequently than news)
@@ -50,24 +50,37 @@ export async function generateMetadata(
     // Check if category
     const category = REVIEW_CATEGORIES.find(c => c.slug === slug);
     if (category) {
-        const title = `${category.label} Reviews - TechPlay`;
-        const description = category.label === "Latest"
-            ? "The freshest reviews hot off the press."
-            : `Browsing ${category.label} reviews.`;
-
         // Same call the page makes; deduped by Next within the render.
         const total = (await getInitialCategoryData(category.id))?.meta?.total;
 
+        /*
+         * The wording comes from `page_seo`, the same table every other page
+         * on the site reads.
+         *
+         * There is a row for each of these categories and the copy in them is
+         * written, not generated — /news/gaming holds "Gaming News 2026 |
+         * Latest Game Releases & Announcements", /reviews/indie-gems holds
+         * "Indie Game Reviews 2026 | Best Hidden Gems & Indie Hits". This
+         * branch built its own title and description out of the slug instead
+         * and never asked, so seventeen category pages introduced themselves
+         * with a template while the real copy sat unread.
+         *
+         * The strings below stay as the fallback for a category with no row,
+         * and generatePageMetadata carries the canonical, the og:image and the
+         * admin's per-page no-index switch along with it.
+         */
+        const meta = await generatePageMetadata(`/reviews/${category.slug}`, {
+            title: `${category.label} Reviews - TechPlay`,
+            description: category.label === "Latest"
+                ? "The freshest reviews hot off the press."
+                : `Browsing ${category.label} reviews.`,
+        });
+
         return {
-            title,
-            description,
-            // Without this the page inherits `canonical: "/reviews"` from the
-            // section layout and disowns itself. See the news route for the
-            // full account.
-            alternates: { canonical: `${process.env.NEXT_PUBLIC_APP_URL}/reviews/${category.slug}` },
-            // Only a count we actually read demotes the page.
+            ...meta,
+            // Only a count we actually read demotes the page, and only ever
+            // downward — the admin switch above is never undone here.
             ...(total === 0 ? { robots: ROBOTS_NOINDEX } : {}),
-            openGraph: { title, description },
         };
     }
 

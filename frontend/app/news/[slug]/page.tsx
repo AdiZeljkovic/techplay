@@ -6,7 +6,7 @@ import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
-import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX, generatePageMetadata } from "@/lib/seo";
 
 // On-demand ISR - no automatic revalidation, only manual via /api/revalidate
 // Backend triggers revalidation when content is updated
@@ -56,33 +56,41 @@ export async function generateMetadata(
     // Check if category first
     const category = NEWS_CATEGORIES.find(c => c.slug === slug);
     if (category) {
-        const title = `${category.label} News - TechPlay`;
-        const description = `Latest news and updates from the ${category.label} world.`;
-
         // The same call the page below makes, with the same options, so Next
         // serves it from the render's fetch cache rather than asking twice.
         const total = (await getInitialCategoryData(category.id))?.meta?.total;
 
+        /*
+         * The wording comes from `page_seo`, the same table every other page
+         * on the site reads.
+         *
+         * There is a row for each of these categories and the copy in them is
+         * written, not generated — /news/gaming holds "Gaming News 2026 |
+         * Latest Game Releases & Announcements", /reviews/indie-gems holds
+         * "Indie Game Reviews 2026 | Best Hidden Gems & Indie Hits". This
+         * branch built its own title and description out of the slug instead
+         * and never asked, so seventeen category pages introduced themselves
+         * with a template while the real copy sat unread.
+         *
+         * The strings below stay as the fallback for a category with no row,
+         * and generatePageMetadata carries the canonical, the og:image and the
+         * admin's per-page no-index switch along with it.
+         */
+        const meta = await generatePageMetadata(`/news/${category.slug}`, {
+            title: `${category.label} News - TechPlay`,
+            description: `Latest news and updates from the ${category.label} world.`,
+        });
+
         return {
-            title,
-            description,
+            ...meta,
             /*
-             * Without this the category inherits `canonical: "/news"` from the
-             * section layout — an explicit instruction to index the parent
-             * instead. All seventeen category pages on the site were doing
-             * that while the sitemap dutifully submitted them, so we asked
-             * Google to crawl seventeen URLs and told it to drop every one.
-             */
-            alternates: { canonical: `${process.env.NEXT_PUBLIC_APP_URL}/news/${category.slug}` },
-            /*
-             * A category with nothing in it is an empty archive, and the
-             * canonical above is what makes that visible — before it, Google
-             * ignored these pages anyway. Only a count we actually read counts:
-             * a failed fetch leaves the page indexable rather than quietly
-             * demoting a healthy category.
+             * A category with nothing in it is an empty archive. Only a count
+             * we actually read counts: a failed fetch leaves the page
+             * indexable rather than quietly demoting a healthy category. This
+             * sits after the spread so it can add a no-index, never remove the
+             * one the admin switch may already have set.
              */
             ...(total === 0 ? { robots: ROBOTS_NOINDEX } : {}),
-            openGraph: { title, description },
         };
     }
 

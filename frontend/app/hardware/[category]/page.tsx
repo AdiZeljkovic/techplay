@@ -6,7 +6,7 @@ import { HARDWARE_CATEGORIES } from "@/lib/categories";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import type { Article } from "@/types";
-import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX, generatePageMetadata } from "@/lib/seo";
 
 // ISR: revalidate every 10 minutes
 export const revalidate = 600;
@@ -57,25 +57,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (categoryDef) {
         const title = `${categoryDef.label} - Hardware Lab`;
-        /*
-         * The template used to read `Latest ${label} reviews and benchmarks`,
-         * which produced "Latest Benchmarks reviews and benchmarks." and
-         * "Latest Guides reviews and benchmarks." — sentences nobody would
-         * write. Proper copy for all seventeen categories is its own job; this
-         * at least parses.
-         */
-        const description = `Hardware ${categoryDef.label.toLowerCase()} from the TechPlay lab, with measured numbers.`;
-
         // Same call the page makes; deduped by Next within the render.
         const total = (await getInitialCategoryData(categoryDef.id))?.meta?.total;
 
-        return {
+        /*
+         * The wording comes from `page_seo`, the same table every other page
+         * on the site reads.
+         *
+         * There is a row for each of these categories and the copy in them is
+         * written, not generated — /news/gaming holds "Gaming News 2026 |
+         * Latest Game Releases & Announcements", /reviews/indie-gems holds
+         * "Indie Game Reviews 2026 | Best Hidden Gems & Indie Hits". This
+         * branch built its own title and description out of the slug instead
+         * and never asked, so seventeen category pages introduced themselves
+         * with a template while the real copy sat unread.
+         *
+         * The strings below stay as the fallback for a category with no row,
+         * and generatePageMetadata carries the canonical, the og:image and the
+         * admin's per-page no-index switch along with it.
+         */
+        const meta = await generatePageMetadata(`/hardware/${categoryDef.slug}`, {
             title,
-            description,
-            // Without this the page inherits `canonical: "/hardware"` from the
-            // section layout and disowns itself. See the news route.
-            alternates: { canonical: `${process.env.NEXT_PUBLIC_APP_URL}/hardware/${categoryDef.slug}` },
-            openGraph: { title, description },
+            description: `Hardware ${categoryDef.label.toLowerCase()} from the TechPlay lab, with measured numbers.`,
+        });
+
+        return {
+            ...meta,
             /*
              * Two reasons a hardware category may stay out of the index: the
              * admin switch, which has always been read here, and an archive

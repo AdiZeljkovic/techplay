@@ -16,15 +16,66 @@ class Category extends Model
         'parent_id',
         'type',
         'visibility',
-        'seo_title',
-        'seo_description',
-        'focus_keyword',
-        'canonical_url',
-        'is_noindex',
+        // seo_title, seo_description, focus_keyword, canonical_url and
+        // is_noindex used to sit here. They were columns nothing read: a
+        // category's search wording lives in the `page_seo` row for its path,
+        // which seoPagePath() below resolves. Dropped 28 Aug 2026.
     ];
 
     protected $casts = [
     ];
+
+    /**
+     * The URL this category is published at.
+     *
+     * The front end keeps this mapping in `frontend/lib/categories.ts`, where
+     * each entry carries the category id and the slug it appears under. It is
+     * repeated here because the admin needs to know which `page_seo` row a
+     * category's SEO belongs to, and the two must not drift: `news-gaming` is
+     * served at /news/gaming, `tech-tech-news` at /hardware/news.
+     *
+     * Returns null for a type that has no public listing page.
+     */
+    public function seoPagePath(): ?string
+    {
+        $section = match ($this->type) {
+            'news' => '/news',
+            'reviews' => '/reviews',
+            'tech' => '/hardware',
+            'forum' => '/forum',
+            default => null,
+        };
+
+        if ($section === null) {
+            return null;
+        }
+
+        // Forum boards are published under their own slug, unprefixed.
+        if ($this->type === 'forum') {
+            return $section.'/'.$this->slug;
+        }
+
+        $slug = (string) $this->slug;
+
+        // The bare section rows are slugged `news`, `reviews` and `tech` — the
+        // type with no suffix — and they are the section page itself.
+        if ($slug === $this->type) {
+            return $section;
+        }
+
+        $prefix = $this->type.'-';
+
+        // `tech-tech-news` is the one row that carries the prefix twice — it is
+        // the Tech News category inside the tech section, and it is served at
+        // /hardware/news. Everything else strips a single prefix.
+        while (str_starts_with($slug, $prefix)) {
+            $slug = substr($slug, strlen($prefix));
+        }
+
+        // The bare section row (`news`, `reviews`, `tech`) is the section
+        // itself, not a category under it.
+        return $slug === '' ? $section : $section.'/'.$slug;
+    }
 
     public function parent()
     {
