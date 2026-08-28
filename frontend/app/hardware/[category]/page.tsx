@@ -93,7 +93,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // It's an article slug — fetch article for metadata
     const article = await getArticle(slug);
     if (!article) {
-        return { title: "Hardware Lab - TechPlay", description: "In-depth hardware reviews and benchmarks." };
+        /*
+         * A missing piece answered with the section's own title and
+         * description, which reads as a real page rather than a dead end — and
+         * with no robots block it inherited the root's index,follow alongside
+         * Next's own noindex. See the news route.
+         */
+        return { title: "Not found — Hardware Lab", robots: ROBOTS_NOINDEX };
     }
 
     const title = article.meta_title || article.title;

@@ -75,7 +75,18 @@ export async function generateMetadata(
 
     if (!review) {
         return {
+            /*
+             * A page that does not exist says so once.
+             *
+             * With no robots block here the root layout's index,follow was
+             * inherited, and Next adds its own noindex when it renders
+             * not-found — so the response carried two contradictory robots
+             * tags. Google takes the stricter one, so the outcome was right by
+             * accident; the contradiction was the tell that nothing was
+             * deciding.
+             */
             title: 'Review Not Found',
+            robots: ROBOTS_NOINDEX,
         };
     }
 

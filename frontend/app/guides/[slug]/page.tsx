@@ -24,7 +24,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const data = await getGuide(slug);
 
     if (!data || !data.guide) {
-        return { title: 'Guide Not Found' };
+        // See the news route: without this the root's index,follow was
+        // inherited alongside Next's own noindex.
+        return { title: 'Guide Not Found', robots: ROBOTS_NOINDEX };
     }
 
     const { guide } = data;
