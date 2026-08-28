@@ -523,10 +523,24 @@ class SitemapController extends Controller
          * empty, so this list does not have to be right forever — it only has
          * to stop asking for pages we know are bare.
          */
+        /*
+         * Only the nine that are both stocked and written for.
+         *
+         * A tag page is indexed when it appears in TAG_META on the frontend —
+         * that is where its title, H1 and description live — and noindexed
+         * otherwise, because an unwritten facet is a doorway. Five tags now
+         * carry thirty games each and no landing copy, so they answer noindex:
+         * third-person, turn-based, hack-and-slash, sci-fi and fantasy. Listing
+         * them here would be the /giveaways contradiction again.
+         *
+         * They are worth writing. fantasy alone matches 40,508 games and sci-fi
+         * 18,396, and "fantasy games" is not a niche query. Adding them is four
+         * lines of copy each in app/games/tag/[tag]/page.tsx, after which they
+         * belong in this list.
+         */
         $popularTags = [
-            'open-world', 'first-person', 'third-person', 'sandbox', 'survival',
-            'stealth', 'turn-based', 'roguelike', 'metroidvania', 'hack-and-slash',
-            'anime', 'sci-fi', 'fantasy', 'post-apocalyptic',
+            'open-world', 'first-person', 'sandbox', 'survival', 'stealth',
+            'roguelike', 'metroidvania', 'anime', 'post-apocalyptic',
         ];
 
         foreach ($genres as $genre) {
