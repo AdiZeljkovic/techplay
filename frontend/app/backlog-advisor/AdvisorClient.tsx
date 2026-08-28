@@ -192,7 +192,7 @@ function RecommendationCard({ pick, onAdded }: { pick: Recommendation; onAdded: 
                                 <p className="flex items-baseline justify-between gap-2 mb-1">
                                     <span className="text-[10.5px] font-semibold text-white/50">{b.label}</span>
                                     <span className="font-display text-[10px] font-black tabular-nums text-white/50">
-                                        {b.value}<span className="text-white/20">/{b.max}</span>
+                                        {b.value}<span className="text-white/45">/{b.max}</span>
                                     </span>
                                 </p>
                                 <span className="block h-[4px] rounded-full bg-[var(--track)] overflow-hidden">
@@ -448,7 +448,7 @@ export default function AdvisorClient() {
                         <h2 className="flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.15em] text-white/55">
                             <span className="w-1 h-3.5 rounded-full bg-[var(--accent)]" /> Recommended for you
                             {(data?.recommendations.length ?? 0) > 0 && (
-                                <span className="font-black tabular-nums text-white/25">{data!.recommendations.length}</span>
+                                <span className="font-black tabular-nums text-white/45">{data!.recommendations.length}</span>
                             )}
                         </h2>
                         {isLoading && <Loader2 className="w-4 h-4 text-white/25 animate-spin" />}

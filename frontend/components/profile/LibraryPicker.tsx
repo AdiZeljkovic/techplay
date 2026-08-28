@@ -184,7 +184,7 @@ export default function LibraryPicker({
             <div className="mt-3 flex items-center justify-between gap-3">
                 <span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/50">
                     {picked.size} picked
-                    {room !== null && <span className="text-white/20"> · room for {room}</span>}
+                    {room !== null && <span className="text-white/45"> · room for {room}</span>}
                 </span>
 
                 <button

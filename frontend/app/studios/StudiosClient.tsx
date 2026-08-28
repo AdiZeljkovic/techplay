@@ -349,7 +349,7 @@ function StudioTile({ studio }: { studio: StudioCard }) {
                     <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-white/50">
                         {studio.country && (
                             <span className="inline-flex items-center gap-1">
-                                <MapPin className="h-3 w-3 text-white/20" />
+                                <MapPin className="h-3 w-3 text-white/45" />
                                 {studio.country.name}
                             </span>
                         )}

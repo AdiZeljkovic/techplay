@@ -193,12 +193,12 @@ function QuestRow({ quest, tint, showSeason }: { quest: Quest; tint: string; sho
                         className="inline-flex items-center gap-1 h-[19px] px-1.5 rounded-[4px] font-display text-[10px] font-black tabular-nums"
                         style={{ background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent-ink)" }}
                     >
-                        +{quest.xp_reward}<span className="text-white/30">XP</span>
+                        +{quest.xp_reward}<span className="text-white/50">XP</span>
                     </span>
                 )}
                 {quest.bounty_reward > 0 && (
                     <span className="inline-flex items-center gap-1 h-[19px] px-1.5 rounded-[4px] bg-amber-400/12 font-display text-[10px] font-black tabular-nums text-amber-400">
-                        +{quest.bounty_reward}<span className="text-white/30">B</span>
+                        +{quest.bounty_reward}<span className="text-white/50">B</span>
                     </span>
                 )}
             </div>

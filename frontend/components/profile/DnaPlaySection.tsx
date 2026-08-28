@@ -78,7 +78,7 @@ export default function DnaPlaySection({ play, platform }: {
                                 </Link>
                                 <p className="mt-1.5 font-display text-[11px] font-bold tabular-nums text-[var(--xp-bright)]">
                                     {deepest.hours.toLocaleString()} h
-                                    <span className="text-white/25"> · {deepest.share}% of everything</span>
+                                    <span className="text-white/45"> · {deepest.share}% of everything</span>
                                 </p>
                             </div>
                         </div>

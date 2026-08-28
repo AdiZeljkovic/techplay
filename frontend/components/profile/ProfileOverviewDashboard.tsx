@@ -92,7 +92,7 @@ export default function ProfileOverviewDashboard({
             <h2 className="flex items-center gap-2.5 font-display text-[11px] font-black uppercase tracking-[0.16em] text-white/55">
                 <span className="w-1 h-3 rounded-full bg-[var(--accent)]" />
                 {label}
-                {typeof count === "number" && <span className="font-black tabular-nums text-white/25">{count}</span>}
+                {typeof count === "number" && <span className="font-black tabular-nums text-white/45">{count}</span>}
             </h2>
             <Link href={href} className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/50 hover:text-[var(--accent)] transition-colors">
                 {cta}

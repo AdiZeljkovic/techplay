@@ -283,7 +283,7 @@ function StoreCard({
                             className={`inline-flex items-center gap-1.5 h-[26px] px-3 rounded-[6px] font-display text-[9.5px] font-black uppercase tracking-[0.1em] transition-[filter,background] ${
                                 item.affordable
                                     ? "bg-[var(--accent)] hover:brightness-110 text-white"
-                                    : "bg-white/[0.05] text-white/30 cursor-not-allowed"
+                                    : "bg-white/[0.05] text-white/50 cursor-not-allowed"
                             }`}
                         >
                             {busy && <Loader2 className="w-3 h-3 animate-spin" />}
@@ -422,7 +422,7 @@ function WalletBanner({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () => 
                         </div>
 
                         <p className="mt-2.5 flex items-baseline justify-between gap-3 font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums">
-                            <span className="text-white/30">{wallet.earned_lifetime.toLocaleString("en-US")} earned</span>
+                            <span className="text-white/50">{wallet.earned_lifetime.toLocaleString("en-US")} earned</span>
                             <span className="text-white/45">
                                 {tier.next ? (
                                     <><span className="text-white">{tier.remaining.toLocaleString("en-US")}</span> to {tier.next.name}</>

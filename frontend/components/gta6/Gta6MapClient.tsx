@@ -122,7 +122,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                     className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] pl-9 pr-8 py-2 text-[13px] text-white placeholder-white/35 focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
                 />
                 {search && (
-                    <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white">
+                    <button onClick={() => handleSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white">
                         <X className="w-3.5 h-3.5" />
                     </button>
                 )}
@@ -139,7 +139,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                     className={`px-2.5 py-1 rounded-[var(--radius-inner)] text-[11px] font-semibold transition-all whitespace-nowrap ${
                         activeCategory === "all"
                             ? "bg-[var(--gta-pink)] text-white"
-                            : "bg-[var(--surface-0)] border border-white/[0.07] text-white/35 hover:text-white hover:border-[var(--gta-pink)]/30"
+                            : "bg-[var(--surface-0)] border border-white/[0.07] text-white/50 hover:text-white hover:border-[var(--gta-pink)]/30"
                     }`}
                 >
                     All
@@ -154,7 +154,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-inner)] text-[11px] font-semibold whitespace-nowrap transition-all ${
                                 active
                                     ? "border"
-                                    : "bg-[var(--surface-0)] border border-white/[0.07] text-white/35 hover:text-white hover:border-white/20"
+                                    : "bg-[var(--surface-0)] border border-white/[0.07] text-white/50 hover:text-white hover:border-white/20"
                             }`}
                             style={active ? {
                                 backgroundColor: conf.color + "22",

@@ -269,7 +269,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                             {g.released && <p className="text-[11px] text-white/50">{g.released.slice(0, 4)}</p>}
                                         </div>
                                         <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
-                                            isAdded ? "bg-emerald-500 text-white" : "bg-white/[0.06] text-white/40"
+                                            isAdded ? "bg-emerald-500 text-white" : "bg-white/[0.06] text-white/55"
                                         }`}>
                                             {busySlug === g.slug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                                         </span>

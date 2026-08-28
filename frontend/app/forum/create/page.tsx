@@ -218,7 +218,7 @@ function CreateThreadForm() {
                         </span>
                         <span className="min-w-0 flex-1">
                             <span className="block font-display text-[13.5px] font-bold leading-snug line-clamp-3 text-white">
-                                {title.trim() || <span className="text-white/20">Your title lands here</span>}
+                                {title.trim() || <span className="text-white/45">Your title lands here</span>}
                             </span>
                             <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-[var(--ink-faint)]">
                                 <span className="font-medium text-[var(--ink-low)]">{user.username}</span>
@@ -382,8 +382,8 @@ function CreateThreadForm() {
                                 required
                             />
                             <p className="mt-2 flex items-center justify-between gap-3 text-[11px]">
-                                <span className="text-white/30">Specific beats clever — this is what people search.</span>
-                                <span className={`tabular-nums ${title.length > 220 ? "text-amber-400" : "text-white/25"}`}>
+                                <span className="text-white/50">Specific beats clever — this is what people search.</span>
+                                <span className={`tabular-nums ${title.length > 220 ? "text-amber-400" : "text-white/45"}`}>
                                     {title.length}/255
                                 </span>
                             </p>

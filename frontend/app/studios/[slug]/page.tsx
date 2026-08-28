@@ -172,7 +172,7 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                 <div className="relative z-10 container-page pt-6 pb-10">
                 <nav className="mb-6 flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/55">
                     <Link href="/games" className="hover:text-white transition-colors">Games</Link>
-                    <span className="text-white/20">/</span>
+                    <span className="text-white/45">/</span>
                     <Link href="/studios" className="hover:text-white transition-colors">Studios</Link>
                 </nav>
 
@@ -215,7 +215,7 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
 
                         <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-white/50">
                             <span className="inline-flex items-center gap-1.5">
-                                <Gamepad2 className="h-3.5 w-3.5 text-white/30" />
+                                <Gamepad2 className="h-3.5 w-3.5 text-white/50" />
                                 <span className="tabular-nums">{studio.games_count.toLocaleString()}</span>
                                 {studio.games_count === 1 ? "game" : "games"}
                             </span>
@@ -312,7 +312,7 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                                     href={`/studios/${sub.slug}`}
                                     className="group/sub inline-flex h-10 items-center gap-2 rounded-[8px] px-3 font-display text-[11px] font-bold uppercase tracking-[0.06em] text-white/50 transition-colors duration-200 hover:bg-[var(--accent)] hover:text-white"
                                 >
-                                    <Building2 className="h-3.5 w-3.5 text-white/25 transition-colors group-hover/sub:text-white/80" />
+                                    <Building2 className="h-3.5 w-3.5 text-white/45 transition-colors group-hover/sub:text-white/80" />
                                     {sub.name}
                                     <span className="rounded-[4px] bg-white/[0.06] px-1.5 py-0.5 text-[10px] tabular-nums text-white/55 transition-colors group-hover/sub:bg-black/25 group-hover/sub:text-white/85">
                                         {sub.games_count}
@@ -405,7 +405,7 @@ function ReleaseHistory({ years }: { years: Record<string, number> }) {
             </div>
             <div className="mt-2 flex justify-between font-display text-[10px] font-bold tabular-nums text-white/45">
                 <span>{first}</span>
-                <span className="text-white/35">peak {peak} in one year</span>
+                <span className="text-white/50">peak {peak} in one year</span>
                 <span>{last}</span>
             </div>
         </Panel>

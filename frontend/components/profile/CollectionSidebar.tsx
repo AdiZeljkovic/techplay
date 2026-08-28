@@ -154,7 +154,7 @@ export function CollectionGoals({ username, isOwnProfile }: { username: string; 
                                 <span className="text-[12px] font-semibold text-white truncate">{g.label}</span>
                                 <span className="shrink-0 flex items-center gap-1.5 font-display text-[11px] font-black tabular-nums text-white/45">
                                     {g.current}
-                                    <span className="text-white/20">/ {g.target}</span>
+                                    <span className="text-white/45">/ {g.target}</span>
                                     {g.done && <Check className="w-3.5 h-3.5 text-emerald-400" />}
                                 </span>
                             </div>

@@ -113,7 +113,7 @@ function NewGroupModal({
                     <h2 className="flex items-center gap-2.5 font-display text-[15px] font-black text-white">
                         <UsersRound className="w-4 h-4 text-[var(--accent)]" /> New group chat
                     </h2>
-                    <button onClick={onClose} className="p-1.5 text-white/30 hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-1.5 text-white/50 hover:text-white transition-colors">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -779,7 +779,7 @@ export default function SocialClient() {
                                                     key={t.id}
                                                     onClick={() => setTab(t.id)}
                                                     className={`h-7 px-2.5 rounded-[6px] font-display text-[9px] font-black uppercase tracking-[0.08em] transition-colors ${
-                                                        tab === t.id ? "bg-[var(--accent)] text-white" : "text-white/35 hover:text-white"
+                                                        tab === t.id ? "bg-[var(--accent)] text-white" : "text-white/50 hover:text-white"
                                                     }`}
                                                 >
                                                     {t.label}

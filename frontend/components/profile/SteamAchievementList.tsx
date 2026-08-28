@@ -119,7 +119,7 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
                         className="h-8 w-[220px] pl-8 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                     />
                     {query && (
-                        <button onClick={() => setQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white">
+                        <button onClick={() => setQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white">
                             <X className="w-3.5 h-3.5" />
                         </button>
                     )}

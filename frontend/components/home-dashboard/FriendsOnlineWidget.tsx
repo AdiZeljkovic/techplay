@@ -34,7 +34,7 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
                     {/* the headline: how many are actually around */}
                     <p className="px-2 pb-2.5 font-display text-[9.5px] font-bold uppercase tracking-[0.16em]">
                         <span className={online > 0 ? "text-emerald-400" : "text-white/45"}>{online} online</span>
-                        <span className="text-white/20"> · {friends.length} total</span>
+                        <span className="text-white/45"> · {friends.length} total</span>
                     </p>
 
                     <div className="flex flex-col gap-0.5">

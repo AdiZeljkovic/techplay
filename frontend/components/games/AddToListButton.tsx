@@ -103,7 +103,7 @@ export default function AddToListButton({ slug, gameName, className = "" }: Prop
                             <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/55">
                                 Your lists
                             </span>
-                            <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white transition-colors">
+                            <button onClick={() => setOpen(false)} className="text-white/50 hover:text-white transition-colors">
                                 <X className="w-3.5 h-3.5" />
                             </button>
                         </div>

@@ -64,7 +64,7 @@ export default function Meter({
                     <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/50 truncate">{label}</span>
                     {showCount && (
                         <span className="shrink-0 font-display text-[10px] font-black tabular-nums text-white/45">
-                            {done}<span className="text-white/20">/{safeMax}</span>
+                            {done}<span className="text-white/45">/{safeMax}</span>
                         </span>
                     )}
                 </p>
@@ -81,7 +81,7 @@ export default function Meter({
                 {bar}
                 {showCount && !label && (
                     <span className="shrink-0 font-display text-[10px] font-black tabular-nums text-white/45">
-                        {done}<span className="text-white/20">/{safeMax}</span>
+                        {done}<span className="text-white/45">/{safeMax}</span>
                     </span>
                 )}
             </span>

@@ -89,7 +89,7 @@ export default function UpcomingRelease({
               */}
             <p className="mt-2 text-[15px] text-white/75">
                 {spelled}
-                {!exact && <span className="text-white/35"> — exact date not announced</span>}
+                {!exact && <span className="text-white/50"> — exact date not announced</span>}
             </p>
 
             {exact && mounted ? (

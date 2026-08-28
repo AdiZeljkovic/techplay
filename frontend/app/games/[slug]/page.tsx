@@ -454,7 +454,7 @@ function HeroCredits({ game }: { game: GameDetail }) {
     return (
         <p className="mt-2.5 text-[13.5px] text-white/55">
             {developers && <>by {developers}</>}
-            {developers && publishers && <span className="mx-2 text-white/20">·</span>}
+            {developers && publishers && <span className="mx-2 text-white/45">·</span>}
             {publishers && <>published by {publishers}</>}
         </p>
     );
@@ -747,7 +747,7 @@ function TimeToBeat({ times }: { times: GameDetail["time_to_beat"] }) {
                         <span className={`inline-flex h-[19px] items-center rounded-[5px] px-1.5 font-display text-[9.5px] font-bold tabular-nums ${
                             thin
                                 ? "border border-amber-400/25 bg-amber-400/10 text-amber-300/80"
-                                : "bg-white/[0.06] text-white/40"
+                                : "bg-white/[0.06] text-white/55"
                         }`}>
                             {thin ? `only ${times.count} ${times.count === 1 ? "report" : "reports"}` : `${times.count.toLocaleString()} players`}
                         </span>
@@ -1474,7 +1474,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 {game.alt_titles.map((alt) => (
                                     <p key={alt.title} className="text-[13px] leading-snug">
                                         <span className="font-medium text-white/85">{alt.title}</span>
-                                        {alt.description && <span className="text-white/35"> — {alt.description}</span>}
+                                        {alt.description && <span className="text-white/50"> — {alt.description}</span>}
                                     </p>
                                 ))}
                             </div>
@@ -1570,7 +1570,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                     <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Standing</p>
                                     <p className="mt-1 text-[13px] font-medium text-white/85">
                                         Top {Math.max(1, 100 - game.popularity.percentile)}%
-                                        <span className="text-white/40"> by {game.popularity.metric.toLowerCase()}</span>
+                                        <span className="text-white/55"> by {game.popularity.metric.toLowerCase()}</span>
                                     </p>
                                 </div>
                             )}

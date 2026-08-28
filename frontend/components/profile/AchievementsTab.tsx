@@ -409,7 +409,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
                             <div className="flex items-center justify-between mb-1.5">
                                 <span className="text-[12px] font-semibold text-white/70">{c.name}</span>
                                 <span className="font-display text-[10.5px] font-black tabular-nums text-white/50">
-                                    {c.done}<span className="text-white/20">/{c.total}</span>
+                                    {c.done}<span className="text-white/45">/{c.total}</span>
                                 </span>
                             </div>
                             <span className="block h-[5px] rounded-full bg-[var(--track)] overflow-hidden">

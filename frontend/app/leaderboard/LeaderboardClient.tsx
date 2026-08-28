@@ -342,7 +342,7 @@ export default function LeaderboardClient() {
                                 className="w-full h-10 pl-9 pr-8 rounded-[10px] bg-[var(--surface-1)] border border-white/[0.07] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                             />
                             {query && (
-                                <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white">
+                                <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white">
                                     <X className="w-3.5 h-3.5" />
                                 </button>
                             )}

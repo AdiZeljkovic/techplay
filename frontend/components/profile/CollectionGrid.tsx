@@ -1041,7 +1041,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                         that cannot, and for a shelf that holds cartridges. */}
                     <div>
                         <label htmlFor="add-platform" className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50 mb-1.5">
-                            Platform <span className="text-white/20">— optional</span>
+                            Platform <span className="text-white/45">— optional</span>
                         </label>
                         <input
                             id="add-platform"

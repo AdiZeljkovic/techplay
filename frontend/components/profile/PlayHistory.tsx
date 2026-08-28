@@ -190,7 +190,7 @@ function YearBlock({ year, peak }: { year: Year; peak: number }) {
                     <div className="mt-2 flex lg:flex-col flex-wrap items-baseline lg:items-start gap-x-4 gap-y-1 font-display text-[10px] font-bold uppercase tracking-[0.13em] tabular-nums">
                         {year.unlocks > 0 && (
                             <span className="text-amber-400/90">
-                                {year.unlocks} <span className="text-white/25">unlocked in {year.unlock_games}</span>
+                                {year.unlocks} <span className="text-white/45">unlocked in {year.unlock_games}</span>
                             </span>
                         )}
                         {year.games_left_off > 0 && (
@@ -269,7 +269,7 @@ export default function PlayHistory({ history }: { history: History }) {
                         <Ridge years={years} peak={peak} />
                         <div className="mt-1.5 flex items-center justify-between font-display text-[9px] font-bold uppercase tracking-[0.14em] tabular-nums text-white/45">
                             <span>{span?.from}</span>
-                            <span className="text-white/15">achievements unlocked, by year</span>
+                            <span className="text-white/45">achievements unlocked, by year</span>
                             <span>{span?.to}</span>
                         </div>
                     </div>

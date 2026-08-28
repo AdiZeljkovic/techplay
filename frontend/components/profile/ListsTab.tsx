@@ -179,7 +179,7 @@ function ListCard({
                     </span>
                     <span className="block mt-1 min-h-[30px] text-[11.5px] text-white/55 leading-snug line-clamp-2">
                         {list.description || (
-                            <span className="text-white/20">{list.items_count === 0 ? "Nothing in it yet" : "No description"}</span>
+                            <span className="text-white/45">{list.items_count === 0 ? "Nothing in it yet" : "No description"}</span>
                         )}
                     </span>
 
@@ -196,7 +196,7 @@ function ListCard({
                     <span className="mt-auto pt-2.5 flex items-center gap-3 font-display text-[10px] font-bold tabular-nums text-white/50">
                         <span className="text-white/55">
                             {list.items_count}
-                            {list.item_limit ? <span className="text-white/25"> / {list.item_limit}</span> : null} games
+                            {list.item_limit ? <span className="text-white/45"> / {list.item_limit}</span> : null} games
                         </span>
                         <span className="inline-flex items-center gap-1"><Heart className="w-3 h-3" /> {list.likes_count ?? 0}</span>
                         <span className="inline-flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {list.comments_count ?? 0}</span>
@@ -362,7 +362,7 @@ export default function ListsTab({ username, isOwnProfile }: Props) {
                     <h2 className="flex-1 min-w-0 flex items-center gap-2.5 font-display text-[12px] font-bold uppercase tracking-[0.15em] text-white/55">
                         <ListIcon className="w-[22px] h-[22px] text-[var(--accent-ink)]" strokeWidth={1.5} />
                         Lists
-                        {lists.length > 0 && <span className="font-black tabular-nums text-white/25">{lists.length}</span>}
+                        {lists.length > 0 && <span className="font-black tabular-nums text-white/45">{lists.length}</span>}
                     </h2>
                 )}
 

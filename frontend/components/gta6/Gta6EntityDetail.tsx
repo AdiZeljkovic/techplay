@@ -72,7 +72,7 @@ export default function Gta6EntityDetail({ entity, sectionLabel, sectionPath, me
                             <div className="flex flex-wrap gap-2 mb-6">
                                 {meta.map(m => (
                                     <span key={m.label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-white/[0.07] text-[12px]">
-                                        <span className="text-white/35">{m.label}:</span>
+                                        <span className="text-white/50">{m.label}:</span>
                                         <span className="text-white font-semibold capitalize">{m.value}</span>
                                     </span>
                                 ))}

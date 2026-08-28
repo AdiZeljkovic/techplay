@@ -544,7 +544,7 @@ export default function ListEditor({
                         <label className="block">
                             <span className="flex items-baseline justify-between font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
                                 <span>Short description</span>
-                                <span className="tabular-nums text-white/25">{form.description.length} / 200</span>
+                                <span className="tabular-nums text-white/45">{form.description.length} / 200</span>
                             </span>
                             <textarea
                                 value={form.description}
@@ -571,7 +571,7 @@ export default function ListEditor({
 
                         <div>
                             <span className="block font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45 mb-1.5">
-                                Tags <span className="text-white/25">(up to 5)</span>
+                                Tags <span className="text-white/45">(up to 5)</span>
                             </span>
                             {form.tags.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-1.5 mb-2">

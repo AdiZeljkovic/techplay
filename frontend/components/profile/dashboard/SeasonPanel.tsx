@@ -179,7 +179,7 @@ export default function SeasonPanel() {
                         </div>
 
                         <div className="mt-2.5 flex items-baseline justify-between gap-3 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] tabular-nums">
-                            <span className="text-white/30">{season.start_date ? dayLabel(season.start_date) : ""}</span>
+                            <span className="text-white/50">{season.start_date ? dayLabel(season.start_date) : ""}</span>
                             <span className="text-white/45">
                                 Week <span className="text-white">{weekNow + 1}</span> of {weeks}
                                 <span className="text-white/20"> · {Math.round(elapsed)}% elapsed</span>

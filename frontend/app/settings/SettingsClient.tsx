@@ -425,7 +425,7 @@ export default function SettingsClient() {
                                         className={`group/nav shrink-0 flex items-center gap-3 lg:h-auto lg:py-2.5 h-11 px-3.5 rounded-[9px] text-left font-display text-[11px] font-bold uppercase tracking-[0.12em] whitespace-nowrap transition-colors duration-300 ${
                                             on
                                                 ? "bg-[var(--accent)]/[0.12] text-[var(--accent-ink)]"
-                                                : "text-white/40 hover:text-white hover:bg-white/[0.04]"
+                                                : "text-white/55 hover:text-white hover:bg-white/[0.04]"
                                         }`}
                                     >
                                         <Icon

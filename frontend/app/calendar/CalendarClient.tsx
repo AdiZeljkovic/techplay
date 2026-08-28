@@ -525,7 +525,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                             <span className="font-display text-[10px] font-black tabular-nums text-white/50">
                                 {data?.stats.showing ?? 0}
                                 {(data?.stats.showing ?? 0) !== (data?.stats.releases ?? 0) && (
-                                    <span className="text-white/20"> / {data?.stats.releases}</span>
+                                    <span className="text-white/45"> / {data?.stats.releases}</span>
                                 )}
                             </span>
                         }
@@ -580,7 +580,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                                             </Link>
                                                             <span className="flex items-center gap-2 mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/50 truncate">
                                                                 {game.genres[0] && <span>{game.genres[0]}</span>}
-                                                                {game.publisher && <span className="text-white/20">· {game.publisher}</span>}
+                                                                {game.publisher && <span className="text-white/45">· {game.publisher}</span>}
                                                             </span>
                                                         </span>
 

@@ -203,7 +203,7 @@ function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft
                     )}
                 </span>
                 <span className="flex-1 min-w-0 text-[13px] font-bold text-white truncate">{value.name}</span>
-                <button onClick={() => onPick(null)} className="p-1.5 text-white/30 hover:text-white transition-colors">
+                <button onClick={() => onPick(null)} className="p-1.5 text-white/50 hover:text-white transition-colors">
                     <X className="w-3.5 h-3.5" />
                 </button>
             </div>
@@ -845,7 +845,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                             <span className="min-w-0">
                                 <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">Busiest month</span>
                                 <span className="block mt-1.5 text-[12.5px] font-semibold text-white whitespace-nowrap">
-                                    {s.busiest_month.label} <span className="text-white/30">· {hhmm(s.busiest_month.minutes)}</span>
+                                    {s.busiest_month.label} <span className="text-white/50">· {hhmm(s.busiest_month.minutes)}</span>
                                 </span>
                             </span>
                         </div>

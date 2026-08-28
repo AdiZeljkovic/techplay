@@ -52,7 +52,7 @@ export default function Segmented({
                         className={`shrink-0 inline-flex items-center gap-2 h-8 px-3.5 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.12em] transition-colors duration-300 ${
                             on
                                 ? "bg-[var(--accent)] text-white shadow-[0_2px_10px_color-mix(in_srgb,var(--accent)_35%,transparent)]"
-                                : "text-white/40 hover:text-white hover:bg-white/[0.05]"
+                                : "text-white/55 hover:text-white hover:bg-white/[0.05]"
                         }`}
                     >
                         {Icon && <Icon className="w-3.5 h-3.5" />}

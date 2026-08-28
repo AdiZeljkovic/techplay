@@ -89,7 +89,7 @@ export default function ForumSidebar() {
                                 )}
                                 <p className="mt-1.5 font-display text-[10px] font-bold tabular-nums text-white/50">
                                     {xp.toLocaleString()}
-                                    <span className="text-white/20"> / {nextRankXp.toLocaleString()} XP</span>
+                                    <span className="text-white/45"> / {nextRankXp.toLocaleString()} XP</span>
                                 </p>
                             </div>
                         </div>
