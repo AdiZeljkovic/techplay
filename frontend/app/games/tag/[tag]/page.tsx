@@ -97,6 +97,43 @@ const TAG_META: Record<string, { title: string; h1: string; description: string;
         description: "Top post-apocalyptic games ranked by community rating. Wastelands, survival and stories of humanity's last stand.",
         keywords:    "best post apocalyptic games, top post-apocalyptic games 2026, wasteland games, apocalypse games ranked",
     },
+
+    /*
+     * Written after the catalogue rebuild, when these five turned out to be
+     * the largest tags in the data and the only ones of that size with no
+     * landing copy — so they answered noindex while matching tens of thousands
+     * of games each. fantasy alone covers 40,508.
+     */
+    "fantasy": {
+        title:       "Best Fantasy Games in 2026",
+        h1:          "Best Fantasy Games",
+        description: "The highest-rated fantasy games ranked by players. Swords, sorcery and worlds worth getting lost in — from tabletop-inspired RPGs to modern epics.",
+        keywords:    "best fantasy games, top fantasy games 2026, fantasy RPG, high fantasy games, magic games",
+    },
+    "sci-fi": {
+        title:       "Best Sci-Fi Games in 2026",
+        h1:          "Best Sci-Fi Games",
+        description: "Top-rated science fiction games ranked by community score. Space opera, cyberpunk and hard sci-fi, from first contact to the far future.",
+        keywords:    "best sci-fi games, top science fiction games 2026, space games, cyberpunk games, futuristic games",
+    },
+    "third-person": {
+        title:       "Best Third-Person Games in 2026",
+        h1:          "Best Third-Person Games",
+        description: "The best third-person games ranked by players. Over-the-shoulder shooters, action-adventures and everything played from just behind the hero.",
+        keywords:    "best third person games, top third-person games 2026, over the shoulder games, third person shooters, action adventure games",
+    },
+    "turn-based": {
+        title:       "Best Turn-Based Games in 2026",
+        h1:          "Best Turn-Based Games",
+        description: "Top turn-based games ranked by community rating. Tactics, strategy and RPGs where thinking beats reflexes and every move counts.",
+        keywords:    "best turn based games, top turn-based games 2026, turn based strategy, tactical RPG, turn based RPG",
+    },
+    "hack-and-slash": {
+        title:       "Best Hack and Slash Games in 2026",
+        h1:          "Best Hack and Slash Games",
+        description: "The highest-rated hack and slash games ranked by players. Combos, crowds and weapons that clear a room — the best the genre has.",
+        keywords:    "best hack and slash games, top hack and slash games 2026, character action games, beat em up games, combo games",
+    },
 };
 
 function getMeta(tag: string) {

@@ -524,23 +524,25 @@ class SitemapController extends Controller
          * to stop asking for pages we know are bare.
          */
         /*
-         * Only the nine that are both stocked and written for.
+         * Stocked and written for — both, or it does not belong here.
          *
-         * A tag page is indexed when it appears in TAG_META on the frontend —
-         * that is where its title, H1 and description live — and noindexed
-         * otherwise, because an unwritten facet is a doorway. Five tags now
-         * carry thirty games each and no landing copy, so they answer noindex:
-         * third-person, turn-based, hack-and-slash, sci-fi and fantasy. Listing
-         * them here would be the /giveaways contradiction again.
+         * A tag page is indexed when it appears in TAG_META on the frontend,
+         * which is where its title, H1 and description live; an unwritten facet
+         * is a doorway and noindexes itself. This list carried twenty and
+         * thirteen of them matched no games at all, so the sitemap was inviting
+         * Google to pages that turn it away.
          *
-         * They are worth writing. fantasy alone matches 40,508 games and sci-fi
-         * 18,396, and "fantasy games" is not a niche query. Adding them is four
-         * lines of copy each in app/games/tag/[tag]/page.tsx, after which they
-         * belong in this list.
+         * Seven were mapping bugs and are fixed in lib/gameFacets.ts. Five more
+         * had games but no copy — fantasy with 40,508 of them — and that copy
+         * has since been written. Six are gone for good: multiplayer,
+         * singleplayer, co-op, story-rich, souls-like and pixel-graphics are
+         * Steam's vocabulary, not this catalogue's, and nothing in the data
+         * means any of them.
          */
         $popularTags = [
-            'open-world', 'first-person', 'sandbox', 'survival', 'stealth',
-            'roguelike', 'metroidvania', 'anime', 'post-apocalyptic',
+            'open-world', 'first-person', 'third-person', 'sandbox', 'survival',
+            'stealth', 'turn-based', 'roguelike', 'metroidvania', 'hack-and-slash',
+            'anime', 'sci-fi', 'fantasy', 'post-apocalyptic',
         ];
 
         foreach ($genres as $genre) {
