@@ -298,4 +298,48 @@ Isto tako sam prijavio da 36.916 stranica curi SEO snagu ka MobyGamesu, dok nisa
 | 🟠 | PayPal webhook odbija sve | `PAYPAL_WEBHOOK_ID` nije postavljen; kod ispravno pada zatvoreno. Latentno — 0 narudžbi, 0 proizvoda, `sandbox`. **Mora** biti riješeno prije prve uplate |
 | 🟡 | Nema GDPR izvoza podataka | Brisanje postoji, prenosivost ne |
 | 🟡 | 57.172 linka ka MobyGamesu | `nofollow` je tu, pa SEO ne curi; ostaje da čitaoce šalješ konkurentu |
-| 🟡 | Restart zbog kernela | Radi se na kraju, dogovoreno |
+| 🟡 | Restart zbog kernela | Zakrpa 6.8.0-137 ne radi dok se ne restartuje. Odgođeno dogovorom |
+| 🟡 | 7 Python paketa | Ubuntu ih **namjerno** zadržava (`deferred due to phasing`), 0.15→0.16, nijedan sigurnosni. Stići će sami — forsirati ih znači zaobići taj mehanizam bez dobitka |
+
+---
+
+# SLJEDEĆI PUT — redoslijed
+
+Sve iz pregleda što je bilo u mojim rukama je urađeno. Ovo je ostalo, i **svaka stavka čeka nešto izvan koda.**
+
+### 1. Storage Box — jedina nedovršena ozbiljna stavka
+
+Backup radi svake noći, provjeren je, i **ne napušta mašinu**. Do tada svaka noć završi greškom 2 i javi na Telegram — namjerno, jer se to ne smije utišati.
+
+Treba mi od vlasnika samo dvoje: **korisničko ime** (`uXXXXX`) i **host** (`uXXXXX.your-storagebox.de`). Ključ, `~/.ssh/config` unos i probno slanje radim ja.
+
+Koraci su već zapisani u `/etc/techplay-backup.conf`. Poslije toga:
+
+```bash
+/usr/local/bin/techplay-backup          # mora završiti s 0
+/usr/local/bin/techplay-healthcheck     # backup mora postati OK
+```
+
+### 2. Restart servera
+
+Kernel 6.8.0-137 čeka. Prije restarta ništa ne treba raditi — put kroz but je **već isproban** (pm2 ugašen pa dignut kroz `systemctl start pm2-techplay`, sajt se vratio). Poslije restarta:
+
+```bash
+/usr/local/bin/techplay-healthcheck
+```
+
+Sve osim `backup` mora biti OK.
+
+### 3. PayPal — prije prve uplate, ne prije
+
+Shop je ugašen (0 narudžbi, 0 proizvoda, `sandbox`), pa ovo ne gori. Ali na dan kad se upali, `PAYPAL_WEBHOOK_ID` **mora** biti postavljen — inače uplata prođe a narudžba se nikad ne označi plaćenom, i to tiho.
+
+### 4. Pošta — vlasnikov dio
+
+`MAIL_HOST=mail.support.techplay.gg` nema DNS zapis. Dok to stoji, ne rade: verifikacija maila, reset lozinke, i GlitchTip obavještenja. Kad mail proradi, GlitchTip se podešava u njegovom sučelju (ne kroz `.env`).
+
+Telegram je u međuvremenu jedini kanal koji **stvarno** stiže — backup ga koristi direktno, zaobilazeći Laravel.
+
+### 5. Sitno, kad se stigne
+
+GDPR izvoz podataka · `AdCampaignResource` interpolira `{$direction}` u `orderByRaw` (nije iskoristivo, ali je obrazac) · 57.172 linka ka MobyGamesu u opisima igara.
