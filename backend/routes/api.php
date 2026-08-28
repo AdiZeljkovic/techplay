@@ -170,7 +170,9 @@ Route::prefix('v1')->group(function () {
         Route::put('/user/profile', [AuthController::class, 'updateProfile']);
         Route::put('/user/preferences', [AuthController::class, 'updatePreferences']);
         Route::put('/user/password', [AuthController::class, 'changePassword']);
-        Route::get('/user/export-data', [AuthController::class, 'exportData']);
+        // Throttle jer izvoz vise nije cetiri polja nego cijela kolekcija:
+        // rijetka radnja, skupa da se sastavi, bez razloga da se ponavlja.
+        Route::middleware('throttle:5,10')->get('/user/export-data', [AuthController::class, 'exportData']);
         // Was this guide any use. The handler has existed since guides
         // shipped and was never routed, so every guide printed "0 found
         // helpful" beside a counter nothing could reach.

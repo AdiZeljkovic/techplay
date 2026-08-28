@@ -371,7 +371,7 @@ class GameController extends Controller
             // way out rather than at ingest so the 140k rows already in the
             // table are covered too, not just the next import.
             'description' => $game->description
-                ? app(SanitizationService::class)->sanitizeRichContent($game->description)
+                ? app(SanitizationService::class)->sanitizeCatalogueText($game->description)
                 : null,
             'released' => $game->released?->format('Y-m-d'),
             'release_precision' => $game->release_precision,

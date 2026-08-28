@@ -218,14 +218,23 @@ class AdCampaignResource extends Resource
                     ->label('CTR')
                     ->suffix('%')
                     ->sortable(query: function ($query, $direction) {
-                        return $query->orderByRaw("CASE WHEN view_count = 0 THEN 0 ELSE (click_count::float / view_count::float) * 100 END {$direction}");
+                        $dir = strtolower((string) $direction) === 'desc' ? 'desc' : 'asc';
+
+                        return $query->orderByRaw("CASE WHEN view_count = 0 THEN 0 ELSE (click_count::float / view_count::float) * 100 END {$dir}");
                     })
                     ->color(fn ($state) => $state > 5 ? 'success' : ($state > 2 ? 'warning' : 'danger')),
                 TextColumn::make('estimated_revenue')
                     ->label('Revenue')
                     ->money('BAM')
                     ->sortable(query: function ($query, $direction) {
-                        return $query->orderByRaw("(view_count::float / 1000) * COALESCE(cpm_price, 0) {$direction}");
+                        // Filament posalje 'asc' ili 'desc' i nikad nista drugo, a
+                        // panel je zakljucan na cetiri naloga — pa ovo nije bila
+                        // rupa. Bio je obrazac: jedina od jedanaest sirovih upita
+                        // u kodu koja lijepi promjenljivu umjesto da je veze.
+                        // Obrasci se prepisuju tamo gdje izvor jeste korisnicki.
+                        $dir = strtolower((string) $direction) === 'desc' ? 'desc' : 'asc';
+
+                        return $query->orderByRaw("(view_count::float / 1000) * COALESCE(cpm_price, 0) {$dir}");
                     }),
                 TextColumn::make('start_date')
                     ->date()

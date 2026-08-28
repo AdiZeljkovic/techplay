@@ -43,6 +43,31 @@ return [
         // to be guessed. Uploads go through ForumUploadController, which
         // re-encodes what it is given, so the URL that survives here always
         // points at a file we wrote ourselves.
+        /*
+         * Third-party catalogue text — game descriptions, and nothing else.
+         *
+         * Same as `forum` with one tag missing: `a`. HTMLPurifier drops the
+         * tag and keeps what was inside it, so "the sequel to <a>V Tennis</a>"
+         * becomes "the sequel to V Tennis" — the sentence survives, the link
+         * does not.
+         *
+         * It matters because these descriptions come from MobyGames and carry
+         * links back to MobyGames: 57,172 of them across 36,916 game pages,
+         * measured 28 Aug 2026. They were nofollowed, so nothing leaked to
+         * search — they simply sent readers to a rival catalogue from thirty-six
+         * thousand of our own pages.
+         *
+         * Its own profile rather than a change to `forum`, because a forum post
+         * is somebody deliberately linking somewhere and that has to keep
+         * working.
+         */
+        'catalogue' => [
+            'HTML.Allowed' => 'p,br,strong,b,em,i,u,s,ul,ol,li,blockquote,code,pre',
+            'AutoFormat.RemoveEmpty' => true,
+            'URI.DisableExternalResources' => true,
+            'URI.AllowedSchemes' => ['http' => true, 'https' => true],
+        ],
+
         'forum' => [
             'HTML.Allowed' => 'p,br,strong,b,em,i,u,s,a[href|title|rel],ul,ol,li,blockquote,code,pre,img[src|alt|width|height]',
             'AutoFormat.RemoveEmpty' => true,

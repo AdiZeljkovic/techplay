@@ -9,7 +9,6 @@ use App\Http\Resources\V1\UserResource;
 use App\Models\Achievement;
 use App\Models\ConnectedAccount;
 use App\Models\GameRating;
-use App\Models\Order;
 use App\Models\Presence;
 use App\Models\User;
 use App\Models\UserCustomization;
@@ -19,6 +18,7 @@ use App\Services\LevelService;
 use App\Services\ProfileService;
 use App\Services\ReCaptchaService;
 use App\Services\TrophyCaseService;
+use App\Services\UserDataExportService;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -670,39 +670,41 @@ class AuthController extends Controller
         ]);
     }
 
-    public function exportData(Request $request)
+    /**
+     * Everything we hold about this account, not a summary of it.
+     *
+     * This existed and was routed, which I missed on the first pass because I
+     * grepped for "gdpr" and "data-export" and the method is called
+     * exportData. What it returned, though, was eight profile fields, two
+     * forum *counts*, orders and achievements — so a person exercising the
+     * right to portability received a page and none of their collection, their
+     * lists, their comments, their ratings, their messages or their linked
+     * accounts.
+     *
+     * The work moved to UserDataExportService, where every one of the fifty
+     * user-linked tables is named with a decision and a reason, and a test
+     * fails when a new one appears unclassified. A list written once and
+     * forgotten is how `gamertags` survived account deletion for months; this
+     * is the same mistake avoided in the other direction.
+     *
+     * The URL does not change. Something may already be pointing at it.
+     */
+    public function exportData(Request $request, UserDataExportService $exporter)
     {
-        $user = $request->user()->load(['rank', 'achievements']);
+        $user = $request->user();
+        $payload = $exporter->export($user);
 
-        $data = [
-            'exported_at' => now()->toISOString(),
-            'profile' => [
-                'username' => $user->username,
-                'display_name' => $user->display_name,
-                'email' => $user->email,
-                'bio' => $user->bio,
-                'xp' => $user->xp,
-                'created_at' => $user->created_at,
-                'gamertags' => $user->gamertags,
-                'pc_specs' => $user->pc_specs,
-            ],
-            'forum' => [
-                'threads_count' => $user->threads()->count(),
-                'posts_count' => $user->posts()->count(),
-            ],
-            'orders' => Order::where('user_id', $user->id)
-                ->select('id', 'total', 'status', 'created_at')
-                ->get(),
-            'achievements' => $user->achievements->map(fn ($a) => [
-                'name' => $a->name,
-                'description' => $a->description,
-                'unlocked_at' => $a->pivot->created_at ?? null,
-            ]),
-        ];
+        $name = 'techplay-'.($user->username ?: $user->id).'-'.now()->format('Y-m-d').'.json';
 
-        return response()->json($data)
-            ->header('Content-Disposition', 'attachment; filename="techplay-data.json"')
-            ->header('Content-Type', 'application/json');
+        // Streamed rather than built in memory: a collection of a few thousand
+        // games with its sessions and ratings is not a response to hold whole.
+        return response()->streamDownload(
+            function () use ($payload) {
+                echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            },
+            $name,
+            ['Content-Type' => 'application/json'],
+        );
     }
 
     public function deleteAccount(Request $request)

@@ -67,6 +67,18 @@ class SanitizationService
     }
 
     /**
+     * Sanitize third-party catalogue text (HTMLPurifier, "catalogue" profile).
+     *
+     * Use for: game descriptions, which arrive from MobyGames and are not ours.
+     * Same safety as rich content, minus the anchors — the tag is dropped and
+     * its text kept, so a sentence built around a link still reads.
+     */
+    public function sanitizeCatalogueText(string $content): string
+    {
+        return Purifier::clean($content, 'catalogue');
+    }
+
+    /**
      * Sanitize staff-authored content (HTMLPurifier, "staff_content" profile)
      * Use for: Article, guide and review bodies. Allows headings, images,
      * tables and whitelisted video embeds (YouTube, Vimeo, Twitch, Spotify).
