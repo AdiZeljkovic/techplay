@@ -311,7 +311,7 @@ export default async function GameListPage({ params }: Props) {
                                                 prefetch={false}
                                                 className="group flex items-center gap-4 p-3 rounded-[12px] border border-white/[0.07] bg-white/[0.02] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors duration-300"
                                             >
-                                                <span className="shrink-0 w-10 text-center font-display text-[20px] font-black tabular-nums leading-none text-white/30">
+                                                <span className="shrink-0 w-10 text-center font-display text-[20px] font-black tabular-nums leading-none text-white/50">
                                                     {rank}
                                                 </span>
 

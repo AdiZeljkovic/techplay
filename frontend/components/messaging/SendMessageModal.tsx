@@ -102,7 +102,7 @@ ${body}` : body });
                                 value={body}
                                 onChange={(e) => setBody(e.target.value)}
                                 placeholder="Write your message here..."
-                                className="w-full min-h-[150px] p-4 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-sm transition-all resize-y placeholder:text-white/35"
+                                className="w-full min-h-[150px] p-4 rounded-[var(--radius-card)] bg-[var(--surface-2)] border border-[var(--line)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/50 text-sm transition-all resize-y placeholder:text-white/50"
                             />
                         </div>
                     </div>

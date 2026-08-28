@@ -151,7 +151,7 @@ function QuietYear({ year }: { year: Year }) {
         <div className="relative pl-11 py-1.5 flex items-baseline gap-3">
             <span aria-hidden className="absolute left-[15px] top-0 bottom-0 w-px bg-white/[0.07]" />
             <span aria-hidden className="absolute left-[12px] top-[9px] w-[7px] h-[7px] rounded-full bg-white/15" />
-            <span className="font-display text-[13px] font-black tabular-nums text-white/35">{year.year}</span>
+            <span className="font-display text-[13px] font-black tabular-nums text-white/50">{year.year}</span>
             <span className="text-[11.5px] text-white/45">{bits.join(" · ") || "quiet"}</span>
         </div>
     );
@@ -261,7 +261,7 @@ export default function PlayHistory({ history }: { history: History }) {
                     <h2 className="mt-2 font-display text-[26px] md:text-[34px] font-black uppercase tracking-[-0.015em] leading-none text-white">
                         {totals.hours.toLocaleString()} <span className="text-white/30">hours</span>
                     </h2>
-                    <p className="mt-2 text-[12.5px] text-white/40">
+                    <p className="mt-2 text-[12.5px] text-white/55">
                         across {totals.games_with_time} games{span ? `, since ${span.from}` : ""}
                     </p>
 

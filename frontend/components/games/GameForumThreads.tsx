@@ -84,7 +84,7 @@ export default function GameForumThreads({
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-white truncate">{thread.title}</p>
-                                        <p className="text-xs text-white/40 mt-0.5">
+                                        <p className="text-xs text-white/55 mt-0.5">
                                             {thread.category?.name ?? "Forum"}
                                             {" · "}
                                             <span suppressHydrationWarning>

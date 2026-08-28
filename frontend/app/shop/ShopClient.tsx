@@ -74,7 +74,7 @@ export default function ShopClient() {
                             placeholder="Search products..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-full bg-[var(--surface-1)] border border-white/[0.07] rounded-full h-[46px] pl-11 pr-10 text-[13px] text-white placeholder:text-white/35 focus:outline-none focus:border-[var(--accent)]/50 transition-all shadow-sm shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
+                            className="w-full bg-[var(--surface-1)] border border-white/[0.07] rounded-full h-[46px] pl-11 pr-10 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-[var(--accent)]/50 transition-all shadow-sm shadow-[0_4px_16px_rgba(0,0,0,0.3)]"
                         />
                         {search && (
                             <button

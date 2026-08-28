@@ -121,7 +121,7 @@ export default function ProfileChecklist({ stats, listsCount, steamConnected, on
                                 ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                                 : <Circle className="w-4 h-4 text-white/20 shrink-0" />}
                             <Icon className={`w-3.5 h-3.5 shrink-0 ${item.done ? "text-white/25" : "text-[var(--accent)]"}`} />
-                            <span className={`text-[12.5px] font-semibold ${item.done ? "text-white/30 line-through" : "text-white/75"}`}>
+                            <span className={`text-[12.5px] font-semibold ${item.done ? "text-white/50 line-through" : "text-white/75"}`}>
                                 {item.label}
                             </span>
                         </>

@@ -122,11 +122,11 @@ export default function LibraryPicker({
             </div>
 
             {isLoading ? (
-                <p className="flex items-center justify-center gap-2 py-10 text-[12.5px] text-white/35">
+                <p className="flex items-center justify-center gap-2 py-10 text-[12.5px] text-white/50">
                     <Loader2 className="w-4 h-4 animate-spin" /> Reading your shelf…
                 </p>
             ) : rows.length === 0 ? (
-                <p className="py-10 text-center text-[12.5px] text-white/30">
+                <p className="py-10 text-center text-[12.5px] text-white/50">
                     Nothing here under that filter.
                 </p>
             ) : (

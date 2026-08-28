@@ -48,7 +48,7 @@ function Lightbox({ images, initial, onClose }: {
             <div className="relative w-full max-w-5xl max-h-[80vh] mx-16" onClick={(e) => e.stopPropagation()}>
                 <Image unoptimized src={images[idx].image} alt={`Screenshot ${idx + 1}`} width={1920} height={1080}
                     className="w-full h-auto max-h-[80vh] object-contain rounded-[8px]" />
-                <p className="text-center text-white/40 text-sm mt-3">{idx + 1} / {images.length}</p>
+                <p className="text-center text-white/55 text-sm mt-3">{idx + 1} / {images.length}</p>
             </div>
             <button aria-label="Next screenshot" onClick={(e) => { e.stopPropagation(); next(); }}
                 className="absolute right-4 p-3 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-full z-10 transition-all">

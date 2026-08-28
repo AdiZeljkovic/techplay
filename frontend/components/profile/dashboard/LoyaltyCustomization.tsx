@@ -149,7 +149,7 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
                     {!data ? (
                         <div className="flex justify-center py-10 text-white/40"><Loader2 className="w-5 h-5 animate-spin" /></div>
                     ) : items.length === 0 ? (
-                        <p className="text-[12px] text-white/30 text-center py-10">Nothing here yet.</p>
+                        <p className="text-[12px] text-white/50 text-center py-10">Nothing here yet.</p>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {items.map((item) => (

@@ -616,7 +616,7 @@ export default function GameDatabaseHub({
                         <div className="py-16 text-center">
                             <Gamepad2 className="w-7 h-7 mx-auto mb-3 text-white/15" />
                             <p className="font-display text-[13px] font-bold text-white">Nothing matches that</p>
-                            <p className="mt-1 text-[12px] text-white/35">Try fewer filters, or a different spelling.</p>
+                            <p className="mt-1 text-[12px] text-white/50">Try fewer filters, or a different spelling.</p>
                         </div>
                     ) : (
                         <div className="flex-1 flex flex-col">

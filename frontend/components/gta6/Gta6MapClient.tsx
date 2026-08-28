@@ -16,7 +16,7 @@ const Gta6LeafletMap = dynamic(() => import("./Gta6LeafletMap"), {
         <div className="absolute inset-0 flex items-center justify-center bg-[var(--surface-0)]">
             <div className="text-center">
                 <div className="w-8 h-8 border-2 border-[var(--gta-pink)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-white/35 text-[13px]">Loading map...</p>
+                <p className="text-white/50 text-[13px]">Loading map...</p>
             </div>
         </div>
     ),
@@ -180,7 +180,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                     ))}
                 </div>
             ) : locations.length === 0 ? (
-                <div className="p-8 text-center text-white/35 text-[13px]">
+                <div className="p-8 text-center text-white/50 text-[13px]">
                     <MapPin className="w-6 h-6 mx-auto mb-2 opacity-30" />
                     No locations found
                 </div>

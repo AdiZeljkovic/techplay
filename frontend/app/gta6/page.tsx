@@ -166,7 +166,7 @@ export default async function Gta6HubPage() {
                 <section id="trailers" className="container-page pb-14 scroll-mt-24">
                     <div className="flex items-center justify-between mb-7">
                         <SectionHeading kicker="Watch" title="Official Trailers" noMargin />
-                        <a href="https://www.youtube.com/@RockstarGames" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-white/35 hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
+                        <a href="https://www.youtube.com/@RockstarGames" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-white/50 hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
                             View all <ChevronRight className="w-4 h-4" />
                         </a>
                     </div>
@@ -183,7 +183,7 @@ export default async function Gta6HubPage() {
                     <section className="container-page pb-14">
                         <div className="flex items-center justify-between mb-7">
                             <SectionHeading kicker="Fresh" title="Latest GTA 6 News" noMargin />
-                            <Link href="/news?search=gta+6" className="inline-flex items-center gap-1 text-white/35 hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
+                            <Link href="/news?search=gta+6" className="inline-flex items-center gap-1 text-white/50 hover:text-[var(--gta-pink)] text-[13px] font-semibold transition-colors">
                                 View all <ChevronRight className="w-4 h-4" />
                             </Link>
                         </div>
@@ -205,7 +205,7 @@ export default async function Gta6HubPage() {
                                         </div>
                                         <div className="p-4">
                                             <h3 className="text-[14px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--gta-pink)] transition-colors">{item.title}</h3>
-                                            {item.excerpt && <p className="text-[12px] text-white/35 leading-relaxed line-clamp-2 mt-1.5">{item.excerpt}</p>}
+                                            {item.excerpt && <p className="text-[12px] text-white/50 leading-relaxed line-clamp-2 mt-1.5">{item.excerpt}</p>}
                                         </div>
                                     </Link>
                                 );

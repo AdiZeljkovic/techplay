@@ -286,7 +286,7 @@ export default function SectionHub({
                 </PageLink>
                 {basePath && pageNumbers(page, pages.last).map((n, i) =>
                     n === "gap" ? (
-                        <span key={`gap-${i}`} aria-hidden className="px-0.5 text-white/25 text-[12px]">
+                        <span key={`gap-${i}`} aria-hidden className="px-0.5 text-white/45 text-[12px]">
                             …
                         </span>
                     ) : n === page ? (
@@ -502,7 +502,7 @@ export default function SectionHub({
                             ))}
                         </div>
                     ) : articles.length === 0 ? (
-                        <p className="mt-8 py-14 text-center text-[12.5px] text-white/35">
+                        <p className="mt-8 py-14 text-center text-[12.5px] text-white/50">
                             Nothing published under this filter yet.
                         </p>
                     ) : (

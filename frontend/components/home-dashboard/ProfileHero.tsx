@@ -366,7 +366,7 @@ export default function ProfileHero({
                 <>
                     {hero.stats.achievements}
                     {hero.achievements_total != null && (
-                        <span className="text-[13px] text-white/35"> / {hero.achievements_total}</span>
+                        <span className="text-[13px] text-white/50"> / {hero.achievements_total}</span>
                     )}
                 </>
             ),
@@ -379,7 +379,7 @@ export default function ProfileHero({
                     value: (
                         <>
                             {hero.streak_days}
-                            <span className="text-[13px] text-white/35"> {hero.streak_days === 1 ? "day" : "days"}</span>
+                            <span className="text-[13px] text-white/50"> {hero.streak_days === 1 ? "day" : "days"}</span>
                         </>
                     ),
                     icon: (
@@ -393,7 +393,7 @@ export default function ProfileHero({
                     label: `Level ${hero.level + 1} loot`,
                     value: (
                         <span className="text-[var(--xp-bright)]">
-                            {levelToGoShown.toLocaleString()} <span className="text-[13px] text-white/35">XP to go</span>
+                            {levelToGoShown.toLocaleString()} <span className="text-[13px] text-white/50">XP to go</span>
                         </span>
                     ),
                     icon: <StatIcon src="/images/profile/v2-loot.webp" size={64} idle="pulse" />,

@@ -341,7 +341,7 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                 {studio.developed.length === 0 && studio.published.length === 0 &&
                  (studio.ported ?? []).length === 0 && (studio.supported ?? []).length === 0 && (
                     <Panel>
-                        <p className="text-[14px] text-white/40">
+                        <p className="text-[14px] text-white/55">
                             No games from this studio are in the database yet.
                         </p>
                     </Panel>

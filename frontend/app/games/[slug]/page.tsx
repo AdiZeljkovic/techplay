@@ -452,7 +452,7 @@ function HeroCredits({ game }: { game: GameDetail }) {
     if (!developers && !publishers) return null;
 
     return (
-        <p className="mt-2.5 text-[13.5px] text-white/40">
+        <p className="mt-2.5 text-[13.5px] text-white/55">
             {developers && <>by {developers}</>}
             {developers && publishers && <span className="mx-2 text-white/20">·</span>}
             {publishers && <>published by {publishers}</>}
@@ -500,7 +500,7 @@ function ScoreStack({ game }: { game: GameDetail }) {
                         <span className="font-display text-[38px] font-black leading-none tabular-nums text-white">
                             {readers.toFixed(1)}
                         </span>
-                        <span className="font-display text-[13px] font-bold text-white/30">/ {game.rating_top ?? 10}</span>
+                        <span className="font-display text-[13px] font-bold text-white/50">/ {game.rating_top ?? 10}</span>
                     </p>
                     {game.ratings_count > 0 && (
                         <p className="mt-1 text-[11.5px] text-white/50 tabular-nums">
@@ -764,7 +764,7 @@ function TimeToBeat({ times }: { times: GameDetail["time_to_beat"] }) {
                         >
                             <p className="font-display text-[26px] sm:text-[30px] font-black leading-none tabular-nums text-white">
                                 {times[pace.key]}
-                                <span className="ml-1 text-[13px] font-bold text-white/35">h</span>
+                                <span className="ml-1 text-[13px] font-bold text-white/50">h</span>
                             </p>
                             <p className="mt-1.5 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/55">
                                 {pace.label}
@@ -1316,7 +1316,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             <div className="prose prose-invert prose-sm max-w-none text-white/65 leading-relaxed [&_a]:text-[var(--accent)]"
                                 dangerouslySetInnerHTML={{ __html: game.description }} />
                         ) : (
-                            <p className="text-[13px] text-white/35 italic">No description available yet.</p>
+                            <p className="text-[13px] text-white/50 italic">No description available yet.</p>
                         )}
                     </Panel>
 

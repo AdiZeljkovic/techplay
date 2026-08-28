@@ -240,7 +240,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         <Gift className="w-12 h-12 text-white/20" />
                     </div>
                     <h1 className="text-2xl font-bold text-white mb-2">Giveaway Not Found</h1>
-                    <p className="text-white/40 text-sm leading-relaxed">This giveaway may have ended or doesn&apos;t exist.</p>
+                    <p className="text-white/55 text-sm leading-relaxed">This giveaway may have ended or doesn&apos;t exist.</p>
                     <Link href="/" className="btn-command inline-flex items-center gap-2 mt-6 px-5 py-2.5 bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-hover)] transition-colors">
                         Back to Home
                     </Link>
@@ -313,7 +313,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 <div className="flex-1">
                     <h3 className="font-bold text-white text-sm leading-snug">{task.title}</h3>
                     {task.description && (
-                        <p className="text-xs text-white/35 mt-1 leading-relaxed line-clamp-2">{task.description}</p>
+                        <p className="text-xs text-white/50 mt-1 leading-relaxed line-clamp-2">{task.description}</p>
                     )}
                 </div>
 
@@ -583,7 +583,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                             <Gift className="w-8 h-8 text-[var(--accent)]" />
                                         </div>
                                         <h2 className="text-2xl font-black text-white mb-2">Ready to win?</h2>
-                                        <p className="text-sm text-white/40 mb-6 max-w-sm mx-auto leading-relaxed">
+                                        <p className="text-sm text-white/55 mb-6 max-w-sm mx-auto leading-relaxed">
                                             Sign in to enter and complete tasks to boost your winning chances!
                                         </p>
                                         <Link
@@ -607,7 +607,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                             <Zap className="w-8 h-8 text-[var(--accent)]" />
                                         </div>
                                         <h2 className="text-2xl font-black text-white mb-2">Join the giveaway</h2>
-                                        <p className="text-sm text-white/40 mb-6 max-w-sm mx-auto leading-relaxed">
+                                        <p className="text-sm text-white/55 mb-6 max-w-sm mx-auto leading-relaxed">
                                             Click to enter and start earning points by completing tasks!
                                         </p>
                                         <motion.button
@@ -640,7 +640,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                         </h2>
                                     </div>
                                     {entry && (
-                                        <div className="flex items-center gap-2 text-xs text-white/40">
+                                        <div className="flex items-center gap-2 text-xs text-white/55">
                                             <span className="font-bold text-white">{completedTotal}</span>
                                             <span>/ {giveaway.tasks.length} completed</span>
                                             {requiredTasks.length > 0 && (
@@ -728,14 +728,14 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="font-bold text-white text-sm">{tier.tier_name}</h3>
                                                 {tier.prize_description && (
-                                                    <p className="text-xs text-white/40 mt-0.5">{tier.prize_description}</p>
+                                                    <p className="text-xs text-white/55 mt-0.5">{tier.prize_description}</p>
                                                 )}
                                             </div>
                                             <div className="text-right flex-shrink-0">
-                                                <div className="text-xs text-white/40">
+                                                <div className="text-xs text-white/55">
                                                     {tier.winner_count} {tier.winner_count === 1 ? 'winner' : 'winners'}
                                                 </div>
-                                                <div className={`text-xs font-bold mt-0.5 ${qualifies ? 'text-green-400' : 'text-white/30'}`}>
+                                                <div className={`text-xs font-bold mt-0.5 ${qualifies ? 'text-green-400' : 'text-white/50'}`}>
                                                     {tier.min_points > 0 ? `${tier.min_points} pts min` : 'No minimum'}
                                                 </div>
                                                 {qualifies && (

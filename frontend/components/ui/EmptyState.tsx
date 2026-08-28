@@ -22,7 +22,7 @@ interface EmptyStateProps {
 export default function EmptyState({ variant = "full", icon, title, body, action, className }: EmptyStateProps) {
     if (variant === "hint") {
         return (
-            <p className={cn("flex-1 flex items-center justify-center text-center text-[12px] text-white/35 py-4 px-2", className)}>
+            <p className={cn("flex-1 flex items-center justify-center text-center text-[12px] text-white/50 py-4 px-2", className)}>
                 {title}
             </p>
         );

@@ -464,7 +464,7 @@ export default function AdvisorClient() {
                             <p className="font-display text-[14px] font-bold text-white">
                                 {summary?.library === 0 ? "Add a few games first" : "Nothing matches those filters"}
                             </p>
-                            <p className="mt-1.5 text-[12px] text-white/40 max-w-[380px] mx-auto leading-snug">
+                            <p className="mt-1.5 text-[12px] text-white/55 max-w-[380px] mx-auto leading-snug">
                                 {summary?.library === 0
                                     ? "Recommendations are scored against your collection — the more it holds, the sharper they get."
                                     : "Loosen a filter, or clear the genre picks."}

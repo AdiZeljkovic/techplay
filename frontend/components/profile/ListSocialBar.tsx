@@ -150,7 +150,7 @@ export default function ListSocialBar({
                                     onChange={(e) => setBody(e.target.value.slice(0, 1000))}
                                     rows={2}
                                     placeholder="Say what you think of this ranking…"
-                                    className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
+                                    className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
                                 />
                                 <div className="mt-2 flex justify-end">
                                     <button
@@ -165,13 +165,13 @@ export default function ListSocialBar({
                             </div>
                         </div>
                     ) : (
-                        <p className="mb-4 text-[12.5px] text-white/40">
+                        <p className="mb-4 text-[12.5px] text-white/55">
                             <Link href="/login" className="text-[var(--accent)] font-semibold">Sign in</Link> to join the discussion.
                         </p>
                     )}
 
                     {comments.length === 0 ? (
-                        <p className="py-4 text-center text-[12px] text-white/25">No comments yet — be the first.</p>
+                        <p className="py-4 text-center text-[12px] text-white/45">No comments yet — be the first.</p>
                     ) : (
                         <div className="space-y-3">
                             {comments.map((c) => {

@@ -62,7 +62,7 @@ export default function GuideHelpful({
                     <h3 className="font-display text-[14px] font-black uppercase tracking-[0.12em] text-white">
                         {vote === null ? "Did this guide help?" : vote ? "Glad it helped" : "Sorry it missed"}
                     </h3>
-                    <p className="mt-1.5 text-[12.5px] text-white/40 leading-snug">
+                    <p className="mt-1.5 text-[12.5px] text-white/55 leading-snug">
                         {vote === null
                             ? "One tap. It tells us which guides are worth writing more of."
                             : "Press the same button again to take it back."}

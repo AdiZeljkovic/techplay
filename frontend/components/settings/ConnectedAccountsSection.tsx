@@ -402,7 +402,7 @@ export default function ConnectedAccountsSection() {
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-[12px] text-white/40">{provider.description}</span>
+                                    <span className="text-[12px] text-white/55">{provider.description}</span>
                                     {provider.caveat && (
                                         <span className="text-[11px] text-white/45 leading-snug">{provider.caveat}</span>
                                     )}
@@ -473,7 +473,7 @@ export default function ConnectedAccountsSection() {
                                             onChange={(e) => setGamertag(e.target.value)}
                                             onKeyDown={(e) => { if (e.key === "Enter") handleGamertagConnect(provider.id); }}
                                             placeholder="Your gamertag"
-                                            className="w-40 bg-[var(--surface-1)] border border-white/[0.1] rounded-[var(--radius-card)] px-3 py-2 text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                                            className="w-40 bg-[var(--surface-1)] border border-white/[0.1] rounded-[var(--radius-card)] px-3 py-2 text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[var(--accent)]/50"
                                         />
                                         <button onClick={() => handleGamertagConnect(provider.id)} disabled={connecting === provider.id}
                                             className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-60">
@@ -539,7 +539,7 @@ export default function ConnectedAccountsSection() {
                             onChange={(e) => setNpsso(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") handleNpssoConnect(); }}
                             placeholder="Paste your npsso token"
-                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[var(--accent)]/50"
                         />
                         <button
                             onClick={handleNpssoConnect}
@@ -589,7 +589,7 @@ export default function ConnectedAccountsSection() {
                             onChange={(e) => setEpicCode(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") handleEpicConnect(); }}
                             placeholder="Paste what that page returned"
-                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[var(--accent)]/50"
                         />
                         <button
                             onClick={handleEpicConnect}
@@ -639,7 +639,7 @@ export default function ConnectedAccountsSection() {
                             onChange={(e) => setGogCode(e.target.value)}
                             onKeyDown={(e) => { if (e.key === "Enter") handleGogConnect(); }}
                             placeholder="Paste the address, or just the code"
-                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50"
+                            className="flex-1 min-w-[220px] h-10 px-3 rounded-[var(--radius-card)] bg-[var(--surface-0)] border border-white/[0.1] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[var(--accent)]/50"
                         />
                         <button
                             onClick={handleGogConnect}

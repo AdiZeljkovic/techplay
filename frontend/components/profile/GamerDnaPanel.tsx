@@ -837,7 +837,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                     </span>
                     <div>
                         <h2 className="font-display text-[22px] font-black uppercase tracking-[0.02em] text-white leading-none">Gamer DNA</h2>
-                        <p className="mt-1 text-[12px] text-white/40">What your library says about you</p>
+                        <p className="mt-1 text-[12px] text-white/55">What your library says about you</p>
                     </div>
                 </div>
 

@@ -207,7 +207,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 onChange={(e) => setXboxGamertag(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === "Enter") connectXbox(); }}
                                 placeholder="Your gamertag"
-                                className="flex-1 bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] h-12 px-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-emerald-500/50 transition-colors"
+                                className="flex-1 bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] h-12 px-4 text-[14px] text-white placeholder:text-white/45 focus:outline-none focus:border-emerald-500/50 transition-colors"
                             />
                             <button onClick={connectXbox} disabled={connecting}
                                 className="flex items-center gap-2 h-12 px-6 rounded-[var(--radius-card)] bg-[#107C10] hover:bg-[#0e6b0e] text-white text-[12px] font-bold uppercase tracking-wider transition-colors disabled:opacity-60">
@@ -239,7 +239,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder="Search the catalogue…"
-                                className="w-full bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] h-12 pl-11 pr-4 text-[14px] text-white placeholder:text-white/25 focus:outline-none focus:border-[var(--accent)]/50 transition-colors"
+                                className="w-full bg-white/[0.03] border border-[var(--line)] rounded-[var(--radius-card)] h-12 pl-11 pr-4 text-[14px] text-white placeholder:text-white/45 focus:outline-none focus:border-[var(--accent)]/50 transition-colors"
                             />
                         </div>
 
@@ -277,10 +277,10 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 );
                             })}
                             {debounced.length >= 2 && !searching && (results?.results ?? []).length === 0 && (
-                                <p className="text-center text-[12px] text-white/30 pt-10">No games found for &quot;{debounced}&quot;</p>
+                                <p className="text-center text-[12px] text-white/50 pt-10">No games found for &quot;{debounced}&quot;</p>
                             )}
                             {debounced.length < 2 && (
-                                <p className="text-center text-[12px] text-white/25 pt-10">Type at least 2 characters — try &quot;Elden&quot;, &quot;GTA&quot;, &quot;Zelda&quot;…</p>
+                                <p className="text-center text-[12px] text-white/45 pt-10">Type at least 2 characters — try &quot;Elden&quot;, &quot;GTA&quot;, &quot;Zelda&quot;…</p>
                             )}
                         </div>
 

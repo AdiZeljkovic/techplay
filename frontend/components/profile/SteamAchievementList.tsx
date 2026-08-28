@@ -116,7 +116,7 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search Steam achievements…"
-                        className="h-8 w-[220px] pl-8 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                        className="h-8 w-[220px] pl-8 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                     />
                     {query && (
                         <button onClick={() => setQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white">

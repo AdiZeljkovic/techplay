@@ -93,7 +93,7 @@ export default function ProfilePreviewCard({
 
                     {/* The empty states are the point: they show what the field
                         is for, in the place the words will land. */}
-                    <p className={`mt-2.5 text-[13px] truncate ${tagline.trim() ? "text-white/75" : "text-white/20 italic"}`}>
+                    <p className={`mt-2.5 text-[13px] truncate ${tagline.trim() ? "text-white/75" : "text-white/45 italic"}`}>
                         {tagline.trim() || "Your tagline goes here"}
                     </p>
 

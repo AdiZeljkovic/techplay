@@ -78,7 +78,7 @@ function Section({ title, blurb, children }: { title: string; blurb: string; chi
         >
             <header className="px-5 md:px-6 py-4 border-b border-white/[0.07]">
                 <h2 className="font-display text-[12px] font-black uppercase tracking-[0.15em] text-white">{title}</h2>
-                <p className="mt-1 text-[12px] text-white/35">{blurb}</p>
+                <p className="mt-1 text-[12px] text-white/50">{blurb}</p>
             </header>
             <div className="p-5 md:p-6">{children}</div>
         </div>
@@ -402,7 +402,7 @@ export default function SettingsClient() {
                     <h1 className="font-display text-[26px] md:text-[32px] font-black uppercase tracking-tight leading-none text-white">
                         Settings
                     </h1>
-                    <p className="mt-1.5 text-[12.5px] text-white/35 truncate">
+                    <p className="mt-1.5 text-[12.5px] text-white/50 truncate">
                         Signed in as {user.email}
                     </p>
                 </header>
@@ -689,7 +689,7 @@ export default function SettingsClient() {
                         {section === "privacy" && (
                             <Section title="Profile visibility" blurb={current.blurb}>
                                 <div className="max-w-lg space-y-2">
-                                    <p className="text-[12.5px] text-white/40 leading-relaxed mb-3">
+                                    <p className="text-[12.5px] text-white/55 leading-relaxed mb-3">
                                         Controls who can open your collection, stats, activity and achievements. Your forum
                                         posts, comments and published reviews stay public either way — they were posted to
                                         public pages.
@@ -774,7 +774,7 @@ export default function SettingsClient() {
                             <>
                                 <Section title="Download your data" blurb="Everything we hold, as one JSON file">
                                     <div className="max-w-lg">
-                                        <p className="text-[12.5px] text-white/40 leading-relaxed mb-4">
+                                        <p className="text-[12.5px] text-white/55 leading-relaxed mb-4">
                                             Your profile, collection, forum posts, orders and achievements. Nothing is deleted
                                             by exporting.
                                         </p>
@@ -790,7 +790,7 @@ export default function SettingsClient() {
                                         <h2 className="flex items-center gap-2 font-display text-[12px] font-black uppercase tracking-[0.15em] text-red-400">
                                             <Trash2 className="w-4 h-4" /> Delete your account
                                         </h2>
-                                        <p className="mt-1 text-[12px] text-white/35">Permanent, and it cannot be undone.</p>
+                                        <p className="mt-1 text-[12px] text-white/50">Permanent, and it cannot be undone.</p>
                                     </header>
                                     <div className="p-5 md:p-6 max-w-lg space-y-3">
                                         <Field label={`Type ${user.username} to confirm`}>

@@ -226,7 +226,7 @@ export default function FeedClient() {
                         ))}
                     </div>
                 ) : items.length === 0 ? (
-                    <p className="mt-10 py-16 text-center text-[12.5px] text-white/35">
+                    <p className="mt-10 py-16 text-center text-[12.5px] text-white/50">
                         Nothing published here yet.
                     </p>
                 ) : (

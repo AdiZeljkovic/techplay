@@ -156,7 +156,7 @@ export default function RewardFeed() {
                                     {moment.unlocked?.[0]?.name}
                                 </p>
                                 {(moment.unlocked?.length ?? 0) > 1 && (
-                                    <p className="mt-1.5 text-[12px] text-white/40">
+                                    <p className="mt-1.5 text-[12px] text-white/55">
                                         and {moment.unlocked!.length - 1} more
                                     </p>
                                 )}

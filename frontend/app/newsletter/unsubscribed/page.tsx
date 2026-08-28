@@ -41,7 +41,7 @@ export default function NewsletterUnsubscribedPage() {
                     People click this by accident, and a receipt with no way back
                     turns a misclick into a lost reader.
                 */}
-                <p className="text-white/35 text-sm mt-6">
+                <p className="text-white/50 text-sm mt-6">
                     Left by mistake?{" "}
                     <Link href="/#newsletter" className="text-[var(--accent)] hover:underline">
                         Sign up again

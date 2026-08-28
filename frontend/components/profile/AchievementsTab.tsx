@@ -139,7 +139,7 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
                     icon={Award}
                     label="Unlocked"
                     value={data.unlocked_count}
-                    sub={<span className="font-display text-[12px] font-bold tabular-nums text-white/30">/ {data.total}</span>}
+                    sub={<span className="font-display text-[12px] font-bold tabular-nums text-white/50">/ {data.total}</span>}
                     tint="#34d399"
                 />
                 <ScoreCell
@@ -246,7 +246,7 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
                     )}
                 </span>
 
-                <span className={`block mt-0.5 text-[12px] leading-snug line-clamp-1 ${a.is_unlocked ? "text-white/45" : "text-white/30"}`}>
+                <span className={`block mt-0.5 text-[12px] leading-snug line-clamp-1 ${a.is_unlocked ? "text-white/45" : "text-white/50"}`}>
                     {a.description}
                 </span>
 
@@ -279,7 +279,7 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
             </span>
 
             <span className="shrink-0 text-right">
-                <span className={`block font-display text-[15px] font-black tabular-nums leading-none ${a.is_unlocked ? "text-[var(--accent)]" : "text-white/20"}`}>
+                <span className={`block font-display text-[15px] font-black tabular-nums leading-none ${a.is_unlocked ? "text-[var(--accent)]" : "text-white/45"}`}>
                     {a.points}
                 </span>
                 <span className="block mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/45">Pts</span>
@@ -602,7 +602,7 @@ export default function AchievementsTab({ username, isOwnProfile = false }: { us
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Search achievements…"
-                            className="h-8 w-[190px] pl-8 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                            className="h-8 w-[190px] pl-8 pr-7 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                         />
                         {query && (
                             <button

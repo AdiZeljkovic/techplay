@@ -168,7 +168,7 @@ export default async function LastDiscPage() {
                             <p className="mt-4 font-display text-[11.5px] font-black uppercase tracking-[0.12em] text-white">
                                 {title}
                             </p>
-                            <p className="mt-2 text-[12px] leading-snug text-white/40">{body}</p>
+                            <p className="mt-2 text-[12px] leading-snug text-white/55">{body}</p>
                         </div>
                     ))}
                 </div>

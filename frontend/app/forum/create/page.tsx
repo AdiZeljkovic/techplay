@@ -166,7 +166,7 @@ function CreateThreadForm() {
                 </span>
                 <div>
                     <h1 className="font-display text-[22px] font-black uppercase tracking-tight text-white">Sign in to post</h1>
-                    <p className="mt-1.5 text-[13px] text-white/40">Threads carry a name, so we need yours first.</p>
+                    <p className="mt-1.5 text-[13px] text-white/55">Threads carry a name, so we need yours first.</p>
                 </div>
                 <div className="flex gap-3">
                     <Link href="/login?redirect=/forum/create"><Button variant="outline">Log in</Button></Link>
@@ -469,7 +469,7 @@ function CreateThreadForm() {
                                                 {gameSearchLoading ? (
                                                     <p className="flex items-center gap-2 p-3 text-[12px] text-white/35"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…</p>
                                                 ) : (gameResults?.results?.length ?? 0) === 0 ? (
-                                                    <p className="p-3 text-[12px] text-white/30">Nothing matched.</p>
+                                                    <p className="p-3 text-[12px] text-white/50">Nothing matched.</p>
                                                 ) : (
                                                     gameResults.results.map((g: { id: number; name: string; slug: string }) => (
                                                         <button

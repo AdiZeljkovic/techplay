@@ -127,7 +127,7 @@ export default function ForumSidebar() {
             ) : (
                 <Panel>
                     <p className="font-display text-[14px] font-black text-white">Join the community</p>
-                    <p className="mt-1 text-[12px] text-white/35 leading-relaxed">
+                    <p className="mt-1 text-[12px] text-white/50 leading-relaxed">
                         Log in to post, earn XP, and climb the ranks.
                     </p>
                     <div className="mt-4 flex gap-2">
@@ -156,7 +156,7 @@ export default function ForumSidebar() {
                         ))}
                     </div>
                 ) : activeThreads.length === 0 ? (
-                    <p className="text-[12px] text-white/25">No recent posts.</p>
+                    <p className="text-[12px] text-white/45">No recent posts.</p>
                 ) : (
                     <div className="divide-y divide-white/[0.05] -my-1">
                         {activeThreads.map((thread) => {

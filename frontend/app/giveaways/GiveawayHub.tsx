@@ -265,7 +265,7 @@ export default function GiveawayHub() {
                             <p className="font-display text-[13.5px] font-bold text-white">
                                 {status === "active" ? "No giveaways running right now" : "Nothing here yet"}
                             </p>
-                            <p className="mt-1.5 text-[12px] text-white/35">
+                            <p className="mt-1.5 text-[12px] text-white/50">
                                 {status === "active"
                                     ? "When the next one opens it lands here first."
                                     : "Try a different filter."}

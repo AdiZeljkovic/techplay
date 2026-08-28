@@ -217,14 +217,14 @@ function GamePicker({ value, onPick }: { value: Draft["game"]; onPick: (g: Draft
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
                 placeholder="Which game did you play?"
-                className="w-full h-10 pl-9 pr-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
+                className="w-full h-10 pl-9 pr-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
             />
             {term.trim().length >= 2 && (
                 <div className="absolute z-20 left-0 right-0 top-[44px] max-h-[240px] overflow-y-auto rounded-[10px] border border-white/[0.1] bg-[var(--surface-2)] shadow-[0_20px_44px_rgba(0,0,0,0.6)]">
                     {isLoading ? (
                         <p className="flex items-center gap-2 p-3 text-[12px] text-white/35"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…</p>
                     ) : (data?.results ?? []).length === 0 ? (
-                        <p className="p-3 text-[12px] text-white/30">Nothing matched.</p>
+                        <p className="p-3 text-[12px] text-white/50">Nothing matched.</p>
                     ) : (
                         (data?.results ?? []).map((g) => (
                             <button
@@ -298,7 +298,7 @@ function SessionComposer({
         }
     };
 
-    const field = "w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]";
+    const field = "w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]";
     const label = "block font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/55 mb-1.5";
 
     return (
@@ -378,7 +378,7 @@ function SessionComposer({
                         onChange={(e) => set("note", e.target.value.slice(0, 2000))}
                         rows={3}
                         placeholder="What happened? What are you going to do next time?"
-                        className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
+                        className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
                     />
                 </div>
 
@@ -395,7 +395,7 @@ function SessionComposer({
                         <button
                             key={key}
                             onClick={() => set(key, !draft[key])}
-                            className={`inline-flex items-center gap-2 text-[12px] font-semibold transition-colors ${draft[key] ? "text-[var(--accent)]" : "text-white/40 hover:text-white/70"}`}
+                            className={`inline-flex items-center gap-2 text-[12px] font-semibold transition-colors ${draft[key] ? "text-[var(--accent)]" : "text-white/55 hover:text-white/70"}`}
                         >
                             <span className={`w-4 h-4 rounded-[4px] border flex items-center justify-center ${draft[key] ? "bg-[var(--accent)] border-transparent" : "border-white/20"}`}>
                                 {draft[key] && <Check className="w-3 h-3 text-white" />}

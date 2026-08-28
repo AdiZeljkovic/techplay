@@ -334,7 +334,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                                 >
                                                     <span className="text-5xl font-bold" style={{ color: scoreMeta.color }}>{review.rating}</span>
                                                 </div>
-                                                <p className="text-white/35 font-medium uppercase tracking-widest text-sm mb-6">Overall Score</p>
+                                                <p className="text-white/50 font-medium uppercase tracking-widest text-sm mb-6">Overall Score</p>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
                                                     <div>
                                                         <h4 className="text-green-500 font-bold text-sm mb-3 flex items-center gap-2"><Check className="w-4 h-4" /> The Good</h4>

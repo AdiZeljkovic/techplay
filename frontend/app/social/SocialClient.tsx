@@ -122,7 +122,7 @@ function NewGroupModal({
                     value={name}
                     onChange={(e) => setName(e.target.value.slice(0, 80))}
                     placeholder="Group name"
-                    className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
+                    className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
                 />
 
                 <p className="mt-4 mb-2 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/55">
@@ -130,7 +130,7 @@ function NewGroupModal({
                 </p>
 
                 {friends.length === 0 ? (
-                    <p className="py-4 text-[12px] text-white/30">Add some friends first — a group is made of them.</p>
+                    <p className="py-4 text-[12px] text-white/50">Add some friends first — a group is made of them.</p>
                 ) : (
                     <div className="max-h-[240px] overflow-y-auto space-y-1 pr-1">
                         {friends.map((f) => (
@@ -793,7 +793,7 @@ export default function SocialClient() {
                                                 value={search}
                                                 onChange={(e) => setSearch(e.target.value)}
                                                 placeholder="Search conversations…"
-                                                className="w-full h-8 pl-8 pr-3 rounded-[7px] bg-white/[0.04] border border-white/[0.07] text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                                className="w-full h-8 pl-8 pr-3 rounded-[7px] bg-white/[0.04] border border-white/[0.07] text-[12px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                                             />
                                         </div>
                                     </div>
@@ -802,7 +802,7 @@ export default function SocialClient() {
                                         {rows.length === 0 ? (
                                             <div className="p-5 text-center">
                                                 <Inbox className="w-6 h-6 mx-auto mb-2.5 text-white/15" />
-                                                <p className="text-[12px] text-white/35 leading-snug">
+                                                <p className="text-[12px] text-white/50 leading-snug">
                                                     {search ? "Nothing matches that search." : "No conversations yet. Message a friend from Online Now."}
                                                 </p>
                                             </div>
@@ -858,7 +858,7 @@ export default function SocialClient() {
                                         <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                                             <MessageCircle className="w-8 h-8 mb-3 text-white/15" />
                                             <p className="font-display text-[14px] font-bold text-white">Pick a conversation</p>
-                                            <p className="mt-1.5 text-[12px] text-white/35 max-w-[280px]">
+                                            <p className="mt-1.5 text-[12px] text-white/50 max-w-[280px]">
                                                 Or message a friend from Online Now — direct threads open on first message.
                                             </p>
                                         </div>
@@ -956,7 +956,7 @@ export default function SocialClient() {
                                                 )}
 
                                                 {(messages.length === 0) ? (
-                                                    <p className="py-10 text-center text-[12px] text-white/25">
+                                                    <p className="py-10 text-center text-[12px] text-white/45">
                                                         No messages yet — say something.
                                                     </p>
                                                 ) : (
@@ -1007,7 +1007,7 @@ export default function SocialClient() {
                                                         }}
                                                         rows={1}
                                                         placeholder="Type a message…"
-                                                        className="flex-1 min-h-[36px] max-h-[120px] px-3 py-2 rounded-[8px] bg-white/[0.04] border border-white/[0.08] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] resize-none"
+                                                        className="flex-1 min-h-[36px] max-h-[120px] px-3 py-2 rounded-[8px] bg-white/[0.04] border border-white/[0.08] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] resize-none"
                                                     />
                                                     <button
                                                         onClick={() => send()}
@@ -1030,7 +1030,7 @@ export default function SocialClient() {
                         ) : section === "requests" ? (
                             <div className="p-4 flex-1 min-h-0 overflow-y-auto">
                                 {(hub?.requests.length ?? 0) === 0 ? (
-                                    <p className="py-12 text-center text-[12.5px] text-white/30">No requests waiting.</p>
+                                    <p className="py-12 text-center text-[12.5px] text-white/50">No requests waiting.</p>
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                         {hub!.requests.map((r) => (
@@ -1060,7 +1060,7 @@ export default function SocialClient() {
                         ) : section === "blocked" ? (
                             <div className="p-4 flex-1 min-h-0 overflow-y-auto">
                                 {(hub?.blocked.length ?? 0) === 0 ? (
-                                    <p className="py-12 text-center text-[12.5px] text-white/30">Nobody blocked.</p>
+                                    <p className="py-12 text-center text-[12.5px] text-white/50">Nobody blocked.</p>
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                         {hub!.blocked.map((b) => (
@@ -1082,7 +1082,7 @@ export default function SocialClient() {
                         ) : (
                             <div className="p-4 flex-1 min-h-0 overflow-y-auto">
                                 {(hub?.friends.length ?? 0) === 0 ? (
-                                    <p className="py-12 text-center text-[12.5px] text-white/30">
+                                    <p className="py-12 text-center text-[12.5px] text-white/50">
                                         No friends yet. Add people from their profile and they show up here.
                                     </p>
                                 ) : (

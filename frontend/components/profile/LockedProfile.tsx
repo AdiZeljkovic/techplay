@@ -249,7 +249,7 @@ export default function LockedProfile({
                     <h2 className="font-display text-[12px] font-black uppercase tracking-[0.15em] text-white">
                         {displayName} keeps this for friends
                     </h2>
-                    <p className="text-[12px] text-white/35">Accepted requests open all of it at once.</p>
+                    <p className="text-[12px] text-white/50">Accepted requests open all of it at once.</p>
                 </header>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-px" style={{ background: "var(--line)" }}>
@@ -271,7 +271,7 @@ export default function LockedProfile({
                     ))}
                 </div>
 
-                <p className="px-5 md:px-6 py-4 border-t border-white/[0.07] flex items-start gap-2.5 text-[12px] leading-relaxed text-white/30">
+                <p className="px-5 md:px-6 py-4 border-t border-white/[0.07] flex items-start gap-2.5 text-[12px] leading-relaxed text-white/50">
                     <ShieldCheck className="w-4 h-4 mt-[1px] shrink-0 text-white/20" />
                     <span>
                         Their name, level and rank stay visible to everyone — a private profile is not a hidden one.

@@ -327,7 +327,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                                         <Icon className="w-4 h-4" strokeWidth={1.8} /> {title}
                                     </h4>
                                     {items.length === 0 ? (
-                                        <p className="text-[12px] text-white/25">Nothing worth listing.</p>
+                                        <p className="text-[12px] text-white/45">Nothing worth listing.</p>
                                     ) : (
                                         <ul className="space-y-2.5">
                                             {items.map((item, i) => (

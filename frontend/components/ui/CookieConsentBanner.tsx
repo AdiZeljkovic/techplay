@@ -146,7 +146,7 @@ export default function CookieConsentBanner() {
                                             <div className="bg-[var(--surface-1)] border border-[var(--line)] p-4 rounded-[var(--radius-card)] flex items-center justify-between">
                                                 <div>
                                                     <span className="font-bold text-white block">Essential</span>
-                                                    <span className="text-xs text-white/35">Required for the site to work.</span>
+                                                    <span className="text-xs text-white/50">Required for the site to work.</span>
                                                 </div>
                                                 <div className="relative flex items-center">
                                                     <Check className="w-5 h-5 text-green-500" />
@@ -160,7 +160,7 @@ export default function CookieConsentBanner() {
                                             >
                                                 <div>
                                                     <span className={`font-bold block ${preferences.analytics ? 'text-[var(--accent)]' : 'text-white'}`}>Analytics</span>
-                                                    <span className="text-xs text-white/35">Help us improve the site.</span>
+                                                    <span className="text-xs text-white/50">Help us improve the site.</span>
                                                 </div>
                                                 <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.analytics ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
                                                     {preferences.analytics && <Check className="w-4 h-4 text-white" />}
@@ -174,7 +174,7 @@ export default function CookieConsentBanner() {
                                             >
                                                 <div>
                                                     <span className={`font-bold block ${preferences.marketing ? 'text-[var(--accent)]' : 'text-white'}`}>Marketing</span>
-                                                    <span className="text-xs text-white/35">Personalized offers.</span>
+                                                    <span className="text-xs text-white/50">Personalized offers.</span>
                                                 </div>
                                                 <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.marketing ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
                                                     {preferences.marketing && <Check className="w-4 h-4 text-white" />}

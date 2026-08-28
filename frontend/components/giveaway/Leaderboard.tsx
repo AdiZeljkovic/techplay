@@ -84,7 +84,7 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
                     </div>
                     Leaderboard
                 </h3>
-                <p className="text-sm text-white/35 text-center py-8">
+                <p className="text-sm text-white/50 text-center py-8">
                     No entries yet. Be the first!
                 </p>
             </div>
@@ -166,7 +166,7 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
                                         <div className="font-bold text-[var(--accent)]">
                                             {entry.points}
                                         </div>
-                                        <div className="text-xs text-white/35">
+                                        <div className="text-xs text-white/50">
                                             pts
                                         </div>
                                     </div>
@@ -177,7 +177,7 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
                 </div>
 
                 {/* Refresh indicator */}
-                <div className="mt-4 text-xs text-white/35 text-center flex items-center justify-center gap-2">
+                <div className="mt-4 text-xs text-white/50 text-center flex items-center justify-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                     Live updates every 30s
                 </div>

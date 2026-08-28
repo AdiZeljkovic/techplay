@@ -24,7 +24,7 @@ interface Props {
 
 function ThreadList({ threads }: { threads: ForumThreadSummary[] }) {
     if (threads.length === 0) {
-        return <p className="text-[13px] text-white/40 py-4">Nothing here yet.</p>;
+        return <p className="text-[13px] text-white/55 py-4">Nothing here yet.</p>;
     }
 
     return (
@@ -69,7 +69,7 @@ export default function ForumActivityTab({ isOwnProfile }: Props) {
         return (
             <div className="flex flex-col items-center justify-center py-16 text-center">
                 <MessageCircle className="w-8 h-8 text-white/20 mb-3" />
-                <p className="text-[13px] text-white/40">Forum activity is only visible to the profile owner.</p>
+                <p className="text-[13px] text-white/55">Forum activity is only visible to the profile owner.</p>
             </div>
         );
     }

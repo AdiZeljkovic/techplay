@@ -163,7 +163,7 @@ export default function ListsClient({
                         <p className="mt-4 font-display text-[13px] font-black uppercase tracking-[0.14em] text-white">
                             No public lists yet
                         </p>
-                        <p className="mt-2 max-w-[420px] text-[12.5px] text-white/40">
+                        <p className="mt-2 max-w-[420px] text-[12.5px] text-white/55">
                             A list shows up here once its author publishes it. Yours can be the first.
                         </p>
                     </div>

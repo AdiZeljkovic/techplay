@@ -250,7 +250,7 @@ export default async function ReleasePage({ params }: Props) {
             {/* Credits sit last: they matter to few and are dull to everyone
                 else, but leaving them out would be a gap. */}
             {(release.publisher || release.developer) && (
-                <div className="container-page pb-14 flex flex-wrap gap-x-8 gap-y-2 text-[12px] text-white/40">
+                <div className="container-page pb-14 flex flex-wrap gap-x-8 gap-y-2 text-[12px] text-white/55">
                     {release.developer && (
                         <span className="inline-flex items-center gap-1.5">
                             <Code2 className="w-3.5 h-3.5" /> {release.developer}

@@ -378,7 +378,7 @@ export default function ListEditor({
                     >
                         {items.length === 0 ? (
                             <div className="py-8 px-4 text-center">
-                                <p className="text-[12.5px] text-white/35">Add games above and they line up here, ready to rank.</p>
+                                <p className="text-[12.5px] text-white/50">Add games above and they line up here, ready to rank.</p>
                                 {/* The advice used to be a panel of its own in the
                                     sidebar, permanently, which is where writing
                                     nobody reads goes. It belongs in the moment
@@ -462,7 +462,7 @@ export default function ListEditor({
                                                 onChange={(e) => patchLocal(item.id, { note: e.target.value.slice(0, 300) })}
                                                 onBlur={(e) => saveItem(item.id, { note: e.target.value.trim() || null })}
                                                 placeholder={`Why this game ranks #${i + 1}…`}
-                                                className="w-full h-8 px-2.5 rounded-[6px] bg-white/[0.03] border border-white/[0.08] text-[12px] text-white placeholder:text-white/20 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                                className="w-full h-8 px-2.5 rounded-[6px] bg-white/[0.03] border border-white/[0.08] text-[12px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                                             />
                                         </div>
 
@@ -477,7 +477,7 @@ export default function ListEditor({
                                                 onBlur={(e) => saveItem(item.id, { score: e.target.value === "" ? null : Math.min(10, Math.max(1, Number(e.target.value))) })}
                                                 placeholder="—"
                                                 title="Score out of 10"
-                                                className="w-[58px] h-9 px-2 rounded-[7px] bg-white/[0.03] border border-white/[0.08] font-display text-[13px] font-black tabular-nums text-center text-[var(--accent)] placeholder:text-white/20 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                                className="w-[58px] h-9 px-2 rounded-[7px] bg-white/[0.03] border border-white/[0.08] font-display text-[13px] font-black tabular-nums text-center text-[var(--accent)] placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                                             />
 
                                             {/* Drag events never fire on touch, so on a
@@ -551,7 +551,7 @@ export default function ListEditor({
                                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value.slice(0, 200) }))}
                                 rows={3}
                                 placeholder="What is this list arguing for?"
-                                className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
+                                className="w-full px-3 py-2.5 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] resize-none"
                             />
                         </label>
 
@@ -592,7 +592,7 @@ export default function ListEditor({
                                 onBlur={addTag}
                                 disabled={form.tags.length >= 5}
                                 placeholder={form.tags.length >= 5 ? "Five is the limit" : "Add a tag and press Enter…"}
-                                className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] disabled:opacity-50"
+                                className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] disabled:opacity-50"
                             />
                         </div>
                     </Panel>
@@ -748,16 +748,16 @@ function GameSearch({ onAdd, disabled, limitLabel }: { onAdd: (slug: string) => 
                     onChange={(e) => setTerm(e.target.value)}
                     disabled={disabled}
                     placeholder={disabled ? "This list is full — remove a game to add another" : "Search for games to add…"}
-                    className="w-full h-10 pl-9 pr-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] disabled:opacity-50"
+                    className="w-full h-10 pl-9 pr-3 rounded-[8px] bg-white/[0.04] border border-white/[0.1] text-[13px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] disabled:opacity-50"
                 />
             </div>
 
             {term.trim().length < 2 ? (
-                <p className="py-6 text-center text-[12px] text-white/25">Type at least 2 characters to search.</p>
+                <p className="py-6 text-center text-[12px] text-white/45">Type at least 2 characters to search.</p>
             ) : isLoading ? (
                 <div className="flex justify-center py-6 text-white/40"><Loader2 className="w-5 h-5 animate-spin" /></div>
             ) : results.length === 0 ? (
-                <p className="py-6 text-center text-[12px] text-white/25">No games found.</p>
+                <p className="py-6 text-center text-[12px] text-white/45">No games found.</p>
             ) : (
                 <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1">
                     {results.map((g: any) => (

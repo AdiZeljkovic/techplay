@@ -59,7 +59,7 @@ export default function CartClient() {
                     <div className="lg:col-span-8">
                         <div className="bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-card)] overflow-hidden">
                             <table className="w-full">
-                                <thead className="bg-[var(--surface-2)] text-white/35 text-xs uppercase">
+                                <thead className="bg-[var(--surface-2)] text-white/50 text-xs uppercase">
                                     <tr>
                                         <th className="p-4 text-left">Product</th>
                                         <th className="p-4 text-center hidden sm:table-cell">Price</th>

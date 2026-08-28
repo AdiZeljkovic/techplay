@@ -166,7 +166,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
             <div className="flex items-center gap-3 mb-6">
                 <h3 className="font-display text-[16px] font-bold text-white uppercase tracking-[0.08em] flex items-center gap-2.5">
                     Discussion
-                    <span className="text-white/35 text-[13px] font-normal tracking-normal normal-case">({comments.length})</span>
+                    <span className="text-white/50 text-[13px] font-normal tracking-normal normal-case">({comments.length})</span>
                 </h3>
             </div>
 
@@ -196,7 +196,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 placeholder="Share your thoughts… (earn 10 XP!)"
-                                className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] p-4 text-[14px] text-white focus:outline-none focus:border-[var(--accent)]/50 transition-colors min-h-[90px] resize-y placeholder:text-white/30"
+                                className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] p-4 text-[14px] text-white focus:outline-none focus:border-[var(--accent)]/50 transition-colors min-h-[90px] resize-y placeholder:text-white/50"
                                 required
                             />
                             {error && <p className="text-red-500 text-[12px] mt-2">{error}</p>}
@@ -229,7 +229,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                         </div>
                         <div>
                             <p className="text-white font-bold text-[14px]">Join the Conversation</p>
-                            <p className="text-white/35 text-[12px] mt-0.5">Log in to comment and earn community XP.</p>
+                            <p className="text-white/50 text-[12px] mt-0.5">Log in to comment and earn community XP.</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -289,7 +289,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 <div className="text-center py-10">
                     <MessageSquare className="w-8 h-8 text-white/35 mx-auto mb-3 opacity-30" />
                     <p className="text-white/45 font-bold text-[13px] uppercase tracking-wider">No comments yet</p>
-                    <p className="text-white/35 text-[12px] mt-1">Be the first to share your thoughts!</p>
+                    <p className="text-white/50 text-[12px] mt-1">Be the first to share your thoughts!</p>
                 </div>
             )}
         </div>
@@ -419,7 +419,7 @@ const CommentItem = memo(function CommentItem({
                                         value={replyContent}
                                         onChange={(e) => setReplyContent(e.target.value)}
                                         placeholder={`Reply to ${displayName}...`}
-                                        className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] p-3 pr-12 text-sm text-white focus:outline-none focus:border-[var(--accent)]/50 min-h-[60px] resize-y placeholder:text-white/35"
+                                        className="w-full bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] p-3 pr-12 text-sm text-white focus:outline-none focus:border-[var(--accent)]/50 min-h-[60px] resize-y placeholder:text-white/50"
                                         autoFocus
                                         required
                                     />
@@ -436,7 +436,7 @@ const CommentItem = memo(function CommentItem({
                                 <div className="flex justify-end mt-2">
                                     <button
                                         type="button"
-                                        className="text-xs text-white/35 hover:text-white"
+                                        className="text-xs text-white/50 hover:text-white"
                                         onClick={() => setReplyingTo(null)}
                                     >
                                         Cancel

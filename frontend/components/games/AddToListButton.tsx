@@ -110,11 +110,11 @@ export default function AddToListButton({ slug, gameName, className = "" }: Prop
 
                         <div className="max-h-[260px] overflow-y-auto">
                             {lists === undefined ? (
-                                <p className="px-3.5 py-4 text-center text-[12px] text-white/30">
+                                <p className="px-3.5 py-4 text-center text-[12px] text-white/50">
                                     <Loader2 className="w-4 h-4 mx-auto animate-spin" />
                                 </p>
                             ) : lists.length === 0 ? (
-                                <p className="px-3.5 py-4 text-[12px] text-white/35 leading-snug">
+                                <p className="px-3.5 py-4 text-[12px] text-white/50 leading-snug">
                                     No lists yet. Start one with this game in it.
                                 </p>
                             ) : (

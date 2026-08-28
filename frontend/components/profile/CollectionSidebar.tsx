@@ -37,7 +37,7 @@ export function RecentlyAdded({ username }: { username: string }) {
                     {[...Array(4)].map((_, i) => <div key={i} className="h-[52px] rounded-[10px] bg-white/[0.04] animate-pulse" />)}
                 </div>
             ) : entries.length === 0 ? (
-                <p className="py-6 text-center text-[12px] text-white/30">Nothing added yet.</p>
+                <p className="py-6 text-center text-[12px] text-white/50">Nothing added yet.</p>
             ) : (
                 <div className="flex flex-col gap-0.5">
                     {entries.map((e) => (
@@ -194,7 +194,7 @@ export function PlatformBreakdown({ data }: { data?: PlatformsGenres }) {
             bodyClassName="p-4"
         >
             {platforms.length === 0 ? (
-                <p className="py-4 text-center text-[12px] text-white/30">No platform data yet.</p>
+                <p className="py-4 text-center text-[12px] text-white/50">No platform data yet.</p>
             ) : (
                 <div className="space-y-3">
                     {platforms.map((p) => (

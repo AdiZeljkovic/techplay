@@ -22,7 +22,7 @@ export default function Gta6EntityDetail({ entity, sectionLabel, sectionPath, me
             <div className="relative bg-[var(--surface-1)] border-b border-white/[0.07]">
                 <div className="gta6-accent-line absolute bottom-0 left-0 right-0" />
                 <div className="max-w-[1100px] mx-auto px-4 xl:px-8 py-4">
-                    <nav className="flex items-center gap-1.5 text-[12px] text-white/35">
+                    <nav className="flex items-center gap-1.5 text-[12px] text-white/50">
                         <Link href="/gta6" className="hover:text-[var(--gta-pink)] transition-colors">GTA 6</Link>
                         <ChevronRight className="w-3.5 h-3.5" />
                         <Link href={sectionPath} className="hover:text-[var(--gta-pink)] transition-colors">{sectionLabel}</Link>
@@ -82,7 +82,7 @@ export default function Gta6EntityDetail({ entity, sectionLabel, sectionPath, me
                         {entity.description ? (
                             <p className="text-white/45 text-[15px] leading-relaxed whitespace-pre-line">{entity.description}</p>
                         ) : (
-                            <p className="text-white/35 text-[14px] italic">More details coming soon.</p>
+                            <p className="text-white/50 text-[14px] italic">More details coming soon.</p>
                         )}
 
                         <div className="mt-8">

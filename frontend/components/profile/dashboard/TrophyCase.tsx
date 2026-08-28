@@ -152,7 +152,7 @@ function Picker({
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder="Search your unlocks…"
-                        className="h-8 w-[200px] pl-8 pr-3 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                        className="h-8 w-[200px] pl-8 pr-3 rounded-[7px] bg-white/[0.04] border border-white/[0.08] text-[12px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
                     />
                 </div>
 
@@ -173,7 +173,7 @@ function Picker({
                     {[...Array(10)].map((_, i) => <div key={i} className="h-[64px] rounded-[8px] bg-white/[0.04] animate-pulse" />)}
                 </div>
             ) : visible.length === 0 ? (
-                <p className="py-6 text-center text-[12px] text-white/30">
+                <p className="py-6 text-center text-[12px] text-white/50">
                     {query ? "Nothing matches that." : "Unlock an achievement and it lands here."}
                 </p>
             ) : (

@@ -93,7 +93,7 @@ export default function NotificationPanel({ unreadCount, onCountRefresh, variant
                 <Loader2 className="w-5 h-5 animate-spin text-white/30" />
             </div>
         ) : notifications.length === 0 ? (
-            <div className="py-10 text-center text-[13px] text-white/30">
+            <div className="py-10 text-center text-[13px] text-white/50">
                 No notifications yet
             </div>
         ) : (

@@ -272,7 +272,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                 <div className="text-center max-w-[380px]">
                     <CalendarDays className="w-8 h-8 mx-auto mb-3 text-white/20" />
                     <p className="font-display text-[15px] font-bold text-white">The calendar is unavailable</p>
-                    <p className="mt-1.5 text-[12.5px] text-white/40 leading-snug">
+                    <p className="mt-1.5 text-[12.5px] text-white/55 leading-snug">
                         The release feed isn&apos;t answering right now. We keep the last good copy of every month,
                         so this only shows when we have never managed to load this one.
                     </p>
@@ -539,7 +539,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                             <div className="px-6 py-14 text-center">
                                 <CalendarDays className="w-7 h-7 mx-auto mb-3 text-white/15" />
                                 <p className="font-display text-[14px] font-bold text-white">Nothing matches</p>
-                                <p className="mt-1.5 text-[12px] text-white/40">
+                                <p className="mt-1.5 text-[12px] text-white/55">
                                     {platform || genre ? "Loosen a filter, or step to another month." : "No releases recorded for this month."}
                                 </p>
                             </div>

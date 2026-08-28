@@ -368,7 +368,7 @@ export default function LastDiscClient() {
                                 <p className="font-display text-[8.5px] font-black uppercase tracking-[0.16em] text-white/50">
                                     Latest signatures
                                 </p>
-                                <p className="mt-2 text-[12px] leading-relaxed text-white/40">
+                                <p className="mt-2 text-[12px] leading-relaxed text-white/55">
                                     {stats!.recent.map((s) => s.name).join(" · ")}
                                 </p>
                             </div>

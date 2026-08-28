@@ -63,7 +63,7 @@ export default function SignInWall({
                         Sign in <ChevronsRight className="w-4 h-4" />
                     </Link>
 
-                    <p className="mt-5 text-center text-[12.5px] text-white/40">
+                    <p className="mt-5 text-center text-[12.5px] text-white/55">
                         New player?{" "}
                         <Link href="/register" className="font-display font-black uppercase tracking-[0.1em] text-[var(--accent)] hover:brightness-125 transition-[filter]">
                             Create your account →

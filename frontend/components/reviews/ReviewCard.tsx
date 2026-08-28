@@ -98,7 +98,7 @@ export default memo(function ReviewCard({ review, index, basePath = "/reviews", 
                                     className={`w-4 h-4 ${i < Math.round(score / 2) ? "text-[var(--accent)] fill-[var(--accent)]" : "text-white/60 dark:text-white/12"}`}
                                 />
                             ))}
-                            <span className="text-[12px] font-bold text-white/35 ml-2">{score}/10</span>
+                            <span className="text-[12px] font-bold text-white/50 ml-2">{score}/10</span>
                         </div>
                     )}
                 </div>

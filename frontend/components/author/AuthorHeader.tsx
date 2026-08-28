@@ -77,7 +77,7 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
                         )}
 
                         {author.bio && (
-                            <p className="text-white/35 text-[13px] leading-relaxed max-w-2xl mb-4 line-clamp-3">
+                            <p className="text-white/50 text-[13px] leading-relaxed max-w-2xl mb-4 line-clamp-3">
                                 {author.bio}
                             </p>
                         )}

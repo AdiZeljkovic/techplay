@@ -231,7 +231,7 @@ export default function StudiosClient({
                         <Loader2 className="w-6 h-6 text-white/30 animate-spin" />
                     </div>
                 ) : studios.length === 0 ? (
-                    <p className="py-24 text-center text-[14px] text-white/40">
+                    <p className="py-24 text-center text-[14px] text-white/55">
                         No studios match “{debounced}”.
                     </p>
                 ) : (
@@ -335,7 +335,7 @@ function StudioTile({ studio }: { studio: StudioCard }) {
                             className="h-full w-full object-contain p-1.5"
                         />
                     ) : (
-                        <span className="font-display text-[15px] font-black text-white/30">
+                        <span className="font-display text-[15px] font-black text-white/50">
                             {initials(studio.name) || <Building2 className="h-5 w-5" />}
                         </span>
                     )}

@@ -64,7 +64,7 @@ export default function UpcomingReleasesWidget() {
         return (
             <div className="text-center py-4">
                 <CalendarClock className="w-6 h-6 text-white/20 mx-auto mb-2" />
-                <p className="text-[12px] text-white/30">No upcoming releases in your wishlist or backlog.</p>
+                <p className="text-[12px] text-white/50">No upcoming releases in your wishlist or backlog.</p>
                 <Link href="/calendar" className="text-[11px] font-bold text-[var(--accent)] hover:underline mt-1 block">
                     Browse Release Calendar →
                 </Link>

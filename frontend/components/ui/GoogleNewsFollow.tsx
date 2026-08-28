@@ -25,7 +25,7 @@ export default function GoogleNewsFollow() {
                 <p className="text-[13px] text-white font-bold leading-snug mb-0.5">
                     Add TechPlay.gg as a preferred source on Google
                 </p>
-                <p className="text-[12px] text-white/35 leading-snug group-hover:text-white/45 transition-colors duration-200">
+                <p className="text-[12px] text-white/50 leading-snug group-hover:text-white/70 transition-colors duration-200">
                     See more of our gaming news, reviews and guides when you search for the latest gaming topics.
                 </p>
             </div>

@@ -790,7 +790,7 @@ export default function ThreadClient({ initial }: { initial: ThreadData | null }
                                     ))}
                                 </div>
                             )}
-                            <div className="flex flex-wrap items-center gap-4 text-[12px] text-white/40">
+                            <div className="flex flex-wrap items-center gap-4 text-[12px] text-white/55">
                                 <span className="flex items-center gap-1" suppressHydrationWarning>
                                     <Clock className="w-4 h-4" />
                                     {formatDistanceToNow(new Date(thread.created_at), { addSuffix: true })}
@@ -985,8 +985,8 @@ export default function ThreadClient({ initial }: { initial: ThreadData | null }
                                     if (post.is_deleted) {
                                         return (
                                             <div key={post.id} className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-panel)] p-4 flex items-center justify-between">
-                                                <span className="text-sm text-white/30 italic">[This post was deleted]</span>
-                                                <span className="text-xs text-white/30">#{(currentPage - 1) * 15 + index + 2}</span>
+                                                <span className="text-sm text-white/50 italic">[This post was deleted]</span>
+                                                <span className="text-xs text-white/50">#{(currentPage - 1) * 15 + index + 2}</span>
                                             </div>
                                         );
                                     }
@@ -1063,12 +1063,12 @@ export default function ThreadClient({ initial }: { initial: ThreadData | null }
                                                 {/* Reply Content */}
                                                 <div className="flex-1 p-4">
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <span className="text-xs text-white/35" suppressHydrationWarning>
+                                                        <span className="text-xs text-white/50" suppressHydrationWarning>
                                                             {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                                                             {post.edited_at && <span className="ml-2 italic">(edited)</span>}
                                                         </span>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-white/35">#{(currentPage - 1) * 15 + index + 2}</span>
+                                                            <span className="text-xs text-white/50">#{(currentPage - 1) * 15 + index + 2}</span>
                                                             {user && !thread.is_locked && (
                                                                 <button
                                                                     onClick={() => quotePost(post.author?.username, post.content, post.id)}
@@ -1209,7 +1209,7 @@ export default function ThreadClient({ initial }: { initial: ThreadData | null }
                                             <Reply className="w-5 h-5 text-[var(--accent)]" />
                                             Post a Reply
                                         </h3>
-                                        <Link href="/forum/rules" className="text-xs text-white/35 hover:text-[var(--accent)] transition-colors flex items-center gap-1">
+                                        <Link href="/forum/rules" className="text-xs text-white/50 hover:text-[var(--accent)] transition-colors flex items-center gap-1">
                                             <Shield className="w-3 h-3" />
                                             Community Guidelines
                                         </Link>

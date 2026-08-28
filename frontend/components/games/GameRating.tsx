@@ -285,7 +285,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
                                     Cancel
                                 </button>
                                 {myReview.length > 0 && (
-                                    <span className="ml-auto text-xs text-white/35">{myReview.length}/1000</span>
+                                    <span className="ml-auto text-xs text-white/50">{myReview.length}/1000</span>
                                 )}
                             </div>
                             {isDraft && (
@@ -334,7 +334,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
                                 </div>
                                 <div className="min-w-0">
                                     <p className="font-display text-[13px] font-bold text-white truncate">{r.user?.name}</p>
-                                    <p className="text-xs text-white/35">{new Date(r.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</p>
+                                    <p className="text-xs text-white/50">{new Date(r.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</p>
                                 </div>
                                 <div className="ml-auto flex gap-0.5 shrink-0">
                                     {[1,2,3,4,5].map((s) => (
@@ -356,7 +356,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
             )}
 
             {!loading && reviews.length === 0 && (!aggregate || aggregate.count === 0) && (
-                <p className="py-1 text-center text-[12.5px] text-white/30">Nobody has rated this yet.</p>
+                <p className="py-1 text-center text-[12.5px] text-white/50">Nobody has rated this yet.</p>
             )}
             </div>
         </div>

@@ -93,7 +93,7 @@ export default function TasteMatch({ username, displayName }: { username: string
                     </p>
                     <p className="mt-2 flex items-baseline gap-1">
                         <span className="font-display text-[52px] font-black tabular-nums leading-none text-white">{score}</span>
-                        <span className="font-display text-[20px] font-black text-white/30">%</span>
+                        <span className="font-display text-[20px] font-black text-white/50">%</span>
                     </p>
                     <p className="mt-1.5 font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--accent-ink)]">
                         {data.verdict}

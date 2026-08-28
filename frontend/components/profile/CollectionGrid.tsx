@@ -808,7 +808,7 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                             onChange={(e) => setTerm(e.target.value)}
                             placeholder="Search this shelf…"
                             aria-label="Search your collection"
-                            className="w-full h-9 pl-9 pr-8 rounded-[8px] bg-white/[0.03] border border-white/[0.09] text-[12.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] transition-colors"
+                            className="w-full h-9 pl-9 pr-8 rounded-[8px] bg-white/[0.03] border border-white/[0.09] text-[12.5px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] transition-colors"
                         />
                         {term && (
                             <button
@@ -1020,7 +1020,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                                 value={term}
                                 onChange={(e) => setTerm(e.target.value)}
                                 placeholder="Search games…"
-                                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-[8px] pl-9 pr-3 h-10 text-[13px] text-white placeholder:text-white/30 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
+                                className="w-full bg-white/[0.04] border border-white/[0.1] rounded-[8px] pl-9 pr-3 h-10 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
                             />
                         </div>
                         <span className="shrink-0">
@@ -1049,7 +1049,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                             value={platform}
                             onChange={(e) => setPlatform(e.target.value)}
                             placeholder="Ubisoft Connect, Battle.net, Switch…"
-                            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-[8px] px-3 h-9 text-[12.5px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
+                            className="w-full bg-white/[0.04] border border-white/[0.1] rounded-[8px] px-3 h-9 text-[12.5px] text-white placeholder:text-white/45 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
                         />
                         <datalist id="tp-launchers">
                             {UNIMPORTABLE_LAUNCHERS.map((l) => <option key={l} value={l} />)}
@@ -1058,11 +1058,11 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
 
                     <div className="max-h-[45vh] overflow-y-auto -mx-1 px-1">
                         {term.trim().length < 2 ? (
-                            <p className="text-[12px] text-white/30 text-center py-8">Type at least 2 characters to search.</p>
+                            <p className="text-[12px] text-white/50 text-center py-8">Type at least 2 characters to search.</p>
                         ) : isLoading ? (
                             <div className="flex items-center justify-center py-8 text-white/40"><Loader2 className="w-5 h-5 animate-spin" /></div>
                         ) : results.length === 0 ? (
-                            <p className="text-[12px] text-white/30 text-center py-8">No games found.</p>
+                            <p className="text-[12px] text-white/50 text-center py-8">No games found.</p>
                         ) : (
                             <ul className="space-y-1.5">
                                 {results.map((g: any) => (

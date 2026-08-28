@@ -345,7 +345,7 @@ export default function CheckoutPage() {
                                 </div>
                             )}
 
-                            <div className="mt-6 flex items-start gap-2 text-xs text-white/35">
+                            <div className="mt-6 flex items-start gap-2 text-xs text-white/50">
                                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                                 <p>By placing an order, you agree to our Terms of Service and Privacy Policy.</p>
                             </div>

@@ -109,7 +109,7 @@ export default function ProductDetailPage() {
 
                         <div className="flex items-center gap-6 mb-8">
                             <div className="text-4xl font-bold text-[var(--accent)]">
-                                {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })} <span className="text-lg text-white/35">KM</span>
+                                {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })} <span className="text-lg text-white/50">KM</span>
                             </div>
                             <div className={`px-4 py-1.5 rounded-full text-sm font-bold border ${product.stock > 0 ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
                                 {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
@@ -125,7 +125,7 @@ export default function ProductDetailPage() {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={product.stock === 0}
-                                className="btn-command flex-1 py-4 px-8 font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-2)] disabled:text-white/35 disabled:cursor-not-allowed"
+                                className="btn-command flex-1 py-4 px-8 font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-2)] disabled:text-white/50 disabled:cursor-not-allowed"
                             >
                                 <ShoppingCart className="w-6 h-6" /> Add to Cart
                             </button>

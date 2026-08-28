@@ -107,7 +107,7 @@ export default function ArticleFooter({
                                     {author.display_name || author.username}
                                 </Link>
                                 {author.bio && (
-                                    <p className="text-white/35 text-[13px] leading-relaxed mt-1 line-clamp-2">{author.bio}</p>
+                                    <p className="text-white/50 text-[13px] leading-relaxed mt-1 line-clamp-2">{author.bio}</p>
                                 )}
                                 <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="mt-2 text-[11px] font-bold uppercase tracking-widest text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors flex items-center gap-1 group w-max">
                                     View Author Page <span className="group-hover:translate-x-0.5 transition-transform inline-block">→</span>

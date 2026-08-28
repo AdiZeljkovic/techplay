@@ -67,7 +67,7 @@ export default function Gta6NewsletterCTA() {
                                 onChange={e => setEmail(e.target.value)}
                                 placeholder="Enter your email"
                                 disabled={status === "loading"}
-                                className="flex-1 bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] px-5 h-[50px] text-white placeholder:text-white/35 text-[14px] focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
+                                className="flex-1 bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] px-5 h-[50px] text-white placeholder:text-white/50 text-[14px] focus:outline-none focus:border-[var(--gta-pink)]/50 transition-colors"
                             />
                             <button
                                 type="submit"

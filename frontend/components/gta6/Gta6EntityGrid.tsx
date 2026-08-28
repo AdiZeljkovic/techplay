@@ -140,7 +140,7 @@ export default function Gta6EntityGrid({
                 <div className="text-center py-20">
                     <Package className="w-10 h-10 mx-auto mb-4 text-[#2A2F38]" />
                     <p className="text-white font-bold text-[16px] mb-1">{emptyTitle}</p>
-                    <p className="text-white/35 text-[13px] max-w-md mx-auto">{emptyHint}</p>
+                    <p className="text-white/50 text-[13px] max-w-md mx-auto">{emptyHint}</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">

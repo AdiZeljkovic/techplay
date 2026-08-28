@@ -314,7 +314,7 @@ export default function Select({
                     })}
 
                     {options.length === 0 && (
-                        <p className="px-2.5 py-3 text-[12.5px] text-white/30">Nothing to choose from.</p>
+                        <p className="px-2.5 py-3 text-[12.5px] text-white/50">Nothing to choose from.</p>
                     )}
                 </div>,
                 document.body,
