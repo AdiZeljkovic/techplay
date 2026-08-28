@@ -97,7 +97,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         title,
         description,
         alternates: { canonical: url },
-        robots: worthIndexing(series) ? ROBOTS_INDEX : ROBOTS_NOINDEX,
+        /*
+         * Below the bar: not indexed, but still followed.
+         *
+         * ROBOTS_NOINDEX carries nofollow, which would have made this page a
+         * dead end — and the whole reason a thin series still renders is that
+         * it links into the catalogue. Same directive the genre facets use
+         * when they come up empty.
+         */
+        robots: worthIndexing(series) ? ROBOTS_INDEX : { index: false, follow: true },
         openGraph: { title: `${title} | TechPlay`, description, url, type: "website", siteName: "TechPlay" },
         twitter: { card: "summary_large_image", title: `${title} | TechPlay`, description },
     };
