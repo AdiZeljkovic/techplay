@@ -14,9 +14,11 @@ use App\Models\Rank;
  *
  * Rather than change a hundred controllers to return their rewards, the
  * services that award them drop a line here and one middleware attaches the
- * lot to whatever JSON is going back. Request-scoped: a singleton in Laravel's
- * container lives and dies with the request, so there is no cross-request
- * bleed and nothing to clear.
+ * lot to whatever JSON is going back.
+ *
+ * Bound with `scoped`, not `singleton` — see AppServiceProvider::register.
+ * Under Octane a singleton outlives the request, and this one would then hand
+ * a reader everything the worker had paid out to everybody else.
  */
 class RewardLedger
 {

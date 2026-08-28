@@ -336,17 +336,17 @@ CLAUDE.md: 142.110 · docs/07: „200.000 istorijskih" · memorija: ~187,7k · b
 
 ## REDOSLIJED KOJI PREDLAŽEM (ništa nije dirano — ovo je lista za odluku)
 
-### P0 — šteti već sada, popravke su male
-| | Nalaz | Popravka |
-|---|---|---|
-| B1 | Dupla registracija ArticleObservera (dupli bounty/Discord/notifikacije na svakoj objavi) | obrisati 1 red + bounty referenca `article:{id}:published` |
-| B-C1 | RewardLedger singleton pod Octane-om (cross-user curenje nagrada) | `singleton()` → `scoped()` + reset poslije attach |
-| B2 | Zakazane objave bez ikakvog fanouta | update po modelu umjesto bulk; obrisati mrtvi fallback |
-| B14 | Draft/zakazani guide-ovi javni | `where('status','published')` na index + show |
-| B3 | Dva sistema prazne ad brojače (brojke kampanja klize) | ukloniti `ads:sync-metrics` iz schedulera |
-| B4 | Dobitnici giveawaya ne saznaju da su dobili (mail-only) | dodati `database` kanal na 3 notifikacije |
-| C1 | Prva narudžba u adminu = 500 (v5 klase + refunded match) | migrirati imports + default grana — prije paljenja shopa |
-| B5 | `push_and_deploy.ps1` zove stari deploy.sh (root build) | retarget na `techplay-deploy.sh` (1 red) |
+### P0 — šteti već sada, popravke su male → **SVE URAĐENO 29.08.2026** (detalji na kraju dokumenta)
+| | Nalaz | Popravka | |
+|---|---|---|---|
+| B1 | Dupla registracija ArticleObservera (dupli bounty/Discord/notifikacije na svakoj objavi) | jedno mjesto registracije + bounty referenca `article:{id}:published` | ✅ |
+| B-C1 | RewardLedger singleton pod Octane-om (cross-user curenje nagrada) | `singleton()` → `scoped()`, uz provjeru da ga Octane i queue stvarno prazne | ✅ |
+| B2 | Zakazane objave bez ikakvog fanouta | update po modelu umjesto bulk; mrtvi fallback obrisan | ✅ |
+| B14 | Draft/zakazani guide-ovi javni | `scopePublished()` + popravljen keš i revalidacija pri povlačenju | ✅ |
+| B3 | Dva sistema prazne ad brojače (brojke kampanja klize) | `ads:sync-metrics` uklonjen iz schedulera i obrisan | ✅ |
+| B4 | Dobitnici giveawaya ne saznaju da su dobili (mail-only) | `database` kanal na 3 notifikacije + popravljen ugovor payloada | ✅ |
+| C1 | Prva narudžba u adminu = 500 (v5 klase + refunded match) | `Filament\Actions\*` + `default` grana + filter | ✅ |
+| B5 | `push_and_deploy.ps1` zove stari deploy.sh (root build) | retarget + stari skript penzionisan + vraćene 5 zaštita frontend deploya | ✅ |
 
 ### P1 — ove sedmice
 Admin: ReleaseCalendar badge keširati (C2) · `pending_review`→`ready_for_review` (C3) · `Closure $set` TypeError (C4) · `filament-jobs-monitor:prune` u scheduler (C5). Backend: guide keš v2/v3 + forgetListings (B15) · gameThreads ključ po publici (B16) · `shouldRenderJsonWhen` (B17) · Blizzard pool `Throwable` (B7) · Socialite guzzle timeouti (B8) · broadcasts na `high` queue (B10) · `failed()` na 5 sync jobova + odglaviti `syncing` (B11). Frontend: fallback naslovnice da ne objavi prazno (D1) · nginx purge za /games pri izmjeni (D2) · kontakt forma kroz serverHeaders (D5). Server: scheduler + SEO cron van roota (A2.1) · sutra provjeriti logrotate (A2.2) · Redis swappiness (A6.1) · **restart zbog kernela — sada čeka -138** (A9). Bot: interni API URL umjesto Cloudflarea (E1) · deploy korak za bota u skripti (E3) · moderacija na word-boundary (E4) · buffy-avatar.png ili maknuti referencu (E6).
@@ -356,6 +356,65 @@ IndexNow → jedan job, jedan ključ (B9) · sitemap: `indexable` kolona + keyse
 
 ### P3 — higijena
 docs/07 prepisati (F-drift) · CLAUDE.md osvježiti (brojevi, jobs lista, middleware.ts, TriviaService/ChallengeService, ImageService) · root PM2 ugasiti (A8) · /var/www ostaci (A7.1) · open-vm-tools/vgauth/apport disable (A8) · HOME za octane (A4.1) · reverb.log u logrotate (A2.3) · netdata auto-update odluka (A2.4) · error.tsx/loading.tsx raspored (D9) · SWR fetcher + timeAgo + modali konsolidacija (D7) · ApiResponse trait dosljednost ili ukidanje pravila (B22).
+
+---
+
+# ŠTA JE URAĐENO — 29.08.2026 (P0)
+
+Sve ispod je izmijenjeno, testirano lokalno (puni suite) i deployovano. Redoslijed je iz P0 liste.
+
+### 1. Objava se više ne dešava dvaput — i plaća se jednom
+
+`ArticleObserver` je bio registrovan na dva mjesta: u `AppServiceProvider` i u `Article::booted()`. Laravel **ne deduplira** — dodaje slušaoca po registraciji. Registracija u modelu je uklonjena; `ArticleVersionObserver`, koji je živio samo tamo, preseljen je u provider, pa sada postoji **jedno** mjesto gdje se observeri registruju (što je i pravilo iz CLAUDE.md, samo ga je ovaj model kršio).
+
+Novac je zaštićen zasebno, jednim slojem niže: `rewardAuthor()` sada koristi `BountyService::alreadyAwarded()` s referencom `article:{id}:published` prije nego išta isplati — a referenca stoji i na samoj isplati, pa je provjera pod istim lockom kao i upis. To pokriva i drugi otvoren put koji dupla registracija nije: **re-publish**. `wasChanged('status')` je tačno i kad se članak povuče na ispravku pa vrati, pa je povlačenje plaćalo autora ponovo.
+
+Zašto referenca a ne samo brisanje duple registracije: quest korake i notifikacije ne štiti novčani lock, pa se kapija čita **prije** svega — što je tačno ono što docblock `BountyService::alreadyAwarded()` i traži.
+
+**Test:** `tests/Feature/PublishHappensOnceTest.php` (5 testova). Provjereno da ima zube — s vraćenom duplom registracijom pada s „Failed asserting that 2 is identical to 1". Isplate su i tada prošle, jer ih štiti referenca; to je namjerno slojevanje.
+
+### 2. Zakazano objavljivanje ide kroz observere
+
+`articles:publish-scheduled` je flipovao status bulk upitom (`whereIn()->update()`), koji ne okida događaje modela — pa se ništa nije desilo: bez keša, ISR-a, sitemapa, IndexNow-a, Discorda, notifikacija i isplate. Sada se objavljuje red po red kroz model. Ručna revalidacija koja je stajala umjesto observera je obrisana: čitala je `services.revalidate.token`/`url`, a jedini ključ koji postoji je `revalidate.secret_token` — oba su bila `null`, pa se blok nikad nije izvršio, tiho. Jedan članak koji odbije da se snimi sada se loguje i preskače (komanda ide svake minute; jedan loš red ne smije zaustaviti ostatak).
+
+### 3. RewardLedger više ne curi između korisnika
+
+`singleton()` → `scoped()`. Prije nego što sam promijenio, provjerio sam da to stvarno drži na oba mjesta gdje je bitno: Octane prazni scoped bindinge kroz `FlushTemporaryContainerInstances` na `RequestTerminated` (u vendor default configu — vlastiti `config/octane.php` ne postoji, provjereno i na serveru), a queue worker kroz `forgetScopedInstances()` iz `QueueServiceProvider`. Bez te provjere popravka bi samo izgledala ispravno.
+
+### 4. Draft guide-ovi više nisu javni
+
+`Guide::scopePublished()` je sada jedina definicija „šta čitalac smije vidjeti" (status + `published_at` koji nije u budućnosti), primijenjena na `index`, `show` i brojač pregleda. Uz to su popravljene dvije stvari bez kojih filter ništa ne znači:
+
+- **Keš:** `GuideObserver` je brisao `guides.index.v2.*` dok kontroler piše `v3` — i to petljom po 5 stranica × 4 težine s praznom pretragom, što ionako ne može pogoditi filtriranu varijantu. Sada ide kroz `CacheService::articleShowKey()` i `forgetListings('guides')`, tj. kroz registar koji kontroler već popunjava.
+- **Front:** revalidacija je bila zaključana iza `status === 'published'`, pa bi povučeni guide i dalje živio na techplay.gg. Sada se javlja i kad guide **izlazi** iz objave.
+
+Mrtva mašinerija u `Guide::booted()` (brisala je `guide.show.{slug}` i `guides.index.page_N…` — ključeve koje niko ne piše) je uklonjena.
+
+**Živa provjera prije izmjene:** sva 4 guide-a na produkciji su `published` s datumom u prošlosti, pa filter **ne skriva ništa što je danas vidljivo** — izloženost je bila latentna.
+
+**Test:** `tests/Feature/UnpublishedGuidesStayPrivateTest.php` (7 testova, uklj. povlačenje već keširanog guide-a).
+
+### 5. Ad brojače prazni samo jedan sistem
+
+`ads:sync-metrics` je uklonjen iz schedulera **i obrisan**. Radio je identičan posao kao `FlushViewCounters`, samo neatomski (GET → increment → DEL kao tri koraka umjesto GETDEL) — klik koji stigne između čitanja i brisanja se gubio, a flush u istom prozoru bi se brojao dvaput. Komanda je obrisana a ne samo odvezana jer bi svako ručno pokretanje i dalje uništavalo podatke; funkcija nije izgubljena — `FlushViewCounters` je radi svakih 5 minuta.
+
+### 6. Dobitnici giveawaya, podsjetnici i digest stižu i kad pošta ne radi
+
+`GiveawayWinnerNotification`, `GiveawayReminderNotification` i `WeeklyDigestNotification` sada idu na `['database', 'mail']`. Payload je pisan po **stvarnom** ugovoru koji `NotificationController::present()` čita (`type/title/message/link`) — što je usput otkrilo da `GameReleaseNotification` piše `url` i `image`, ključeve koje presenter ne gleda, pa je ta notifikacija godinama stizala u zvono bez linka i bez slike. Popravljeno.
+
+### 7. Admin narudžbe više ne pucaju
+
+`OrderItemsRelationManager` je koristio `Filament\Tables\Actions\*` — klase koje u instaliranom Filamentu **ne postoje** (provjereno u vendor stablu: taj direktorij drži samo `HeaderActionsPosition.php`). Prebačeno na `Filament\Actions\*`. Metode `->actions()`/`->bulkActions()` su ostavljene jer u ovoj verziji postoje kao alijasi i koristi ih još 29 resursa. Badge statusa je dobio `default` granu i `refunded` (bez defaulta `match` **baca**, pa bi prva refundirana narudžba oborila cijelu listu), a `refunded` je dodan i u filter.
+
+### 8. Deploy: jedan put, i to onaj ispravan
+
+`push_and_deploy.ps1` je zvao stari `deploy.sh`. Sada zove `/usr/local/bin/techplay-deploy.sh`. Stari skript je penzionisan — ne deployuje više ništa, nego ispiše šta treba pokrenuti (istorija je u gitu).
+
+**Usput otkriveno, i popravljeno:** `techplay-deploy.sh` je od jučer bio *siromašniji* od onoga što je zamijenio. Nedostajalo mu je:
+- **build admin teme** (`viteTheme` čita kompajliran fajl; ništa drugo ga ne gradi) — svaka izmjena izgleda panela bi se deployovala kao stari izgled, bez ijedne greške;
+- **pet zaštita iz `deploy_frontend.sh`**: arhiva chunkova (ChunkLoadError za otvorene tabove), brisanje `fetch-cache` (bez njega admin izmjene ne stižu — dva deploya 17.08. su otišla uzalud), pražnjenje nginx keša za `/games/` (**to je nalaz D2 iz ove analize** — mehanizam je postojao, samo ga dokumentovani put više nije zvao), Cloudflare purge, i provjera da svaki asset koji stranice traže zaista postoji.
+
+Frontend pola sada delegira na `deploy_frontend.sh`, koji je dobio `run_as_owner` — build i pm2 idu kao vlasnik stabla (`techplay`), a nginx i Cloudflare token ostaju rootu. Referenca je vlasnik direktorija, isti obrazac koji taj fajl već koristi na jednom mjestu, pa ostaje tačan i ako se vlasništvo opet promijeni.
 
 ---
 

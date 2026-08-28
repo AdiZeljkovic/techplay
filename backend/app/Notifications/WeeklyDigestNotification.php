@@ -22,9 +22,40 @@ class WeeklyDigestNotification extends Notification implements ShouldQueue
         public ?array $season,         // ['name','days_remaining'] | null
     ) {}
 
+    /**
+     * A digest that can only arrive by mail does not arrive at all here — the
+     * mail host has no DNS record, so the Friday run has been sending nothing
+     * for weeks while reporting success. The bell version is a summary line
+     * rather than the whole letter; it is a nudge back to the profile, and the
+     * profile is where all of it already lives.
+     */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        $parts = [];
+
+        if ($this->streakDays > 0) {
+            $parts[] = "{$this->streakDays}-day streak";
+        }
+
+        if ($this->articles !== []) {
+            $parts[] = count($this->articles).' new for your games';
+        }
+
+        if ($this->upcoming !== []) {
+            $parts[] = count($this->upcoming).' releasing soon';
+        }
+
+        return [
+            'type' => 'weekly_digest',
+            'title' => 'Your week on TechPlay',
+            'message' => $parts === [] ? 'Claim today’s bounty to start a streak.' : implode(' · ', $parts),
+            'link' => '/profile/'.$notifiable->username,
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

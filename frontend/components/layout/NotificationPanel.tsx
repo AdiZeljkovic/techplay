@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import useSWR, { mutate } from "swr";
 import axios from "@/lib/axios";
 import Link from "next/link";
-import { Bell, Trophy, Users, MessageSquare, X, CheckCheck, Loader2 } from "lucide-react";
+import { Bell, Trophy, Users, MessageSquare, X, CheckCheck, Loader2, Gift, Clock, Gamepad2 } from "lucide-react";
 import { getStorageUrl } from "@/lib/imageUrl";
 import { formatDistanceToNow } from "date-fns";
 import Sheet from "@/components/ui/Sheet";
@@ -28,6 +28,13 @@ function typeIcon(type: string) {
         case "achievement": return <Trophy className="w-4 h-4 text-yellow-400" />;
         case "friend_request": return <Users className="w-4 h-4 text-blue-400" />;
         case "forum_reply": return <MessageSquare className="w-4 h-4 text-green-400" />;
+        // Giveaways and the digest reach the bell as of 29 Aug 2026. They were
+        // mail-only until then, and mail does not leave this server — so
+        // whoever won something was never told. Winning deserves better than
+        // the same grey bell as everything else.
+        case "giveaway_won": return <Gift className="w-4 h-4 text-yellow-400" />;
+        case "giveaway_ending": return <Clock className="w-4 h-4 text-orange-400" />;
+        case "game_release": return <Gamepad2 className="w-4 h-4 text-purple-400" />;
         default: return <Bell className="w-4 h-4 text-white/50" />;
     }
 }

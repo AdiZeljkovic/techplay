@@ -30,18 +30,23 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// PERFORMANCE: Flush Redis view counters to database every 5 minutes
+// PERFORMANCE: Flush Redis view counters to database every 5 minutes.
+//
+// Ad views and clicks ride along in here (`views:ad:*`, `clicks:ad:*`). They
+// used to be drained by `ads:sync-metrics` on the hour as well, and the two
+// raced: this job takes a counter with GETDEL, while that command read it,
+// incremented the row, and deleted the key as three separate steps. A click
+// landing between its read and its delete was destroyed; a flush landing in the
+// same window was counted twice. Campaign billing numbers drifted every hour,
+// in both directions. The command has been removed — GETDEL is the whole point.
 Schedule::job(new FlushViewCounters)->everyFiveMinutes()->withoutOverlapping(10);
 
-// MONETIZATION: Sync ad metrics from Redis to database every hour
 // Proof of life for the cron line itself. Without this nothing inside the app
 // can tell whether `* * * * * php artisan schedule:run` was ever installed —
 // and if it was not, every scheduled task simply never happens, silently.
 Schedule::call(function () {
     Cache::put('scheduler:heartbeat', now()->toIso8601String(), 3600);
 })->everyMinute()->name('scheduler-heartbeat')->withoutOverlapping();
-
-Schedule::command('ads:sync-metrics')->hourly()->onFailure($reportFailure('ads:sync-metrics'));
 
 // GIVEAWAYS: Send reminder emails for giveaways ending in 24 hours (runs every 6 hours)
 Schedule::job(new SendGiveawayReminders)->everySixHours();

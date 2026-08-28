@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Cache;
 
 class Guide extends Model
 {
@@ -50,34 +49,24 @@ class Guide extends Model
     }
 
     /**
-     * The "booted" method of the model.
+     * What a reader is allowed to see.
+     *
+     * `status` defaults to `draft`, and the admin also parks work as
+     * `ready_for_review`, so a public query that does not say this returns both.
+     * Every other reader of this table already draws the line — the newsroom,
+     * the sitemap, the author page — and the public API was the one that did
+     * not, which is how unfinished guides were reachable at /guides and
+     * /guides/{slug}.
+     *
+     * A `published_at` in the future is treated as not yet published, so a date
+     * set ahead of time behaves the way whoever set it expected.
      */
-    protected static function booted(): void
+    public function scopePublished($query)
     {
-        static::saved(function ($guide) {
-            self::clearCache($guide);
-        });
-
-        static::deleted(function ($guide) {
-            self::clearCache($guide);
-        });
-    }
-
-    protected static function clearCache($guide)
-    {
-        // Clear specific guide cache
-        Cache::forget("guide.show.{$guide->slug}");
-
-        // Clear pagination cache for common combinations
-        $difficulties = ['all', 'beginner', 'intermediate', 'advanced'];
-        $emptySearchHash = md5('');
-
-        foreach ($difficulties as $diff) {
-            // Clear first 5 pages for each difficulty
-            for ($i = 1; $i <= 5; $i++) {
-                Cache::forget("guides.index.page_{$i}.diff_{$diff}.search_{$emptySearchHash}");
-            }
-        }
+        return $query->where('status', 'published')
+            ->where(function ($q) {
+                $q->whereNull('published_at')->orWhere('published_at', '<=', now());
+            });
     }
 
     public function game()

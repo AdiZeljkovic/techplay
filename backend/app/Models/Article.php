@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Observers\ArticleObserver;
-use App\Observers\ArticleVersionObserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -102,11 +100,5 @@ class Article extends Model
     public function versions()
     {
         return $this->morphMany(ContentVersion::class, 'versionable')->latest();
-    }
-
-    protected static function booted(): void
-    {
-        static::observe(ArticleVersionObserver::class);
-        static::observe(ArticleObserver::class);
     }
 }

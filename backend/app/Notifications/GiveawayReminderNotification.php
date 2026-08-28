@@ -17,11 +17,24 @@ class GiveawayReminderNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * Get the notification's delivery channels.
+     * Mail cannot leave this server, so a reminder that only went by mail was
+     * not a reminder. The bell reaches the entrants who are already on the site,
+     * which is where they would go to add points anyway.
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        return [
+            'type' => 'giveaway_ending',
+            'title' => 'Ending soon: '.$this->giveaway->title,
+            'message' => $this->giveaway->prize_name.' — last chance to add points.',
+            'link' => '/giveaway/'.$this->giveaway->slug,
+            'giveaway_id' => $this->giveaway->id,
+        ];
     }
 
     /**
@@ -41,17 +54,5 @@ class GiveawayReminderNotification extends Notification implements ShouldQueue
             ->action('View Giveaway', $this->giveaway->getPublicUrl())
             ->line('Good luck! 🍀')
             ->salutation('Best regards, The TechPlay Team');
-    }
-
-    /**
-     * Get the array representation of the notification.
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            'giveaway_id' => $this->giveaway->id,
-            'giveaway_slug' => $this->giveaway->slug,
-            'prize_name' => $this->giveaway->prize_name,
-        ];
     }
 }

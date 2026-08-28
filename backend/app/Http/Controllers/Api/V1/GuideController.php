@@ -33,6 +33,7 @@ class GuideController extends Controller
             // plus its SEO block — 67 KB for thirteen cards that show a title,
             // an image, an excerpt and a difficulty.
             $query = Guide::query()
+                ->published()
                 ->select([
                     'id', 'author_id', 'game_id', 'title', 'slug', 'excerpt',
                     'featured_image_url', 'difficulty', 'status', 'views',
@@ -66,7 +67,7 @@ class GuideController extends Controller
         // cache hits — which serialises the whole route on one row lock the
         // moment a story goes viral.
         try {
-            $viewId = Guide::where('slug', $slug)->value('id');
+            $viewId = Guide::published()->where('slug', $slug)->value('id');
             if ($viewId) {
                 Redis::incr('views:guide:'.$viewId);
             }
@@ -76,7 +77,8 @@ class GuideController extends Controller
 
         // Cache the Guide data itself
         $guide = Cache::remember(CacheService::articleShowKey('guide', $slug), CacheService::TTL_LONG, function () use ($slug) {
-            return Guide::where('slug', $slug)
+            return Guide::published()
+                ->where('slug', $slug)
                 ->with(['author:id,username,display_name,avatar_url,bio', 'game:id,slug,name,cover_url,released,rating,genres,platforms,critic_scores'])
                 ->withCount([
                     'votes as helpful_count' => function ($query) {
@@ -139,7 +141,7 @@ class GuideController extends Controller
             $userVote = (bool) $validated['is_helpful'];
         }
 
-        Cache::forget("guide.show.v3.{$slug}");
+        Cache::forget(CacheService::articleShowKey('guide', $slug));
 
         return $this->success([
             'user_vote' => $userVote,

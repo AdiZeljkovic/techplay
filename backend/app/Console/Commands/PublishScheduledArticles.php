@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\Article;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PublishScheduledArticles extends Command
@@ -13,48 +12,56 @@ class PublishScheduledArticles extends Command
 
     protected $description = 'Publish articles scheduled for release at or before now';
 
+    /**
+     * Publish one at a time, through the model.
+     *
+     * This was a single `whereIn(...)->update()`. A query-builder update fires
+     * no model events, so a scheduled article flipped to `published` in the
+     * database and nothing else happened: no cache cleared, no ISR purge, no
+     * news sitemap entry, no IndexNow ping, no Discord announcement, no
+     * notification to anyone tracking the game, no payout to the author. It
+     * reached readers whenever a listing TTL happened to lapse.
+     *
+     * The hand-rolled revalidation that stood in for the observers could never
+     * have run either: it read `services.revalidate.token` and
+     * `services.revalidate.url`, and the only key that exists is
+     * `revalidate.secret_token`. Both resolved to null, so the block was
+     * skipped in silence — and what it would have sent was a path purge, which
+     * Next 16 ignores on a dynamic route.
+     *
+     * A row that refuses to save is logged and stepped over. This runs every
+     * minute; one article with a bad payload must not hold back the rest.
+     */
     public function handle(): void
     {
         $articles = Article::where('status', 'scheduled')
             ->where('published_at', '<=', now())
+            ->with('category')
             ->get();
 
         if ($articles->isEmpty()) {
             return;
         }
 
-        $ids = $articles->pluck('id')->toArray();
+        $published = [];
 
-        Article::whereIn('id', $ids)->update(['status' => 'published']);
-
-        Log::info('PublishScheduledArticles: published '.count($ids).' articles', ['ids' => $ids]);
-
-        // Trigger ISR revalidation for each published article
-        $revalidateToken = config('services.revalidate.token');
-        $revalidateUrl = config('services.revalidate.url');
-
-        if ($revalidateToken && $revalidateUrl) {
-            foreach ($articles as $article) {
-                $paths = ["/news/{$article->slug}"];
-
-                if ($article->category) {
-                    if ($article->category->type === 'reviews') {
-                        $paths = ["/reviews/{$article->slug}"];
-                    } elseif (in_array($article->category->type, ['tech', 'hardware'])) {
-                        $paths = ["/hardware/{$article->slug}"];
-                    }
-                }
-
-                foreach ($paths as $path) {
-                    try {
-                        Http::withToken($revalidateToken)->post($revalidateUrl, ['path' => $path]);
-                    } catch (\Throwable $e) {
-                        Log::warning("Failed to revalidate {$path}: ".$e->getMessage());
-                    }
-                }
+        foreach ($articles as $article) {
+            try {
+                $article->update(['status' => 'published']);
+                $published[] = $article->id;
+            } catch (\Throwable $e) {
+                Log::error('PublishScheduledArticles: article refused to publish', [
+                    'id' => $article->id,
+                    'slug' => $article->slug,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
-        $this->info("Published {$articles->count()} scheduled article(s).");
+        if ($published !== []) {
+            Log::info('PublishScheduledArticles: published '.count($published).' articles', ['ids' => $published]);
+        }
+
+        $this->info('Published '.count($published).' scheduled article(s).');
     }
 }

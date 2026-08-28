@@ -19,11 +19,28 @@ class GiveawayWinnerNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * Get the notification's delivery channels.
+     * The bell first, the inbox second.
+     *
+     * This was mail-only. Outbound mail from this site does not work — the host
+     * in MAIL_HOST has no DNS record — so telling somebody they had won was a
+     * message written into a socket that never opened, and there was no second
+     * channel to notice. Whoever won anything since then has not been told.
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        return [
+            'type' => 'giveaway_won',
+            'title' => 'You won: '.$this->giveaway->title,
+            'message' => $this->prizeName().' — we will contact you about claiming it.',
+            'link' => '/giveaway/'.$this->giveaway->slug,
+            'giveaway_id' => $this->giveaway->id,
+            'tier_id' => $this->tier?->id,
+        ];
     }
 
     /**
@@ -31,9 +48,7 @@ class GiveawayWinnerNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $prizeName = $this->tier
-            ? $this->tier->tier_name.' - '.$this->tier->prize_description
-            : $this->giveaway->prize_name;
+        $prizeName = $this->prizeName();
 
         return (new MailMessage)
             ->subject('🎉 YOU WON: '.$this->giveaway->title)
@@ -50,17 +65,11 @@ class GiveawayWinnerNotification extends Notification implements ShouldQueue
             ->salutation('Congratulations again, The TechPlay Team');
     }
 
-    /**
-     * Get the array representation of the notification.
-     */
-    public function toArray(object $notifiable): array
+    /** A tiered giveaway names the prize on the tier; a plain one on itself. */
+    private function prizeName(): string
     {
-        return [
-            'giveaway_id' => $this->giveaway->id,
-            'giveaway_slug' => $this->giveaway->slug,
-            'prize_name' => $this->giveaway->prize_name,
-            'tier_id' => $this->tier?->id,
-            'tier_name' => $this->tier?->tier_name,
-        ];
+        return $this->tier
+            ? $this->tier->tier_name.' - '.$this->tier->prize_description
+            : $this->giveaway->prize_name;
     }
 }

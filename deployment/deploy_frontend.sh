@@ -16,6 +16,25 @@ ARCHIVE="$FRONT/.static-archive"
 
 cd "$FRONT"
 
+# Build and pm2 belong to whoever owns this tree; nginx and the Cloudflare token
+# belong to root. Since 28.08.2026 those are two different users, so each step
+# says which one it needs instead of assuming the invoker is right for all of
+# them. A `next build` run as root leaves a root-owned .next in a techplay tree,
+# and the failure that causes is silent until the next restart.
+#
+# The directory's own owner is the reference, the same way step 3a already does
+# it — nothing to configure, and it stays correct if ownership changes again.
+run_as_owner() {
+    local owner
+    owner=$(stat -c '%U' "$FRONT" 2>/dev/null || echo "")
+
+    if [ -z "$owner" ] || [ "$(id -un)" = "$owner" ]; then
+        bash -lc "cd '$FRONT' && $1"
+    else
+        sudo -u "$owner" -H bash -lc "cd '$FRONT' && $1"
+    fi
+}
+
 # 1. Preserve the current build's chunks before they are clobbered.
 if [ -d .next/static ]; then
     mkdir -p "$ARCHIVE"
@@ -30,7 +49,8 @@ fi
 # untouched by this.
 rm -rf .next/cache/fetch-cache
 
-npm run build
+run_as_owner "npm install --no-audit --no-fund"
+run_as_owner "npm run build"
 
 # 3. Resurrect prior chunks alongside the new ones (-n: never overwrite new).
 if [ -d "$ARCHIVE" ]; then
@@ -57,8 +77,9 @@ chmod -R u+rwX,go+rX .next/static 2>/dev/null || true
 find "$ARCHIVE" -type f -mtime +7 -delete 2>/dev/null || true
 find "$ARCHIVE" -type d -empty -delete 2>/dev/null || true
 
-# 5. Serve it.
-pm2 restart techplay-frontend
+# 5. Serve it. pm2 is per-user: root's daemon is empty since the split, so this
+# has to be the owner's or it silently starts nothing at all.
+run_as_owner "pm2 restart techplay-frontend"
 
 PROBE_BASE="${PROBE_BASE:-http://127.0.0.1:3000}"
 

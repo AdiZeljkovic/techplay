@@ -298,6 +298,15 @@ class ArticleObserver
 
     /**
      * Reward the article author on first publish with bounty + quest progress.
+     *
+     * Paid once per article, ever — the ledger reference is the gate, and it is
+     * read before the quest steps as well, because gating only the money leaves
+     * a repeatable action still nudging quests forward.
+     *
+     * Two doors used to stand open. The fan-out ran twice while the observer
+     * was registered twice, and `wasChanged('status')` is true again when a
+     * piece is pulled back for a correction and re-published — so a retracted
+     * article paid its author a second time on the way back out.
      */
     protected function rewardAuthor(Article $article): void
     {
@@ -312,11 +321,18 @@ class ArticleObserver
                 return;
             }
 
+            $bounties = app(BountyService::class);
+            $reference = "article:{$article->id}:published";
+
+            if ($bounties->alreadyAwarded($article->author, $reference)) {
+                return;
+            }
+
             $isReview = $article->category && in_array($article->category->type, ['review', 'reviews']);
             $bounty = $isReview ? 75 : 30;
             $reason = $isReview ? "Review published: {$article->title}" : "Article published: {$article->title}";
 
-            app(BountyService::class)->award($article->author, $bounty, $reason, 'milestone');
+            $bounties->award($article->author, $bounty, $reason, 'milestone', true, $reference);
             app(QuestService::class)->progress($article->author, 'article_published', 1);
 
             if ($isReview) {

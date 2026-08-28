@@ -63,9 +63,9 @@
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |
 |--------|------|--------------------|------|------|
-| GET | `/guides` | GuideController::index | - | Lista guideova |
-| GET | `/guides/{slug}` | GuideController::show | - | Detalj guidea. Vraća `helpful_count`, `unhelpful_count`, `user_vote` |
-| POST | `/guides/{slug}/vote` | GuideController::vote | auth:sanctum, throttle:30,1 | `is_helpful` bool. Isti odgovor drugi put povlači glas. Briše `guide.show.v3.{slug}` keš |
+| GET | `/guides` | GuideController::index | - | Lista guideova. **Samo objavljeni** (`Guide::published()` — status + `published_at` koji nije u budućnosti); do 29.08.2026 su se listali i draftovi |
+| GET | `/guides/{slug}` | GuideController::show | - | Detalj guidea. Vraća `helpful_count`, `unhelpful_count`, `user_vote`. Neobjavljen → 404 (isti scope) |
+| POST | `/guides/{slug}/vote` | GuideController::vote | auth:sanctum, throttle:30,1 | `is_helpful` bool. Isti odgovor drugi put povlači glas. Briše keš guidea kroz `CacheService::articleShowKey('guide', …)` — ključ se nigdje ne ispisuje rukom |
 
 ## Content — Tech/Hardware
 

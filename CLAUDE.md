@@ -63,6 +63,15 @@ techplay-deploy.sh frontend     # one half
 techplay-deploy.sh --no-pull    # when the pull already happened
 ```
 
+`deploy.sh` is retired (29 Aug 2026) and now only prints where to go: it built
+as whoever ran it, which over SSH is root, so it left a root-owned `.next` in a
+`techplay` tree and reloaded root's empty pm2 daemon. The frontend half of
+`techplay-deploy.sh` hands off to `deployment/deploy_frontend.sh`, which carries
+the chunk archive (no ChunkLoadError for open tabs), the `fetch-cache` wipe
+(without it admin edits never reach the site), the nginx `/games/` purge, the
+Cloudflare purge, and an asset check that reads the pages back. Those five were
+missing from the split-ownership script for a day.
+
 **Ownership, since 28 Aug 2026:** `backend/` is `www-data` (octane, reverb,
 queue worker), `frontend/` and `discord/` are `techplay` (next-server and the
 bot under pm2), the repo root is `root`. A `git pull` as root leaves root-owned
@@ -83,7 +92,9 @@ pull itself.
 
 **Content model:** The central article type is `Article` (news, reviews, tech/hardware, guides, videos all share this model via polymorphic category association). Separate `Post` and `Thread` models handle the forum. `Game` is a standalone model populated by the store aggregator (`Services/Releases/BlindCatalogueSync`, `SteamService`, `PlayStationService`), not from MobyGames — that source was retired in the 08/2026 catalogue rebuild. 142,110 rows.
 
-**Observers + cache revalidation:** Every content model has an Observer in `app/Observers/`. On publish, update **and delete**, observers call `RevalidationService::revalidateArticle()`, which POSTs to the Next.js `/api/revalidate` endpoint. There used to be two services doing this — `CacheRevalidationService` and `RevalidationService` — which is how `deleted()` came to clear Redis without telling the frontend; they were merged 18 Aug 2026. All observers are registered in `AppServiceProvider`.
+**Observers + cache revalidation:** Every content model has an Observer in `app/Observers/`. On publish, update **and delete**, observers call `RevalidationService::revalidateArticle()`, which POSTs to the Next.js `/api/revalidate` endpoint. There used to be two services doing this — `CacheRevalidationService` and `RevalidationService` — which is how `deleted()` came to clear Redis without telling the frontend; they were merged 18 Aug 2026. **All observers are registered in `AppServiceProvider`, and nowhere else** — `ArticleObserver` was also registered in `Article::booted()`, Laravel appends a listener per registration rather than deduplicating, and for two months every publish ran the whole fan-out twice: two Discord announcements, two notification walks, two payouts to the author (fixed 29 Aug 2026, guarded by `tests/Feature/PublishHappensOnceTest.php`).
+
+**Publishing is a model event.** Anything that changes an article's status must go through the model (`$article->update(...)`), never a query-builder `update()` — a bulk update fires no events, so nothing downstream happens. `articles:publish-scheduled` did exactly that until 29 Aug 2026, and scheduled articles reached readers only when a listing TTL happened to lapse.
 
 **Games database:** Built by the store aggregator — `SyncReleases` / `MergeReleases` over `Services/Releases/`, with `SteamService` and `PlayStationService` as sources. MobyGames, RAWG and IGDB were all retired in the 08/2026 rebuild. Games are stored locally in PostgreSQL; the API **never proxies a live request to a store**. `Game.genres` and `Game.platforms` are `TEXT[]` columns (renamed from `genre_names` / `platform_names` in that rebuild, along with `background_image` → `cover_url`) and are queried with `@> ARRAY[?]::text[]`, which is what the `games_genres_gin` / `games_platforms_gin` indexes answer. The `pgArray()` helper in `GameController` deserialises them when PDO hands them back as strings.
 

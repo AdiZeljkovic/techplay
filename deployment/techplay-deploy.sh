@@ -48,6 +48,26 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
     step "backend"
     cd "$ROOT/backend"
     composer install --no-dev --optimize-autoloader --no-interaction 2>&1 | tail -2
+
+    # The admin panel's stylesheet, which nothing else builds.
+    #
+    # `viteTheme('resources/css/filament/admin/theme.css')` means Filament reads
+    # a compiled file, and this is the only step that compiles it. The old
+    # deploy.sh had it; this script did not, so from 28.08.2026 every change to
+    # the panel's look shipped as the previous look — with no error anywhere,
+    # because a stale manifest is a perfectly valid one.
+    #
+    # Ahead of the migration on purpose: this is the step most likely to fail on
+    # something outside the machine, and `set -e` would abort the deploy where it
+    # stood. Failing here leaves the schema untouched, which is the cheap side.
+    #
+    # `npm ci` wipes and reinstalls, so it runs only when the lockfile is newer
+    # than what was installed from it.
+    if [[ ! -d node_modules || package-lock.json -nt node_modules ]]; then
+        npm ci --no-audit --no-fund 2>&1 | tail -1
+    fi
+    npm run build 2>&1 | tail -1
+
     php artisan migrate --force 2>&1 | tail -3
     php artisan config:cache >/dev/null
     php artisan route:cache >/dev/null
@@ -61,9 +81,23 @@ fi
 
 if [[ "$TARGET" == "all" || "$TARGET" == "frontend" ]]; then
     step "frontend"
-    # Kao techplay, inace .next ispadne root-ov i pm2 ga ne moze citati.
-    sudo -u techplay -H bash -lc "cd $ROOT/frontend && npm install --no-audit --no-fund && npm run build" 2>&1 | tail -3
-    sudo -u techplay -H bash -lc "pm2 restart techplay-frontend" >/dev/null
+    # Preko deploy_frontend.sh, koji radi build kao vlasnik stabla i nosi pet
+    # stvari koje su ovdje nedostajale od 28.08.2026:
+    #
+    #   arhiva starih chunkova   — bez nje ChunkLoadError svakome ko ima
+    #                              otvorenu stranicu u trenutku deploya
+    #   brisanje fetch-cache     — bez njega izmjene iz admina ne stignu na
+    #                              sajt (dva deploya 17.08. su otisla uzalud)
+    #   praznjenje nginx kesa    — /games/ se drzi sat vremena, pa izmjena
+    #                              igre ne stigne do citaoca
+    #   Cloudflare purge         — inace se sve vidi tek kad istekne s-maxage
+    #   provjera resursa         — procita stranice i prati svaki asset koji
+    #                              traze, pa deploy ne moze reci "gotov" nad
+    #                              stranicom kojoj fali stylesheet
+    #
+    # Skript sam izlazi s greskom ako nesto od toga ne prodje, a `set -e` ovdje
+    # to prenosi dalje.
+    bash "$ROOT/deployment/deploy_frontend.sh"
     echo "  frontend gotov"
 fi
 

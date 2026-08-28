@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Events\GuidePublished;
 use App\Models\Guide;
+use App\Services\CacheService;
 use App\Services\ContentGameLinker;
 use App\Services\RevalidationService;
 use App\Services\SanitizationService;
@@ -54,13 +55,17 @@ class GuideObserver
 
     public function updated(Guide $guide): void
     {
-        if ($guide->status === 'published') {
-            $this->revalidationService->revalidateArticle($guide->slug, 'guides');
+        /*
+         * A guide leaving `published` has to reach the frontend as loudly as
+         * one arriving. This call sat inside the published branch, so a guide
+         * pulled back for a rewrite kept its page on techplay.gg: the API
+         * answered 404 while Next served the copy it already held.
+         */
+        $this->revalidationService->revalidateArticle($guide->slug, 'guides');
 
-            if ($guide->isDirty('status')) {
-                broadcast(new GuidePublished($guide))->toOthers();
-                $this->pingSearchEngines($guide->slug);
-            }
+        if ($guide->status === 'published' && $guide->isDirty('status')) {
+            broadcast(new GuidePublished($guide))->toOthers();
+            $this->pingSearchEngines($guide->slug);
         }
 
         $this->invalidateCache($guide);
@@ -104,24 +109,16 @@ class GuideObserver
     protected function invalidateCache(Guide $guide): void
     {
         /*
-         * v3, which is what `GuideController::show` writes.
-         *
-         * The key was bumped in the controller and this line was not, so every
-         * guide edit and every guide deletion has been clearing a key nobody
-         * writes. A deleted guide answered 200 from cache; an edited one served
-         * the old text until the TTL ran out.
+         * Both spellings come from CacheService, because it is the only place
+         * that knows how a guide key is built. Spelling them here by hand is
+         * what left the listing loop a version behind: the controller wrote
+         * `guides.index.v3.…` and this cleared v2, so an edited guide kept its
+         * old card until the TTL lapsed. The loop could not have covered it
+         * anyway — it walked five pages of four difficulties with an empty
+         * search, and a listing key also carries the search term. The register
+         * the controller writes to reaches every variant that exists.
          */
-        Cache::forget("guide.show.v3.{$guide->slug}");
-
-        // The previous key, for anything still sitting in Redis under it.
-        Cache::forget("guide.show.v2.{$guide->slug}");
-
-        // Clear guide listing cache (first 5 pages, all difficulties, no search)
-        for ($page = 1; $page <= 5; $page++) {
-            foreach (['all', 'beginner', 'intermediate', 'advanced'] as $diff) {
-                $cacheKey = "guides.index.v2.page_{$page}.diff_{$diff}.search_".md5('');
-                Cache::forget($cacheKey);
-            }
-        }
+        Cache::forget(CacheService::articleShowKey('guide', $guide->slug));
+        CacheService::forgetListings('guides');
     }
 }

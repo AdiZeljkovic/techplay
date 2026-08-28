@@ -20,6 +20,7 @@ use App\Models\Thread;
 use App\Models\User;
 use App\Notifications\AdminAlert;
 use App\Observers\ArticleObserver;
+use App\Observers\ArticleVersionObserver;
 use App\Observers\CategoryObserver;
 use App\Observers\CommentObserver;
 use App\Observers\ContentObserver;
@@ -62,9 +63,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Request-scoped: a singleton lives and dies with the request, so what
-        // one reader earned can never leak into another's response.
-        $this->app->singleton(RewardLedger::class);
+        // Request-scoped, and `scoped` is the word that makes it so.
+        //
+        // `singleton` means "one per container", which under FPM happens to be
+        // one per request — the assumption this line was written under. Octane
+        // keeps the container alive across requests, so the ledger became one
+        // per worker: a reader's response could carry the XP, the unlocked
+        // achievements and the rank promotion of everyone that worker had
+        // served since it booted, and the entry list grew until it restarted.
+        //
+        // `scoped` is flushed for us at both boundaries that matter —
+        // FlushTemporaryContainerInstances on RequestTerminated in Octane, and
+        // forgetScopedInstances between jobs in the queue worker, where awards
+        // fired from observers otherwise piled up with nobody to read them.
+        $this->app->scoped(RewardLedger::class);
 
         // A floor under every outbound HTTP call. Guzzle's default timeout is
         // zero — meaning wait forever — and several integrations in the request
@@ -148,9 +160,21 @@ class AppServiceProvider extends ServiceProvider
                 config(['app.url' => str_replace('http://', 'https://', config('app.url'))]);
             }
         }
-        // Existing observers
+        // Every observer is registered here and nowhere else.
+        //
+        // ArticleObserver was registered twice — here and again in
+        // Article::booted() — and Laravel appends a listener per registration
+        // rather than deduplicating. Every publish therefore ran the whole
+        // fan-out twice: two Discord announcements, two notification walks over
+        // every tracker and wishlister, two IndexNow submissions, and two
+        // payouts to the author. The ledger still shows it: the same article
+        // credited twice, a second apart. Live from 20 Jun to 29 Aug 2026.
+        //
+        // A model that registers its own observer looks harmless in isolation,
+        // which is exactly why it survived two months. Keep the list here.
         Post::observe(PostObserver::class);
         Article::observe(ContentObserver::class);
+        Article::observe(ArticleVersionObserver::class);
 
         // Real-time broadcast observers
         Article::observe(ArticleObserver::class);

@@ -13,15 +13,16 @@
 
 | Job | Trigger | Svrha |
 |-----|---------|-------|
-| `FetchOgData` | Editorial message s URL-om | Fetchuje OG metadata za link preview |
-| `FlushViewCounters` | Scheduled (5 min) | Prelije Redis brojače `views:*` u kolone `views`/`view_count` na articles, threads, games, guides i ad_campaigns |
-| `MobyEnrichmentJob` | Artisan/observer | Enrich game detalja iz MobyGames API |
-| `PingIndexNow` | Observer (publish) | Ping Bing/Yandex za instant indexing |
-| `PollSteamPresence` | Scheduled | Polling Steam API za user presence |
-| `SendChatReminder` | Scheduled/event | Reminder notifikacija za editorial chat |
-| `SendGiveawayReminders` | Scheduled | Email reminders za giveaway koji uskoro ističu |
-| `SubmitIndexNow` | Observer (publish) | Submit URL listu IndexNow protokolom |
-| `SyncSteamLibrary` | User trigger/scheduled | Sinkronizacija Steam biblioteke u user_games |
+| `FlushViewCounters` | Scheduled (5 min) | Prelije Redis brojače `views:*` u kolone `views`/`view_count` na articles, threads, games, guides i ad_campaigns. **Jedini koji prazni `views:ad:*` i `clicks:ad:*`** — radi to GETDEL-om, atomski; `ads:sync-metrics` je radio isto neatomski i obrisan je 29.08.2026 jer su se dva sistema otimala oko istih ključeva |
+| `PollSteamPresence` | Scheduled (2 min) | Polling Steam API za user presence |
+| `PublishArticleFanout` | `ArticleObserver::saved` | Sve poslije objave, van requesta: revalidacija, sitemap-news, IndexNow, Discord, notifikacije pratiocima, isplata autoru |
+| `SendGiveawayReminders` | Scheduled (6 h) | Podsjetnici za giveaway koji uskoro ističu (od 29.08. i kroz zvono, ne samo mail) |
+| `SendReleaseReminders` | Scheduled (dnevno 09:00) | Javlja da je igra s watchliste izašla |
+| `SubmitIndexNow` | `ContentObserver` (save/delete) | Submit URL listu IndexNow protokolom |
+| `Sync{Steam,Xbox,Gog,PlayStation,Epic}Library` | User trigger / `platforms:resync` | Sinkronizacija biblioteke u user_games |
+| `EnrichSteamBatch` | `games:enrich-steam` + samolančanje | Dopunjava prazne kolone igara iz Steam payloada, 25/min |
+
+> Ranije su ovdje bili `FetchOgData`, `MobyEnrichmentJob`, `PingIndexNow` i `SendChatReminder` — **nijedan ne postoji** (editorial chat je obrisan migracijom 17.08.2026, Moby penzionisan 08/2026, PingIndexNow obrisan 18.08.2026). Ostatak ovog dokumenta nije prošao istu provjeru; vidi docs/77 za puni popis raskoraka.
 
 ### IGDB Jobs (Legacy?)
 - `Igdb/` subfolder postoji u Jobs — vjerovatno legacy IGDB job(s)
@@ -32,8 +33,8 @@
 
 | Komanda | Svrha | Vjerovatni interval |
 |---------|-------|-------------------|
-| `PublishScheduledArticles` | Publishuje članak ako je `published_at` u prošlosti | Svaki sat ili svako par minuta |
-| `FlushViewCounters` | Redis → DB view counter sync | Svakih 5-15 minuta |
+| `PublishScheduledArticles` | Publishuje članak kad `published_at` dođe. **Ide kroz model** (`$article->update(...)`), red po red — bulk update ne okida observere, pa objava ne bi imala ni keš, ni ISR, ni Discord, ni notifikacije, ni isplatu (tako je bilo do 29.08.2026) | Svake minute |
+| `FlushViewCounters` | Redis → DB view counter sync | Svakih 5 minuta |
 | `SnapshotReputation` | Snapshot XP/rank za sve korisnike | Dnevno |
 | `SyncAchievements` | Provjera i dodjela achievementa | Dnevno/satno |
 | `CheckWishlistReleases` | Provjera novih release datuma za wishlist | Dnevno |

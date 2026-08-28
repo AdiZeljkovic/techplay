@@ -21,11 +21,15 @@ class GameReleaseNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
+            // `link` and `icon_path`, because those are the two keys
+            // NotificationController::present reads. Written as `url` and
+            // `image`, this notification reached the bell with nowhere to click
+            // and no artwork beside it.
             'type' => 'game_release',
             'title' => "{$this->game->name} is out",
             'message' => 'A game on your watchlist just released.',
-            'url' => "/games/{$this->game->slug}",
-            'image' => $this->game->cover_url,
+            'link' => "/games/{$this->game->slug}",
+            'icon_path' => $this->game->cover_url,
         ];
     }
 

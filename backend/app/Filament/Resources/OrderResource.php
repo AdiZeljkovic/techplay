@@ -105,11 +105,17 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('user.username')->label('Customer')->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'gray',
+                    // `refunded` is written by the PayPal webhook and was
+                    // missing here, and a `match` with no default throws rather
+                    // than falling back — so the first refunded order would not
+                    // have coloured a badge wrong, it would have taken the whole
+                    // Orders list down with an UnhandledMatchError.
+                    ->color(fn (?string $state): string => match ($state) {
                         'processing' => 'warning',
                         'completed' => 'success',
                         'cancelled' => 'danger',
+                        'refunded' => 'info',
+                        default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('total_price')
                     ->formatStateUsing(fn ($state) => number_format($state, 2).' KM')
@@ -137,6 +143,7 @@ class OrderResource extends Resource
                         'processing' => 'Processing',
                         'completed' => 'Completed',
                         'cancelled' => 'Cancelled',
+                        'refunded' => 'Refunded',
                     ]),
                 SelectFilter::make('payment_status')
                     ->label('Payment Status')
