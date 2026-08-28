@@ -54,6 +54,23 @@ npm start               # node dist/index.js (production)
 ./deployment/push_and_deploy.ps1   # Windows: export DB, git push, SSH deploy
 ```
 
+On the server, deploy through the script — ownership is split and doing it by
+hand gets it wrong quietly:
+
+```bash
+techplay-deploy.sh              # git pull, both halves, health check
+techplay-deploy.sh frontend     # one half
+techplay-deploy.sh --no-pull    # when the pull already happened
+```
+
+**Ownership, since 28 Aug 2026:** `backend/` is `www-data` (octane, reverb,
+queue worker), `frontend/` and `discord/` are `techplay` (next-server and the
+bot under pm2), the repo root is `root`. A `git pull` as root leaves root-owned
+files in a techplay tree and the next build fails on permissions — silently,
+until the following restart. The script restores ownership before it builds,
+which is the only reason it exists. Nothing runs as root any more except the
+pull itself.
+
 ---
 
 ## Architecture
@@ -82,7 +99,7 @@ npm start               # node dist/index.js (production)
 - `IndexNowService` — pings Bing/Yandex on publish via the `SubmitIndexNow` job
 - `SchemaService` — generates JSON-LD structured data
 - `PayPalService` + `PayPalWebhookController` — shop orders and subscriptions (signature-verified webhooks)
-- `CacheService` / `RevalidationService` — response caching with on-demand Next.js revalidation. The store is **`file`**, not Redis (this line said Redis for months); there is no prefix scan and no tag support, which is why listing keys are kept in a register as they are written. **Article cache keys are built by `CacheService::articleShowKey()` and cleared by `forgetArticle()` / `forgetListings()` — never write one out by hand, in code or in a test.** They were spelled in three places once, the versions drifted, and edits stopped reaching readers for an hour while a test that hardcoded the stale key reported green (fixed 19 Aug 2026).
+- `CacheService` / `RevalidationService` — response caching with on-demand Next.js revalidation. The store is **Redis** (`CACHE_STORE=redis`, verified at runtime 28 Aug 2026 — this line has claimed `file` and, before that, Redis; it is Redis). Listing keys are still kept in a register as they are written, which is machinery a file store needed and Redis does not; it is harmless and has not been unwound. **Article cache keys are built by `CacheService::articleShowKey()` and cleared by `forgetArticle()` / `forgetListings()` — never write one out by hand, in code or in a test.** They were spelled in three places once, the versions drifted, and edits stopped reaching readers for an hour while a test that hardcoded the stale key reported green (fixed 19 Aug 2026).
 
 **Real-time:** Laravel Reverb (WebSocket server) + Pusher protocol. Frontend uses `laravel-echo` + `pusher-js`. Events in `app/Events/` broadcast on publish (articles, comments, forum posts, etc.) — for forum content specifically, dispatch happens inside Model Observers (`ThreadObserver`, `ForumPostObserver`), not inline in the controller.
 

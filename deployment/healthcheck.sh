@@ -86,7 +86,11 @@ def check_supervisor():
 
 
 def check_pm2():
-    ok, out = sh("pm2 jlist")
+    # pm2 je per-korisnik, a od 28.08.2026 frontend i bot rade kao `techplay`,
+    # ne kao root. `pm2 jlist` kao root od tada vraca praznu listu i provjera je
+    # javljala pad na sistemu koji radi — sto je gore od provjere koja ne
+    # postoji, jer se nauci da se ignorise.
+    ok, out = sh("sudo -u techplay -H pm2 jlist")
     try:
         procs = json.loads(out or "[]")
     except Exception:
@@ -123,17 +127,52 @@ def check_websocket():
 
 
 def check_backup():
-    if not BACKUP_DIR.exists():
-        return False, "backup direktorij ne postoji"
-    runs = [d for d in BACKUP_DIR.iterdir() if d.is_dir() and d.name.startswith("20")]
-    if not runs:
-        return False, "nijedan backup nije napravljen"
-    newest = max(runs, key=lambda d: d.stat().st_mtime)
-    age_h = (datetime.now().timestamp() - newest.stat().st_mtime) / 3600
-    dump = newest / "db.dump"
-    if not dump.exists() or dump.stat().st_size < 1_000_000:
-        return False, f"zadnji backup ({newest.name}) nema upotrebljiv dump"
-    return age_h < BACKUP_MAX_AGE_H, f"zadnji backup star {age_h:.0f} h ({newest.name})"
+    """Da li je kopija napravljena i, vaznije, da li je otisla s masine.
+
+    Ovo je gledalo u /var/backups/techplay i trazilo da tamo nesto stoji. Od
+    28.08.2026 to je naopako: kopija se poslije uspjesnog slanja **brise** s
+    diska, pa prazan direktorij znaci da je sve proslo, a pun znaci da nesto
+    nije otislo. Stara provjera bi od sada javljala pad svaku noc kad sve radi.
+
+    Istina se cita iz systemd-a: kad je jedinica zadnji put zavrsila i kako.
+    Skript izlazi s 2 kad kopija ne napusti masinu, pa 'success' ovdje znaci i
+    da je napravljena i da je na Storage Boxu.
+    """
+    ok, out = sh("systemctl show techplay-backup.service "
+                 "--property=Result,ExecMainExitTimestamp,ExecMainStatus --value")
+    if not ok or not out:
+        return False, "ne mogu procitati stanje techplay-backup.service"
+
+    lines = [l.strip() for l in out.splitlines()]
+    result = lines[0] if lines else ""
+    stamp = lines[1] if len(lines) > 1 else ""
+    status = lines[2] if len(lines) > 2 else ""
+
+    if not stamp:
+        return False, "backup jos nijednom nije zavrsio"
+
+    try:
+        # systemd daje npr. "Fri 2026-08-29 02:31:44 UTC"
+        when = datetime.strptime(" ".join(stamp.split()[1:3]), "%Y-%m-%d %H:%M:%S")
+        age_h = (datetime.now() - when).total_seconds() / 3600
+    except Exception:
+        return False, f"ne razumijem vrijeme zadnjeg backupa: {stamp}"
+
+    if result != "success" or status not in ("0", ""):
+        # Izlaz 2 je skriptova rijec za "nije otislo s masine".
+        why = "nije prenesen na Storage Box" if status == "2" else f"zavrsio s {result}/{status}"
+        return False, f"zadnji backup ({age_h:.0f} h) {why}"
+
+    if age_h >= BACKUP_MAX_AGE_H:
+        return False, f"zadnji uspjesan backup star {age_h:.0f} h"
+
+    leftovers = 0
+    if BACKUP_DIR.exists():
+        leftovers = len([d for d in BACKUP_DIR.iterdir()
+                         if d.is_dir() and d.name.startswith("20")])
+    extra = f", {leftovers} neposlanih na disku" if leftovers else ""
+
+    return True, f"zadnji backup prije {age_h:.0f} h, prenesen{extra}"
 
 
 def check_certificate():

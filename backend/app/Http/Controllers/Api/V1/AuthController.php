@@ -732,14 +732,33 @@ class AuthController extends Controller
 
         // These all still named the person after "deletion": platform handles
         // on the public profile, hardware, location, the editorial byline.
+        /*
+         * Kolone se provjeravaju kroz getAttributes() jer ih cetiri ovdje
+         * uopste ne postoje na tabeli — steam_id, psn_id, xbox_gamertag i
+         * discord_username. Straza ih cini bezopasnim, ali je i sakrila da
+         * `gamertags`, koja POSTOJI i drzi platformske nadimke, nije bila na
+         * spisku: poslije "brisanja" naloga nadimci su ostajali u bazi.
+         * Nadjeno u pregledu 28.08.2026, na sedam naloga.
+         */
         foreach ([
+            'gamertags',
             'steam_id', 'psn_id', 'xbox_gamertag', 'discord_username',
-            'battlenet_id', 'battletag', 'discord_avatar',
+            'battlenet_id', 'battletag', 'battlenet_region', 'discord_avatar',
+            // Ostaci veze s Discordom. discord_id se brisao, a ova dva su
+            // ostajala — kad je clanstvo uslo i kad je zadnji put provjereno.
+            'discord_guild_joined_at', 'discord_guild_checked_at',
             'pc_specs', 'location', 'tagline', 'author_slug', 'author_social_links',
         ] as $column) {
             if (array_key_exists($column, $user->getAttributes())) {
                 $user->{$column} = null;
             }
+        }
+
+        // Ova je NOT NULL, pa se gasi a ne prazni. Prvi pokusaj ju je stavio u
+        // istu petlju s ostalima i brisanje naloga je pocelo da vraca 500 —
+        // uhvaceno testom prije nego je iko probao.
+        if (array_key_exists('discord_guild_member', $user->getAttributes())) {
+            $user->discord_guild_member = false;
         }
 
         $user->save();
