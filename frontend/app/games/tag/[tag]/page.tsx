@@ -122,13 +122,30 @@ export async function generateMetadata({ params }: { params: Promise<{ tag: stri
     // copy for and what belongs in an index; everything else still renders
     // for a reader, and still passes link equity, it just is not indexed.
     const curated = Object.prototype.hasOwnProperty.call(TAG_META, tag);
+    /*
+     * A curated facet with nothing behind it is still an empty page.
+     *
+     * Ten of the fifteen curated tags matched no games at all — open-world,
+     * multiplayer, co-op, story-rich and the rest. The landing copy was written
+     * against a Steam-style vocabulary, and the catalogue rebuild in August
+     * replaced it: the tags in the data now read "Direct control", "1st-person",
+     * "Fixed / flip-screen". All ten answered index,follow and all ten sat in
+     * sitemap-hub.xml, so we asked Google to crawl ten pages and gave it
+     * nothing on arrival.
+     *
+     * Counted rather than listed, so a facet that fills up returns on its own
+     * and one that empties leaves on its own. Only a count actually read
+     * demotes the page — a failed fetch leaves it as it was.
+     */
+    const stocked = (await fetchFacetGames({ tag: tagFilter(tag) })).length;
+
 
     return {
         title:       `${meta.title}`,
         description: meta.description,
         keywords:    meta.keywords,
         alternates:  { canonical: url },
-        ...(curated ? {} : { robots: { index: false, follow: true } }),
+        ...(curated && stocked > 0 ? {} : { robots: { index: false, follow: true } }),
         openGraph: {
             title:       `${meta.title} — TechPlay`,
             description: meta.description,

@@ -502,11 +502,31 @@ class SitemapController extends Controller
 
         $platforms = ['pc', 'playstation', 'xbox', 'nintendo', 'mobile'];
 
+        /*
+         * Tags that exist in the catalogue, not tags that sound like they
+         * should.
+         *
+         * This list carried twenty and thirteen of them matched no games at
+         * all, while every one answered index,follow — so the sitemap invited
+         * Google to thirteen empty pages. The vocabulary had moved under it:
+         * the August rebuild replaced RAWG's tags with MobyGames', and Steam
+         * words like multiplayer, singleplayer, co-op, story-rich, souls-like
+         * and pixel-graphics simply do not appear in the data.
+         *
+         * Seven of the thirteen were mapping bugs rather than missing data and
+         * are fixed in lib/gameFacets.ts — "Sci-Fi / Futuristic" against a
+         * value stored as "Sci-fi / futuristic" was 18,396 games behind one
+         * capital letter.
+         *
+         * The six with no equivalent are gone from here. Their pages still
+         * render, and the frontend noindexes any facet whose shelf comes back
+         * empty, so this list does not have to be right forever — it only has
+         * to stop asking for pages we know are bare.
+         */
         $popularTags = [
-            'open-world', 'multiplayer', 'singleplayer', 'co-op', 'story-rich',
-            'first-person', 'third-person', 'sandbox', 'survival', 'stealth',
-            'turn-based', 'roguelike', 'metroidvania', 'souls-like', 'hack-and-slash',
-            'pixel-graphics', 'anime', 'sci-fi', 'fantasy', 'post-apocalyptic',
+            'open-world', 'first-person', 'third-person', 'sandbox', 'survival',
+            'stealth', 'turn-based', 'roguelike', 'metroidvania', 'hack-and-slash',
+            'anime', 'sci-fi', 'fantasy', 'post-apocalyptic',
         ];
 
         foreach ($genres as $genre) {

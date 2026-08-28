@@ -43,16 +43,41 @@ export const platformFilter = (slug: string) => PLATFORM_FILTER[slug.toLowerCase
  * "1st-person", "Side view" — not the marketing words a slug usually carries.
  * Anything unmapped is title-cased and tried as-is.
  */
+/**
+ * URL slug to the exact string stored in games.tags.
+ *
+ * Exact is the word. The values here are matched with `@>` against a text[]
+ * column, so they are case-sensitive and space-sensitive, and the vocabulary
+ * changed under them: the catalogue rebuild in August replaced RAWG's tags with
+ * MobyGames', which capitalise only the first word — "Sci-fi / futuristic", not
+ * "Sci-Fi / Futuristic".
+ *
+ * That one capital F cost 18,396 games. Measured across the twenty tag pages in
+ * sitemap-hub.xml, thirteen were serving an empty grid under index,follow, and
+ * seven of those were this: a slug with no mapping, or a mapping written
+ * against the old vocabulary. Together they cover 78,274 games.
+ *
+ * Six slugs are left out deliberately — multiplayer, singleplayer, co-op,
+ * story-rich, souls-like and pixel-graphics. Nothing in the catalogue means any
+ * of them; those are Steam's categories, not this data's. Their pages still
+ * render for a reader and are noindexed automatically by the empty-facet guard.
+ */
 export const TAG_FILTER: Record<string, string> = {
     fantasy: "Fantasy",
-    "sci-fi": "Sci-Fi / Futuristic",
     horror: "Horror",
+    "sci-fi": "Sci-fi / futuristic",
     "1st-person": "1st-person",
+    "first-person": "1st-person",
     "3rd-person": "3rd-person (Other)",
+    "third-person": "3rd-person (Other)",
     "top-down": "Top-down",
     "side-view": "Side view",
     "real-time": "Real-time",
     "turn-based": "Turn-based",
+    anime: "Anime / Manga",
+    "open-world": "Open world",
+    "post-apocalyptic": "Post-apocalyptic",
+    "hack-and-slash": "Hack and slash",
 };
 
 export const tagFilter = (slug: string) => TAG_FILTER[slug.toLowerCase()] ?? titleCase(slug);
