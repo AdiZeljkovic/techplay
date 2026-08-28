@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { drawableCovers, drawableImage } from "@/lib/ogCovers";
 
 export const runtime = "edge";
 
@@ -46,14 +47,17 @@ export async function GET(req: NextRequest) {
             achievementsCount = s.achievements_count ?? 0;
             percentile = json.reputation?.percentile ?? null;
             reputationScore = json.reputation?.reputation ?? s.reputation ?? 0;
-            avatarUrl = typeof u.avatar_url === "string" && u.avatar_url.startsWith("http") ? u.avatar_url : null;
+            // Same rule as the covers: an avatar Satori cannot decode draws
+            // an empty circle, and no avatar draws the initial instead.
+            avatarUrl = drawableImage(u.avatar_url);
 
             // Pinned showcase first, then playing — the games that define this gamer
-            covers = [...(json.showcase ?? []), ...(json.playing_now ?? [])]
-                .map((g: any) => g?.cover_url)
-                .filter((src: unknown): src is string => typeof src === "string" && src.startsWith("http"))
-                .filter((src: string, i: number, arr: string[]) => arr.indexOf(src) === i)
-                .slice(0, 3);
+            covers = drawableCovers(
+                [...(json.showcase ?? []), ...(json.playing_now ?? [])]
+                    .map((g: any) => g?.cover_url)
+                    .filter((src: unknown, i: number, arr: unknown[]) => arr.indexOf(src) === i),
+                3,
+            );
         }
     } catch {
         // Fallback to username-only card

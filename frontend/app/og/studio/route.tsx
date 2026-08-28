@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { drawableCovers } from "@/lib/ogCovers";
 
 export const runtime = "edge";
 
@@ -64,10 +65,7 @@ export async function GET(req: NextRequest) {
             // should be the studio's own work where there is any.
             const rows: Row[] = [...(studio.developed ?? []), ...(studio.published ?? [])];
 
-            covers = rows
-                .map((g) => g?.cover_url)
-                .filter((src: unknown): src is string => typeof src === "string" && src.startsWith("http"))
-                .slice(0, 5);
+            covers = drawableCovers(rows.map((g) => g?.cover_url), 5);
         }
     } catch {
         // A card with the name still beats no card at all.

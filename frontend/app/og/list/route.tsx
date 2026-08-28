@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { drawableCovers } from "@/lib/ogCovers";
 
 export const runtime = "edge";
 
@@ -61,20 +62,18 @@ export async function GET(req: NextRequest) {
             type Row = { tier?: string | null; position?: number; game?: { cover_url?: string } };
             const rows: Row[] = list.items ?? [];
 
-            covers = rows
-                .map((i) => i?.game?.cover_url)
-                .filter((src: unknown): src is string => typeof src === "string" && src.startsWith("http"))
-                .slice(0, 5);
+            covers = drawableCovers(rows.map((i) => i?.game?.cover_url), 5);
 
             if (listType === "tier") {
                 board = ["S", "A", "B", "C", "D", "F"].map((tier) => ({
                     tier,
-                    covers: rows
-                        .filter((r) => r.tier === tier)
-                        .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-                        .map((r) => r.game?.cover_url)
-                        .filter((src: unknown): src is string => typeof src === "string" && src.startsWith("http"))
-                        .slice(0, 9),
+                    covers: drawableCovers(
+                        rows
+                            .filter((r) => r.tier === tier)
+                            .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+                            .map((r) => r.game?.cover_url),
+                        9,
+                    ),
                 }));
             }
         }
