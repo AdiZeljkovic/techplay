@@ -41,5 +41,5 @@ async function getInitialNews() {
 export default async function NewsPage() {
     const initialData = await getInitialNews();
 
-    return <SectionHub section="news" initialData={initialData} />;
+    return <SectionHub section="news" initialData={initialData} basePath="/news" />;
 }

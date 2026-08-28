@@ -29,5 +29,5 @@ async function getInitialGuides() {
 export default async function GuidesPage() {
     const initialData = await getInitialGuides();
 
-    return <SectionHub section="guides" initialData={initialData} />;
+    return <SectionHub section="guides" initialData={initialData} basePath="/guides" />;
 }

@@ -114,6 +114,8 @@ export default function SectionHub({
     category,
     categoryName,
     initialData,
+    initialPage = 1,
+    basePath,
 }: {
     section: SectionKey;
     /**
@@ -130,6 +132,21 @@ export default function SectionHub({
     categoryName?: string;
     /** The server component already fetched page one; don't make the reader wait for it twice. */
     initialData?: ListBody | null;
+    /**
+     * Which page this URL is. /news is 1, /news/page/4 is 4.
+     *
+     * 630 articles are published and all 630 are in the sitemap, but only 43
+     * could be reached by following a link: the listings render thirteen each
+     * and the pager was a pair of buttons, so pages two and beyond existed
+     * only as client state. Everything past the first screen was an orphan.
+     */
+    initialPage?: number;
+    /**
+     * Where the pager's links point — "/news", "/reviews". Absent on category
+     * pages, which do not have a paginated route of their own yet; the pager
+     * there stays as it was.
+     */
+    basePath?: string;
 }) {
     const config = SECTIONS[section];
     const pinned = Boolean(category);
@@ -137,7 +154,7 @@ export default function SectionHub({
     const [chosen, setChosen] = useState("all");
     /** The pager sits under the list; turning a page returns to its top. */
     const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(initialPage);
     const [email, setEmail] = useState("");
     const [subscribing, setSubscribing] = useState(false);
 
@@ -156,7 +173,7 @@ export default function SectionHub({
 
     const { data: listBody, isLoading } = useSWR<ListBody>(listUrl, fetcher, {
         keepPreviousData: true,
-        fallbackData: page === 1 && initialData ? initialData : undefined,
+        fallbackData: page === initialPage && initialData ? initialData : undefined,
     });
 
     const rows = listBody?.data ?? [];
@@ -208,6 +225,26 @@ export default function SectionHub({
         scrollToTop();
     };
 
+    /*
+     * A real address for every page, or none at all.
+     *
+     * The pager was two buttons, so pages two and beyond were client state and
+     * nothing more — 587 of 630 published articles could not be reached by
+     * following a link from anywhere on the site. They were in the sitemap,
+     * which tells a search engine a page exists; a link is what tells it the
+     * page matters.
+     *
+     * Page one is the section's own URL rather than /news/page/1, so there is
+     * one address for it instead of two. Category pages have no paginated
+     * route yet and pass no basePath; their pager keeps working as a control
+     * without becoming a link to nowhere.
+     */
+    const pageHref = (n: number): string | null => {
+        if (!basePath || n < 1) return null;
+
+        return n === 1 ? basePath : `${basePath}/page/${n}`;
+    };
+
     // One pager, rendered at both ends of the list.
     const pager = pages && pages.last > 1 && (
         <span className="flex items-center gap-3">
@@ -215,12 +252,22 @@ export default function SectionHub({
                 {pages.total.toLocaleString()} · page {pages.current} of {pages.last}
             </span>
             <span className="flex items-center gap-1.5">
-                <PageButton disabled={page <= 1} onClick={() => goToPage(page - 1)} label="Previous page">
+                <PageLink
+                    href={pageHref(page - 1)}
+                    disabled={page <= 1}
+                    onNavigate={() => goToPage(page - 1)}
+                    label="Previous page"
+                >
                     <ChevronLeft className="w-4 h-4" />
-                </PageButton>
-                <PageButton disabled={page >= pages.last} onClick={() => goToPage(page + 1)} label="Next page">
+                </PageLink>
+                <PageLink
+                    href={pageHref(page + 1)}
+                    disabled={page >= pages.last}
+                    onNavigate={() => goToPage(page + 1)}
+                    label="Next page"
+                >
                     <ChevronRight className="w-4 h-4" />
-                </PageButton>
+                </PageLink>
             </span>
         </span>
     );
@@ -593,18 +640,63 @@ function Tab({
     );
 }
 
-function PageButton({
-    disabled, onClick, label, children,
-}: { disabled: boolean; onClick: () => void; label: string; children: React.ReactNode }) {
+/**
+ * An address a crawler can follow and a click that stays on the page.
+ *
+ * The pager used to be a plain button, so the only way to page two was to be a
+ * browser running JavaScript — 587 of 630 published articles had no link
+ * pointing at them from anywhere. Now the same control is an anchor with a real
+ * href, and the click handler cancels the navigation and updates in place, so
+ * nothing changes for a reader.
+ *
+ * Without an href — a category page, or the ends of the range — it falls back
+ * to the button it was, rather than rendering a link to nowhere.
+ */
+function PageLink({
+    href, disabled, onNavigate, label, children,
+}: {
+    href: string | null;
+    disabled: boolean;
+    onNavigate: () => void;
+    label: string;
+    children: React.ReactNode;
+}) {
+    const className =
+        "w-8 h-8 rounded-[7px] bg-[var(--accent)] text-white hover:brightness-110 flex items-center justify-center transition-all";
+    const off =
+        "w-8 h-8 rounded-[7px] bg-white/[0.05] text-white/25 flex items-center justify-center";
+
+    if (disabled) {
+        return (
+            <span aria-hidden className={off}>
+                {children}
+            </span>
+        );
+    }
+
+    if (!href) {
+        return (
+            <button onClick={onNavigate} aria-label={label} className={className}>
+                {children}
+            </button>
+        );
+    }
+
     return (
-        <button
-            onClick={onClick}
-            disabled={disabled}
+        <Link
+            href={href}
             aria-label={label}
-            className="w-8 h-8 rounded-[7px] bg-[var(--accent)] text-white hover:brightness-110 disabled:bg-white/[0.05] disabled:text-white/25 flex items-center justify-center transition-all"
+            className={className}
+            onClick={(e) => {
+                // Plain left click only: a middle click or ctrl-click should
+                // open the page it says it will.
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+                e.preventDefault();
+                onNavigate();
+            }}
         >
             {children}
-        </button>
+        </Link>
     );
 }
 

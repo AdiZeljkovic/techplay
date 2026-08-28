@@ -29,5 +29,5 @@ async function getInitialHardware() {
 export default async function HardwarePage() {
     const initialData = await getInitialHardware();
 
-    return <SectionHub section="tech" initialData={initialData} />;
+    return <SectionHub section="tech" initialData={initialData} basePath="/hardware" />;
 }

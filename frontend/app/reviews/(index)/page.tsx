@@ -33,5 +33,5 @@ async function getInitialReviews() {
 export default async function ReviewsPage() {
     const initialData = await getInitialReviews();
 
-    return <SectionHub section="reviews" initialData={initialData} />;
+    return <SectionHub section="reviews" initialData={initialData} basePath="/reviews" />;
 }
