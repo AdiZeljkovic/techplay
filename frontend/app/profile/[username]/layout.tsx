@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://techplay.gg";
 
@@ -90,7 +91,17 @@ export async function generateMetadata({ params }: { params: Promise<{ username:
     return {
         title: `${name}'s Profile`,
         description,
-        robots: hidden ? { index: false, follow: false } : undefined,
+        /*
+         * `undefined` here does not mean "inherit the root" — it wipes it.
+         *
+         * Next merges metadata top-down, but a segment that sets the key to
+         * undefined sets it to undefined; the parent's value does not come
+         * back. Measured on production: /studios/rockstar-games and
+         * /profile/adi emitted no robots tag at all, so neither carried
+         * max-image-preview:large and neither was eligible for Discover — the
+         * one directive the whole site had just been given.
+         */
+        robots: hidden ? ROBOTS_NOINDEX : ROBOTS_INDEX,
         alternates: { canonical: `${APP_URL}/profile/${username}` },
         openGraph: {
             title: `${name} on TechPlay`,

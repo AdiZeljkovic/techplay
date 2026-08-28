@@ -6,6 +6,7 @@ import { getApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import DataAttribution from "@/components/games/DataAttribution";
 import Panel from "@/components/ui/Panel";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
 
 /* ─── shapes ─────────────────────────────────────────────────────────────── */
 
@@ -86,7 +87,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
                them. They keep their page, because game pages link straight to
                it, but asking Google to index 35,000 of those would be asking
                for a thin-content problem. */
-            robots: studio.indexable ? undefined : { index: false, follow: true },
+            /*
+             * `undefined` here does not mean "inherit the root" — it wipes it.
+             *
+             * Next merges metadata top-down, but a segment that sets the key to
+             * undefined sets it to undefined; the parent's value does not come
+             * back. Measured on production: /studios/rockstar-games and
+             * /profile/adi emitted no robots tag at all, so neither carried
+             * max-image-preview:large and neither was eligible for Discover — the
+             * one directive the whole site had just been given.
+             */
+            robots: studio.indexable ? ROBOTS_INDEX : { index: false, follow: true },
             openGraph: {
                 title: studio.name,
                 description,
