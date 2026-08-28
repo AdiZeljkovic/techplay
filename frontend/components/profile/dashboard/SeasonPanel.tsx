@@ -129,7 +129,7 @@ export default function SeasonPanel() {
                                     <Icon className="w-4 h-4 shrink-0" style={{ color: tint }} strokeWidth={1.6} />
                                     <span>
                                         <span className="block font-display text-[17px] font-black tabular-nums leading-none" style={{ color: tint }}>{label}</span>
-                                        <span className="block mt-1 font-display text-[8px] font-bold uppercase tracking-[0.16em] text-white/35">{unit}</span>
+                                        <span className="block mt-1 font-display text-[8px] font-bold uppercase tracking-[0.16em] text-white/50">{unit}</span>
                                     </span>
                                 </div>
                             ))}
@@ -146,7 +146,7 @@ export default function SeasonPanel() {
                         <span className="font-display text-[38px] font-black tabular-nums leading-none" style={{ color: days <= 7 ? "var(--accent-ink)" : "#fff" }}>
                             {days}
                         </span>
-                        <span className="mt-1.5 font-display text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">
+                        <span className="mt-1.5 font-display text-[8px] font-bold uppercase tracking-[0.18em] text-white/50">
                             {days === 1 ? "Day left" : "Days left"}
                         </span>
                     </div>

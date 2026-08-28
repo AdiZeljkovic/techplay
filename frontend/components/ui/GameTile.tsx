@@ -93,7 +93,7 @@ export default function GameTile({
                 <span className="block font-display text-[12px] font-bold text-white leading-tight line-clamp-1 group-hover/tile:text-[var(--accent-ink)] transition-colors duration-300">
                     {name}
                 </span>
-                {meta && <span className="mt-0.5 block text-[10.5px] tabular-nums text-white/30 line-clamp-1">{meta}</span>}
+                {meta && <span className="mt-0.5 block text-[10.5px] tabular-nums text-white/50 line-clamp-1">{meta}</span>}
             </span>
         </>
     );

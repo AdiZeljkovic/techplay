@@ -38,7 +38,7 @@ export default function GuideSteps({ steps }: { steps?: GuideStep[] | null }) {
             >
                 Step by step
             </h2>
-            <p className="pl-4 text-white/35 text-[11px] font-bold uppercase tracking-widest mb-8">
+            <p className="pl-4 text-white/50 text-[11px] font-bold uppercase tracking-widest mb-8">
                 {usable.length} {usable.length === 1 ? "step" : "steps"}
             </p>
 

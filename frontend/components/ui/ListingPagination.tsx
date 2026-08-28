@@ -26,7 +26,7 @@ export default function ListingPagination({ page, lastPage, onPrev, onNext, prev
                 Previous
             </button>
 
-            <div className="h-[42px] px-5 flex items-center bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] text-[11px] font-bold uppercase tracking-wider text-white/35">
+            <div className="h-[42px] px-5 flex items-center bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] text-[11px] font-bold uppercase tracking-wider text-white/50">
                 Page&nbsp;<span className="text-[var(--accent)]">{page}</span>{lastPage ? <>&nbsp;of&nbsp;{lastPage}</> : null}
             </div>
 

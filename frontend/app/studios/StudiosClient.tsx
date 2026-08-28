@@ -346,7 +346,7 @@ function StudioTile({ studio }: { studio: StudioCard }) {
                         {studio.name}
                     </span>
 
-                    <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-white/35">
+                    <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-white/50">
                         {studio.country && (
                             <span className="inline-flex items-center gap-1">
                                 <MapPin className="h-3 w-3 text-white/20" />
@@ -398,7 +398,7 @@ function Figure({ value, label }: { value: number; label: string }) {
             <span className="block font-display text-[16px] font-black leading-none tabular-nums text-white">
                 {value.toLocaleString()}
             </span>
-            <span className="mt-1 block font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-white/30">
+            <span className="mt-1 block font-display text-[8.5px] font-black uppercase tracking-[0.12em] text-white/50">
                 {label}
             </span>
         </span>

@@ -63,14 +63,14 @@ export default async function ListsByTagPage({ params }: Props) {
                 <div className="flex flex-wrap items-center gap-3">
                     <Link
                         href="/lists"
-                        className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 hover:text-[var(--accent)] transition-colors"
+                        className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/55 hover:text-[var(--accent)] transition-colors"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" /> All lists
                     </Link>
                     <span className="inline-flex items-center gap-1.5 h-[22px] px-2.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] font-display text-[10px] font-black uppercase tracking-[0.1em] text-[var(--accent)]">
                         <TagIcon className="w-3 h-3" /> {pretty(tag)}
                     </span>
-                    <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                    <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                         {lists.length} {lists.length === 1 ? "list" : "lists"}
                     </span>
                 </div>

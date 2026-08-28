@@ -183,7 +183,7 @@ function StoreComingSoon() {
                         >
                             <Icon className="w-[26px] h-[26px] text-white/25" strokeWidth={1.5} />
                             <span className="font-display text-[10.5px] font-black uppercase tracking-[0.14em] text-white/45">{label}</span>
-                            <span className="text-[10.5px] text-white/25 leading-snug">{blurb}</span>
+                            <span className="text-[10.5px] text-white/45 leading-snug">{blurb}</span>
                         </div>
                     );
                 })}
@@ -236,7 +236,7 @@ function StoreCard({
             <span className="flex flex-col flex-1 p-3.5">
                 <span className="block font-display text-[13.5px] font-bold text-white leading-snug line-clamp-1">{item.name}</span>
                 {item.description && (
-                    <span className="block mt-1 text-[11.5px] text-white/40 leading-snug line-clamp-2 min-h-[30px]">
+                    <span className="block mt-1 text-[11.5px] text-white/55 leading-snug line-clamp-2 min-h-[30px]">
                         {item.description}
                     </span>
                 )}
@@ -268,12 +268,12 @@ function StoreCard({
                     ) : item.tier_locked ? (
                         <span
                             title={`Requires the ${item.required_tier} supporter tier`}
-                            className="inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-[6px] bg-white/[0.05] font-display text-[9px] font-black uppercase tracking-[0.08em] text-white/40"
+                            className="inline-flex items-center gap-1.5 h-[26px] px-2.5 rounded-[6px] bg-white/[0.05] font-display text-[9px] font-black uppercase tracking-[0.08em] text-white/55"
                         >
                             <Lock className="w-3 h-3" /> {item.required_tier}
                         </span>
                     ) : item.sold_out ? (
-                        <span className="inline-flex items-center h-[26px] px-2.5 rounded-[6px] bg-white/[0.05] font-display text-[9px] font-black uppercase tracking-[0.08em] text-white/35">
+                        <span className="inline-flex items-center h-[26px] px-2.5 rounded-[6px] bg-white/[0.05] font-display text-[9px] font-black uppercase tracking-[0.08em] text-white/50">
                             Sold out
                         </span>
                     ) : (
@@ -379,10 +379,10 @@ function WalletBanner({ wallet, onHelp }: { wallet: BountyWallet; onHelp: () => 
 
                     <div className="min-w-0 flex-1">
                         <p className="flex items-baseline justify-between gap-3">
-                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/40">Reward tier</span>
+                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.18em] text-white/55">Reward tier</span>
                             <button
                                 onClick={onHelp}
-                                className="shrink-0 inline-flex items-center gap-1 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/30 hover:text-white transition-colors"
+                                className="shrink-0 inline-flex items-center gap-1 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50 hover:text-white transition-colors"
                             >
                                 <HelpCircle className="w-3 h-3" /> How bounty works
                             </button>

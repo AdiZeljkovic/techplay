@@ -129,7 +129,7 @@ export default function RewardFeed() {
                                 >
                                     <ChevronsUp className="w-8 h-8" style={{ color: moment.promoted.color ?? "var(--accent)" }} />
                                 </span>
-                                <p className="mt-4 font-display text-[10px] font-black uppercase tracking-[0.22em] text-white/40">Rank up</p>
+                                <p className="mt-4 font-display text-[10px] font-black uppercase tracking-[0.22em] text-white/55">Rank up</p>
                                 <p className="mt-1.5 font-display text-[26px] font-black uppercase tracking-tight text-white leading-none">
                                     {moment.promoted.name}
                                 </p>
@@ -149,7 +149,7 @@ export default function RewardFeed() {
                                         <Trophy className="w-8 h-8 text-[var(--accent)]" />
                                     </span>
                                 )}
-                                <p className="mt-4 font-display text-[10px] font-black uppercase tracking-[0.22em] text-white/40">
+                                <p className="mt-4 font-display text-[10px] font-black uppercase tracking-[0.22em] text-white/55">
                                     {(moment.unlocked?.length ?? 0) > 1 ? `${moment.unlocked!.length} achievements unlocked` : "Achievement unlocked"}
                                 </p>
                                 <p className="mt-1.5 font-display text-[22px] font-black text-white leading-tight">

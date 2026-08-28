@@ -53,7 +53,7 @@ export default function RigCard({
                 >
                     <Link2 className="w-5 h-5 text-white/25" />
                     <span className="font-display text-[11.5px] font-bold text-white">Connect a platform</span>
-                    <span className="text-[11px] text-white/30">Steam pulls your library across in one click.</span>
+                    <span className="text-[11px] text-white/50">Steam pulls your library across in one click.</span>
                 </Link>
             ) : (
                 <div className="flex flex-wrap gap-1.5">

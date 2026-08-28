@@ -204,7 +204,7 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
                                 >
                                     {game.status}
                                 </span>
-                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/35">
+                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                                     {parseISO(game.released).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                                 </span>
                             </span>
@@ -215,7 +215,7 @@ function UpcomingList({ isOwnProfile }: { isOwnProfile: boolean }) {
 
             <Link
                 href="/calendar"
-                className="block pt-2 text-center font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/30 hover:text-[var(--accent)] transition-colors"
+                className="block pt-2 text-center font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/50 hover:text-[var(--accent)] transition-colors"
             >
                 View full release calendar →
             </Link>
@@ -417,7 +417,7 @@ function StatCell({
                 <Icon className="w-[27px] h-[27px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.6} />
             </span>
             <span className="min-w-0">
-                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
+                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">
                     {label}
                 </span>
                 <span className="mt-1 flex items-baseline gap-1.5">
@@ -446,7 +446,7 @@ function CollectionLedger({ stats, isOwnProfile }: { stats?: UserProfile["stats"
 
     const share = (n: number) => (total > 0 ? `${Math.round((n / total) * 100)}%` : null);
     const pct = (v: string | null) =>
-        v ? <span className="font-display text-[11px] font-bold tabular-nums text-white/30">{v}</span> : null;
+        v ? <span className="font-display text-[11px] font-bold tabular-nums text-white/50">{v}</span> : null;
 
     return (
         <div
@@ -486,7 +486,7 @@ function CollectionLedger({ stats, isOwnProfile }: { stats?: UserProfile["stats"
                         <span className="font-display text-[12px] font-black tabular-nums text-[var(--accent)]">{ring}%</span>
                     </RingMeter>
                     <span className="min-w-0">
-                        <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
+                        <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">
                             Completion rate
                         </span>
                         <span className="block mt-1 text-[12px] font-semibold text-white">
@@ -834,7 +834,7 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                     </span>
 
                     {(search || sort !== "recent") && (
-                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                             {total} {total === 1 ? "game" : "games"}
                         </span>
                     )}
@@ -867,7 +867,7 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                             <Library className="w-5 h-5" />
                         </span>
                         <p className="font-display text-[13px] font-bold text-white">Nothing on this shelf yet</p>
-                        <p className="text-[11px] text-white/35 max-w-[280px]">
+                        <p className="text-[11px] text-white/50 max-w-[280px]">
                             Pull your Steam library across in one click, or add a game by hand.
                         </p>
                         <div className="mt-2 flex items-center gap-2">
@@ -927,7 +927,7 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                                 <span className="w-9 h-9 rounded-full bg-white/[0.05] group-hover:bg-[var(--accent)]/15 flex items-center justify-center text-white/30 group-hover:text-[var(--accent)] transition-colors">
                                     <Plus className="w-4 h-4" />
                                 </span>
-                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/25 group-hover:text-white/60 transition-colors">
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/45 group-hover:text-white/60 transition-colors">
                                     Add game
                                 </span>
                             </button>
@@ -1040,7 +1040,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                         libraries fill this in themselves; this is for the ones
                         that cannot, and for a shelf that holds cartridges. */}
                     <div>
-                        <label htmlFor="add-platform" className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35 mb-1.5">
+                        <label htmlFor="add-platform" className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50 mb-1.5">
                             Platform <span className="text-white/20">— optional</span>
                         </label>
                         <input
@@ -1076,7 +1076,7 @@ function AddGameModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
                                         <span className="flex-1 min-w-0">
                                             <span className="block text-[13px] font-semibold text-white truncate">{g.name}</span>
                                             {g.released && (
-                                                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/30">
+                                                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/50">
                                                     {new Date(g.released).getFullYear()}
                                                 </span>
                                             )}

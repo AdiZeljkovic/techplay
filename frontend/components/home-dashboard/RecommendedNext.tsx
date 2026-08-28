@@ -107,7 +107,7 @@ function Row({
 
             {typeof match === "number" && (
                 <div className="shrink-0 text-right w-[62px]">
-                    <span className="block font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/30">Match</span>
+                    <span className="block font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/50">Match</span>
                     <span className="block font-display text-[22px] font-black tabular-nums leading-none" style={{ color: tone }}>
                         {match}%
                     </span>

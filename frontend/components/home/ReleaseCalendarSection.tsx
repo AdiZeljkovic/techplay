@@ -115,7 +115,7 @@ export default function ReleaseCalendarSection() {
                                         {game.name}
                                     </h4>
                                     {platforms && (
-                                        <p className="mt-1 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/25 truncate">
+                                        <p className="mt-1 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/45 truncate">
                                             {platforms}
                                         </p>
                                     )}

@@ -36,7 +36,7 @@ export default function DiscordWidget() {
                 </span>
                 <div className="min-w-0">
                     <p className="font-display text-[15px] font-black text-white leading-tight truncate">{siteName}</p>
-                    <p className="mt-0.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/30">
+                    <p className="mt-0.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/50">
                         Official server
                     </p>
                 </div>

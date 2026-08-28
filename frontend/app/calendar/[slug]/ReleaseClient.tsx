@@ -124,7 +124,7 @@ export default function ReleaseClient({ release }: { release: Release }) {
                             </button>
 
                             {wishlists > 0 && (
-                                <p className="pt-1 text-center text-[11.5px] text-white/35">
+                                <p className="pt-1 text-center text-[11.5px] text-white/50">
                                     {wishlists === 1 ? "1 person here is waiting" : `${wishlists} people here are waiting`}
                                 </p>
                             )}

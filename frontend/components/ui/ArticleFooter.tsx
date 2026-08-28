@@ -67,7 +67,7 @@ export default function ArticleFooter({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-3 border-t border-white/[0.07]">
                     {filteredTags.length > 0 && (
                         <div className="flex flex-wrap gap-2 items-center">
-                            <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest shrink-0">Tags:</span>
+                            <span className="text-white/50 text-[11px] font-bold uppercase tracking-widest shrink-0">Tags:</span>
                             {filteredTags.map((tag, i) => (
                                 <span key={i} className="px-3 py-1 bg-[var(--surface-0)] border border-white/[0.07] hover:border-[var(--accent)]/40 hover:text-[var(--accent)] text-white/45 text-[12px] rounded-[var(--radius-card)] transition-all cursor-default">
                                     {tag}
@@ -76,7 +76,7 @@ export default function ArticleFooter({
                         </div>
                     )}
                     <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest">Share:</span>
+                        <span className="text-white/50 text-[11px] font-bold uppercase tracking-widest">Share:</span>
                         <SocialShare url={shareUrl} title={shareTitle} description={shareDescription} vertical={false} />
                     </div>
                 </div>
@@ -102,7 +102,7 @@ export default function ArticleFooter({
                                 )}
                             </Link>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 mb-0.5">The Author</span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/50 mb-0.5">The Author</span>
                                 <Link href={`/author/${author.author_slug || author.username || 'me'}`} className="text-white font-bold text-[15px] hover:text-[var(--accent)] transition-colors leading-tight">
                                     {author.display_name || author.username}
                                 </Link>
@@ -117,7 +117,7 @@ export default function ArticleFooter({
 
                         {socialLinks.length > 0 && (
                             <div className="hidden sm:flex flex-col gap-2 items-end shrink-0">
-                                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">Follow Us</span>
+                                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">Follow Us</span>
                                 <div className="flex items-center gap-1.5">
                                     {socialLinks.map((s, i) => (
                                         <Link key={i} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}

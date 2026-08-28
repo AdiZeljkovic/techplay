@@ -272,7 +272,7 @@ export default function SectionHub({
     // One pager, rendered at both ends of the list.
     const pager = pages && pages.last > 1 && (
         <span className="flex items-center gap-3">
-            <span className="font-display text-[10.5px] font-bold tabular-nums text-white/30 whitespace-nowrap">
+            <span className="font-display text-[10.5px] font-bold tabular-nums text-white/50 whitespace-nowrap">
                 {pages.total.toLocaleString()} · page {pages.current} of {pages.last}
             </span>
             <span className="flex items-center gap-1.5">
@@ -571,7 +571,7 @@ export default function SectionHub({
                                                     {a.title}
                                                 </span>
                                                 {a.category && (
-                                                    <span className="block mt-0.5 text-[10.5px] text-white/30">{a.category.name}</span>
+                                                    <span className="block mt-0.5 text-[10.5px] text-white/50">{a.category.name}</span>
                                                 )}
                                             </span>
                                         </Link>
@@ -579,7 +579,7 @@ export default function SectionHub({
                                 ))}
                             </ol>
                         ) : (
-                            <p className="text-[11.5px] text-white/30">Not enough reading yet to rank anything.</p>
+                            <p className="text-[11.5px] text-white/50">Not enough reading yet to rank anything.</p>
                         )}
                     </Panel>
 
@@ -611,7 +611,7 @@ export default function SectionHub({
                                             <span className="block text-[12px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                                 {g.name}
                                             </span>
-                                            <span className="block text-[10.5px] uppercase tracking-[0.06em] text-white/30">
+                                            <span className="block text-[10.5px] uppercase tracking-[0.06em] text-white/50">
                                                 {shortDate(g.released) ?? "TBA"}
                                             </span>
                                         </span>
@@ -619,18 +619,18 @@ export default function SectionHub({
                                             <span className="block font-display text-[15px] font-black tabular-nums text-[var(--accent)] leading-none">
                                                 {Math.max(0, g.days_away)}
                                             </span>
-                                            <span className="block text-[8.5px] uppercase tracking-[0.1em] text-white/30">days</span>
+                                            <span className="block text-[8.5px] uppercase tracking-[0.1em] text-white/50">days</span>
                                         </span>
                                     </Link>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-[11.5px] text-white/30">Nothing dated in the window yet.</p>
+                            <p className="text-[11.5px] text-white/50">Nothing dated in the window yet.</p>
                         )}
                     </Panel>
 
                     <Panel title="Stay in the loop">
-                        <p className="text-[11.5px] text-white/40 leading-snug mb-3">
+                        <p className="text-[11.5px] text-white/55 leading-snug mb-3">
                             The bigger stories, sent when there is something worth sending.
                         </p>
                         <form onSubmit={subscribe} className="flex gap-2">
@@ -814,12 +814,12 @@ function ArticleCard({
                     {article.title}
                 </span>
                 {article.excerpt && (
-                    <span className="mt-1.5 text-[11.5px] text-white/40 leading-snug line-clamp-3">
+                    <span className="mt-1.5 text-[11.5px] text-white/55 leading-snug line-clamp-3">
                         {article.excerpt}
                     </span>
                 )}
 
-                <span className="mt-auto pt-3.5 flex items-center justify-between gap-2 text-[10px] text-white/30">
+                <span className="mt-auto pt-3.5 flex items-center justify-between gap-2 text-[10px] text-white/50">
                     {author && (
                         <span className="inline-flex items-center gap-1.5 min-w-0">
                             <User className="w-3 h-3 shrink-0" />

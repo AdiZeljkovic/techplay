@@ -56,7 +56,7 @@ function Toggle({
             <span className={`shrink-0 mt-0.5 ${on ? "text-[var(--accent)]" : "text-white/25"}`}>{icon}</span>
             <span className="min-w-0 flex-1">
                 <span className="block text-[12.5px] font-semibold text-white">{title}</span>
-                <span className="block text-[11px] text-white/35 leading-snug">{body}</span>
+                <span className="block text-[11px] text-white/50 leading-snug">{body}</span>
             </span>
             <span
                 className={`shrink-0 relative w-[42px] h-[24px] rounded-full transition-colors duration-300 ${
@@ -302,7 +302,7 @@ export default function ListEditor({
                     <div className="flex items-center gap-3 mb-2">
                         <button
                             onClick={onClose}
-                            className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 hover:text-white transition-colors"
+                            className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/55 hover:text-white transition-colors"
                         >
                             <ArrowLeft className="w-3.5 h-3.5" /> Back to lists
                         </button>
@@ -370,7 +370,7 @@ export default function ListEditor({
                     <Panel
                         title="The ranking"
                         meta={
-                            <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                            <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                                 {items.length}{limit !== null ? ` / ${limit}` : ""} games
                             </span>
                         }
@@ -385,7 +385,7 @@ export default function ListEditor({
                                     the page is still blank. */}
                                 <ul className="mt-4 inline-flex flex-col gap-2 text-left">
                                     {TIPS.map((tip) => (
-                                        <li key={tip} className="flex gap-2.5 max-w-[420px] text-[11.5px] text-white/40 leading-snug">
+                                        <li key={tip} className="flex gap-2.5 max-w-[420px] text-[11.5px] text-white/55 leading-snug">
                                             <span aria-hidden className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[var(--accent)] shrink-0" />
                                             {tip}
                                         </li>
@@ -452,7 +452,7 @@ export default function ListEditor({
                                             <p className="flex items-baseline gap-2 min-w-0">
                                                 <span className="text-[13px] font-bold text-white truncate">{item.game?.name}</span>
                                                 {item.game?.released && (
-                                                    <span className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/25">
+                                                    <span className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/45">
                                                         {item.game.released.slice(0, 4)}
                                                     </span>
                                                 )}
@@ -601,7 +601,7 @@ export default function ListEditor({
                         title="List type"
                         material="instrument"
                         meta={limit !== null
-                            ? <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">{items.length} / {limit}</span>
+                            ? <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">{items.length} / {limit}</span>
                             : undefined}
                         bodyClassName="p-4"
                     >
@@ -706,7 +706,7 @@ function PreviewCard({
 
                 <div className="mt-3 flex items-center gap-3">
                     <span className="text-[11px] font-semibold text-white/70">@{username}</span>
-                    <span className="flex items-center gap-3 font-display text-[10px] font-bold tabular-nums text-white/35">
+                    <span className="flex items-center gap-3 font-display text-[10px] font-bold tabular-nums text-white/50">
                         <span className="inline-flex items-center gap-1"><Heart className="w-3 h-3" /> {list.likes_count ?? 0}</span>
                         <span className="inline-flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {list.comments_count ?? 0}</span>
                         <span className="inline-flex items-center gap-1"><Trophy className="w-3 h-3" /> {items.length}</span>
@@ -771,7 +771,7 @@ function GameSearch({ onAdd, disabled, limitLabel }: { onAdd: (slug: string) => 
                                 <span className="absolute inset-x-0 bottom-0 p-2">
                                     <span className="block text-[11px] font-bold text-white leading-tight line-clamp-2">{g.name}</span>
                                     {g.released && (
-                                        <span className="block mt-0.5 font-display text-[9px] font-bold tabular-nums text-white/35">
+                                        <span className="block mt-0.5 font-display text-[9px] font-bold tabular-nums text-white/50">
                                             {new Date(g.released).getFullYear()}
                                         </span>
                                     )}
@@ -836,7 +836,7 @@ export function CommunityInspiration({ variant = "rail" }: { variant?: "rail" | 
                             <span className="block text-[12px] font-bold text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                 {l.name}
                             </span>
-                            <span className="mt-1 flex items-center gap-2.5 font-display text-[9.5px] font-bold tabular-nums text-white/30">
+                            <span className="mt-1 flex items-center gap-2.5 font-display text-[9.5px] font-bold tabular-nums text-white/50">
                                 <span>@{l.user?.username}</span>
                                 <span className="inline-flex items-center gap-1"><Heart className="w-2.5 h-2.5" /> {l.likes_count ?? 0}</span>
                                 <span className="inline-flex items-center gap-1"><MessageSquare className="w-2.5 h-2.5" /> {l.comments_count ?? 0}</span>

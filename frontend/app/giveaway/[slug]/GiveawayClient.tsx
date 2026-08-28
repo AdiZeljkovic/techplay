@@ -478,7 +478,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             transition={{ delay: 0.3, duration: 0.4 }}
                             className="mb-8"
                         >
-                            <div className="text-[9px] uppercase tracking-[0.2em] text-white/35 font-bold mb-3">Time Remaining</div>
+                            <div className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-bold mb-3">Time Remaining</div>
                             <div className="flex justify-center gap-2 sm:gap-3">
                                 {[
                                     { label: 'Days', value: time.days },
@@ -499,7 +499,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                         >
                                             {String(item.value).padStart(2, '0')}
                                         </motion.span>
-                                        <span className="text-[9px] uppercase tracking-widest text-white/35 mt-2 font-bold">{item.label}</span>
+                                        <span className="text-[9px] uppercase tracking-widest text-white/50 mt-2 font-bold">{item.label}</span>
                                     </div>
                                 ))}
                             </div>
@@ -553,7 +553,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                         {giveaway.winner.username?.[0]?.toUpperCase() ?? "?"}
                                     </div>
                                     <div className="text-left">
-                                        <div className="text-[10px] text-white/40 uppercase tracking-widest">Winner</div>
+                                        <div className="text-[10px] text-white/55 uppercase tracking-widest">Winner</div>
                                         <div className="text-xl font-black text-[var(--accent)]">@{giveaway.winner.username}</div>
                                     </div>
                                 </div>
@@ -658,7 +658,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                         {optionalTasks.length > 0 && (
                                             <div className="flex items-center gap-2 mb-3">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                                <span className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Required</span>
+                                                <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">Required</span>
                                             </div>
                                         )}
                                         <div className="grid md:grid-cols-2 gap-3">
@@ -675,7 +675,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                         {requiredTasks.length > 0 && (
                                             <div className="flex items-center gap-3 my-4">
                                                 <div className="flex-1 h-px bg-white/[0.05]" />
-                                                <span className="text-[10px] text-white/25 uppercase tracking-widest font-bold flex items-center gap-1.5">
+                                                <span className="text-[10px] text-white/45 uppercase tracking-widest font-bold flex items-center gap-1.5">
                                                     <Zap className="w-3 h-3 text-[var(--accent)]/60" />
                                                     Bonus Tasks
                                                 </span>

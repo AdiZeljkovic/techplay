@@ -129,7 +129,7 @@ export default function ProfileTabStrip({
                         <span className="font-display text-[15px] font-black tabular-nums leading-none text-amber-400">
                             {bounty.toLocaleString("en-US")}
                         </span>
-                        <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">
+                        <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50">
                             Bounty
                         </span>
                     </Link>

@@ -11,7 +11,7 @@
  */
 export default function DataAttribution({ className = "" }: { className?: string }) {
     return (
-        <p className={`text-[11.5px] leading-relaxed text-white/25 ${className}`}>
+        <p className={`text-[11.5px] leading-relaxed text-white/45 ${className}`}>
             Game and studio data from{" "}
             <a
                 href="https://www.igdb.com"

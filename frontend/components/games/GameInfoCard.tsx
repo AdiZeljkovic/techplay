@@ -31,7 +31,7 @@ export default function GameInfoCard({ game }: { game: LinkedGame }) {
 
     return (
         <div className="rounded-[8px] border border-white/[0.07] bg-[var(--surface-1)] overflow-hidden">
-            <p className="px-4 pt-3.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
+            <p className="px-4 pt-3.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/55">
                 About this game
             </p>
 
@@ -51,7 +51,7 @@ export default function GameInfoCard({ game }: { game: LinkedGame }) {
                     <p className="font-display text-[15px] font-black text-white leading-tight group-hover:text-[var(--accent)] transition-colors">
                         {game.name}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-white/40">
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-white/55">
                         {year && (
                             <span className="inline-flex items-center gap-1">
                                 <Calendar className="w-3 h-3" /> {year}

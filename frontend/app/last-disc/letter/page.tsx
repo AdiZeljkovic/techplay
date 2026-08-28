@@ -107,7 +107,7 @@ export default function LetterPage() {
             <div className="container-page pt-8 max-w-[760px]">
                 <Link
                     href="/last-disc"
-                    className="inline-flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/35 hover:text-[var(--accent)] transition-colors"
+                    className="inline-flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/50 hover:text-[var(--accent)] transition-colors"
                 >
                     <ArrowLeft className="w-3.5 h-3.5" /> The Last Disc
                 </Link>

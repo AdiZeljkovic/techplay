@@ -41,7 +41,7 @@ function Trailer({ id, title, date }: { id: string; title: string; date: string 
             </div>
             <div className="p-4 flex items-center justify-between">
                 <h3 className="text-[14px] font-bold text-white">{title}</h3>
-                <span className="text-[11px] text-white/35 uppercase tracking-wide">{date}</span>
+                <span className="text-[11px] text-white/50 uppercase tracking-wide">{date}</span>
             </div>
         </div>
     );

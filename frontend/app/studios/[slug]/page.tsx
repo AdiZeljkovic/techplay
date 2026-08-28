@@ -170,7 +170,7 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                 <span aria-hidden className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
                 <div className="relative z-10 container-page pt-6 pb-10">
-                <nav className="mb-6 flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/40">
+                <nav className="mb-6 flex items-center gap-1.5 font-display text-[10px] font-black uppercase tracking-[0.14em] text-white/55">
                     <Link href="/games" className="hover:text-white transition-colors">Games</Link>
                     <span className="text-white/20">/</span>
                     <Link href="/studios" className="hover:text-white transition-colors">Studios</Link>
@@ -295,7 +295,7 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
             <div className="container-page py-6 space-y-5">
                 {studio.subsidiaries.length > 0 && (
                     <Panel title={`Studios under ${studio.name}`} meta={
-                        <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                        <span className="font-display text-[10px] font-bold tabular-nums text-white/45">
                             {studio.subsidiaries.length}
                         </span>
                     }>
@@ -314,7 +314,7 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
                                 >
                                     <Building2 className="h-3.5 w-3.5 text-white/25 transition-colors group-hover/sub:text-white/80" />
                                     {sub.name}
-                                    <span className="rounded-[4px] bg-white/[0.06] px-1.5 py-0.5 text-[10px] tabular-nums text-white/40 transition-colors group-hover/sub:bg-black/25 group-hover/sub:text-white/85">
+                                    <span className="rounded-[4px] bg-white/[0.06] px-1.5 py-0.5 text-[10px] tabular-nums text-white/55 transition-colors group-hover/sub:bg-black/25 group-hover/sub:text-white/85">
                                         {sub.games_count}
                                     </span>
                                 </Link>
@@ -382,7 +382,7 @@ function ReleaseHistory({ years }: { years: Record<string, number> }) {
             material="instrument"
             title="Releases by year"
             meta={
-                <span className="font-display text-[10px] font-bold tabular-nums text-white/30">
+                <span className="font-display text-[10px] font-bold tabular-nums text-white/50">
                     {total.toLocaleString()} across {first}–{last}
                 </span>
             }
@@ -403,7 +403,7 @@ function ReleaseHistory({ years }: { years: Record<string, number> }) {
                     />
                 ))}
             </div>
-            <div className="mt-2 flex justify-between font-display text-[10px] font-bold tabular-nums text-white/25">
+            <div className="mt-2 flex justify-between font-display text-[10px] font-bold tabular-nums text-white/45">
                 <span>{first}</span>
                 <span className="text-white/35">peak {peak} in one year</span>
                 <span>{last}</span>
@@ -461,7 +461,7 @@ function StudioFigures({ studio, years }: { studio: Studio; years: Record<string
                         <p className="font-display text-[22px] font-black leading-none tabular-nums text-white">
                             {figure.value.toLocaleString()}
                         </p>
-                        <p className="mt-1 font-display text-[9px] font-black uppercase tracking-[0.12em] text-white/35">
+                        <p className="mt-1 font-display text-[9px] font-black uppercase tracking-[0.12em] text-white/50">
                             {figure.label}
                         </p>
                     </div>
@@ -469,7 +469,7 @@ function StudioFigures({ studio, years }: { studio: Studio; years: Record<string
             </div>
 
             {seasons.length > 1 && (
-                <p className="mt-3.5 border-t border-white/[0.07] pt-3 font-display text-[10px] font-bold tabular-nums text-white/30">
+                <p className="mt-3.5 border-t border-white/[0.07] pt-3 font-display text-[10px] font-bold tabular-nums text-white/50">
                     Shipping {seasons[0]}–{seasons[seasons.length - 1]}
                 </p>
             )}
@@ -524,7 +524,7 @@ function GameShelf({ title, games, total }: { title: string; games: StudioGame[]
         <Panel
             title={title}
             meta={
-                <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                <span className="font-display text-[10px] font-bold tabular-nums text-white/45">
                     {total.toLocaleString()}
                 </span>
             }

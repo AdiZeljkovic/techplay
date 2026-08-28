@@ -237,7 +237,7 @@ export default async function ReleasePage({ params }: Props) {
                                     {other.name}
                                 </span>
                                 {other.released && (
-                                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/35 mt-0.5">
+                                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/50 mt-0.5">
                                         {new Date(other.released).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
                                     </span>
                                 )}

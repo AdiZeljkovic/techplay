@@ -71,7 +71,7 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
                                             <span className="text-[10px] text-white/45 truncate">{f.game_name}</span>
                                         </span>
                                     ) : (
-                                        <span className="block mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/25">
+                                        <span className="block mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/45">
                                             {f.is_online ? "Online" : "Offline"}
                                         </span>
                                     )}

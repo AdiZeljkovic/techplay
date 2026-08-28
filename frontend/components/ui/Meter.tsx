@@ -61,7 +61,7 @@ export default function Meter({
         <div className={cn("min-w-0", className)}>
             {label && (
                 <p className="mb-1.5 flex items-baseline justify-between gap-3">
-                    <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/35 truncate">{label}</span>
+                    <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/50 truncate">{label}</span>
                     {showCount && (
                         <span className="shrink-0 font-display text-[10px] font-black tabular-nums text-white/45">
                             {done}<span className="text-white/20">/{safeMax}</span>

@@ -124,7 +124,7 @@ export default function GuideHelpful({
             </div>
 
             {total > 0 && (
-                <p className="flex items-center gap-2 px-5 md:px-6 py-3 border-t border-white/[0.07] font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
+                <p className="flex items-center gap-2 px-5 md:px-6 py-3 border-t border-white/[0.07] font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400/70" />
                     <span className="tabular-nums text-white/60">{counts.helpful}</span> of{" "}
                     <span className="tabular-nums text-white/60">{total}</span> found this helpful

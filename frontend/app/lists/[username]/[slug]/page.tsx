@@ -170,7 +170,7 @@ export default async function GameListPage({ params }: Props) {
                                 </span>
                             </Link>
                         )}
-                        <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/40">
+                        <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/55">
                             {list.items_count} {list.items_count === 1 ? "game" : "games"}
                         </span>
                         {(list.tags?.length ?? 0) > 0 && (
@@ -224,7 +224,7 @@ export default async function GameListPage({ params }: Props) {
                         {podium.length > 0 && (
                             <section>
                                 <h2 className="flex items-center gap-3 mb-4">
-                                    <span className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/35">The top {podium.length}</span>
+                                    <span className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/50">The top {podium.length}</span>
                                     <span aria-hidden className="flex-1 h-px bg-white/[0.07]" />
                                 </h2>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
@@ -261,7 +261,7 @@ export default async function GameListPage({ params }: Props) {
                                                         <span className="font-display text-[16px] font-black tabular-nums leading-none text-white">
                                                             {Number(it.score).toFixed(1)}
                                                         </span>
-                                                        <span className="mt-0.5 font-display text-[7px] font-bold uppercase tracking-[0.14em] text-white/40">Score</span>
+                                                        <span className="mt-0.5 font-display text-[7px] font-bold uppercase tracking-[0.14em] text-white/55">Score</span>
                                                     </span>
                                                 )}
                                             </span>
@@ -271,7 +271,7 @@ export default async function GameListPage({ params }: Props) {
                                                     <span className="font-display text-[16px] font-black text-white leading-tight line-clamp-1 group-hover:text-[var(--accent)] transition-colors">
                                                         {it.game!.name}
                                                     </span>
-                                                    <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
+                                                    <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/45">
                                                         {it.game!.released ? it.game!.released.slice(0, 4) : "TBA"}
                                                     </span>
                                                 </span>
@@ -294,7 +294,7 @@ export default async function GameListPage({ params }: Props) {
                             <section>
                                 {podium.length > 0 && (
                                     <h2 className="flex items-center gap-3 mb-4">
-                                        <span className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/35">
+                                        <span className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
                                             {podium.length + 1}–{items.length}
                                         </span>
                                         <span aria-hidden className="flex-1 h-px bg-white/[0.07]" />
@@ -337,11 +337,11 @@ export default async function GameListPage({ params }: Props) {
                                                         <span className="font-display text-[15px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                                             {it.game!.name}
                                                         </span>
-                                                        <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
+                                                        <span className="shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/45">
                                                             {it.game!.released ? it.game!.released.slice(0, 4) : "TBA"}
                                                         </span>
                                                         {it.game!.rating > 0 && (
-                                                            <span className="shrink-0 inline-flex items-center gap-1 text-[11px] tabular-nums text-white/35">
+                                                            <span className="shrink-0 inline-flex items-center gap-1 text-[11px] tabular-nums text-white/50">
                                                                 <Star className="w-3 h-3 text-amber-400 fill-amber-400" /> {Number(it.game!.rating).toFixed(1)}
                                                             </span>
                                                         )}
@@ -359,7 +359,7 @@ export default async function GameListPage({ params }: Props) {
                                                         <span className="font-display text-[17px] font-black tabular-nums leading-none text-[var(--accent)]">
                                                             {Number(it.score).toFixed(1)}
                                                         </span>
-                                                        <span className="mt-0.5 font-display text-[7.5px] font-bold uppercase tracking-[0.14em] text-white/30">
+                                                        <span className="mt-0.5 font-display text-[7.5px] font-bold uppercase tracking-[0.14em] text-white/50">
                                                             Score
                                                         </span>
                                                     </span>

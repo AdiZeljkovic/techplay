@@ -82,7 +82,7 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
                             </p>
                         )}
 
-                        <div className="flex flex-wrap items-center gap-4 text-[11px] text-white/35">
+                        <div className="flex flex-wrap items-center gap-4 text-[11px] text-white/50">
                             <span className="flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5 text-[var(--accent)]" />
                                 Member since {author.joined_at}
@@ -144,7 +144,7 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
                     {STATS.map(({ key, label }) => (
                         <div key={key} className="bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] px-3 py-3 text-center">
                             <span className="block text-[22px] font-black text-white font-display">{stats[key]}</span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/35">{label}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">{label}</span>
                         </div>
                     ))}
                 </div>

@@ -189,7 +189,7 @@ function CreateThreadForm() {
     ].filter(Boolean) as string[];
 
     const field = "w-full rounded-[9px] bg-white/[0.03] border border-white/[0.09] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_55%,transparent)] transition-colors";
-    const legend = "font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/40";
+    const legend = "font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/55";
 
     /* The preview sits in the shell's rail rather than inside the form: it is
        something to look at, not something to fill in. */
@@ -330,7 +330,7 @@ function CreateThreadForm() {
                                 <p className="mt-3 inline-flex items-center gap-2.5 h-11 px-4 rounded-[9px] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] bg-[var(--accent-soft)]">
                                     <Check className="w-4 h-4 text-[var(--accent)]" />
                                     <span className="font-display text-[12px] font-bold text-white">{selectedCategory.name}</span>
-                                    <span className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/30">Locked</span>
+                                    <span className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/50">Locked</span>
                                 </p>
                             ) : (
                                 /* Boards as marks, not a bare select. The select
@@ -580,7 +580,7 @@ function CreateThreadForm() {
                         {/* ── the action ── */}
                         <div className="flex flex-wrap items-center justify-end gap-3 px-5 py-4 border-t border-white/[0.07]" style={{ background: "var(--surface-2)" }}>
                             {missing.length > 0 && (
-                                <span className="mr-auto font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                <span className="mr-auto font-display text-[10.5px] font-bold uppercase tracking-[0.1em] text-white/50">
                                     Still needs {missing.join(", ")}
                                 </span>
                             )}

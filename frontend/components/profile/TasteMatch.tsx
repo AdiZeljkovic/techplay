@@ -53,7 +53,7 @@ export default function TasteMatch({ username, displayName }: { username: string
 
         return (
             <section className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] p-5">
-                <p className="font-display text-[11px] font-black uppercase tracking-[0.16em] text-white/40">Taste match</p>
+                <p className="font-display text-[11px] font-black uppercase tracking-[0.16em] text-white/55">Taste match</p>
                 <p className="mt-2 text-[13px] text-white/50 leading-relaxed max-w-[520px]">
                     {data.yours_is_short
                         ? `Add ${data.needed} games to your collection and this will tell you how close your taste is to ${displayName}'s.`
@@ -98,7 +98,7 @@ export default function TasteMatch({ username, displayName }: { username: string
                     <p className="mt-1.5 font-display text-[12px] font-bold uppercase tracking-[0.12em] text-[var(--accent-ink)]">
                         {data.verdict}
                     </p>
-                    <p className="mt-2 text-[11.5px] text-white/35">
+                    <p className="mt-2 text-[11.5px] text-white/50">
                         {data.counts?.shared ?? 0} of your {data.counts?.yours ?? 0} games in common
                     </p>
                 </div>
@@ -114,7 +114,7 @@ export default function TasteMatch({ username, displayName }: { username: string
 
                     {(data.shared_genres?.length ?? 0) > 0 && (
                         <p className="flex flex-wrap items-center gap-1.5">
-                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/35 mr-1">Both of you</span>
+                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/50 mr-1">Both of you</span>
                             {data.shared_genres!.map((g) => (
                                 <span key={g.name} className="inline-flex items-center h-[22px] px-2.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_35%,transparent)] text-[11px] font-bold text-[var(--accent-ink)]">
                                     {g.name}
@@ -127,7 +127,7 @@ export default function TasteMatch({ username, displayName }: { username: string
                         and it is what people actually reply to. */}
                     {(data.they_love?.length ?? 0) > 0 && (
                         <p className="flex flex-wrap items-center gap-1.5">
-                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/35 mr-1">Only them</span>
+                            <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/50 mr-1">Only them</span>
                             {data.they_love!.map((g) => (
                                 <span key={g.name} className="inline-flex items-center h-[22px] px-2.5 rounded-full bg-white/[0.05] border border-white/[0.09] text-[11px] font-bold text-white/55">
                                     {g.name}
@@ -138,7 +138,7 @@ export default function TasteMatch({ username, displayName }: { username: string
 
                     {(data.shared_games?.length ?? 0) > 0 && (
                         <div>
-                            <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/35 mb-2">Both on your shelves</p>
+                            <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/50 mb-2">Both on your shelves</p>
                             <div className="flex flex-wrap gap-2">
                                 {data.shared_games!.map((g) => (
                                     <Link

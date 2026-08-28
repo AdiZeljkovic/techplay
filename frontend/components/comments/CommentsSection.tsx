@@ -209,7 +209,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                 </div>
                             )}
                             <div className="mt-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-                                <p className="text-[11px] text-white/30">Be respectful and follow our community guidelines.</p>
+                                <p className="text-[11px] text-white/50">Be respectful and follow our community guidelines.</p>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting || !content.trim()}
@@ -362,14 +362,14 @@ const CommentItem = memo(function CommentItem({
                         {/* Rank Badge */}
                         {comment.user.rank && !isStaff && (
                             <span
-                                className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[var(--surface-1)] text-white/35 border border-white/[0.07]"
+                                className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-[var(--surface-1)] text-white/50 border border-white/[0.07]"
                                 style={{ color: comment.user.rank.color }}
                             >
                                 {comment.user.rank.name}
                             </span>
                         )}
 
-                        <span className="text-[11px] text-white/35 font-bold uppercase tracking-wider" suppressHydrationWarning>• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
+                        <span className="text-[11px] text-white/50 font-bold uppercase tracking-wider" suppressHydrationWarning>• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
                     </div>
 
                     <div className={`text-white/45 leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''}`}>
@@ -402,7 +402,7 @@ const CommentItem = memo(function CommentItem({
                         {depth < 2 && (
                             <button
                                 onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/35 hover:text-[var(--accent)] transition-colors"
+                                className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-white/50 hover:text-[var(--accent)] transition-colors"
                             >
                                 <MessageSquare className="w-4 h-4" />
                                 Reply

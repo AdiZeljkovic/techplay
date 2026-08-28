@@ -220,7 +220,7 @@ export default function TierBoard({
                                 {/* An empty rung is a statement — nothing here is
                                     this good, or this bad — so it stays drawn. */}
                                 {row.length === 0 && (
-                                    <span className="self-center text-[11px] text-white/15 pl-1">
+                                    <span className="self-center text-[11px] text-white/45 pl-1">
                                         {editable ? "Drop a game here" : "—"}
                                     </span>
                                 )}
@@ -239,7 +239,7 @@ export default function TierBoard({
                             : "border-white/[0.1]"
                     }`}
                 >
-                    <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/35">
+                    <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/50">
                         Unranked · {unranked.length}
                     </p>
 
@@ -256,7 +256,7 @@ export default function TierBoard({
                             ))}
                         </div>
                     ) : (
-                        <p className="text-[11.5px] text-white/25">
+                        <p className="text-[11.5px] text-white/45">
                             Every game on the board has a tier.
                         </p>
                     )}

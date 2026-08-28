@@ -231,7 +231,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                                         {decodeHtml(review.author?.display_name || review.author?.username || "TechPlay Reviewer")}
                                                     </Link>
                                                 </span>
-                                                <div className="flex items-center gap-2 text-white/35 text-[11px] font-bold uppercase tracking-widest mt-1">
+                                                <div className="flex items-center gap-2 text-white/50 text-[11px] font-bold uppercase tracking-widest mt-1">
                                                     <span>{publishedDate}</span>
                                                     <span className="w-1 h-1 rounded-full bg-white/12" />
                                                     <span>{readingTime.toUpperCase()}</span>
@@ -244,13 +244,13 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                 {/* Info bar beneath hero */}
                                 <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-8 md:px-12 py-2.5 gap-3">
                                     <div className="flex items-center flex-wrap gap-3">
-                                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">CATEGORY:</span>
+                                        <span className="text-white/50 text-[11px] font-bold uppercase tracking-widest mr-2">CATEGORY:</span>
                                         <span className="inline-flex items-center h-[26px] px-3 rounded-full border border-white/10 text-white text-[10.5px] font-bold uppercase tracking-wider">
                                             {decodeHtml(review.category?.name) || "Review"}
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2.5 flex-wrap">
-                                        <span className="text-white/35 text-[11px] font-bold uppercase tracking-widest">SHARE:</span>
+                                        <span className="text-white/50 text-[11px] font-bold uppercase tracking-widest">SHARE:</span>
                                         <SocialShare
                                             url={`/reviews/${review.slug}`}
                                             title={decodeHtml(review.title)}

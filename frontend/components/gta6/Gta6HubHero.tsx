@@ -62,7 +62,7 @@ export default function Gta6HubHero() {
                         {/* Release date + countdown */}
                         <div className="flex flex-wrap items-end gap-x-6 gap-y-4 mb-8">
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35 mb-1">Release Date</p>
+                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Release Date</p>
                                 <p className="font-display text-[20px] md:text-[24px] font-black text-white">Nov 19, 2026</p>
                             </div>
                             <Gta6Countdown />

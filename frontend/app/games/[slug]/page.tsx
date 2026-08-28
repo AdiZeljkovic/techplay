@@ -390,7 +390,7 @@ function CompanyRow({
 
     return (
         <div>
-            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">{label}</p>
+            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">{label}</p>
             <p className="mt-1 text-[13px] font-medium text-white/85">
                 {names.map((name, index) => {
                     const slug = linkable.get(name.toLowerCase());
@@ -493,7 +493,7 @@ function ScoreStack({ game }: { game: GameDetail }) {
         <div className="shrink-0 rounded-[14px] border border-white/[0.09] bg-black/40 backdrop-blur-sm p-4 md:min-w-[196px]">
             {readers !== null && (
                 <div className="pb-3.5 border-b border-white/[0.07]">
-                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.14em] text-white/35">
+                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.14em] text-white/50">
                         Reader score
                     </p>
                     <p className="mt-1 flex items-baseline gap-1.5">
@@ -503,7 +503,7 @@ function ScoreStack({ game }: { game: GameDetail }) {
                         <span className="font-display text-[13px] font-bold text-white/30">/ {game.rating_top ?? 10}</span>
                     </p>
                     {game.ratings_count > 0 && (
-                        <p className="mt-1 text-[11.5px] text-white/35 tabular-nums">
+                        <p className="mt-1 text-[11.5px] text-white/50 tabular-nums">
                             {game.ratings_count.toLocaleString()} {game.ratings_count === 1 ? "vote" : "votes"}
                         </p>
                     )}
@@ -607,7 +607,7 @@ function LinkRows({ links, website }: { links: GameDetail["links"]; website: str
 
                 {social.length > 0 && (
                     <div className="pt-0.5">
-                        <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Community</p>
+                        <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Community</p>
                         <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1">
                             {social.map((link) => (
                                 <a
@@ -769,7 +769,7 @@ function TimeToBeat({ times }: { times: GameDetail["time_to_beat"] }) {
                             <p className="mt-1.5 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/55">
                                 {pace.label}
                             </p>
-                            <p className="text-[11px] leading-snug text-white/30 whitespace-nowrap">{pace.note}</p>
+                            <p className="text-[11px] leading-snug text-white/50 whitespace-nowrap">{pace.note}</p>
                         </div>
                     ))}
                 </div>
@@ -822,7 +822,7 @@ function WaysToPlay({
                 <ChipRow label="Engine" values={engines} />
                 {players.length > 0 && (
                     <div>
-                        <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Players</p>
+                        <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Players</p>
                         <p className="mt-1 text-[13px] font-medium text-white/85 tabular-nums">{players.join(" · ")}</p>
                     </div>
                 )}
@@ -836,7 +836,7 @@ function ChipRow({ label, values }: { label: string; values: string[] }) {
 
     return (
         <div>
-            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">{label}</p>
+            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">{label}</p>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {values.map((value) => (
                     <span
@@ -864,9 +864,9 @@ function LanguageTable({ rows }: { rows: GameLanguage[] }) {
             <table className="w-full text-[12.5px]">
                 <thead>
                     <tr className="text-left">
-                        <th className="pb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Language</th>
+                        <th className="pb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Language</th>
                         {(["audio", "subtitles", "interface"] as const).map((column) => (
-                            <th key={column} className="pb-2 w-[86px] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">
+                            <th key={column} className="pb-2 w-[86px] font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">
                                 {column}
                             </th>
                         ))}
@@ -916,7 +916,7 @@ function StudioRow({
 
     return (
         <div>
-            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">{label}</p>
+            <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">{label}</p>
             <p className="mt-1 text-[13px] font-medium text-white/85">
                 {credited.map((studio, index) => (
                     <span key={studio.slug}>
@@ -936,7 +936,7 @@ function AttributeGrid({ groups }: { groups: Record<string, string[]> }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {Object.entries(groups).map(([category, values]) => (
                 <div key={category} className="rounded-[8px] border border-white/[0.06] bg-white/[0.03] px-3.5 py-3">
-                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">
+                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">
                         {category.replace(/^Minimum /, "Min. ")}
                     </p>
                     <p className="mt-1 text-[13px] font-medium text-white/85 leading-snug">{values.join(", ")}</p>
@@ -976,7 +976,7 @@ function MiniGameCard({ game }: { game: GameListItem }) {
                     {game.name}
                 </p>
                 {game.released && (
-                    <p className="mt-0.5 text-[10.5px] text-white/35">{game.released.slice(0, 4)}</p>
+                    <p className="mt-0.5 text-[10.5px] text-white/50">{game.released.slice(0, 4)}</p>
                 )}
             </div>
         </Link>
@@ -1282,7 +1282,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         reader looking at pictures stays looking at pictures. */}
                     {(screenshots.length > 0 || artworks.length > 0) && (
                         <Panel title="Gallery" meta={
-                            <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                            <span className="font-display text-[10px] font-bold tabular-nums text-white/45">
                                 {screenshots.length + artworks.length}
                             </span>
                         }>
@@ -1290,7 +1290,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 {screenshots.length > 0 && (
                                     <div>
                                         {artworks.length > 0 && (
-                                            <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/30">
+                                            <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">
                                                 Screenshots
                                             </p>
                                         )}
@@ -1300,7 +1300,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 {artworks.length > 0 && (
                                     <div>
                                         {screenshots.length > 0 && (
-                                            <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/30">
+                                            <p className="mb-2 font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">
                                                 Key art
                                             </p>
                                         )}
@@ -1384,7 +1384,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         <Panel
                             title="In member lists"
                             meta={
-                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                                <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                                     {game.in_lists!.total}
                                 </span>
                             }
@@ -1405,13 +1405,13 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                             <span className="block font-display text-[12.5px] font-bold text-white/85 truncate group-hover:text-[var(--accent)] transition-colors">
                                                 {l.name}
                                             </span>
-                                            <span className="mt-0.5 block text-[10.5px] text-white/35 truncate">
+                                            <span className="mt-0.5 block text-[10.5px] text-white/50 truncate">
                                                 {l.display_name || l.username} · {l.items_count} {l.items_count === 1 ? "game" : "games"}
                                                 {l.list_type === "tier" ? " · tier list" : ""}
                                             </span>
                                         </span>
                                         {l.likes_count > 0 && (
-                                            <span className="shrink-0 font-display text-[10.5px] font-bold tabular-nums text-white/30">
+                                            <span className="shrink-0 font-display text-[10.5px] font-bold tabular-nums text-white/50">
                                                 ♥ {l.likes_count}
                                             </span>
                                         )}
@@ -1457,7 +1457,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                                 {a.title}
                                             </p>
                                             {a.published_at && (
-                                                <p className="mt-1 text-[10.5px] text-white/35">
+                                                <p className="mt-1 text-[10.5px] text-white/50">
                                                     {new Date(a.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                                                 </p>
                                             )}
@@ -1527,19 +1527,19 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             <StudioRow label="Also worked on it" studios={game.studios} role="supporting" />
                             {released && (
                                 <div>
-                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Released</p>
+                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Released</p>
                                     <p className="mt-1 text-[13px] font-medium text-white/85">{released}</p>
                                 </div>
                             )}
                             {game.series_name && (
                                 <div>
-                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Series</p>
+                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Series</p>
                                     <p className="mt-1 text-[13px] font-medium text-white/85">{game.series_name}</p>
                                 </div>
                             )}
                             {game.platforms.length > 0 && (
                                 <div>
-                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Platforms</p>
+                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Platforms</p>
                                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                                         {game.platforms.map((p) => (
                                             <span key={p} className="rounded-[5px] border border-white/[0.09] bg-white/[0.04] px-2 py-0.5 text-[11px] font-medium text-white/70">
@@ -1551,11 +1551,11 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             )}
                             {game.age_ratings.length > 0 && (
                                 <div>
-                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Age ratings</p>
+                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Age ratings</p>
                                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                                         {game.age_ratings.map((r) => (
                                             <span key={r.rating_system_name} className="rounded-[5px] border border-white/[0.09] bg-white/[0.04] px-2 py-1 text-center">
-                                                <span className="block text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/35">{r.rating_system_name.replace(" Rating", "")}</span>
+                                                <span className="block text-[8.5px] font-bold uppercase tracking-[0.1em] text-white/50">{r.rating_system_name.replace(" Rating", "")}</span>
                                                 <span className="block font-display text-[12px] font-black text-white">{r.rating_name}</span>
                                             </span>
                                         ))}
@@ -1567,7 +1567,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 printed with it. */}
                             {game.popularity && (
                                 <div>
-                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Standing</p>
+                                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Standing</p>
                                     <p className="mt-1 text-[13px] font-medium text-white/85">
                                         Top {Math.max(1, 100 - game.popularity.percentile)}%
                                         <span className="text-white/40"> by {game.popularity.metric.toLowerCase()}</span>

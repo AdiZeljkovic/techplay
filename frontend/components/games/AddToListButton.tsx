@@ -100,7 +100,7 @@ export default function AddToListButton({ slug, gameName, className = "" }: Prop
 
                     <div className="absolute z-50 left-0 right-0 mt-2 rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] shadow-[0_18px_44px_rgba(0,0,0,0.6)] overflow-hidden">
                         <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 border-b border-white/[0.06]">
-                            <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/40">
+                            <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/55">
                                 Your lists
                             </span>
                             <button onClick={() => setOpen(false)} className="text-white/30 hover:text-white transition-colors">
@@ -130,7 +130,7 @@ export default function AddToListButton({ slug, gameName, className = "" }: Prop
                                         >
                                             <span className="min-w-0 flex-1">
                                                 <span className="block text-[12.5px] font-semibold text-white truncate">{list.name}</span>
-                                                <span className="block text-[10.5px] text-white/30">
+                                                <span className="block text-[10.5px] text-white/50">
                                                     {list.items_count}
                                                     {list.item_limit ? ` / ${list.item_limit}` : ""} games
                                                 </span>

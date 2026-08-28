@@ -107,7 +107,7 @@ function Shelf({ shelf, active, onPick }: { shelf: typeof SHELVES[number]; activ
                 }`}
             />
             <p className="mt-3 font-display text-[13.5px] font-black text-white">{shelf.title}</p>
-            <p className="mt-1 text-[11.5px] leading-snug text-white/40">{shelf.line}</p>
+            <p className="mt-1 text-[11.5px] leading-snug text-white/55">{shelf.line}</p>
 
             {/* Which way in you took is not obvious from a grid that only ever
                 reorders itself, so the tile says it: a rule that draws across
@@ -178,7 +178,7 @@ function Choice({
         >
             <span className="text-[12px] font-medium truncate">{label}</span>
             {count !== undefined && (
-                <span className={`font-display text-[10px] font-bold tabular-nums shrink-0 ${active ? "text-white/80" : "text-white/25"}`}>
+                <span className={`font-display text-[10px] font-bold tabular-nums shrink-0 ${active ? "text-white/80" : "text-white/45"}`}>
                     {compact(count)}
                 </span>
             )}
@@ -562,7 +562,7 @@ export default function GameDatabaseHub({
                                 {search ? `“${search}”` : SORTS.find((s) => s.value === sort)?.label ?? "All games"}
                             </span>
                             {typeof data?.count === "number" && (
-                                <span className="font-display text-[10.5px] font-bold tabular-nums text-white/30 whitespace-nowrap">
+                                <span className="font-display text-[10.5px] font-bold tabular-nums text-white/50 whitespace-nowrap">
                                     {data.count.toLocaleString()} found
                                 </span>
                             )}
@@ -662,14 +662,14 @@ export default function GameDatabaseHub({
                                         <span className="flex-1 min-w-0 text-[12px] font-medium text-white/70 group-hover:text-white truncate">
                                             {g.name}
                                         </span>
-                                        <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                                        <span className="font-display text-[10px] font-bold tabular-nums text-white/45">
                                             {g.wishlists}
                                         </span>
                                     </Link>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-[11.5px] text-white/30">
+                            <p className="text-[11.5px] text-white/50">
                                 No wishlists yet — the first one lands here.
                             </p>
                         )}
@@ -843,7 +843,7 @@ function RecentlyViewed() {
                     ))}
                 </div>
             ) : (
-                <p className="text-[11.5px] text-white/30">Games you open will show up here.</p>
+                <p className="text-[11.5px] text-white/50">Games you open will show up here.</p>
             )}
         </RailPanel>
     );

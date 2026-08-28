@@ -90,7 +90,7 @@ function Countdown({ endsAt, big = false }: { endsAt: string | null; big?: boole
 
     if (c.done) {
         return (
-            <span className="font-display text-[11px] font-black uppercase tracking-[0.12em] text-white/35">
+            <span className="font-display text-[11px] font-black uppercase tracking-[0.12em] text-white/50">
                 Closed
             </span>
         );
@@ -118,7 +118,7 @@ function Countdown({ endsAt, big = false }: { endsAt: string | null; big?: boole
                     <span className="block font-display text-[26px] font-black tabular-nums text-white leading-none">
                         {String(cell.n).padStart(2, "0")}
                     </span>
-                    <span className="block mt-1 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/35">
+                    <span className="block mt-1 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/50">
                         {cell.unit}
                     </span>
                 </span>
@@ -193,7 +193,7 @@ export default function GiveawayHub() {
                             >
                                 <Icon className="w-3.5 h-3.5 text-[var(--accent)]" />
                                 <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">{value}</span>
-                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/35">{label}</span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50">{label}</span>
                             </span>
                         ))}
                     </div>
@@ -305,7 +305,7 @@ export default function GiveawayHub() {
                                     </span>
                                     <span className="min-w-0">
                                         <span className="block text-[12px] font-bold text-white">{step.t}</span>
-                                        <span className="block text-[11.5px] text-white/40 leading-snug">{step.d}</span>
+                                        <span className="block text-[11.5px] text-white/55 leading-snug">{step.d}</span>
                                     </span>
                                 </li>
                             ))}
@@ -327,7 +327,7 @@ export default function GiveawayHub() {
                                             <span className="block text-[12px] font-bold text-white truncate group-hover:text-[var(--accent)]">
                                                 {w.winner?.username ?? "Winner"}
                                             </span>
-                                            <span className="block text-[11px] text-white/35 truncate">
+                                            <span className="block text-[11px] text-white/50 truncate">
                                                 Won {w.prize ?? w.title}
                                             </span>
                                         </span>
@@ -335,7 +335,7 @@ export default function GiveawayHub() {
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-[11.5px] text-white/30">
+                            <p className="text-[11.5px] text-white/50">
                                 No draws have been settled yet — the first winner shows up here.
                             </p>
                         )}
@@ -343,7 +343,7 @@ export default function GiveawayHub() {
 
                     <Panel title="Your entries">
                         {!user ? (
-                            <p className="text-[11.5px] text-white/30">
+                            <p className="text-[11.5px] text-white/50">
                                 <Link href="/login" className="text-[var(--accent)] hover:brightness-110">Sign in</Link>{" "}
                                 to keep track of what you have entered.
                             </p>
@@ -355,7 +355,7 @@ export default function GiveawayHub() {
                                 <Tally value={hub.mine.ended} label="Ended" />
                             </div>
                         ) : (
-                            <p className="text-[11.5px] text-white/30">You have not entered anything yet.</p>
+                            <p className="text-[11.5px] text-white/50">You have not entered anything yet.</p>
                         )}
                     </Panel>
                 </aside>
@@ -370,7 +370,7 @@ function Tally({ value, label }: { value: number; label: string }) {
     return (
         <span className="block">
             <span className="block font-display text-[17px] font-black tabular-nums text-white leading-none">{value}</span>
-            <span className="block mt-1 text-[9.5px] uppercase tracking-[0.1em] text-white/35">{label}</span>
+            <span className="block mt-1 text-[9.5px] uppercase tracking-[0.1em] text-white/50">{label}</span>
         </span>
     );
 }
@@ -438,19 +438,19 @@ function Featured({
                             <span className="block h-[7px] rounded-full bg-white/[0.07] overflow-hidden">
                                 <span className="block h-full rounded-full bg-[var(--accent)]" style={{ width: `${pct}%` }} />
                             </span>
-                            <p className="mt-1.5 font-display text-[10.5px] font-bold tabular-nums text-white/40">
+                            <p className="mt-1.5 font-display text-[10.5px] font-bold tabular-nums text-white/55">
                                 {featured.entries.toLocaleString()} / {featured.entry_goal!.toLocaleString()} entries · {pct}%
                             </p>
                         </div>
                     ) : (
-                        <p className="mt-4 font-display text-[10.5px] font-bold tabular-nums text-white/40">
+                        <p className="mt-4 font-display text-[10.5px] font-bold tabular-nums text-white/55">
                             {featured.entries.toLocaleString()} {featured.entries === 1 ? "entry" : "entries"} so far
                         </p>
                     )}
                 </div>
 
                 <div className="flex flex-col items-center gap-3 lg:pl-4">
-                    <span className="font-display text-[9px] font-black uppercase tracking-[0.18em] text-white/35">Ends in</span>
+                    <span className="font-display text-[9px] font-black uppercase tracking-[0.18em] text-white/50">Ends in</span>
                     <Countdown endsAt={featured.ends_at} big />
                     <Link
                         href={`/giveaway/${featured.slug}`}
@@ -506,11 +506,11 @@ function Card({ row }: { row: Row }) {
                     {row.title}
                 </span>
                 {row.prize.name && (
-                    <span className="mt-1 text-[11px] text-white/40 line-clamp-1">{row.prize.name}</span>
+                    <span className="mt-1 text-[11px] text-white/55 line-clamp-1">{row.prize.name}</span>
                 )}
 
                 <span className="mt-auto pt-3 flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 text-[10.5px] text-white/35">
+                    <span className="inline-flex items-center gap-1.5 text-[10.5px] text-white/50">
                         <Users className="w-3 h-3" /> {row.stats.total_entries.toLocaleString()}
                     </span>
                     {ended ? (

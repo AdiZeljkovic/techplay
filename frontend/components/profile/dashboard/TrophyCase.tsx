@@ -80,7 +80,7 @@ function Slot({ item, onClear }: { item: TrophyCaseItem; onClear?: () => void })
             {item.game ? (
                 <Link
                     href={`/games/${item.game.slug}`}
-                    className="mt-1 text-[10px] text-white/30 hover:text-[var(--accent)] transition-colors line-clamp-1"
+                    className="mt-1 text-[10px] text-white/50 hover:text-[var(--accent)] transition-colors line-clamp-1"
                 >
                     {item.game.name}
                 </Link>
@@ -201,7 +201,7 @@ function Picker({
                                 </span>
                                 <span className="min-w-0 flex-1">
                                     <span className="block text-[12px] font-semibold text-white truncate">{item.name}</span>
-                                    <span className="block text-[10.5px] text-white/30 truncate">
+                                    <span className="block text-[10.5px] text-white/50 truncate">
                                         {item.game?.name ?? (item.points != null ? `${item.points} pts` : "TechPlay")}
                                     </span>
                                 </span>
@@ -272,7 +272,7 @@ export default function TrophyCase({ isOwnProfile, initial, fallback = [] }: Pro
                 </h2>
 
                 <div className="flex items-center gap-3">
-                    <Link href="?tab=achievements" className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-[var(--accent)] transition-colors">
+                    <Link href="?tab=achievements" className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/50 hover:text-[var(--accent)] transition-colors">
                         All achievements
                     </Link>
                     {isOwnProfile && !editing && (
@@ -295,7 +295,7 @@ export default function TrophyCase({ isOwnProfile, initial, fallback = [] }: Pro
                         <Pin className="w-5 h-5" />
                     </span>
                     <span className="font-display text-[12.5px] font-bold text-white">Pin your five best</span>
-                    <span className="text-[11px] text-white/35 max-w-[300px] text-center">
+                    <span className="text-[11px] text-white/50 max-w-[300px] text-center">
                         Anything you have unlocked here or on Steam. This is the part of your profile that talks.
                     </span>
                 </button>
@@ -317,7 +317,7 @@ export default function TrophyCase({ isOwnProfile, initial, fallback = [] }: Pro
             {editing && <Picker current={items} onCancel={() => setEditing(false)} onSave={save} />}
 
             {!arranged && shown.length > 0 && isOwnProfile && (
-                <p className="mt-3.5 text-[11.5px] text-white/30">
+                <p className="mt-3.5 text-[11.5px] text-white/50">
                     These are simply your latest. Pin five and this becomes the part of your profile that talks.
                 </p>
             )}

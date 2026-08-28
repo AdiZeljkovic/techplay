@@ -118,7 +118,7 @@ export default function Gta6EverythingWeKnowPage() {
                                     <Icon className="w-4.5 h-4.5 text-[var(--gta-pink)]" />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-bold uppercase tracking-widest text-white/35 mb-1">{label}</p>
+                                    <p className="text-[11px] font-bold uppercase tracking-widest text-white/50 mb-1">{label}</p>
                                     <p className="text-[13px] text-[#D4D4D8] leading-relaxed">{value}</p>
                                 </div>
                             </div>

@@ -242,7 +242,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                                         {decodeHtml(article.author?.display_name || article.author?.username || "TechPlay Editor")}
                                                     </Link>
                                                 </span>
-                                                <div className="flex items-center gap-2 text-white/35 text-[11px] font-bold uppercase tracking-widest mt-1">
+                                                <div className="flex items-center gap-2 text-white/50 text-[11px] font-bold uppercase tracking-widest mt-1">
                                                     <ClientDate date={article.published_at || article.created_at} />
                                                     <span className="w-1 h-1 rounded-full bg-white/12" />
                                                     <span>{readingTime.toUpperCase()}</span>
@@ -255,7 +255,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                 {/* Info bar beneath hero */}
                                 <div className="relative z-20 flex flex-col md:flex-row md:items-center justify-between border-t border-white/[0.05] bg-[#0A0D12] px-4 md:px-12 py-2.5 gap-2.5 md:gap-3">
                                     <div className="flex items-center flex-wrap gap-3">
-                                        <span className="hidden md:inline text-white/35 text-[11px] font-bold uppercase tracking-widest mr-2">CATEGORY:</span>
+                                        <span className="hidden md:inline text-white/50 text-[11px] font-bold uppercase tracking-widest mr-2">CATEGORY:</span>
                                         <span className="inline-flex items-center h-[26px] px-3 rounded-full border border-white/10 text-white text-[10.5px] font-bold uppercase tracking-wider">
                                             {decodeHtml(article.category?.name) || "News"}
                                         </span>
@@ -265,7 +265,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         a reader is looking for moved depending on
                                         which kind of article they had opened. */}
                                     <div className="flex items-center gap-2.5 flex-nowrap">
-                                        <span className="hidden md:inline text-white/35 text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
+                                        <span className="hidden md:inline text-white/50 text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
                                         <SocialShare
                                             url={`/news/${article.slug}`}
                                             title={decodeHtml(article.title)}

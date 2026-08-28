@@ -97,7 +97,7 @@ export default function SessionSuggestions({ onLogged }: { onLogged?: () => void
                 <h3 className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">
                     Looks like you played
                 </h3>
-                <span className="ml-auto font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/25">
+                <span className="ml-auto font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
                     From Steam
                 </span>
             </header>
@@ -114,7 +114,7 @@ export default function SessionSuggestions({ onLogged }: { onLogged?: () => void
 
                         <div className="min-w-0 flex-1">
                             <p className="text-[13px] font-semibold text-white truncate">{s.game.name}</p>
-                            <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-white/40">
+                            <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-white/55">
                                 <input
                                     value={edited[s.id] ?? String(s.minutes)}
                                     onChange={(e) => setEdited((prev) => ({ ...prev, [s.id]: e.target.value.replace(/\D/g, "") }))}

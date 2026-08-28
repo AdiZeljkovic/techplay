@@ -132,7 +132,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
 
     const PanelCategories = ({ scroll = false }: { scroll?: boolean }) => (
         <div className={`p-4 border-b border-white/[0.07] shrink-0 ${scroll ? "overflow-x-auto" : ""}`}>
-            {!scroll && <p className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-3">Category</p>}
+            {!scroll && <p className="text-[10px] font-bold uppercase tracking-widest text-white/50 mb-3">Category</p>}
             <div className={`flex gap-1.5 ${scroll ? "min-w-max" : "flex-wrap"}`}>
                 <button
                     onClick={() => setActive("all")}
@@ -204,7 +204,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
                                     <div className="min-w-0 flex-1">
                                         <p className="text-[12px] font-medium text-white leading-tight truncate">{loc.name}</p>
-                                        <p className="text-[10px] text-white/35 mt-0.5">
+                                        <p className="text-[10px] text-white/50 mt-0.5">
                                             {label}
                                             {loc.is_unconfirmed && <span className="ml-1 text-[#F59E0B]">· unconfirmed</span>}
                                         </p>
@@ -251,7 +251,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                             <div className="flex items-center gap-2">
                                 <MapPin className="w-4 h-4 text-[var(--gta-pink)] shrink-0" />
                                 <h2 className="text-[13px] font-bold text-white">Locations</h2>
-                                <span className="text-[11px] text-white/35">
+                                <span className="text-[11px] text-white/50">
                                     {isLoading ? "…" : (
                                         <><span className="text-[var(--gta-pink)] font-bold">{locations.length}</span> results</>
                                     )}
@@ -303,7 +303,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                             <h1 className="text-[12px] font-bold text-white leading-none whitespace-nowrap">
                                 GTA 6 Interactive Map
                                 {totalLocations > 0 && (
-                                    <span className="ml-2 text-[10px] font-normal text-white/35">
+                                    <span className="ml-2 text-[10px] font-normal text-white/50">
                                         {totalLocations.toLocaleString()} locations
                                     </span>
                                 )}
@@ -361,7 +361,7 @@ export default function Gta6MapClient({ initialCategories, totalLocations = 0 }:
                     <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-[var(--gta-pink)]" />
                         <span className="text-[13px] font-bold text-white">Locations</span>
-                        <span className="text-[11px] text-white/35">
+                        <span className="text-[11px] text-white/50">
                             {isLoading ? "…" : (
                                 <><span className="text-[var(--gta-pink)] font-bold">{locations.length}</span> results</>
                             )}

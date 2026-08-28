@@ -188,7 +188,7 @@ export default function ListSocialBar({
                                                 <Link href={`/profile/${c.user.username}`} className="text-[12px] font-bold text-white hover:text-[var(--accent)] transition-colors">
                                                     {c.user.display_name || c.user.username}
                                                 </Link>
-                                                <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/25">
+                                                <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/45">
                                                     {timeAgo(c.created_at)}
                                                 </span>
                                             </p>

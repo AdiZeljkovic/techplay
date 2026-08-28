@@ -61,8 +61,8 @@ function Field({ label, hint, children }: { label: string; hint?: React.ReactNod
     return (
         <div>
             <div className="flex items-baseline justify-between gap-3 mb-2">
-                <label className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40">{label}</label>
-                {hint && <span className="text-[11px] text-white/30">{hint}</span>}
+                <label className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/55">{label}</label>
+                {hint && <span className="text-[11px] text-white/50">{hint}</span>}
             </div>
             {children}
         </div>
@@ -438,7 +438,7 @@ export default function SettingsClient() {
                                                 blurb and only the panel header
                                                 ever showed it — which is the one
                                                 place you have already arrived. */}
-                                            <span className={`hidden lg:block mt-0.5 font-display text-[9px] font-medium normal-case tracking-normal truncate ${on ? "text-[var(--accent-ink)]/50" : "text-white/20"}`}>
+                                            <span className={`hidden lg:block mt-0.5 font-display text-[9px] font-medium normal-case tracking-normal truncate ${on ? "text-[var(--accent-ink)]/50" : "text-white/45"}`}>
                                                 {blurb}
                                             </span>
                                         </span>
@@ -505,7 +505,7 @@ export default function SettingsClient() {
                                                     onChange={(e) => setTagline(e.target.value.slice(0, 120))}
                                                     placeholder="One line, under your name on your profile"
                                                 />
-                                                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
+                                                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/50">
                                                     <Quote className="w-3 h-3" /> Shown on your profile header, above your bio.
                                                 </p>
                                             </Field>
@@ -516,7 +516,7 @@ export default function SettingsClient() {
                                                     onChange={(e) => setLocation(e.target.value.slice(0, 100))}
                                                     placeholder="Sarajevo, BA"
                                                 />
-                                                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/30">
+                                                <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-white/50">
                                                     <MapPin className="w-3 h-3" /> Optional, and public.
                                                 </p>
                                             </Field>
@@ -600,7 +600,7 @@ export default function SettingsClient() {
                                             </span>
                                             <div className="min-w-0 flex-1">
                                                 <p className="font-display text-[12.5px] font-bold text-white">Discord</p>
-                                                <p className="text-[11.5px] text-white/35 leading-snug">
+                                                <p className="text-[11.5px] text-white/50 leading-snug">
                                                     {user.discord_linked
                                                         ? "Linked. Professor Buffy can see you in our server and mirror your XP."
                                                         : "Link it so the bot recognises you in our server, and your membership shows on your profile."}
@@ -639,7 +639,7 @@ export default function SettingsClient() {
                                         </span>
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-[13px] font-semibold text-white">Email me</span>
-                                            <span className="block text-[11.5px] text-white/35 leading-snug">
+                                            <span className="block text-[11.5px] text-white/50 leading-snug">
                                                 Giveaway reminders and anything else that needs to reach you when you are not here.
                                                 Turning this off never hides anything on the site.
                                             </span>
@@ -666,7 +666,7 @@ export default function SettingsClient() {
                                             </span>
                                             <span className="min-w-0 flex-1">
                                                 <span className="block text-[13px] font-semibold text-white">Shelve what I play</span>
-                                                <span className="block text-[11.5px] text-white/35 leading-snug">
+                                                <span className="block text-[11.5px] text-white/50 leading-snug">
                                                     When Steam or Discord shows you playing something for more than a couple of
                                                     minutes, add it to your library as Playing. This is also what lets your hours
                                                     be counted — a game with no shelf entry has nowhere to record them.
@@ -678,7 +678,7 @@ export default function SettingsClient() {
                                         </button>
                                     </div>
 
-                                    <p className="mt-5 pt-5 border-t border-white/[0.07] text-[11.5px] text-white/30 leading-relaxed">
+                                    <p className="mt-5 pt-5 border-t border-white/[0.07] text-[11.5px] text-white/50 leading-relaxed">
                                         Release reminders are set per game, on the calendar — the bell on any unreleased title.
                                         On-site notifications are always on; they are the bell in the header.
                                     </p>
@@ -716,13 +716,13 @@ export default function SettingsClient() {
                                                     </span>
                                                     {active && <Check className="w-4 h-4 ml-auto text-[var(--accent)]" />}
                                                 </span>
-                                                <span className="block text-[11.5px] text-white/35 mt-1.5 leading-relaxed">{opt.description}</span>
+                                                <span className="block text-[11.5px] text-white/50 mt-1.5 leading-relaxed">{opt.description}</span>
                                             </button>
                                         );
                                     })}
 
                                     {visibility === "friends" && (
-                                        <p className="pt-2 text-[11.5px] text-white/35 leading-relaxed">
+                                        <p className="pt-2 text-[11.5px] text-white/50 leading-relaxed">
                                             While private you also drop off the leaderboards and out of member search. Anyone
                                             with your link still sees your name, level and rank — with an <strong>Add Friend</strong> button.
                                         </p>

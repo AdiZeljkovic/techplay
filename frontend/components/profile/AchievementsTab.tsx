@@ -95,7 +95,7 @@ function ScoreCell({
                 <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
             </span>
             <span className="min-w-0">
-                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
+                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">
                     {label}
                 </span>
                 <span className="flex items-baseline gap-2 mt-1">
@@ -150,7 +150,7 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
                         rarest ? (
                             <span className="text-[11.5px] font-semibold text-white/45 truncate max-w-[150px]">{rarest.name}</span>
                         ) : (
-                            <span className="text-[11.5px] text-white/25">Not enough players yet</span>
+                            <span className="text-[11.5px] text-white/45">Not enough players yet</span>
                         )
                     }
                     tint={RARITY.epic.color}
@@ -161,7 +161,7 @@ function ScoreStrip({ data }: { data: AchievementsPayload }) {
                         <span className="font-display text-[12px] font-black tabular-nums text-[var(--accent)]">{ring}%</span>
                     </RingMeter>
                     <span className="min-w-0">
-                        <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">
+                        <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">
                             Completion
                         </span>
                         <span className="block mt-1 text-[12px] font-semibold text-white">
@@ -254,7 +254,7 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
                 {inProgress && (
                     <span className="block mt-2">
                         <span className="flex items-center justify-between mb-1">
-                            <span className="font-display text-[10px] font-bold tabular-nums text-white/35">
+                            <span className="font-display text-[10px] font-bold tabular-nums text-white/50">
                                 {a.current?.toLocaleString("en-US")} / {a.criteria_value.toLocaleString("en-US")}
                             </span>
                             <span className="font-display text-[10px] font-black tabular-nums text-[var(--xp-bright)]">{a.percent}%</span>
@@ -282,7 +282,7 @@ function AchievementCard({ a }: { a: AchievementEntry }) {
                 <span className={`block font-display text-[15px] font-black tabular-nums leading-none ${a.is_unlocked ? "text-[var(--accent)]" : "text-white/20"}`}>
                     {a.points}
                 </span>
-                <span className="block mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/25">Pts</span>
+                <span className="block mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/45">Pts</span>
             </span>
         </div>
     );
@@ -310,7 +310,7 @@ function MiniRow({ a }: { a: AchievementEntry }) {
             <span className="min-w-0 flex-1">
                 <span className="block text-[12.5px] font-bold text-white truncate">{a.name}</span>
                 {a.is_unlocked ? (
-                    <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/30">
+                    <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/50">
                         {a.unlocked_at ? timeAgo(a.unlocked_at) : "Unlocked"}
                     </span>
                 ) : (
@@ -322,7 +322,7 @@ function MiniRow({ a }: { a: AchievementEntry }) {
                     </span>
                 )}
             </span>
-            <span className="shrink-0 font-display text-[11px] font-black tabular-nums text-white/30">
+            <span className="shrink-0 font-display text-[11px] font-black tabular-nums text-white/50">
                 {a.is_unlocked ? `+${a.points}` : `${a.percent ?? 0}%`}
             </span>
         </div>
@@ -382,7 +382,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
                             )}
                         </span>
                         <p className="font-display text-[14px] font-bold text-white">{rarest.name}</p>
-                        <p className="mt-1 text-[11.5px] text-white/40 leading-snug">{rarest.description}</p>
+                        <p className="mt-1 text-[11.5px] text-white/55 leading-snug">{rarest.description}</p>
                         <p
                             className="mt-2.5 inline-flex items-center gap-1.5 h-[22px] px-2.5 rounded-[5px] font-display text-[9px] font-black uppercase tracking-[0.12em]"
                             style={{ color: RARITY.epic.color, background: `color-mix(in srgb, ${RARITY.epic.color} 14%, transparent)` }}
@@ -408,7 +408,7 @@ function AchievementsSidebar({ data }: { data: AchievementsPayload }) {
                         <div key={c.name}>
                             <div className="flex items-center justify-between mb-1.5">
                                 <span className="text-[12px] font-semibold text-white/70">{c.name}</span>
-                                <span className="font-display text-[10.5px] font-black tabular-nums text-white/35">
+                                <span className="font-display text-[10.5px] font-black tabular-nums text-white/50">
                                     {c.done}<span className="text-white/20">/{c.total}</span>
                                 </span>
                             </div>
@@ -662,7 +662,7 @@ export default function AchievementsTab({ username, isOwnProfile = false }: { us
                                     Load more
                                     <ChevronDown className="w-4 h-4" />
                                 </button>
-                                <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
+                                <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/45">
                                     {shown.length} of {visible.length}
                                 </span>
                             </div>

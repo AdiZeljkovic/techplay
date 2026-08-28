@@ -121,7 +121,7 @@ export default function FrontiersPage() {
                         {/* countdown, CTA and the notify form all live client-side */}
                         <FrontiersClient />
 
-                        <p className="mt-7 max-w-[430px] text-[11.5px] leading-relaxed text-white/25">
+                        <p className="mt-7 max-w-[430px] text-[11.5px] leading-relaxed text-white/45">
                             Frontiers is in development. This page is the announcement — the date and the details
                             can still move while it is being built.
                         </p>

@@ -94,7 +94,7 @@ export default function ProfileOverviewDashboard({
                 {label}
                 {typeof count === "number" && <span className="font-black tabular-nums text-white/25">{count}</span>}
             </h2>
-            <Link href={href} className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-[var(--accent)] transition-colors">
+            <Link href={href} className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/50 hover:text-[var(--accent)] transition-colors">
                 {cta}
             </Link>
         </div>

@@ -36,7 +36,7 @@ function ThreadList({ threads }: { threads: ForumThreadSummary[] }) {
                             <p className="text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                 {thread.title}
                             </p>
-                            <p className="text-[11px] text-white/40 mt-0.5">
+                            <p className="text-[11px] text-white/55 mt-0.5">
                                 {thread.category?.name ?? "Forum"}
                                 {" · "}
                                 <span suppressHydrationWarning>

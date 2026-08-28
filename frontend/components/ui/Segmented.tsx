@@ -65,7 +65,7 @@ export default function Segmented({
                         )}
                         {label}
                         {typeof count === "number" && (
-                            <span className={`font-display text-[10px] font-black tabular-nums ${on ? "text-white/70" : "text-white/25"}`}>
+                            <span className={`font-display text-[10px] font-black tabular-nums ${on ? "text-white/70" : "text-white/45"}`}>
                                 {count}
                             </span>
                         )}

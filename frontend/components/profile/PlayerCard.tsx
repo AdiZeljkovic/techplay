@@ -96,7 +96,7 @@ export default function PlayerCard({ card, platforms }: {
                             )}
                         </Link>
                         <div className="min-w-0">
-                            <p className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30">Most played</p>
+                            <p className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/50">Most played</p>
                             <Link href={`/games/${deepest.slug}`} className="mt-1 block font-display text-[15px] font-black text-white leading-tight hover:text-[var(--accent)] transition-colors line-clamp-2">
                                 {deepest.name}
                             </Link>
@@ -114,9 +114,9 @@ export default function PlayerCard({ card, platforms }: {
                 <div className="flex-1 flex flex-wrap gap-x-9 gap-y-4 min-w-0">
                     {figures.map(({ label, value, sub }) => (
                         <div key={label} className="min-w-0 basis-[136px] grow-0">
-                            <p className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30 leading-[1.5]">{label}</p>
+                            <p className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/50 leading-[1.5]">{label}</p>
                             <p className="mt-1 font-display text-[22px] font-black tabular-nums leading-none text-white truncate">{value}</p>
-                            {sub && <p className="mt-1.5 text-[10.5px] text-white/25 truncate">{sub}</p>}
+                            {sub && <p className="mt-1.5 text-[10.5px] text-white/45 truncate">{sub}</p>}
                         </div>
                     ))}
                 </div>

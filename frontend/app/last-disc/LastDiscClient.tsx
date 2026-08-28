@@ -82,7 +82,7 @@ function Digits({ value, label, wide = false }: { value: number | null; label: s
                     </span>
                 ))}
             </span>
-            <span className="mt-2.5 block font-display text-[8.5px] font-bold uppercase tracking-[0.2em] text-white/35">
+            <span className="mt-2.5 block font-display text-[8.5px] font-bold uppercase tracking-[0.2em] text-white/50">
                 {label}
             </span>
         </span>
@@ -214,7 +214,7 @@ export default function LastDiscClient() {
 
                 {/* ── the poll ── */}
                 <section className="rounded-[var(--radius-panel)] border border-white/[0.07] bg-[var(--surface-1)] p-5 flex flex-col">
-                    <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40">
+                    <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/55">
                         What do you think?
                     </p>
                     <h2 className="mt-2 font-display text-[15px] font-black text-white leading-snug">
@@ -268,7 +268,7 @@ export default function LastDiscClient() {
                                                 style={{ width: `${option.percent}%` }}
                                             />
                                         </span>
-                                        <span className="mt-1 block font-display text-[9.5px] font-bold tabular-nums text-white/25">
+                                        <span className="mt-1 block font-display text-[9.5px] font-bold tabular-nums text-white/45">
                                             {option.votes.toLocaleString("en-US")} {option.votes === 1 ? "vote" : "votes"}
                                         </span>
                                     </div>
@@ -277,7 +277,7 @@ export default function LastDiscClient() {
                         </div>
                     )}
 
-                    <p className="mt-auto pt-4 font-display text-[10px] font-bold tabular-nums text-white/30">
+                    <p className="mt-auto pt-4 font-display text-[10px] font-bold tabular-nums text-white/50">
                         {(poll?.total ?? 0).toLocaleString("en-US")} {poll?.total === 1 ? "vote" : "votes"} so far
                         {voted && <span className="ml-2 text-emerald-400/70">· thanks for voting</span>}
                     </p>
@@ -316,7 +316,7 @@ export default function LastDiscClient() {
                                     <span className="block font-display text-[24px] font-black tabular-nums leading-none text-white">
                                         {value === undefined ? "—" : value.toLocaleString("en-US")}
                                     </span>
-                                    <span className="mt-1.5 block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/35">
+                                    <span className="mt-1.5 block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/50">
                                         {caption}
                                     </span>
                                 </span>
@@ -365,7 +365,7 @@ export default function LastDiscClient() {
 
                         {(stats?.recent.length ?? 0) > 0 && (
                             <div className="mt-5 shrink-0">
-                                <p className="font-display text-[8.5px] font-black uppercase tracking-[0.16em] text-white/30">
+                                <p className="font-display text-[8.5px] font-black uppercase tracking-[0.16em] text-white/50">
                                     Latest signatures
                                 </p>
                                 <p className="mt-2 text-[12px] leading-relaxed text-white/40">
@@ -412,7 +412,7 @@ export default function LastDiscClient() {
                                         placeholder="name@example.com"
                                         className={field}
                                     />
-                                    <p className="mt-1.5 text-[10.5px] text-white/25">
+                                    <p className="mt-1.5 text-[10.5px] text-white/45">
                                         Used only to keep the count honest — one signature per address. Never shared with Sony.
                                     </p>
                                 </div>
@@ -495,7 +495,7 @@ export default function LastDiscClient() {
                                     Sign the open letter
                                 </button>
 
-                                <p className="flex items-center justify-center gap-1.5 text-[10.5px] text-white/25">
+                                <p className="flex items-center justify-center gap-1.5 text-[10.5px] text-white/45">
                                     <BarChart3 className="w-3 h-3" />
                                     We respect your privacy. Read our{" "}
                                     <Link href="/privacy" className="text-white/45 hover:text-white underline underline-offset-2">

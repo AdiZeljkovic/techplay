@@ -85,7 +85,7 @@ export default function ContinuePlayingCard({ games }: { games: PlayingNowGame[]
                             >
                                 {game.name}
                             </Link>
-                            <p className="mt-0.5 text-[11px] text-white/40 tabular-nums truncate">{sub}</p>
+                            <p className="mt-0.5 text-[11px] text-white/55 tabular-nums truncate">{sub}</p>
                         </div>
 
                         <Link

@@ -234,7 +234,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                                     <span className="font-display text-[30px] font-black tabular-nums leading-none" style={{ color: tone }}>
                                         {score.toFixed(1)}
                                     </span>
-                                    <span className="font-display text-[11px] font-bold tabular-nums text-white/25">/ 10</span>
+                                    <span className="font-display text-[11px] font-bold tabular-nums text-white/45">/ 10</span>
                                 </span>
                                 <span className="block mt-1 font-display text-[10px] font-black uppercase tracking-[0.14em]" style={{ color: tone }}>
                                     {tier.label}
@@ -262,7 +262,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                             <h3 className="font-display text-[22px] md:text-[26px] font-black text-white leading-[1.1] tracking-tight">
                                 {review_data.game_title}
                             </h3>
-                            <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/35">
+                            <p className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/50">
                                 {review_data.developer && (
                                     <span className="inline-flex items-center gap-1.5">
                                         <Building2 className="w-3.5 h-3.5 text-[var(--accent-ink)]" strokeWidth={1.6} /> {review_data.developer}
@@ -281,7 +281,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
 
                         {(review_data.platforms?.length || review_data.tested_on) && (
                             <div className="px-5 py-3 border-b border-white/[0.07] flex flex-wrap items-center gap-2">
-                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30 mr-1">Available on</span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50 mr-1">Available on</span>
 
                                 {/* The platform's own mark, in its own colour —
                                     the same one release cards use. Every chip
@@ -307,7 +307,7 @@ export default function ReviewSidebar({ article }: ReviewSidebarProps) {
                                 })}
 
                                 {review_data.tested_on && (
-                                    <span className="ml-auto font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/30">
+                                    <span className="ml-auto font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/50">
                                         Tested on <span className="text-white/70">{review_data.tested_on}</span>
                                     </span>
                                 )}

@@ -113,7 +113,7 @@ function FinishedRow({ entry }: { entry: FinishedEntry }) {
                     )}
                 </p>
 
-                <p className="mt-1.5 flex items-center gap-2 flex-wrap font-display text-[9.5px] font-bold uppercase tracking-[0.11em] text-white/30">
+                <p className="mt-1.5 flex items-center gap-2 flex-wrap font-display text-[9.5px] font-bold uppercase tracking-[0.11em] text-white/50">
                     <span
                         className="inline-flex items-center gap-1 h-[18px] px-1.5 rounded-[4px]"
                         style={entry.completed
@@ -299,7 +299,7 @@ function SessionComposer({
     };
 
     const field = "w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]";
-    const label = "block font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/40 mb-1.5";
+    const label = "block font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/55 mb-1.5";
 
     return (
         <Panel
@@ -406,7 +406,7 @@ function SessionComposer({
                     ))}
 
                     <span className="ml-auto flex items-center gap-3">
-                        <span className="font-display text-[11px] font-bold tabular-nums text-white/35">{hhmm(totalMinutes)}</span>
+                        <span className="font-display text-[11px] font-bold tabular-nums text-white/50">{hhmm(totalMinutes)}</span>
                         <button
                             onClick={save}
                             disabled={saving}
@@ -513,7 +513,7 @@ function SessionRow({ session, onEdit, onDelete, onChanged }: { session: PlaySes
                 <span className="font-display text-[17px] font-black tabular-nums text-white">
                     {new Date(session.played_on).getDate()}
                 </span>
-                <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.12em] text-white/35">
+                <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.12em] text-white/50">
                     {new Date(session.played_on).toLocaleDateString("en-GB", { month: "short" })}
                 </span>
             </span>
@@ -529,7 +529,7 @@ function SessionRow({ session, onEdit, onDelete, onChanged }: { session: PlaySes
                         <Clock3 className="w-3 h-3" /> {hhmm(session.minutes)}
                     </span>
                     {session.platform && (
-                        <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/30">{session.platform}</span>
+                        <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/50">{session.platform}</span>
                     )}
                     {mood && (
                         <span
@@ -540,7 +540,7 @@ function SessionRow({ session, onEdit, onDelete, onChanged }: { session: PlaySes
                         </span>
                     )}
                     {session.is_private && (
-                        <span className="inline-flex items-center gap-1 font-display text-[8.5px] font-black uppercase tracking-[0.1em] text-white/30">
+                        <span className="inline-flex items-center gap-1 font-display text-[8.5px] font-black uppercase tracking-[0.1em] text-white/50">
                             <EyeOff className="w-2.5 h-2.5" /> Private
                         </span>
                     )}
@@ -556,7 +556,7 @@ function SessionRow({ session, onEdit, onDelete, onChanged }: { session: PlaySes
                                 <span className="flex-1 max-w-[140px] h-[4px] rounded-full bg-[var(--track)] overflow-hidden">
                                     <span className="block h-full rounded-full bg-[var(--accent)]" style={{ width: `${session.progress_percent}%` }} />
                                 </span>
-                                <span className="font-display text-[10px] font-black tabular-nums text-white/40">{session.progress_percent}%</span>
+                                <span className="font-display text-[10px] font-black tabular-nums text-white/55">{session.progress_percent}%</span>
                             </>
                         )}
                     </div>
@@ -576,7 +576,7 @@ function SessionRow({ session, onEdit, onDelete, onChanged }: { session: PlaySes
                 )}
 
                 {session.companions.length > 0 && (
-                    <p className="mt-2 inline-flex items-center gap-1.5 font-display text-[10px] font-bold text-white/30">
+                    <p className="mt-2 inline-flex items-center gap-1.5 font-display text-[10px] font-bold text-white/50">
                         <Users className="w-3 h-3" /> with {session.companions.join(", ")}
                     </p>
                 )}
@@ -831,10 +831,10 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                                 <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
                             </span>
                             <span className="min-w-0">
-                                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">{label}</span>
+                                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">{label}</span>
                                 <span className="flex items-baseline gap-2 mt-1">
                                     <span className="font-display text-[19px] font-black tabular-nums leading-none text-white">{value}</span>
-                                    {sub && <span className="text-[11px] text-white/30 whitespace-nowrap">{sub}</span>}
+                                    {sub && <span className="text-[11px] text-white/50 whitespace-nowrap">{sub}</span>}
                                 </span>
                             </span>
                         </div>
@@ -843,7 +843,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                     {s.busiest_month && (
                         <div className="flex items-center min-w-0 px-5 py-4 col-span-2 md:col-span-3 lg:col-span-1" style={{ background: "var(--surface-2)" }}>
                             <span className="min-w-0">
-                                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">Busiest month</span>
+                                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">Busiest month</span>
                                 <span className="block mt-1.5 text-[12.5px] font-semibold text-white whitespace-nowrap">
                                     {s.busiest_month.label} <span className="text-white/30">· {hhmm(s.busiest_month.minutes)}</span>
                                 </span>
@@ -873,12 +873,12 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                 <Panel
                     title="Gaming Calendar"
                     material="lit"
-                    meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Last 12 months</span>}
+                    meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/50">Last 12 months</span>}
                 >
                     {(
                         <>
                             <CalendarHeat calendar={journal.calendar} />
-                            <p className="mt-4 flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/25">
+                            <p className="mt-4 flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/45">
                                 Less
                                 {[0.1, 0.35, 0.6, 0.85, 1].map((v) => (
                                     <span key={v} className="block w-[11px] h-[11px] rounded-[2px]" style={{ background: `color-mix(in srgb, var(--accent) ${18 + v * 82}%, var(--surface-2))` }} />
@@ -914,7 +914,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                         <Panel
                             title="Sessions"
                             meta={journal.total_sessions > 0
-                                ? <span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/30">
+                                ? <span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/50">
                                     {journal.sessions.length} of {journal.total_sessions}
                                 </span>
                                 : undefined}
@@ -938,11 +938,11 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                                     {groupRuns(journal.sessions, (s) => monthOf(s.played_on)).map(({ key, rows }) => (
                                         <section key={key}>
                                             <h4 className="flex items-center gap-3 mb-2.5">
-                                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/35 whitespace-nowrap">
+                                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/50 whitespace-nowrap">
                                                     {monthLabel(key)}
                                                 </span>
                                                 <span aria-hidden className="flex-1 h-px bg-white/[0.06]" />
-                                                <span className="font-display text-[9.5px] font-bold tabular-nums text-white/20">
+                                                <span className="font-display text-[9.5px] font-bold tabular-nums text-white/45">
                                                     {hhmm(rows.reduce((a, r) => a + r.minutes, 0))}
                                                 </span>
                                             </h4>
@@ -967,7 +967,7 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                     {view === "timeline" && (
                         <Panel
                             title="Finished"
-                            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">{journal?.is_owner ? "Games, and your verdict on them" : "Games, and the verdict on them"}</span>}
+                            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/50">{journal?.is_owner ? "Games, and your verdict on them" : "Games, and the verdict on them"}</span>}
                             bodyClassName="p-4"
                         >
                             {finished.length === 0 ? (
@@ -981,11 +981,11 @@ export default function JournalTab({ username, view = "diary", prefill, onPrefil
                                     {groupRuns(finished, (e) => e.at?.slice(0, 4) ?? "—").map(({ key, rows }) => (
                                         <section key={key}>
                                             <h4 className="flex items-center gap-3 mb-2.5">
-                                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] tabular-nums text-white/35">
+                                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] tabular-nums text-white/50">
                                                     {key === "—" ? "Undated" : key}
                                                 </span>
                                                 <span aria-hidden className="flex-1 h-px bg-white/[0.06]" />
-                                                <span className="font-display text-[9.5px] font-bold tabular-nums text-white/20">
+                                                <span className="font-display text-[9.5px] font-bold tabular-nums text-white/45">
                                                     {rows.length} {rows.length === 1 ? "game" : "games"}
                                                 </span>
                                             </h4>

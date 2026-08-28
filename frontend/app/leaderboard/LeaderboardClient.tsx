@@ -99,11 +99,11 @@ const GOLD = "#f0b429";
 
 function Trend({ value }: { value: number | null }) {
     if (value === null) {
-        return <span className="font-display text-[10px] font-bold text-white/15">—</span>;
+        return <span className="font-display text-[10px] font-bold text-white/45">—</span>;
     }
     if (value === 0) {
         return (
-            <span className="inline-flex items-center gap-1 font-display text-[11px] font-bold tabular-nums text-white/25">
+            <span className="inline-flex items-center gap-1 font-display text-[11px] font-bold tabular-nums text-white/45">
                 <Minus className="w-3 h-3" /> 0
             </span>
         );
@@ -158,7 +158,7 @@ function PodiumCard({ entry, place }: { entry: Entry; place: 1 | 2 | 3 }) {
                 </span>
 
                 {entry.rank_title && (
-                    <span className="mt-1 block font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+                    <span className="mt-1 block font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
                         {entry.rank_title}
                     </span>
                 )}
@@ -171,7 +171,7 @@ function PodiumCard({ entry, place }: { entry: Entry; place: 1 | 2 | 3 }) {
                     style={{ color: first ? GOLD : "#ffffff", fontSize: first ? 30 : 24 }}
                 >
                     {entry.value.toLocaleString("en-US")}
-                    <span className="ml-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
+                    <span className="ml-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
                         {entry.label}
                     </span>
                 </span>
@@ -189,14 +189,14 @@ function SeasonPanel({ season }: { season: NonNullable<Payload["season"]> }) {
         <Panel variant="console" title={season.name}>
             {season.ends_at && (
                 <>
-                    <p className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">Season ends in</p>
+                    <p className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 mb-2">Season ends in</p>
                     <div className="grid grid-cols-4 gap-2 mb-4">
                         {([["Days", left.days], ["Hrs", left.hours], ["Mins", left.minutes], ["Secs", left.seconds]] as const).map(([label, v]) => (
                             <span key={label} className="text-center">
                                 <span className="block font-numeric text-[20px] leading-none text-white">
                                     {String(v).padStart(2, "0")}
                                 </span>
-                                <span className="mt-1 block font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/35">{label}</span>
+                                <span className="mt-1 block font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/50">{label}</span>
                             </span>
                         ))}
                     </div>
@@ -206,7 +206,7 @@ function SeasonPanel({ season }: { season: NonNullable<Payload["season"]> }) {
             {season.your_xp !== null && (
                 <div className="pt-3 border-t border-white/[0.07]">
                     <p className="flex items-center justify-between gap-3">
-                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">Your season XP</span>
+                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/55">Your season XP</span>
                         <span className="font-numeric text-[13px] text-[var(--xp-bright)]">
                             {season.your_xp.toLocaleString("en-US")}
                         </span>
@@ -280,7 +280,7 @@ export default function LeaderboardClient() {
                     </span>
                     <h1 className="font-display text-[28px] md:text-5xl font-black text-white tracking-tight">Leaderboard</h1>
                     <p className="hidden md:block mt-2 text-[14px] text-white/45">Compete. Climb. Be the legend.</p>
-                    <p className="mt-2 md:mt-3 inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/30">
+                    <p className="mt-2 md:mt-3 inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         Rankings refresh every 5 minutes
                     </p>
@@ -360,7 +360,7 @@ export default function LeaderboardClient() {
                                         {viewer.position ? `#${viewerPosition}` : "—"}
                                     </p>
                                     {viewer.trend !== null && viewer.trend !== 0 && (
-                                        <p className="mt-1.5"><Trend value={viewer.trend} /> <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">XP this week</span></p>
+                                        <p className="mt-1.5"><Trend value={viewer.trend} /> <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/45">XP this week</span></p>
                                     )}
                                 </div>
 
@@ -376,7 +376,7 @@ export default function LeaderboardClient() {
                                     <span className="min-w-0">
                                         <span className="block font-display text-[17px] font-black text-white truncate">{viewer.name}</span>
                                         {viewer.rank_title && (
-                                            <span className="mt-0.5 flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/40">
+                                            <span className="mt-0.5 flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/55">
                                                 <ShieldCheck className="w-3 h-3" /> {viewer.rank_title}
                                             </span>
                                         )}
@@ -385,10 +385,10 @@ export default function LeaderboardClient() {
 
                                 <div className="flex-1 min-w-[180px]">
                                     <p className="flex items-center justify-between gap-2 mb-1.5">
-                                        <span className="font-display text-[10px] font-bold tabular-nums text-white/40">
+                                        <span className="font-display text-[10px] font-bold tabular-nums text-white/55">
                                             {viewer.level_progress.current_xp.toLocaleString("en-US")} / {viewer.level_progress.next_level_xp.toLocaleString("en-US")} XP
                                         </span>
-                                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/50">
                                             to level {viewer.level + 1}
                                         </span>
                                     </p>
@@ -401,11 +401,11 @@ export default function LeaderboardClient() {
                                 </div>
 
                                 <div className="shrink-0 text-right">
-                                    <p className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40">Total {viewer.label}</p>
+                                    <p className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55">Total {viewer.label}</p>
                                     <p className="mt-1 font-display text-[22px] font-black tabular-nums leading-none text-[var(--accent)]">
                                         {viewer.value.toLocaleString("en-US")}
                                     </p>
-                                    <p className="mt-1.5 inline-flex items-center gap-1.5 font-display text-[10px] font-bold tabular-nums text-white/35">
+                                    <p className="mt-1.5 inline-flex items-center gap-1.5 font-display text-[10px] font-bold tabular-nums text-white/50">
                                         <Gamepad2 className="w-3 h-3" /> {viewer.games} games
                                     </p>
                                 </div>
@@ -542,7 +542,7 @@ export default function LeaderboardClient() {
                                             {["#", "Player", "Rank / Title", data?.label ?? "Score", "XP this week", "Games", "Reputation"].map((h, i) => (
                                                 <th
                                                     key={h}
-                                                    className={`px-4 py-3 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35 ${i >= 3 ? "text-right" : ""}`}
+                                                    className={`px-4 py-3 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/50 ${i >= 3 ? "text-right" : ""}`}
                                                 >
                                                     {h}
                                                 </th>
@@ -585,7 +585,7 @@ export default function LeaderboardClient() {
                                                                 <ShieldCheck className="w-3 h-3" /> {e.rank_title}
                                                             </span>
                                                         ) : (
-                                                            <span className="font-display text-[11px] font-bold text-white/20">—</span>
+                                                            <span className="font-display text-[11px] font-bold text-white/45">—</span>
                                                         )}
                                                     </td>
 
@@ -625,7 +625,7 @@ export default function LeaderboardClient() {
                             <div className="space-y-3">
                                 {data!.rising.map((r) => (
                                     <Link key={r.username} href={`/profile/${r.username}`} className="group flex items-center gap-3">
-                                        <span className="w-5 shrink-0 font-display text-[11px] font-black tabular-nums text-white/25">{r.position}</span>
+                                        <span className="w-5 shrink-0 font-display text-[11px] font-black tabular-nums text-white/45">{r.position}</span>
                                         <Avatar src={r.avatar_url} alt={r.username} size="sm" />
                                         <span className="min-w-0 flex-1 text-[12.5px] font-semibold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                             {r.name}
@@ -653,7 +653,7 @@ export default function LeaderboardClient() {
                                 </Link>
                             ))}
                         </div>
-                        <p className="mt-4 pt-3 border-t border-white/[0.07] text-[11px] text-white/25 leading-snug">
+                        <p className="mt-4 pt-3 border-t border-white/[0.07] text-[11px] text-white/45 leading-snug">
                             Friends-only profiles are left off every board — the setting would be worthless if the ranking
                             published your name anyway.
                         </p>

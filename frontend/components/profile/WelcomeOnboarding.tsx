@@ -189,7 +189,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                             </button>
                         </div>
 
-                        <button onClick={dismiss} className="mt-6 text-[11px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">
+                        <button onClick={dismiss} className="mt-6 text-[11px] font-bold uppercase tracking-widest text-white/50 hover:text-white/60 transition-colors">
                             Skip for now
                         </button>
                     </div>
@@ -215,8 +215,8 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                 Connect
                             </button>
                         </div>
-                        <p className="mt-3 text-[11px] text-white/30">Your Xbox privacy must allow others to see your game history (default setting).</p>
-                        <button onClick={() => setMode("choice")} className="mt-6 text-[11px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">
+                        <p className="mt-3 text-[11px] text-white/50">Your Xbox privacy must allow others to see your game history (default setting).</p>
+                        <button onClick={() => setMode("choice")} className="mt-6 text-[11px] font-bold uppercase tracking-widest text-white/50 hover:text-white/60 transition-colors">
                             ← Back
                         </button>
                     </div>
@@ -266,7 +266,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[13px] font-bold text-white line-clamp-1">{g.name}</p>
-                                            {g.released && <p className="text-[11px] text-white/35">{g.released.slice(0, 4)}</p>}
+                                            {g.released && <p className="text-[11px] text-white/50">{g.released.slice(0, 4)}</p>}
                                         </div>
                                         <span className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center ${
                                             isAdded ? "bg-emerald-500 text-white" : "bg-white/[0.06] text-white/40"
@@ -285,7 +285,7 @@ export default function WelcomeOnboarding({ username, forced, onClose }: {
                         </div>
 
                         <div className="flex items-center justify-between mt-5">
-                            <button onClick={() => setMode("choice")} className="text-[11px] font-bold uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors">
+                            <button onClick={() => setMode("choice")} className="text-[11px] font-bold uppercase tracking-widest text-white/50 hover:text-white/60 transition-colors">
                                 ← Back
                             </button>
                             <button onClick={finishPicking} disabled={added.length === 0}

@@ -116,7 +116,7 @@ export default function UpcomingReleasesWidget() {
             <div className="pt-2 border-t border-white/[0.05] mt-1">
                 <Link
                     href="/calendar"
-                    className="text-[10px] font-bold uppercase tracking-widest text-white/30 hover:text-[var(--accent)] transition-colors"
+                    className="text-[10px] font-bold uppercase tracking-widest text-white/50 hover:text-[var(--accent)] transition-colors"
                 >
                     View Release Calendar →
                 </Link>

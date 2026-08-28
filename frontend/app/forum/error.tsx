@@ -42,7 +42,7 @@ export default function SectionError({
                 </Link>
             </div>
             {error.digest && (
-                <p className="mt-6 font-display text-[9px] uppercase tracking-[0.16em] text-white/20">
+                <p className="mt-6 font-display text-[9px] uppercase tracking-[0.16em] text-white/45">
                     Ref {error.digest}
                 </p>
             )}

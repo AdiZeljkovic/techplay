@@ -113,7 +113,7 @@ export default function SeasonBanner({ onOpen }: Props) {
               Active season
             </span>
             {days !== null && (
-              <span className="shrink-0 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/35">
+              <span className="shrink-0 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/50">
                 <span
                   className="font-black tabular-nums text-[12px]"
                   style={{ color: ending ? "var(--accent-ink)" : "rgba(255,255,255,0.8)" }}
@@ -143,7 +143,7 @@ export default function SeasonBanner({ onOpen }: Props) {
                   <span className="font-display text-[11.5px] font-black tabular-nums leading-none" style={{ color: tint }}>
                     {value}
                   </span>
-                  <span className="font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/35 leading-none">
+                  <span className="font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/50 leading-none">
                     {unit}
                   </span>
                 </span>

@@ -182,14 +182,14 @@ export default function LockedProfile({
                                         <span className="block font-display text-[13px] font-black uppercase tracking-[0.06em] text-white leading-none">
                                             {rankName ?? `Level ${level}`}
                                         </span>
-                                        <span className="mt-1.5 block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">
+                                        <span className="mt-1.5 block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50">
                                             Level {level} · {xp.toLocaleString()} XP
                                         </span>
                                     </span>
                                 </span>
 
                                 {joinedAt && (
-                                    <span className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
+                                    <span className="inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
                                         <CalendarDays className="w-3.5 h-3.5" /> Member since {joinedAt}
                                     </span>
                                 )}
@@ -221,7 +221,7 @@ export default function LockedProfile({
                                             <span className="block font-display text-[17px] font-black tabular-nums leading-none text-white">
                                                 {value}
                                             </span>
-                                            <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/25">
+                                            <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/45">
                                                 {label}
                                             </span>
                                         </span>

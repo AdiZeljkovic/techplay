@@ -103,7 +103,7 @@ export default function UpcomingRelease({
                             <span className="font-display text-[26px] font-black leading-none tabular-nums text-white">
                                 {value}
                             </span>
-                            <span className="mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
+                            <span className="mt-1 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/50">
                                 {label}
                             </span>
                         </span>

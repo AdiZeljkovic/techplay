@@ -81,7 +81,7 @@ const STROKE = 1.4;
 
 function Label({ children }: { children: React.ReactNode }) {
     return (
-        <p className="font-display text-[8.5px] font-black uppercase tracking-[0.18em] text-white/25 mb-2">
+        <p className="font-display text-[8.5px] font-black uppercase tracking-[0.18em] text-white/45 mb-2">
             {children}
         </p>
     );
@@ -121,7 +121,7 @@ function Rows({ items, onGo }: { items: Row[]; onGo: () => void }) {
                     <r.icon className="w-[22px] h-[22px] shrink-0 text-[var(--accent)]" strokeWidth={STROKE} />
                     <span className="min-w-0">
                         <span className="block font-display text-[12.5px] font-black text-white leading-tight">{r.name}</span>
-                        <span className="block mt-0.5 text-[11px] text-white/30 truncate">{r.description}</span>
+                        <span className="block mt-0.5 text-[11px] text-white/50 truncate">{r.description}</span>
                     </span>
                 </Link>
             ))}

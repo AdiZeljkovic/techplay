@@ -191,7 +191,7 @@ function AdSlot({
                 label — it tells the reader something is broken. `filled` is
                 set from the data-ad-status AdSense writes on the element. */}
             {label && filled && (
-                <p className="mb-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.18em] text-white/20">
+                <p className="mb-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.18em] text-white/45">
                     Advertisement
                 </p>
             )}

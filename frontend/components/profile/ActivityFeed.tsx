@@ -101,7 +101,7 @@ export default function ActivityFeed({ username, compact }: Props) {
                                         <Icon className="w-3.5 h-3.5" style={{ color: meta.color }} />
                                     </span>
                                     <span className="flex-1 min-w-0 text-[13px] text-white/75 truncate">{it.title}</span>
-                                    {it.created_at && <span className="text-[10px] text-white/30 shrink-0">{formatDistanceToNow(new Date(it.created_at), { addSuffix: true })}</span>}
+                                    {it.created_at && <span className="text-[10px] text-white/50 shrink-0">{formatDistanceToNow(new Date(it.created_at), { addSuffix: true })}</span>}
                                 </div>
                             );
                             return it.url ? <Link key={i} href={it.url} className="block">{body}</Link> : <div key={i}>{body}</div>;
@@ -123,7 +123,7 @@ export default function ActivityFeed({ username, compact }: Props) {
             {!compact && lastPage > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6">
                     <button onClick={() => goToPage(Math.max(1, page - 1))} disabled={page <= 1} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Prev</button>
-                    <span className="text-[11px] text-white/40 tabular-nums">{page} / {lastPage}</span>
+                    <span className="text-[11px] text-white/55 tabular-nums">{page} / {lastPage}</span>
                     <button onClick={() => goToPage(Math.min(lastPage, page + 1))} disabled={page >= lastPage} className="px-3 py-1.5 rounded-[var(--radius-card)] bg-white/[0.05] disabled:opacity-30 text-white/70 text-[11px] font-bold uppercase tracking-wider">Next</button>
                 </div>
             )}

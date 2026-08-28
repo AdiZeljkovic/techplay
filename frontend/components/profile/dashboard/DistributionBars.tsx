@@ -37,7 +37,7 @@ export default function DistributionBars({ items, barClassName = "bg-gradient-to
                 <div key={it.name}>
                     <div className="flex justify-between items-baseline mb-1">
                         <span className="text-[12px] font-semibold text-white/75 truncate pr-2">{it.name}</span>
-                        <span className="text-[10px] font-bold text-white/40 tabular-nums shrink-0">{it.percent}%</span>
+                        <span className="text-[10px] font-bold text-white/55 tabular-nums shrink-0">{it.percent}%</span>
                     </div>
                     <div className="h-2 bg-white/[0.06] rounded-full overflow-hidden">
                         <div

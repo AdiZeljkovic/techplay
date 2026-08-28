@@ -161,7 +161,7 @@ const MENU_ITEM =
 
 /** Two items under a word beat four items under nothing. */
 const MENU_LABEL =
-    "px-2.5 pt-2 pb-1 font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/25";
+    "px-2.5 pt-2 pb-1 font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/45";
 
 /* ── the record strip ─────────────────────────────────────────────────── */
 
@@ -204,7 +204,7 @@ function StatBay({ cell, lit = false }: { cell: StripCell; lit?: boolean }) {
             <span className="relative flex items-center gap-3.5 min-w-0">
                 {cell.icon}
                 <span className="min-w-0">
-                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/35 group-hover/cell:text-white/60 transition-colors duration-300 whitespace-nowrap">
+                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50 group-hover/cell:text-white/60 transition-colors duration-300 whitespace-nowrap">
                         {cell.label}
                     </span>
                     <span className="block mt-1.5 font-display text-[22px] font-black tabular-nums leading-none text-white truncate">
@@ -532,7 +532,7 @@ export default function ProfileHero({
                                             key={key}
                                             className="inline-flex items-center gap-1.5 h-[22px] max-w-full px-2.5 rounded-[6px] bg-black/30 border border-white/[0.12]"
                                         >
-                                            <span className="font-display text-[8.5px] font-black uppercase tracking-[0.14em] text-white/35 shrink-0">
+                                            <span className="font-display text-[8.5px] font-black uppercase tracking-[0.14em] text-white/50 shrink-0">
                                                 {PLATFORM_LABEL[key] ?? key}
                                             </span>
                                             <span className="text-[11.5px] font-semibold text-white/70 truncate">{handle}</span>

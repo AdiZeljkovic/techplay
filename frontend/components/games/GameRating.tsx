@@ -148,7 +148,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
                     Reader ratings
                 </h2>
                 {aggregate && aggregate.count > 0 && (
-                    <span className="font-display text-[10px] font-bold tabular-nums text-white/25">
+                    <span className="font-display text-[10px] font-bold tabular-nums text-white/45">
                         {aggregate.count.toLocaleString()}
                     </span>
                 )}
@@ -188,7 +188,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
                                 <Star key={s} className={`w-3.5 h-3.5 ${s <= Math.round(aggregate.average ?? 0) ? "text-amber-400 fill-amber-400" : "text-white/15"}`} />
                             ))}
                         </div>
-                        <p className="mt-1.5 text-[11px] text-white/35 tabular-nums">
+                        <p className="mt-1.5 text-[11px] text-white/50 tabular-nums">
                             {aggregate.count.toLocaleString()} {aggregate.count === 1 ? "rating" : "ratings"}
                         </p>
                     </div>
@@ -197,11 +197,11 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
                             const pct = aggregate.count > 0 ? ((aggregate.distribution[s] ?? 0) / aggregate.count * 100) : 0;
                             return (
                                 <div key={s} className="flex items-center gap-2">
-                                    <span className="w-3 font-display text-[10px] font-bold tabular-nums text-white/35">{s}</span>
+                                    <span className="w-3 font-display text-[10px] font-bold tabular-nums text-white/50">{s}</span>
                                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.07]">
                                         <div className="h-full rounded-full bg-amber-400 transition-all duration-500" style={{ width: `${pct}%` }} />
                                     </div>
-                                    <span className="w-6 text-right text-[10.5px] tabular-nums text-white/30">{aggregate.distribution[s] ?? 0}</span>
+                                    <span className="w-6 text-right text-[10.5px] tabular-nums text-white/50">{aggregate.distribution[s] ?? 0}</span>
                                 </div>
                             );
                         })}
@@ -212,7 +212,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
             {/* Rating form */}
             {isAuthenticated ? (
                 <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.02] p-3.5">
-                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35 mb-2.5">Your rating</p>
+                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50 mb-2.5">Your rating</p>
 
                     {/* Stars */}
                     <div className="flex items-center gap-1 mb-3">
@@ -299,7 +299,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
             ) : (
                 /* Not logged in — show stars but clicking opens login modal */
                 <div className="rounded-[10px] border border-white/[0.07] bg-white/[0.02] p-3.5">
-                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35 mb-2.5">Rate this game</p>
+                    <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50 mb-2.5">Rate this game</p>
                     <div className="mb-3.5 flex items-center gap-1">
                         {[1,2,3,4,5].map((s) => (
                             <button key={s}
@@ -325,7 +325,7 @@ export default function GameRating({ slug, ratingsCount = 0 }: Props) {
             {/* Reviews list */}
             {reviews.length > 0 && (
                 <div className="space-y-3">
-                    <h3 className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/35">Reviews</h3>
+                    <h3 className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Reviews</h3>
                     {reviews.map((r) => (
                         <div key={r.id} className="rounded-[10px] border border-white/[0.06] bg-white/[0.02] p-3.5">
                             <div className="flex items-center gap-3 mb-2">

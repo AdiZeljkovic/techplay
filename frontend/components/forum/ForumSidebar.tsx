@@ -87,7 +87,7 @@ export default function ForumSidebar() {
                                         {user.rank.name}
                                     </p>
                                 )}
-                                <p className="mt-1.5 font-display text-[10px] font-bold tabular-nums text-white/35">
+                                <p className="mt-1.5 font-display text-[10px] font-bold tabular-nums text-white/50">
                                     {xp.toLocaleString()}
                                     <span className="text-white/20"> / {nextRankXp.toLocaleString()} XP</span>
                                 </p>
@@ -103,7 +103,7 @@ export default function ForumSidebar() {
                                 <span key={label} className="rounded-[var(--radius-card)] bg-white/[0.03] py-2.5 text-center">
                                     <Icon className="w-3 h-3 mx-auto mb-1.5 text-white/25" />
                                     <span className="block font-display text-[15px] font-black tabular-nums text-white leading-none">{value}</span>
-                                    <span className="mt-1 block font-display text-[7.5px] font-bold uppercase tracking-[0.16em] text-white/30">{label}</span>
+                                    <span className="mt-1 block font-display text-[7.5px] font-bold uppercase tracking-[0.16em] text-white/50">{label}</span>
                                 </span>
                             ))}
                         </div>
@@ -171,7 +171,7 @@ export default function ForumSidebar() {
                                         <p className="font-display text-[12px] font-black text-white leading-snug line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                             {decodeHtml(thread.title)}
                                         </p>
-                                        <p className="mt-0.5 text-[10.5px] text-white/25">
+                                        <p className="mt-0.5 text-[10.5px] text-white/45">
                                             {thread.category?.name ?? "Forum"}
                                             {" · "}
                                             <span suppressHydrationWarning>

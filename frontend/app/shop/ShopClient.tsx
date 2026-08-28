@@ -86,7 +86,7 @@ export default function ShopClient() {
                             </button>
                         )}
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-white/35">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-white/50">
                         {products.length} {products.length === 1 ? "PRODUCT" : "PRODUCTS"}
                     </span>
                 </div>
@@ -153,7 +153,7 @@ export default function ShopClient() {
                                     <div className="mt-auto pt-4 flex items-center justify-between gap-4 border-t border-white/[0.04]">
                                         <div className="font-display text-[20px] font-bold text-[var(--accent)] tracking-tight leading-none">
                                             {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
-                                            <span className="text-[11px] font-bold text-white/35 ml-1">KM</span>
+                                            <span className="text-[11px] font-bold text-white/50 ml-1">KM</span>
                                         </div>
 
                                         <button

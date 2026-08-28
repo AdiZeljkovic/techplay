@@ -49,7 +49,7 @@ export default function LoyaltyCustomization({ data, isOwnProfile, username, xp 
                         <HexMedal size={56} color={tierColor}><Box className="w-5 h-5" strokeWidth={2.2} /></HexMedal>
                         <div className="min-w-0">
                             <div className="text-xl font-black uppercase tracking-wide leading-none" style={{ color: tierColor }}>{data.tier ?? "Bronze"}</div>
-                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40 mt-1">Tier</div>
+                            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/55 mt-1">Tier</div>
                         </div>
                     </div>
                     {nextTierName ? (
@@ -61,7 +61,7 @@ export default function LoyaltyCustomization({ data, isOwnProfile, username, xp 
                             </div>
                         </>
                     ) : (
-                        <div className="text-[11px] font-semibold text-white/40">Max tier reached</div>
+                        <div className="text-[11px] font-semibold text-white/55">Max tier reached</div>
                     )}
                 </div>
 
@@ -138,7 +138,7 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
                     {Object.entries(TYPE_META).map(([type, meta]) => {
                         const Icon = meta.icon;
                         return (
-                            <button key={type} onClick={() => setTab(type)} className={`flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider border-b-2 -mb-px transition-colors ${tab === type ? "border-[var(--accent)] text-[var(--accent)]" : "border-transparent text-white/40 hover:text-white/70"}`}>
+                            <button key={type} onClick={() => setTab(type)} className={`flex items-center gap-1.5 px-3 py-2.5 text-[11px] font-bold uppercase tracking-wider border-b-2 -mb-px transition-colors ${tab === type ? "border-[var(--accent)] text-[var(--accent)]" : "border-transparent text-white/55 hover:text-white/70"}`}>
                                 <Icon className="w-3.5 h-3.5" /> {meta.label}
                             </button>
                         );
@@ -157,7 +157,7 @@ function CustomizationModal({ username, onClose }: { username: string; onClose: 
                                     <Swatch item={item} />
                                     <div className="flex-1 min-w-0">
                                         <div className="text-[13px] font-bold text-white truncate">{item.name}</div>
-                                        {item.description && <div className="text-[10px] text-white/40 line-clamp-1">{item.description}</div>}
+                                        {item.description && <div className="text-[10px] text-white/55 line-clamp-1">{item.description}</div>}
                                         <div className="text-[10px] font-bold mt-0.5">
                                             {item.required_tier ? <span className="text-fuchsia-400">{item.required_tier} tier</span> : item.cost > 0 ? <span className="text-amber-400 inline-flex items-center gap-1"><Coins className="w-3 h-3" />{item.cost}</span> : <span className="text-emerald-400">Free</span>}
                                         </div>

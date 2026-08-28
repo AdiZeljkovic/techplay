@@ -207,14 +207,14 @@ function IdentityCard({ data }: { data: GamerDnaPayload }) {
                             <span className="font-display text-[30px] font-black tabular-nums leading-none text-white">
                                 {score.toLocaleString("en-US")}
                             </span>
-                            <span className="mt-1 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/30">
+                            <span className="mt-1 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50">
                                 / {data.score.max.toLocaleString("en-US")}
                             </span>
                         </span>
                     </Donut>
                     <button
                         onClick={() => setOpenBreakdown((v) => !v)}
-                        className="inline-flex items-center gap-1 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/30 hover:text-[var(--accent)] transition-colors"
+                        className="inline-flex items-center gap-1 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/50 hover:text-[var(--accent)] transition-colors"
                     >
                         <HelpCircle className="w-3 h-3" />
                         {openBreakdown ? "Hide the working" : "How it's calculated"}
@@ -229,7 +229,7 @@ function IdentityCard({ data }: { data: GamerDnaPayload }) {
                         <div key={b.key}>
                             <p className="flex items-baseline justify-between gap-2 mb-1">
                                 <span className="text-[11px] font-semibold text-white/55">{b.label}</span>
-                                <span className="font-display text-[10px] font-black tabular-nums text-white/35">{b.value}</span>
+                                <span className="font-display text-[10px] font-black tabular-nums text-white/50">{b.value}</span>
                             </p>
                             <span className="block h-[4px] rounded-full bg-[var(--track)] overflow-hidden">
                                 <span
@@ -265,7 +265,7 @@ function SignatureStrip({ games }: { games: GamerDnaPayload["signature"] }) {
     return (
         <Panel
             title="Signature games"
-            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">What the hours went into</span>}
+            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/50">What the hours went into</span>}
             bodyClassName="p-4"
         >
             {games.length === 0 ? (
@@ -345,9 +345,9 @@ function Readout({ icon: Icon, label, value, sub, tint }: {
                 <Icon className="w-[23px] h-[23px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
             </span>
             <span className="min-w-0">
-                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">{label}</span>
+                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">{label}</span>
                 <span className="block mt-1 font-display text-[17px] font-black tabular-nums leading-none text-white truncate">{value}</span>
-                {sub && <span className="block mt-1 text-[10.5px] text-white/30 truncate">{sub}</span>}
+                {sub && <span className="block mt-1 text-[10.5px] text-white/50 truncate">{sub}</span>}
             </span>
         </div>
     );
@@ -392,7 +392,7 @@ function RhythmPanel({ rhythm }: { rhythm: GamerDnaPayload["rhythm"] }) {
 
             {rhythm.moods.length > 0 && (
                 <div className="p-4 border-t border-white/[0.07]">
-                    <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40 mb-2.5">
+                    <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/55 mb-2.5">
                         How it feels
                     </p>
                     {/* One bar, split by mood — a mood is a share of your
@@ -409,7 +409,7 @@ function RhythmPanel({ rhythm }: { rhythm: GamerDnaPayload["rhythm"] }) {
                     </div>
                     <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                         {rhythm.moods.map((m) => (
-                            <span key={m.name} className="inline-flex items-center gap-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/35">
+                            <span key={m.name} className="inline-flex items-center gap-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/50">
                                 <span aria-hidden className="w-1.5 h-1.5 rounded-full" style={{ background: MOOD_COLORS[m.name] ?? "#9ca3af" }} />
                                 {m.name}
                                 <span className="tabular-nums text-white/60">{m.percent}%</span>
@@ -490,9 +490,9 @@ function MilestoneStrip({ m }: { m: GamerDnaPayload["milestones"] }) {
                             <Icon className="w-[24px] h-[24px] transition-transform duration-300 group-hover/bay:scale-110" strokeWidth={1.5} />
                         </span>
                         <span className="min-w-0">
-                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/40 whitespace-nowrap">{label}</span>
+                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55 whitespace-nowrap">{label}</span>
                             <span className="block mt-1 font-display text-[19px] font-black leading-none text-white truncate">{value}</span>
-                            <span className="block mt-1.5 text-[10.5px] text-white/30 leading-snug">{sub}</span>
+                            <span className="block mt-1.5 text-[10.5px] text-white/50 leading-snug">{sub}</span>
                         </span>
                     </div>
                 ))}
@@ -533,7 +533,7 @@ function VerdictPanel({ v }: { v: GamerDnaPayload["verdicts"] }) {
             title="Your scores vs the room"
             material="instrument"
             className="h-full"
-            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/30">{v.sample} rated</span>}
+            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] tabular-nums text-white/50">{v.sample} rated</span>}
         >
             <p className="font-display text-[24px] font-black uppercase tracking-tight leading-none" style={{ color: tint }}>
                 {v.label}
@@ -562,7 +562,7 @@ function VerdictPanel({ v }: { v: GamerDnaPayload["verdicts"] }) {
                 ))}
             </div>
 
-            <p className="mt-6 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/25 leading-snug">
+            <p className="mt-6 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/45 leading-snug">
                 Both on the catalogue&apos;s ten-point scale. You rate out of five, so five stars counts as a ten.
             </p>
         </Panel>
@@ -587,7 +587,7 @@ function GraveyardPanel({ g }: { g: GamerDnaPayload["graveyard"] }) {
             title="The graveyard"
             material="instrument"
             className="h-full"
-            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Dropped, and gone quiet</span>}
+            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/50">Dropped, and gone quiet</span>}
         >
             {total === 0 ? (
                 <EmptyState
@@ -601,12 +601,12 @@ function GraveyardPanel({ g }: { g: GamerDnaPayload["graveyard"] }) {
                     <div className="flex items-center gap-6">
                         <span>
                             <span className="block font-display text-[28px] font-black tabular-nums leading-none text-white">{g.dropped}</span>
-                            <span className="block mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">Dropped</span>
+                            <span className="block mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50">Dropped</span>
                         </span>
                         <span aria-hidden className="w-px h-9 bg-white/[0.08]" />
                         <span>
                             <span className="block font-display text-[28px] font-black tabular-nums leading-none text-white/70">{g.dormant}</span>
-                            <span className="block mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/35">Untouched 6mo+</span>
+                            <span className="block mt-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50">Untouched 6mo+</span>
                         </span>
                     </div>
 
@@ -645,7 +645,7 @@ function PeersPanel({ peers }: { peers: GamerDnaPayload["peers"] }) {
             title="Taste twins"
             material="instrument"
             className="h-full"
-            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/30">Shelves like yours</span>}
+            meta={<span className="font-display text-[10px] font-bold uppercase tracking-[0.1em] text-white/50">Shelves like yours</span>}
         >
             {peers.length === 0 ? (
                 <EmptyState
@@ -676,7 +676,7 @@ function PeersPanel({ peers }: { peers: GamerDnaPayload["peers"] }) {
                                 <span className="block text-[12.5px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                     {p.display_name || p.username}
                                 </span>
-                                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
+                                <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/45">
                                     @{p.username}
                                 </span>
                             </span>
@@ -698,10 +698,10 @@ function AxisRow({ axis }: { axis: DnaAxis }) {
     return (
         <div className="group">
             <div className="flex items-center justify-between gap-3 mb-1.5">
-                <span className={`font-display text-[10.5px] font-bold ${axis.value < 50 ? "text-white" : "text-white/35"}`}>
+                <span className={`font-display text-[10.5px] font-bold ${axis.value < 50 ? "text-white" : "text-white/50"}`}>
                     {axis.left}
                 </span>
-                <span className={`font-display text-[10.5px] font-bold ${axis.value > 50 ? "text-white" : "text-white/35"}`}>
+                <span className={`font-display text-[10.5px] font-bold ${axis.value > 50 ? "text-white" : "text-white/50"}`}>
                     {axis.right}
                 </span>
             </div>
@@ -726,7 +726,7 @@ function AxisRow({ axis }: { axis: DnaAxis }) {
             </div>
 
             <p className="mt-1.5 flex items-center justify-between gap-2">
-                <span className="font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/25">{axis.basis}</span>
+                <span className="font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/45">{axis.basis}</span>
                 <span className="font-display text-[10px] font-black tabular-nums text-white/45">{axis.value}%</span>
             </p>
         </div>
@@ -738,7 +738,7 @@ function LegendRow({ item, color }: { item: DistributionStat; color: string }) {
         <div className="flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
             <span className="flex-1 min-w-0 text-[12px] text-white/60 truncate">{item.name}</span>
-            <span className="font-display text-[11px] font-bold tabular-nums text-white/40">{item.percent}%</span>
+            <span className="font-display text-[11px] font-bold tabular-nums text-white/55">{item.percent}%</span>
         </div>
     );
 }
@@ -842,7 +842,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span className="hidden sm:inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/30">
+                    <span className="hidden sm:inline-flex items-center gap-1.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
                         <Clock3 className="w-3.5 h-3.5" />
                         Updated {new Date(dna.updated_at).toLocaleDateString("en-GB")}
                     </span>
@@ -900,7 +900,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                                 >
                                     <span className="flex flex-col items-center">
                                         <span className="font-display text-[20px] font-black tabular-nums leading-none text-white">{dna.genres.length}</span>
-                                        <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/30">Genres</span>
+                                        <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/50">Genres</span>
                                     </span>
                                 </Donut>
                                 <div className="w-full flex-1 space-y-1.5">
@@ -923,7 +923,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                         <div className="space-y-4">
                             {dna.fingerprint.map((axis) => <AxisRow key={axis.key} axis={axis} />)}
                         </div>
-                        <p className="mt-4 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/25 leading-snug">
+                        <p className="mt-4 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/45 leading-snug">
                             Violet axes are measured off your collection. Orange ones are read from the genres and tags of the
                             games you own.
                         </p>
@@ -952,7 +952,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                                             <span className="font-display text-[10.5px] font-bold leading-tight" style={{ color: e.count > 0 ? e.color : "rgba(255,255,255,0.25)" }}>
                                                 {e.label}
                                             </span>
-                                            <span className="mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.08em] text-white/25">
+                                            <span className="mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.08em] text-white/45">
                                                 {e.range}
                                             </span>
                                             <span className="mt-1.5 font-display text-[15px] font-black tabular-nums" style={{ color: e.count > 0 ? e.color : "rgba(255,255,255,0.2)" }}>
@@ -993,7 +993,7 @@ export default function GamerDnaPanel({ username }: { username: string }) {
                         <ArchetypeCard key={a.key} a={a} tint={ARCHETYPE_TINTS[i % ARCHETYPE_TINTS.length]} />
                     ))}
                 </div>
-                <p className="mt-3.5 text-[11px] text-white/30 leading-snug">
+                <p className="mt-3.5 text-[11px] text-white/50 leading-snug">
                     {dna.archetypes[0]?.hint ?? "Play, collect and post to grow your archetypes."}
                 </p>
             </Panel>

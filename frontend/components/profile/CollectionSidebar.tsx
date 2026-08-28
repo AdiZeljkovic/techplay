@@ -58,7 +58,7 @@ export function RecentlyAdded({ username }: { username: string }) {
                                 <span className="block text-[12px] font-semibold text-white truncate group-hover:text-[var(--accent)] transition-colors duration-150">
                                     {e.game?.name}
                                 </span>
-                                <span className="block mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/25">
+                                <span className="block mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/45">
                                     Added {timeAgo(e.added_at ?? e.updated_at).toLowerCase()}
                                 </span>
                             </span>
@@ -125,7 +125,7 @@ export function CollectionGoals({ username, isOwnProfile }: { username: string; 
                 <div className="space-y-3">
                     {goals.map((g) => (
                         <label key={g.type} className="block">
-                            <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/40 mb-1.5">
+                            <span className="block font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/55 mb-1.5">
                                 {g.label.replace(String(g.target), "…")}
                             </span>
                             <input
@@ -172,7 +172,7 @@ export function CollectionGoals({ username, isOwnProfile }: { username: string; 
                         </div>
                     ))}
                     {isOwnProfile && goals.some((g) => g.is_default) && (
-                        <p className="text-[10.5px] text-white/25 leading-snug">
+                        <p className="text-[10.5px] text-white/45 leading-snug">
                             These are suggested targets — set your own with Edit goals.
                         </p>
                     )}
@@ -214,7 +214,7 @@ export function PlatformBreakdown({ data }: { data?: PlatformsGenres }) {
                                     />
                                 </span>
                             </span>
-                            <span className="shrink-0 w-[34px] text-right font-display text-[10px] font-bold tabular-nums text-white/30">
+                            <span className="shrink-0 w-[34px] text-right font-display text-[10px] font-bold tabular-nums text-white/50">
                                 {p.percent}%
                             </span>
                         </div>

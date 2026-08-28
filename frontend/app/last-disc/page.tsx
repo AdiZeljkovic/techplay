@@ -135,7 +135,7 @@ export default async function LastDiscPage() {
                                         <span className="block font-display text-[10.5px] font-black uppercase tracking-[0.14em] text-white">
                                             {title}
                                         </span>
-                                        <span className="mt-0.5 block text-[11px] text-white/40">{body}</span>
+                                        <span className="mt-0.5 block text-[11px] text-white/55">{body}</span>
                                     </span>
                                 </div>
                             ))}

@@ -146,7 +146,7 @@ function syncStatusBadge(status: ConnectedAccount["sync_status"], lastSynced: st
             );
         default:
             return (
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-white/30">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-white/50">
                     <Clock className="w-3.5 h-3.5" /> Never synced
                 </span>
             );
@@ -369,7 +369,7 @@ export default function ConnectedAccountsSection() {
                             <div className="flex items-center gap-2 mb-0.5">
                                 <span className="text-[14px] font-bold text-white">{provider.name}</span>
                                 {account && (
-                                    <span className="text-[11px] font-semibold text-white/40 truncate">
+                                    <span className="text-[11px] font-semibold text-white/55 truncate">
                                         {account.display_name ?? "Connected"}
                                     </span>
                                 )}
@@ -382,7 +382,7 @@ export default function ConnectedAccountsSection() {
                                             <Shield className="w-2.5 h-2.5" /> Verified
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center h-[18px] px-1.5 rounded-[4px] bg-white/[0.07] text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/40">
+                                        <span className="inline-flex items-center h-[18px] px-1.5 rounded-[4px] bg-white/[0.07] text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/55">
                                             Unverified
                                         </span>
                                     )
@@ -392,7 +392,7 @@ export default function ConnectedAccountsSection() {
                                 <div className="flex flex-col gap-1">
                                     {syncStatusBadge(account.sync_status, account.last_synced_at)}
                                     {account.reconnect_after && account.sync_status !== "expired" && (
-                                        <span className="text-[11px] text-white/30">
+                                        <span className="text-[11px] text-white/50">
                                             Needs reconnecting after {new Date(account.reconnect_after).toLocaleDateString()}
                                         </span>
                                     )}
@@ -404,7 +404,7 @@ export default function ConnectedAccountsSection() {
                                 <div className="flex flex-col gap-1">
                                     <span className="text-[12px] text-white/40">{provider.description}</span>
                                     {provider.caveat && (
-                                        <span className="text-[11px] text-white/25 leading-snug">{provider.caveat}</span>
+                                        <span className="text-[11px] text-white/45 leading-snug">{provider.caveat}</span>
                                     )}
                                 </div>
                             )}
@@ -522,7 +522,7 @@ export default function ConnectedAccountsSection() {
                                 </a>{" "}
                                 and copy the long value next to <span className="text-white/70">npsso</span>.
                             </p>
-                            <p className="mt-2 text-[11px] text-white/25 leading-relaxed max-w-[560px]">
+                            <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
                                 The token is encrypted before it is stored and is only used to read your trophy list. It stops
                                 working after about two months, and this page will tell you before it does.
                             </p>
@@ -572,7 +572,7 @@ export default function ConnectedAccountsSection() {
                                 </a>{" "}
                                 — it answers with a short line of text. Paste the whole thing here.
                             </p>
-                            <p className="mt-2 text-[11px] text-white/25 leading-relaxed max-w-[560px]">
+                            <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
                                 The code works once and expires in minutes. Epic tells us what you own and what it is called
                                 — no playtime, no achievements — so those games land on your shelf as backlog.
                             </p>
@@ -622,7 +622,7 @@ export default function ConnectedAccountsSection() {
                                 , log in, and you will land on a blank page. Copy its whole address — or just the{" "}
                                 <span className="text-white/70">code=</span> part — and paste it here.
                             </p>
-                            <p className="mt-2 text-[11px] text-white/25 leading-relaxed max-w-[560px]">
+                            <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
                                 The code works once and expires quickly. GOG tells us what you own and nothing more — no
                                 playtime, no achievements — so those games land on your shelf as backlog.
                             </p>
@@ -694,7 +694,7 @@ export default function ConnectedAccountsSection() {
 
             <div className="flex items-start gap-2 mt-2 p-3 rounded-[var(--radius-card)] bg-white/[0.02] border border-white/[0.05]">
                 <Shield className="w-3.5 h-3.5 text-white/25 mt-0.5 shrink-0" />
-                <p className="text-[11px] text-white/30 leading-relaxed">
+                <p className="text-[11px] text-white/50 leading-relaxed">
                     Platform tokens are encrypted at rest. We only read library data — we never post, purchase, or modify anything on your behalf. You can disconnect at any time.
                 </p>
             </div>

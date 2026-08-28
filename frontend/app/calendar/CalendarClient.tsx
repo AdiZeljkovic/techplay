@@ -333,7 +333,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                     <span className="block font-display text-[24px] font-black tabular-nums leading-none text-white">
                                         {data?.stats.releases ?? 0}
                                     </span>
-                                    <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/35">
+                                    <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/50">
                                         This month
                                     </span>
                                 </span>
@@ -345,7 +345,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                     <span className="block font-display text-[24px] font-black tabular-nums leading-none text-white">
                                         {data?.stats.wishlisted ?? 0}
                                     </span>
-                                    <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/35">
+                                    <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/50">
                                         {user ? "On your wishlist" : "Sign in to track"}
                                     </span>
                                 </span>
@@ -383,7 +383,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                 {[...Array(5)].map((_, i) => <div key={i} className="h-[46px] rounded-[8px] bg-white/[0.04] animate-pulse" />)}
                             </div>
                         ) : (data?.upcoming.length ?? 0) === 0 ? (
-                            <p className="py-2 text-[11.5px] text-white/30 leading-snug">
+                            <p className="py-2 text-[11.5px] text-white/50 leading-snug">
                                 Nothing left to come this month. Step forward with the arrows.
                             </p>
                         ) : (
@@ -391,7 +391,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                 {data!.upcoming.map((game) => (
                                     <Link key={game.slug} href={`/calendar/${game.slug}`} className="group flex items-center gap-3">
                                         <span className="shrink-0 w-[38px] text-center">
-                                            <span className="block font-display text-[8px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                            <span className="block font-display text-[8px] font-bold uppercase tracking-[0.1em] text-white/50">
                                                 {game.released ? new Date(game.released).toLocaleDateString("en-GB", { month: "short" }) : "TBA"}
                                             </span>
                                             <span className="block font-display text-[17px] font-black tabular-nums leading-none text-white">
@@ -411,7 +411,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                             <span className="flex items-center gap-2 mt-1">
                                                 <PlatformMarks platforms={game.platforms} className="w-3 h-3" />
                                                 {game.genres[0] && (
-                                                    <span className="font-display text-[8px] font-bold uppercase tracking-[0.06em] text-white/25 truncate">
+                                                    <span className="font-display text-[8px] font-bold uppercase tracking-[0.06em] text-white/45 truncate">
                                                         {game.genres[0]}
                                                     </span>
                                                 )}
@@ -522,7 +522,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                     <Panel
                         title={label ? `${label} ${year} releases` : "Releases"}
                         meta={
-                            <span className="font-display text-[10px] font-black tabular-nums text-white/35">
+                            <span className="font-display text-[10px] font-black tabular-nums text-white/50">
                                 {data?.stats.showing ?? 0}
                                 {(data?.stats.showing ?? 0) !== (data?.stats.releases ?? 0) && (
                                     <span className="text-white/20"> / {data?.stats.releases}</span>
@@ -552,11 +552,11 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                     return (
                                         <div key={day.date} className="flex gap-3 md:gap-4 p-3 md:p-4">
                                             <span className="shrink-0 w-[42px] md:w-[52px] text-center pt-1">
-                                                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-white/30">{day.month}</span>
+                                                <span className="block font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-white/50">{day.month}</span>
                                                 <span className="block font-display text-[22px] md:text-[26px] font-black tabular-nums leading-none text-white">{day.day}</span>
                                                 <span className="block mt-0.5 font-display text-[8.5px] font-bold uppercase tracking-[0.12em] text-[var(--accent)]">{day.weekday}</span>
                                                 {day.total > 1 && (
-                                                    <span className="block mt-1.5 font-display text-[8.5px] font-bold tabular-nums text-white/20">
+                                                    <span className="block mt-1.5 font-display text-[8.5px] font-bold tabular-nums text-white/45">
                                                         {day.total} games
                                                     </span>
                                                 )}
@@ -578,7 +578,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                                             <Link href={`/calendar/${game.slug}`} className="block text-[13px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors py-3 -my-3 sm:py-0 sm:my-0">
                                                                 {game.name}
                                                             </Link>
-                                                            <span className="flex items-center gap-2 mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/30 truncate">
+                                                            <span className="flex items-center gap-2 mt-0.5 font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/50 truncate">
                                                                 {game.genres[0] && <span>{game.genres[0]}</span>}
                                                                 {game.publisher && <span className="text-white/20">· {game.publisher}</span>}
                                                             </span>
@@ -602,7 +602,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                                     <button
                                                         onClick={() => openDay(day.date)}
                                                         disabled={openingDay === day.date}
-                                                        className="w-full h-11 md:h-9 rounded-[9px] border border-dashed border-white/[0.11] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-white/[0.03] inline-flex items-center justify-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/40 hover:text-white transition-colors disabled:opacity-50"
+                                                        className="w-full h-11 md:h-9 rounded-[9px] border border-dashed border-white/[0.11] hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] hover:bg-white/[0.03] inline-flex items-center justify-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/55 hover:text-white transition-colors disabled:opacity-50"
                                                     >
                                                         {openingDay === day.date
                                                             ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading</>
@@ -622,12 +622,12 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                 <aside className="xl:col-span-4 min-w-0 space-y-4">
                     <Panel title="Your watchlist releases">
                         {!user ? (
-                            <p className="py-1 text-[11.5px] text-white/30 leading-snug">
+                            <p className="py-1 text-[11.5px] text-white/50 leading-snug">
                                 <Link href="/login" className="text-[var(--accent)] font-semibold">Sign in</Link> to wishlist
                                 games and get told the day they land.
                             </p>
                         ) : (data?.watchlist.length ?? 0) === 0 ? (
-                            <p className="py-1 text-[11.5px] text-white/30 leading-snug">
+                            <p className="py-1 text-[11.5px] text-white/50 leading-snug">
                                 Nothing upcoming on your list. Wishlist a game below and it appears here.
                             </p>
                         ) : (
@@ -644,7 +644,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                             <Link href={`/games/${game.slug}`} className="block text-[12.5px] font-bold text-white truncate hover:text-[var(--accent)] transition-colors">
                                                 {game.name}
                                             </Link>
-                                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/50">
                                                 {new Date(game.released).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                                             </span>
                                         </span>
@@ -659,7 +659,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
 
                     <Panel title="Biggest still to come">
                         {(data?.most_followed.length ?? 0) === 0 ? (
-                            <p className="py-1 text-[11.5px] text-white/30">Nothing further out yet.</p>
+                            <p className="py-1 text-[11.5px] text-white/50">Nothing further out yet.</p>
                         ) : (
                             <div className="space-y-3">
                                 {data!.most_followed.map((game) => (
@@ -674,7 +674,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                             <span className="block text-[12.5px] font-bold text-white truncate group-hover:text-[var(--accent)] transition-colors">
                                                 {game.name}
                                             </span>
-                                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/50">
                                                 {game.released ? new Date(game.released).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "TBA"}
                                             </span>
                                         </span>
@@ -689,7 +689,7 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
 
                     <Panel title="Platform breakdown">
                         {(data?.platform_breakdown.length ?? 0) === 0 ? (
-                            <p className="py-1 text-[11.5px] text-white/30">No platform data this month.</p>
+                            <p className="py-1 text-[11.5px] text-white/50">No platform data this month.</p>
                         ) : (
                             <>
                                 <div className="flex h-[8px] rounded-full overflow-hidden bg-[var(--track)] mb-3.5">
@@ -702,12 +702,12 @@ export default function CalendarClient({ initial }: { initial?: CalendarPayload 
                                         <div key={p.key} className="flex items-center gap-2.5">
                                             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: PLATFORM_TINTS[p.key] }} />
                                             <span className="flex-1 min-w-0 text-[12px] text-white/60 truncate">{p.label}</span>
-                                            <span className="font-display text-[10px] font-bold tabular-nums text-white/30">{p.count}</span>
+                                            <span className="font-display text-[10px] font-bold tabular-nums text-white/50">{p.count}</span>
                                             <span className="w-[34px] text-right font-display text-[11px] font-black tabular-nums text-white/55">{p.percent}%</span>
                                         </div>
                                     ))}
                                 </div>
-                                <p className="mt-3.5 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/25 leading-snug">
+                                <p className="mt-3.5 pt-3 border-t border-white/[0.07] text-[10.5px] text-white/45 leading-snug">
                                     A game shipping on several platforms counts once for each — the shares add past 100%
                                     on purpose.
                                 </p>

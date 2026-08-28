@@ -82,7 +82,7 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
                         >
                             <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-[var(--accent)]"}`} />
                             {label}
-                            <span className={`text-[10px] ${isActive ? "text-white/70" : "text-white/35"}`}>
+                            <span className={`text-[10px] ${isActive ? "text-white/70" : "text-white/50"}`}>
                                 ({count})
                             </span>
                         </button>

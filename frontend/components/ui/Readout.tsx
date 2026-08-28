@@ -50,7 +50,7 @@ export default function Readout({
 
     return (
         <div className={cn("min-w-0", className)}>
-            <p className="flex items-center gap-1.5 font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/35">
+            <p className="flex items-center gap-1.5 font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
                 {icon}
                 <span className="truncate">{label}</span>
             </p>
@@ -64,7 +64,7 @@ export default function Readout({
                 </span>
 
                 {unit && (
-                    <span className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/30">{unit}</span>
+                    <span className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/50">{unit}</span>
                 )}
 
                 {/* Zero is not movement, and rendering it as "0%" makes a

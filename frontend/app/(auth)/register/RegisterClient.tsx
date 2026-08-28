@@ -142,7 +142,7 @@ export default function RegisterClient() {
                         </ul>
                     </div>
 
-                    <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
+                    <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
                         <span><span className="text-white">15K+</span> MEMBERS</span>
                         <span className="w-1 h-1 rounded-full bg-[var(--accent)]" />
                         <span><span className="text-white">50K+</span> GAMES</span>

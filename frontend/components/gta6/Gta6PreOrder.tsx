@@ -58,7 +58,7 @@ export default function Gta6PreOrder() {
                             >
                                 <PlatformIcon kind={p.icon} />
                                 {p.name}
-                                {p.note && <span className="text-[10px] font-semibold text-white/35 uppercase">{p.note}</span>}
+                                {p.note && <span className="text-[10px] font-semibold text-white/50 uppercase">{p.note}</span>}
                             </a>
                         );
                     })}

@@ -91,7 +91,7 @@ export default function BrandPanel({
             </div>
 
             {/* Bottom strip */}
-            <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
+            <div className="relative z-10 flex items-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-white/50">
                 {footnote}
             </div>
         </div>

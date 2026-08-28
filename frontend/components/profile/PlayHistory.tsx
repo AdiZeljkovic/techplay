@@ -132,7 +132,7 @@ function Covers({ year, feature }: { year: Year; feature: boolean }) {
             })}
 
             {rest > 0 && (
-                <span className="w-[56px] aspect-[3/4] rounded-[8px] border border-dashed border-white/[0.14] flex items-center justify-center font-display text-[11px] font-black tabular-nums text-white/25">
+                <span className="w-[56px] aspect-[3/4] rounded-[8px] border border-dashed border-white/[0.14] flex items-center justify-center font-display text-[11px] font-black tabular-nums text-white/45">
                     +{rest}
                 </span>
             )}
@@ -152,7 +152,7 @@ function QuietYear({ year }: { year: Year }) {
             <span aria-hidden className="absolute left-[15px] top-0 bottom-0 w-px bg-white/[0.07]" />
             <span aria-hidden className="absolute left-[12px] top-[9px] w-[7px] h-[7px] rounded-full bg-white/15" />
             <span className="font-display text-[13px] font-black tabular-nums text-white/35">{year.year}</span>
-            <span className="text-[11.5px] text-white/25">{bits.join(" · ") || "quiet"}</span>
+            <span className="text-[11.5px] text-white/45">{bits.join(" · ") || "quiet"}</span>
         </div>
     );
 }
@@ -267,7 +267,7 @@ export default function PlayHistory({ history }: { history: History }) {
 
                     <div className="mt-5">
                         <Ridge years={years} peak={peak} />
-                        <div className="mt-1.5 flex items-center justify-between font-display text-[9px] font-bold uppercase tracking-[0.14em] tabular-nums text-white/25">
+                        <div className="mt-1.5 flex items-center justify-between font-display text-[9px] font-bold uppercase tracking-[0.14em] tabular-nums text-white/45">
                             <span>{span?.from}</span>
                             <span className="text-white/15">achievements unlocked, by year</span>
                             <span>{span?.to}</span>
@@ -282,7 +282,7 @@ export default function PlayHistory({ history }: { history: History }) {
                                 <span className="block font-display text-[15px] font-black tabular-nums leading-none text-white">
                                     {totals.unlocks.toLocaleString()}
                                 </span>
-                                <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.15em] text-white/30">Achievements</span>
+                                <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.15em] text-white/50">Achievements</span>
                             </span>
                         </span>
 
@@ -291,7 +291,7 @@ export default function PlayHistory({ history }: { history: History }) {
                                 <Flame className="w-4 h-4 text-[var(--accent)] shrink-0" strokeWidth={1.6} />
                                 <span>
                                     <span className="block font-display text-[15px] font-black tabular-nums leading-none text-white">{busiest.year}</span>
-                                    <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.15em] text-white/30">
+                                    <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.15em] text-white/50">
                                         Busiest · {busiest.unlocks} unlocked
                                     </span>
                                 </span>
@@ -309,7 +309,7 @@ export default function PlayHistory({ history }: { history: History }) {
                                         machine partway through, so the split
                                         covers less than the total. Unexplained,
                                         that gap reads as lost games. */}
-                                    <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.15em] text-white/30">
+                                    <span className="mt-1 block font-display text-[8.5px] font-bold uppercase tracking-[0.15em] text-white/50">
                                         {devices.attributed_hours.toLocaleString()} h of {devices.total_hours.toLocaleString()} placed
                                     </span>
                                 </span>
@@ -328,7 +328,7 @@ export default function PlayHistory({ history }: { history: History }) {
                 )}
             </div>
 
-            <p className="pl-11 flex items-start gap-2 text-[11px] leading-relaxed text-white/25">
+            <p className="pl-11 flex items-start gap-2 text-[11px] leading-relaxed text-white/45">
                 <Clock3 className="w-3.5 h-3.5 mt-[1px] shrink-0 text-white/15" />
                 <span>
                     Built from dates the platforms report — when each game was last opened, when each achievement

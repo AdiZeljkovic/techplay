@@ -49,12 +49,12 @@ export default function DailyHub({ onOpenTab }: Props) {
 
                 <div className="pt-1">
                     <h4 className="flex items-center justify-between gap-2 mb-2.5">
-                        <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/40">
+                        <span className="font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-white/55">
                             Active quests
                         </span>
                         <button
                             onClick={() => onOpenTab("progression")}
-                            className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/30 hover:text-[var(--accent-ink)] transition-colors"
+                            className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/50 hover:text-[var(--accent-ink)] transition-colors"
                         >
                             All quests
                         </button>

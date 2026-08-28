@@ -47,12 +47,12 @@ export default function ImageDropzone({
     return (
         <div>
             <div className="flex items-baseline justify-between gap-3 mb-2.5">
-                <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/40">{label}</p>
+                <p className="font-display text-[9px] font-black uppercase tracking-[0.16em] text-white/55">{label}</p>
                 {preview && onClear && (
                     <button
                         type="button"
                         onClick={onClear}
-                        className="inline-flex items-center gap-1.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/30 hover:text-[var(--accent)] transition-colors"
+                        className="inline-flex items-center gap-1.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50 hover:text-[var(--accent)] transition-colors"
                     >
                         <Trash2 className="w-3 h-3" /> Remove
                     </button>
@@ -108,12 +108,12 @@ export default function ImageDropzone({
                         >
                             <Upload className="w-3.5 h-3.5" /> {preview ? "Replace" : "Upload"}
                         </button>
-                        <p className="mt-2 text-[11px] text-white/25">{hint}</p>
+                        <p className="mt-2 text-[11px] text-white/45">{hint}</p>
                     </div>
                 )}
             </div>
 
-            {shape === "cover" && <p className="mt-2 text-[11px] text-white/25">{hint}</p>}
+            {shape === "cover" && <p className="mt-2 text-[11px] text-white/45">{hint}</p>}
 
             <input
                 ref={inputRef}

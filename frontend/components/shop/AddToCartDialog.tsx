@@ -125,7 +125,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
                                 </h3>
                                 <div className="font-display text-[18px] font-bold text-[var(--accent)] leading-none">
                                     {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })}
-                                    <span className="text-[11px] font-bold text-white/35 ml-1">KM</span>
+                                    <span className="text-[11px] font-bold text-white/50 ml-1">KM</span>
                                 </div>
                             </div>
                         </div>
@@ -133,7 +133,7 @@ export default function AddToCartDialog({ isOpen, onClose, product }: AddToCartD
 
                     {/* Quantity Selector */}
                     <div className="flex items-center justify-between mb-5 p-3.5 bg-[#070A0F] rounded-[var(--radius-card)] border border-white/[0.07]">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-white/35">Quantity</span>
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-white/50">Quantity</span>
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setLineQuantity(quantity - 1)}

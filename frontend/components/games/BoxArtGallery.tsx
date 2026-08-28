@@ -52,7 +52,7 @@ export default function BoxArtGallery({ art }: { art: BoxArt[] }) {
                             />
                         </span>
                         {cover.label && (
-                            <span className="mt-1.5 block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/35 group-hover:text-white/60 transition-colors truncate">
+                            <span className="mt-1.5 block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/50 group-hover:text-white/60 transition-colors truncate">
                                 {cover.label}
                             </span>
                         )}
@@ -73,7 +73,7 @@ export default function BoxArtGallery({ art }: { art: BoxArt[] }) {
                     <div className="relative max-w-3xl max-h-[85vh] mx-16" onClick={(e) => e.stopPropagation()}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={art[open].image} alt={art[open].label ?? "Box art"} className="max-h-[80vh] w-auto object-contain" />
-                        <p className="text-center mt-3 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/40">
+                        <p className="text-center mt-3 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/55">
                             {art[open].label ?? "Box art"} · {open + 1} / {art.length}
                         </p>
                     </div>

@@ -46,7 +46,7 @@ function StatItem({ stat, run }: { stat: HypeStat; run: boolean }) {
             <div className="min-w-0">
                 <p className="font-display text-[22px] md:text-[26px] font-black text-white leading-none tabular-nums">{display}</p>
                 <p className="text-[11px] text-white/90 font-semibold uppercase tracking-wide mt-1 truncate">{stat.label}</p>
-                {stat.sub && <p className="text-[10px] text-white/35 truncate">{stat.sub}</p>}
+                {stat.sub && <p className="text-[10px] text-white/50 truncate">{stat.sub}</p>}
             </div>
         </div>
     );

@@ -258,7 +258,7 @@ export default function FeedClient() {
                             keyboard reader never trips a scroll sentinel. */}
                         <div ref={sentinel} className="mt-8 flex flex-col items-center gap-3">
                             {loadingMore && (
-                                <span className="inline-flex items-center gap-2 font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white/35">
+                                <span className="inline-flex items-center gap-2 font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white/50">
                                     <Loader2 className="w-3.5 h-3.5 animate-spin" /> Loading
                                 </span>
                             )}
@@ -273,7 +273,7 @@ export default function FeedClient() {
                             )}
 
                             {done && meta && (
-                                <span className="font-display text-[10.5px] font-bold tabular-nums uppercase tracking-[0.1em] text-white/25">
+                                <span className="font-display text-[10.5px] font-bold tabular-nums uppercase tracking-[0.1em] text-white/45">
                                     That is all {meta.total.toLocaleString()} pieces
                                 </span>
                             )}
@@ -352,7 +352,7 @@ function Card({ item }: { item: FeedItem }) {
 
             <span className="flex-1 flex flex-col p-3.5">
                 {item.category && (
-                    <span className="block mb-1.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/30">
+                    <span className="block mb-1.5 font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50">
                         {item.category.name}
                     </span>
                 )}
@@ -362,7 +362,7 @@ function Card({ item }: { item: FeedItem }) {
                 </span>
 
                 {item.excerpt && (
-                    <span className="mt-1.5 text-[11.5px] text-white/40 leading-snug line-clamp-2">
+                    <span className="mt-1.5 text-[11.5px] text-white/55 leading-snug line-clamp-2">
                         {item.excerpt}
                     </span>
                 )}
@@ -374,7 +374,7 @@ function Card({ item }: { item: FeedItem }) {
                     </span>
                 )}
 
-                <span className="mt-auto pt-3.5 flex items-center justify-between gap-2 text-[10px] text-white/30">
+                <span className="mt-auto pt-3.5 flex items-center justify-between gap-2 text-[10px] text-white/50">
                     {item.author && (
                         <span className="inline-flex items-center gap-1.5 min-w-0">
                             <User className="w-3 h-3 shrink-0" />

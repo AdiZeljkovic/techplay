@@ -42,7 +42,7 @@ export default function EmptyState({ variant = "full", icon, title, body, action
                 </span>
             )}
             <p className={cn("font-display font-bold text-white", variant === "full" ? "text-[13px]" : "text-[12px]")}>{title}</p>
-            {body && <p className="text-[11px] text-white/35 max-w-[260px] -mt-1">{body}</p>}
+            {body && <p className="text-[11px] text-white/50 max-w-[260px] -mt-1">{body}</p>}
             {action && (() => {
                 const look = "mt-1 inline-flex items-center gap-1.5 px-4 h-9 rounded-[var(--radius-card)] bg-[var(--accent)] text-white font-display text-[11px] font-bold uppercase tracking-wider hover:bg-[var(--accent-hover)] transition-colors duration-300";
 

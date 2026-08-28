@@ -81,7 +81,7 @@ function ListCard({ list }: { list: GameListPreview }) {
                         {list.name}
                     </span>
                     {author && (
-                        <span className="mt-1 block text-[11.5px] font-semibold text-white/35">@{author}</span>
+                        <span className="mt-1 block text-[11.5px] font-semibold text-white/50">@{author}</span>
                     )}
                 </span>
 
@@ -92,7 +92,7 @@ function ListCard({ list }: { list: GameListPreview }) {
                 )}
             </span>
 
-            <span className="flex items-center gap-3.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+            <span className="flex items-center gap-3.5 font-display text-[9.5px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                 <span>{list.items_count} {list.items_count === 1 ? "game" : "games"}</span>
                 <span className="inline-flex items-center gap-1"><Heart className="w-3 h-3" /> {list.likes_count ?? 0}</span>
                 <span className="inline-flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {list.comments_count ?? 0}</span>

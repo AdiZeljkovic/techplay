@@ -125,7 +125,7 @@ function NewGroupModal({
                     className="w-full h-10 px-3 rounded-[8px] bg-white/[0.04] border border-white/[0.09] text-[13px] text-white placeholder:text-white/25 focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)]"
                 />
 
-                <p className="mt-4 mb-2 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/40">
+                <p className="mt-4 mb-2 font-display text-[9px] font-bold uppercase tracking-[0.14em] text-white/55">
                     Add friends {picked.length > 0 && <span className="text-[var(--accent)]">· {picked.length} selected</span>}
                 </p>
 
@@ -194,7 +194,7 @@ function MessageBubble({
                 up under the message above it instead of sliding left. */}
             {!mine && (
                 grouped
-                    ? <span aria-hidden className="w-8 shrink-0 pt-1 text-center font-display text-[9px] font-bold tabular-nums text-white/25 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                    ? <span aria-hidden className="w-8 shrink-0 pt-1 text-center font-display text-[9px] font-bold tabular-nums text-white/45 opacity-0 group-hover/msg:opacity-100 transition-opacity">
                         {clock(message.created_at)}
                     </span>
                     : <Avatar src={message.sender?.avatar_url ?? null} alt={message.sender?.username ?? "?"} size="sm" />
@@ -205,7 +205,7 @@ function MessageBubble({
                 {!grouped && (
                     <span className={`mb-1 flex items-center gap-2 ${mine ? "flex-row-reverse" : ""}`}>
                         {!mine && <span className="text-[11.5px] font-bold text-white/70">{message.sender?.username}</span>}
-                        <span className="font-display text-[9px] font-bold tabular-nums text-white/25">{clock(message.created_at)}</span>
+                        <span className="font-display text-[9px] font-bold tabular-nums text-white/45">{clock(message.created_at)}</span>
                     </span>
                 )}
 
@@ -302,7 +302,7 @@ function DayDivider({ iso }: { iso: string }) {
     return (
         <div className="flex items-center gap-3 pt-5 pb-1">
             <span className="flex-1 h-px bg-white/[0.07]" />
-            <span className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/30">
+            <span className="font-display text-[9px] font-black uppercase tracking-[0.14em] text-white/50">
                 {dayLabel(iso)}
             </span>
             <span className="flex-1 h-px bg-white/[0.07]" />
@@ -705,7 +705,7 @@ export default function SocialClient() {
                             >
                                 <Icon className="w-3 h-3 text-[var(--accent)]" />
                                 <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">{value}</span>
-                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/35">{label}</span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50">{label}</span>
                             </span>
                         ))}
                     </div>
@@ -829,13 +829,13 @@ export default function SocialClient() {
                                                     <span className="flex items-center gap-2">
                                                         <span className="text-[12.5px] font-bold text-white truncate">{c.name}</span>
                                                         {c.last_message && (
-                                                            <span className="ml-auto shrink-0 font-display text-[9px] font-bold text-white/25">
+                                                            <span className="ml-auto shrink-0 font-display text-[9px] font-bold text-white/45">
                                                                 {timeAgo(c.last_message.created_at)}
                                                             </span>
                                                         )}
                                                     </span>
                                                     <span className="flex items-center gap-2 mt-0.5">
-                                                        <span className="min-w-0 flex-1 text-[11.5px] text-white/40 truncate">
+                                                        <span className="min-w-0 flex-1 text-[11.5px] text-white/55 truncate">
                                                             {c.last_message
                                                                 ? `${c.last_message.is_mine ? "You: " : c.type !== "direct" && c.last_message.sender ? `${c.last_message.sender}: ` : ""}${c.last_message.body}`
                                                                 : "No messages yet"}
@@ -885,7 +885,7 @@ export default function SocialClient() {
                                                     ) : (
                                                         <span className="block font-display text-[15px] font-black text-white truncate">{active.name}</span>
                                                     )}
-                                                    <span className="flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/35">
+                                                    <span className="flex items-center gap-2 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/50">
                                                         {active.type === "direct" ? (
                                                             (() => {
                                                                 const f = hub?.friends.find((x) => x.username === active.partner?.username);
@@ -1018,7 +1018,7 @@ export default function SocialClient() {
                                                     </button>
                                                 </div>
                                                 {draft.length > 1800 && (
-                                                    <p className="mt-1.5 text-right font-display text-[9px] font-bold tabular-nums text-white/25">
+                                                    <p className="mt-1.5 text-right font-display text-[9px] font-bold tabular-nums text-white/45">
                                                         {2000 - draft.length} left
                                                     </p>
                                                 )}
@@ -1040,7 +1040,7 @@ export default function SocialClient() {
                                                     <Link href={`/profile/${r.user.username}`} className="block text-[13px] font-bold text-white truncate hover:text-[var(--accent)] transition-colors">
                                                         {r.user.display_name || r.user.username}
                                                     </Link>
-                                                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/50">
                                                         {r.user.xp.toLocaleString("en-US")} XP · {timeAgo(r.created_at)}
                                                     </span>
                                                 </span>
@@ -1099,7 +1099,7 @@ export default function SocialClient() {
                                                             <Gamepad2 className="w-2.5 h-2.5" /> {f.game}
                                                         </span>
                                                     ) : (
-                                                        <span className="font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/25">
+                                                        <span className="font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/45">
                                                             {f.online ? "Online" : "Offline"}
                                                         </span>
                                                     )}
@@ -1136,7 +1136,7 @@ export default function SocialClient() {
                         meta={<span className="font-display text-[11px] font-black tabular-nums text-emerald-400">{stats?.online ?? 0}</span>}
                     >
                         {(hub?.friends.length ?? 0) === 0 ? (
-                            <p className="py-1 text-[11.5px] text-white/30 leading-snug">
+                            <p className="py-1 text-[11.5px] text-white/50 leading-snug">
                                 No friends yet. Add people from their profile and they show up here.
                             </p>
                         ) : (
@@ -1153,7 +1153,7 @@ export default function SocialClient() {
                                                     <Gamepad2 className="w-2.5 h-2.5" /> {f.game}
                                                 </span>
                                             ) : (
-                                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/25">
+                                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.08em] text-white/45">
                                                     {f.online ? "Online" : "Offline"}
                                                 </span>
                                             )}
@@ -1173,7 +1173,7 @@ export default function SocialClient() {
 
                     <Panel title="People You May Know">
                         {(hub?.suggestions.length ?? 0) === 0 ? (
-                            <p className="py-1 text-[11.5px] text-white/30 leading-snug">
+                            <p className="py-1 text-[11.5px] text-white/50 leading-snug">
                                 Suggestions appear once your friends have friends you don&apos;t.
                             </p>
                         ) : (
@@ -1185,7 +1185,7 @@ export default function SocialClient() {
                                             <Link href={`/profile/${s.username}`} className="block text-[12.5px] font-bold text-white truncate hover:text-[var(--accent)] transition-colors">
                                                 {s.display_name || s.username}
                                             </Link>
-                                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/30">
+                                            <span className="block font-display text-[9px] font-bold uppercase tracking-[0.1em] text-white/50">
                                                 {s.mutual_friends} mutual friend{s.mutual_friends === 1 ? "" : "s"}
                                             </span>
                                         </span>

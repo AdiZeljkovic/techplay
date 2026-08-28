@@ -52,7 +52,7 @@ export default function ShareRow() {
 
     return (
         <div>
-            <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/40">
+            <p className="font-display text-[9.5px] font-bold uppercase tracking-[0.16em] text-white/55">
                 Share this campaign
             </p>
 

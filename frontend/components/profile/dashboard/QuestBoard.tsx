@@ -170,7 +170,7 @@ function QuestRow({ quest, tint, showSeason }: { quest: Quest; tint: string; sho
                         </span>
                     )}
                 </p>
-                <p className="mt-0.5 text-[11.5px] text-white/35 leading-snug">{quest.description}</p>
+                <p className="mt-0.5 text-[11.5px] text-white/50 leading-snug">{quest.description}</p>
 
                 {/* A one-step quest has nothing to measure — the mark says it all. */}
                 {quest.criteria_value > 1 && (
@@ -269,11 +269,11 @@ function Layer({ layer, quests }: { layer: (typeof LAYERS)[number]; quests: Ques
                             <Check className="w-2.5 h-2.5" strokeWidth={3.5} /> Cleared
                         </span>
                     ) : resetIn ? (
-                        <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                        <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                             {resetIn} left
                         </span>
                     ) : (
-                        <span className="hidden sm:block text-[10.5px] text-white/25">{blurb}</span>
+                        <span className="hidden sm:block text-[10.5px] text-white/45">{blurb}</span>
                     )}
                 </span>
             </header>
@@ -287,7 +287,7 @@ function Layer({ layer, quests }: { layer: (typeof LAYERS)[number]; quests: Ques
             {(hidden > 0 || expanded) && (
                 <button
                     onClick={() => setExpanded((v) => !v)}
-                    className="mt-2.5 w-full h-8 rounded-[7px] border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/35 hover:text-white transition-colors"
+                    className="mt-2.5 w-full h-8 rounded-[7px] border border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05] font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/50 hover:text-white transition-colors"
                 >
                     {expanded ? "Show fewer" : `${hidden} more`}
                 </button>

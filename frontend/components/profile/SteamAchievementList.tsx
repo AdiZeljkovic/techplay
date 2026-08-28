@@ -140,7 +140,7 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
                 </div>
 
                 {data && (
-                    <span className="ml-auto font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/25">
+                    <span className="ml-auto font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/45">
                         {data.achieved.toLocaleString()} of {data.total.toLocaleString()} · {data.completion_pct}%
                     </span>
                 )}
@@ -191,11 +191,11 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
                                     {a.display_name ?? "Unnamed achievement"}
                                 </span>
                                 {a.description && (
-                                    <span className={`block mt-0.5 text-[11.5px] leading-snug line-clamp-1 ${a.achieved ? "text-white/40" : "text-white/25"}`}>
+                                    <span className={`block mt-0.5 text-[11.5px] leading-snug line-clamp-1 ${a.achieved ? "text-white/55" : "text-white/45"}`}>
                                         {a.description}
                                     </span>
                                 )}
-                                <span className="mt-1 flex items-center gap-2 font-display text-[9px] font-bold uppercase tracking-[0.11em] text-white/25">
+                                <span className="mt-1 flex items-center gap-2 font-display text-[9px] font-bold uppercase tracking-[0.11em] text-white/45">
                                     {a.game && (
                                         <Link href={`/games/${a.game.slug}`} className="truncate hover:text-[var(--accent)] transition-colors">
                                             {a.game.name}
@@ -218,7 +218,7 @@ export default function SteamAchievementList({ username, isOwnProfile = false }:
                     >
                         Previous
                     </button>
-                    <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/30">
+                    <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] tabular-nums text-white/50">
                         {data.meta.page} / {data.meta.last_page}
                     </span>
                     <button

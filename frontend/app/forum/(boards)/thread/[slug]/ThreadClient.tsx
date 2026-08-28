@@ -674,7 +674,7 @@ export default function ThreadClient({ initial }: { initial: ThreadData | null }
             <div className="border-b border-[var(--line)]">
                 <div className="pt-4 pb-3">
                     {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-[11.5px] text-white/35 mb-2.5">
+                    <div className="flex items-center gap-2 text-[11.5px] text-white/50 mb-2.5">
                         <Link href="/forum" className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
                             <ArrowLeft className="w-4 h-4" />
                             Forum
@@ -880,7 +880,7 @@ export default function ThreadClient({ initial }: { initial: ThreadData | null }
                                         small print; on a phone they are two
                                         lines of stranger's paperwork above the
                                         thing you opened the thread to read. */}
-                                    <div className="hidden sm:flex text-[11px] text-white/30 items-center gap-2 ml-auto">
+                                    <div className="hidden sm:flex text-[11px] text-white/50 items-center gap-2 ml-auto">
                                         <span>{thread.author?.posts_count || 0} posts</span>
                                         {thread.author?.created_at && (
                                             <span>Joined {format(new Date(thread.author.created_at), 'MMM yyyy')}</span>
@@ -1051,7 +1051,7 @@ export default function ThreadClient({ initial }: { initial: ThreadData | null }
                                                             </span>
                                                         )}
 
-                                                        <div className="hidden md:block text-[10px] text-white/35 mt-2">
+                                                        <div className="hidden md:block text-[10px] text-white/50 mt-2">
                                                             <div>{post.author?.posts_count || 0} posts</div>
                                                             {post.author?.created_at && (
                                                                 <div>Joined {format(new Date(post.author.created_at), 'MMM yyyy')}</div>

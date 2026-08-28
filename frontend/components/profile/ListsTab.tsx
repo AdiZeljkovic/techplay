@@ -177,7 +177,7 @@ function ListCard({
                     <span className="block font-display text-[14px] font-bold text-white leading-snug line-clamp-1 group-hover:text-[var(--accent)] transition-colors">
                         {list.name}
                     </span>
-                    <span className="block mt-1 min-h-[30px] text-[11.5px] text-white/40 leading-snug line-clamp-2">
+                    <span className="block mt-1 min-h-[30px] text-[11.5px] text-white/55 leading-snug line-clamp-2">
                         {list.description || (
                             <span className="text-white/20">{list.items_count === 0 ? "Nothing in it yet" : "No description"}</span>
                         )}
@@ -186,14 +186,14 @@ function ListCard({
                     {(list.tags?.length ?? 0) > 0 && (
                         <span className="mt-2.5 flex flex-wrap gap-1.5">
                             {list.tags!.slice(0, 3).map((t) => (
-                                <span key={t} className="inline-flex items-center h-[18px] px-2 rounded-full bg-white/[0.05] text-[9.5px] font-bold text-white/40">
+                                <span key={t} className="inline-flex items-center h-[18px] px-2 rounded-full bg-white/[0.05] text-[9.5px] font-bold text-white/55">
                                     {t}
                                 </span>
                             ))}
                         </span>
                     )}
 
-                    <span className="mt-auto pt-2.5 flex items-center gap-3 font-display text-[10px] font-bold tabular-nums text-white/30">
+                    <span className="mt-auto pt-2.5 flex items-center gap-3 font-display text-[10px] font-bold tabular-nums text-white/50">
                         <span className="text-white/55">
                             {list.items_count}
                             {list.item_limit ? <span className="text-white/25"> / {list.item_limit}</span> : null} games
@@ -237,7 +237,7 @@ function StarterGrid({
 }) {
     return (
         <div className="rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] p-4">
-            <p className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/40 mb-3">{heading}</p>
+            <p className="font-display text-[10px] font-black uppercase tracking-[0.16em] text-white/55 mb-3">{heading}</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {STARTERS.map((s) => {
                     const Icon = s.icon;
@@ -259,7 +259,7 @@ function StarterGrid({
                             </span>
                             <span className="min-w-0">
                                 <span className="block text-[12.5px] font-semibold text-white truncate">{s.name}</span>
-                                <span className="block text-[10.5px] text-white/35 truncate">{s.blurb}</span>
+                                <span className="block text-[10.5px] text-white/50 truncate">{s.blurb}</span>
                             </span>
                         </button>
                     );

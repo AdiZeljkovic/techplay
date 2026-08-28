@@ -75,7 +75,7 @@ function Row({ article, index }: { article: FeedItem; index: number }) {
                     {article.title}
                 </span>
                 {article.published_at && (
-                    <span className="mt-auto pt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
+                    <span className="mt-auto pt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/45">
                         {publishedLabel(article.published_at)}
                     </span>
                 )}

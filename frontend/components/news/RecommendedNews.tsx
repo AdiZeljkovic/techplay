@@ -87,7 +87,7 @@ export default function RecommendedNews({ excludeSlug }: RecommendedNewsProps) {
                                 <h3 className="mt-1.5 font-display text-[13px] font-black text-white leading-[1.25] line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
                                     {decodeHtml(article.title)}
                                 </h3>
-                                <span className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/25">
+                                <span className="mt-1.5 font-display text-[9.5px] font-bold uppercase tracking-[0.1em] text-white/45">
                                     {new Date(article.published_at).toLocaleDateString("en-GB", {
                                         day: "numeric",
                                         month: "short",

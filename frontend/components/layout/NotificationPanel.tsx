@@ -128,7 +128,7 @@ export default function NotificationPanel({ unreadCount, onCountRefresh, variant
                                     {n.message}
                                 </div>
                             )}
-                            <div className="text-[10px] text-white/25 mt-1">
+                            <div className="text-[10px] text-white/45 mt-1">
                                 {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                             </div>
                         </div>
@@ -214,7 +214,7 @@ export default function NotificationPanel({ unreadCount, onCountRefresh, variant
                                 <button
                                     onClick={markAll}
                                     disabled={markingAll}
-                                    className="flex items-center gap-1 text-[11px] font-semibold text-white/40 hover:text-[var(--accent)] transition-colors"
+                                    className="flex items-center gap-1 text-[11px] font-semibold text-white/55 hover:text-[var(--accent)] transition-colors"
                                     title="Mark all as read"
                                 >
                                     {markingAll

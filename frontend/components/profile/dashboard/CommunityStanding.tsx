@@ -66,7 +66,7 @@ export default function CommunityStanding({ standing, recognitions = [] }: {
                     size={72}
                 />
                 <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/40 mb-0.5">Community Standing</div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/55 mb-0.5">Community Standing</div>
                     <div className="text-lg font-black text-white leading-tight truncate">
                         {rank?.name ?? "Unranked"}
                     </div>
@@ -84,7 +84,7 @@ export default function CommunityStanding({ standing, recognitions = [] }: {
                     <span className="text-3xl font-black text-white tabular-nums leading-none">
                         {standing.xp.toLocaleString("en-US")}
                     </span>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">XP</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-white/55">XP</span>
                     {delta !== null && (
                         <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold ml-auto ${delta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                             {delta >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -103,7 +103,7 @@ export default function CommunityStanding({ standing, recognitions = [] }: {
                                 style={{ width: `${fill}%`, background: `linear-gradient(90deg, color-mix(in srgb, ${tint} 55%, black), ${tint})` }}
                             />
                         </div>
-                        <p className="mt-1.5 flex items-baseline justify-between gap-2 text-[10.5px] text-white/30">
+                        <p className="mt-1.5 flex items-baseline justify-between gap-2 text-[10.5px] text-white/50">
                             <span>{(next.min_xp - standing.xp).toLocaleString("en-US")} XP to {next.name}</span>
                             <span className="tabular-nums">{fill}%</span>
                         </p>
@@ -115,10 +115,10 @@ export default function CommunityStanding({ standing, recognitions = [] }: {
 
             {/* Monthly contribution */}
             <div className="flex items-center justify-between py-3 border-y border-[var(--line)]">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">This month</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-white/55">This month</span>
                 <span className="flex items-baseline gap-1.5">
                     <span className="text-[15px] font-black text-white tabular-nums">{standing.monthly_contribution.toLocaleString("en-US")}</span>
-                    <span className="text-[11px] text-white/40">pts</span>
+                    <span className="text-[11px] text-white/55">pts</span>
                     {contribDelta !== null && (
                         <span className={`text-[10px] font-bold ${contribDelta >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                             {contribDelta >= 0 ? "+" : ""}{contribDelta}%
@@ -132,7 +132,7 @@ export default function CommunityStanding({ standing, recognitions = [] }: {
                 simply never posted. */}
             {standing.reputation > 0 && (
                 <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-white/40">Forum reputation</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-white/55">Forum reputation</span>
                     <span className="text-[13px] font-black text-white tabular-nums">{standing.reputation.toLocaleString("en-US")}</span>
                 </div>
             )}

@@ -71,7 +71,7 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
                     </p>
 
                     {/* Meta */}
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-white/35 pt-4 border-t border-white/[0.04]">
+                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-white/50 pt-4 border-t border-white/[0.04]">
                         <div className="flex items-center gap-1.5 min-w-0">
                             <User className="w-3.5 h-3.5 shrink-0 text-[var(--accent)]" />
                             <span className="truncate">{article.author?.display_name || article.author?.username || "Editor"}</span>

@@ -97,7 +97,7 @@ export default function ProfilePreviewCard({
                         {tagline.trim() || "Your tagline goes here"}
                     </p>
 
-                    <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-white/40">
+                    <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] text-white/55">
                         <span className="inline-flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5 text-white/25" />
                             <span className={location.trim() ? "" : "text-white/20 italic"}>

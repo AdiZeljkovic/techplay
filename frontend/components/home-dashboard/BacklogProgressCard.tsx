@@ -87,14 +87,14 @@ export default function BacklogProgressCard({
             <div className="flex items-center gap-5 rounded-[12px] border border-white/[0.07] bg-white/[0.02] p-4">
                 <RingMeter value={ringValue} size={104} strokeWidth={8} color="var(--success)">
                     <span className="font-display text-[22px] font-black tabular-nums leading-none" style={{ color: "var(--success)" }}>{ringValue}%</span>
-                    <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/40">Cleared</span>
+                    <span className="mt-1 font-display text-[8px] font-bold uppercase tracking-[0.14em] text-white/55">Cleared</span>
                 </RingMeter>
 
                 <dl className="flex-1 min-w-0 divide-y divide-white/[0.05]">
                     {SHELF.map(({ label, tone, key }) => (
                         <div key={label} className="flex items-center gap-2.5 py-[7px] first:pt-0 last:pb-0">
                             <span aria-hidden className="w-[3px] h-[15px] rounded-full shrink-0" style={{ background: tone }} />
-                            <dt className="flex-1 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/40">{label}</dt>
+                            <dt className="flex-1 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/55">{label}</dt>
                             <dd className="font-display text-[17px] font-black tabular-nums leading-none text-white">{stats[key]}</dd>
                         </div>
                     ))}
@@ -129,7 +129,7 @@ export default function BacklogProgressCard({
                 {/* The pace line — the only figure here that is about the month
                     rather than the pile, so it gets its own sentence instead of
                     a counter competing with the shelf. */}
-                <p className="mt-2.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
+                <p className="mt-2.5 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/50">
                     <span className="tabular-nums text-[var(--accent)]">{monthCount}</span>{" "}
                     {stats.completed_this_month === 1 ? "game" : "games"} finished this month
                 </p>
@@ -140,7 +140,7 @@ export default function BacklogProgressCard({
                 pile you already committed to, so the label says which. */}
             {suggestion && (
                 <div className="mt-4">
-                    <p className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.16em] text-white/40 mb-2">
+                    <p className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.16em] text-white/55 mb-2">
                         <span aria-hidden className="w-1 h-3 rounded-full bg-[var(--accent)]" />
                         Start next from your backlog
                     </p>

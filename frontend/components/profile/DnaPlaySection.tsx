@@ -72,7 +72,7 @@ export default function DnaPlaySection({ play, platform }: {
                                 )}
                             </Link>
                             <div className="min-w-0">
-                                <p className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30">Deepest</p>
+                                <p className="font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/50">Deepest</p>
                                 <Link href={`/games/${deepest.slug}`} className="mt-1 block font-display text-[15px] font-black text-white leading-tight hover:text-[var(--accent)] transition-colors line-clamp-2">
                                     {deepest.name}
                                 </Link>
@@ -112,19 +112,19 @@ export default function DnaPlaySection({ play, platform }: {
                             ],
                         ] as const).map(([Icon, label, value, sub, tint]) => (
                             <div key={label} className="min-w-0">
-                                <p className="flex items-center gap-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/30">
+                                <p className="flex items-center gap-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.16em] text-white/50">
                                     <Icon className="w-3 h-3" style={{ color: tint }} strokeWidth={1.8} />
                                     {label}
                                 </p>
                                 <p className="mt-1 font-display text-[19px] font-black tabular-nums leading-none text-white truncate">{value}</p>
-                                {sub && <p className="mt-1 text-[10.5px] text-white/25 truncate">{sub}</p>}
+                                {sub && <p className="mt-1 text-[10.5px] text-white/45 truncate">{sub}</p>}
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {(platform.perfected > 0 || topDevice) && (
-                    <div className="mt-5 pt-4 border-t border-white/[0.06] flex flex-wrap items-center gap-x-7 gap-y-2 font-display text-[10px] font-bold uppercase tracking-[0.13em] text-white/30">
+                    <div className="mt-5 pt-4 border-t border-white/[0.06] flex flex-wrap items-center gap-x-7 gap-y-2 font-display text-[10px] font-bold uppercase tracking-[0.13em] text-white/50">
                         {platform.perfected > 0 && (
                             <span className="inline-flex items-center gap-2">
                                 <Trophy className="w-3.5 h-3.5 text-amber-400" strokeWidth={1.7} />
