@@ -418,6 +418,18 @@ Frontend pola sada delegira na `deploy_frontend.sh`, koji je dobio `run_as_owner
 
 ---
 
+## NAĐENO PRI PROVJERI DEPLOYA — 29.08.2026
+
+🔴 **Prijava kroz Discord je pokvarena na produkciji, i neko je danas pokušao.** U logu su tri neuspjela pokušaja u 21:18–21:19: `Discord OAuth failed: POST https://discord.com/api/oauth2/token resulted in a 401`. Uzrok: **`DISCORD_CLIENT_SECRET` ne postoji u `.env`.** `DISCORD_CLIENT_ID` i redirect jesu postavljeni, pa korisnik prođe kroz Discord ekran, vrati se — i tu padne. Bot ima svoj `DISCORD_BOT_SECRET` i radi normalno; ovo je druga tajna.
+
+🟠 **Battle.net prijava isto.** `services.battlenet.client_id` i `client_secret` čitaju `BATTLENET_*`, a u `.env` postoje samo `BLIZZARD_CLIENT_ID` / `BLIZZARD_CLIENT_SECRET` (koje koristi `BlizzardService` za API i uredno rade). U praksi je to isti par kredencijala iz Blizzardovog portala, pa je popravka vjerovatno samo fallback na `BLIZZARD_*` — ali to traži potvrdu da je redirect URI registrovan za tu aplikaciju, pa nije dirano.
+
+🟡 **`env:validate` ne može uhvatiti nijedno od ovoga u stanju u kojem produkcija živi.** Sam kaže: *„Configuration is cached, so env() reads as null and every check below would fail."* Alat napravljen tačno za ovaj problem je neupotrebljiv poslije `config:cache`, a `config:cache` je obavezan korak deploya. Treba ga zvati **prije** keširanja u `techplay-deploy.sh`, ili ga naučiti da čita `config()` umjesto `env()`.
+
+**Ispravka mog vlastitog nalaza:** u prvom prolazu sam prijavio da fale i Turnstile i Groq ključevi. Netačno — provjeravao sam `services.turnstile.secret` i `services.groq.key`, a stvarna imena su `secret_key` i `api_key`. Oba **jesu** postavljena i rade (Turnstile 0 odbijanja u logu, Groq ključ 56 znakova). Pouka je ista kao kod „291 rute bez autentifikacije" iz docs/76: grep po imenu koje sam pretpostavio, umjesto po imenu koje kod stvarno čita.
+
+---
+
 ## ŠTA NISAM MOGAO PROVJERITI
 
 | Stavka | Zašto |
