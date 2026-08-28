@@ -1,7 +1,9 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { generatePageMetadata } from "@/lib/seo";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import GameDatabaseHub from "@/components/games/GameDatabaseHub";
+import GamesIndexShell, { type ShelfGame } from "@/components/games/GamesIndexShell";
 
 export async function generateMetadata(): Promise<Metadata> {
     return generatePageMetadata('/games', {
@@ -26,9 +28,62 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 export const revalidate = 3600;
 
-export default function GamesPage() {
+/**
+ * The first shelf of games, fetched on the server so the fallback has something
+ * to say.
+ *
+ * Ordered the way the hub itself opens — highest rated first — so what a
+ * crawler reads and what a reader sees a moment later are the same games in
+ * the same order.
+ */
+async function openingShelf(): Promise<ShelfGame[]> {
+    try {
+        const res = await fetch(
+            `${getServerApiUrl()}/games?ordering=-rating&page_size=24`,
+            { next: { revalidate: 3600 }, headers: serverHeaders() },
+        );
+
+        if (!res.ok) return [];
+
+        const json = await res.json();
+
+        return (json.results ?? []).map((g: ShelfGame) => ({
+            slug: g.slug,
+            name: g.name,
+            cover_url: g.cover_url ?? null,
+        }));
+    } catch {
+        // An empty shelf is a page without links, which is where this started.
+        // It is still better than a page that fails to build.
+        return [];
+    }
+}
+
+export default async function GamesPage() {
+    const games = await openingShelf();
+
     return (
-        <Suspense>
+        /*
+         * The fallback is not a spinner — it is the page.
+         *
+         * useSearchParams inside a statically rendered route makes Next skip
+         * server-rendering this subtree and write the fallback into the HTML.
+         * That fallback was `undefined`, so /games shipped with no H1, no
+         * intro and no links: 0 anchors into a catalogue of 332,455 games,
+         * measured on production.
+         *
+         * Now the HTML carries the heading, the sentence and the first two
+         * dozen games as real hrefs, and the client swaps in the interactive
+         * hub on hydration.
+         */
+        <Suspense
+            fallback={
+                <GamesIndexShell
+                    intro="Discover, explore and track games across every generation."
+                    games={games}
+                />
+            }
+        >
             <GameDatabaseHub />
         </Suspense>
     );
