@@ -80,11 +80,61 @@ async function getCoverage(): Promise<Coverage[]> {
     }
 }
 
+/*
+ * A campaign, and the letter it is built around.
+ *
+ * The page had no structured data at all. What it is, in schema terms, is a
+ * WebPage whose subject is a piece of writing that lives one URL down — so it
+ * says that, and /last-disc/letter carries the Article itself. Two pages, one
+ * claim each, rather than both pretending to be the letter.
+ *
+ * No signature count anywhere in here. `interactionStatistic` would be honest
+ * and the honest number is currently zero, which is worth stating to nobody.
+ * It goes in when there is something to state.
+ */
+const CAMPAIGN_URL = "https://techplay.gg/last-disc";
+const LETTER_URL = "https://techplay.gg/last-disc/letter";
+
+const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://techplay.gg" },
+        { "@type": "ListItem", position: 2, name: "Tools", item: "https://techplay.gg/tools" },
+        { "@type": "ListItem", position: 3, name: "The Last Disc", item: CAMPAIGN_URL },
+    ],
+};
+
+const campaign = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "The Last Disc",
+    url: CAMPAIGN_URL,
+    description:
+        "An open letter from players around the world asking Sony to keep physical PlayStation games alive beyond 2028.",
+    inLanguage: "en",
+    isPartOf: { "@type": "WebSite", name: "TechPlay", url: "https://techplay.gg" },
+    primaryImageOfPage: {
+        "@type": "ImageObject",
+        url: "https://techplay.gg/images/last-disc/last-disc-hero.webp",
+        width: 1983,
+        height: 793,
+    },
+    mainEntity: {
+        "@type": "Article",
+        "@id": `${LETTER_URL}#article`,
+        headline: "Open Letter to Sony Interactive Entertainment",
+        url: LETTER_URL,
+    },
+};
+
 export default async function LastDiscPage() {
     const coverage = await getCoverage();
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)] pb-14">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(campaign) }} />
             {/* ══ hero ══
                 The disc sits in the left third of the art and shatters to the
                 right, so everything the page says is set over the right two

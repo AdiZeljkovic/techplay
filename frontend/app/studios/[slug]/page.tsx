@@ -98,11 +98,33 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
              * one directive the whole site had just been given.
              */
             robots: studio.indexable ? ROBOTS_INDEX : { index: false, follow: true },
+            /*
+             * The card is drawn, not borrowed.
+             *
+             * This handed social networks `studio.logo_url` — a `t_logo_med`
+             * PNG on IGDB's CDN, usually a transparent wordmark a few hundred
+             * pixels wide. Platforms letterbox that onto their own background,
+             * so 31,970 studio pages posted as a small floating logo that said
+             * nothing about the studio. /og/studio draws the name, the founding
+             * year and country, the catalogue count and five covers, at the
+             * 1200x630 the cards actually want.
+             */
             openGraph: {
                 title: studio.name,
                 description,
                 type: "profile",
-                ...(studio.logo_url ? { images: [{ url: studio.logo_url }] } : {}),
+                images: [{
+                    url: `https://techplay.gg/og/studio?slug=${encodeURIComponent(slug)}`,
+                    width: 1200,
+                    height: 630,
+                    alt: studio.name,
+                }],
+            },
+            twitter: {
+                card: "summary_large_image",
+                title: studio.name,
+                description,
+                images: [`https://techplay.gg/og/studio?slug=${encodeURIComponent(slug)}`],
             },
         };
     } catch {

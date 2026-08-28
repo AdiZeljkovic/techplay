@@ -101,9 +101,59 @@ const ASKS = [
     "Openly communicate with the community about plans for the long-term support of already-purchased physical and digital titles.",
 ];
 
+/*
+ * The letter is the Article; /last-disc is the campaign around it.
+ *
+ * @id matches the mainEntity the campaign page points at, so the two say the
+ * same thing about one document rather than each claiming to be it.
+ *
+ * `author` is the community, not a person: nobody signed this as an individual
+ * and naming a byline that does not exist would be a worse claim than an
+ * organisational one. No datePublished — the letter carries no date in its own
+ * text and inventing one for the markup would put a date on the record that
+ * nothing else here supports.
+ */
+const LETTER_URL = "https://techplay.gg/last-disc/letter";
+
+const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: "https://techplay.gg" },
+        { "@type": "ListItem", position: 2, name: "The Last Disc", item: "https://techplay.gg/last-disc" },
+        { "@type": "ListItem", position: 3, name: "Open Letter", item: LETTER_URL },
+    ],
+};
+
+const article = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "@id": `${LETTER_URL}#article`,
+    headline: "Open Letter to Sony Interactive Entertainment",
+    url: LETTER_URL,
+    mainEntityOfPage: LETTER_URL,
+    inLanguage: "en",
+    description:
+        "Digital is only bad when it's the only option. The TechPlay community's open letter asking Sony to keep physical PlayStation games available alongside digital.",
+    about: [
+        { "@type": "Thing", name: "Physical video game distribution" },
+        { "@type": "Organization", name: "Sony Interactive Entertainment" },
+    ],
+    author: { "@type": "Organization", name: "The TechPlay community", url: "https://techplay.gg" },
+    publisher: { "@type": "Organization", name: "TechPlay", url: "https://techplay.gg" },
+    image: {
+        "@type": "ImageObject",
+        url: "https://techplay.gg/images/last-disc/last-disc-hero.webp",
+        width: 1983,
+        height: 793,
+    },
+};
+
 export default function LetterPage() {
     return (
         <main className="min-h-screen bg-[var(--surface-0)] pb-16">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }} />
             <div className="container-page pt-8 max-w-[760px]">
                 <Link
                     href="/last-disc"

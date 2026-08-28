@@ -30,5 +30,55 @@ export default async function ListsPage() {
         { next: { revalidate: 600 } },
     ).catch(() => null);
 
-    return <ListsClient initialLists={listing?.data ?? []} />;
+    const lists = listing?.data ?? [];
+    const url = "https://techplay.gg/lists";
+
+    const breadcrumb = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Home", item: "https://techplay.gg" },
+            { "@type": "ListItem", position: 2, name: "Game Lists", item: url },
+        ],
+    };
+
+    /*
+     * The lists on the page, named — not a count of them.
+     *
+     * Only the ones with an author are listed: the URL is
+     * /lists/{username}/{slug}, so a list whose author did not come back with
+     * the payload has no address to give, and an ItemList entry without a URL
+     * describes something a reader cannot reach.
+     *
+     * `numberOfItems` counts what is actually listed below rather than what
+     * the API returned, so the two can never disagree.
+     */
+    const addressable = lists.filter((list) => list.user?.username);
+
+    const itemList = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Game Lists",
+        url,
+        description:
+            "Rankings made by the community — Top 10s, Top 100s and genre lists, with the games in the order somebody put them.",
+        mainEntity: {
+            "@type": "ItemList",
+            numberOfItems: addressable.length,
+            itemListElement: addressable.map((list, i) => ({
+                "@type": "ListItem",
+                position: i + 1,
+                name: list.name,
+                url: `https://techplay.gg/lists/${list.user!.username}/${list.slug}`,
+            })),
+        },
+    };
+
+    return (
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
+            <ListsClient initialLists={lists} />
+        </>
+    );
 }
