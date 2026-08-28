@@ -42,7 +42,7 @@ Zaostalo: `storage/app/public/ranks/*.png` više nema čitaoca, nisu brisani.
 | `reviews` | Game reviews | id, title, slug, content, game_id, score (0-10), specs, published_at |
 | `guides` | Gaming guides | id, title, slug, content, category_id, upvotes, downvotes, status |
 | `videos` | Video sadržaj | id, title, slug, embed_url, category_id, thumbnail |
-| `categories` | Kategorije | id, name, slug, type (news/forum/itd.), parent_id |
+| `categories` | Kategorije | id, name, slug, type (news/forum/itd.), parent_id, description, rules, visibility |
 | `content_versions` | Verzije sadržaja | id, versionable_type, versionable_id, content, version |
 | `seo_metas` | SEO metadata override | id, entity_type, entity_id, meta_title, meta_description, og_* |
 | `page_seos` | Per-path SEO | id, path, title, description, og_image |
@@ -143,7 +143,8 @@ igre.
 
 | Tabela | Opis | Ključne kolone |
 |--------|------|---------------|
-| `site_settings` | Globalne postavke | key, value (maintenance_mode, itd.) |
+| `site_settings` | Globalne postavke | key, value |
+| `page_seo` | SEO po stranici — **jedini** izvor za naslov, opis, canonical i noindex svake stranice, kategorije uključene | page_path, page_name, meta_title, meta_description, meta_keywords, og_*, canonical_url, is_noindex |
 | `redirects` | URL redirecti | from_path, to_path, type (301/302) |
 | `media` | Upload datoteke | id, model_type, model_id, file_path, mime_type, size |
 | `ad_campaigns` | Reklamne kampanje | id, name, position, content, starts_at, ends_at, iab_* |
@@ -242,3 +243,31 @@ Detaljno: `docs/36-p1-autorizacija.md`, `docs/41-p4-kolekcija-i-liste.md`
 3. View count ima jedan izvor istine: Redis brojač `views:article:{id}`, koji `FlushViewCounters` svakih pet minuta prelije u `articles.views`. Tabele `article_views`/`guide_views`/`review_views` (dnevnik po posjeti, s IP-om i otiskom) obrisane su 11.08.2026. — nikad nisu imale nijedan red.
 4. PostgreSQL TEXT[] kolone u `games` tablici zahtijevaju poseban `pgArray()` helper kod raw upita — greška-prone
 5. `editorial_messages` za interni editorial chat — ova feature nije vidljiva na frontend-u (interna alat)
+
+---
+
+## SEO kategorija spojen u jednu tabelu (28.08.2026)
+
+`categories` je imala pet kolona za SEO — `seo_title`, `seo_description`,
+`focus_keyword`, `canonical_url`, `is_noindex` — koje **nijedan kontroler nije
+selektovao, nijedan resource serijalizovao i nijedna ruta renderovala**. Naslov,
+opis, canonical i noindex kategorijske stranice dolaze iz reda u `page_seo` za
+njenu putanju (`/news/gaming`, `/reviews/indie-gems`, `/forum/consoles`), isto
+kao za svaku drugu stranicu.
+
+Kolone su obrisane migracijom `2026_08_28_040000_drop_dead_seo_columns_from_categories`.
+Vrijednosti su prethodno izvezene u `storage/app/backups/category-seo-2026-08-28.json`,
+mada je u njima bio šablon: `CategorySeoSeeder` je popunio 30 od 31 reda tako
+što je sekcijsku riječ dodao imenu koje ju je već sadržavalo, pa je kategorija
+"News" bila opisana kao "News News & Updates", a "Community" kao "Community
+Community Forum". Jedan red je ostao prazan.
+
+SEO kartica u adminu ostaje na istom mjestu, ali sada čita i piše `page_seo` red
+(vidi `EditCategory` / `CreateCategory`). Putanju daje `Category::seoPagePath()`,
+koji preslikava `news-gaming` u `/news/gaming` i `tech-tech-news` u
+`/hardware/news`; front istu mapu drži u `frontend/lib/categories.ts`, a
+`CategorySeoPathTest` drži te dvije kopije jednu uz drugu.
+
+Obrisan je i ključ `seo_noindex_categories` iz `site_settings`: jedan boolean
+koji bi sakrio sve hardware kategorije odjednom, ugašen, bez ijednog polja u
+adminu da se upali. `page_seo.is_noindex` radi isti posao po stranici.

@@ -469,3 +469,49 @@ Brojke o prometu možda postoje u Google Analyticsu, koji odavde nije vidljiv �
 dirano. Ali dok se ne potvrde, to su tvrdnje prema kupcima. Standard u industriji za medijski
 kit ove veličine je ne objaviti brojku koju ne možeš braniti, nego "trenutne brojke na
 upit".
+
+---
+
+## Kategorijske stranice čitaju tekst koji im je napisan (28.08.2026)
+
+Sedamnaest kategorijskih stranica imalo je ručno pisan SEO u `page_seo` i
+predstavljalo se šablonom. `/reviews/indie-gems` u bazi drži *"Indie Game
+Reviews 2026 | Best Hidden Gems & Indie Hits"*, a servirao je *"Browsing Indie
+Gems reviews."* — grana je gradila naslov i opis iz sluga i nikad nije pitala
+bazu.
+
+News, reviews, hardware i forum grane sada idu kroz `generatePageMetadata`, kao
+i svaka druga stranica, pa uz tekst dobijaju canonical, og:image i admin
+prekidač za noindex. Generisani stringovi ostaju kao rezerva za kategoriju bez
+reda.
+
+**Zašto niko nije primijetio:** postojale su dvije SEO forme za istu stranicu.
+Urednik kategorije pisao je u pet kolona na `categories` koje niko ne čita.
+Detalji i šta je s njima urađeno: `docs/07-database-map.md`.
+
+**`CategorySeoSeeder` je bio živa opasnost.** Sam je gradio putanje i pogriješio
+u tri od četiri tipa — `/news/category/news-gaming` i `/reviews/category/...`
+nisu adrese na ovom sajtu, a tech je slijetao na `/hardware/tech-benchmarks`
+gdje se stranica servira na `/hardware/benchmarks`. Tip koji je pogodio bio je
+forum, i tu je generisani naslov bezuslovno prosljeđivao u `updateOrCreate`:
+jedan `db:seed` zamijenio bi *"Console & Peripheral Forums | PS5, Xbox, Switch
+Discussion"* sa *"Consoles Community Forum"*. Sada uzima putanju iz
+`Category::seoPagePath()` i nikad ne dira red koji postoji.
+
+## og:image nosi svoje dimenzije (28.08.2026)
+
+`og:image` je izlazio sam. Skraper koji ne zna oblik mora skinuti fajl prije
+nego rasporedi karticu, a dio njih u međuvremenu pretpostavi kvadrat — što sliku
+omjera 1.78:1 obrezuje po sredini. Backend sada mjeri i sliku po stranici i
+podrazumijevanu (`SettingsController`, kroz postojeći `ImageDimensionService`),
+pa par putuje uz URL. 42 od 44 reda nose svoju `og_image`, dakle to je pravilo
+a ne izuzetak.
+
+Dimenzije se mjere pri čitanju, ne čuvaju u koloni: jedna podrazumijevana slika
+i 44 reda, sve iza postojećeg jednosatnog keša koji oba observera već čiste.
+Članci i vodiči su dobili kolone jer ih ima 632 i imaju batch posao za punjenje;
+45 mjerenja unutar keša nema.
+
+**Otvoreno:** podrazumijevana slika je 965×541 (1.78:1), a kartice traže
+1200×630 (1.91:1). Prijedlog obrezan i uvećan je pripremljen; čeka odluku jer je
+to izmjena brend grafike.
