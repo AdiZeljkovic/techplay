@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import GameDatabaseHub from "@/components/games/GameDatabaseHub";
+import { fetchFacetGames } from "@/lib/facetGames";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -82,11 +83,20 @@ export default async function YearHubPage({ params }: { params: Promise<{ year: 
         url,
     };
 
+    // Fetched here so the grid is in the HTML; see lib/facetGames.
+    const preset = { yearFrom: Number(year), yearTo: Number(year) };
+    const games = await fetchFacetGames(preset);
+
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
-            <GameDatabaseHub preset={{ yearFrom: Number(year), yearTo: Number(year) }} heading={meta.h1} intro={meta.description} />
+            <GameDatabaseHub
+                preset={preset}
+                heading={meta.h1}
+                intro={meta.description}
+                initialGames={games}
+            />
         </>
     );
 }

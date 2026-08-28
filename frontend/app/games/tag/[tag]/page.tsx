@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import GameDatabaseHub from "@/components/games/GameDatabaseHub";
 import { tagFilter } from "@/lib/gameFacets";
+import { fetchFacetGames } from "@/lib/facetGames";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -167,11 +168,21 @@ export default async function TagHubPage({ params }: { params: Promise<{ tag: st
         url,
     };
 
+    // Fetched here so the grid is in the HTML; the hub draws it from
+    // SWR otherwise, which answers in the browser and nowhere else.
+    const preset = { tag: tagFilter(tag) };
+    const games = await fetchFacetGames(preset);
+
     return (
         <>
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPage) }} />
-            <GameDatabaseHub preset={{ tag: tagFilter(tag) }} heading={meta.h1} intro={meta.description} />
+            <GameDatabaseHub
+                preset={preset}
+                heading={meta.h1}
+                intro={meta.description}
+                initialGames={games}
+            />
         </>
     );
 }

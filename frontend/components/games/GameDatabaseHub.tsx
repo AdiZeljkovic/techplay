@@ -199,10 +199,23 @@ export default function GameDatabaseHub({
     preset,
     heading,
     intro,
+    initialGames,
 }: {
     preset?: { genre?: string; platform?: string; tag?: string; yearFrom?: number; yearTo?: number };
     heading?: string;
     intro?: string;
+    /**
+     * The first page, fetched on the server so the grid exists in the HTML.
+     *
+     * Without it `rows` starts empty and the grid is drawn only after SWR
+     * answers in the browser — so /games/genre/action rendered its heading and
+     * then nothing, and no crawler ever found a link into the catalogue from
+     * any of the 84 facet hubs.
+     *
+     * Safe to seed: the fold effect below replaces the whole list when page 1
+     * arrives, so what the server sent cannot be appended to itself.
+     */
+    initialGames?: Game[];
 } = {}) {
     const router = useRouter();
     const params = useSearchParams();
@@ -215,7 +228,7 @@ export default function GameDatabaseHub({
     const [status, setStatus] = useState(params.get("status") ?? "all");
     const [sort, setSort] = useState(params.get("ordering") ?? "-rating");
     const [page, setPage] = useState(1);
-    const [rows, setRows] = useState<Game[]>([]);
+    const [rows, setRows] = useState<Game[]>(initialGames ?? []);
     const [railOpen, setRailOpen] = useState(false);
     const [sortOpen, setSortOpen] = useState(false);
     // One group open at a time — the rail is a list of settings, not a wall.
