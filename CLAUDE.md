@@ -94,13 +94,13 @@ npm start               # node dist/index.js (production)
 
 **Routing:** App Router. Pages are under `frontend/app/`. Route groups: `(auth)` for login/register/verify-email. Key sections: `/news`, `/reviews`, `/games`, `/forum`, `/guides`, `/videos`, `/hardware` (tech), `/wow-analyzer`, `/giveaways`, `/shop`, `/profile`, `/settings`, `/friends`, `/messages`.
 
-**Data fetching strategy:** Server components fetch directly from backend at build/request time (`next: { revalidate: N }`). ISR is the primary caching strategy. Image optimization is **disabled** (`images: { unoptimized: true }`) to avoid disk exhaustion from the large game image library.
+**Data fetching strategy:** Server components fetch directly from backend at build/request time (`next: { revalidate: N }`). ISR is the primary caching strategy. Image optimization is **on**, with `unoptimized` set per image at the call site for everything that is not ours — game covers, Steam icons, Discord avatars, all already served by someone else's CDN. It read as globally disabled here for months; the switch was inverted because the global setting also stripped `srcset` and `sizes` from our own uploads, so a 412px phone was downloading a 1170px hero JPEG, and Next 16 offers no way back in (a custom loader and `unoptimized: true` both remove the `/_next/image` endpoint that a per-image `unoptimized={false}` would need). See the comment on `images` in `next.config.ts`.
 
 **Auth:** Client-side only. `AuthContext` (`context/AuthContext.tsx`) stores token + user in `localStorage`, restores on mount, verifies in background. Middleware (`middleware.ts`) does not enforce auth — it cannot, since the token lives in `localStorage`. It no longer checks maintenance mode either; that was removed with maintenance mode itself.
 
 **API client:** `lib/api.ts` exports `getApiUrl()` which replaces `localhost` with `127.0.0.1` to avoid IPv6 issues in Node.js SSR. All fetch calls use `process.env.NEXT_PUBLIC_API_URL`.
 
-**Contexts:** `AuthContext`, `CartContext`, `ThemeContext`, `SiteSettingsContext`, `MobileMenuContext` — all wrap the app in `layout.tsx`.
+**Contexts:** `AuthContext`, `CartContext`, `SiteSettingsContext`, `MobileMenuContext` — all wrap the app in `layout.tsx`. (`ThemeContext` was listed here and does not exist; the site is dark only, and `globals.css` carries no light palette or `prefers-color-scheme` block.)
 
 **SEO:** `GlobalSeo` component renders dynamic meta tags. `SchemaService` (backend) and inline JSON-LD in `layout.tsx` provide Organization + WebSite structured data. `SeoMeta` / `PageSeo` models allow per-page SEO overrides via the admin panel.
 
