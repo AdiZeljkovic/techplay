@@ -245,6 +245,30 @@ export default function SectionHub({
         return n === 1 ? basePath : `${basePath}/page/${n}`;
     };
 
+    /*
+     * A few numbers, so the archive is not a single-file queue.
+     *
+     * Previous and next alone make a chain: with forty-two pages of news, the
+     * last one sits forty-two hops from /news, and depth is one of the things
+     * that decides how often a page is worth re-crawling. First, last and the
+     * two either side of where you are brings anything within about three.
+     *
+     * It is also just a better pager. Nobody clicks "next" thirty times.
+     */
+    const pageNumbers = (current: number, last: number): (number | "gap")[] => {
+        if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+
+        const near = [current - 1, current, current + 1].filter((n) => n > 1 && n < last);
+        const out: (number | "gap")[] = [1];
+
+        if (near[0] !== undefined && near[0] > 2) out.push("gap");
+        out.push(...near);
+        if (near[near.length - 1] !== undefined && near[near.length - 1] < last - 1) out.push("gap");
+        out.push(last);
+
+        return out;
+    };
+
     // One pager, rendered at both ends of the list.
     const pager = pages && pages.last > 1 && (
         <span className="flex items-center gap-3">
@@ -260,6 +284,32 @@ export default function SectionHub({
                 >
                     <ChevronLeft className="w-4 h-4" />
                 </PageLink>
+                {basePath && pageNumbers(page, pages.last).map((n, i) =>
+                    n === "gap" ? (
+                        <span key={`gap-${i}`} aria-hidden className="px-0.5 text-white/25 text-[12px]">
+                            …
+                        </span>
+                    ) : n === page ? (
+                        <span
+                            key={n}
+                            aria-current="page"
+                            className="w-8 h-8 rounded-[7px] bg-white/[0.09] text-white flex items-center justify-center font-display text-[12px] font-bold tabular-nums"
+                        >
+                            {n}
+                        </span>
+                    ) : (
+                        <PageLink
+                            key={n}
+                            href={pageHref(n)}
+                            disabled={false}
+                            onNavigate={() => goToPage(n)}
+                            label={`Page ${n}`}
+                        >
+                            <span className="font-display text-[12px] font-bold tabular-nums">{n}</span>
+                        </PageLink>
+                    ),
+                )}
+
                 <PageLink
                     href={pageHref(page + 1)}
                     disabled={page >= pages.last}
