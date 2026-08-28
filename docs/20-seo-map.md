@@ -539,3 +539,45 @@ spojene s IGDB-om, a izmišljen URL bi bio gori od nikakvog.
 **`sameAs` nije dodan.** Ne držimo nijedan provjeren vanjski identifikator
 (Wikipedia, Wikidata) za ove studije, a `sameAs` s pogođenim adresama je gora
 tvrdnja nego izostavljen `sameAs`.
+
+## Oznake na alatima i kartica za studije (28.08.2026)
+
+**Backlog Advisor, Game Lists i The Last Disc nisu imali nijedan `ld+json`
+blok.** Sada:
+
+| Stranica | Tip |
+|---|---|
+| `/backlog-advisor` | `WebApplication` — isti tip koji `/wow-analyzer` već nosi, ne novi rječnik za istu vrstu stvari |
+| `/lists` | `CollectionPage` + `ItemList` s **imenovanim** listama koje su na stranici |
+| `/last-disc` | `WebPage` čiji je `mainEntity` pismo |
+| `/last-disc/letter` | `Article`, spojen s prethodnim preko `@id` |
+
+Na `/lists` ulaze samo liste čiji je autor stigao u odgovoru — adresa je
+`/lists/{username}/{slug}`, pa lista bez autora nema gdje da pokaže.
+`numberOfItems` broji ono što je zaista nabrojano, ne ono što je API vratio.
+
+Na Last Disc **nema broja potpisa**: `interactionStatistic` bi bio tačan a
+tačan broj je trenutno nula. Nema ni `datePublished` — pismo u svom tekstu ne
+nosi datum, a izmišljen datum je tvrdnja koju ništa ne podupire. Autor je
+zajednica, ne potpis osobe koja ne postoji.
+
+## `/og/studio` — i greška koju je otkrio tek pogled na sliku
+
+Stranica studija slala je društvenim mrežama `studio.logo_url`: `t_logo_med`
+PNG na IGDB-ovom CDN-u, obično proziran natpis od par stotina piksela. Mreže ga
+smjeste na svoju pozadinu, pa je 31.970 stranica objavljivano kao mali lebdeći
+logo. Nova kartica crta ime, godinu i zemlju osnivanja, broj igara i pet omota
+na 1200×630.
+
+**`ImageResponse` ne ume da nacrta WebP.** Satori dekodira PNG, JPEG i SVG.
+WebP uđe, a izađe uokviren prazan pravougaonik — okvir se nacrta, slika nikad ne
+stigne. To nije rub slučaja: **129.911 od 313.776 omota u katalogu je WebP
+(41%)**, jer MobyGames ne servira ništa drugo; njegov CDN prihvati `.jpg` na
+istoj adresi i i dalje odgovori `image/webp`, pa nema ekstenzije za prepisati.
+
+`/og/list` i `/og/profile` imali su istu rupu **otkad postoje**. Filter sada
+ide **prije** rezanja (`lib/ogCovers.ts`), pa studio s 48 igara uzme prvih pet
+*iscrtivih* umjesto prvih pet pa se nada.
+
+**Kako je nađeno:** status je bio 200, veličina 687 KB, dimenzije tačne. Greška
+se vidjela tek kad je slika otvorena.
