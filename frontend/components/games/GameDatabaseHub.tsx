@@ -201,7 +201,7 @@ export default function GameDatabaseHub({
     intro,
     initialGames,
 }: {
-    preset?: { genre?: string; platform?: string; tag?: string; yearFrom?: number; yearTo?: number };
+    preset?: { genre?: string; platform?: string; tag?: string; series?: string; yearFrom?: number; yearTo?: number };
     heading?: string;
     intro?: string;
     /**
@@ -226,7 +226,16 @@ export default function GameDatabaseHub({
     const [platform, setPlatform] = useState(preset?.platform ?? params.get("platforms") ?? "");
     const [era, setEra] = useState(params.get("era") ?? "");
     const [status, setStatus] = useState(params.get("status") ?? "all");
-    const [sort, setSort] = useState(params.get("ordering") ?? "-rating");
+    /*
+     * A series opens in release order.
+     *
+     * The default everywhere else is highest-rated, which is right for a genre
+     * or a tag and wrong for a sequence: it puts the best-reviewed entry above
+     * the one the series starts with. Seeded from the preset rather than set
+     * after mount, so the server's rows and the hub's first query agree and the
+     * grid does not reshuffle on hydration.
+     */
+    const [sort, setSort] = useState(params.get("ordering") ?? (preset?.series ? "released" : "-rating"));
     const [page, setPage] = useState(1);
     const [rows, setRows] = useState<Game[]>(initialGames ?? []);
     const [railOpen, setRailOpen] = useState(false);

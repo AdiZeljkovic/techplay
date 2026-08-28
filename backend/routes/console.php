@@ -137,6 +137,20 @@ Schedule::command('sitemap:generate')
 Schedule::command('releases:sync')->weeklyOn(1, '03:00')->withoutOverlapping()->onFailure($reportFailure('releases:sync'));
 Schedule::command('releases:merge')->weeklyOn(1, '05:30')->onFailure($reportFailure('releases:merge'));
 
+/*
+ * The series index, rebuilt after the catalogue settles.
+ *
+ * Monday's merge at 05:30 is what regroups titles, so this runs an hour behind
+ * it. The full sitemap runs daily at 03:30 and reads game_series, which means
+ * a series that appears on Monday morning is published in Tuesday's file — a
+ * day's delay on a page type that changes a few times a year, and the
+ * alternative is racing the merge for no gain.
+ *
+ * Slugs already published are never reassigned, so a rebuild adds and removes
+ * rather than moving anything a search engine has been told about.
+ */
+Schedule::command('games:sync-series')->weeklyOn(1, '06:30')->withoutOverlapping(60)->onFailure($reportFailure('games:sync-series'));
+
 // PROFILE: Snapshot reputation + monthly contribution on the 1st of each month
 Schedule::command('profile:snapshot-reputation')->monthlyOn(1, '00:30')->onFailure($reportFailure('profile:snapshot-reputation'));
 

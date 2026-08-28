@@ -515,3 +515,27 @@ i 44 reda, sve iza postojećeg jednosatnog keša koji oba observera već čiste.
 **Otvoreno:** podrazumijevana slika je 965×541 (1.78:1), a kartice traže
 1200×630 (1.91:1). Prijedlog obrezan i uvećan je pripremljen; čeka odluku jer je
 to izmjena brend grafike.
+
+## `/tools` i povezivanje studija (28.08.2026)
+
+**`/tools` je vraćao 404**, a zaglavlje je od početka nudilo „All Tools" koji je
+vodio na `/wow-analyzer` — jedan od pet alata, ne na spisak. Lista je postojala
+samo unutar tog padajućeg menija. Sada je u `frontend/lib/tools.ts`, koju čitaju
+i meni i nova stranica, pa alat ne može biti u meniju a da fali na stranici.
+Schema: `ItemList` s imenovanih pet, ne `CollectionPage` (koji bi rekao „ova
+stranica nešto skuplja" ne rekavši šta).
+
+**Zasluge na stranici igre nisu vodile nigdje.** `publisher` i `developer` u
+`VideoGame` schemi bili su goli `{ "@type": "Organization", name }` — „Rockstar
+Games" na ovoj stranici i „Rockstar Games" na ostalih 47 bili su, koliko
+pretraživač vidi, nepovezani nizovi. Vidljive zasluge **već** vode na
+`/studios/{slug}` kad imamo red za kompaniju; sada i oznake govore isto: `@id`
+po kojem se spaja i URL na kojem živi. Studio stranica emituje isti `@id` plus
+`mainEntityOfPage`.
+
+Imena bez reda o studiju ostaju u goloj formi — pokrivaju igre koje nikad nisu
+spojene s IGDB-om, a izmišljen URL bi bio gori od nikakvog.
+
+**`sameAs` nije dodan.** Ne držimo nijedan provjeren vanjski identifikator
+(Wikipedia, Wikidata) za ove studije, a `sameAs` s pogođenim adresama je gora
+tvrdnja nego izostavljen `sameAs`.

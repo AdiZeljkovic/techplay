@@ -21,6 +21,8 @@ export interface FacetPreset {
     genre?: string;
     platform?: string;
     tag?: string;
+    /** A series slug, resolved to its key by the API — see /games/series. */
+    series?: string;
     yearFrom?: number;
     yearTo?: number;
 }
@@ -41,14 +43,22 @@ export async function fetchFacetGames(preset: FacetPreset): Promise<FacetGame[]>
     if (preset.genre) q.set("genres", preset.genre);
     if (preset.platform) q.set("platforms", preset.platform);
     if (preset.tag) q.set("tags", preset.tag);
+    if (preset.series) q.set("series", preset.series);
 
     if (preset.yearFrom) {
         q.set("year_from", String(preset.yearFrom));
         q.set("year_to", String(preset.yearTo ?? preset.yearFrom));
     }
 
-    // The hub's own defaults: highest rated first, thirty to a page.
-    q.set("ordering", "-rating");
+    /*
+     * The hub's own defaults: highest rated first, thirty to a page.
+     *
+     * A series is the exception. "Final Fantasy games" is a question about a
+     * sequence, and answering it with the best-reviewed entry first buries
+     * where the sequence starts — so these open oldest-first, and the hub is
+     * told the same so the grid does not reshuffle on hydration.
+     */
+    q.set("ordering", preset.series ? "released" : "-rating");
     q.set("page", "1");
     q.set("page_size", "30");
 

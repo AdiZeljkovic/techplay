@@ -131,9 +131,22 @@ export default async function StudioPage({ params }: { params: Promise<{ slug: s
     const developedOnly = (studio.developed ?? []).filter((g) => !publishedSlugs.has(g.slug));
     const publishedOnly = (studio.published ?? []).filter((g) => !developedSlugs.has(g.slug));
 
+    const pageUrl = `https://techplay.gg/studios/${studio.slug}`;
+
+    /*
+     * The @id is what makes this the same company the game pages credit.
+     *
+     * Every /games/{slug} that this studio made emits the identical @id, so a
+     * crawler can join 332,455 game pages onto 31,970 studio entities instead
+     * of reading each credit as a loose string. `url` stays the official site
+     * where we hold one — that is the company's own address — and
+     * mainEntityOfPage says which page here describes it.
+     */
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "Organization",
+        "@id": `${pageUrl}#organization`,
+        mainEntityOfPage: pageUrl,
         name: studio.name,
         ...(studio.description ? { description: studio.description } : {}),
         ...(studio.logo_url ? { logo: studio.logo_url } : {}),

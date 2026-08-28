@@ -8,6 +8,7 @@ use App\Models\Article;
 use App\Models\Game;
 use App\Models\GameList;
 use App\Models\GameRelation;
+use App\Models\GameSeries;
 use App\Services\CacheService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\SanitizationService;
@@ -176,17 +177,32 @@ class GameController extends Controller
         $page = max(1, (int) $request->input('page', 1));
         $pageSize = min(40, max(10, (int) $request->input('page_size', 20)));
 
-        $cacheKey = 'games.index.v2.'.md5(json_encode([
-            $search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize,
+        /*
+         * The series filter takes the slug, not the key.
+         *
+         * `series_key` is a bare integer with no meaning to a reader, and the
+         * page that uses this filter is /games/series/{slug} — so the slug is
+         * what travels. An unknown slug resolves to null and the filter is not
+         * applied; the route above it answers 404 before that can happen, and a
+         * stray ?series=nonsense on /games should not empty the catalogue.
+         */
+        $seriesSlug = (string) $request->input('series', '');
+        $seriesKey = $seriesSlug !== ''
+            ? GameSeries::where('slug', $seriesSlug)->value('series_key')
+            : null;
+
+        $cacheKey = 'games.index.v3.'.md5(json_encode([
+            $search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize, $seriesKey,
         ]));
 
-        $payload = Cache::remember($cacheKey, 300, function () use ($search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize, $request) {
+        $payload = Cache::remember($cacheKey, 300, function () use ($search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize, $seriesKey, $request) {
             $today = now()->toDateString();
             $q = Game::query()
                 ->when($search, fn ($q) => $q->where('name', 'ilike', "%{$search}%"))
                 ->when($genre, fn ($q) => $q->whereRaw('genres @> ARRAY[?]::text[]', [$genre]))
                 ->when($platform, fn ($q) => $q->whereRaw('platforms @> ARRAY[?]::text[]', [$platform]))
                 ->when($tag, fn ($q) => $q->whereRaw('tags @> ARRAY[?]::text[]', [$tag]))
+                ->when($seriesKey !== null, fn ($q) => $q->where('series_key', $seriesKey))
                 ->when($yearFrom > 0, fn ($q) => $q->where('released', '>=', "{$yearFrom}-01-01"))
                 ->when($yearTo > 0, fn ($q) => $q->where('released', '<=', "{$yearTo}-12-31"))
                 ->when($minRating > 0, fn ($q) => $q->where('rating', '>=', $minRating))
@@ -400,6 +416,15 @@ class GameController extends Controller
             ])->values()->all(),
             'series_key' => $game->series_key,
             'series_name' => $game->series_name,
+            /* The series as somewhere to go. The name was printed as plain
+               text and the rail below it stopped at six games, so a reader on
+               entry four of a fourteen-game series had no way to see the rest.
+               Null when the series has no row yet — a fresh import before
+               games:sync-series runs — and the page prints the name flat, as
+               it did before. */
+            'series_slug' => $game->series_key
+                ? GameSeries::where('series_key', $game->series_key)->value('slug')
+                : null,
             'videos' => $game->videos ?? [],
             'box_art' => $game->box_art ?? [],
             'critic_scores' => $game->critic_scores,
@@ -628,6 +653,56 @@ class GameController extends Controller
             ]);
 
         return response()->json(['count' => $results->count(), 'results' => $results]);
+    }
+
+    /**
+     * The series itself, by slug.
+     *
+     * `series()` above answers "what else is in this game's series" for a game
+     * page. This one answers "what is this series", which is what
+     * /games/series/{slug} is, and carries the counts and the year span the
+     * page states in prose and in its VideoGameSeries block.
+     */
+    public function seriesShow(string $slug)
+    {
+        $series = GameSeries::where('slug', $slug)->first();
+
+        if (! $series) {
+            return response()->json(['message' => 'Series not found'], 404);
+        }
+
+        // Cheap, and it keeps the page honest: platforms and genres are read
+        // off the member games rather than stored on the series, where they
+        // would go stale the moment a new entry lands.
+        $facets = Cache::remember('series.facets.'.$series->series_key, 3600, function () use ($series) {
+            $games = Game::where('series_key', $series->series_key)
+                ->get(['platforms', 'genres']);
+
+            $flatten = function (string $field) use ($games) {
+                $all = [];
+                foreach ($games as $game) {
+                    foreach (($game->{$field} ?? []) as $value) {
+                        $all[$value] = ($all[$value] ?? 0) + 1;
+                    }
+                }
+                arsort($all);
+
+                return array_slice(array_keys($all), 0, 8);
+            };
+
+            return ['platforms' => $flatten('platforms'), 'genres' => $flatten('genres')];
+        });
+
+        return response()->json([
+            'slug' => $series->slug,
+            'name' => $series->name,
+            'games_count' => $series->games_count,
+            'first_year' => $series->first_year,
+            'last_year' => $series->last_year,
+            'described_count' => $series->described_count,
+            'platforms' => $facets['platforms'],
+            'genres' => $facets['genres'],
+        ]);
     }
 
     /**

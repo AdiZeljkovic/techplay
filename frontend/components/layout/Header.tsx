@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { TOOLS } from "@/lib/tools";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +12,7 @@ import { useCart } from "@/context/CartContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
 import {
-    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Mail, Users, Tag, ArrowRight, Bookmark, Settings, MessagesSquare, Trophy, Gift, Swords, ShieldHalf, Compass, MapPinned, Disc3, ListOrdered, ChevronLeft,
+    Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Mail, Users, Tag, ArrowRight, Bookmark, Settings, MessagesSquare, Trophy, Gift, Swords, ChevronLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScoreBadge from "@/components/ui/ScoreBadge";
@@ -614,19 +615,28 @@ const INITIAL_NAV_ITEMS: NavItemType[] = [
             { name: "Frontiers",   href: "/frontiers",   icon: Swords,         description: "Clans, territory, resources — coming" },
         ] },
     {
-        name: "Tools", href: "/wow-analyzer", hasDropdown: true, viewAllLabel: "All Tools",
-        activePaths: ["/wow-analyzer", "/backlog-advisor", "/lists", "/gta6", "/last-disc"],
-        children: [
-            { name: "WoW Analyzer",    href: "/wow-analyzer",    icon: ShieldHalf, description: "Character readiness check" },
-            { name: "Backlog Advisor", href: "/backlog-advisor", icon: Compass,    description: "What should you play next?" },
-            // The community directory. It has existed since June and was linked
-            // from nowhere — of 54 members, two had ever made a list, and four
-            // of the seven lists were empty. A page nobody can reach is a page
-            // nobody writes for.
-            { name: "Game Lists",      href: "/lists",           icon: ListOrdered, description: "Rankings and tier lists by the community" },
-            { name: "GTA 6 Hub",       href: "/gta6",            icon: MapPinned,  description: "Map, characters, vehicles, weapons" },
-            { name: "The Last Disc",   href: "/last-disc",       icon: Disc3,      description: "Open letter: keep physical games" },
-        ] },
+        /*
+         * "All Tools" now goes to the page that lists them.
+         *
+         * It pointed at /wow-analyzer — one of the five — because /tools
+         * answered 404 and this dropdown was the only place the set existed.
+         * The children come from lib/tools.ts, which /tools reads too, so a
+         * tool cannot be in the menu and missing from the page.
+         *
+         * The lists entry is here for a reason worth keeping: the community
+         * directory existed since June linked from nowhere, and of 54 members
+         * two had ever made a list. A page nobody can reach is a page nobody
+         * writes for.
+         */
+        name: "Tools", href: "/tools", hasDropdown: true, viewAllLabel: "All Tools",
+        activePaths: ["/tools", ...TOOLS.map((t) => t.href)],
+        children: TOOLS.map((t) => ({
+            name: t.name,
+            href: t.href,
+            icon: t.icon,
+            description: t.description,
+        })),
+    },
     { name: "Shop", href: "/shop" },
 ];
 

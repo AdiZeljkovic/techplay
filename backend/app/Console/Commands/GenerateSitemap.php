@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\SitemapController;
 use App\Models\Game;
+use App\Models\GameSeries;
 use App\Models\Product;
 use App\Models\Studio;
 use Illuminate\Console\Command;
@@ -114,6 +115,13 @@ class GenerateSitemap extends Command
                section. */
             if (Studio::where('indexable', true)->exists()) {
                 $sitemaps['sitemap-studios.xml'] = fn () => $sitemap->studios();
+            }
+
+            /* Same agreement as the line above: index() lists this file only
+               when a series clears the bar, so this must ask the same question
+               or the index points at a file nobody writes. */
+            if (GameSeries::indexable()->exists()) {
+                $sitemaps['sitemap-series.xml'] = fn () => $sitemap->series();
             }
         }
 

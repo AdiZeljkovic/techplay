@@ -617,6 +617,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/games/{slug}/articles', [GameController::class, 'articles']);
         Route::get('/games/{slug}/screenshots', [GameController::class, 'screenshots']);
         Route::get('/games/{slug}/videos', [GameController::class, 'videos']);
+        // Before /games/{slug}, or 'series' is read as a game slug.
+        Route::get('/games/series/{slug}', [GameController::class, 'seriesShow']);
         Route::get('/games/{slug}/series', [GameController::class, 'series']);
         Route::get('/games/{slug}/suggested', [GameController::class, 'suggested']);
         Route::get('/games/{slug}/ratings', [GameRatingController::class, 'index']);

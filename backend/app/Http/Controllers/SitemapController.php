@@ -6,6 +6,7 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\Game;
 use App\Models\GameList;
+use App\Models\GameSeries;
 use App\Models\Gta6Character;
 use App\Models\Guide;
 use App\Models\Product;
@@ -63,6 +64,12 @@ class SitemapController extends Controller
         if (self::hasPublishedLists()) {
             $sitemaps[] = 'sitemap-lists.xml';
         }
+        // Its own file rather than a few thousand more lines in
+        // sitemap-hub.xml: a page type this new is one whose indexing you want
+        // to be able to read on its own in Search Console.
+        if (GameSeries::indexable()->exists()) {
+            $sitemaps[] = 'sitemap-series.xml';
+        }
         if (Article::where('status', 'published')->whereBetween('published_at', [now()->subHours(48), now()])->exists()) {
             $sitemaps[] = 'sitemap-news.xml';
         }
@@ -78,6 +85,7 @@ class SitemapController extends Controller
 
             return [
                 'sitemap-hub.xml' => now()->subDays(7)->toIso8601String(),
+                'sitemap-series.xml' => now()->subDays(1)->toIso8601String(),
                 'sitemap-pages.xml' => now()->subDays(7)->toIso8601String(),
                 'sitemap-articles.xml' => $articleLastmod ? Carbon::parse($articleLastmod)->toIso8601String() : now()->toIso8601String(),
                 'sitemap-categories.xml' => now()->subDays(7)->toIso8601String(),
@@ -168,7 +176,12 @@ class SitemapController extends Controller
              * appeared in no sitemap at all — including /wow-analyzer, which
              * carries WebApplication, a five-question FAQPage and breadcrumbs,
              * and is the best-marked single page on the site.
+             *
+             * /tools is the page that collects them, added once it existed —
+             * the header's "All Tools" link pointed at /wow-analyzer until
+             * then, because the set lived only inside that dropdown.
              */
+            ['/tools', 'monthly', '0.7'],
             ['/wow-analyzer', 'monthly', '0.7'],
             ['/backlog-advisor', 'monthly', '0.6'],
             ['/lists', 'daily', '0.6'],
@@ -480,6 +493,42 @@ class SitemapController extends Controller
             $xml .= "    </image:image>\n";
             $xml .= "  </url>\n";
         }
+
+        $xml .= '</urlset>';
+
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Game series — one URL per series worth reading.
+     *
+     * `GameSeries::indexable()` draws the line at three entries with something
+     * written about at least one of them, which is the same bar a single game
+     * has to clear. Below it the page renders and links out, it is just not
+     * announced: a two-game "series" is a list, and a grid of covers with no
+     * text is the thin archive that gets a site's crawl budget spent for
+     * nothing.
+     */
+    public function series(): Response
+    {
+        $xml = $this->xmlHeader();
+
+        GameSeries::indexable()
+            ->orderByDesc('games_count')
+            ->chunk(1000, function ($series) use (&$xml) {
+                foreach ($series as $row) {
+                    // A series with more entries is more likely to be what
+                    // someone typed; nothing here changes often enough to be
+                    // worth more than a monthly recrawl.
+                    $priority = $row->games_count >= 10 ? '0.6' : '0.4';
+                    $xml .= $this->urlEntry(
+                        "{$this->frontendUrl}/games/series/{$row->slug}",
+                        $row->updated_at?->toIso8601String(),
+                        'monthly',
+                        $priority,
+                    );
+                }
+            });
 
         $xml .= '</urlset>';
 

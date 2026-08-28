@@ -102,6 +102,7 @@ interface GameDetail {
     publishers: string[];
     series_key: number | null;
     series_name: string | null;
+    series_slug: string | null;
     studios: GameStudio[];
     videos: string[];
 
@@ -360,6 +361,28 @@ function groupAttributes(attributes: GameAttribute[]) {
 function youtubeId(url: string): string | null {
     const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
     return m ? m[1] : null;
+}
+
+/**
+ * The same company, said once.
+ *
+ * Matched on name because that is the only key the two sides share: the plain
+ * `developers`/`publishers` arrays come off the game row and `studios` is the
+ * subset we matched to IGDB. Case-insensitive and trimmed, because the two
+ * sources disagree on both.
+ */
+function studioRef(name: string, studios: GameStudio[]) {
+    const match = studios.find(
+        (s) => s.name.trim().toLowerCase() === name.trim().toLowerCase(),
+    );
+
+    if (!match) {
+        return { "@type": "Organization", name };
+    }
+
+    const url = `https://techplay.gg/studios/${match.slug}`;
+
+    return { "@type": "Organization", "@id": `${url}#organization`, name, url };
 }
 
 /**
@@ -1099,8 +1122,23 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
         ...(trailerYt ? { trailer: { "@type": "VideoObject", name: `${game.name} — Trailer`, embedUrl: `https://www.youtube-nocookie.com/embed/${trailerYt}` } } : {}),
         genre:               game.genres    ?? [],
         gamePlatform:        game.platforms ?? [],
-        publisher:           (game.publishers ?? []).map((name) => ({ "@type": "Organization", name })),
-        developer:           (game.developers ?? []).map((name) => ({ "@type": "Organization", name })),
+        /*
+         * A credit that points at the studio's page, where one exists.
+         *
+         * These were bare `{ "@type": "Organization", name }` — a name and
+         * nothing to resolve it against, so "Rockstar Games" on this page and
+         * "Rockstar Games" on the 47 others were, as far as a search engine
+         * could tell, unrelated strings. The visible credits already link to
+         * /studios/{slug} when we hold a row for the company (see CompanyRow),
+         * and the markup now says the same thing: an @id a crawler can join on,
+         * and the URL it lives at.
+         *
+         * Names without a studio row keep the plain form. They cover the games
+         * that never matched IGDB, which is most of the catalogue, and a made-up
+         * URL would be worse than no URL.
+         */
+        publisher:           (game.publishers ?? []).map((name) => studioRef(name, game.studios)),
+        developer:           (game.developers ?? []).map((name) => studioRef(name, game.studios)),
         applicationCategory: "Game",
     };
 
@@ -1534,7 +1572,16 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                             {game.series_name && (
                                 <div>
                                     <p className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/50">Series</p>
-                                    <p className="mt-1 text-[13px] font-medium text-white/85">{game.series_name}</p>
+                                    {game.series_slug ? (
+                                        <Link
+                                            href={`/games/series/${game.series_slug}`}
+                                            className="mt-1 block text-[13px] font-medium text-white/85 hover:text-[var(--accent)] transition-colors"
+                                        >
+                                            {game.series_name}
+                                        </Link>
+                                    ) : (
+                                        <p className="mt-1 text-[13px] font-medium text-white/85">{game.series_name}</p>
+                                    )}
                                 </div>
                             )}
                             {game.platforms.length > 0 && (
@@ -1602,6 +1649,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     <section>
                         <h2 className="mb-4 flex items-center gap-2.5 font-display text-[15px] font-black uppercase tracking-[0.08em] text-white">
                             <Layers className="w-[18px] h-[18px] text-[var(--accent)]" /> More in the series
+                            {game.series_slug && (
+                                <Link
+                                    href={`/games/series/${game.series_slug}`}
+                                    className="ml-auto font-display text-[11px] font-bold uppercase tracking-[0.1em] text-white/55 hover:text-[var(--accent)] transition-colors"
+                                >
+                                    See all
+                                </Link>
+                            )}
                         </h2>
                         <div className="flex sm:grid gap-3.5 overflow-x-auto scrollbar-hide snap-x scroll-pl-4 sm:scroll-pl-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                             {series.slice(0, 6).map((g) => <MiniGameCard key={g.id} game={g} />)}

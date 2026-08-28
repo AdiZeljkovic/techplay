@@ -270,3 +270,46 @@ renderuje čitaocu i **prosljeđuje link equity** (`follow: true`), samo nije u 
 50 znakova → `index: false`), što je s obzirom na ~85k igara bez opisa upravo ono što
 treba; canonical na svakoj stranici pokazuje na sebe; strukturirani podaci
 (BreadcrumbList + CollectionPage na listinzima) su prisutni.
+
+---
+
+## Serijali igara — `game_series` (28.08.2026)
+
+Katalog grupiše 332.455 igara u 9.611 serijala preko `games.series_key`, ali do
+sada je jedini način da se serijal vidi bio otvoriti igru i skrolovati do „more
+in this series". To je obrnut redoslijed od pitanja koje se zapravo postavlja —
+„Final Fantasy games", „svaki Mass Effect po redu" — i ostavljalo je ~4.000
+stvarnih grupacija bez stranice.
+
+**Tabela `game_series`**: `series_key` (unique), `name`, `slug` (unique),
+`games_count`, `first_year`, `last_year`, `described_count`.
+
+**Zašto se slug čuva a ne računa u upitu:** `series_key` je goli broj, pa adresa
+mora doći iz imena — a PostgreSQL regex i PHP `Str::slug` se ne slažu oko
+akcenata. „Pokémon" daje `pokemon` u jednom i `pok-mon` u drugom, pa bi sitemap
+i ruta objavljivali različite adrese. Računa se jednom, u PHP-u.
+
+**`php artisan games:sync-series`** — idempotentna, vozi ponedjeljkom u 06:30,
+sat iza `releases:merge`. Dva pravila:
+
+- **Objavljen slug se nikad ne premješta.** Ako agregator preimenuje serijal
+  uzvodno, ime se mijenja a adresa ostaje — inače bi svaki link i svaki red u
+  sitemapu tiho postali 404.
+- **Sudar imena rješava veličina.** Veći serijal zadržava goli slug, manji
+  dobija `-{series_key}` sufiks. Deterministički, ne po redoslijedu koji baza
+  slučajno vrati.
+
+**Prag za indeks** (`GameSeries::indexable()`): tri igre i bar jedna s opisom —
+isti prag koji `Game::indexable()` postavlja za pojedinačnu igru. Ispod njega
+stranica radi i prosljeđuje linkove, samo se ne objavljuje.
+
+**Rute:** `GET /api/v1/games/series/{slug}` (sam serijal, s platformama i
+žanrovima čitanim iz članova) i `?series={slug}` filter na `/api/v1/games`.
+Front: `/games/series/{slug}`, ISR 24 h, `VideoGameSeries` schema s `hasPart`
+samo za igre koje se stvarno prikazuju.
+
+**Poredak:** serijal se otvara **hronološki**, ne po ocjeni. Pitanje o slijedu
+se ne odgovara najbolje ocijenjenim nastavkom.
+
+`sitemap-series.xml` je zaseban i uslovan — indeks ga imenuje samo ako iza njega
+ima sadržaja. Testovi: `tests/Feature/GameSeriesTest.php` (11).
