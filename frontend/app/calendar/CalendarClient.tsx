@@ -196,7 +196,18 @@ function ReleaseActions({
 
 /* ── the page ─────────────────────────────────────────────────────────── */
 
-export default function CalendarClient() {
+/**
+ * @param initial  The current month, fetched on the server.
+ *
+ *   Without it the whole calendar was drawn from SWR, which answers in the
+ *   browser and nowhere else — so /calendar served 75 KB of chrome with not one
+ *   link to a release. The page is indexed and it pointed at nothing.
+ *
+ *   The key below is `/calendar` on first render, because month, platform and
+ *   genre all start empty, so what the server fetched and what SWR asks for are
+ *   the same request.
+ */
+export default function CalendarClient({ initial }: { initial?: CalendarPayload } = {}) {
     const { user } = useAuth();
     const [month, setMonth] = useState<string | null>(null);
     const [platform, setPlatform] = useState("");
@@ -226,7 +237,14 @@ export default function CalendarClient() {
     const { data, isLoading, error, mutate } = useSWR<CalendarPayload>(
         `/calendar${query ? `?${query}` : ""}`,
         fetcher,
-        { keepPreviousData: true, revalidateOnFocus: false }
+        {
+            keepPreviousData: true,
+            revalidateOnFocus: false,
+            // Only for the unfiltered view the server actually fetched; a month
+            // or platform the reader picks is a different request and must not
+            // be answered with this.
+            ...(initial && !query ? { fallbackData: initial } : {}),
+        }
     );
 
     useEffect(() => { setOpened({}); }, [query]);

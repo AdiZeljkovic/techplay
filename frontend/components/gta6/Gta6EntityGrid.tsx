@@ -111,7 +111,23 @@ export default function Gta6EntityGrid({
             </div>
 
             {/* Grid */}
-            {isLoading ? (
+            {/*
+              * The skeleton is for having nothing, not for being busy.
+              *
+              * `initialItems` is fetched on the server precisely so the content
+              * is in the HTML — the comment on the prop said as much — but this
+              * branch asked only whether a request was in flight, and on the
+              * server one always is. So every one of these three pages rendered
+              * eight pulsing placeholders and shipped them: /gta6/characters
+              * with no link to any of its twelve profiles, /gta6/vehicles and
+              * /gta6/weapons with none of their 121 and 36 names.
+              *
+              * Characters link out to their own pages; vehicles and weapons
+              * pass linkable={false} because they have none, and for them this
+              * is the difference between a page with 157 entries on it and a
+              * page with nothing.
+              */}
+            {isLoading && items.length === 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {Array.from({ length: 8 }).map((_, i) => (
                         <div key={i} className="bg-[var(--surface-1)] border border-white/[0.07] rounded-[var(--radius-card)] overflow-hidden">
