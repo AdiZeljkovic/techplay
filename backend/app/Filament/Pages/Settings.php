@@ -296,8 +296,13 @@ class Settings extends Page implements HasForms
 
         // The front end reads settings through SettingsController, and the SEO
         // page cache holds a copy of some of them.
+        //
+        // `site_settings.all` was forgotten here and is not a key anyone writes
+        // — the controller caches `settings.all` and `settings.grouped`, and
+        // SiteSettingObserver clears both because SiteSetting::set() goes
+        // through updateOrCreate. The line did nothing except suggest this
+        // method was what kept the front end current.
         Cache::forget('page_seo.all');
-        Cache::forget('site_settings.all');
 
         Notification::make()
             ->title('Settings saved')

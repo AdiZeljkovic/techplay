@@ -1,6 +1,6 @@
 # TechPlay
 
-> TechPlay is a gaming and technology media outlet from Bosnia and Herzegovina. We publish hardware reviews with benchmark data, gaming news, PC build guides, and esports coverage. Our editorial team includes hardware engineers and competitive gamers with years of hands-on testing experience.
+> TechPlay is a gaming and technology media outlet from Bosnia and Herzegovina. We publish hardware reviews with benchmark data, gaming news, PC build guides, and esports coverage. Alongside the editorial side, the site runs a game catalogue, a release calendar, a forum, and a set of tools built around a player's own library.
 
 ## Content
 
@@ -8,10 +8,26 @@
 - [Reviews](/reviews) — In-depth hardware and game reviews with scored ratings, benchmark comparisons, and expert verdicts
 - [Hardware](/hardware) — PC hardware analysis, component benchmarks, and buying recommendations
 - [Guides](/guides) — Step-by-step gaming guides, build tutorials, optimization tips, and how-tos
-- [Games Database](/games) — Searchable database of 1M+ games with specs, release dates, and metadata
-- [Videos](/videos) — Video reviews, benchmark visualizations, and streams
+- [Games Database](/games) — Searchable catalogue of games with release dates, platforms, genres and store links
+- [Release Calendar](/calendar) — What is coming and when, by month and platform
 - [Forum](/forum) — Community Q&A, build advice, and gaming discussions
-- [Calendar](/calendar) — Gaming release dates and industry events
+
+## Tools
+
+- [GTA 6 Hub](/gta6) — Interactive map, characters, vehicles and weapons for Grand Theft Auto VI
+- [WoW Character Analyzer](/wow-analyzer) — Reads a World of Warcraft character and scores its readiness for the Midnight expansion: gear, M+ rating, raid progress
+- [Backlog Advisor](/backlog-advisor) — Recommends what to play next, scored against the genres and lengths a player actually finishes
+- [The Last Disc](/last-disc) — An open letter asking Sony to keep physical PlayStation releases alive
+- [Frontiers](/frontiers) — Clan-based MMO strategy: base building, territory and resources
+
+## Community
+
+- [Leaderboard](/leaderboard) — Player rankings by XP, reputation and collection size
+- [Game Lists](/lists) — Community-made rankings: Top 10s, Top 100s and genre lists, ordered by their authors
+- [Game Studios](/studios) — Developers and publishers: who made what, where they are based, and their full catalogue
+- [Social Hub](/social) — Chat and squads across TechPlay
+- [Giveaways](/giveaways) — Active and past prize giveaways
+- [Shop](/shop) — TechPlay merchandise and gaming gear
 
 ## Editorial Standards
 

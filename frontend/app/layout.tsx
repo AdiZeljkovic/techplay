@@ -102,7 +102,7 @@ export async function generateMetadata(): Promise<Metadata> {
       default: siteName,
       template: `%s ${separator} ${siteName}`,
     },
-    description: settings.seo_meta_description || "TechPlay puts every game you own in one library — Steam, PlayStation and Xbox together, with the hours you played — then reads your taste back to you. Plus reviews, release dates and a 141,000-game catalogue.",
+    description: settings.seo_meta_description || "TechPlay puts every game you own in one library — Steam, PlayStation and Xbox together, with the hours you played — then reads your taste back to you. Plus reviews, release dates and the game catalogue.",
     keywords: ["gaming", "gaming news", "hardware reviews", "PC gaming", "esports", "game database", "TechPlay"],
     openGraph: {
       type: 'website',

@@ -61,6 +61,8 @@ export interface PageSeoData {
     og_title?: string;
     og_description?: string;
     og_image?: string;
+    og_image_width?: number;
+    og_image_height?: number;
     canonical_url?: string;
     is_noindex?: boolean;
 }
@@ -69,6 +71,8 @@ export interface SiteSettings {
     site_name?: string;
     seo_meta_description?: string;
     seo_og_image_default?: string;
+    seo_og_image_default_width?: string;
+    seo_og_image_default_height?: string;
     seo_twitter_card_type?: string;
     seo_social_twitter?: string;
     [key: string]: any;
@@ -186,10 +190,29 @@ export async function generatePageMetadata(
     // title is a bare link, so it falls back to the site name here.
     const ogTitle = pageSeo?.og_title || title || siteName;
     const ogDescription = pageSeo?.og_description || description;
+    /*
+     * The dimensions travel with the URL, from whichever source won.
+     *
+     * og:image went out alone. A scraper that does not know the shape has to
+     * fetch the file before it can lay the card out, and several guess square
+     * in the meantime — which crops a 1.78:1 image down the middle. The
+     * backend measures both the per-page image and the default one
+     * (SettingsController), so the only job here is to keep the pair together:
+     * a width from one source and a URL from the other would describe an image
+     * that does not exist.
+     */
     const ogImage = pageSeo?.og_image
-        ? `${STORAGE_URL}/${pageSeo.og_image}`
+        ? {
+            url: `${STORAGE_URL}/${pageSeo.og_image}`,
+            width: pageSeo.og_image_width,
+            height: pageSeo.og_image_height,
+        }
         : settings.seo_og_image_default
-            ? `${STORAGE_URL}/${settings.seo_og_image_default}`
+            ? {
+                url: `${STORAGE_URL}/${settings.seo_og_image_default}`,
+                width: Number(settings.seo_og_image_default_width) || undefined,
+                height: Number(settings.seo_og_image_default_height) || undefined,
+            }
             : undefined;
     /**
      * `meta_keywords` arrives as an array, not a string.
@@ -241,7 +264,7 @@ export async function generatePageMetadata(
             title: ogTitle,
             description: ogDescription,
             siteName,
-            images: ogImage ? [{ url: ogImage }] : [],
+            images: ogImage ? [{ ...ogImage, alt: ogTitle }] : [],
             type: 'website',
         },
         twitter: {
@@ -249,7 +272,7 @@ export async function generatePageMetadata(
             site: settings.seo_social_twitter,
             title: ogTitle,
             description: ogDescription,
-            images: ogImage ? [ogImage] : [],
+            images: ogImage ? [ogImage.url] : [],
         },
     };
 }
