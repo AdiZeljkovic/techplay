@@ -2,7 +2,8 @@
 
 **Datum:** 28.08.2026.
 **Obim:** server, backend, admin panel, frontend, podaci — sve što radi i sve što se koristi.
-**Pravilo:** svaki nalaz je **izmjeren**, ne pretpostavljen. Ništa nije popravljeno — ovo je snimak stanja.
+**Pravilo:** svaki nalaz je **izmjeren**, ne pretpostavljen.
+**Status:** pregled je urađen prvo bez ijedne izmjene; popravke su došle poslije i zapisane su na kraju.
 
 | Oznaka | Značenje |
 |---|---|
@@ -17,10 +18,10 @@
 
 Od 47 provjerenih stavki: **2 ozbiljne**, **7 bitnih**, **8 za popraviti**, **30 čistih**.
 
-Dvije stvari traže odluku danas:
+Dvije stvari su tražile odluku odmah, i obje su riješene istog dana:
 
-1. 🔴 **Nema nijedne rezervne kopije baze.** 5,8 GB, nula automatskih kopija.
-2. 🔴 **SSH prima lozinku i dozvoljava root prijavu**, uz 1.417 zabilježenih pokušaja.
+1. 🔴 **Kopije baze nikad nisu napuštale server.** (Prvo sam napisao da kopija nema — pogrešno, vidi ispravku ispod.)
+2. 🔴 **SSH je primao lozinku i dozvoljavao root prijavu**, uz 1.417 zabilježenih pokušaja.
 
 Ostalo su bombe sa satnim mehanizmom i tehnički dug, ne požari.
 
@@ -30,23 +31,27 @@ Ostalo su bombe sa satnim mehanizmom i tehnički dug, ne požari.
 
 ## 🔴 OZBILJNO
 
-### 1. Nema rezervnih kopija baze
+### 1. ~~Nema rezervnih kopija baze~~ → Kopije se prave, ali nikad ne napuste mašinu
+
+> **ISPRAVKA, isti dan.** Prvo sam ovdje napisao da kopija nema. **Ima ih.** Rade svake noći u 03:15, jedanaest uzastopnih noći, preko `/etc/cron.d/techplay-backup`. Promakle su mi jer sam pročitao samo rootov `crontab -l` — a posao je u `cron.d`, što je drugo mjesto — i jer sam ispis `/var/backups/` odrezao na osam redova, pa se poddirektorij `techplay/` nije ni pojavio.
+>
+> Nalaz je bio pogrešan u opisu, ali ne i u zaključku: **nijedna od tih kopija nije bila izvan servera.**
 
 **Izmjereno:**
 ```
-baza:                       5 845 MB
-cron backup posao:          nema
-systemd tajmer:             nema
-pg_dump igdje u skriptama:  nema (samo u /root/.bash_history — ručno)
-/var/backups/:              samo alternatives.tar.* (Debian, ne podaci)
-storage/app/backups/:       6 jednokratnih izvoza uz pojedine migracije
+baza:                    5 845 MB
+kopije:                  11 noći, 18–28.08., 1,3 GB svaka = 14 GB
+raspored:                /etc/cron.d/techplay-backup, 03:15
+sadržaj kopije:          db.dump + redis.rdb + uploads.tar.gz  ✓
+provjera dumpa:          pg_restore --list, već je postojala  ✓
+slanje van mašine:       rsync to storagebox:techplay FAILED — svake noći
 ```
 
-Ono što se ne može ponovo napraviti: 54 korisnika, njihove kolekcije, forum, 630 članaka, liste, XP i reputacija. Katalog igara bi se dao ponovo izgraditi iz agregatora; ostalo ne bi.
+Skript `deployment/backup.sh` je bio dobro napisan i **radio je svoj posao**. Svake noći je i javljao da nije završio — u `/var/log/techplay-backup.log`, i kroz cron poštu na serveru čija odlazna pošta ne radi. Dakle: ispravan alarm, nikakav zvučnik.
 
-**Šta ovo znači:** jedan `DROP`, otkaz diska, ili neuspjela migracija = sve ide.
+**Šta ovo znači:** greška u radu (`DROP`, loša migracija) bila je pokrivena. Otkaz diska nije bio — 14 GB kopija ležalo je na istom disku kao i ono što čuvaju.
 
-**Napomena:** ne mogu vidjeti ima li Hetzner snapshotova sa strane servera — to treba provjeriti u Hetzner panelu. Ako ih ima, ozbiljnost pada na 🟠, ali snapshot cijelog diska nije isto što i dump baze (ne može se vratiti jedna tabela).
+**Riješeno 28.08.2026** — vidi odjeljak *Šta je urađeno*.
 
 ### 2. SSH: root prijava lozinkom, otvoreno prema internetu
 
@@ -219,3 +224,78 @@ Nijedan nije sigurnosni, ali kernel zakrpa ne radi dok se ne restartuje.
 **Kad stigne:** dupli sitemap raspored (8), `gamertags` pri brisanju (7), ostalo iz 🟡.
 
 PayPal (6) čeka dan kad se shop upali — ali tad **mora** biti riješeno prije prve uplate.
+
+---
+
+# ŠTA JE URAĐENO — 28.08.2026.
+
+Sve ispod je izmijenjeno **i provjereno na produkciji** istog dana.
+
+## 🔴 Rezervne kopije
+
+`deployment/backup.sh` je zadržao svoj oblik i dobio ono što mu je stvarno falilo:
+
+| Dodano | Zašto |
+|---|---|
+| Telegram javljanje, **direktno** | Laravelov `telegram` kanal ide kroz `DeduplicationHandler` koji baferniše do gašenja procesa i umotan je u `WhatFailureGroupHandler` koji guta vlastite neuspjehe — izmjereno: greška je stigla u dnevnik, u Telegram nije. Posao koji čuva podatke ne smije zavisiti od kanala koji ćuti kad zakaže |
+| Provjera da dump **ima sadržaj** | `pg_restore --list` je već postojao, ali dump uzet nad polumigriranom bazom prolazi tu provjeru i uredno se vrati preko prave — što je jedini način da kopija pogorša ispad. Sada se traži ≥20 tabela i ≥100 MB |
+| Konfiguracija u kopiji | `.env` fajlovi, nginx, supervisor, `sshd_config.d`, crontab. Kilobajti, a razlika između *vraćanja* platforme i *ponovnog sastavljanja* |
+| `cron` → **systemd tajmer** | `Persistent=true`. Cron unos koji dođe na red dok je mašina ugašena se preskoči — a to je noć koja je bila važna |
+| Lokalno se **briše** poslije slanja | Jedanaest noći je naraslo na 14 GB od 75 GB diska. Arhiva je na Storage Boxu; lokalno je odskočna daska. Kopija koja **nije** otišla se čuva (tada je jedina), ali najviše dvije — nedostupan Storage Box ne smije biti razlog da se disk napuni i sajt stane |
+
+**Čeka:** podaci Hetzner Storage Boxa. Do tada skript svake noći izlazi s greškom 2 i **javlja to na Telegram** — namjerno, jer kopija na istom disku nije kopija.
+
+Postupak je u `/etc/techplay-backup.conf`, s upisanim koracima.
+
+## 🔴 SSH
+
+`PermitRootLogin prohibit-password`, `PasswordAuthentication no`, `MaxAuthTries` 6→3, `LoginGraceTime` 120→30, `X11Forwarding` isključen. U zasebnom fajlu `/etc/ssh/sshd_config.d/00-techplay-hardening.conf`, koji se učitava prije ostatka.
+
+Provjereno: `reload` (ne restart, da postojeća veza preživi), pa **nova** veza ključem — radi; pa pokušaj lozinkom — `Permission denied (publickey)`.
+
+## 🟠 Ništa više ne radi kao root
+
+| Proces | Bilo | Sada |
+|---|---|---|
+| `queue:work` | root | `www-data` |
+| `next-server` (pm2) | root | `techplay` |
+| Discord bot (pm2) | root | `techplay` |
+
+Put kroz buт **isproban**, ne pretpostavljen: pm2 ugašen, `systemctl start pm2-techplay`, sajt se vratio.
+
+Time je vlasništvo podijeljeno, pa je ručni deploy postao lako pogrešiv — `git pull` kao root ostavlja root-ove fajlove u `techplay` stablu i sljedeći build padne na dozvolama, tiho. Zato **`techplay-deploy.sh`**, koji vrati vlasništvo prije nego išta gradi.
+
+## 🟠 Ostalo
+
+- **`.env` dozvole:** `640 root:www-data` gdje aplikacija čita, `600` gdje ne. Bile su `-rwxr-xr-x` s 25 tajni.
+- **Brisanje naloga:** `gamertags` (7 naloga) i tri ostatka Discord veze sada se brišu. Novi test ne uzima spisak — popuni **svaku** kolonu, obriše nalog i pita šta je preživjelo. Našao je šest više nego ja ručno, pa uhvatio i moju grešku: postavljanje `NOT NULL` kolone na `null`, što bi brisanje naloga vraćalo kao 500 za svakoga.
+- **Redis:** dobio lozinku (40 znakova). `redis-cli PING` bez nje sada vraća `NOAUTH`.
+- **Admin panel:** uklonjen drugi put unutra (`role === 'admin'` kolona). Jedini nalog koji ju je imao već ima dozvolu kroz ulogu, pa niko ništa ne gubi.
+- **Dupli raspored sitemapa:** cron unos uklonjen, ostaje Laravel raspored s bravom protiv preklapanja.
+- **Nadogradnje:** 8 paketa (uklj. Node 24.19→24.20). Sedam Python paketa Ubuntu **namjerno** zadržava (`deferred due to phasing`) — zakrpa 0.15→0.16, nijedna sigurnosna; forsirati ih znači zaobići taj mehanizam bez dobitka.
+- **Očišćeno:** tri zaostale kopije `.env`, `rawg-crawl.log` (8,4 MB, sistem penzionisan u 08/2026), 14 GB lokalnih kopija.
+
+## Dvije stvari koje sam sâm slomio, i koje je uhvatila provjera
+
+`techplay-healthcheck` radi svakih 5 minuta i za njega **nisam znao** dok mi nije prijavio kvarove koje sam upravo napravio:
+
+1. `FAIL pm2` — pm2 je per-korisnik, a ja sam ga premjestio na `techplay`; provjera je pitala rootov, prazan. **Popravljeno:** pita `techplay`-ov.
+2. `FAIL backup` — provjera je tražila da lokalni direktorij nije prazan, a po novom prazan **znači uspjeh**. **Popravljeno:** čita systemd zapis zadnjeg pokretanja, gdje je izlaz 2 skriptova način da kaže „nije otišlo s mašine".
+
+Isti popravak je i u `deployment/healthcheck.sh`, da ga sljedeći deploy ne pregazi.
+
+## Nalaz koji sam pogrešno prijavio, i ispravka
+
+U prvom prolazu sam napisao da **291 od 291 API rute nema autentifikaciju**. Tražio sam `auth` malim slovima, a klasa je `Illuminate\Auth\Middleware\Authenticate`. Stvarno: 147 traži prijavu, 144 su javne, a samo 26 mijenja stanje bez nje — i 25 od 26 ima ograničenje brzine.
+
+Isto tako sam prijavio da 36.916 stranica curi SEO snagu ka MobyGamesu, dok nisam pogledao stvarni HTML: linkovi **imaju** `rel="nofollow"`.
+
+## Šta i dalje stoji
+
+| | Stavka | Zašto nije riješeno |
+|---|---|---|
+| 🟠 | GlitchTip ne može da javi | `EMAIL_URL=consolemail://`. Odlazna pošta na serveru ne radi (`MAIL_HOST=mail.support.techplay.gg` nema DNS zapis), a mail server je vlasnikov. GlitchTip webhook se podešava u njegovom sučelju, ne kroz `.env` |
+| 🟠 | PayPal webhook odbija sve | `PAYPAL_WEBHOOK_ID` nije postavljen; kod ispravno pada zatvoreno. Latentno — 0 narudžbi, 0 proizvoda, `sandbox`. **Mora** biti riješeno prije prve uplate |
+| 🟡 | Nema GDPR izvoza podataka | Brisanje postoji, prenosivost ne |
+| 🟡 | 57.172 linka ka MobyGamesu | `nofollow` je tu, pa SEO ne curi; ostaje da čitaoce šalješ konkurentu |
+| 🟡 | Restart zbog kernela | Radi se na kraju, dogovoreno |

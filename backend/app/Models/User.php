@@ -20,7 +20,17 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function canAccessPanel(Panel $panel): bool
     {
         if ($panel->getId() === 'admin') {
-            return $this->can('view admin panel') || $this->role === 'admin';
+            /*
+             * Jedan put unutra, ne dva.
+             *
+             * Ovdje je stajalo `|| $this->role === 'admin'` — kolona koja je
+             * zaobilazila cijeli sistem dozvola: ko je nju imao, ulazio je bez
+             * obzira sta Spatie kaze. Provjereno 28.08.2026: jedini nalog s tom
+             * kolonom je vlasnikov, a on dozvolu vec ima kroz Super Admin
+             * ulogu, pa ovo nikome nista ne oduzima. Oduzima samo drugi put,
+             * koji se ne vidi u ekranu za uloge.
+             */
+            return $this->can('view admin panel');
         }
 
         // Deny by default. There is only one panel today, so the old `return
