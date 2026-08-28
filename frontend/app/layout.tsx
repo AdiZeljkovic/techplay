@@ -60,7 +60,21 @@ const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["600"],
   display: 'swap',
-  preload: true,
+  /*
+   * Not preloaded, unlike the other two.
+   *
+   * Three families with two subsets each put five font files — 152 KB — in
+   * front of the LCP image, and on Slow 4G that queue is most of why the
+   * homepage takes eleven seconds to show its picture. This face sets scores,
+   * counters and timestamps: numbers that are already legible in the fallback
+   * and that nobody reads before the headline. It still loads, one step later,
+   * and `swap` means the digits appear immediately either way.
+   *
+   * The display and body faces stay preloaded — they draw the first text on
+   * screen, and a headline that reflows after paint is worse than a counter
+   * that does.
+   */
+  preload: false,
 });
 
 

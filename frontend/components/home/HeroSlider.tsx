@@ -97,6 +97,21 @@ export default function HeroSlider({ articles }: { articles: Article[] }) {
                             alt={current.title}
                             fill
                             priority={index === 0}
+                            /*
+                             * priority earns this image a preload; it does not
+                             * put it at the front of the queue.
+                             *
+                             * Measured on the homepage: five font files at
+                             * 152 KB and the logo at 20 KB are declared ahead of
+                             * it, so 172 KB has to move before a 40 KB image
+                             * starts — about three and a half seconds of Slow
+                             * 4G, on the element Google times the page by. LCP
+                             * on mobile is 11.0s against a 2.5s threshold.
+                             *
+                             * fetchPriority beats declaration order, which is
+                             * why it is the fix rather than reordering the head.
+                             */
+                            fetchPriority={index === 0 ? "high" : "auto"}
                             sizes="(max-width: 1024px) 100vw, 45vw"
                             className="object-cover"
                         />
