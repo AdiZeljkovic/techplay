@@ -7,9 +7,6 @@ return [
      * seen by the browser, but a literal in a Blade view is also a literal in
      * git history and cannot be rotated without a deploy.
      */
-    'giphy' => [
-        'key' => env('GIPHY_API_KEY'),
-    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -81,11 +78,6 @@ return [
         ],
     ],
 
-    'recaptcha' => [
-        'site_key' => env('RECAPTCHA_SITE_KEY', env('TURNSTILE_SITE_KEY')),
-        'secret_key' => env('RECAPTCHA_SECRET_KEY', env('TURNSTILE_SECRET_KEY')),
-    ],
-
     'turnstile' => [
         // Absent by default: with no value there is no captcha bypass.
         'bypass_token' => env('TURNSTILE_BYPASS_TOKEN'),
@@ -144,16 +136,6 @@ return [
         'region' => env('BLIZZARD_DEFAULT_REGION', 'us'),
     ],
 
-    'openai' => [
-        'api_key' => env('OPENAI_API_KEY'),
-        'model' => env('OPENAI_MODEL', 'gpt-4-turbo'),
-    ],
-
-    'gemini' => [
-        'api_key' => env('GEMINI_API_KEY'),
-        'model' => env('GEMINI_MODEL', 'gemini-2.0-flash'),
-    ],
-
     'groq' => [
         'api_key' => env('GROQ_API_KEY'),
         'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
@@ -165,15 +147,6 @@ return [
 
     'indexnow' => [
         'key' => env('INDEXNOW_KEY'),
-    ],
-
-    'mobygames' => [
-        'api_key' => env('MOBY_API_KEY'),
-        'base_url' => 'https://api.mobygames.com/v1',
-    ],
-
-    'rawg' => [
-        'api_key' => env('RAWG_API_KEY'),
     ],
 
     'epic' => [
@@ -202,12 +175,5 @@ return [
      * Their limit is four requests a second with at most eight in flight; going
      * over earns a 429. The client keeps to it rather than discovering it.
      */
-    'igdb' => [
-        'client_id' => env('IGDB_CLIENT_ID'),
-        'client_secret' => env('IGDB_CLIENT_SECRET'),
-        'base_url' => 'https://api.igdb.com/v4',
-        'token_url' => 'https://id.twitch.tv/oauth2/token',
-        'requests_per_second' => 4,
-    ],
 
 ];

@@ -356,8 +356,12 @@ Admin: ReleaseCalendar badge keširati (C2) · `pending_review`→`ready_for_rev
 
 </details>
 
-### P2 — kad dođe red
+### P2 — **VEĆINOM URAĐENO 29.08.2026** (vidi odjeljak niže). Neurađeno i zašto: mrtve rute i WoW komponente — obrazloženo tamo.
+
+<details><summary>Originalna P2 lista</summary>
 IndexNow → jedan job, jedan ključ (B9) · sitemap: `indexable` kolona + keyset paginacija (A5.2) · indeks na `studios.parent_id` (A5.3) i `LOWER(games.name)` (A5.4) · odluka o `igdb_raw`: preseliti/isključiti iz dumpa/prihvatiti (A5.1+F1) · drop lista duplih indeksa iz `\di` + sedmičnih snapshotova (F2) · unpublish grana u observerima (B6) · giveaway reminder prozor (B13) · re-publish latch (B13) · čišćenje ~28 mrtvih ruta (B21) i mrtvog frontend koda (D8) · news/reviews/tech konsolidacija + TechPlay score na jedno mjesto (B18) · shop: metadata + KM/EUR odluka + mrtva PayPal grana (D3, D4) · GDPR rep: `last_disc_signatures` + avatar fajl pri brisanju (F6, B20) · media pipeline: jedan sistem slika (B12) · WoW analyzer sadržajno odmrznuti (B13).
+
+</details>
 
 ### P3 — higijena
 docs/07 prepisati (F-drift) · CLAUDE.md osvježiti (brojevi, jobs lista, middleware.ts, TriviaService/ChallengeService, ImageService) · root PM2 ugasiti (A8) · /var/www ostaci (A7.1) · open-vm-tools/vgauth/apport disable (A8) · HOME za octane (A4.1) · reverb.log u logrotate (A2.3) · netdata auto-update odluka (A2.4) · error.tsx/loading.tsx raspored (D9) · SWR fetcher + timeAgo + modali konsolidacija (D7) · ApiResponse trait dosljednost ili ukidanje pravila (B22).
@@ -474,6 +478,59 @@ Uvezan u `techplay-deploy.sh` **poslije** `config:cache`, namjerno. Da je postoj
 
 ---
 
+# ŠTA JE URAĐENO — P2 (29.08.2026)
+
+### IGDB staging obrisan — 3,9 GB, 65% baze
+
+Odluka vlasnika: izvlačenje je završeno. Redoslijed je bio takav da izvor ne ode prije proizvoda:
+
+1. **Provjereno da je sve sletjelo** u trajne tabele: 332.455 igara, 262.576 IGDB vanjskih ID-jeva, 57.630 studija s `igdb_id`, 566.915 linkova, 85.368 relacija, 285.850 veza igra↔studio.
+2. **Arhivirano** u `/var/backups/igdb-archive/igdb-staging-2026-08-29.dump` — 490 MB, `pg_dump -Fc`, provjereno `pg_restore --list` (obje tabele s podacima, sekvencama i ograničenjima).
+3. **Obrisano** migracijom `2026_08_29_050000`.
+4. **Uklonjen i alat** koji bez tih tabela ne može raditi: 11 `igdb:*` komandi, `IgdbClient`/`IgdbMatcher`/`IgdbFacts`, `CrawlIgdbBatchJob` i 9 testova — **25 fajlova**. Ostavljene komande koje pucaju na nepostojećoj tabeli su gore od obrisanih, a među njima su bile i destruktivne (`igdb:merge`, `igdb:import`, `igdb:revert`) koje bi jedna pogrešno otkucana naredba pustila na kanonski katalog.
+5. **Očišćeno sedam mrtvih config blokova** koje niko ne čita: `igdb`, `openai`, `gemini`, `mobygames`, `rawg`, `giphy`, `recaptcha` (taj zadnji je duplikat — `ReCaptchaService` čita `turnstile.*`).
+
+Povratak, ako ikad zatreba: `pg_restore -d techplay <arhiva>` za podatke i `git show` ovog commita za alat.
+
+### Mjereno prije i poslije: sitemap više ne čita svaki opis
+
+`Game::indexable()` je vrtio regexp preko 305.581 opisa pri svakom prolazu, a sitemap sadržaja ide svakih 15 minuta — ukupno ~2,8 h DB vremena u 11 dana, više nego sve ostalo zajedno. Parcijalni indeks s **tačno tim** predikatom prebacuje posao na upis:
+
+| | Prije | Poslije |
+|---|---|---|
+| Prebrojavanje indeksabilnih | 1.579 ms | **234 ms** |
+| Jedna stranica sitemapa | 845 ms | **72 ms** |
+| Plan | Index Scan + čitanje tabele | **Index Only Scan** |
+
+Izraz u `Game::scopeIndexable()` i predikat indeksa moraju ostati identični — zapisano na oba mjesta, jer Postgres ih uparuje poređenjem izraza i razlika od jednog razmaka tiho isključuje indeks.
+
+### Ostali indeksi, svaki s izmjerenim razlogom
+
+- **`studios.parent_id`** nije imao indeks, a stranica studija traži podstudije pri svakom renderu: **234.079 poziva, 2.345 s, svaki sekvencijalni skan 57.630 redova**. Sada Index Scan.
+- **`lower(games.name)`** — tako se naslov iz prodavnice spaja s katalogom (presence polling svake 2 min po igraču, i svaki uvoz biblioteke). Bio pun skan 332.455 redova; sada Index Scan, a stvarni upit (`LOWER(name) = ? OR slug = ?`) koristi BitmapOr oba indeksa.
+- **`games_hub_name_idx` obrisan** — nula skenova u sva tri mjerenja (17.08., 24.08., 29.08.), građen za filter koji hub više ne šalje. Druga dva iz te porodice se koriste (58 i 2.017 skenova) i ostaju.
+- **20 grupa identičnih indeksa** obrisano (`threads` je nosio 22 indeksa, `comments` i `posts` po 11). Sigurno po konstrukciji: u svakoj grupi ostaje indeks s istim kolonama. Nasljeđe četiri januarske migracije koje su dodavale iste indekse jedna preko druge; čišćenje 18.08. sredilo je samo `articles`.
+
+### IndexNow: s pet implementacija na jednu
+
+Tri inline kopije (Article, Guide, Game observeri) čitale su ključ iz env-a, job iz baze — **dva različita ključa**, od kojih samo jedan ima fajl koji Next servira. Uz to su `host` i `keyLocation` građeni iz API domena dok su se slali frontend URL-ovi, što protokol odbija; komentar pored linije je čak pisao „e.g. techplay.gg" a proizvodio drugo. Sada: jedan job, jedan ključ, `app.site_url`, i test koji drži ugovor. Mrtvi `IndexNowService` (nula pozivalaca, a nosio je ispravku koja nikad nije stigla u živi put) obrisan. Uklonjen i Google sitemap ping — taj endpoint je penzionisan 2023. i vraća 404. Popravljeno i mapiranje sekcije: sve što nije recenzija išlo je kao `/news/`, pa su hardware članci prijavljivani na adresu koja 404-a.
+
+### Ispravke ponašanja
+
+- **Povučen članak stvarno nestaje.** Observer je izlazio odmah za svaki status osim `published`, pa povlačenje nije čistilo ni keš ni listinge ni Next — a članci su `revalidate=false`, dakle bez tajmera koji bi to sam popravio. Brisanje i povlačenje sada idu kroz isto čišćenje.
+- **Giveaway podsjetnici:** dvosatni prozor na šestosatnoj kadenci značio je da **dvije trećine giveawaya nikad ne dobije najavu**. Sada cijeli dan + kolona `reminder_sent_at`, pa i propušteno pokretanje sustigne umjesto da preskoči.
+- **Brisanje naloga nikad nije obrisalo nijedan fajl.** Test s lažnim diskom je pao i pokazao dublji uzrok nego što je analiza tvrdila: `getOriginal()` se čita **poslije** `save()`, koji sinhronizuje originale — pa je „originalna" putanja bila `null` koji je upravo upisan. Ni avatari ni cover slike. Putanje se sada hvataju prije brisanja kolona. Isti prolaz anonimizuje i potpis na otvorenom pismu, koji drži vlastitu kopiju e-mail adrese.
+- **TechPlay skor se računao dvaput i davao različite brojeve** — widget je isključivao skice ocjena, stranica igre ih je uključivala. Formula i pravilo o skicama sada su na jednom mjestu (`Support\TechplayScore`).
+- **Shop:** proizvodi su bili jedine detalj-stranice bez ikakvog metadata (client komponenta ga ne može imati). Sada rade po projektnom obrascu `page.tsx` + `Client.tsx`, s OG karticom. Referenca na `og-shop.png` uklonjena — taj fajl nikad nije postojao, pa je kartica pokazivala na 404.
+- **Tri npm paketa** bez ijednog importa uklonjena (`@radix-ui/react-avatar`, `class-variance-authority`, `react-scroll` + tipovi); build i tsc čisti.
+
+### Šta NISAM uradio, i zašto
+
+- **~28 „mrtvih" ruta ostaje.** Nginx logovi (12 dana) pokazuju nula poziva za skoro sve, ali to nije dokaz da rijetka admin akcija ne postoji, a korist od brisanja je mala. Popis ostaje u ovom dokumentu.
+- **7 nespojenih WoW komponenti — obrisano na nalog vlasnika (29.08.).** `HousingReadiness`, `PreparationChecklist`, `TimelineTracker`, `DailyPlanner`, `HistoricalProgress`, `WowLeaderboard`, `WowRecentAnalyses`, plus `lib/wow-midnight-theme.ts` koji je postojao isključivo zbog njih i `recharts` koji je time ostao bez ijednog korisnika. Nula uvoza provjereno prije brisanja; `tsc` i build prolaze. U `components/wow/` ostaje 13 komponenti koje analizator stvarno koristi.
+
+---
+
 ## NAĐENO PRI PROVJERI DEPLOYA — 29.08.2026
 
 🔴 **Prijava kroz Discord je pokvarena na produkciji, i neko je danas pokušao.** U logu su tri neuspjela pokušaja u 21:18–21:19: `Discord OAuth failed: POST https://discord.com/api/oauth2/token resulted in a 401`. Uzrok: **`DISCORD_CLIENT_SECRET` ne postoji u `.env`.** `DISCORD_CLIENT_ID` i redirect jesu postavljeni, pa korisnik prođe kroz Discord ekran, vrati se — i tu padne. Bot ima svoj `DISCORD_BOT_SECRET` i radi normalno; ovo je druga tajna.
@@ -483,6 +540,98 @@ Uvezan u `techplay-deploy.sh` **poslije** `config:cache`, namjerno. Da je postoj
 🟡 **`env:validate` ne može uhvatiti nijedno od ovoga u stanju u kojem produkcija živi.** Sam kaže: *„Configuration is cached, so env() reads as null and every check below would fail."* Alat napravljen tačno za ovaj problem je neupotrebljiv poslije `config:cache`, a `config:cache` je obavezan korak deploya. Treba ga zvati **prije** keširanja u `techplay-deploy.sh`, ili ga naučiti da čita `config()` umjesto `env()`.
 
 **Ispravka mog vlastitog nalaza:** u prvom prolazu sam prijavio da fale i Turnstile i Groq ključevi. Netačno — provjeravao sam `services.turnstile.secret` i `services.groq.key`, a stvarna imena su `secret_key` i `api_key`. Oba **jesu** postavljena i rade (Turnstile 0 odbijanja u logu, Groq ključ 56 znakova). Pouka je ista kao kod „291 rute bez autentifikacije" iz docs/76: grep po imenu koje sam pretpostavio, umjesto po imenu koje kod stvarno čita.
+
+---
+
+# ODLUKE KOJE ČEKAJU VLASNIKA
+
+Ništa ispod nije dirano. Sve je provjereno i spremno; nedostaje samo odluka.
+
+## 1. Dvadeset osam ruta bez pronađenog pozivaoca
+
+**Dokaz za svaku:** nijedan pozivalac u frontendu, Discord botu, configu ni mail templateima — plus **nula pogodaka u ~12 dana nginx logova**. Brojevi linija su iz `backend/routes/api.php` na dan 29.08.2026.
+
+**Zašto ovo nije isto što i mrtve WoW komponente:** komponentu koju nijedan fajl ne uvozi bundler dokazano ne isporučuje. Rutu može gađati nešto što se ne vidi iz repoa — ručni `curl`, Postman kolekcija, bookmark u adminu. Dvanaest dana logova to sužava, ali ne isključuje.
+
+### 1a. Zamijenjene — postoji ispravna alternativa *(najsigurnije za brisanje)*
+
+| Ruta | Linija | Šta se koristi umjesto nje |
+|---|---|---|
+| `GET /rewards` | 526 | `/rewards/catalog` |
+| `GET /users/{u}/trophy-case` | 296 | profil već nosi `trophy_case` u payloadu |
+| `GET /friends` | 197 | Social Hub čita `/social` |
+| `GET /friends/activity` | 327 | widgeti idu na `/me/dashboard` |
+| `GET /page-seo` | 522 | `/page-seo/{path}` (523) |
+| `GET /seasons` | 535 | `/seasons/active` |
+| `GET /categories/{slug}` | 474 | nema opšte stranice kategorije |
+| `GET /games/hub/{type}/{value}` | 614 | facet stranice idu na `/games?genres=` |
+| `GET /games/{slug}/articles` | 619 | presavijeno u `/games/{slug}/bundle` |
+| `GET /games/{slug}/screenshots` | 620 | isto |
+| `GET /games/{slug}/videos` | 621 | isto |
+| `GET /games/{slug}/series` | 624 | isto |
+| `GET /games/{slug}/suggested` | 625 | isto |
+
+Napomena uz zadnjih pet: komentar u kodu tvrdi da se „koriste drugdje" — i koriste se, ali kao **PHP metode** koje `bundle()` zove direktno. HTTP pozivaoca nema.
+
+### 1b. Admin alat bez sučelja *(sigurno, uz jednu provjeru)*
+
+| Ruta | Linija | Napomena |
+|---|---|---|
+| `POST /seo/suggest-links` | 658 | cijeli `SeoController` nema **nijednog** pozivaoca |
+| `GET /seo/orphan-pages` | 659 | isto |
+| `GET /seo/articles/{article}/inbound-links` | 660 | isto |
+| `GET /seo/articles/{article}/schemas` | 661 | isto |
+| `POST /forum/threads/{slug}/restore` | 243 | nema moderatorskog dugmeta |
+| `GET /last-disc/export` | 180 | **pitanje za tebe: koristiš li ručno?** |
+| `POST /webhooks/discord/notify` | 654 | **isto pitanje** |
+
+### 1c. Polusagrađene — jedna strana postoji, druga nikad nije napravljena *(odluka je: dovršiti ili odbaciti)*
+
+| Ruta | Linija | Šta nedostaje |
+|---|---|---|
+| `GET /me/reading` | 308 | writeri (bookmark, progres) rade; čitalac nikad sagrađen |
+| `POST /journal/sessions/{s}/moments` | 359 | UI može **obrisati** momenat, ali ga nikad ne kreira |
+| `POST /user/wow-characters/{id}/set-main` | 189 | zove se samo GET |
+| `DELETE /user/wow-characters/{id}` | 190 | isto |
+| `POST /conversations/{c}/participants` | 213 | nema UI za dodavanje u grupu |
+| `GET /wow/analysis/{id}` | 506 | share dugme koristi `navigator.share` |
+| `POST /wow/analysis/{id}/share` | 507 | isto |
+| `GET /presence/{username}` | 499 | živ je samo botov `/discord/presence` |
+| `POST /presence` | 282 | isto |
+| `DELETE /presence` | 283 | isto |
+| `GET /gta6/vehicles/{slug}` | 578 | detalj stranice ne postoje (samo za likove) |
+| `GET /gta6/weapons/{slug}` | 582 | isto |
+| `GET /authors/{slug}/articles` | 565 | stranica autora traži samo `/authors/{slug}` |
+| `GET /support/mine` | 393 | support stranica koristi samo tiers + pledge |
+| `GET /rewards/redemptions` | 363 | store nikad ne lista istoriju |
+| `GET /game-lists/tags` | 530 | discover stranica ih ne traži |
+
+### 1d. Suvišne — posao se već dešava drugdje
+
+| Ruta | Linija | Zašto |
+|---|---|---|
+| `POST /conversations/{c}/read` | 211 | GET poruka već označava pročitano |
+| `POST /auth/refresh` | 168 | frontend sam u komentaru piše da je neupotrebljiv iza istog guarda |
+| `GET /articles/{slug}/views` | 593 | niko ne čita |
+
+### 1e. Mrtvi handleri — bez ijedne rute
+
+`SettingsController::grouped` · `TrackingController::getCategoryPath` · **`DiscordAdminController::getActiveEvent`** — bot **može pokrenuti** event preko `/discord/admin/event`, ali ga niko ne može pročitati nazad.
+
+**Moja preporuka po redoslijedu:** 1a i `/seo/*` iz 1b bih brisao bez oklijevanja · za `last-disc/export` i `webhooks/discord/notify` treba tvoj odgovor · 1c ostaviti dok se ne odluči hoće li se te funkcije dovršiti · 1d je sigurno ali beznačajno.
+
+## 2. Discord i Battle.net prijava
+
+Obje su pokvarene na produkciji i **obje traže podatke iz portala**, ne kod:
+
+- **Discord:** `DISCORD_CLIENT_SECRET` ne postoji u `.env`. Tri stvarna pokušaja prijave pala su 28.08. u 21:18–21:19 s `401` na Discordovoj token adresi. Treba tajna iz Discord developer portala.
+- **Battle.net:** `services.battlenet.client_id/secret` čitaju `BATTLENET_*`, a u `.env` postoje samo `BLIZZARD_*` (koje rade za API). Vjerovatno je isti par kredencijala — ali treba potvrda da je redirect URI registrovan za tu aplikaciju prije nego se spoji.
+
+`env:validate` sada oba prijavljuje kao `DOWN` pri svakom deployu, pa se ne mogu ponovo zaboraviti.
+
+## 3. Restart servera
+
+Kernel 6.8.0-138 čeka. Put kroz boot je već isproban ranije. Nosi kratak prekid, pa biraš trenutak.
 
 ---
 
