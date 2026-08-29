@@ -38,6 +38,7 @@ class Giveaway extends Model
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'reminder_sent_at' => 'datetime',
         'winner_announced_at' => 'datetime',
         'is_public' => 'boolean',
         'prize_value' => 'decimal:2',

@@ -78,12 +78,31 @@ class ArticleObserver
      */
     public function saved(Article $article): void
     {
-        if ($article->status !== 'published' || ! $article->slug) {
+        if (! $article->slug) {
             return;
         }
 
         if (! $article->relationLoaded('category')) {
             $article->load('category');
+        }
+
+        /*
+         * A piece leaving `published` has to reach readers as loudly as one
+         * arriving. This method returned immediately for any status other than
+         * `published`, and nothing else covered the transition: the Redis entry
+         * stayed, the listings stayed, and Next was never told — and article
+         * pages are `revalidate = false`, so its copy had no timer to fall back
+         * on. A retracted piece kept its URL, its title and its body.
+         *
+         * The same failure as the delete hook had until 19 Aug 2026, one status
+         * to the left, which is why both now go through the same withdrawal.
+         */
+        if ($article->status !== 'published') {
+            if ($article->wasChanged('status')) {
+                $this->withdraw($article);
+            }
+
+            return;
         }
 
         $this->clearApiListingCache($article->category->type ?? null);
@@ -158,16 +177,24 @@ class ArticleObserver
      */
     public function deleted(Article $article)
     {
-        /*
-         * Forget the piece itself, first.
-         *
-         * This hook revalidated the listing it used to appear in and the
-         * homepage, and never touched the article's own key — so
-         * `{type}.show.v2.{slug}` kept answering 200 out of Redis for the full
-         * TTL_LONG after the row was gone, and the page stayed up with its
-         * title, its body and an `index, follow` in the head. `saved()` has
-         * always called this; `deleted()` never did.
-         */
+        $this->withdraw($article);
+    }
+
+    /**
+     * Take a piece off the site — because it was deleted, or unpublished.
+     *
+     * Both mean the same thing to a reader, so both do the same work: forget
+     * the piece itself, forget the listings it appeared in, and tell the
+     * frontend about the page and its section.
+     *
+     * Forgetting the piece itself comes first, and used to be missing here:
+     * this hook revalidated the listing and the homepage but never touched the
+     * article's own key, so `{type}.show.v3.{slug}` kept answering 200 out of
+     * Redis for the full TTL after the row was gone — the page stayed up with
+     * its title, its body and an `index, follow` in the head.
+     */
+    protected function withdraw(Article $article): void
+    {
         $this->clearArticleShowCache($article->slug);
         $this->clearAuthorCache($article);
         $this->clearApiListingCache($article->category?->type);

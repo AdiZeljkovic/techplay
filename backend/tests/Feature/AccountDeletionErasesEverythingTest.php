@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -115,6 +117,74 @@ class AccountDeletionErasesEverythingTest extends TestCase
             $survived,
             'These columns still name the person after deletion: '.implode(', ', $survived),
         );
+    }
+
+    /**
+     * The picture, not just the column that pointed at it.
+     *
+     * Avatars are stored as `asset('storage/…')`, an absolute URL, and the
+     * cleanup skipped anything starting with "http" — so the guard written to
+     * remove orphaned uploads could never match the one kind of upload people
+     * make, and every deleted account left its portrait readable on the public
+     * disk. Covers were stored relative and were removed, which is why this
+     * went unnoticed.
+     */
+    public function test_the_uploaded_avatar_is_removed_from_disk(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create(['password' => bcrypt('tajna-lozinka')]);
+
+        Storage::disk('public')->put('avatars/probni.jpg', 'slika');
+        Storage::disk('public')->put('covers/probni.jpg', 'slika');
+
+        $user->forceFill([
+            'avatar_url' => asset('storage/avatars/probni.jpg'),
+            'cover_image' => 'covers/probni.jpg',
+        ])->save();
+
+        $this->actingAs($user->fresh())
+            ->deleteJson('/api/v1/user/account', ['current_password' => 'tajna-lozinka'])
+            ->assertOk();
+
+        Storage::disk('public')->assertMissing('avatars/probni.jpg');
+        Storage::disk('public')->assertMissing('covers/probni.jpg');
+    }
+
+    /**
+     * The open letter keeps its own copy of the address.
+     *
+     * `last_disc_signatures` collects an email of its own, because the letter is
+     * open to people who are not signed in. Its `user_id` is `nullOnDelete`,
+     * which never fires here — the account is anonymised in place rather than
+     * dropped — so the real address stayed in that table beside a name.
+     */
+    public function test_the_campaign_signature_stops_naming_the_person(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'stvarna@adresa.test',
+            'password' => bcrypt('tajna-lozinka'),
+        ]);
+
+        DB::table('last_disc_signatures')->insert([
+            'user_id' => $user->id,
+            'email' => 'stvarna@adresa.test',
+            'name' => 'Pravo Ime',
+            'display' => 'name',
+            'wants_updates' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($user->fresh())
+            ->deleteJson('/api/v1/user/account', ['current_password' => 'tajna-lozinka'])
+            ->assertOk();
+
+        $signature = DB::table('last_disc_signatures')->where('user_id', $user->id)->first();
+
+        $this->assertNotNull($signature, 'The signature itself should survive — it counts toward a public tally.');
+        $this->assertNotSame('stvarna@adresa.test', $signature->email);
+        $this->assertNull($signature->name);
     }
 
     public function test_deletion_refuses_without_the_current_password(): void

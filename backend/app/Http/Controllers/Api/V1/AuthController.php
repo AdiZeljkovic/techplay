@@ -24,8 +24,10 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -722,6 +724,31 @@ class AuthController extends Controller
             ]);
         }
 
+        /*
+         * Where the uploads live, read before anything is cleared.
+         *
+         * The cleanup at the end of this method used `getOriginal()`, which it
+         * reached only after `$user->save()` — and saving syncs the originals,
+         * so by then the "original" avatar was the null that had just been
+         * written. It has therefore never deleted a single file: not avatars,
+         * not covers. Every deleted account left its portrait readable on the
+         * public disk.
+         *
+         * An avatar is stored as `asset('storage/…')`, an absolute URL, while a
+         * cover is stored relative — so both shapes are reduced to a disk path
+         * here. An avatar taken from Discord's CDN has no `/storage/` in it and
+         * is not ours to delete; it drops out as null.
+         */
+        $ownedFiles = collect([$user->avatar_url, $user->cover_image])
+            ->filter()
+            ->map(function (string $value): ?string {
+                $path = str_contains($value, '/storage/') ? Str::after($value, '/storage/') : $value;
+
+                return str_starts_with($path, 'http') ? null : $path;
+            })
+            ->filter()
+            ->all();
+
         // Anonymize personal data
         $user->email = "deleted_{$id}@deleted.techplay.gg";
         $user->name = 'Deleted User';
@@ -769,13 +796,32 @@ class AuthController extends Controller
         // and the public profile listed them.
         ConnectedAccount::where('user_id', $id)->delete();
 
-        // Only the URL columns were cleared; the uploaded files stayed
-        // world-readable on the public disk.
-        foreach ([$user->getOriginal('avatar_url'), $user->getOriginal('cover_image')] as $path) {
-            if ($path && ! str_starts_with((string) $path, 'http')) {
-                Storage::disk('public')->delete($path);
-            }
+        // The paths were taken before the columns were cleared — see above.
+        foreach ($ownedFiles as $path) {
+            Storage::disk('public')->delete($path);
         }
+
+        /*
+         * The open-letter signature carries its own copy of the address.
+         *
+         * `last_disc_signatures.email` is collected separately — the letter is
+         * open to people who are not signed in — and its `user_id` is merely
+         * `nullOnDelete`, which does nothing here because the account is
+         * anonymised in place rather than deleted. So after "deletion" the real
+         * address sat in that table beside a name and a country.
+         *
+         * Anonymised rather than removed, to match how the account itself is
+         * treated: the signature counted toward a public tally and withdrawing
+         * it silently would change a published number.
+         */
+        DB::table('last_disc_signatures')
+            ->where('user_id', $id)
+            ->update([
+                'email' => "deleted_{$id}@deleted.techplay.gg",
+                'name' => null,
+                'display' => 'anonymous',
+                'wants_updates' => false,
+            ]);
 
         // Revoke all tokens
         $user->tokens()->delete();
