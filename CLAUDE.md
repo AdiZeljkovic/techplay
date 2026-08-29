@@ -106,7 +106,7 @@ pull itself.
 
 **Key services:**
 - `SanitizationService` — XSS protection for all user content
-- `ImageService` / `ImageOptimizationService` — upload validation + processing
+- `ImageOptimizer` (GD, writes `_thumb`/`_medium`/`_large`) and `ImageDimensionService` (measures a cover so a share card can declare its size). There is no `ImageService`. A third one, `ImageOptimizationService`, needs `intervention/image`, which is **not in composer.json** — so it reports itself unavailable and every caller no-ops, and the media library ships originals only. Install the package or delete the service; do not add a fourth.
 - `IndexNowService` — pings Bing/Yandex on publish via the `SubmitIndexNow` job
 - `SchemaService` — generates JSON-LD structured data
 - `PayPalService` + `PayPalWebhookController` — shop orders and subscriptions (signature-verified webhooks)
@@ -128,7 +128,7 @@ pull itself.
 
 **Data fetching strategy:** Server components fetch directly from backend at build/request time (`next: { revalidate: N }`). ISR is the primary caching strategy. Image optimization is **on**, with `unoptimized` set per image at the call site for everything that is not ours — game covers, Steam icons, Discord avatars, all already served by someone else's CDN. It read as globally disabled here for months; the switch was inverted because the global setting also stripped `srcset` and `sizes` from our own uploads, so a 412px phone was downloading a 1170px hero JPEG, and Next 16 offers no way back in (a custom loader and `unoptimized: true` both remove the `/_next/image` endpoint that a per-image `unoptimized={false}` would need). See the comment on `images` in `next.config.ts`.
 
-**Auth:** Client-side only. `AuthContext` (`context/AuthContext.tsx`) stores token + user in `localStorage`, restores on mount, verifies in background. Middleware (`middleware.ts`) does not enforce auth — it cannot, since the token lives in `localStorage`. It no longer checks maintenance mode either; that was removed with maintenance mode itself.
+**Auth:** Client-side only. `AuthContext` (`context/AuthContext.tsx`) stores token + user in `localStorage`, restores on mount, verifies in background. **There is no `middleware.ts`** — it was deleted along with maintenance mode, so the frontend has no per-request middleware at all. Nothing enforces auth at the edge and nothing can, since the token lives in `localStorage`; pages gate themselves.
 
 **API client:** `lib/api.ts` exports `getApiUrl()` which replaces `localhost` with `127.0.0.1` to avoid IPv6 issues in Node.js SSR. All fetch calls use `process.env.NEXT_PUBLIC_API_URL`.
 
@@ -151,10 +151,8 @@ Single-guild bot. Services are singletons started in the `ClientReady` event:
 | `PollingService` | Polls backend for news/giveaway updates, posts to channels |
 | `XpService` | Awards 15 XP/message (60s cooldown), syncs leaderboard |
 | `ServerStatsService` | Updates voice channel names with live server stats |
-| `TriviaService` | Scheduled gaming trivia questions |
 | `RecapService` | Weekly activity recaps |
 | `SubscriptionService` | Manages Discord channel subscriptions for news notifications |
-| `ChallengeService` | Gaming challenges with reaction-based acceptance |
 | `StatusService` | Bot status rotation |
 
 Slash commands defined in `src/commands/definitions.ts`, dispatched via `src/handlers/commands.ts`. Event handlers (welcome, moderation, challenge reactions) in `src/handlers/events.ts`.

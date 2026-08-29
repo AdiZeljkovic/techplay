@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { timeAgoDetailed as timeAgo, shortDate } from "@/lib/timeAgo";
 import Link from "next/link";
 import ScoreBadge from "@/components/ui/ScoreBadge";
 import Image from "next/image";
@@ -69,21 +70,6 @@ const SECTION_LABEL: Record<FeedItem["section"], string> = {
     reviews: "Review",
     tech: "Tech",
     guides: "Guide",
-};
-
-const shortDate = (iso?: string | null) =>
-    iso ? new Date(iso.replace(" ", "T")).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : null;
-
-const timeAgo = (iso?: string | null) => {
-    if (!iso) return null;
-
-    const mins = Math.floor((Date.now() - new Date(iso.replace(" ", "T")).getTime()) / 60000);
-    if (mins < 1) return "just now";
-    if (mins < 60) return `${mins} min ago`;
-    if (mins < 1440) return `${Math.floor(mins / 60)} h ago`;
-
-    const days = Math.floor(mins / 1440);
-    return days < 30 ? `${days} d ago` : shortDate(iso);
 };
 
 export default function FeedClient() {

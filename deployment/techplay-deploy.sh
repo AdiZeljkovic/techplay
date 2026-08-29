@@ -88,12 +88,32 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
     # Nedostajuca integracija (Discord prijava, PayPal webhook) je upozorenje i
     # ne prekida nista — jedna ugasena funkcija ne smije blokirati objavu.
     php artisan env:validate
+    # Logrotate isto zivi u repou. Tri zasebna fajla su bila samo na serveru i
+    # dva su se tiho preskakala mjesecima jer im je falila `su` direktiva —
+    # logrotate to ne prijavi kao gresku, samo preskoci i izadje s nulom.
+    if ! cmp -s "$ROOT/deployment/logrotate-techplay.conf" /etc/logrotate.d/techplay; then
+        step "logrotate: konfiguracija se promijenila"
+        install -m 644 "$ROOT/deployment/logrotate-techplay.conf" /etc/logrotate.d/techplay
+        rm -f /etc/logrotate.d/techplay-backup /etc/logrotate.d/techplay-reverb
+        logrotate -d /etc/logrotate.d/techplay >/dev/null 2>&1 && echo "  provjerena" || echo "  UPOZORENJE: logrotate ne prihvata novi config"
+    fi
+
     # Konfiguracija workera zivi u repou; ovdje se samo drzi u koraku. Bez ovoga
     # se repo i /etc razilaze tiho, sto je tacno kako je frontend deploy izgubio
     # pet zastita na jedan dan.
-    if ! cmp -s "$ROOT/deployment/supervisor-worker.conf" /etc/supervisor/conf.d/techplay-worker.conf; then
-        step "supervisor: konfiguracija workera se promijenila"
-        install -m 644 "$ROOT/deployment/supervisor-worker.conf" /etc/supervisor/conf.d/techplay-worker.conf
+    supervisor_changed=no
+    for pair in "supervisor-worker.conf:techplay-worker.conf" "supervisor-octane.conf:techplay-octane.conf"; do
+        src="$ROOT/deployment/${pair%%:*}"
+        dst="/etc/supervisor/conf.d/${pair##*:}"
+
+        if [[ -f "$src" ]] && ! cmp -s "$src" "$dst"; then
+            step "supervisor: ${pair##*:} se promijenila"
+            install -m 644 "$src" "$dst"
+            supervisor_changed=yes
+        fi
+    done
+
+    if [[ "$supervisor_changed" == "yes" ]]; then
         supervisorctl reread 2>&1 | tail -2
         supervisorctl update 2>&1 | tail -2
     fi

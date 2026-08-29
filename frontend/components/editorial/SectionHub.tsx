@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, Fragment } from "react";
+import { timeAgoDetailed as timeAgo, shortDate } from "@/lib/timeAgo";
 import Link from "next/link";
 import Image from "next/image";
 import useSWR from "swr";
@@ -93,20 +94,6 @@ const pageInfo = (body?: ListBody) => {
         last: meta.last_page,
         total: meta.total ?? 0,
     };
-};
-
-const shortDate = (iso?: string | null) =>
-    iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : null;
-
-const timeAgo = (iso?: string | null) => {
-    if (!iso) return null;
-
-    const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-    if (mins < 60) return `${Math.max(1, mins)} min ago`;
-    if (mins < 1440) return `${Math.floor(mins / 60)} h ago`;
-
-    const days = Math.floor(mins / 1440);
-    return days < 30 ? `${days} d ago` : shortDate(iso);
 };
 
 export default function SectionHub({
