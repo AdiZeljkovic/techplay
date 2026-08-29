@@ -1,156 +1,97 @@
-"use client";
-
-import useSWR from "swr";
-import axios from "@/lib/axios";
-import { useParams } from "next/navigation";
-import { useCart } from "@/context/CartContext";
-import { ShoppingCart, PackageOpen, ArrowLeft, Truck, ShieldCheck } from "lucide-react";
-import { useState } from "react";
-import Link from "next/link";
-import PageHero from "@/components/ui/PageHero";
-import Image from "next/image";
-
-import AddToCartDialog from "@/components/shop/AddToCartDialog";
+import type { Metadata } from "next";
+import ProductClient from "./ProductClient";
+import { getServerApiUrl, serverHeaders } from "@/lib/api";
+import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
 import { getStorageUrl } from "@/lib/imageUrl";
 
-const fetcher = (url: string) => axios.get(url).then((res) => res.data);
+/**
+ * A product page that search engines and chat apps can read.
+ *
+ * This route was a single `"use client"` file with no layout beside it, and a
+ * client component cannot export metadata — so every product served the root
+ * layout's default title and no card at all. Shared in a Discord message or a
+ * tweet, a product link showed the site's generic description; in a search
+ * result it showed "TechPlay". It was the only detail page on the site without
+ * its own metadata, and it was the one on the page people are asked to buy
+ * from.
+ *
+ * Same shape as every other detail route here: a server page that fetches for
+ * the head, and the interactive half beside it in ProductClient. The client
+ * still does its own fetch through SWR — the cart needs live stock — so this
+ * one is for the head only.
+ */
 
-export default function ProductDetailPage() {
-    const params = useParams();
-    const slug = params.slug as string;
-    const { addToCart } = useCart();
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+export const revalidate = 900;
 
-    const { data: product, isLoading } = useSWR(slug ? `/shop/products/${slug}` : null, fetcher);
+type Props = { params: Promise<{ slug: string }> };
 
-    const handleAddToCart = () => {
-        if (product) {
-            addToCart(product);
-            setIsDialogOpen(true);
+type Product = {
+    name?: string;
+    description?: string;
+    price?: number | string;
+    image_url?: string;
+    stock?: number;
+};
+
+async function getProduct(slug: string): Promise<Product | null> {
+    try {
+        const res = await fetch(`${getServerApiUrl()}/shop/products/${slug}`, {
+            next: { revalidate: 900, tags: ["shop", `product-${slug}`] },
+            headers: serverHeaders(),
+        });
+
+        if (!res.ok) {
+            return null;
         }
+
+        const json = await res.json();
+
+        return json?.data ?? json ?? null;
+    } catch {
+        // The head is not worth a 500. The page still renders; it just goes out
+        // with the fallback title rather than the product's.
+        return null;
+    }
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug } = await params;
+    const product = await getProduct(slug);
+
+    if (!product?.name) {
+        return { title: "Product Not Found", robots: ROBOTS_NOINDEX };
+    }
+
+    const title = `${product.name} — TechPlay Shop`;
+    const description = (product.description ?? "")
+        .replace(/<[^>]+>/g, "")
+        .trim()
+        .slice(0, 160) || `${product.name}, from the TechPlay shop.`;
+
+    const absoluteImage = product.image_url ? getStorageUrl(product.image_url) : undefined;
+
+    return {
+        title,
+        description,
+        robots: ROBOTS_INDEX,
+        alternates: { canonical: `/shop/${slug}` },
+        openGraph: {
+            title,
+            description,
+            type: "website",
+            url: `https://techplay.gg/shop/${slug}`,
+            siteName: "TechPlay",
+            images: absoluteImage ? [{ url: absoluteImage, alt: product.name }] : undefined,
+        },
+        twitter: {
+            card: absoluteImage ? "summary_large_image" : "summary",
+            title,
+            description,
+            images: absoluteImage ? [absoluteImage] : undefined,
+        },
     };
+}
 
-    if (isLoading) {
-        // ... (keep loading state)
-        return (
-            <div className="min-h-screen">
-                <PageHero title="Loading..." icon={PackageOpen} />
-                <div className="container-page py-12">
-                    <div className="animate-pulse h-96 bg-[var(--surface-1)] rounded-[var(--radius-panel)]" />
-                </div>
-            </div>
-        )
-    }
-
-    if (!product) {
-        // ... (keep not found state)
-        return (
-            <div className="min-h-screen">
-                <PageHero title="Product Not Found" icon={PackageOpen} />
-                <div className="container-page py-12 text-center">
-                    <Link href="/shop" className="text-[var(--accent)] hover:underline">Return to Shop</Link>
-                </div>
-            </div>
-        )
-    }
-
-    return (
-        <div className="min-h-screen">
-            <PageHero
-                title="TechShop"
-                description="Premium gear for the ultimate gaming experience."
-                icon={PackageOpen}
-            />
-
-            <div className="container-page py-12">
-                <div className="mb-8">
-                    <Link href="/shop" className="inline-flex items-center gap-2 text-white/55 hover:text-[var(--accent)] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Products
-                    </Link>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-                    {/* Product Image */}
-                    <div className="relative group">
-                        <div className="relative bg-[var(--surface-1)] border border-[var(--line)] rounded-[var(--radius-panel)] overflow-hidden aspect-square flex items-center justify-center p-8 shadow-2xl">
-                            {product.image_url ? (
-                                <div className="relative w-full h-full">
-                                    <Image
-                                        src={getStorageUrl(product.image_url)}
-                                        alt={product.name}
-                                        fill
-                                        className="object-contain group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                </div>
-                            ) : (
-                                <div className="text-white/35 flex flex-col items-center">
-                                    <PackageOpen className="w-24 h-24 opacity-20 mb-4" />
-                                    <span>No Image Available</span>
-                                </div>
-                            )}
-
-                            {/* Tags/Badges */}
-                            <div className="absolute top-6 left-6 flex flex-col gap-2">
-                                {product.stock < 5 && product.stock > 0 && (
-                                    <span className="px-3 py-1 bg-orange-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full shadow-lg border border-orange-400">
-                                        Low Stock
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="flex flex-col justify-center">
-                        <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6 leading-tight">
-                            {product.name}
-                        </h1>
-
-                        <div className="flex items-center gap-6 mb-8">
-                            <div className="text-4xl font-bold text-[var(--accent)]">
-                                {Number(product.price).toLocaleString('bs-BA', { minimumFractionDigits: 2 })} <span className="text-lg text-white/50">KM</span>
-                            </div>
-                            <div className={`px-4 py-1.5 rounded-full text-sm font-bold border ${product.stock > 0 ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'}`}>
-                                {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
-                            </div>
-                        </div>
-
-                        <div className="prose prose-invert prose-lg text-white/55 mb-10 max-w-none">
-                            <p>{product.description || "No description provided for this product."}</p>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                            <button
-                                onClick={handleAddToCart}
-                                disabled={product.stock === 0}
-                                className="btn-command flex-1 py-4 px-8 font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] disabled:bg-[var(--surface-2)] disabled:text-white/50 disabled:cursor-not-allowed"
-                            >
-                                <ShoppingCart className="w-6 h-6" /> Add to Cart
-                            </button>
-                        </div>
-
-                        {/* Features / Assurance */}
-                        <div className="grid grid-cols-2 gap-4 pt-8 border-t border-[var(--line)]">
-                            <div className="flex items-center gap-3 text-white/55">
-                                <Truck className="w-5 h-5 text-[var(--accent)]" />
-                                <span className="text-sm">Fast Delivery (24-48h)</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-white/55">
-                                <ShieldCheck className="w-5 h-5 text-[var(--accent)]" />
-                                <span className="text-sm">Official Warranty</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <AddToCartDialog
-                isOpen={isDialogOpen}
-                onClose={() => setIsDialogOpen(false)}
-                product={product}
-            />
-        </div>
-    );
+export default function ProductPage() {
+    return <ProductClient />;
 }

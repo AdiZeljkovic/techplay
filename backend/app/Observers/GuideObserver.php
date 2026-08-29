@@ -3,14 +3,13 @@
 namespace App\Observers;
 
 use App\Events\GuidePublished;
+use App\Jobs\SubmitIndexNow;
 use App\Models\Guide;
 use App\Services\CacheService;
 use App\Services\ContentGameLinker;
 use App\Services\RevalidationService;
 use App\Services\SanitizationService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
 class GuideObserver
 {
@@ -71,24 +70,10 @@ class GuideObserver
         $this->invalidateCache($guide);
     }
 
+    /** Through the one job that knows how — see ArticleObserver for the why. */
     protected function pingSearchEngines(string $slug): void
     {
-        $siteUrl = rtrim(config('app.frontend_url', 'https://techplay.gg'), '/');
-        $articleUrl = "{$siteUrl}/guides/{$slug}";
-        $indexNowKey = config('services.indexnow.key');
-
-        if ($indexNowKey) {
-            try {
-                Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
-                    'host' => parse_url($siteUrl, PHP_URL_HOST),
-                    'key' => $indexNowKey,
-                    'keyLocation' => "{$siteUrl}/{$indexNowKey}.txt",
-                    'urlList' => [$articleUrl],
-                ]);
-            } catch (\Exception $e) {
-                Log::warning('IndexNow ping failed for guide', ['error' => $e->getMessage()]);
-            }
-        }
+        SubmitIndexNow::dispatch(rtrim((string) config('app.site_url'), '/')."/guides/{$slug}");
     }
 
     public function deleted(Guide $guide): void

@@ -2,11 +2,11 @@
 
 namespace App\Observers;
 
+use App\Jobs\SubmitIndexNow;
 use App\Models\Game;
 use App\Services\CacheService;
 use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class GameObserver
@@ -87,24 +87,9 @@ class GameObserver
         }
     }
 
+    /** Through the one job that knows how — see ArticleObserver for the why. */
     private function pingIndexNow(string $slug): void
     {
-        $indexNowKey = config('services.indexnow.key');
-        if (! $indexNowKey) {
-            return;
-        }
-
-        $siteUrl = rtrim(config('app.frontend_url', 'https://techplay.gg'), '/');
-
-        try {
-            Http::timeout(5)->post('https://api.indexnow.org/indexnow', [
-                'host' => parse_url($siteUrl, PHP_URL_HOST),
-                'key' => $indexNowKey,
-                'keyLocation' => "{$siteUrl}/{$indexNowKey}.txt",
-                'urlList' => ["{$siteUrl}/games/{$slug}"],
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning('[GameObserver] IndexNow ping failed', ['slug' => $slug, 'error' => $e->getMessage()]);
-        }
+        SubmitIndexNow::dispatch(rtrim((string) config('app.site_url'), '/')."/games/{$slug}");
     }
 }

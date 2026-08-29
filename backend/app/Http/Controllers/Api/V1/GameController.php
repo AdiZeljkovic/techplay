@@ -12,6 +12,7 @@ use App\Models\GameSeries;
 use App\Services\CacheService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\SanitizationService;
+use App\Support\TechplayScore;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -497,15 +498,26 @@ class GameController extends Controller
             ->value('review_score');
         $editorial = $editorial !== null ? (float) $editorial : null;
 
-        $stars = DB::table('game_ratings')->where('game_slug', $game->slug)->avg('rating');
-        $community = $stars !== null ? round(((float) $stars) * 2, 1) : null;
+        /*
+         * Finished ratings only.
+         *
+         * This averaged every row, drafts included, while the ratings widget on
+         * the same page counted `is_draft = false` — so one unfinished rating
+         * made the header and the widget disagree about the same score. The
+         * widget was right: a draft is a rating somebody has not sent yet.
+         */
+        $stars = DB::table('game_ratings')
+            ->where('game_slug', $game->slug)
+            ->where('is_draft', false)
+            ->selectRaw('count(*) as count, avg(rating) as average')
+            ->first();
 
-        return match (true) {
-            $editorial !== null && $community !== null => round(0.6 * $editorial + 0.4 * $community, 1),
-            $editorial !== null => round($editorial, 1),
-            $community !== null => $community,
-            default => null,
-        };
+        $community = TechplayScore::community(
+            $stars?->average !== null ? (float) $stars->average : null,
+            (int) ($stars?->count ?? 0),
+        );
+
+        return TechplayScore::blend($editorial, $community);
     }
 
     /**

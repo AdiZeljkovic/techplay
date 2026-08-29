@@ -24,6 +24,10 @@ class ContentObserver
 
     /**
      * Handle the Article "saved" event.
+     *
+     * This is the only place an article is submitted to IndexNow. The publish
+     * fan-out used to do it as well, so a first publish went out twice — and
+     * with a different key, because the two read different settings.
      */
     public function saved(Article $article): void
     {
@@ -53,13 +57,22 @@ class ContentObserver
         // because the default happened to match production.
         $frontendUrl = rtrim((string) config('app.site_url'), '/');
 
-        // category is nullable, and this threw on any article saved without
-        // one — a crash on publish, from a search-engine ping nobody needs to
-        // succeed. News is the right default: it is where an uncategorised
-        // article is rendered.
-        $path = $article->category?->type === 'reviews' ? 'reviews' : 'news';
-        $url = "{$frontendUrl}/{$path}/{$article->slug}";
+        /*
+         * The section the article is actually served under.
+         *
+         * This asked only whether the piece was a review and sent everything
+         * else to /news/ — so every hardware article was announced to Bing at a
+         * URL that answers 404, and every guide-typed one too. Category is
+         * nullable, and news is the right default for a piece without one,
+         * because that is where an uncategorised article is rendered.
+         */
+        $path = match ($article->category?->type) {
+            'reviews', 'review' => 'reviews',
+            'tech', 'hardware' => 'hardware',
+            'guides', 'guide' => 'guides',
+            default => 'news',
+        };
 
-        SubmitIndexNow::dispatch($url);
+        SubmitIndexNow::dispatch("{$frontendUrl}/{$path}/{$article->slug}");
     }
 }

@@ -15,7 +15,11 @@ export const metadata: Metadata = {
         type: "website",
         url: "https://techplay.gg/shop",
         siteName: "TechPlay",
-        images: [{ url: "/og-shop.png", width: 1200, height: 630, alt: "TechPlay Shop" }],
+        // No `images` here on purpose. This named /og-shop.png, a file that has
+        // never existed in public/ — so the card went out pointing at a 404 and
+        // most readers got no image at all. Omitting the key lets the root
+        // layout's default (the one set in the admin) through, which is a real
+        // picture. Put a shop-specific card back the day there is one to point at.
         locale: "en_US",
     },
     twitter: {

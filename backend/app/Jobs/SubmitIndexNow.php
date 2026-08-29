@@ -28,14 +28,15 @@ class SubmitIndexNow implements ShouldQueue
         Log::error('SubmitIndexNow failed', ['error' => $e->getMessage()]);
     }
 
-    protected $urls;
+    /** @var array<int, string> */
+    public array $urls;
 
     /**
      * Create a new job instance.
      *
-     * @param  array|string  $urls
+     * @param  array<int, string>|string  $urls
      */
-    public function __construct($urls)
+    public function __construct(array|string $urls)
     {
         $this->urls = is_array($urls) ? $urls : [$urls];
     }
@@ -49,15 +50,33 @@ class SubmitIndexNow implements ShouldQueue
             return;
         }
 
-        $host = parse_url(config('app.url'), PHP_URL_HOST); // e.g. techplay.gg
+        /*
+         * The site's own address, not the API's.
+         *
+         * IndexNow requires the key file to sit on the same host as the URLs
+         * being submitted. The URLs here are frontend URLs — techplay.gg — and
+         * both `host` and `keyLocation` were built from `app.url`, which is
+         * api-beta.techplay.gg. Every submission since this shipped named a
+         * host that does not match the pages it was announcing, and the comment
+         * beside the line even said "e.g. techplay.gg" while producing the
+         * other one.
+         *
+         * `site_url` rather than `frontend_url`, because that value doubles as
+         * the CORS allow-list and may hold several origins separated by commas.
+         * Next serves `/{key}.txt` by proxy from the backend for exactly this
+         * reason, so the file is genuinely there.
+         */
+        $siteUrl = rtrim((string) config('app.site_url'), '/');
+        $host = parse_url($siteUrl, PHP_URL_HOST);
         $key = SiteSetting::get('seo_indexnow_key');
-        $keyLocation = config('app.url')."/{$key}.txt";
 
         if (! $key) {
             Log::warning('IndexNow: API Key not configured.');
 
             return;
         }
+
+        $keyLocation = "{$siteUrl}/{$key}.txt";
 
         // IndexNow Endpoint (Bing acts as a proxy for Yandex/Seznam too)
         $endpoint = 'https://api.indexnow.org/indexnow';

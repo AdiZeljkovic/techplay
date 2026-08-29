@@ -11,6 +11,7 @@ use App\Services\BountyService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\QuestService;
 use App\Services\XpService;
+use App\Support\TechplayScore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -80,14 +81,12 @@ class GameRatingController extends Controller
             return $score !== null ? (float) $score : null;
         });
 
-        $community = $aggregate->count > 0 ? round(((float) $aggregate->average) * 2, 1) : null;
+        $community = TechplayScore::community(
+            $aggregate->average !== null ? (float) $aggregate->average : null,
+            (int) $aggregate->count,
+        );
 
-        $score = match (true) {
-            $editorial !== null && $community !== null => round(0.6 * $editorial + 0.4 * $community, 1),
-            $editorial !== null => round($editorial, 1),
-            $community !== null => $community,
-            default => null,
-        };
+        $score = TechplayScore::blend($editorial, $community);
 
         if ($score === null) {
             return null;
