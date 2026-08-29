@@ -145,6 +145,15 @@ class Game extends Model
                 ->whereRaw('length(description) > 50');
         }
 
+        /*
+         * This exact string is also the predicate of `games_indexable_slug_idx`
+         * (migration 2026_08_29_030000). Postgres matches a partial index to a
+         * query by comparing the parsed expressions, so the two have to stay
+         * identical — change the rule here and the index stops being used
+         * without any error, and the sitemap goes back to running a regular
+         * expression over three hundred thousand descriptions every fifteen
+         * minutes. Change both, or neither.
+         */
         return $query->whereNotNull('description')
             ->whereRaw("length(regexp_replace(description, '<[^>]+>', '', 'g')) > 50");
     }
