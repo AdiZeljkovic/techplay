@@ -92,7 +92,7 @@ class ValidateEnv extends Command
         // resolve. Local .env carries three origins; production carries one.
         $this->flagFeature(
             'frontend',
-            'FRONTEND_URL is a list, not one origin — revalidation posts to it raw',
+            'FRONTEND_URL is a single origin (revalidation reads it raw)',
             ! str_contains((string) config('app.frontend_url'), ','),
         );
     }
@@ -123,10 +123,44 @@ class ValidateEnv extends Command
 
         $this->checkPayPal();
 
+        $this->checkMail();
+    }
+
+    /**
+     * A configured mail host that does not exist is worse than none.
+     *
+     * Everything about the setup looks right — a mailer, a host, a port — and
+     * every send fails on `getaddrinfo`. That is the state this site has been
+     * in for weeks, and it takes email verification, password resets, giveaway
+     * winners and the weekly digest with it. Checking that the name is set is
+     * not enough, so this asks whether it resolves.
+     *
+     * One DNS lookup at deploy time, and only when the mailer is smtp.
+     */
+    private function checkMail(): void
+    {
         $mailer = config('mail.default');
         $host = config("mail.mailers.{$mailer}.host");
-        $this->flagFeature('mail', "mailer [{$mailer}] host ".($host ?: 'unset'),
-            $mailer !== 'smtp' || filled($host));
+
+        if ($mailer !== 'smtp') {
+            $this->row('info', 'mail', "mailer [{$mailer}] — nothing leaves this machine");
+
+            return;
+        }
+
+        if (blank($host)) {
+            $this->flagFeature('mail', 'MAIL_HOST is unset', false);
+
+            return;
+        }
+
+        $resolves = gethostbyname($host) !== $host || filter_var($host, FILTER_VALIDATE_IP);
+
+        $this->flagFeature(
+            'mail',
+            $resolves ? "host {$host} resolves" : "host {$host} does not resolve — nothing can be sent",
+            (bool) $resolves,
+        );
     }
 
     /**

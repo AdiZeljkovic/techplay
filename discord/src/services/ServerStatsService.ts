@@ -33,9 +33,29 @@ export class ServerStatsService {
         if (!guild) return;
 
         try {
-            // Fetch all members to get accurate counts (required for presence checks)
-            await guild.members.fetch();
-
+            /*
+             * No full member fetch.
+             *
+             * This asked Discord for every member of the guild every ten
+             * minutes, and Discord answered by rate-limiting it — the bot's
+             * error log carries `opcode: 8` gateway rejections with a
+             * `retry_after` on them. The fetch was never needed for what is
+             * drawn here: `memberCount` comes down with the guild itself, and
+             * presences arrive over the gateway into the cache because the
+             * GuildPresences intent is on. A plain fetch() does not even
+             * populate presence — it was paying a heavy price for a field it
+             * did not deliver.
+             *
+             * The cache fills within moments of connecting and stays current;
+             * the counts below simply read it.
+             *
+             * The condition on that: below Discord's large-guild threshold of
+             * 250, the whole member list arrives with GUILD_CREATE. This guild
+             * is 153. If it grows past 250 the cache becomes partial, and the
+             * online and bot counts would quietly start reading low — at which
+             * point this needs a fetch again, on a much longer cadence than
+             * ten minutes.
+             */
             const totalCount = guild.memberCount;
             const onlineCount = guild.members.cache.filter(m => !m.user.bot && (m.presence?.status === 'online' || m.presence?.status === 'dnd' || m.presence?.status === 'idle')).size;
             const botCount = guild.members.cache.filter(m => m.user.bot).size;
