@@ -1,13 +1,12 @@
-import { Client, TextChannel, EmbedBuilder } from 'discord.js';
+import { Client, EmbedBuilder } from 'discord.js';
 import { ApiService } from './ApiService';
 import { XpService } from './XpService';
-import { config } from '../config';
+import { announcementChannel } from './AnnouncementChannel';
 import * as cron from 'node-cron';
 
 export class RecapService {
     private client: Client;
     private api: ApiService;
-    private readonly CHANNEL_ID = config.recapChannelId;
 
     constructor(client: Client) {
         this.client = client;
@@ -42,7 +41,12 @@ export class RecapService {
                     {
                         name: '🏆 Member of the Week',
                         value: topWeekly
-                            ? `🌟 **${topWeekly.name}**\nGained **${topWeekly.xp} XP** this week! Congrats! 🎊`
+                            // The daily cap can leave the busiest member on zero
+                            // XP for the week, and "Gained 0 XP" is not a prize.
+                            // Their messages are the honest number to show then.
+                            ? (topWeekly.xp > 0
+                                ? `🌟 **${topWeekly.name}**\nGained **${topWeekly.xp} XP** this week! Congrats! 🎊`
+                                : `🌟 **${topWeekly.name}**\n**${topWeekly.messages}** messages this week! Congrats! 🎊`)
                             : 'No active members this week.'
                     },
                     {
@@ -65,7 +69,7 @@ export class RecapService {
                 .setFooter({ text: 'Stay tuned for more updates next week!' })
                 .setTimestamp();
 
-            const channel = this.getAnnouncementChannel();
+            const channel = await announcementChannel(this.client);
             if (channel) {
                 await channel.send({ content: '📢 **Weekly Recap is here!**', embeds: [embed] });
 
@@ -76,18 +80,5 @@ export class RecapService {
         } catch (error) {
             console.error('Failed to post weekly recap:', error);
         }
-    }
-
-    private getAnnouncementChannel(): TextChannel | null {
-        if (this.CHANNEL_ID) {
-            return this.client.channels.cache.get(this.CHANNEL_ID) as TextChannel;
-        }
-
-        const guild = this.client.guilds.cache.first();
-        if (!guild) return null;
-
-        return guild.channels.cache.find(c =>
-            c.name === 'announcements' || c.name === 'general' || c.name === 'news'
-        ) as TextChannel;
     }
 }

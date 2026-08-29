@@ -17,7 +17,7 @@ TechPlay.gg je custom gaming platforma namijenjena gaming zajednici na globalnom
 
 | Okolina | Frontend | Backend |
 |---------|----------|---------|
-| Production | `techplay.gg` | `api.techplay.gg` |
+| Production | `techplay.gg` | `api-beta.techplay.gg` |
 | Beta | `beta.techplay.gg` | `api-beta.techplay.gg` |
 
 ---

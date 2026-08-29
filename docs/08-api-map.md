@@ -1,6 +1,6 @@
 # 08 — API Map
 
-**Base URL:** `https://api.techplay.gg/api/v1`
+**Base URL:** `https://api-beta.techplay.gg/api/v1`
 **Auth:** Bearer token (`Authorization: Bearer <token>`)
 **Format odgovora:** `{ success: bool, data: any, message: string }` (ApiResponse trait)
 

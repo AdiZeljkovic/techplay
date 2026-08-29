@@ -641,15 +641,45 @@ class SitemapController extends Controller
 
         $xml = $this->xmlHeader();
 
-        Game::indexable()
-            ->select('slug', 'updated_at')
-            ->orderBy('slug')
-            ->offset(($page - 1) * $perPage)
-            ->limit($perPage)
-            ->each(function (Game $game) use (&$xml) {
+        /*
+         * Walked by slug rather than by OFFSET.
+         *
+         * `each()` reads in chunks of a thousand, and with an OFFSET on the
+         * query every one of those chunks re-walked the whole distance from the
+         * start — fifty queries per file, the last of them stepping over a
+         * quarter of a million index entries to reach its first row. Page five
+         * cost 226,693 buffer reads a chunk; the same rows reached by seeking
+         * past the previous slug cost 894.
+         *
+         * That was the most expensive statement on this database: 23,278 calls
+         * over twelve days for about 2.8 hours of it, because every crawler
+         * request for a games sitemap paid the walk again.
+         *
+         * Safe because `slug` carries a unique index — with duplicates, `>`
+         * would step over the rows sharing a slug with the last one read.
+         */
+        $after = $page > 1
+            ? Game::indexable()->orderBy('slug')->offset(($page - 1) * $perPage - 1)->limit(1)->value('slug')
+            : null;
+
+        $remaining = $perPage;
+
+        while ($remaining > 0) {
+            $batch = Game::indexable()
+                ->select('slug', 'updated_at')
+                ->when($after !== null, fn ($q) => $q->where('slug', '>', $after))
+                ->orderBy('slug')
+                ->limit(min(1000, $remaining))
+                ->get();
+
+            if ($batch->isEmpty()) {
+                break;
+            }
+
+            foreach ($batch as $game) {
                 // Skip junk slugs like "-", "_", "_____" that survived import
                 if (! preg_match('/[a-z0-9]/i', (string) $game->slug)) {
-                    return;
+                    continue;
                 }
                 $xml .= $this->urlEntry(
                     "{$this->frontendUrl}/games/{$game->slug}",
@@ -657,7 +687,11 @@ class SitemapController extends Controller
                     'monthly',
                     '0.8'
                 );
-            });
+            }
+
+            $after = $batch->last()->slug;
+            $remaining -= $batch->count();
+        }
 
         $xml .= '</urlset>';
 

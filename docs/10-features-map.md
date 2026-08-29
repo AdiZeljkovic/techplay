@@ -1372,7 +1372,13 @@ oružja nemaju. Nespojena funkcija, ne mrtav kod.
 
 **Opis:** Slike za članke, profile covers, avatare.
 
-**Backend:** `ImageService`, `ImageOptimizationService`, `MediaObserver`
+**Backend:** `ImageService` (upload + storage), `ImageOptimizer` (GD; zovu ga dvije ručne komande)
+
+> `ImageOptimizationService` i `MediaObserver` su **obrisani 29.08.2026.** WebP
+> kopija uz original nije nastajala sedam mjeseci jer `intervention/image` nikad
+> nije instaliran — 18 od 1.176 redova ima `webp_path`, zadnji od 17. januara.
+> Niko nije primijetio jer Next konvertuje naše uploade pri serviranju
+> (`formats: ['image/webp']` u `next.config.ts`), a `webp_url` nije čitao niko.
 **Admin:** `MediaResource`
 **Database:** `media`
 **Napomene:** Upload → validacija → storage → opcijski resize/optimize.

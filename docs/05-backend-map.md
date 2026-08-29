@@ -199,7 +199,7 @@ Sve rute su pod prefiksom `/api/v1/`. Organizovane su u grupe:
 | `GroqService` | Groq AI pozivi |
 | `HreflangService` | SEO hreflang generisanje |
 | `ImageService` | Upload validacija i storage |
-| `ImageOptimizationService` | Post-upload optimizacija |
+| ~~`ImageOptimizationService`~~ | **Obrisan 29.08.2026.** Zavisio je od `intervention/image`, koji nikad nije instaliran, pa sedam mjeseci nije radio ništa — 18 od 1.176 slika ima WebP, zadnja od 17. januara. Next ionako konvertuje naše uploade (`formats: ['image/webp']`), a `webp_url` nije čitao niko. `ImageOptimizer` (GD) radi i ostaje. |
 | `IndexNowService` | IndexNow ping za Bing/Yandex |
 | `InternalLinkService` | AI preporuka internih linkova |
 | `KeywordDensityService` | SEO keyword analiza |
@@ -292,7 +292,7 @@ Svaki observer na publish/update poziva `CacheRevalidationService`:
 | `ForumPostObserver` | Post | Broadcast ForumReplyPosted |
 | `GuideObserver` | Guide | Revalidira guides cache |
 | `MediaKitSettingObserver` | MediaKitSetting | UNKNOWN |
-| `MediaObserver` | Media | UNKNOWN |
+| ~~`MediaObserver`~~ | Media | **Obrisan 29.08.2026** s `ImageOptimizationService` — izlazio je na prvoj liniji jer servis nije bio dostupan. |
 | `PageSeoObserver` | PageSeo | Revalidira SEO cache |
 | `PostObserver` | Post | Duplicate? ili zasebno |
 | `ProductObserver` | Product | Broadcast ProductStockUpdated |
@@ -312,7 +312,7 @@ Svaki observer na publish/update poziva `CacheRevalidationService`:
 | `ForumReplyPosted` | ForumPostObserver | public/broadcast |
 | `GuidePublished` | GuideObserver | public/broadcast |
 | `NotificationReceived` | UNKNOWN | private user channel |
-| `PresenceUpdated` | PresenceController | public/broadcast |
+| ~~`PresenceUpdated`~~ | — | **Obrisan 29.08.2026.** Išao je na **javni** kanal `presence.{id}` s tim šta neko igra, ignorisao `profile_visibility`, palio se svake 2 min po igraču bez obzira je li se išta promijenilo — i **nijedan klijent se nije pretplaćivao**. |
 | `ProductStockUpdated` | ProductObserver | public/broadcast |
 | `ReviewPublished` | ReviewObserver | public/broadcast |
 | `ThreadCreated` | ThreadObserver | public/broadcast |

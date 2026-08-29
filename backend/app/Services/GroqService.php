@@ -97,14 +97,32 @@ class GroqService
         }
     }
 
+    /**
+     * Midnight's launch, 2 March 2026 at 15:00 UTC.
+     *
+     * The prompt used to compute "days left" against this and clamp at zero, so
+     * from 2 March onward every analysis told the reader the expansion "launches
+     * March 2, 2026 - 0 days left". It had been saying that for the better part
+     * of six months. A countdown that has run out is not a countdown; past the
+     * date the prompt should say the expansion is live, and the sentence below
+     * now does.
+     */
+    private const MIDNIGHT_LAUNCH = '2026-03-02 15:00:00';
+
     protected function buildPrompt(array $characterData): string
     {
-        $daysUntilLaunch = max(0, (int) ((strtotime('2026-03-02 15:00:00') - time()) / 86400));
+        $launch = strtotime(self::MIDNIGHT_LAUNCH);
+        $days = (int) floor(($launch - time()) / 86400);
+
+        $timing = $days > 0
+            ? "launches March 2, 2026 — {$days} days away"
+            : 'live since March 2, 2026';
+
         $characterClass = $characterData['character']['class'] ?? 'Unknown';
         $itemLevel = $characterData['equipment']['item_level'] ?? 0;
 
         return <<<PROMPT
-You are an expert World of Warcraft analyst. Analyze this {$characterClass} character for Midnight expansion (launches March 2, 2026 - {$daysUntilLaunch} days left).
+You are an expert World of Warcraft analyst. Analyze this {$characterClass} character for the Midnight expansion ({$timing}).
 
 PROVIDE SPEC-SPECIFIC ANALYSIS:
 - {$characterClass}-specific rotation tips
@@ -112,18 +130,9 @@ PROVIDE SPEC-SPECIFIC ANALYSIS:
 - Recommended talent builds for M+ and raids
 - Optimal gear upgrades for current iLvL ({$itemLevel})
 
-KEY MIDNIGHT FACTORS:
-- Royal Voidwing mount (ends at launch, NEVER returns)
-- Void Elves (core to Midnight story)
-- Quel'Thalas lore (Sunwell raid, Silvermoon)
-- Housing collections (mounts, pets, toys, transmog)
-- Profession readiness (crafting high-level gear day 1)
+{$this->midnightFactors($days > 0)}
 
-CURRENT MYTHIC+ SEASON AFFIXES (provide affix-specific strategies):
-- Tyrannical/Fortified rotation
-- Xal'atath's Guile (avoid voidzones)
-- Shardborne (collect shards for damage buff)
-
+{$this->affixSection()}
 CHARACTER DATA:
 {$this->formatCharacterData($characterData)}
 
@@ -133,7 +142,7 @@ Return ONLY valid JSON with this exact structure:
   "advice": [
     "{$characterClass}-specific rotation tip",
     "Gear upgrade priority (BiS item suggestion)",
-    "Mythic+ affix strategy for this week",
+    "Mythic+ strategy — affix-specific if this week's affixes are listed above, otherwise general",
     "Midnight collection tip",
     "Profession tip (if applicable)"
   ],
@@ -143,6 +152,62 @@ Return ONLY valid JSON with this exact structure:
 
 IMPORTANT: Make advice ACTIONABLE and SPECIFIC to this {$characterClass} character. No generic tips!
 PROMPT;
+    }
+
+    /**
+     * What matters about Midnight depends on whether it has started.
+     *
+     * The list was written before launch and never revisited, so months into the
+     * expansion the tool was still telling people to chase a mount that stopped
+     * being obtainable at launch and to have professions ready to craft on day
+     * one — day one having been in March. Half of a pre-launch checklist is
+     * actively wrong once the thing has launched.
+     */
+    protected function midnightFactors(bool $beforeLaunch): string
+    {
+        $shared = [
+            'Void Elves (core to Midnight story)',
+            "Quel'Thalas lore (Sunwell raid, Silvermoon)",
+            'Housing collections (mounts, pets, toys, transmog)',
+        ];
+
+        $timed = $beforeLaunch
+            ? [
+                'Royal Voidwing mount (ends at launch, NEVER returns)',
+                'Profession readiness (crafting high-level gear day 1)',
+            ]
+            : [
+                'Current-season gearing paths and weekly caps',
+                'Profession progress toward current-tier crafted gear',
+            ];
+
+        $heading = $beforeLaunch ? 'KEY MIDNIGHT FACTORS (pre-launch)' : 'KEY MIDNIGHT FACTORS';
+
+        return $heading.":\n- ".implode("\n- ", [...$timed, ...$shared]);
+    }
+
+    /**
+     * This week's affixes, or silence.
+     *
+     * Three of them were written into the prompt by hand. They were correct for
+     * one week in early 2026 and wrong every week after, and the model repeated
+     * strategies for them as confidently as it did the parts drawn from the
+     * character's own data — which is worse than saying nothing, because the
+     * reader cannot tell the two apart.
+     *
+     * If Raider.IO cannot be reached the section is omitted rather than guessed,
+     * and the JSON contract below asks for a general Mythic+ tip in that case.
+     */
+    protected function affixSection(): string
+    {
+        $affixes = app(RaiderIOService::class)->getCurrentAffixes();
+
+        if (! $affixes) {
+            return '';
+        }
+
+        return "THIS WEEK'S MYTHIC+ AFFIXES (provide affix-specific strategies):\n- "
+            .implode("\n- ", $affixes)."\n\n";
     }
 
     protected function formatCharacterData(array $data): string

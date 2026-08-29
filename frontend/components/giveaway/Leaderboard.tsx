@@ -21,6 +21,8 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let interval: ReturnType<typeof setInterval> | null = null;
+
         const fetchLeaderboard = async () => {
             try {
                 const res = await axios.get(`/giveaways/${slug}/leaderboard`);
@@ -32,11 +34,36 @@ export default function Leaderboard({ slug }: LeaderboardProps) {
             }
         };
 
-        fetchLeaderboard();
-
         // Refresh leaderboard every 30 seconds
-        const interval = setInterval(fetchLeaderboard, 30000);
-        return () => clearInterval(interval);
+        const startPolling = () => {
+            fetchLeaderboard();
+            interval = setInterval(fetchLeaderboard, 30000);
+        };
+
+        const stopPolling = () => {
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+        };
+
+        // PERF: Page Visibility API — a leaderboard nobody is looking at asked
+        // the API for standings every 30s for as long as the tab stayed open.
+        const handleVisibilityChange = () => {
+            if (document.hidden) stopPolling();
+            else startPolling();
+        };
+
+        // First load happens either way; the interval only while visible.
+        if (document.hidden) fetchLeaderboard();
+        else startPolling();
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            stopPolling();
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, [slug]);
 
     const getRankIcon = (rank: number) => {

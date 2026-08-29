@@ -66,7 +66,7 @@
 | `forum` | `ThreadCreated`, `ForumReplyPosted` | `/forum` |
 | `shop` | `ProductStockUpdated` | `/shop` |
 | `private.user.{id}` | `NotificationReceived` | Svi (logged in) |
-| `presence.{username}` | `PresenceUpdated` | `/profile` |
+| ~~`presence.{username}`~~ | ~~`PresenceUpdated`~~ | **Obrisano 29.08.2026** — `/profile` se nikad nije ni pretplatio. Kanal je bio **javan** i nosio je šta neko igra, mimo `profile_visibility`, svake 2 min po igraču. Prisustvo se čita iz `presences` tabele pri renderu. |
 
 ---
 

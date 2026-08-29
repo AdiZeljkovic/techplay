@@ -2,6 +2,8 @@
 
 namespace App\Services\Feed;
 
+use App\Casts\PostgresArray;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -55,16 +57,27 @@ class InterestProfile
     /** What the profile was actually built from, for the page to be honest about. */
     public array $basis = ['reads' => 0, 'bookmarks' => 0, 'comments' => 0, 'games' => 0];
 
+    /**
+     * Four queries, held for five minutes.
+     *
+     * A reading history does not turn over between two page loads, and this was
+     * being rebuilt from scratch on every request to the personalised feed —
+     * including the second page of the same session. The window matters only at
+     * the edge: an article read now counts towards the feed within five
+     * minutes rather than on the next refresh.
+     */
     public static function for(int $userId): self
     {
-        $profile = new self;
+        return Cache::remember("feed.profile.v1.{$userId}", 300, function () use ($userId) {
+            $profile = new self;
 
-        $profile->fromReading($userId);
-        $profile->fromBookmarks($userId);
-        $profile->fromComments($userId);
-        $profile->fromCollection($userId);
+            $profile->fromReading($userId);
+            $profile->fromBookmarks($userId);
+            $profile->fromComments($userId);
+            $profile->fromCollection($userId);
 
-        return $profile;
+            return $profile;
+        });
     }
 
     /** True when there is nothing to go on and the feed must say so. */
@@ -183,12 +196,11 @@ class InterestProfile
         }
 
         // Postgres hands back arrays as {Action,"Role-Playing (RPG)"} when they
-        // come through PDO untouched.
+        // come through PDO untouched. Split here on every comma, so a tag like
+        // "4X (explore, expand, exploit, and exterminate)" became four
+        // interests, none of which anybody has.
         if (str_starts_with($raw, '{')) {
-            return array_map(
-                fn (string $v) => trim($v, '" '),
-                array_filter(explode(',', trim($raw, '{}')))
-            );
+            return PostgresArray::parse($raw);
         }
 
         $decoded = json_decode($raw, true);

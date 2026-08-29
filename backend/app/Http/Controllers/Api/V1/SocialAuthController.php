@@ -239,7 +239,8 @@ class SocialAuthController extends Controller
             'discord_id' => $discordUser->getId(),
             'discord_avatar' => $discordUser->getAvatar(),
             'gamertags' => ['discord' => $discordUser->getNickname() ?? $discordUser->getName()],
-            'role' => 'user',
+            // `role` omitted: the legacy column has no reader left and its
+            // default is already 'user'. See the note in AuthController@register.
         ]);
 
         $this->storeTokens($newUser, 'discord', $discordUser->token, $discordUser->refreshToken);

@@ -117,7 +117,7 @@ class PanelToolingTest extends TestCase
     /**
      * The platform filter runs through `@> ARRAY[?]::text[]`, which is what
      * `games_platforms_gin` answers — written as a `LIKE` against the array's
-     * text form it would read all 142,110 rows instead.
+     * text form it would read all 332,455 rows instead.
      *
      * The query itself cannot run here: `platforms` is a PostgreSQL `text[]`
      * and the suite runs on SQLite, which has neither the type nor the

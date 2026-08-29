@@ -16,8 +16,22 @@ class MostViewedArticles extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+            /*
+             * `popular()` only sorts. On the public home page it is handed a
+             * query that already filters to published and past-dated, so it
+             * behaves; here it was given the bare model, and every draft and
+             * scheduled piece with a view count sat in a panel headed "Most
+             * Viewed Articles". A draft has views because staff opened it.
+             *
+             * The eager load is for the Category column below, which was one
+             * query per row — twenty-five on the largest page size.
+             */
             ->query(
-                Article::query()->popular()
+                Article::query()
+                    ->where('status', 'published')
+                    ->where('published_at', '<=', now())
+                    ->with('category:id,name')
+                    ->popular()
             )
             ->columns([
                 Tables\Columns\TextColumn::make('title')

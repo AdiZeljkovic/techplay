@@ -25,8 +25,10 @@ class MediaPickerFields
      * **Avatars.** Eight of them, offered as candidates for a news hero. They
      * are somebody's profile picture; they are not cover art and never will be.
      *
-     * **WebP derivatives.** `ImageOptimizationService` writes `x.webp` next to
-     * `x.jpg`, and `media:sync` walked the disk creating a row per *file* — so
+     * **WebP derivatives.** `ImageOptimizationService` wrote `x.webp` next to
+     * `x.jpg` — it was deleted on 29 Aug 2026, having not run since January, but
+     * what it wrote is still on disk. `media:sync` walked that disk creating a
+     * row per *file* — so
      * all 18 pictures in the library appeared twice, as two entries with two
      * unreadable names that happened to be the same picture. A conversion is a
      * property of an image, not another image; `webp_path` is the column for it.

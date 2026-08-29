@@ -4,7 +4,7 @@
 
 TechPlay.gg je custom gaming platforma koja kombinuje gaming magazin, game database, release calendar, community forum, korisnički profilni sistem s XP/achievements mehanizmima, Discord bota i vanjska API integracije. Nije generički gaming blog — cilj je postati centralna, premium gaming platforma za globalnu gaming zajednicu.
 
-**Produkcija:** `techplay.gg` (frontend) | `api.techplay.gg` (backend)
+**Produkcija:** `techplay.gg` (frontend) | `api-beta.techplay.gg` (backend)
 **Beta:** `beta.techplay.gg` | `api-beta.techplay.gg`
 
 ---

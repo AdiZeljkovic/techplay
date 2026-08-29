@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\BrokenLinkResource\Pages;
+use App\Jobs\RecheckBrokenLinks;
 use App\Models\BrokenLink;
 use App\Services\LinkChecker;
 use Filament\Actions\Action;
@@ -248,34 +249,31 @@ class BrokenLinkResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     /*
-                     * Ten seconds of network per link, so the group is capped.
-                     * Filament runs this in the request, and a page of 100 links
-                     * would sit past any sensible timeout.
+                     * Queued, because ten seconds of network per link does not
+                     * fit in a request. This ran inline with a cap of 25, and
+                     * `/admin` is served through nginx's `location /` with
+                     * `proxy_read_timeout 60s` — so a selection of seven links
+                     * could already outlast the request. The rows the loop had
+                     * reached were saved, the rest were not, and the admin saw
+                     * a 504 instead of the count.
+                     *
+                     * The cap stays: it bounds one job's runtime, and the panel
+                     * says plainly what it did not take.
                      */
                     BulkAction::make('recheckMany')
                         ->label('Check again')
                         ->icon('heroicon-m-arrow-path')
                         ->color('gray')
                         ->action(function (Collection $records): void {
-                            $checker = app(LinkChecker::class);
-                            $fixed = 0;
-
-                            foreach ($records->take(25) as $record) {
-                                $result = $checker->check($record->url);
-                                $record->update([
-                                    'status_code' => $result['status_code'],
-                                    'error_message' => $result['error_message'],
-                                    'last_checked_at' => now(),
-                                    'is_fixed' => $result['ok'],
-                                ]);
-                                $fixed += $result['ok'] ? 1 : 0;
-                            }
-
+                            $taking = $records->take(25);
                             $skipped = max(0, $records->count() - 25);
 
+                            RecheckBrokenLinks::dispatch($taking->pluck('id')->all());
+
                             Notification::make()
-                                ->title($fixed.' of '.min($records->count(), 25).' now work')
-                                ->body($skipped > 0 ? $skipped.' left unchecked — 25 at a time.' : null)
+                                ->title('Checking '.$taking->count().' links in the background')
+                                ->body(trim('The table updates as each answers.'.
+                                    ($skipped > 0 ? " {$skipped} left unselected — 25 at a time." : '')))
                                 ->success()
                                 ->send();
                         })

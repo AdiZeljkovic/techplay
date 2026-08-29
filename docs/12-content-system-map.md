@@ -69,7 +69,7 @@
 - URL pristup: `NEXT_PUBLIC_STORAGE_URL` prefiks
 - `Media` model prati sve uploadove
 - `images: { unoptimized: true }` na frontendu — Next.js ne optimizira
-- `ImageOptimizationService` postoji za server-side optimizaciju
+- Server-side optimizacija ide kroz `ImageOptimizer` (GD), koji zovu dvije ručne komande. `ImageOptimizationService` je **obrisan 29.08.2026** — nije radio od januara; Next konvertuje uploade u WebP pri serviranju.
 
 ---
 

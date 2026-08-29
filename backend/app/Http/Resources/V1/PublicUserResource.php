@@ -28,9 +28,25 @@ class PublicUserResource extends JsonResource
             'location' => $this->location,
             'tagline' => $this->tagline,
             'playstyle_tags' => $this->playstyle_tags ?? [],
-            'role' => ($this->hasRole(['admin', 'Admin', 'administrator', 'Super Admin']) || strtolower($this->role) === 'admin') ? 'admin'
-                : (($this->hasRole(['editor', 'Editor']) || strtolower($this->role) === 'editor') ? 'editor'
-                    : (($this->hasRole(['moderator', 'Moderator']) || strtolower($this->role) === 'moderator') ? 'moderator' : 'member')),
+            /*
+             * The badge comes from Spatie alone.
+             *
+             * Each line also consulted `users.role`, the legacy string column —
+             * the same second door that was closed for panel access on 28 Aug
+             * and left open here, where the answer is shown to the public.
+             * Nobody's badge changes: exactly one account carries
+             * `role = 'admin'`, and it holds Super Admin as well. Three
+             * accounts read 'user' in that column while holding Super Admin,
+             * Editor-in-Chief or Journalist, so the column understates as
+             * readily as it overstates and is worth nothing to either.
+             *
+             * Editor-in-Chief and Journalist deliberately fall through to
+             * 'member': this field marks authority in a thread, not seniority
+             * on the masthead, which StaffResource carries instead.
+             */
+            'role' => $this->hasRole(['admin', 'Admin', 'administrator', 'Super Admin']) ? 'admin'
+                : ($this->hasRole(['editor', 'Editor']) ? 'editor'
+                    : ($this->hasRole(['moderator', 'Moderator']) ? 'moderator' : 'member')),
             'created_at' => $this->created_at,
             'rank' => $this->whenLoaded('rank', function () {
                 return [

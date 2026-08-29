@@ -6,6 +6,7 @@ use App\Models\Guide;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -55,7 +56,7 @@ class UnpublishedGuidesStayPrivateTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('unpublishedStates')]
+    #[DataProvider('unpublishedStates')]
     public function test_an_unpublished_guide_is_absent_from_the_listing(string $status): void
     {
         $hidden = $this->guide(['status' => $status]);
@@ -68,7 +69,7 @@ class UnpublishedGuidesStayPrivateTest extends TestCase
         $this->assertFalse($slugs->contains($hidden->slug), "A {$status} guide was listed publicly.");
     }
 
-    #[\PHPUnit\Framework\Attributes\DataProvider('unpublishedStates')]
+    #[DataProvider('unpublishedStates')]
     public function test_an_unpublished_guide_cannot_be_read_directly(string $status): void
     {
         $guide = $this->guide(['status' => $status]);

@@ -37,10 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 const userData = json.data || json;
                 setUser(userData);
                 localStorage.setItem("user", JSON.stringify(userData));
-            } else {
+            } else if (response.status === 401 || response.status === 403) {
                 // Token invalid - clear everything
                 clearAuth();
             }
+            // Any other answer is the API having a bad moment, not a verdict on
+            // this session. Clearing here on a 500, a 502 from a restarting
+            // Octane or a rate limit signed the reader out for good: the token
+            // was gone, so the gate on the next render sent them to /login and
+            // the retry that would have worked never happened.
         } catch (error) {
             console.error("Failed to fetch user:", error);
             // Network error - keep token, maybe try again later
@@ -63,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // Update with fresh data if available
                 setUser(freshUser);
                 localStorage.setItem("user", JSON.stringify(freshUser));
-            } else if (response.status === 401) {
+            } else if (response.status === 401 || response.status === 403) {
                 // Token is truly invalid - clear auth
                 clearAuth();
             }

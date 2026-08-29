@@ -140,7 +140,26 @@ export class PollingService {
         const latestId = items[0].id;
         console.log(`🔍 [PollingService] ${feed.type} — latest API id: ${latestId}, lastCheckedId: ${feed.lastCheckedId}`);
 
-        const newItems = items.filter(n => n.id > feed.lastCheckedId && feed.lastCheckedId !== 0);
+        /*
+         * A feed the backend was too down to initialise arms itself here.
+         *
+         * `lastCheckedId` staying at 0 used to disable the feed permanently:
+         * the filter below excluded everything while it was 0, and nothing else
+         * ever set it, so a backend that was unreachable for the few seconds
+         * around startup left that feed silent until somebody restarted the
+         * bot. The poll is the retry — it already runs on its own timer, which
+         * is why there is no second one here.
+         *
+         * Nothing is announced on the way in, exactly as at startup: the
+         * alternative is a burst of articles the server has already read.
+         */
+        if (feed.lastCheckedId === 0) {
+            feed.lastCheckedId = latestId;
+            console.log(`🔄 [PollingService] ${feed.type} armed on a later poll — last ID: ${latestId}`);
+            return;
+        }
+
+        const newItems = items.filter(n => n.id > feed.lastCheckedId);
 
         if (newItems.length > 0) {
             console.log(`📢 [PollingService] ${feed.type} — ${newItems.length} new item(s) found, posting...`);

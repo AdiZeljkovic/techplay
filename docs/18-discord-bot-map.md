@@ -102,9 +102,15 @@ Pri pokretanju:
 
 ### `XpService.ts` (bot-side)
 - Sluša svaku poruku na serveru (MessageCreate event)
-- 15 XP po poruci
+- 15 XP po poruci — **traženih**, ne nužno dodijeljenih
 - 60s cooldown po korisniku
 - `POST /api/v1/discord/xp` → backend dodjela XP
+- Sedmična aktivnost broji `xp_awarded` iz odgovora, ne traženih 15. Backend
+  ima dnevnu granicu od 100 XP i sezonski množitelj, pa se traženo i dobijeno
+  redovno razlikuju; do 29.08.2026. bot je zbrajao izmišljenih 15 i „Member of
+  the Week" je krunisao po broju koji ne postoji. Uz XP se sada broje i poruke,
+  jer je stari kod broj poruka izvodio dijeljenjem tog XP-a s 15 — što je radilo
+  samo dok je XP bio lažan.
 - **Napomena:** Zasebna implementacija od backend XpService — potrebna sinkronizacija
 
 ### `ServerStatsService.ts`
@@ -122,6 +128,12 @@ Pri pokretanju:
 - Nedeljni recap aktivnosti
 - Šalje u `RECAP_CHANNEL_ID` (ili traži #announcements/#general)
 - Sadrži: top korisnici po XP, novi članci, forum aktivnost
+- Odredište se od 29.08.2026. rješava kroz `AnnouncementChannel.ts`, jedno
+  mjesto za sve objave bota. Prije toga je najava o preticanju na ljestvici
+  išla u `message.channel` — dakle u kanal u kojem je neko slučajno pisao kad
+  je provjera opalila. Resolver i **dohvaća** kanal, ne samo čita keš: promašaj
+  keša je ranije značio da recap tiho ne uradi ništa, pa ni ne resetuje
+  sedmičnu aktivnost.
 
 ### `SubscriptionService.ts`
 - Upravljanje Discord channel subscriptions za news notifikacije
@@ -228,6 +240,36 @@ Bot je napisan u januaru 2026, kad je TechPlay bio portal s vijestima i rank lje
 - **Push umjesto ankete.** `PublishListener` sluša na **127.0.0.1:8099**, `ArticleObserver` ga kucne preko `DiscordAnnouncer` na objavu. Anketa je ostala kao mreža, interval 60 s → 600 s: **5.760 → 576 zahtjeva dnevno**.
 - **`createNotLinkedEmbed`** vodi s tim **šta povezivanje donosi**, ne s tim da red u bazi ne postoji. Od 153 člana servera nijedan nije bio povezan — ne zato što je teško, nego što nigdje nije pisalo čemu služi.
 
+### Popravljeno 29.08.2026.
+
+- **Presence throttle je radio naopako.** Uslov je bio strukturno pogrešan, ne
+  operator: **nepromijenjeno** stanje se ponovo slalo svakih 30 s, a **promjena**
+  se nije prigušivala uopšte. Discord šalje `PresenceUpdate` i za idle, Spotify i
+  rich-presence tajmere, pa je to cijelo veče kucalo backend. Backendov
+  `PresenceService::set()` je stanje bez TTL-a, dakle otkucaj svakih pola minute
+  nije kupovao ništa a plaćao je upis `last_played_at` po igraču. Gore: promjena
+  naslova zove `bankSession()`, pa je neprigušen launcher koji trepće upisivao
+  odigrane sesije koje niko nije odigrao.
+- **Feed je ostajao mrtav do restarta.** `checkFeed` je filtrirao
+  `id > lastCheckedId && lastCheckedId !== 0`, a to je postavljao samo start.
+  Backend nedostupan pri dizanju bota = taj feed šuti zauvijek. Sada se naoruža
+  na prvom pollu koji prođe, bez najave unazad.
+- **StatusService je na jednu grešku javno pisao „Maintenance 🔧"** — timeout,
+  429 s limitera, restart octanea, svejedno. Sada traži tri promašaja zaredom, a
+  ispod praga zadržava zadnje što je pisalo.
+- **Dispatch komandi je bio bez try/catch.** Komanda koja baci ostavljala je
+  interakciju bez odgovora. Sada se hvata, loguje i odgovara — kroz
+  `editReply`/`followUp`/`reply`, ovisno o stanju interakcije.
+- Obrisano: `RECOMMENDATIONS.md` (predprojektni pitch), paket `he` (nigdje
+  importovan). Hardkodiranih „332.000" bilo je na tri mjesta, ne dva; sada je
+  jedna imenovana konstanta `BuffyService.CATALOGUE_SIZE` s datumom mjerenja.
+
 ### Ostalo neriješeno
 - Role u serveru su i dalje stara ljestvica s tipfelerima: `Rokie`, `Challener`, `Legendary`, `Global Elite`, `God Of Gaming`, `Noob`, `Newbie`; `Apex` ne postoji. `/sync` sada **kaže** kad rola fali, ali ih ne pravi — preimenovanje je ručni posao u Discordu.
-- `RECAP_CHANNEL_ID` nije postavljen, pa `RecapService` nema gdje pisati.
+- `RECAP_CHANNEL_ID` nije postavljen, pa `RecapService` nema gdje pisati — a sada
+  kroz njega ide i najava o preticanju, dakle i ona šuti dok se ne postavi.
+- Sedmična aktivnost živi u memoriji, pa restart bota vraća „Member of the Week"
+  na „No active members".
+- `.env.example` i dalje nudi `API_URL=https://techplay.gg/api/v1`, vrijednost za
+  koju `config.ts` ima komentar zašto je pogrešna (vodi bota kroz Cloudflare do
+  backenda na istoj mašini). Svaka nova instalacija ponovo napravi taj bug.

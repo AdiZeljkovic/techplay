@@ -14,10 +14,15 @@ use Illuminate\Console\Command;
  * per file. That produced two problems at once, both visible the moment anyone
  * opened "Choose from library":
  *
- * **Every picture was in there twice.** `ImageOptimizationService` writes
+ * **Every picture was in there twice.** `ImageOptimizationService` wrote
  * `x.webp` beside `x.jpg`, and a walk of the disk sees two files. Eighteen
  * pictures, thirty-six rows. A conversion is a property of an image, not
  * another image, and `webp_path` is the column that says so.
+ *
+ * That service was deleted on 29 Aug 2026 — it had not run since January, which
+ * is why there are eighteen and not eleven hundred. This command still matters:
+ * the files it wrote are still on disk, and a fresh walk would pair them up
+ * again.
  *
  * **Every title was a storage name.** `title` was set to the file name, and the
  * file name is a ULID. All 36 rows were titled things like

@@ -59,18 +59,27 @@ function readStoredCart(): CartItem[] {
 
 export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
+    const [restored, setRestored] = useState(false);
 
     useEffect(() => {
         setItems(readStoredCart());
+        setRestored(true);
     }, []);
 
     useEffect(() => {
+        // Both effects run in the same pass, and in that pass `items` is still
+        // the empty array the provider starts with — so this wrote `[]` over
+        // the stored cart before the restore above had a chance to land. A
+        // reload arriving inside that window read the emptied value back and
+        // the cart was gone for real.
+        if (!restored) return;
+
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
         } catch {
             // storage full or blocked — the cart simply does not persist
         }
-    }, [items]);
+    }, [items, restored]);
 
     const capacity = (product: Product, wanted: number) =>
         typeof product.stock === 'number' && product.stock > 0

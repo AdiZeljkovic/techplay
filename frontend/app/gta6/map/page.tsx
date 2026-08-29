@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
-import { generatePageMetadata } from "@/lib/seo";
+import { generatePageMetadata, ROBOTS_INDEX } from "@/lib/seo";
 import Gta6MapClient from "@/components/gta6/Gta6MapClient";
 
 export const revalidate = 86400;
@@ -30,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
             description: "1,000+ GTA 6 locations mapped across Vice City and Leonida.",
         },
         alternates: { canonical: `${SITE_URL}/gta6/map` },
-        robots: { index: true, follow: true },
+        robots: ROBOTS_INDEX,
     };
 }
 

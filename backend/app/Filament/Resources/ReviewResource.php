@@ -49,7 +49,7 @@ class ReviewResource extends Resource
     /**
      * Five hits, not fifty.
      *
-     * Filament's default is 50 per resource, and with 142,110 games in the
+     * Filament's default is 50 per resource, and with 332,455 games in the
      * catalogue any common word floods the panel: searching "adi" returned
      * fifty games and buried the two users it was actually looking for. The
      * point of a global search is to show a spread across types and let you

@@ -2,7 +2,7 @@
 
 ## Pristup admin panelu
 
-1. Idi na `techplay.gg/admin` ili `api.techplay.gg/admin`
+1. Idi na `techplay.gg/admin` ili `api-beta.techplay.gg/admin`
 2. Login s admin akreditivima (Filament auth)
 3. Dashboard s widgetima i navigacijom
 
@@ -196,4 +196,4 @@
 1. **Admin → MediaResource**
 2. Upload novih fajlova
 3. Browse/delete postojećih
-4. MediaObserver prati upload događaje
+4. Nakon uploada ne radi se ništa dodatno. `MediaObserver` je pravio WebP kopiju uz original — a nije radio od januara jer paket koji mu treba nije instaliran; obrisan 29.08.2026. Konverziju radi Next pri serviranju.

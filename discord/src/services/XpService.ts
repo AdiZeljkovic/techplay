@@ -1,5 +1,6 @@
 import { Client, Events, Message, TextChannel } from 'discord.js';
 import { ApiService } from './ApiService';
+import { announcementChannel } from './AnnouncementChannel';
 import { BuffyService } from './BuffyService';
 import { violatesFilter } from '../handlers/events';
 
@@ -17,7 +18,7 @@ export class XpService {
     private buffy: BuffyService;
     private cooldowns: Set<string> = new Set();
     private lastLeaderboard: Map<string, number> = new Map();
-    private weeklyActivity: Map<string, { name: string, xp: number }> = new Map();
+    private weeklyActivity: Map<string, { name: string, xp: number, messages: number }> = new Map();
 
     // Leaderboard cache
     private leaderboardCache: LeaderboardUser[] = [];
@@ -79,11 +80,18 @@ export class XpService {
         const xpResponse = await this.api.addXp(message.author.id, this.XP_PER_MESSAGE);
 
         if (xpResponse) {
-            // Track weekly activity
-            const current = this.weeklyActivity.get(message.author.id) || { name: message.author.username, xp: 0 };
+            // What the backend actually paid, not what was asked for. The daily
+            // cap and the season multiplier both move it, so counting a flat 15
+            // credited "Member of the Week" with XP nobody was given — and it
+            // overstated most on the members who talk the most, because they are
+            // the ones who spend the second half of the day capped at nothing.
+            const awarded = typeof xpResponse.xp_awarded === 'number' ? xpResponse.xp_awarded : 0;
+
+            const current = this.weeklyActivity.get(message.author.id) || { name: message.author.username, xp: 0, messages: 0 };
             this.weeklyActivity.set(message.author.id, {
                 name: message.author.username,
-                xp: current.xp + this.XP_PER_MESSAGE
+                xp: current.xp + awarded,
+                messages: current.messages + 1
             });
 
             const channel = message.channel as TextChannel;
@@ -110,7 +118,7 @@ export class XpService {
                 }
             }
 
-            await this.checkOvertakes(message);
+            await this.checkOvertakes();
         }
     }
 
@@ -135,32 +143,59 @@ export class XpService {
         }
     }
 
-    private async checkOvertakes(message: Message) {
+    private async checkOvertakes() {
         const newLeaderboard = await this.getCachedLeaderboard();
-        const channel = message.channel as TextChannel;
 
-        for (const currentUser of newLeaderboard) {
-            const oldPos = this.lastLeaderboard.get(currentUser.username);
-            const newPos = currentUser.rank_position;
+        const climbs = newLeaderboard.filter((u: LeaderboardUser) => {
+            const oldPos = this.lastLeaderboard.get(u.username);
+            return oldPos !== undefined && u.rank_position < oldPos;
+        });
 
-            if (oldPos !== undefined && newPos < oldPos) {
-                channel.send(`⚔️ *Professor Buffy announces:* **${currentUser.name || currentUser.username}** just climbed to **#${newPos}** on the Leaderboard! The competition heats up! 🔥`);
-            }
-        }
-
+        // The snapshot moves whether or not the announcement lands, so a
+        // missing channel costs one announcement rather than repeating every
+        // climb it has ever seen on the next message.
         this.lastLeaderboard.clear();
         newLeaderboard.forEach((u: LeaderboardUser) => {
             this.lastLeaderboard.set(u.username, u.rank_position);
         });
+
+        if (climbs.length === 0) return;
+
+        /*
+         * This is a server-wide notice, not a reply.
+         *
+         * It went to `message.channel` — whichever channel the message that
+         * happened to trigger the check was in. The ladder is the site's, so
+         * most of what shows up here was earned on the website by people who
+         * are not in that conversation and may not be in that channel at all,
+         * and the leaderboard is cached for a minute, so a refresh would find
+         * several of them at once and congratulate all of them in front of
+         * whoever was talking.
+         */
+        const channel = await announcementChannel(this.client);
+        if (!channel) return;
+
+        for (const climber of climbs) {
+            await channel.send(
+                `⚔️ *Professor Buffy announces:* **${climber.name || climber.username}** just climbed to **#${climber.rank_position}** on the Leaderboard! The competition heats up! 🔥`
+            ).catch(() => {
+                // Missing Send Messages in the announcement channel is a server
+                // setting, not something to crash a message handler over.
+            });
+        }
     }
 
     public getTopWeeklyUser() {
-        let topUser = null;
-        let maxXP = -1;
+        let topUser: { id: string, name: string, xp: number, messages: number } | null = null;
 
         for (const [id, data] of this.weeklyActivity.entries()) {
-            if (data.xp > maxXP) {
-                maxXP = data.xp;
+            // Messages break the tie: everyone who reached the daily cap sits on
+            // the same XP, and on a quiet week that is everyone on zero.
+            const better = !topUser
+                || data.xp > topUser.xp
+                || (data.xp === topUser.xp && data.messages > topUser.messages);
+
+            if (better) {
                 topUser = { id, ...data };
             }
         }
@@ -168,10 +203,16 @@ export class XpService {
         return topUser;
     }
 
+    /**
+     * Messages that earned an XP attempt — linked members, past the cooldown.
+     *
+     * This used to divide the tracked XP by 15 to arrive back at a count, which
+     * only held while that XP was itself a flat 15 a message.
+     */
     public getWeeklyMessageCount(): number {
         let total = 0;
         for (const data of this.weeklyActivity.values()) {
-            total += Math.round(data.xp / this.XP_PER_MESSAGE);
+            total += data.messages;
         }
         return total;
     }

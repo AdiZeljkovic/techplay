@@ -46,8 +46,9 @@ export const commands = [
                 description: 'Start typing — the catalogue suggests as you go',
                 type: ApplicationCommandOptionType.String,
                 required: true,
-                // 332,000 games. Typing a title blind and hoping for an exact
-                // match is not a search, it is a guess.
+                // A catalogue this size — see BuffyService.CATALOGUE_SIZE —
+                // makes typing a title blind and hoping for an exact match a
+                // guess rather than a search.
                 autocomplete: true,
             }
         ]

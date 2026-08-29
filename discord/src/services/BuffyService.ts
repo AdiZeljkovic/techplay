@@ -36,6 +36,17 @@ export class BuffyService {
 
     public static readonly FOOTER_TEXT = '🦉 Professor Buffy | TechPlay Community';
 
+    /**
+     * Roughly how big the game catalogue is, for prose.
+     *
+     * Approximate on purpose, and rounded so it reads that way. There is no
+     * endpoint that counts the catalogue, and adding an API call to a help
+     * embed to put a number in a sentence would be paying request latency for
+     * decoration. `select count(*) from games` is the real answer; last checked
+     * 29 Aug 2026, when it was 332,455. Round it here when that drifts.
+     */
+    public static readonly CATALOGUE_SIZE = '332,000';
+
     /** Called once the Discord client knows who it is. */
     public static setIdentity(avatarUrl: string | null | undefined): void {
         BuffyService.avatarUrl ??= avatarUrl ?? null;
@@ -449,7 +460,7 @@ export class BuffyService {
 ` +
                 `**🔍 The catalogue**
 ` +
-                `\`/game\` — look up any of 332,000 games (suggests as you type)
+                `\`/game\` — look up any of ${BuffyService.CATALOGUE_SIZE} games (suggests as you type)
 ` +
                 `\`/search\` — find an article
 ` +

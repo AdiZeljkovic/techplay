@@ -1,6 +1,7 @@
 
 import ShopClient from "./ShopClient";
 import { Metadata } from "next";
+import { ROBOTS_INDEX } from "@/lib/seo";
 
 export const metadata: Metadata = {
     title: "Shop — Gaming Merchandise & Gear",
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
     alternates: {
         canonical: "https://techplay.gg/shop",
     },
-    robots: { index: true, follow: true },
+    robots: ROBOTS_INDEX,
 };
 
 export default function ShopPage() {

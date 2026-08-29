@@ -10,8 +10,48 @@ import { XpService } from '../services/XpService';
 /**
  * Handles all slash command interactions.
  * Each command is a separate function for clarity.
+ *
+ * The dispatch below had nothing around it. A handler that threw — an API
+ * answering a shape nobody expected, an edit against an interaction that had
+ * already expired — sent its rejection all the way out to the process-level net
+ * in index.ts, which logs it and nothing else. What the member sees is "the
+ * application did not respond", or a command left deferred and thinking until
+ * it times out, neither of which they can tell from a command that is slow.
  */
 export async function handleCommand(interaction: ChatInputCommandInteraction, client: Client) {
+    try {
+        await dispatch(interaction, client);
+    } catch (error) {
+        console.error(`❌ [commands] /${interaction.commandName} failed:`, error instanceof Error ? error.message : error);
+
+        await answerWithFailure(interaction);
+    }
+}
+
+/**
+ * Says something rather than nothing.
+ *
+ * Which of the three is available depends on how far the handler got before it
+ * threw, and getting it wrong throws again — this is the one place in the file
+ * where there is nowhere left to report a failure.
+ */
+async function answerWithFailure(interaction: ChatInputCommandInteraction) {
+    const content = '😖 Something went wrong on my end. Try that again in a moment.';
+
+    try {
+        if (interaction.deferred) {
+            await interaction.editReply({ content });
+        } else if (interaction.replied) {
+            await interaction.followUp({ content, flags: MessageFlags.Ephemeral });
+        } else {
+            await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+        }
+    } catch {
+        // The token is gone or the reply already landed. Nothing to do.
+    }
+}
+
+async function dispatch(interaction: ChatInputCommandInteraction, client: Client) {
     const api = ApiService.getInstance();
     const buffy = BuffyService.getInstance();
 
@@ -44,12 +84,12 @@ export async function handleCommand(interaction: ChatInputCommandInteraction, cl
 /**
  * Suggests games as somebody types.
  *
- * The catalogue holds 332,000 titles and `/game` used to take a name typed
- * blind, then answer with whatever came first for that string. Discord gives
- * an autocomplete three seconds to reply and shows nothing at all if the
- * answer is late, so this fails to an empty list rather than to an error —
- * an empty list is a search that found nothing, which is a sentence Discord
- * already knows how to say.
+ * The catalogue holds several hundred thousand titles and `/game` used to take
+ * a name typed blind, then answer with whatever came first for that string.
+ * Discord gives an autocomplete three seconds to reply and shows nothing at all
+ * if the answer is late, so this fails to an empty list rather than to an
+ * error — an empty list is a search that found nothing, which is a sentence
+ * Discord already knows how to say.
  */
 export async function handleAutocomplete(interaction: AutocompleteInteraction) {
     if (interaction.commandName !== 'game') {

@@ -22,10 +22,29 @@
 
 **PostgreSQL `TEXT[]` kolone** na `games`: `genres`, `platforms`, `tags`,
 `developers`, `publishers`. PHP ih prima kao sirovi string
-`{Action,"Role-Playing (RPG)"}`. Eloquent ih kastuje kroz `PostgresArray`; kod
-sirovih `DB::table` upita **obavezno** kroz `pgArray()` prije bilo koje PHP
-array operacije. Filtriraju se s `@> ARRAY[?]::text[]`, što odgovaraju GIN
-indeksi `games_genres_gin` / `games_platforms_gin` / `games_tags_gin`.
+`{Action,"Role-Playing (RPG)"}`.
+
+**Postoji tačno jedan parser: `App\Casts\PostgresArray::parse()`.** Eloquent ga
+zove kroz cast, `GameController::pgArray()` je tanak omotač oko njega, i svaki
+sirovi `DB::table` upit mora proći kroz njega prije bilo koje PHP array
+operacije. Bilo ih je pet, od kojih su dvije dijelile po svakom zarezu — a
+**3.522 vrijednosti sadrže zarez** (2.715 `developers`, 454 `platforms`, 353
+`tags`; `genres` nijedna). `{"Cygames, Inc."}` je bio dva studija. Uz to, 120
+imena studija sadrži navodnik, a `str_getcsv` escape poštuje ali ne skida — zato
+`parse()` na kraju radi i unescape. **Ne piši šesti.**
+
+Filtriraju se s `@> ARRAY[?]::text[]`, što odgovaraju GIN indeksi
+`games_genres_gin` / `games_platforms_gin` / `games_tags_gin`. `developers`
+**nema** GIN i ne treba mu ga: nijedan upit u `pg_stat_statements` ne filtrira
+po toj koloni.
+
+**Indeksi za sortiranje kataloga** (`games_hub_rating`, `games_hub_popularity`,
+`games_hub_released`) postoje jer vodeći `ORDER BY` u `GameController::index` je
+izraz koji demotira izdanja, pa bez njih nijedno sortiranje nije indeksabilno —
+mjereno 295 ms i 141.287 buffera za 24 reda, s indeksom 0,36 ms i 78. **Izraz u
+migraciji mora ostati znak po znak isti kao u kontroleru**; Postgres izraz-indekse
+uparuje strukturno i onaj koji se razlikuje za jedan cast je onaj koji neće biti
+korišten.
 
 ---
 

@@ -856,6 +856,9 @@ function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
     const level = levelForXp(xp);
     // A level does not cost a flat thousand — the curve steepens with rank, so
     // `xp % 1000` disagreed with the profile's own bar at almost every value.
+    // The bar was corrected and the label beside it was not: it went on reading
+    // "/ 1,000 XP" while the bar filled against a band worth anywhere from 100
+    // to 3,788, so the two disagreed on the same line.
     const bandFloor = xpForLevel(level);
     const bandCeiling = xpForLevel(level + 1);
     const intoLevel = xp - bandFloor;
@@ -939,7 +942,7 @@ function UserMenu({ user, logout }: { user: HeaderUser; logout: () => void }) {
                                     {name}
                                 </span>
                                 <span className="block text-[11px] tabular-nums text-[var(--ink-low)]">
-                                    {intoLevel.toLocaleString()} / 1,000 XP to Level {level + 1}
+                                    {intoLevel.toLocaleString()} / {bandSize.toLocaleString()} XP to Level {level + 1}
                                 </span>
                             </span>
                         </Link>

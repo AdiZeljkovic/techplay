@@ -66,9 +66,11 @@ class AuthController extends Controller
             'password' => $validated['password'], // Model's 'hashed' cast handles hashing
         ]);
 
-        // Set role directly (not mass assignable for security)
-        $user->role = 'user';
-        $user->save();
+        // `users.role` is the legacy string column. It has no reader left —
+        // panel access moved to the `view admin panel` permission on 28 Aug and
+        // the public badge to Spatie on 29 Aug — and the column is NOT NULL
+        // with a default of 'user', so writing it here said nothing the schema
+        // was not already saying. One save fewer per registration.
 
         // Send email verification notification (don't block registration if this fails)
         try {

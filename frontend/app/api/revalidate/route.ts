@@ -16,7 +16,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         // 1. Verify secret token (security)
-        // Accept both x-revalidate-token (RevalidationService) and Authorization: Bearer (CacheRevalidationService)
+        //
+        // Two headers, because two services used to post here and each picked
+        // its own. They were merged into RevalidationService on 18 Aug 2026 and
+        // it sends Bearer; x-revalidate-token stays accepted so a queued job
+        // written before the merge still lands.
         const headerToken = request.headers.get('x-revalidate-token')
             ?? request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? null;
         // Two names for one secret have been in circulation: the backend's
@@ -37,7 +41,7 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const { type, slug, category } = body;
 
-        // Handle paths array (sent by CacheRevalidationService::revalidatePaths for GTA6 content)
+        // Handle paths array (sent by RevalidationService::revalidatePaths for GTA6 content)
         // An empty array is truthy, and the backend sends `paths: []` on every
         // article purge — so this branch swallowed the request, revalidated
         // nothing and answered "success".

@@ -40,8 +40,10 @@ class EnrichFromWikidata extends Command
 
         // ── our side of the join: name+year → game ids ───────────────────
         $ours = [];
-        DB::table('games')->select(['id', 'name', 'released'])->orderBy('id')
-            ->chunk(10000, function ($games) use (&$ours) {
+        // chunkById seeks past the last id read; chunk re-walks from the top
+        // with an OFFSET each pass, which on 332,000 rows is most of the cost.
+        DB::table('games')->select(['id', 'name', 'released'])
+            ->chunkById(10000, function ($games) use (&$ours) {
                 foreach ($games as $g) {
                     $year = $g->released ? (int) substr($g->released, 0, 4) : null;
                     $ours[mb_strtolower(trim($g->name))][] = ['id' => $g->id, 'year' => $year];

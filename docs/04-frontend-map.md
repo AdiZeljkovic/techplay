@@ -111,16 +111,26 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
 - **Real-time:** hooks `useRealTime*.ts` — Laravel Echo listeners na WebSocket channels
 
 ### Real-time hooks
-| Hook | Channel / Event |
-|------|----------------|
-| `useRealTimeNews` | News publish events |
-| `useRealTimeReviews` | Review publish events |
-| `useRealTimeComments` | Comment posted events |
-| `useRealTimeForum` | Forum reply events |
-| `useRealTimeGuides` | Guide publish events |
-| `useRealTimeVideos` | Video publish events |
-| `useRealTimeShop` | Shop stock update events |
-| `useRealTimeNotifications` | User notification events |
+
+**Ostao je jedan.** `hooks/useRealTimeForum.ts`, koji uvoze `ThreadClient.tsx` i
+`CategoryClient.tsx` — jedini stvarno spojen na stranicu.
+
+| Izvoz | Odakle | Ko ga uvozi |
+|------|--------|-------------|
+| `useRealTimeForum` | `hooks/useRealTimeForum.ts` | `CategoryClient.tsx` |
+| `useRealTimeThreadReplies` | isti fajl | `ThreadClient.tsx` |
+
+Obrisani 29.08.2026., jer su bili napisani, izvezeni i **nikad uvezeni ni u
+jednu stranicu** — bundler ih nije ni isporučivao: `useRealTimeNews`,
+`useRealTimeReviews`, `useRealTimeComments`, `useRealTimeGuides`,
+`useRealTimeShop`, `useRealTimeNotifications`, `useMediaKit`.
+
+> `useRealTimeVideos` je bio u ovoj tabeli a **nikad nije postojao u repou** —
+> provjereno, nula pogodaka u cijelom `frontend/`.
+
+**Pouka:** `useRealTimeThreadReplies` je bio na listi za brisanje i vraćen je.
+Nije zasebni fajl nego drugi izvoz iz `useRealTimeForum.ts`, pa je „nema fajla s
+tim imenom" izgledalo kao „niko ga ne koristi". **Traži uvoz, ne fajl.**
 
 ---
 

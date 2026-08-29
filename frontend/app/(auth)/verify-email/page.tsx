@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
         // Only a signed-in reader can be polled about their own status, and
         // only until they are verified — this used to keep polling behind the
         // success screen for as long as the tab stayed open.
-        if (!user) return;
+        if (!user || isVerified) return;
 
         let cancelled = false;
         const checkStatus = async () => {
@@ -39,7 +39,7 @@ export default function VerifyEmailPage() {
         const interval = setInterval(checkStatus, 5000);
 
         return () => { cancelled = true; clearInterval(interval); };
-    }, [user]);
+    }, [user, isVerified]);
 
     useEffect(() => {
         if (isVerified) setResendStatus("idle");

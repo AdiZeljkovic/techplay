@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Casts\PostgresArray;
 use App\Models\Game;
 use App\Models\User;
 use App\Models\UserGame;
@@ -143,10 +144,9 @@ class TasteMatchService
             return [];
         }
 
-        return array_filter(array_map(
-            fn (string $part) => trim($part, " \"'"),
-            explode(',', trim($value, '{}')),
-        ));
+        // Split here on every comma, so 454 platform values and 353 tags —
+        // anything with one inside — entered the taste vector as fragments.
+        return array_filter(array_map('trim', PostgresArray::parse($value)));
     }
 
     /* ── the maths ────────────────────────────────────────────────────── */

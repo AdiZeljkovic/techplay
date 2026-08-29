@@ -14,7 +14,7 @@ use Filament\Resources\Resource;
 // Grid is imported for the same reason Group and Section are: without it, PHP
 // resolves `Grid::make()` against the current namespace and looks for
 // App\Filament\Resources\Grid. That is what broke the create form for a
-// catalogue of 142,110 games — the page answered 500 and nobody could add one.
+// catalogue of 332,455 games — the page answered 500 and nobody could add one.
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
@@ -46,7 +46,7 @@ class GameResource extends Resource
     /**
      * Five hits, not fifty.
      *
-     * Filament's default is 50 per resource, and with 142,110 games in the
+     * Filament's default is 50 per resource, and with 332,455 games in the
      * catalogue any common word floods the panel: searching "adi" returned
      * fifty games and buried the two users it was actually looking for. The
      * point of a global search is to show a spread across types and let you
@@ -287,7 +287,7 @@ class GameResource extends Resource
     /**
      * The platforms worth filtering by.
      *
-     * Not read from the column: `platforms` is a `text[]` across 142,110 rows
+     * Not read from the column: `platforms` is a `text[]` across 332,455 rows
      * and `select distinct unnest(...)` on it is a full scan for a dropdown.
      * These are the ones a person actually looks for, spelled the way the
      * catalogue spells them.
@@ -320,7 +320,7 @@ class GameResource extends Resource
             'views',
             'platforms',
             'genres',
-            // No empty-string descriptions exist (checked: 0 of 142,110), so IS NOT
+            // No empty-string descriptions exist (checked: 0 of 332,455), so IS NOT
             // NULL is enough — and unlike a comparison it never has to detoast the
             // column to answer.
             DB::raw('(description IS NOT NULL) AS has_description'),
@@ -335,7 +335,7 @@ class GameResource extends Resource
              * Simple pagination: previous and next, no page numbers.
              *
              * The numbered pager has to ask `select count(*) from games` on
-             * every load, and on 142,110 rows Postgres answers that with a
+             * every load, and on 332,455 rows Postgres answers that with a
              * sequential scan — 83 ms measured, on a screen whose own render is
              * 130. Nobody pages to 5,684 anyway; the catalogue is reached by
              * searching and filtering.
@@ -345,7 +345,7 @@ class GameResource extends Resource
              * Selection stops at the page you are looking at.
              *
              * Filament's "select all" needs a total, and asking `count(*)` of
-             * 142,110 rows costs 52 ms on every single load of this screen —
+             * 332,455 rows costs 52 ms on every single load of this screen —
              * a quarter of its render time, spent so a checkbox can offer to
              * select a hundred and forty-two thousand games at once. That is
              * not an operation anyone should reach for from a list, and the
@@ -419,7 +419,7 @@ class GameResource extends Resource
              * Newest first, not highest rated.
              *
              * `defaultSort('rating', 'desc')` looked sensible and was the
-             * slowest thing in the panel. 114,301 of the 142,110 games have no
+             * slowest thing in the panel. 114,301 of the 332,455 games have no
              * rating at all, and Postgres sorts NULLs first on a DESC — so the
              * screen opened with a hundred and fourteen thousand unrated rows,
              * and the planner had to walk every one of them before it could
@@ -430,7 +430,7 @@ class GameResource extends Resource
              */
             ->defaultSort('id', 'desc')
             /*
-             * One filter for 142,110 rows was the thinnest tooling in the panel
+             * One filter for 332,455 rows was the thinnest tooling in the panel
              * on its largest list. These three are what curating a catalogue
              * this size actually asks of it, and each is backed by an index that
              * already exists — `games_platforms_gin` has been sitting there
@@ -443,7 +443,7 @@ class GameResource extends Resource
                     ->query(fn (Builder $q, array $data) => filled($data['value'] ?? null)
                         // `@> ARRAY[?]::text[]` is the containment operator the
                         // GIN index answers; `LIKE` on the array's text form
-                        // would scan all 142,110 rows.
+                        // would scan all 332,455 rows.
                         ? $q->whereRaw('platforms @> ARRAY[?]::text[]', [$data['value']])
                         : $q),
 

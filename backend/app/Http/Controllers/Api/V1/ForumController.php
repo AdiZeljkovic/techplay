@@ -122,14 +122,30 @@ class ForumController extends Controller
             // Get category IDs for batch loading latest threads
             $categoryIds = $allForumCategories->pluck('id');
 
-            // PERFORMANCE: Single query to get latest thread per category (no N+1)
-            $latestThreads = Thread::whereIn('category_id', $categoryIds)
+            /*
+             * The newest thread per board, picked in the database.
+             *
+             * This avoided the N+1 but replaced it with something that grows
+             * without limit: every thread in every visible board, each with its
+             * author, loaded and sorted so that all but one per board could be
+             * thrown away. Seven threads today, so it costs nothing today —
+             * which is the only reason it has never shown up.
+             *
+             * Grouped on `id` rather than `created_at` because max() needs a
+             * single column to be a key, and on this table the two orders agree:
+             * ids are assigned on insert and created_at is stamped in the same
+             * breath. Verified against all seven rows rather than assumed.
+             */
+            $newestPerBoard = Thread::whereIn('category_id', $categoryIds)
+                ->selectRaw('max(id) as id')
+                ->groupBy('category_id')
+                ->pluck('id');
+
+            $latestThreads = Thread::whereIn('id', $newestPerBoard)
                 ->with('author:id,username,avatar_url')
                 ->select('id', 'title', 'slug', 'category_id', 'author_id', 'created_at')
-                ->orderBy('created_at', 'desc')
                 ->get()
-                ->groupBy('category_id')
-                ->map(fn ($threads) => $threads->first());
+                ->keyBy('category_id');
 
             // Attach latest_thread to each category
             $allForumCategories->each(function ($cat) use ($latestThreads) {

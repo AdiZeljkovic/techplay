@@ -68,10 +68,13 @@ class EnrichFromSteam extends Command
         $already = DB::table('game_external_ids')->where('provider', 'steam')->pluck('game_id')->flip();
         $candidates = 0;
 
+        // chunkById, not chunk: the second seeks past the last id it read, the
+        // first re-counts from the top with an OFFSET on every pass. Sixty-seven
+        // passes over this catalogue, hourly, made it the third most expensive
+        // statement on the database — 16,624 calls for 38 minutes of it.
         DB::table('games')
             ->select(['id', 'name'])
-            ->orderBy('id')
-            ->chunk(5000, function ($games) use ($normalizer, $byKey, $already, &$candidates) {
+            ->chunkById(5000, function ($games) use ($normalizer, $byKey, $already, &$candidates) {
                 $rows = [];
                 foreach ($games as $game) {
                     if (isset($already[$game->id])) {

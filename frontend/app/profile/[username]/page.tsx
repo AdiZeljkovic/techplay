@@ -53,7 +53,11 @@ function ProfilePageInner() {
     // under it. Read from the same table the strip filters on: this used to
     // name "rewards" directly, and the day a second section became owner-only
     // the strip hid it while the body still rendered it.
-    const viewerIsOwner = !!currentUser?.username && currentUser.username === username;
+    //
+    // Folded, because one side of that comparison is the canonical stored name
+    // and the other is whatever casing the address bar was given.
+    const viewerIsOwner =
+        !!currentUser?.username && currentUser.username.toLowerCase() === username.toLowerCase();
     const ownerOnly = PROFILE_TABS.some((t) => t.id === wanted && t.ownOnly);
     const activeTab: ProfileTab = ownerOnly && !viewerIsOwner ? "overview" : wanted;
 

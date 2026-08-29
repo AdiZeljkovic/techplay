@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getServerApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
+import { ROBOTS_INDEX } from "@/lib/seo";
 import AuthorHeader from "@/components/author/AuthorHeader";
 import AuthorArticleGrid from "@/components/author/AuthorArticleGrid";
 import type { AuthorPageData } from "@/types";
@@ -56,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alternates: {
             canonical: authorUrl,
         },
-        robots: { index: true, follow: true },
+        robots: ROBOTS_INDEX,
     };
 }
 

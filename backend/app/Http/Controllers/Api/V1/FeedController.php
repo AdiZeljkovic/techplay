@@ -211,7 +211,21 @@ class FeedController extends Controller
      */
     private function rank(InterestProfile $profile): Collection
     {
-        $rows = collect($this->feed->query()->limit(self::CANDIDATES)->get());
+        /*
+         * The candidates are the same four hundred rows for everybody.
+         *
+         * Nothing about this query depends on the profile — only the scoring
+         * below does — so it was being run once per signed-in reader per page
+         * of their feed to fetch a list identical to the one the previous
+         * reader had just fetched. Two minutes is short enough that a new
+         * article reaches a personalised feed about as fast as it reaches the
+         * cached `latest` one above, which holds for five.
+         */
+        $rows = collect(Cache::remember(
+            'feed.candidates.v1.'.self::CANDIDATES,
+            120,
+            fn () => $this->feed->query()->limit(self::CANDIDATES)->get()->all()
+        ));
 
         return $rows
             ->reject(fn ($row) => $row->kind === 'article' && isset($profile->seen[(int) $row->id]))

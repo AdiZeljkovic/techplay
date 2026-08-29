@@ -7,6 +7,7 @@ use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Something the panel should know about, addressed to staff.
@@ -66,11 +67,22 @@ class AdminAlert extends Notification
     }
 
     /**
-     * Everyone who can open the panel.
+     * Whoever is responsible for the machine.
      *
-     * There is one such account today. Written as a query rather than a
-     * constant so the second one is included the day it exists.
+     * This looked for `users.role = 'admin'` or a Spatie role *named* 'admin',
+     * and there has never been a role by that name — the ladder is Editor,
+     * Editor-in-Chief, Journalist, Moderator, Super Admin. So the Spatie half
+     * matched nobody and every alert this site has ever raised was delivered on
+     * the strength of a legacy column that is being retired. Cleaning that
+     * column would have silently addressed these to no one.
+     *
+     * Super Admin rather than everyone who can open the panel: all five roles
+     * carry `view admin panel`, and a failed queue job is not a Journalist's
+     * problem. If the role is ever renamed this returns zero, and the caller
+     * says so rather than reporting a delivery that did not happen.
      */
+    public const AUDIENCE = 'Super Admin';
+
     public static function send(
         string $title,
         ?string $body = null,
@@ -80,9 +92,16 @@ class AdminAlert extends Notification
         ?string $urlLabel = null,
     ): int {
         $admins = User::query()
-            ->where(fn ($q) => $q->where('role', 'admin')
-                ->orWhereHas('roles', fn ($r) => $r->where('name', 'admin')))
+            ->whereHas('roles', fn ($r) => $r->where('name', self::AUDIENCE))
             ->get();
+
+        if ($admins->isEmpty()) {
+            Log::error('AdminAlert reached nobody: no user holds the '.self::AUDIENCE.' role.', [
+                'title' => $title,
+            ]);
+
+            return 0;
+        }
 
         foreach ($admins as $admin) {
             $admin->notify(new self($title, $body, $colour, $icon, $url, $urlLabel));

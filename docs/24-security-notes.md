@@ -73,7 +73,7 @@
 - **Provjeri:** Jel admin login ima 2FA? Nema vidljivog 2FA servisa
 
 ### Upload sigurnost
-- `ImageService` / `ImageOptimizationService` postoje
+- `ImageService` postoji (`ImageOptimizationService` obrisan 29.08.2026 — nije radio od januara)
 - **Provjeri:** Da li se verificira MIME type (ne samo ekstenzija)?
 - **Provjeri:** Da li se slike uploaduju van web roota (storage, ne public)?
 - **Rizik:** PHP execution u upload folderu

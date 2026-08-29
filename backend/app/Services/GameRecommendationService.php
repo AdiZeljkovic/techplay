@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Casts\PostgresArray;
 use App\Models\Game;
 use App\Models\User;
 use App\Services\Chronicle\TasteProfileService;
@@ -412,16 +413,7 @@ class GameRecommendationService
             return $decoded;
         }
 
-        $trimmed = trim($raw, '{}');
-
-        if ($trimmed === '') {
-            return [];
-        }
-
-        return array_map(
-            fn (string $part) => trim($part, ' "'),
-            preg_split('/,(?=(?:[^"]*"[^"]*")*[^"]*$)/', $trimmed) ?: []
-        );
+        return PostgresArray::parse($raw);
     }
 
     private function humanList(array $items): string

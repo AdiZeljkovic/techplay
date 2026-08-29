@@ -588,9 +588,276 @@ Rootov PM2 daemon s nula procesa ugašen (držao 23 MB) · `/var/log/techplay-se
 
 ---
 
+# RUNDA 29.08.2026 — Discord, Battle.net, media pipeline i ostatak
+
+Nalog je bio: popraviti Discord i Battle.net, preskočiti Shop, reći s čim je
+povezan media pipeline, uraditi sve ostalo što se može, i **obrisati sve što
+nigdje nije povezano i ne radi**.
+
+## Battle.net — imao je dvije greške, svaka sama po sebi fatalna
+
+Prva je bila u dokumentu: config je čitao `BATTLENET_CLIENT_ID` i
+`BATTLENET_CLIENT_SECRET`, imena koja ne postoje ni u jednoj od pet arhiviranih
+kopija `.env`-a, dok kredencijali iz Blizzardovog portala stoje pod `BLIZZARD_*`.
+Blizzard izdaje **jedan** klijent po aplikaciji i on služi i za API i za prijavu,
+pa je fallback ispravan, a ne prečica.
+
+Druga nije bila u dokumentu i gora je: `BATTLENET_REDIRECT_URI` je pokazivao na
+`https://techplay.gg/auth/callback` — **frontend stranicu koja čita `?token=`**.
+To je ono što joj backend pošalje *poslije* razmjene. Battle.net bi tamo
+dostavio `?code=` i stranica ne bi znala šta s tim. Ista greška koju komentar
+iznad `discord.redirect` opisuje kao već popravljenu, ovdje ostavljena.
+
+Izmjereno na produkciji prije popravke — `redirect_uri` koji je stvarno išao
+Blizzardu bio je `https%3A%2F%2Ftechplay.gg%2Fauth%2Fcallback`; poslije popravke
+`.env`-a i restarta octanea šalje `%2Fapi%2Fv1%2Fauth%2Fbattlenet%2Fcallback`.
+
+**Ostaje tebi:** u Blizzardovom portalu redirect URI mora biti tačno
+`https://techplay.gg/api/v1/auth/battlenet/callback`.
+
+## Discord — ne može se popraviti iz repoa
+
+`DISCORD_CLIENT_SECRET` **nikad nije postojao** ni u jednoj arhiviranoj kopiji.
+Dakle prijava nije pokvarena — nikad nije ni radila. Treba vrijednost iz Discord
+developer portala, upisana direktno u `/var/www/techplay/backend/.env`. Redirect
+je već ispravan.
+
+## Media pipeline — s čim je povezan i zašto je obrisan
+
+Lanac je bio: upload u adminu → `MediaObserver` → `ImageOptimizationService` →
+WebP kopija pored originala, izložena kao `webp_url`.
+
+Ne radi jer `intervention/image` nije instaliran, pa je servis vraćao
+„nedostupan" i observer izlazio na prvoj liniji. **Od 1.176 slika samo 18 ima
+WebP, zadnja od 17. januara** — sedam mjeseci. Niko nije primijetio jer
+`next.config` ima `formats: ['image/webp']`, dakle Next već konvertuje naše
+uploade pri serviranju, a `webp_url` ne čita niko — samo stoji u `$appends`.
+
+Nije povezano i ne radi → servis i observer obrisani. `ImageOptimizer` (GD)
+ostaje: radi i zovu ga dvije ručne komande.
+
+## Mjerenja koja su ispravila nalaze iz ovog dokumenta
+
+Ovo je najvredniji dio runde, jer pet nalaza iz sekcije „Trošak" nije bilo
+tamo gdje je dokument tvrdio.
+
+| Nalaz | Šta dokument tvrdi | Šta mjerenje kaže |
+|---|---|---|
+| **F1 games hub** | fali indeks za sortiranje | **Tačno, i gore nego opisano.** Vodeći `ORDER BY` je izraz koji demotira izdanja, pa je *svako* sortiranje neindeksabilno: pun paralelni seq scan 332.455 redova + top-N heapsort, **295 ms i 141.287 buffera** za 24 reda. Izraz-indeks: **0,36 ms i 78 buffera.** |
+| **B19 ForumController::categories** | učitava cijelu threads tabelu, raste linearno | Struktura je tačna, **cijena nije: forum ima 7 threadova, upit traje 0,105 ms.** Popravljeno svejedno (jeftino), ali bez ijednog dobitka danas. |
+| **B19 CalendarController** | neukeširan GROUP BY po ~1.100 slugova po requestu | **679 redova u `user_games`, od toga nula wishlist. 0,097 ms.** Nije dirano. |
+| **B19 FeedController::personalized** | 400 redova bodovanih u PHP-u po requestu, bez keša | Tačno. Ali skupi dio nije bodovanje nego to da su **kandidati identični za svakog korisnika** i da se profil (4 upita) gradi iznova pri svakom listanju. Oboje keširano. |
+| **A5.8 `developers` bez GIN-a** | upit je jednom stajao 36 minuta | Nijedan upit u `pg_stat_statements` ne filtrira po `developers`. Indeks nije dodat. |
+
+**Ono što dokument nije našao, a najskuplje je bilo.** `pg_stat_statements` za
+12 dana kaže da je najskuplji upit u cijeloj bazi bio sitemap katalога igara:
+
+```
+select "slug","updated_at" from "games" where description is not null
+  and length(regexp_replace(...)) > $4 order by "slug" limit $5 offset $6
+     1.770 poziva · prosjek 3.095 ms
+select "slug","updated_at" from "games" where description is not null
+  order by "slug" limit $1 offset $2
+    21.508 poziva · prosjek 212 ms
+```
+
+Zajedno **23.278 poziva i oko 2,8 sati** vremena baze. Uzrok su dva sloja:
+parcijalni indeks (riješen ranije danas) i **dubok OFFSET**, koji je ostao.
+`->each()` čita u komadima po hiljadu, a s `offset()` na upitu svaki komad
+ponovo prohoda cijeli put od početka — pedeset upita po fajlu, zadnji preskače
+četvrt miliona unosa. Svaki dolazak crawlera na `sitemap-games-5.xml` plaćao je
+taj hod iznova.
+
+Prelaskom na hod po `slug`-u (`slug` ima unique indeks, pa `>` ne može preskočiti
+red): **226.693 → 894 buffera po komadu.**
+
+Isti obrazac nađen još dva puta: `games:enrich-steam` (satno, 67 komada po
+prolazu, **16.624 poziva / 38 minuta**) i `games:enrich-wikidata`. Oba prebačena
+na `chunkById`.
+
+## Indeksi — provjereno, i ništa se ne briše
+
+Cijela baza ima **tačno jedan** neiskorišten indeks veći od 1 MB:
+`games_lower_name_idx` (12 MB, 0 skenova). Umalo obrisan — a **koristi se**:
+`GameMatchingService` na tri mjesta radi `LOWER(name) = ?`, `EXPLAIN` pokazuje
+Index Scan i 0,154 ms. Nula skenova znači samo da se ta putanja nije izvršila u
+12 dana. Ostavljen.
+
+`threads` ima 16 indeksa na **7 redova**, od kojih 8 s nula skenova. Nisu
+obrisani: na tabeli te veličine „0 skenova" govori o veličini tabele, ne o
+vrijednosti indeksa, a jedini strukturno sigurni (prefiks pokriven drugim
+indeksom) ne koštaju ništa mjerljivo. Zabilježeno, ne dirano.
+
+## TEXT[] parsiranje — pet kopija, dvije stvarno pogrešne
+
+Sada jedan `PostgresArray::parse()`, kroz koji idu svi. Dvije kopije su dijelile
+po **svakom** zarezu, što je tačno dok vrijednost ne sadrži zarez — a **3.522 ih
+sadrži**: 2.715 imena studija, 454 platforme, 353 taga. `{"Cygames, Inc."}` se
+vraćao kao dva studija, `4X (explore, expand, exploit, and exterminate)` kao
+četiri taga. Oba parsera hrane taste matching, pa su fragmenti postajali nečiji
+interesi.
+
+Usput je test uhvatio drugu grešku, u **kanonskoj** verziji: `str_getcsv` poštuje
+escape ali ga ne skida, pa je `Ken \"coda\" Snyder` izlazio s obje kose crte.
+**120 imena razvojnih studija** ima navodnik u sebi. Dodat je unescape.
+
+Napomena o mom vlastitom komentaru: prvi put sam napisao da je primjer „Hack and
+Slash, Beat 'em up" **žanr**. Netačno — `genres` je jedina array kolona s **nula**
+zareza. Komentari i test sada nose vrijednosti prepisane iz baze.
+
+## XP labela u headeru — nalaz je bio pogrešan, greška je stvarna
+
+Dokument tvrdi „XP→level drift FE/BE, Header računa lokalno". Krivulje su
+**identične** — 20 sidara i `XP_PER_LEVEL_BEYOND` se poklapaju red po red.
+
+Ali odmah ispod: `bandSize` se računa iz krivulje i traka se puni ispravno, dok
+labela pored nje piše hardkodirano **„/ 1.000 XP"**. Komentar dva reda iznad
+doslovno kaže da nivo ne košta ravnu hiljadu. Neko je popravio matematiku i
+ostavio tekst, pa su traka i broj na istom redu govorili različito. Nivo košta
+između 100 i 3.788 XP, ovisno o rangu.
+
+## Ostalo u ovoj rundi
+
+**Sigurnosna regresija:** devet `.env.bak.*` fajlova u backendu, svi `-rwxr-xr-x`
+(**svima čitljivi**), s po 23–25 tajni. docs/76 je 28.08. očistio tri takva;
+ovih devet je preživjelo. Obrisani. Kopija aktivnog `.env`-a sada ide u
+`/root/env-backups` s pravima 0600, izvan web stabla.
+
+**Obrisane dvije tabele** koje su napravljene i nikad korištene:
+`forum_categories` (boardovi žive u `categories` s `type='forum'`) i
+`subscription_plans` (plaćeni nivo koji nikad nije napravljen). Obje prazne, bez
+stranog ključa, bez pomena u `app/`. **Treća je bila na spisku i ostaje:**
+`queue_monitor_failure_groups` izgleda jednako mrtvo iz `app/`, ali ga piše
+`croustibat/filament-jobs-monitor` i ima dva reda — brisanje bi slomilo monitor
+pri sljedećem padu, ne pri migraciji.
+
+**Discord bot** (detalji u `docs/18`): presence throttle je propuštao promjene a
+ponavljao nepromijenjeno stanje svakih 30 s — i pošto promjena naslova zove
+`bankSession()`, launcher koji trepće je upisivao odigrane sesije koje niko nije
+odigrao · feed je ostajao mrtav do restarta ako backend nije bio dostupan pri
+dizanju · „Member of the Week" je krunisao po izmišljenih 15 XP po poruci umjesto
+po `xp_awarded` koji backend vraća poslije dnevne granice · StatusService je na
+jedan timeout javno pisao „Maintenance" · najava o preticanju je išla u kanal u
+kojem je neko slučajno pisao · dispatch komandi bez try/catch.
+
+**Frontend** (agent je uz to ispravio dva nalaza): verify-email je pollirao
+zauvijek iza ekrana uspjeha, i to iza komentara koji je tvrdio da je popravljeno ·
+CartContext je u istom prolazu upisivao prazno preko spašene korpe · **pravi bug
+oko odjave nije bio u `verifyToken` nego u `fetchAndSetUser`**, gdje je *bilo koji*
+neuspješan status — 500, 502 s restarta octanea, 429 s limitera — tumačen kao
+nevažeći token · tri stranice su ručno pisale `robots` i gubile
+`max-image-preview:large`, a jedna od njih je prethodno već imala ispravnu
+vrijednost iz helpera pa ju je pregazila slabijom.
+
+Dva nalaza koje je agent provjerio i **oborio**: giveaway leaderboard stvarno
+pollira bez provjere vidljivosti, ali komponenta **nije nigdje importovana**, pa
+danas ne košta nijedan zahtjev; provjera vlasnika profila jest case-sensitive,
+ali `/profile/AdiZ` nikad ne stigne do nje — backend traži `where('username',...)`
+bez `citext`, pa layout javi 404 prije toga.
+
+## `users.role` — druga vlast, i alarm koji je zavisio od nje
+
+28.08. je zatvoren ulaz u admin panel kroz tu kolonu. Ostala su dva mjesta koja
+su je i dalje čitala, i jedno od njih je bilo gore od ulaza.
+
+Podaci: **tačno jedan** nalog ima `role = 'admin'` (vlasnikov, koji ionako ima
+Super Admin), a **tri** naloga imaju `role = 'user'` dok drže Super Admin,
+Editor-in-Chief ili Journalist. Kolona dakle griješi u oba smjera.
+
+- `PublicUserResource` je javni bedž računao kao Spatie **ili** ta kolona. Sada
+  samo Spatie. Nijedan bedž se ne mijenja — provjereno po korisniku, ne po zbiru.
+- `AdminAlert::send()` je tražio `role = 'admin'` **ili Spatie rolu imena
+  `'admin'`**. Takva rola **nikad nije postojala** — ljestvica je Editor,
+  Editor-in-Chief, Journalist, Moderator, Super Admin. Znači Spatie polovica nije
+  pogađala nikoga i svaki alarm koji je ovaj sajt ikad podigao stigao je isključivo
+  zahvaljujući zastarjeloj koloni. **Da je kolona očišćena, alarmi o padu jobova
+  ne bi stizali nikome — tiho.** Sada gađa `Super Admin` i loguje grešku ako ne
+  nađe nikoga.
+- Dva upisa u kolonu (registracija i Discord OAuth) su uklonjena: kolona je
+  `NOT NULL DEFAULT 'user'`, pa nisu govorili ništa što šema već ne govori.
+
+Kolona je sada **bez ijednog čitaoca**. Namjerno nije obrisana u istom potezu —
+ako se neki bedž ipak izgubi, podatak treba da postoji za provjeru. Brisanje je
+sljedeći korak, kad se potvrdi na produkciji.
+
+Pet testova drži liniju: `tests/Feature/LegacyRoleColumnTest.php`.
+
+## Admin panel — dvije stvari koje su stvarno pucale
+
+**„Most Viewed Articles" je pokazivao draftove.** `scopePopular()` samo sortira;
+javna naslovnica mu proslijedi upit koji je već filtriran na objavljeno, a widget
+mu je davao goli model. Draft ima preglede jer ga je redakcija otvarala. Uz to,
+kolona Category je bila jedan upit po redu — do 25 na najvećoj stranici.
+
+**Bulk „Check again" je gađao 504.** Izmjereno: `/admin` ide kroz nginx
+`location /` koji ima **`proxy_read_timeout 60s`**, a akcija je davala svakom
+linku do 10 s mreže, do 25 njih, u samom zahtjevu. **Selekcija od sedam je već
+prelazila timeout.** Redovi do kojih je petlja stigla su se upisali, ostali nisu,
+a obavijest s brojem nije stigla — posao se desio napola i izgledao kao pad. Sada
+ide u red (`RecheckBrokenLinks`), a panel odmah kaže šta je preuzeo. Trenutno ima
+62 pokvarena linka, dakle selekcija „sve" je bila 620 sekundi.
+
+## WoW analiza — dvije činjenice zamrznute u trenutku pisanja
+
+Alat je mjesecima govorio dvije neistine, obje izrečene s istom sigurnošću kao i
+dijelovi koji su čitani iz stvarnog lika — a to je ono što ih čini skupim, jer
+čitalac ne može razlikovati jedno od drugog.
+
+**Prva: odbrojavanje koje je isteklo.** Prompt je računao `max(0, launch - now)`
+prema 2. martu 2026. Od tog datuma svaka analiza je pisala *„launches March 2,
+2026 — 0 days left"*. Danas je 29. avgust; to stoji tako skoro šest mjeseci.
+Odbrojavanje koje je isteklo nije odbrojavanje — poslije datuma prompt sada kaže
+da je ekspanzija živa.
+
+**Druga: afiksi upisani rukom.** Tri komada u heredocu — Tyrannical/Fortified,
+Xal'atath's Guile, Shardborne. Bili su tačni jednu sedmicu početkom 2026. i
+pogrešni svake sedmice otad. Provjereno uživo na Raider.IO danas: aktuelna
+rotacija je *Xal'atath's Bargain: Voidbound, Tyrannical, Fortified, Xal'atath's
+Guile* — dakle **Shardborne odavno nije u igri**, a model je za njega mjesecima
+davao strategije.
+
+Sada se povlače s Raider.IO (`getCurrentAffixes()`, keš 6 h — afiksi se mijenjaju
+jednom sedmično na resetu). Ako Raider.IO ne odgovori, **sekcija se izostavlja**
+umjesto da se pogađa, a JSON ugovor traži opšti M+ savjet u tom slučaju. Savjet
+koji ne pominje afikse vrijedi više od savjeta o pogrešnima.
+
+**Usput:** „KEY MIDNIGHT FACTORS" je bio predlansirni spisak koji niko nije
+revidirao, pa je alat i dalje slao ljude po Royal Voidwing (prestao biti dostupan
+**na lansiranju**) i savjetovao da profesije budu spremne za craft „day 1" — dan
+prvi je bio u martu. Spisak sada zavisi od toga je li lansiranje prošlo.
+
+Pet testova u `tests/Feature/WowPromptStaysCurrentTest.php` drži da se nijedno od
+ovoga ne može ponovo zamrznuti.
+
+## Nalazi provjereni i ostavljeni, s razlogom
+
+- **Giveaway tabela radi COUNT po redu.** 2 giveawaya, 21 prijava. Ne dira se.
+- **`games:enrich-wikidata` nije u scheduleru.** Radi; to je ručni backfill alat,
+  ne periodičan posao. Ostaje ručni — ali je prebačen na `chunkById`, jer je
+  dijelio isti dubok OFFSET s enrich-steam.
+- **`pollinate` je enabled.** Oneshot pri bootu, ne dnevni poziv. Gašenje ne
+  donosi ništa a dira entropiju pri dizanju. **`motd-news` je ugašen** — to je
+  bio dnevni odlazni poziv Canonicalu bez ikakve vrijednosti na headless mašini.
+- **`/admin` radi i na `techplay.gg`, ne samo na `api-beta`.** Isti auth, kolačić
+  `.techplay.gg` pokriva oba, dakle nije zaobilaženje ovlaštenja — nego prijavni
+  ekran na javnoj domeni koju najviše gađaju skraperi, izvan pravila vezanih za
+  api-beta. Nije dirano: ne znam gdje se ti prijavljuješ, a blokada bi te mogla
+  zaključati. **Ide među tvoje odluke.**
+
+---
+
 # ŠTA JE OSTALO — pregled 29.08.2026
 
-Prolaz kroz **svaki** nalaz iz ovog dokumenta i njegov status danas. Od 🔴 nalaza ostaje **nula**; od 🟠 ostaje devet; ostatak je 🟡 i odluke.
+Prolaz kroz **svaki** nalaz iz ovog dokumenta i njegov status danas.
+
+**Stanje na kraju 29.08.:** od 🔴 ostaje **nula**, od 🟠 ostaje **nula**, od 🟡
+ostaje **jedan** (PayPal, svjesno — Shop je „coming soon"). Sve ostalo što stoji
+su **odluke koje ne mogu donijeti umjesto tebe**, ili konsolidacije svjesno
+preskočene jer ne popravljaju ništa što je danas pokvareno.
+
+Pet nalaza iz sekcije „Trošak" pokazalo se **netačnim ili beznačajnim** kad su
+izmjereni, a **najskuplja stvar u bazi uopšte nije bila u dokumentu**. To je
+zabilježeno po stavci ispod, jer je pouka vrednija od popravke.
 
 ## 1. Čeka tvoju odluku
 
@@ -606,59 +873,79 @@ Dolaze još tri koje ne mogu donijeti sam:
 
 ## 2. Bugovi koji su i dalje živi
 
-Ništa od ovoga ne ruši sajt, ali svako radi nešto pogrešno **danas**:
+Od trinaest iz ove tabele **ostaju dva** — oba čekaju odluku, ne rad.
 
-| | Šta | Nalaz |
+| | Šta | Status |
 |---|---|---|
-| 🟠 | **Admin izmjena korisničkog sadržaja zaobilazi `SanitizationService`** (Comment, GameRating, Post, Thread — sanitizacija živi samo u API kontrolerima), a `PostResource` ga renderuje `->html()` | C6 |
-| 🟠 | **Izmjena igre u adminu ne čisti nginx keš** — deploy ga prazni, pojedinačna izmjena ne; stranica ostaje ustajala do sat vremena | D2 |
-| 🟠 | **Presence se emituje na JAVNI kanal** bez privacy gatea (`new Channel("presence.{id}")`), i to i kad se ništa nije promijenilo — svake 2 min po igraču | B13 |
-| 🟠 | **Vraćanje zaliha pri otkazivanju ide query-builderom**, pa `ProductObserver` ne opali → keš i broadcast ne vide vraćene zalihe | B13 |
-| 🟠 | **Notifikacija o komentaru linkuje na `/articles/{slug}`** — `getContentUrl` gradi `/{type}s/{slug}`, a članci se serviraju pod `/news`, `/reviews`, `/hardware` | B13 |
-| 🟡 | **SeoManager filter „category" gađa kolonu koje nema** — upotreba filtera baca SQL grešku | C7 |
-| 🟡 | **`/hardware` sluša tag `hardware` koji niko ne šalje** (spašava ga path purge; popravka je jedan red na `['tech']`) | D9 |
-| 🟡 | **GTA6 character purge je no-op** (`revalidatePath` na dinamičkoj ruti) — izmjene lika čekaju 1 h | D9 |
-| 🟡 | **WoW analiza je sadržajno zamrznuta na mart 2026** — vječno „0 days left", prošlosezonski afixi u promptu | B13 |
-| 🟡 | **PayPal:** token se ne kešira (dvije runde po operaciji), a `captureOrder` šalje Guzzle opcije **kao tijelo zahtjeva** (radi jer PayPal ignoriše nepoznata polja) | B13 |
-| 🟡 | **Bot:** presence throttle je izvrnut · feed ostaje mrtav do restarta ako backend nije dostupan pri startu · „Member of the Week" broji fiktivnih 15 XP · StatusService na prolaznu grešku javno kaže „Maintenance" · overtake najave slijeću u pogrešan kanal · dispatch komandi bez try/catch | E5, E6 |
-| 🟡 | **Frontend sitno:** verify-email pollira i poslije uspjeha · CartContext ima prozor od jednog frejma u kojem mount pregazi korpu · pad `/auth/me` na cold-loadu šalje ulogovanog na /login · giveaway leaderboard pollira i kad je tab skriven · owner provjera profila je case-sensitive | D10 |
+| ✅ | **WoW analiza je sadržajno zamrznuta na mart 2026** — vječno „0 days left", prošlosezonski afixi | **Riješeno 29.08.**, vidi ispod |
+| 🟡 | **PayPal:** token se ne kešira, a `captureOrder` šalje Guzzle opcije kao tijelo zahtjeva | **Ostaje namjerno** — Shop je „coming soon", tvoja odluka |
+| ✅ | Admin izmjena zaobilazi `SanitizationService` (C6) · nginx keš ne zna za izmjenu igre (D2) · presence na javnom kanalu (B13) · zalihe mimo observera (B13) · notifikacija linkuje na nepostojeći put (B13) · SeoManager filter baca SQL (C7) · `/hardware` tag (D9) · GTA6 purge no-op (D9) | Riješeno 29.08. |
+| ✅ | **Bot** — svih šest (E5, E6). Uz ispravku: presence throttle **nije** bio izvrnut operator nego strukturno pogrešan uslov, i najave o preticanju nisu išle u „pogrešan kanal" nego u **kanal u kojem je neko slučajno pisao** | Riješeno 29.08. |
+| ✅ | **Frontend** — svih pet (D10). Dva nalaza **oborena**: giveaway leaderboard nije nigdje importovan, a case-sensitive provjera vlasnika se nikad ne dosegne | Riješeno 29.08. |
 
 ## 3. Trošak koji se i dalje plaća
 
-| | Šta | Nalaz |
+Ostaje **nula**. Ali tri stavke nisu bile problem, a najveći trošak nije bio u ovoj tabeli.
+
+| | Šta je tvrđeno | Šta je izmjereno |
 |---|---|---|
-| 🟠 | **`FeedController::personalized`** povlači 400 redova i boduje ih u PHP-u **po svakom requestu**, bez keša | B19 |
-| 🟠 | **`ForumController::categories`** učitava CIJELU threads tabelu s autorima da uzme po jedan red po boardu — raste linearno s forumom | B19 |
-| 🟠 | **N+1 kroz `CommentAuthorResource::is_staff`** — jedan roles upit po redu komentara, do 185 redova po stranici (fix: eager `user.roles`) | B19 |
-| 🟠 | **`CalendarController`** dekoriše mjesec neukeširanim GROUP BY po ~1.100 slugova po requestu | B19 |
-| 🟠 | **Games hub je ostao bez indeksa za sortiranje** — vodeći ORDER BY izraz je neindeksabilan, `released` nema pun indeks, `rating ASC` btree ne služi `DESC NULLS LAST` | F1 |
-| 🟡 | **BrokenLink bulk „check again"** = do 25 sinhronih HTTP provjera u jednom Livewire requestu (~250 s, preko svakog timeouta) | C8 |
-| 🟡 | **MostViewedArticles** bez eager loada (N+1) i bez filtera na published — draftovi u listi | C8 |
-| 🟡 | **Giveaway tabela** radi COUNT po redu za visible i modal | C8 |
-| 🟡 | **`developers` TEXT[] nema GIN** — upit koji ga koristi stajao je 36 minuta jednom; ako se ponovi, stoji opet | A5.8 |
+| ✅ | **Games hub bez indeksa za sortiranje** (F1) | Tačno i gore: 295 ms / 141.287 buffera → **0,36 ms / 78** |
+| ✅ | **`FeedController::personalized`** bez keša (B19) | Tačno, ali trošak nije bodovanje nego identičan set kandidata po korisniku + profil od 4 upita po stranici. Oboje keširano |
+| ✅ | **N+1 kroz `is_staff`** (B19) | Tačno, riješeno ranije danas |
+| ✅ | **BrokenLink bulk** ~250 s (C8) | Tačno, i konkretnije: `/admin` ima **`proxy_read_timeout 60s`**, dakle selekcija od sedam je već padala. U red |
+| ✅ | **MostViewedArticles** draftovi + N+1 (C8) | Tačno, riješeno |
+| ⬜ | **`ForumController::categories`** raste linearno (B19) | Struktura tačna, **cijena nije: 7 threadova, 0,105 ms.** Popravljeno svejedno |
+| ⬜ | **`CalendarController`** GROUP BY po ~1.100 slugova (B19) | **679 redova u `user_games`, nula wishlist, 0,097 ms.** Ne dira se |
+| ⬜ | **Giveaway tabela** COUNT po redu (C8) | **2 giveawaya, 21 prijava.** Ne dira se |
+| ❌ | **`developers` TEXT[] nema GIN** (A5.8) | **Nijedan upit ne filtrira po `developers`.** Indeks nije dodat |
+| ⚠️ | *(nije bilo u tabeli)* | **Sitemap katalога: 23.278 poziva, ~2,8 sati baze — najskuplja stvar u cijeloj bazi.** Dubok OFFSET; 226.693 → 894 buffera po komadu |
+| ⚠️ | *(nije bilo u tabeli)* | **`games:enrich-steam`: 16.624 poziva, 38 minuta.** Isti obrazac, isti lijek |
 | 🟡 | **Pola miliona view UPDATE-a sedmično** ide red po red; batch upis bi smanjio WAL (0 ms po pozivu, nije hitno) | A5.6 |
 
 ## 4. Dupli sistemi koji su ostali
 
-Od devetnaest iz presjeka **riješeno je devet**. Ostaje:
+Od devetnaest iz presjeka **riješeno je petnaest**. Preostalih pet nisu posao
+nego odluke ili svjesno preskočeno: **#4** i **#5** traže da odlučiš šta radi
+notifikacije, **#14** je Shop, a **#11** i **#12** su stilske konsolidacije kroz
+desetine fajlova koje ne popravljaju nijedno ponašanje koje je danas pokvareno.
+
+Ispod je stanje svih devetnaest, s onim što je mjerenje reklo:
 
 | # | Sistem | Zašto još stoji |
 |---|---|---|
 | 4 | **Detekcija vijesti u botu** — PollingService + SubscriptionService, dva stanja istine | Traži odluku šta radi DM notifikacije |
 | 5 | **Notifikacije korisniku** — Header polling + mrtav push sistem | = odluka D6 gore |
-| 7 | **Slike** — dva nekompatibilna pipeline-a | = odluka B12 gore |
-| 8 | **TEXT[] parsiranje** ×5 (kanonski cast + 4 kopije, 2 naivne pucaju na zarezu u vrijednosti) | Nije dirano |
-| 9 | **XP→level matematika** FE/BE — Header računa lokalno, ProfileHero čita backend; **drift je već živ** | Nije dirano |
+| 7 | **Slike** — dva nekompatibilna pipeline-a | **Riješeno 29.08.** WebP pipeline je bio mrtav sedam mjeseci (18 od 1.176 slika); Next ionako konvertuje. Obrisan; `ImageOptimizer` ostaje |
+| 8 | **TEXT[] parsiranje** ×5 (2 naivne pucaju na zarezu u vrijednosti) | **Riješeno 29.08.** Jedan `PostgresArray::parse()`. Pogađalo je **3.522 vrijednosti**, ne teoriju. Test je usput našao i grešku u kanonskoj verziji: escape se poštovao ali nije skidao, pa je 120 imena studija imalo kose crte u sebi |
+| 9 | **XP→level matematika** FE/BE — Header računa lokalno, ProfileHero čita backend; **drift je već živ** | **Nalaz netačan.** Krivulje su identične — 20 sidara i `XP_PER_LEVEL_BEYOND` se poklapaju red po red. Ali dva reda niže je stvarna greška: labela je pisala hardkodirano „/ 1.000 XP" pored trake koja se puni prema pojasu vrijednom 100–3.788. Popravljeno |
 | 11 | **SWR `fetcher`** — 57 fajlova ima vlastitu definiciju, s različitim unwrapovima | Svjesno preskočeno (vidi 6) |
 | 12 | **Modali** — `ui/Dialog` + 9 ručnih overlaya, z-index 30–9998 | Svjesno preskočeno |
-| 13 | **API base URL** na 4 mjesta — og rute i dalje fallbackuju na `api.techplay.gg` koji **ne rezolvira** | Nije dirano |
+| 13 | **API base URL** na 4 mjesta — og rute su fallbackovale na `api.techplay.gg` koji **ne rezolvira** | **Riješeno 29.08.** Og rute su preusmjerene ranije danas; provjereno da nijedan živi kod više ne pominje taj host. Ali **sedam dokumenata ga je navodilo kao produkcijski API** (`docs/01`, `02`, `08`, `22`, `30`, `README`, `full-platform-map`) — svako ko bi ih slijedio kucao bi ime koje ne postoji. Ispravljeno na `api-beta.techplay.gg` |
 | 14 | **PayPal** — dva obrasca (shop server-side, support client-side) | = odluka D4 |
-| 17 | **robots meta** — helper + 2 ručne kopije koje gube `max-image-preview:large` | Nije dirano |
-| 19 | **Keš guides/products/gta6** — guides riješen, products i gta6 i dalje čiste samo prvih 5 stranica | Djelimično |
+| 17 | **robots meta** — helper + 2 ručne kopije koje gube `max-image-preview:large` | **Riješeno 29.08.** Kopija je bilo **tri**, ne dvije (`shop`, `author/[slug]`, `gta6/map`) — a `gta6/map` je već dobijao ispravnu vrijednost iz helpera pa ju je pregazio slabijom. Četvrta (`wow-analyzer`) je namjerno ostavljena: drift jest, ali **ne gubi** direktivu, nosi je u ugniježđenom `googleBot` objektu, i konverzija bi promijenila šta Next emituje |
+| 19 | **Keš guides/products/gta6** — products i gta6 čiste samo prvih 5 stranica | **Izmjereno, ne dira se: 0 proizvoda, 12 GTA6 likova.** Petlja od 5 stranica je čisto teorijska |
 
 ## 5. Mrtav kod i nered
 
-Mrtvi hookovi `useRealTime*` (6) i `useMediaKit` — **8 fajlova** · mrtvi rewrites za `/feed` i `/rss` u next.config (filesystem rute ih pregaze) · `getComments()` u `news/[slug]` definisan i nikad pozvan · `remotePatterns` još dozvoljava `media.rawg.io`, pravatar, placeholder, unsplash i mrtvi `api.techplay.gg` · fantomska policy mapa `News::class` (model ne postoji) · `games:enrich-wikidata` radi a nije u scheduleru · šest starih MD fajlova u korijenu repoa · `RECOMMENDATIONS.md` u botu je predprojektni pitch · dep `he` bez importa · hardkodirano „332,000 games" na 2 mjesta u botu · ~15 docblockova s „142.110 igara" · tri mrtve tabele (`forum_categories`, `subscription_plans`, `queue_monitor_failure_groups`) · `users.role` legacy kolona koja se i dalje piše i čita uz Spatie · `motd-news` i `pollinate` enabled.
+**Sve riješeno 28.–29.08.** osim jedne stavke, i dvije koje su se pokazale netačnima.
+
+Obrisano: mrtvi hookovi `useRealTime*` i `useMediaKit` (8 fajlova, uz jedan
+**vraćen** — `useRealTimeThreadReplies` forum stvarno uvozi) · mrtvi rewrites za
+`/feed` i `/rss` · `getComments()` · pet penzionisanih `remotePatterns` hostova ·
+fantomska policy mapa `News::class` · šest starih MD fajlova iz korijena repoa ·
+`RECOMMENDATIONS.md` i paket `he` u botu · dvije mrtve tabele.
+
+Ispravljeno: hardkodirano „332.000 games" u botu (bilo je na **tri** mjesta, ne
+dva; sada jedna imenovana konstanta s datumom) · „142.110 igara" u **jedanaest**
+izvornih fajlova (tabela drži 332.455) · `users.role` više nema nijednog
+čitaoca · `motd-news` ugašen.
+
+**Netačno u ovom nalazu:** `queue_monitor_failure_groups` **nije** mrtva —
+`croustibat/filament-jobs-monitor` je piše i ima dva reda. `pollinate` je
+oneshot pri bootu, ne dnevni poziv; ostaje.
+
+**Ostaje:** `games:enrich-wikidata` nije u scheduleru — namjerno, to je ručni
+backfill alat, ne periodičan posao.
 
 ## 6. Svjesno preskočeno, s razlogom
 
@@ -674,7 +961,8 @@ Mrtvi hookovi `useRealTime*` (6) i `useMediaKit` — **8 fajlova** · mrtvi rewr
 - **Test suite ništa ne pokreće automatski** — ni deploy, ni CI. Zelenilo zavisi od discipline.
 - **`/admin`, `/livewire`, `/sanctum` izloženi i na techplay.gg** pored api-beta — dva URL ulaza u isti admin (auth drži, ali je dupla površina).
 - **netdata se sam nadograđuje svake noći** bez nadzora.
-- **Prunanje** i dalje fali za `player_signals`, `session_suggestions`, `notifications` i `content_versions`.
+- ~~**Prunanje** i dalje fali za `player_signals`, `session_suggestions`, `notifications` i `content_versions`.~~ **Riješeno 29.08.** — `prune:derived-history`, svaki prozor s razlogom.
+- ~~**`/admin`, `/livewire`, `/sanctum` izloženi i na techplay.gg**~~ — provjereno 29.08., i dalje stoji; premješteno među tvoje odluke jer blokada može zaključati tebe.
 
 ## 8. Čeka provjeru za sedmicu dana
 
@@ -761,14 +1049,38 @@ Napomena uz zadnjih pet: komentar u kodu tvrdi da se „koriste drugdje" — i k
 
 ## 2. Discord i Battle.net prijava
 
-Obje su pokvarene na produkciji i **obje traže podatke iz portala**, ne kod:
+**Battle.net je popravljen 29.08.** — kod i `.env` su sređeni, izmjereno da sada
+šalje ispravan `redirect_uri`. Ostaje jedan korak koji je samo tvoj:
 
-- **Discord:** `DISCORD_CLIENT_SECRET` ne postoji u `.env`. Tri stvarna pokušaja prijave pala su 28.08. u 21:18–21:19 s `401` na Discordovoj token adresi. Treba tajna iz Discord developer portala.
-- **Battle.net:** `services.battlenet.client_id/secret` čitaju `BATTLENET_*`, a u `.env` postoje samo `BLIZZARD_*` (koje rade za API). Vjerovatno je isti par kredencijala — ali treba potvrda da je redirect URI registrovan za tu aplikaciju prije nego se spoji.
+> U Blizzardovom portalu redirect URI mora biti tačno
+> `https://techplay.gg/api/v1/auth/battlenet/callback`
 
-`env:validate` sada oba prijavljuje kao `DOWN` pri svakom deployu, pa se ne mogu ponovo zaboraviti.
+**Discord se ne može popraviti iz repoa.** `DISCORD_CLIENT_SECRET` **nikad nije
+postojao** ni u jednoj od pet arhiviranih kopija `.env`-a — dakle ta prijava nije
+pokvarena, nego nikad nije ni radila. Tri stvarna pokušaja pala su 28.08. u
+21:18–21:19 s `401` na Discordovoj token adresi. Treba tajna iz Discord developer
+portala, upisana direktno u `/var/www/techplay/backend/.env` (ne kroz razgovor).
+Redirect je već ispravan.
 
-## 3. Restart servera
+`env:validate` oba prijavljuje kao `DOWN` pri svakom deployu, pa se ne mogu
+ponovo zaboraviti.
+
+## 3. Drugi ulaz u admin panel
+
+`/admin`, `/livewire` i `/sanctum` odgovaraju i na `techplay.gg`, ne samo na
+`api-beta.techplay.gg`. Provjereno 29.08.: obje adrese daju 302 na `/admin/login`,
+Filament asseti se rješavaju po hostu, `SESSION_DOMAIN=.techplay.gg` pokriva oba.
+Dakle panel **radi** na obje — nije zaobilaženje ovlaštenja, isti je auth.
+
+Zašto je to ipak vrijedno odluke: prijavni ekran stoji na javnoj domeni koju
+najviše gađaju skraperi (vidi nalaz o singapurskom skraperu), izvan svih pravila
+vezanih za `api-beta`. Blokada je jedan `return 404;` u `location /admin` na
+frontend vhostu.
+
+**Nisam ga blokirao jer ne znam gdje se ti prijavljuješ.** Ako koristiš
+`techplay.gg/admin`, blokada te zaključava.
+
+## 4. Restart servera
 
 Kernel 6.8.0-138 čeka. Put kroz boot je već isproban ranije. Nosi kratak prekid, pa biraš trenutak.
 

@@ -64,6 +64,53 @@ class RaiderIOService
     }
 
     /**
+     * This week's Mythic+ affixes, or nothing.
+     *
+     * The analysis prompt used to name three affixes in a heredoc. They were
+     * right when they were written and wrong from the next reset onward, and by
+     * the time this was noticed the model had spent months giving strategies for
+     * a rotation that had not been live since spring — stated with the same
+     * confidence as the parts that were true.
+     *
+     * Returning null on any failure is the point: the prompt drops the section
+     * entirely rather than falling back to a remembered answer. Advice that does
+     * not mention affixes is worth more than advice about the wrong ones.
+     *
+     * Six hours, because affixes turn over once a week on reset.
+     *
+     * @return array<int,string>|null
+     */
+    public function getCurrentAffixes(string $region = 'eu'): ?array
+    {
+        return Cache::remember("rio_affixes_{$region}", 21600, function () use ($region) {
+            try {
+                $response = Http::timeout(8)->get(self::BASE_URL.'/mythic-plus/affixes', [
+                    'region' => $region,
+                    'locale' => 'en',
+                ]);
+
+                if (! $response->successful()) {
+                    Log::warning('Raider.IO affix request failed', ['status' => $response->status()]);
+
+                    return null;
+                }
+
+                $names = collect($response->json('affix_details') ?? [])
+                    ->pluck('name')
+                    ->filter()
+                    ->values()
+                    ->all();
+
+                return $names !== [] ? $names : null;
+            } catch (\Throwable $e) {
+                Log::warning('Raider.IO affix exception', ['error' => $e->getMessage()]);
+
+                return null;
+            }
+        });
+    }
+
+    /**
      * Transform Raider.IO response to our format
      */
     public function transformMythicPlusData(?array $rioData): array

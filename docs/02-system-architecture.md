@@ -9,7 +9,7 @@ TechPlay.gg se sastoji od tri samostalno deployabilna komponenta koja međusobno
 │                        INTERNET                             │
 │                                                             │
 │  Korisnik ──→ techplay.gg ──→ [ Next.js Frontend ]        │
-│  Korisnik ──→ api.techplay.gg → [ Laravel Backend ]        │
+│  Korisnik ──→ api-beta.techplay.gg → [ Laravel Backend ]        │
 │  Admin ──────────────────────→ [ Filament Admin Panel ]    │
 │  Discord Server ─────────────→ [ Professor Buffy Bot ]     │
 └─────────────────────────────────────────────────────────────┘
@@ -20,7 +20,7 @@ TechPlay.gg se sastoji od tri samostalno deployabilna komponenta koja međusobno
 ## Komunikacija između komponenti
 
 ### Frontend ↔ Backend
-- Frontend šalje HTTP REST API pozive na `api.techplay.gg/api/v1/*`
+- Frontend šalje HTTP REST API pozive na `api-beta.techplay.gg/api/v1/*`
 - Server Components fetchuju direktno za SSR/ISR
 - Client Components koriste `lib/api.ts` i custom hooks
 - Auth: Bearer token u `Authorization` headeru
@@ -39,7 +39,7 @@ TechPlay.gg se sastoji od tri samostalno deployabilna komponenta koja međusobno
 - Next.js purge ISR cache za pogođene putanje
 
 ### Discord Bot ↔ Backend
-- Bot komunicira s backendom kroz `api.techplay.gg/api/v1/discord/*`
+- Bot komunicira s backendom kroz `api-beta.techplay.gg/api/v1/discord/*`
 - Autentifikacija: zajednički `DISCORD_BOT_SECRET` (ne Sanctum token)
 - Dedicated route middleware: `throttle:300,1`
 - Bot NEMA direktan pristup bazi podataka

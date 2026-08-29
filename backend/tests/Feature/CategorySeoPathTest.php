@@ -6,6 +6,7 @@ use App\Filament\Resources\CategoryResource\Pages\EditCategory;
 use App\Models\Category;
 use App\Models\PageSeo;
 use App\Models\User;
+use Database\Seeders\CategorySeoSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -93,7 +94,7 @@ class CategorySeoPathTest extends TestCase
             ],
         );
 
-        $this->seed(\Database\Seeders\CategorySeoSeeder::class);
+        $this->seed(CategorySeoSeeder::class);
 
         $this->assertSame(
             'Console & Peripheral Forums | PS5, Xbox, Switch Discussion',
@@ -108,7 +109,7 @@ class CategorySeoPathTest extends TestCase
             ['name' => 'Benchmarks', 'type' => 'tech'],
         );
 
-        $this->seed(\Database\Seeders\CategorySeoSeeder::class);
+        $this->seed(CategorySeoSeeder::class);
 
         // Not /hardware/tech-benchmarks, which is where it used to land and is
         // not a page.
@@ -124,7 +125,7 @@ class CategorySeoPathTest extends TestCase
         // behind — the wording under test is the one it writes from scratch.
         PageSeo::where('page_path', '/news')->delete();
 
-        $this->seed(\Database\Seeders\CategorySeoSeeder::class);
+        $this->seed(CategorySeoSeeder::class);
 
         // "News News & Updates" is what the old template produced here.
         $this->assertSame('News | TechPlay', PageSeo::where('page_path', '/news')->value('meta_title'));
@@ -196,5 +197,4 @@ class CategorySeoPathTest extends TestCase
         // write to a dead field.
         $this->assertArrayNotHasKey('seo_title', $category->fresh()->getAttributes());
     }
-
 }

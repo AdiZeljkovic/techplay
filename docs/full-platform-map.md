@@ -36,7 +36,7 @@ flowchart TB
     end
 
     %% ─── BACKEND API ─────────────────────────
-    subgraph BE["⚙️  BACKEND — Laravel 12 — api.techplay.gg/api/v1"]
+    subgraph BE["⚙️  BACKEND — Laravel 12 — api-beta.techplay.gg/api/v1"]
         BA1["Content API: GET /news · /reviews · /guides · /tech · /videos"]
         BA2["Game API: GET /games · /games/calendar · /games/hub · RAWG proxy"]
         BA4["User API: /auth · /user · /presence · /leaderboard · /notifications"]

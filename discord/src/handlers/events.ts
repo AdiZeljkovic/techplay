@@ -157,27 +157,26 @@ export function setupModeration(client: Client) {
 
 /**
  * Sets up Discord Rich Presence tracking → syncs "Playing Now" to TechPlay backend.
- * Only fires for guild members (not DMs). Throttled: one API call per user per 30s.
+ * Only fires for guild members (not DMs). One call per user per 30s, and only
+ * when what they are playing has actually changed.
  */
 export function setupPresenceTracking(client: Client) {
-    const lastReported = new Map<string, { game: string | null; ts: number }>();
+    const reported = new Map<string, { game: string | null; ts: number }>();
+    const wanted = new Map<string, string | null>();
+    const waiting = new Map<string, ReturnType<typeof setTimeout>>();
     const THROTTLE_MS = 30_000;
 
-    client.on(Events.PresenceUpdate, async (_old: Presence | null, newPresence: Presence) => {
-        const userId = newPresence.userId;
-        if (!userId || newPresence.user?.bot) return;
+    const report = async (userId: string) => {
+        const gameName = wanted.get(userId) ?? null;
+        const before = reported.get(userId);
 
-        // Find the first PLAYING (type 0) activity
-        const gameActivity = newPresence.activities.find(a => a.type === 0);
-        const gameName = gameActivity?.name ?? null;
+        if (before && before.game === gameName) return;
 
-        const prev = lastReported.get(userId);
-        const now = Date.now();
-
-        // Skip if same state reported within throttle window
-        if (prev && prev.game === gameName && now - prev.ts < THROTTLE_MS) return;
-
-        lastReported.set(userId, { game: gameName, ts: now });
+        // The window opens before the call, so a slow or failing backend cannot
+        // be asked again inside it. The state itself is only recorded once it
+        // arrived, so a report that failed is sent again the next time presence
+        // moves rather than being remembered as delivered.
+        reported.set(userId, { game: before?.game ?? null, ts: Date.now() });
 
         try {
             await axios.post(`${config.apiUrl}/discord/presence`, {
@@ -187,9 +186,53 @@ export function setupPresenceTracking(client: Client) {
                 headers: { 'X-Discord-Bot-Token': config.botSecret },
                 timeout: 5000,
             });
+
+            reported.set(userId, { game: gameName, ts: Date.now() });
         } catch {
             // Non-critical — presence update failures are silent
         }
+    };
+
+    client.on(Events.PresenceUpdate, (_old: Presence | null, newPresence: Presence) => {
+        const userId = newPresence.userId;
+        if (!userId || newPresence.user?.bot) return;
+
+        // Find the first PLAYING (type 0) activity
+        const gameActivity = newPresence.activities.find(a => a.type === 0);
+        const gameName = gameActivity?.name ?? null;
+
+        wanted.set(userId, gameName);
+
+        /*
+         * The throttle used to sit on the wrong half of this.
+         *
+         * An unchanged state went out again every thirty seconds — and Discord
+         * emits PresenceUpdate for a great deal more than the game: going idle,
+         * a Spotify track, a rich-presence timer ticking. The backend stores
+         * state rather than a heartbeat, so all of that was rewriting the same
+         * row, one `last_played_at` write per player per half minute, all
+         * evening. A change, meanwhile, was never throttled at all, and that is
+         * the case that costs something: switching titles banks a play session
+         * on the site, so a launcher flickering between two of them writes
+         * sessions that were never played.
+         *
+         * So an unchanged state is silence, and a change waits out the window.
+         * The wait carries whatever is current when it expires, not what
+         * started it — which is the part a throttle that simply drops the event
+         * would get wrong, since presence updates stop arriving the moment
+         * somebody settles on one game.
+         */
+        const prev = reported.get(userId);
+
+        if (prev && prev.game === gameName) return;
+        if (waiting.has(userId)) return;
+
+        const wait = prev ? Math.max(0, THROTTLE_MS - (Date.now() - prev.ts)) : 0;
+
+        waiting.set(userId, setTimeout(() => {
+            waiting.delete(userId);
+            void report(userId);
+        }, wait));
     });
 
     console.log('🎮 Presence tracking handler registered');

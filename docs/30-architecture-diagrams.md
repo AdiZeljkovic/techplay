@@ -15,7 +15,7 @@ graph TB
     end
 
     subgraph "TechPlay Backend (Laravel 12)"
-        API[api.techplay.gg<br/>REST API /api/v1]
+        API[api-beta.techplay.gg<br/>REST API /api/v1]
         ADMIN[/admin<br/>Filament v5]
         REVERB[Laravel Reverb<br/>WebSocket Server]
     end
@@ -73,16 +73,28 @@ flowchart TD
     A[Admin otvara Filament] --> B[Kreira/edituje sadržaj<br/>News/Review/Guide/Video]
     B --> C[Save u bazu<br/>Model::create/update]
     C --> D{Observer<br/>ArticleObserver itd.}
-    D --> E[CacheRevalidationService<br/>revalidateArticle]
-    E --> F[POST na Next.js<br/>/api/revalidate?secret=TOKEN&path=/news/slug]
-    F --> G[ISR cache purge<br/>za pogođene putanje]
-    D --> H[IndexNowService<br/>PingIndexNow job queued]
+    D --> E[RevalidationService<br/>revalidateArticle]
+    E --> F[POST na Next.js /api/revalidate<br/>Bearer REVALIDATE_SECRET_TOKEN]
+    F --> G[revalidateTag<br/>purge po TAGU]
+    D --> H[IndexNowService<br/>SubmitIndexNow job queued]
     H --> I[Bing/Yandex<br/>instant indexing]
     D --> J[Broadcast Event<br/>ArticlePublished]
     J --> K[Laravel Reverb<br/>WebSocket]
-    K --> L[Frontend useRealTimeNews<br/>nova vijest se pojavljuje live]
     G --> M[Korisnik osvježi<br/>vidi novi sadržaj]
 ```
+
+**Tri stvari koje je ovaj dijagram tvrdio a nisu tačne** (ispravljeno 29.08.2026):
+
+- `CacheRevalidationService` **ne postoji** — spojen je u `RevalidationService`
+  18.08. Dva servisa koja rade isto su i razlog zašto je `deleted()` čistio Redis
+  a nije javljao frontendu.
+- `PingIndexNow` **ne postoji** — job se zove `SubmitIndexNow`; onaj prvi je bio
+  u dokumentaciji i nije ga dispatchovalo ništa, obrisan 18.08.
+- Poziv **nije** `?secret=TOKEN&path=` nego Bearer header, i purge ide **po tagu**.
+  `revalidatePath()` na dinamičkoj ruti je no-op u Nextu 16 — zato tag.
+- `useRealTimeNews` je **obrisan 29.08.** jer ga nijedna stranica nije uvozila.
+  WebSocket grana ovdje završava na Reverbu; live prikaz vijesti nikad nije bio
+  spojen. Jedini živi real-time na sajtu je forum.
 
 ---
 
