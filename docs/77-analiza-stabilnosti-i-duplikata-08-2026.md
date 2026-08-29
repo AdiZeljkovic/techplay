@@ -492,6 +492,19 @@ Odluka vlasnika: izvlačenje je završeno. Redoslijed je bio takav da izvor ne o
 
 Povratak, ako ikad zatreba: `pg_restore -d techplay <arhiva>` za podatke i `git show` ovog commita za alat.
 
+**Izmjereno poslije deploya:**
+
+| | Prije | Poslije |
+|---|---|---|
+| Baza | 5.866 MB | **1.972 MB** |
+| Disk (iskorišteno / slobodno) | 22 GB / 51 GB | **18 GB / 55 GB** |
+| Najveća tabela | `igdb_raw` 3.816 MB | `games` 1.556 MB |
+| Indeksa na `threads` / `comments` / `posts` | 22 / 11 / 11 | **16 / 7 / 6** |
+
+Poslije deploya: healthcheck 7/8 (backup FAIL po dizajnu), **nula grešaka u logu**, sve javne stranice 200, i sitemap i dalje ide kroz `Index Only Scan`.
+
+Jedna brojka se **nije** pomjerila i to je očekivano: cache hit ratio je i dalje 61%, jer je to zbir od restarta baze 17.08. i ne može odraziti promjenu unazad. Da li je 3,9 GB nepročitanih podataka zaista oslobodilo `shared_buffers` za ono što se čita, vidjeće se tek na svježoj statistici — vrijedi provjeriti za sedmicu dana.
+
 ### Mjereno prije i poslije: sitemap više ne čita svaki opis
 
 `Game::indexable()` je vrtio regexp preko 305.581 opisa pri svakom prolazu, a sitemap sadržaja ide svakih 15 minuta — ukupno ~2,8 h DB vremena u 11 dana, više nego sve ostalo zajedno. Parcijalni indeks s **tačno tim** predikatom prebacuje posao na upis:
