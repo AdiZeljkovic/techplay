@@ -6,7 +6,7 @@ export const runtime = "edge";
 
 // Prefer the private origin (bypasses Cloudflare Bot Fight Mode for
 // server-side fetches), falling back to the public API URL.
-const API = (process.env.NEXT_PRIVATE_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://api.techplay.gg/api/v1").replace(/\/$/, "");
+const API = (process.env.NEXT_PRIVATE_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "https://api-beta.techplay.gg/api/v1").replace(/\/$/, "");
 
 /** The board's own gradient, hot at the top — same scale as TierBoard. */
 const TIER_TONE: Record<string, string> = {

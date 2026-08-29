@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Events\PresenceUpdated;
 use App\Models\Game;
 use App\Models\Presence;
 use App\Models\User;
@@ -148,14 +147,26 @@ class PresenceService
             $this->shelveIfPlaying($user, $game, $presence);
         }
 
-        broadcast(new PresenceUpdated(
-            userId: $user->id,
-            gameName: $presence->game_name,
-            gameSlug: $presence->game_slug,
-            source: $presence->source,
-            startedAt: $presence->started_at->toIso8601String(),
-        ))->toOthers();
-
+        /*
+         * Nothing is broadcast here any more.
+         *
+         * `PresenceUpdated` went out on a public channel — `presence.{id}`, no
+         * authorisation — carrying what a member was playing, and it went out
+         * on every poll rather than on every change: once every two minutes per
+         * connected player, whether or not anything had moved. It also ignored
+         * `profile_visibility`, so a member who had set their profile to
+         * friends-only was still announcing their evening to anyone who cared
+         * to subscribe by guessing a user id.
+         *
+         * And nobody was listening. Not one client subscribes to that channel —
+         * checked across every echo.channel/echo.private call in the frontend.
+         *
+         * If a live "now playing" indicator is built later it needs a private
+         * channel authorised against the viewer's right to see that profile,
+         * and it should fire on change rather than on poll. Neither is a small
+         * addition to what was here, which is why this is a removal rather than
+         * a patch.
+         */
         return $presence;
     }
 
@@ -169,13 +180,6 @@ class PresenceService
 
         Presence::where('user_id', $user->id)->update(['is_active' => false]);
 
-        broadcast(new PresenceUpdated(
-            userId: $user->id,
-            gameName: null,
-            gameSlug: null,
-            source: null,
-            startedAt: null,
-        ))->toOthers();
     }
 
     /**

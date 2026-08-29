@@ -7,10 +7,27 @@ use App\Events\NotificationReceived;
 use App\Models\Comment;
 use App\Models\User;
 use App\Services\QuestService;
+use App\Services\SanitizationService;
 use App\Services\XpService;
 
 class CommentObserver
 {
+    /**
+     * Clean the body before it is stored, whoever is storing it.
+     *
+     * This lived only in CommentController, so a moderator editing the same
+     * comment in the admin panel wrote straight past it. Here it covers both
+     * doors, and sanitising already-clean text is a no-op — the controller can
+     * keep its own call, which it needs anyway to run spam detection before
+     * deciding whether to save at all.
+     */
+    public function saving(Comment $comment): void
+    {
+        if ($comment->isDirty('content') && is_string($comment->content)) {
+            $comment->content = app(SanitizationService::class)->sanitizePlainText($comment->content);
+        }
+    }
+
     /**
      * Handle the Comment "created" event.
      */
@@ -87,11 +104,31 @@ class CommentObserver
         ));
     }
 
+    /**
+     * Where the reader is sent when they tap the notification.
+     *
+     * This pluralised the model name — Article became `/articles/`, a path the
+     * site does not serve. Articles live under the section they belong to, and
+     * a comment on one sent its author to a 404. Games and guides happened to
+     * come out right by coincidence of naming, which is why it went unnoticed.
+     */
     private function getContentUrl(Comment $comment): string
     {
-        $type = strtolower(class_basename($comment->commentable_type));
-        $slug = $comment->commentable->slug ?? $comment->commentable_id;
+        $commentable = $comment->commentable;
+        $slug = $commentable->slug ?? $comment->commentable_id;
 
-        return "/{$type}s/{$slug}#comment-{$comment->id}";
+        $section = match (strtolower(class_basename($comment->commentable_type))) {
+            'article' => match ($commentable?->category?->type) {
+                'reviews', 'review' => 'reviews',
+                'tech', 'hardware' => 'hardware',
+                'guides', 'guide' => 'guides',
+                default => 'news',
+            },
+            'guide' => 'guides',
+            'game' => 'games',
+            default => strtolower(class_basename($comment->commentable_type)).'s',
+        };
+
+        return "/{$section}/{$slug}#comment-{$comment->id}";
     }
 }

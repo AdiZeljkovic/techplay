@@ -5,10 +5,24 @@ namespace App\Observers;
 use App\Models\Post;
 use App\Services\AchievementService;
 use App\Services\QuestService;
+use App\Services\SanitizationService;
 use App\Services\XpService;
 
 class PostObserver
 {
+    /**
+     * Clean the body before it is stored — see CommentObserver for the why.
+     *
+     * Forum posts matter more than most: PostResource renders this content
+     * back into the admin panel with ->html().
+     */
+    public function saving(Post $post): void
+    {
+        if ($post->isDirty('content') && is_string($post->content)) {
+            $post->content = app(SanitizationService::class)->sanitizeRichContent($post->content);
+        }
+    }
+
     /**
      * Handle the Post "created" event.
      */

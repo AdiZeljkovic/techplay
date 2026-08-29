@@ -106,15 +106,29 @@ class RevalidationService
      * array is non-empty, so an empty call here would fall through to the type
      * switch and be rejected. Guarded rather than sent.
      */
-    public function revalidatePaths(array $paths): bool
+    /**
+     * Purge by path, and by tag where a path cannot reach.
+     *
+     * `revalidatePath` does nothing for a dynamic route — Next says so, and
+     * this codebase has learned it twice. A GTA6 character page is dynamic, so
+     * every edit sent `/gta6/characters/{slug}` into the void and the page sat
+     * on its one-hour timer. Listing pages are static and the path works for
+     * them, so both go together.
+     */
+    public function revalidatePaths(array $paths, array $tags = []): bool
     {
         $paths = array_values(array_filter($paths, 'is_string'));
+        $tags = array_values(array_filter($tags, 'is_string'));
 
-        if ($paths === []) {
+        if ($paths === [] && $tags === []) {
             return false;
         }
 
-        return $this->send('paths', ['paths' => $paths], count($paths).' paths');
+        return $this->send(
+            'paths',
+            ['paths' => $paths, 'tags' => $tags],
+            count($paths).' paths, '.count($tags).' tags',
+        );
     }
 
     /**

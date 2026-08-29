@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 async function getInitialHardware() {
     try {
         const res = await fetch(`${getServerApiUrl()}/tech?page=1`, {
-            next: { revalidate: 600, tags: ['hardware'] },
+            next: { revalidate: 600, tags: ['tech'] },
             headers: serverHeaders(),
         });
         if (!res.ok) return null;

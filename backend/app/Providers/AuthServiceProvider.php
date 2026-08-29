@@ -19,7 +19,6 @@ use App\Models\Gta6Weapon;
 use App\Models\Guide;
 use App\Models\MailSuppression;
 use App\Models\Media;
-use App\Models\News;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
 use App\Models\PageSeo;
@@ -41,7 +40,6 @@ use App\Policies\AdminOnlyPolicy;
 use App\Policies\ArticlePolicy;
 use App\Policies\ContentPolicy;
 use App\Policies\ModerationPolicy;
-use App\Policies\NewsPolicy;
 use App\Policies\UserManagementPolicy;
 use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -63,7 +61,6 @@ class AuthServiceProvider extends ServiceProvider
         // are already tiered by permission (create/update on `manage content`,
         // delete on `delete articles`, publish on `publish articles`).
         Article::class => ArticlePolicy::class,
-        News::class => NewsPolicy::class,
 
         // Forum moderation
         Comment::class => ModerationPolicy::class,

@@ -29,7 +29,10 @@ export async function generateStaticParams(): Promise<{ slug: string }[]> {
 
 async function fetchCharacter(slug: string): Promise<Gta6Character | null> {
     const json = await fetchContent<{ data?: Gta6Character }>(`${getApiUrl()}/gta6/characters/${slug}`, {
-        next: { revalidate: 3600 },
+        // Tag, not just a timer: revalidatePath is a no-op on a dynamic route,
+        // so an edit in the admin had nothing that could reach this page and
+        // waited out the hour. The observer purges `gta6-character-{slug}`.
+        next: { revalidate: 3600, tags: ['gta6-characters', `gta6-character-${slug}`] },
     });
 
     return json?.data ?? null;

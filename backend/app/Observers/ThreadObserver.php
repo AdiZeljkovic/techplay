@@ -6,12 +6,27 @@ use App\Events\ThreadCreated;
 use App\Models\Thread;
 use App\Services\AchievementService;
 use App\Services\QuestService;
+use App\Services\SanitizationService;
 use App\Services\XpService;
 use App\Support\ForumCache;
 use Illuminate\Support\Facades\Log;
 
 class ThreadObserver
 {
+    /** Title and body both, and from either door — see CommentObserver. */
+    public function saving(Thread $thread): void
+    {
+        $sanitizer = app(SanitizationService::class);
+
+        if ($thread->isDirty('title') && is_string($thread->title)) {
+            $thread->title = $sanitizer->sanitizeTitle($thread->title);
+        }
+
+        if ($thread->isDirty('content') && is_string($thread->content)) {
+            $thread->content = $sanitizer->sanitizeRichContent($thread->content);
+        }
+    }
+
     public function created(Thread $thread): void
     {
         broadcast(new ThreadCreated($thread))->toOthers();

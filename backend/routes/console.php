@@ -102,6 +102,14 @@ Schedule::command('queue:prune-failed --hours=720')
     ->weeklyOn(1, '02:30')
     ->onFailure($reportFailure('queue:prune-failed'));
 
+// Cetiri tabele koje su rasle bez ijednog puta prema dolje. Prozori su u samoj
+// komandi, uz razlog za svaki — nijedan nije okrugao broj nego ono sto tabelu
+// jos cita.
+Schedule::command('prune:derived-history')
+    ->dailyAt('02:40')
+    ->withoutOverlapping(30)
+    ->onFailure($reportFailure('prune:derived-history'));
+
 /*
  * Broken links, for the admin list that reports them.
  *

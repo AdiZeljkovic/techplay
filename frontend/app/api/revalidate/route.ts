@@ -41,15 +41,27 @@ export async function POST(request: NextRequest) {
         // An empty array is truthy, and the backend sends `paths: []` on every
         // article purge — so this branch swallowed the request, revalidated
         // nothing and answered "success".
-        if (Array.isArray(body.paths) && body.paths.length > 0) {
-            const paths: string[] = body.paths.filter((p: unknown) => typeof p === 'string');
+        if ((Array.isArray(body.paths) && body.paths.length > 0)
+            || (Array.isArray(body.tags) && body.tags.length > 0)) {
+            const paths: string[] = (body.paths ?? []).filter((p: unknown) => typeof p === 'string');
+            const tags: string[] = (body.tags ?? []).filter((t: unknown) => typeof t === 'string');
+
             for (const path of paths) {
                 revalidatePath(path);
             }
+
+            // Tags are what actually reach a dynamic route: revalidatePath does
+            // nothing for one, which is why editing a GTA6 character used to
+            // change everything except that character's own page.
+            for (const tag of tags) {
+                revalidateTag(tag, { expire: 0 });
+            }
+
             return NextResponse.json({
                 success: true,
                 revalidated: true,
                 paths,
+                tags,
                 timestamp: new Date().toISOString(),
             });
         }

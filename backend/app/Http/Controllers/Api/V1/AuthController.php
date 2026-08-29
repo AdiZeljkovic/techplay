@@ -823,6 +823,19 @@ class AuthController extends Controller
                 'wants_updates' => false,
             ]);
 
+        /*
+         * The address and the browser string a giveaway entry recorded.
+         *
+         * Both were collected to catch somebody entering twice, and both are
+         * personal data that outlives the reason for holding them the moment
+         * the giveaway closes — let alone the moment the account is deleted.
+         * The entry row itself stays: it is part of a draw that has a winner,
+         * and removing it would change a result already announced.
+         */
+        DB::table('giveaway_entries')
+            ->where('user_id', $id)
+            ->update(['ip_address' => null, 'user_agent' => null]);
+
         // Revoke all tokens
         $user->tokens()->delete();
 

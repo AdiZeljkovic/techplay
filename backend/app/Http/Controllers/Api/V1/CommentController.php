@@ -34,13 +34,17 @@ class CommentController extends Controller
             ->whereNull('parent_id')
             ->with([
                 'user.rank',
+                // `is_staff` na svakom autoru pita Spatie za role, a to je jedan
+                // upit po redu ako se ne ucitaju unaprijed — do 185 redova po
+                // stranici izmedju gornjeg nivoa i tri nivoa odgovora.
+                'user.roles',
                 // The status filter above covers top-level comments only, and
                 // Comment has no global scope — so a reply left `pending` by
                 // probation or the two-link spam rule was rendered to every
                 // visitor anyway. Moderation has to apply at every depth.
-                'replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank')->limit(100), // Prevent memory overload
-                'replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank')->limit(50),
-                'replies.replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank')->limit(25),
+                'replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank', 'user.roles')->limit(100), // Prevent memory overload
+                'replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank', 'user.roles')->limit(50),
+                'replies.replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank', 'user.roles')->limit(25),
             ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);

@@ -11,17 +11,21 @@ class Gta6CharacterObserver
     public function saved(Gta6Character $character): void
     {
         $this->clearCache($character->slug);
-        app(RevalidationService::class)->revalidatePaths([
-            '/gta6/characters',
-            '/gta6/characters/'.$character->slug,
-            '/gta6',
-        ]);
+        app(RevalidationService::class)->revalidatePaths(
+            // The character's own page is dynamic, so its path is not listed
+            // here — a path purge cannot touch it. The tag can.
+            ['/gta6/characters', '/gta6'],
+            ['gta6-characters', 'gta6-character-'.$character->slug],
+        );
     }
 
     public function deleted(Gta6Character $character): void
     {
         $this->clearCache($character->slug);
-        app(RevalidationService::class)->revalidatePaths(['/gta6/characters', '/gta6']);
+        app(RevalidationService::class)->revalidatePaths(
+            ['/gta6/characters', '/gta6'],
+            ['gta6-characters', 'gta6-character-'.$character->slug],
+        );
     }
 
     private function clearCache(string $slug): void

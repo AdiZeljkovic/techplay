@@ -141,14 +141,18 @@ class SeoManagerResource extends Resource
                     }),
             ])
             ->filters([
-                SelectFilter::make('category')
-                    ->options([
-                        'gaming' => 'Gaming',
-                        'reviews' => 'Reviews',
-                        'pc' => 'PC',
-                        'console' => 'Console',
-                        'industry' => 'Industry',
-                    ]),
+                /*
+                 * Filtriranje po sekciji ide kroz relaciju, ne kroz kolonu.
+                 *
+                 * Ovdje je stajao SelectFilter nad `articles.category` —
+                 * legacy string kolonom koje na produkciji **nema**. Upotreba
+                 * filtera je bacala SQL gresku (`column "category" does not
+                 * exist`), a ponudjene vrijednosti (gaming/pc/console) ionako
+                 * nisu odgovarale nicemu sto se pise.
+                 */
+                SelectFilter::make('category_id')
+                    ->label('Section')
+                    ->relationship('category', 'name'),
 
                 TernaryFilter::make('has_meta')
                     ->label('Has Meta Description')

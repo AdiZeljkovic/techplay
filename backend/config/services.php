@@ -3,21 +3,6 @@
 return [
 
     /*
-     * The GIF picker in the editorial chat. A Giphy web key is meant to be
-     * seen by the browser, but a literal in a Blade view is also a literal in
-     * git history and cannot be rotated without a deploy.
-     */
-
-    /*
-    |--------------------------------------------------------------------------
-    | Internal server-to-server auth
-    |--------------------------------------------------------------------------
-    | The Next.js SSR process presents this token (X-Internal-Token) so the
-    | api rate limiter can tell our own server from a visitor. Same box,
-    | both .env files. No token configured = no exemption.
-    */
-
-    /*
     |--------------------------------------------------------------------------
     | Telegram alerts
     |--------------------------------------------------------------------------
@@ -30,6 +15,15 @@ return [
         'token' => env('TELEGRAM_ALERT_TOKEN'),
         'chat_id' => env('TELEGRAM_ALERT_CHAT_ID'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Internal server-to-server auth
+    |--------------------------------------------------------------------------
+    | The Next.js SSR process presents this token (X-Internal-Token) so the
+    | api rate limiter can tell our own server from a visitor. Same box,
+    | both .env files. No token configured = no exemption.
+    */
 
     'internal' => [
         'token' => env('INTERNAL_API_TOKEN'),
@@ -124,10 +118,31 @@ return [
         'enabled' => env('PSN_ENABLED', false),
     ],
 
+    /*
+     * Sign in with Battle.net.
+     *
+     * Same credentials as `blizzard` below, and that is not a shortcut: the
+     * Blizzard developer portal issues one client per application, used both
+     * for the game API (client-credentials) and for signing people in
+     * (authorization-code). This block asked for BATTLENET_* variables that
+     * have never existed in any .env — checked against five archived copies —
+     * so `client_id` and `client_secret` resolved to null and Socialite could
+     * not build the provider at all.
+     *
+     * The redirect defaulted to https://techplay.gg/auth/callback, which is a
+     * frontend page — and that page only knows how to read `?token=`, which is
+     * what the *backend* sends it after the exchange. Battle.net would have
+     * delivered `?code=` there and the page would have shrugged. Exactly the
+     * fault the comment on `discord.redirect` below records, left standing on
+     * this provider.
+     *
+     * The value here must match the redirect URI registered in the Blizzard
+     * portal, character for character.
+     */
     'battlenet' => [
-        'client_id' => env('BATTLENET_CLIENT_ID'),
-        'client_secret' => env('BATTLENET_CLIENT_SECRET'),
-        'redirect' => env('BATTLENET_REDIRECT_URI', 'https://techplay.gg/auth/callback'),
+        'client_id' => env('BATTLENET_CLIENT_ID', env('BLIZZARD_CLIENT_ID')),
+        'client_secret' => env('BATTLENET_CLIENT_SECRET', env('BLIZZARD_CLIENT_SECRET')),
+        'redirect' => env('BATTLENET_REDIRECT_URI', 'https://techplay.gg/api/v1/auth/battlenet/callback'),
     ],
 
     'blizzard' => [
@@ -139,6 +154,14 @@ return [
     'groq' => [
         'api_key' => env('GROQ_API_KEY'),
         'model' => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+    ],
+
+    /*
+     * Where nginx keeps the cached /games/ pages. Empty anywhere the cache does
+     * not exist (local, tests), and NginxPageCache simply does nothing then.
+     */
+    'nginx_cache' => [
+        'path' => env('NGINX_CACHE_PATH', '/var/cache/nginx/techplay'),
     ],
 
     'revalidate' => [

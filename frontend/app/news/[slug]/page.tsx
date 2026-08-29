@@ -210,24 +210,6 @@ export async function generateMetadata(
     };
 }
 
-async function getComments(id: number, type: string = 'article') {
-    // The article itself already comes through getServerApiUrl; its comments
-    // were the one call still going out to the public hostname and back.
-    try {
-        const res = await fetch(`${getServerApiUrl()}/comments/${type}/${id}`, {
-            next: { revalidate: 0 }, // Comments should be fresh? Or short cache?
-            // User requested "Instant".
-            // Since we have cache tags/invalidation, we can cache it short term e.g 10s or 0.
-            // Let's use 0 (no-store) ensuring fresh comments on page refresh, 
-            // since we depend on hydration for persistence.
-        });
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.data || [];
-    } catch (e) {
-        return [];
-    }
-}
 
 // ... imports
 

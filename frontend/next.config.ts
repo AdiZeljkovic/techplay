@@ -183,14 +183,6 @@ const nextConfig: NextConfig = {
 
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i.pravatar.cc',
-      },
-      {
         protocol: 'http',
         hostname: 'localhost',
       },
@@ -209,14 +201,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'ui-avatars.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'via.placeholder.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'media.rawg.io',
       },
       /*
        * The hosts production data actually returns, sampled across /home,
@@ -251,10 +235,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'api-beta.techplay.gg',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.techplay.gg',
       },
     ],
   },
@@ -312,8 +292,10 @@ const nextConfig: NextConfig = {
   async rewrites() {
     const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/api\/v1\/?$/, '');
     return [
-      { source: '/feed', destination: `${backendBase}/feed` },
-      { source: '/rss',  destination: `${backendBase}/feed` },
+      // /feed i /rss nemaju rewrite: app/feed/route.ts i app/rss/route.ts
+      // postoje, a filesystem rute pobjedjuju afterFiles rewrite — pa ovi
+      // nikad nisu ni opalili. Da jesu, vodili bi kroz javno ime i Cloudflare
+      // challenge, umjesto kroz interni poziv s tokenom koji rute rade.
 
       // IndexNow's ownership proof. The protocol wants the key file on the
       // same host as the URLs being submitted, and the URLs are ours while

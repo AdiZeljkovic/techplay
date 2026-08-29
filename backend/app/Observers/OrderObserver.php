@@ -45,8 +45,29 @@ class OrderObserver
                     return;
                 }
 
+                /*
+                 * Through the model, so ProductObserver hears about it.
+                 *
+                 * A query-builder increment writes the row and fires no events,
+                 * so the shop's cached product page and the stock broadcast
+                 * never learned the units had come back: a cancelled order left
+                 * the item reading "out of stock" until the cache expired,
+                 * while the database said otherwise.
+                 *
+                 * `lockForUpdate` because two lines of the same order — or two
+                 * orders cancelled at once — would otherwise read the same
+                 * starting figure. The claim above stops one order paying out
+                 * twice; this stops two from colliding.
+                 */
                 foreach ($order->items()->get() as $line) {
-                    Product::whereKey($line->product_id)->increment('stock', (int) $line->quantity);
+                    $product = Product::whereKey($line->product_id)->lockForUpdate()->first();
+
+                    if (! $product) {
+                        continue;
+                    }
+
+                    $product->stock = (int) $product->stock + (int) $line->quantity;
+                    $product->save();
                 }
             });
 
