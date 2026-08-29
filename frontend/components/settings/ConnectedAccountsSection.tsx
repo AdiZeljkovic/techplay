@@ -14,6 +14,12 @@ interface ConnectedAccount {
     /** 'expired' is PlayStation's own: the token aged out and only the reader can renew it. */
     sync_status: "idle" | "pending" | "syncing" | "done" | "error" | "expired" | "private";
     sync_error?: string | null;
+    /**
+     * True when `syncing` has outlived any sync that could still be running —
+     * a worker killed outright never releases the lock. The backend decides,
+     * so the threshold is not spelled out twice.
+     */
+    sync_stale?: boolean;
     last_synced_at: string | null;
     visibility: string;
     /** Xbox only — whether the gamertag was ever proved to be theirs. */
@@ -105,6 +111,11 @@ const PROVIDERS: {
         ),
     },
 ];
+
+/** In flight, and not merely still labelled that way. */
+function isSyncing(account: ConnectedAccount): boolean {
+    return account.sync_status === "syncing" && !account.sync_stale;
+}
 
 function syncStatusBadge(status: ConnectedAccount["sync_status"], lastSynced: string | null) {
     switch (status) {
@@ -437,7 +448,16 @@ export default function ConnectedAccountsSection() {
                                             <Shield className="w-3.5 h-3.5" /> Verify
                                         </button>
                                     )}
-                                    <button onClick={() => handleSync(account.id)} disabled={isBusy || account.sync_status === "syncing"}
+                                    {/*
+                                      * Greyed out while a sync could still be running, and no longer.
+                                      *
+                                      * A worker killed outright never gets to release the lock, so the
+                                      * row keeps saying "syncing" with nobody behind it. The backend
+                                      * lets a retry through after six hours; matching that here is what
+                                      * stops the button staying dead while the API would have accepted
+                                      * the click.
+                                      */}
+                                    <button onClick={() => handleSync(account.id)} disabled={isBusy || isSyncing(account)}
                                         className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors disabled:opacity-40">
                                         {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
                                         Re-sync

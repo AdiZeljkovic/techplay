@@ -2,8 +2,18 @@
 
 **Datum:** 29.08.2026.
 **Tip:** završni regression + architecture + production readiness audit
-**Pravilo:** ništa nije mijenjano. Isključivo read-only provjere.
 **Source of truth:** kod i produkcijsko stanje. Dokumentacija se provjerava, ne vjeruje joj se.
+
+**Dvije faze, namjerno razdvojene:**
+
+1. **Audit — read-only.** Ništa nije mijenjano dok je trajao. Svi nalazi ispod su
+   zabilježeni prije ijedne izmjene.
+2. **Popravke — poslije, na zahtjev.** Šta je urađeno stoji uz svaki nalaz.
+
+**Tri nalaza iz prve faze pokazala su se netačnim kad sam ih krenuo popravljati.**
+Nisu obrisani nego **precrtani i objašnjeni** — J-1 (povučen u cijelosti), L-1
+(bila dva poziva, ne trinaest) i dio E-1. Način na koji sam pogriješio ponavlja
+se toliko da je zaseban zaključak na kraju dokumenta.
 
 ---
 
@@ -35,9 +45,9 @@ Navedeno unaprijed, da nijedan nalaz ne izgleda jači nego što jeste.
 | G | Redis | 🟢 srednje |
 | H | Laravel backend | ⚪ lagano |
 | I | Events / observers | 🟢 duboko |
-| J | Queue | 🟠 duboko |
+| J | Queue | 🟢 duboko *(nalaz povučen)* |
 | K | Scheduler / cron | 🟢 srednje |
-| L | External API | 🟡 duboko |
+| L | External API | 🔵 duboko *(nalaz ispravljen)* |
 | M | Auth / security | 🟢 duboko |
 | N | Email / notifications | ⚪ lagano |
 | O | Payments / shop | 🟠 srednje |
@@ -296,7 +306,39 @@ to nikoga ne pogađa — **0 proizvoda u bazi** i mode je `sandbox`.
 
 ---
 
-### 🟠 J-1 — Zaglavljen „syncing" trajno zaključa biblioteku, bez ijednog oporavka
+### ❌ J-1 — POVUČEN. Nalaz je bio pogrešan.
+
+**Ostavljam ga ispod u cijelosti, precrtan, jer je način na koji sam pogriješio
+vredniji od samog nalaza.**
+
+Tvrdio sam da nijedan `Sync*Library` job nema `failed()` i da ništa ne čisti
+zaglavljeni `syncing`. **Oboje je netačno.**
+
+- `app/Jobs/Concerns/ReleasesTheSyncLock.php` — trait koji **svih pet jobova
+  koristi** — ima `failed()` koji vraća `syncing` u `error`. Njegov docblock
+  opisuje **tačno** onaj scenario koji sam ja „otkrio", uključujući i to da
+  timeout nikad ne stigne do `catch`-a.
+- `platforms:resync` ima `STALE_SYNC_HOURS = 6` i mrežu za worker ubijen
+  nasilno — koja usput rješava i `NULL NOT IN (…)` zamku, na šta nisam ni
+  pomislio.
+
+**Kako sam pogriješio:** grepovao sam `public function failed` **po fajlovima
+jobova**, a metoda živi u traitu. Za mrežu sam tražio riječi `stale|older|reset`
+u komandama, a komanda to zove drugačije. **Treći put u ovoj sesiji ista greška:
+tražio sam ime koje sam pretpostavio, umjesto da pratim kako je stvarno
+napisano** — prvo `auth:sanctum`, pa `timeout` po jednom redu, pa ovo.
+
+**Šta je ipak ostalo, i popravljeno je:** mreža se izvršava **sedmično**
+(srijedom u 04:00), a prag je 6 sati. Sync koji umre u četvrtak ostavljao je
+sivo dugme i 422 do **sljedeće srijede** — oporavak je postojao i kasnio danima.
+Sada backend propušta ponovni pokušaj poslije istih 6 sati, a frontend gasi
+dugme po `sync_stale` koje backend izračuna, da prag ne stoji na dva mjesta.
+
+**Prava težina: 🟡 MEDIUM, ne 🟠 HIGH.**
+
+<details><summary>Originalni (pogrešan) nalaz</summary>
+
+### ~~🟠 J-1 — Zaglavljen „syncing" trajno zaključa biblioteku, bez ijednog oporavka~~
 
 **Šta:** Ako job sinhronizacije biblioteke bude **ubijen** (a ne baci izuzetak),
 nalog zauvijek ostaje u stanju `syncing` i korisnik više nikad ne može
@@ -329,9 +371,37 @@ još nije desio.
 **Preporuka:** `failed()` na svih pet jobova koji postavlja `sync_status = 'error'`,
 plus komanda koja resetuje sve što je u `syncing` duže od sat vremena.
 
+</details>
+
 ---
 
-### 🟡 L-1 — Trideset sekundi je gornja granica za vanjski poziv u putanji zahtjeva
+### 🟡 L-1 — ISPRAVLJEN. Bez timeouta su bila dva poziva, ne trinaest.
+
+Tvrdio sam **13 vanjskih poziva bez timeouta**. Provjerom svakog pojedinačno —
+gledajući redove **oko** poziva umjesto samo reda s `Http::` — ispalo je da
+većina ima eksplicitan timeout:
+
+| Poziv | Stvarno stanje |
+|---|---|
+| `DiscordAnnouncer:48` | `timeout(2)` — odgovara mjerenju od 2,004 s ranije u sesiji |
+| `EpicService:203` | `timeout(20)` |
+| `GogService:98` | `timeout(20)` |
+| `OpenXblService:16` | `timeout(30)` |
+| `PlayStationService:59` | `timeout(15)` |
+| `BlizzardService:573` | **lažan pogodak** — moj broj reda je pokazivao na docblock; `Http::pool` postavlja `timeout(30)` na svaki poziv unutar |
+| `ReCaptchaService:45` | **stvarno bez timeouta** |
+| `SubmitIndexNow:92` | **stvarno bez timeouta** |
+
+**Popravljena su oba stvarna:** Turnstile dobio `timeout(5)` + `connectTimeout(3)`
+jer sjedi u registraciji i drži Octane radnika; IndexNow dobio `timeout(10)` jer
+s `tries=3` na `default` redu može držati workera minut i po.
+
+**Prava težina: 🔵 LOW, ne 🟡 MEDIUM.** Tvoj zahtjev — da ništa ne može držati
+radnika beskonačno — bio je zadovoljen i prije ovoga.
+
+---
+
+### 🟡 L-1 (original) — Trideset sekundi je gornja granica za vanjski poziv u putanji zahtjeva
 
 **Tvoj zahtjev:** *„Nijedan external HTTP request ne smije moći beskonačno držati
 Octane worker."* — **Zadovoljen.** Ništa ne visi zauvijek.
@@ -596,12 +666,12 @@ tek kad ta dva budu riješena.
 - **C-1** Backup nikad ne napusti mašinu
 
 **🟠 HIGH (3)**
-- **J-1** Zaglavljen `syncing` trajno zaključa biblioteku, bez oporavka
+- ~~**J-1** Zaglavljen `syncing`~~ — **POVUČEN, nalaz je bio pogrešan.** `failed()` postoji u traitu, mreža postoji u `platforms:resync`. Ostalo je samo to da mreža ide sedmično a prag je 6 h — popravljeno, spušteno na 🟡
 - **E-1** Dva strana ključa bez indeksa na tabelama od 25 i 10 MB
 - **O-1** PayPal webhook odbija sve (ispravno danas, blokira Shop sutra)
 
 **🟡 MEDIUM (6)**
-- **L-1** Tri vanjska poziva u putanji zahtjeva na defaultu od 30 s
+- ~~**L-1** Trinaest poziva bez timeouta~~ — bila su **dva**; oba popravljena. Spušteno na 🔵
 - **R-1** 62 fetchera bez kanonskog API sloja, broj raste
 - **AC-1** `auth/login` i `api/revalidate` bez ijednog testa
 - **I-1** Dvije komande pišu u `games` mimo observera
@@ -679,10 +749,10 @@ Ništa veliko nije ostalo. Prethodne runde su ovo dobro počistile.
 1. **Otkaz diska briše i produkciju i backup** (C-1)
 2. **Ništa ne javlja kad nešto pukne** (A-1) — 30 nevidljivih grešaka/20k zahtjeva
 3. **Svaki sljedeći reboot ponovo obori GlitchTip** — uzrok je redoslijed, ne slučaj
-4. **Zaglavljen `syncing`** trajno zaključa korisnikovu biblioteku (J-1)
+4. ~~Zaglavljen `syncing`~~ — **povučeno**, sistem to već rješava. Zamijenjeno: mail ne radi, pa verifikacija i reset lozinke ne stižu
 5. **`www-data` crontab nije u backupu** — restore bi dao sajt bez ijednog periodičnog posla
 6. Shop bi pri paljenju odbijao svaku potvrdu plaćanja (O-1)
-7. Osam sporih WoW analiza zauzme cijeli Octane (L-1)
+7. ~~Osam sporih WoW analiza zauzme Octane~~ — `Http::pool` već ima `timeout(30)`; ostaje samo da je 30 s dugo
 8. `auth/login` bez testa — regresija u prijavi ne bi bila uhvaćena (AC-1)
 9. Trka kod achievementa daje 500 umjesto tihog preskoka (V-1)
 10. Mail ne radi — verifikacije, digest i reset lozinke ne mogu biti poslani
@@ -694,7 +764,7 @@ Ništa veliko nije ostalo. Prethodne runde su ovo dobro počistile.
 Većina je već riješena; ovo je ono što ostaje.
 
 1. Brisanje igara/studija radi seq scan zbog FK bez indeksa (E-1)
-2. Tri vanjska poziva u putanji zahtjeva na 30 s (L-1)
+2. ~~Tri poziva na 30 s~~ — Turnstile i IndexNow popravljeni; Blizzard je već imao timeout
 3. Šest suvišnih indeksa plaća se pri svakom upisu (E-2)
 4. `impressum` renderuje se pri svakom zahtjevu bez keša
 5. `--workers=8` na 4 jezgra — 2× overcommit; radi, ali je granica bliža nego što izgleda
@@ -795,3 +865,144 @@ Oblasti označene kao lagane oslanjaju se na provjere iz ranijih rundi ove sesij
 koje su bile dokazne, ali **nisu ponovo verifikovane od nule u ovom prolazu**.
 Za **P (Filament admin)** nemam browser, pa je ocjena 6 data konzervativno — ne
 zato što sam našao probleme, nego zato što nisam mogao provjeriti.
+
+---
+
+# POUKA KOJA SE PONOVILA ČETIRI PUTA
+
+Ovo je, iskreno, najkorisniji rezultat cijelog audita.
+
+Četiri puta sam u jednom danu proizveo nalaz koji je bio **netačan na isti
+način**: tražio sam ime koje sam **pretpostavio**, umjesto da pratim kako je
+stvar zaista napisana.
+
+| # | Tvrdnja | Čime sam je „dokazao" | Stvarnost |
+|---|---|---|---|
+| 1 | 291 ruta bez autentifikacije | grep `auth:sanctum` | `route:list --json` piše `Illuminate\Auth\Middleware\Authenticate:sanctum`. **165 je zaštićeno.** |
+| 2 | Turnstile i Groq ključevi fale | grep `services.turnstile.secret` | Kod čita `secret_key` i `api_key`. **Oba postavljena.** |
+| 3 | Sync jobovi nemaju `failed()` | grep po fajlovima jobova | Metoda je u **traitu** koji svih pet koristi |
+| 4 | 13 poziva bez timeouta | grep reda s `Http::` | Timeout stoji **red-dva niže**; stvarno bez njega bila su dva |
+
+I obrnut smjer, jednako opasan: **`useRealTimeThreadReplies`** je bio na listi za
+brisanje jer nije postojao fajl s tim imenom — a to je drugi izvoz iz
+`useRealTimeForum.ts` koji forum stvarno uvozi. Da sam vjerovao grepu, slomio bih
+forum.
+
+**Pravilo koje iz ovoga slijedi:** za svaku tvrdnju oblika „X ne postoji" ili „X
+nije podešen", dokaz ne smije biti odsustvo pogotka na ime koje sam pretpostavio.
+Mora biti jedno od:
+
+- **izvršavanje** — `route:list`, `EXPLAIN`, `config()` u tinkeru, stvarni HTTP
+  zahtjev
+- **mjerenje na produkciji** — `pg_stat_statements`, log, `ss`, `docker inspect`
+- **čitanje same definicije** — vendor izvor, trait, konstruktor
+
+Nalazi u ovom dokumentu koji **jesu** stajali — GlitchTip, backup, indeksi,
+zaštita ruta, idempotentnost novca — svi su dobijeni na jedan od ta tri načina.
+Nalazi koji su pali svi su bili grep.
+
+---
+
+# FAZA 2 — ŠTA JE POPRAVLJENO
+
+Poslije audita, na zahtjev. Redoslijed je po težini nalaza.
+
+## 🔴 A-1 GlitchTip — RIJEŠENO I DOKAZANO
+
+**Šta je urađeno:**
+
+1. `systemctl edit postgresql@16-main` → drop-in `after-docker.conf` s
+   `After=docker.service` **i `Wants=`, ne `Requires=`**. Redoslijed, ne
+   zavisnost: ako Docker ne uspije da se digne, baza svejedno mora. Docker se
+   digao u istoj sekundi kao Postgres, pa je čekanje mjerljivo nula.
+2. `systemctl restart postgresql@16-main` da veže bridge odmah, ne tek na
+   sljedećem rebootu.
+3. Restart GlitchTip kontejnera i Octanea (baza je prekinula konekcije).
+
+**Dokaz da radi:**
+
+```
+prije:   127.0.0.1:5432   [::1]:5432
+poslije: 127.0.0.1:5432   172.17.0.1:5432   [::1]:5432
+
+LOG: listening on IPv4 address "172.17.0.1", port 5432     ← bez WARNING-a
+```
+
+GlitchTip iz kontejnera: `issues u bazi: 1397` — čita svoju bazu.
+
+**Dokaz iz stvarnog prometa, ne iz mog testa:** zadnja tri `/api/2/envelope/`
+zahtjeva u nginx logu vraćaju **200** (19:36:16, 19:36:18, 19:36:22). Prije
+popravke 30 od 34 petstotinke bili su baš ti zahtjevi.
+
+**Da se ne bi ponovilo tiho:** `healthcheck.sh` dobio deveti provjeru,
+`check_glitchtip()`. Namjerno **ne gleda HTTP status ni stanje kontejnera** —
+oboje su javljali zdravo dok je sistem bio mrtav — nego jedino što ne može
+slagati: može li proces pročitati svoju bazu. Healthcheck ide svakih 5 minuta i
+šalje Telegram.
+
+## 🔴 C-1 Backup — POLA RIJEŠENO, POLA ČEKA TEBE
+
+**Otkriće:** ključ za Storage Box **već postoji** na serveru
+(`/root/.ssh/storagebox`, napravljen 17.08.) i `.ssh/config` ima podešen host
+`u634216.your-storagebox.de:23`. Fali **jedan korak**: javni ključ nije
+autorizovan na Storage Boxu.
+
+```
+$ ssh storagebox
+u634216@u634216.your-storagebox.de: Permission denied (publickey,password).
+```
+
+**Urađeno:**
+- `TECHPLAY_BACKUP_SSH=storagebox:techplay` upisano u `/etc/techplay-backup.conf`.
+  Dok ključ nije autorizovan, ishod je **identičan dosadašnjem** (izlaz 2,
+  Telegram, dvije lokalne kopije) samo s tačnijom porukom. Čim ključ bude gore,
+  prva sljedeća noć odlazi s mašine — bez ijedne dalje izmjene.
+- Backup dopunjen onim što mu je falilo: **`www-data` crontab** (jedan red bez
+  kojeg poslije restorea nikad ne krene nijedan zakazani posao), `/etc/cron.d`,
+  `nginx/snippets` i `conf.d`, `logrotate.d/techplay`, systemd drop-in, i
+  `pm2 dump`.
+
+**Ostaje tebi — jedna komanda:**
+
+```bash
+ssh-copy-id -p 23 -s -i /root/.ssh/storagebox.pub u634216@u634216.your-storagebox.de
+```
+
+(`-s` je obavezan: Storage Box prima ključeve preko SFTP-a. Tražit će lozinku
+Storage Boxa.) Ili zalijepi ovaj ključ kroz Hetzner Robot:
+
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC9Gu76NZ2FAsbQgpW/9qPcwSUYZh0AiZqzn7lzC2dHQ techplay-backup
+```
+
+## Ostale popravke
+
+| Nalaz | Urađeno |
+|---|---|
+| **J-1** *(povučen)* | Mreža za zaglavljen `syncing` išla je sedmično a prag joj je 6 h. Backend sada propušta ponovni pokušaj poslije istih 6 h; frontend gasi dugme po `sync_stale` koje backend izračuna, pa prag stoji **na jednom mjestu** |
+| **E-1** | Indeksi na `studios.became_studio_id` i `game_relations.other_game_id` |
+| **E-2** | Šest indeksa koji sjenče unique — obrisani |
+| **L-1** *(ispravljen)* | Turnstile `timeout(5)`, IndexNow `timeout(10)`. Ostali su već imali svoj |
+| **V-1** | `UniqueConstraintViolationException` se hvata — gubitnik trke tiho vraća `false` umjesto 500 |
+| **AC-1** | `LoginContractTest` (6 testova) i `RevalidationContractTest` (8) |
+| **B (novo)** | Deploy sada sinhronizuje `healthcheck.sh` i `backup.sh` iz repoa. Prije toga izmjena u repou je mogla stajati nepročitana — a tiho zastarjeli healthcheck je gori od nikakvog |
+| 🔵 | `impressum` s `force-dynamic` na `revalidate = 3600` |
+| 🔵 | Obrisan `// TODO` iznad implementiranog PayPal verify-a |
+
+## Šta NIJE dirano, i zašto
+
+- **`PAYPAL_WEBHOOK_ID`** — Shop je odložen, mode je `sandbox`, 0 proizvoda.
+  Postaviti **prije nego što se Shop upali**, ne prije launcha.
+- **62 fetchera (R-1)** — konsolidacija kroz 62 fajla je refaktor s rizikom
+  regresije, a ništa danas nije pokvareno. Ali **raste**, i to je jedina stavka
+  koja ozbiljno prijeti cilju „godinu dana bez novog cleanupa".
+- **Mail** — tvoja infrastruktura.
+
+## Ocjene poslije popravki
+
+| Oblast | Bilo | Sada |
+|---|---|---|
+| Observability | 3 | **7** — GlitchTip radi i healthcheck ga čuva |
+| Disaster Recovery | 3 | **6** — sadržaj kompletan, off-site čeka jedan tvoj korak (bit će 8) |
+| Reliability | 6 | **8** — nalaz je bio pogrešan, sistem je bio bolji nego što sam napisao |
+| **Overall** | **7** | **8** — i **8,5** čim ključ ode na Storage Box |

@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Notifications\AchievementUnlockedNotification;
 use Carbon\Carbon;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -311,13 +312,31 @@ class AchievementService
         }
     }
 
+    /**
+     * Grant it once, and let the database be the one to say so.
+     *
+     * The check below is not a guarantee: `achievements:sync` runs nightly and
+     * the same unlock can be reached from a web request in the same moment, so
+     * both can see it missing. `user_achievements` carries a unique index on
+     * (user_id, achievement_id) which makes the second insert fail rather than
+     * duplicate — but an unhandled failure is a 500 for the reader, or a nightly
+     * command that stops halfway through the remaining members.
+     *
+     * Catching the violation turns that into what it should have been all along:
+     * the loser of the race quietly returns false, and only the winner announces
+     * anything or pays anything out.
+     */
     private function unlock(User $user, Achievement $achievement): bool
     {
         if ($user->achievements()->where('achievement_id', $achievement->id)->exists()) {
             return false;
         }
 
-        $user->achievements()->attach($achievement->id, ['unlocked_at' => now()]);
+        try {
+            $user->achievements()->attach($achievement->id, ['unlocked_at' => now()]);
+        } catch (UniqueConstraintViolationException) {
+            return false;
+        }
 
         // An unlock is the one thing on the site worth interrupting somebody
         // for, and it used to arrive as a notification they might read later.

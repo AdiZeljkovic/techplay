@@ -140,11 +140,13 @@ class PayPalWebhookController extends Controller
         // Get raw body
         $body = $request->getContent();
 
-        // TODO: Full implementation requires PayPal SDK
-        // For now, we verify using PayPal's webhook verification API
+        // Verified against PayPal's own API, below. The note that used to stand
+        // here called this a TODO awaiting the PayPal SDK, directly above the
+        // call that does the work — so anyone reading it would conclude webhooks
+        // were unverified when they are not. The SDK is not needed for this: one
+        // documented REST endpoint answers it.
         //
-        // IMPLEMENTATION NOTE:
-        // Use PayPal REST API POST /v1/notifications/verify-webhook-signature
+        // POST /v1/notifications/verify-webhook-signature
         // Request body:
         // {
         //   "auth_algo": $authAlgo,
@@ -158,7 +160,6 @@ class PayPalWebhookController extends Controller
         //
         // Response: { "verification_status": "SUCCESS" | "FAILURE" }
 
-        // Placeholder: Call PayPal verification API
         $verificationResult = $this->callPayPalVerificationAPI([
             'auth_algo' => $authAlgo,
             'cert_url' => $certUrl,

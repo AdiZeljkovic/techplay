@@ -19,7 +19,11 @@ async function getStaffData() {
 
 
     try {
-        const res = await fetch(url, { cache: 'no-store', headers: serverHeaders() });
+        // An hour, not `no-store`. The masthead changes when somebody is hired,
+        // which is not something to re-ask the API on every single request —
+        // and this page is not behind the nginx cache that /games/ and /studios/
+        // sit behind, so `no-store` meant a round trip per visitor and per bot.
+        const res = await fetch(url, { next: { revalidate: 3600 }, headers: serverHeaders() });
         if (!res.ok) {
             console.error('[Impressum] Staff API error - status:', res.status);
             return null;
@@ -32,7 +36,9 @@ async function getStaffData() {
     }
 }
 
-export const dynamic = 'force-dynamic';
+// Rebuilt hourly rather than rendered per request. `force-dynamic` was doing the
+// latter for a page whose content changes when the masthead does.
+export const revalidate = 3600;
 
 export default async function ImpressumPage() {
     const staff = await getStaffData();

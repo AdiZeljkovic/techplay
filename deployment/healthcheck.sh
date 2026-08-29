@@ -201,6 +201,38 @@ def check_failed_jobs():
     return n < 20, f"{n} neuspjelih poslova u redu"
 
 
+def check_glitchtip():
+    """Prati li nas jos iko.
+
+    Ovo je jedina provjera koja gleda alat za pracenje gresaka, i postoji zato
+    sto je 29.08.2026. GlitchTip bio mrtav sat vremena a da niko nije mogao
+    saznati. Postgres slusa i na docker0 bridgeu, digao se tri sekunde prije
+    Dockera, bind je pao uz WARNING (ne gresku) i baza je nastavila normalno.
+    GlitchTip je od tada dobijao Connection refused.
+
+    Nista nije vristalo: `docker ps` je javljao healthy, web je vracao 200,
+    kontejneri su imali nula restarta. Jedini vidljivi trag bio je 30 od 34
+    petstotinke u nginx logu na /api/2/envelope — dakle same prijave gresaka
+    koje nikad nisu stigle.
+
+    Zato se ne gleda ni HTTP status ni stanje kontejnera, nego jedino sto ne moze
+    lagati: moze li proces stvarno procitati svoju bazu.
+    """
+    ok, out = sh(
+        "docker exec glitchtip-web-1 ./manage.py shell -c "
+        "'from apps.issue_events.models import Issue; print(Issue.objects.count())' 2>&1 | tail -1",
+        timeout=45,
+    )
+
+    if not ok:
+        return False, "GlitchTip ne odgovara — greske se nigdje ne biljeze"
+
+    if not re.fullmatch(r"\d+", (out or "").strip()):
+        return False, f"GlitchTip ne moze do baze: {(out or '').strip()[:80]}"
+
+    return True, ""
+
+
 CHECKS = [
     ("supervisor", check_supervisor),
     ("pm2", check_pm2),
@@ -210,6 +242,7 @@ CHECKS = [
     ("backup", check_backup),
     ("certifikat", check_certificate),
     ("redovi", check_failed_jobs),
+    ("glitchtip", check_glitchtip),
 ]
 
 

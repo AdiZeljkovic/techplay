@@ -42,10 +42,22 @@ class ReCaptchaService
         }
 
         try {
-            $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-                'secret' => $this->secretKey,
-                'response' => $token,
-            ]);
+            /*
+             * Five seconds, not Laravel's default thirty.
+             *
+             * This sits in the registration request, so the reader is watching a
+             * spinner for however long it takes, and an Octane worker is held for
+             * the same time. With eight workers, eight people registering while
+             * Turnstile is slow is the whole pool. Cloudflare answers this
+             * endpoint in tens of milliseconds; anything near five seconds is
+             * already a failure, and failing closed after five beats succeeding
+             * after twenty-nine.
+             */
+            $response = Http::asForm()->timeout(5)->connectTimeout(3)
+                ->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                    'secret' => $this->secretKey,
+                    'response' => $token,
+                ]);
 
             $data = $response->json();
 

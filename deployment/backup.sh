@@ -121,18 +121,42 @@ if [ -d "${APP_DIR}/backend/storage/app/public" ]; then
 fi
 
 # The configuration, without which the machine cannot be rebuilt without
-# guessing: the .env files, nginx, supervisor, the crontab. Kilobytes, and the
+# guessing: the .env files, nginx, supervisor, the crontabs. Kilobytes, and the
 # difference between restoring a platform and reconstructing one.
+#
+# The crontabs are here for one reason. Until 29.08.2026 this captured root's
+# and nothing else — and root's is empty. The one that matters belongs to
+# www-data and is a single line:
+#
+#   * * * * * cd /var/www/techplay/backend && php artisan schedule:run
+#
+# Without it nothing scheduled ever runs again: no scheduled article reaches a
+# reader, no sitemap is rewritten, no enrichment, no pruning, no nightly backup
+# of derived data. The site serves perfectly and looks healthy the whole time,
+# and nobody would think to check a crontab. One line, and it was the largest
+# hole in this archive.
 STEP="konfiguracija"
-crontab -l > "${DEST}/root-crontab.txt" 2>/dev/null || true
+for u in root www-data techplay; do
+    crontab -u "$u" -l > "${DEST}/crontab-${u}.txt" 2>/dev/null || true
+done
+
+# pm2 resurrects the frontend and the bot from this file. Without it a restored
+# machine comes up with neither, and `pm2 list` is simply empty.
+cp /home/techplay/.pm2/dump.pm2 "${DEST}/pm2-dump.json" 2>/dev/null || true
+
 tar -czf "${DEST}/config.tar.gz" --ignore-failed-read -C / \
     var/www/techplay/backend/.env \
     var/www/techplay/frontend/.env \
     var/www/techplay/frontend/.env.local \
     var/www/techplay/discord/.env \
     etc/nginx/sites-available \
+    etc/nginx/snippets \
+    etc/nginx/conf.d \
     etc/supervisor/conf.d \
     etc/ssh/sshd_config.d \
+    etc/cron.d \
+    etc/logrotate.d/techplay \
+    etc/systemd/system/postgresql@16-main.service.d \
     2>/dev/null || echo "  config archive incomplete, continuing"
 chmod 600 "${DEST}/config.tar.gz" 2>/dev/null || true
 

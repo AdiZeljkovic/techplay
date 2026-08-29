@@ -32,12 +32,20 @@ class ConnectedAccountController extends Controller
     use ApiResponse;
 
     /**
+     * Past this, a row still saying `syncing` has nobody behind it.
+     *
+     * Deliberately the same six hours `platforms:resync` uses — two different
+     * thresholds for the same judgement is how they drift apart.
+     */
+    private const STALE_SYNC_HOURS = 6;
+
+    /**
      * GET /connected-accounts — list all connected accounts for the auth user.
      */
     public function index(Request $request): JsonResponse
     {
         $accounts = ConnectedAccount::where('user_id', $request->user()->id)
-            ->get(['id', 'provider', 'display_name', 'sync_status', 'sync_error', 'last_synced_at', 'visibility', 'metadata'])
+            ->get(['id', 'provider', 'display_name', 'sync_status', 'sync_error', 'last_synced_at', 'visibility', 'metadata', 'updated_at'])
             ->map(fn (ConnectedAccount $account) => [
                 'id' => $account->id,
                 'provider' => $account->provider,
@@ -46,6 +54,17 @@ class ConnectedAccountController extends Controller
                 'sync_error' => $account->sync_error,
                 'last_synced_at' => $account->last_synced_at?->toIso8601String(),
                 'visibility' => $account->visibility,
+                /*
+                 * Whether `syncing` still means anything.
+                 *
+                 * A worker killed outright never releases the lock, so the row
+                 * can keep saying `syncing` with nobody behind it. Sent as an
+                 * answer rather than a timestamp so the six-hour threshold lives
+                 * in one place — the screen greys its button on this, and the
+                 * sync endpoint lets a retry through on the same rule.
+                 */
+                'sync_stale' => $account->sync_status === 'syncing'
+                    && $account->updated_at?->lt(now()->subHours(self::STALE_SYNC_HOURS)),
                 // Whether the gamertag was ever proved, and when a PlayStation
                 // link will need a fresh token — both things the screen has to
                 // say out loud rather than discover by failing.
@@ -498,7 +517,21 @@ class ConnectedAccountController extends Controller
     {
         $account = ConnectedAccount::where('user_id', $request->user()->id)->findOrFail($id);
 
-        if ($account->sync_status === 'syncing') {
+        /*
+         * `syncing` blocks a second run — but only while a sync could still be
+         * running.
+         *
+         * Two things already release the lock: the jobs do it in failed(), which
+         * covers a timeout, and `platforms:resync` sweeps anything older than six
+         * hours, which covers a worker killed outright before failed() could run.
+         *
+         * That sweep is weekly. So a member whose sync died on a Thursday kept a
+         * disabled button and a 422 until the following Wednesday — the recovery
+         * existed and simply arrived days late. The same six-hour threshold is
+         * applied here so they can just press the button again.
+         */
+        if ($account->sync_status === 'syncing'
+            && $account->updated_at?->gt(now()->subHours(self::STALE_SYNC_HOURS))) {
             return $this->error('Sync already in progress', 422);
         }
 

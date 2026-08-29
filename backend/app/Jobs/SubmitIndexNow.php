@@ -89,7 +89,12 @@ class SubmitIndexNow implements ShouldQueue
         ];
 
         try {
-            $response = Http::post($endpoint, $payload);
+            // Ten seconds, not the thirty Laravel defaults to. This runs on the
+            // `default` queue behind enrichment and library syncs, and with
+            // tries=3 an unresponsive endpoint would hold a worker for a minute
+            // and a half to tell a search engine about a URL it will crawl
+            // anyway.
+            $response = Http::timeout(10)->connectTimeout(3)->post($endpoint, $payload);
 
             if ($response->successful()) {
                 Log::info('IndexNow: Submitted '.count($this->urls).' URLs successfully.');

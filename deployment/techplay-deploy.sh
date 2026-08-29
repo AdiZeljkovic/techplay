@@ -98,6 +98,21 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
         logrotate -d /etc/logrotate.d/techplay >/dev/null 2>&1 && echo "  provjerena" || echo "  UPOZORENJE: logrotate ne prihvata novi config"
     fi
 
+    # Healthcheck i backup: obje skripte zive u repou, obje se izvrsavaju iz
+    # /usr/local/bin, i do 29.08.2026. ih deploy nije dirao. Izmjena u repou je
+    # dakle mogla stajati necitana koliko god dugo — a healthcheck je ono sto
+    # jedino javlja da nesto ne valja, pa je tiho zastarjeli healthcheck gori od
+    # nikakvog. Isti obrazac drifta koji je vec jednom ugrizao logrotate.
+    for pair in "healthcheck.sh:techplay-healthcheck" "backup.sh:techplay-backup"; do
+        src="$ROOT/deployment/${pair%%:*}"
+        dst="/usr/local/bin/${pair##*:}"
+
+        if [[ -f "$src" ]] && ! cmp -s "$src" "$dst"; then
+            step "${pair##*:} se promijenila"
+            install -m 700 "$src" "$dst"
+        fi
+    done
+
     # Konfiguracija workera zivi u repou; ovdje se samo drzi u koraku. Bez ovoga
     # se repo i /etc razilaze tiho, sto je tacno kako je frontend deploy izgubio
     # pet zastita na jedan dan.
