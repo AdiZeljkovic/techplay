@@ -16,6 +16,7 @@
 #   techplay-deploy.sh              # sve
 #   techplay-deploy.sh backend      # samo backend
 #   techplay-deploy.sh frontend     # samo frontend
+#   techplay-deploy.sh discord      # samo bot
 #   techplay-deploy.sh --no-pull    # bez git pull-a (kad je vec povuceno)
 
 set -euo pipefail
@@ -39,6 +40,11 @@ fi
 step "vlasnistvo"
 chown -R techplay:techplay "$ROOT/frontend" "$ROOT/discord"
 chown -R www-data:www-data "$ROOT/backend/storage" "$ROOT/backend/bootstrap/cache"
+# public/ takodje: sitemapi se pisu iz aplikacije (ArticleObserver na objavu,
+# sitemap:generate iz schedulera). Dok je scheduler radio kao root, svi
+# sitemap*.xml su ostali root:root 644 — pa ih www-data nije mogao prepisati,
+# i objava clanka bi tiho preskocila azuriranje sitemap-news.xml.
+chown -R www-data:www-data "$ROOT/backend/public"
 chown root:www-data "$ROOT/backend/.env" && chmod 640 "$ROOT/backend/.env"
 chown techplay:techplay "$ROOT/frontend/.env" "$ROOT/frontend/.env.local" "$ROOT/discord/.env" 2>/dev/null || true
 chmod 600 "$ROOT/frontend/.env" "$ROOT/frontend/.env.local" "$ROOT/discord/.env" 2>/dev/null || true
@@ -72,10 +78,37 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
     php artisan config:cache >/dev/null
     php artisan route:cache >/dev/null
     php artisan view:cache >/dev/null
+
+    # Poslije kesiranja, namjerno: od tog trenutka .env vise niko ne cita, pa je
+    # jedina istina ono sto je zavrsilo u kesu. Komanda cita config(), ne env(),
+    # bas zato — ranija verzija je odbijala da radi nad kesiranom konfiguracijom
+    # i time bila neupotrebljiva tacno tamo gdje je trebala.
+    #
+    # Izlaz 1 znaci "sajt ovako ne moze da radi" i `set -e` ce prekinuti deploy.
+    # Nedostajuca integracija (Discord prijava, PayPal webhook) je upozorenje i
+    # ne prekida nista — jedna ugasena funkcija ne smije blokirati objavu.
+    php artisan env:validate
+    # Konfiguracija workera zivi u repou; ovdje se samo drzi u koraku. Bez ovoga
+    # se repo i /etc razilaze tiho, sto je tacno kako je frontend deploy izgubio
+    # pet zastita na jedan dan.
+    if ! cmp -s "$ROOT/deployment/supervisor-worker.conf" /etc/supervisor/conf.d/techplay-worker.conf; then
+        step "supervisor: konfiguracija workera se promijenila"
+        install -m 644 "$ROOT/deployment/supervisor-worker.conf" /etc/supervisor/conf.d/techplay-worker.conf
+        supervisorctl reread 2>&1 | tail -2
+        supervisorctl update 2>&1 | tail -2
+    fi
+
     # supervisorctl restart, ne octane:reload — reload je ostavljao konekcije
     # za sobom (197 zombija, 08/2026).
     supervisorctl restart techplay-octane:* 2>&1 | tail -2
-    supervisorctl restart techplay-worker 2>&1 | tail -1
+
+    # Samo one koje supervisor stvarno poznaje: skript mora proci i na masini
+    # koja jos nije dobila brzi red.
+    for worker in techplay-worker techplay-worker-live; do
+        if supervisorctl status 2>/dev/null | grep -q "^${worker} "; then
+            supervisorctl restart "$worker" 2>&1 | tail -1
+        fi
+    done
     echo "  backend gotov"
 fi
 
@@ -99,6 +132,17 @@ if [[ "$TARGET" == "all" || "$TARGET" == "frontend" ]]; then
     # to prenosi dalje.
     bash "$ROOT/deployment/deploy_frontend.sh"
     echo "  frontend gotov"
+fi
+
+if [[ "$TARGET" == "all" || "$TARGET" == "discord" ]]; then
+    step "discord"
+    # Bot se kompajlira na serveru (dist/ nije u gitu), a ovaj skript ga do
+    # 29.08.2026 nije ni dodirivao osim chowna — pa je poslije svakog `git pull`
+    # nastavljao da izvrsava stari dist/ dok se neko ne bi sjetio da ga rucno
+    # sagradi. Bez ijedne poruke: pm2 uredno prijavljuje "online".
+    sudo -u techplay -H bash -lc "cd $ROOT/discord && npm install --no-audit --no-fund && npm run build" 2>&1 | tail -2
+    sudo -u techplay -H bash -lc "pm2 restart techplay-bot" >/dev/null
+    echo "  bot gotov"
 fi
 
 step "provjera"

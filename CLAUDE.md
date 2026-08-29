@@ -28,7 +28,7 @@ php artisan test tests/Feature/GameTest.php
 vendor/bin/pint                         # Code formatter (Laravel Pint)
 php artisan migrate
 php artisan migrate:fresh --seed
-php artisan env:validate                # Check required env vars
+php artisan env:validate                # Check the config the app will actually run with
 ```
 
 ### Frontend (run from `frontend/`)
@@ -114,7 +114,11 @@ pull itself.
 
 **Real-time:** Laravel Reverb (WebSocket server) + Pusher protocol. Frontend uses `laravel-echo` + `pusher-js`. Events in `app/Events/` broadcast on publish (articles, comments, forum posts, etc.) — for forum content specifically, dispatch happens inside Model Observers (`ThreadObserver`, `ForumPostObserver`), not inline in the controller.
 
-**Queue jobs:** `FetchOgData`, `FlushViewCounters`, `MobyEnrichmentJob`, `SubmitIndexNow`, `SendGiveawayReminders`, `SendChatReminder`. (`PingIndexNow` was listed here and dispatched by nothing — deleted 18 Aug 2026.)
+**Queue jobs:** `FlushViewCounters`, `PollSteamPresence`, `PublishArticleFanout`, `SubmitIndexNow`, `SendGiveawayReminders`, `SendReleaseReminders`, `EnrichSteamBatch`, `Sync{Steam,Xbox,Gog,PlayStation,Epic}Library`. (`FetchOgData`, `MobyEnrichmentJob`, `SendChatReminder` and `PingIndexNow` were listed here and do not exist.)
+
+**Two queues, two workers.** `default` carries the heavy work (enrichment, library syncs, the publish fan-out); `live` carries only broadcasts, and has its own process so a chat message does not wait behind a five-minute sync. Events get there through the `BroadcastsOnTheLiveQueue` trait — add it to any new `ShouldBroadcast` event. Worker config lives in `deployment/supervisor-worker.conf` and the deploy script syncs it to `/etc/supervisor/conf.d/`.
+
+**The scheduler runs as `www-data`** (its crontab), not root. Anything Laravel writes — compiled views, caches, `public/sitemap*.xml` — belongs to the `www-data` tree, and a root-run task leaves files the application cannot later overwrite. That is not hypothetical: on 29 Aug 2026 every sitemap was `root:root 644`, so `ArticleObserver` could not have rewritten `sitemap-news.xml` on publish.
 
 **Testing:** PHPUnit, in-memory SQLite for tests (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`). Run `php artisan test`.
 

@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Events\Concerns\BroadcastsOnTheLiveQueue;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -10,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 
 class PresenceUpdated implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use BroadcastsOnTheLiveQueue, Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
         public readonly int $userId,

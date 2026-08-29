@@ -36,12 +36,18 @@ export class ApiService {
         this.baseUrl = config.apiUrl;
 
         // Create axios instance with bot token header for authenticated requests
+        const usesLoopback = /^https?:\/\/(127\.0\.0\.1|localhost)\b/.test(this.baseUrl);
+
         this.client = axios.create({
             baseURL: this.baseUrl,
             timeout: 10000, // 10 second timeout
             headers: {
                 'Content-Type': 'application/json',
                 'X-Discord-Bot-Token': config.botSecret || '',
+                // Only when talking to the loopback address, where there is no
+                // name for the backend to answer as.
+                ...(usesLoopback && config.apiHost ? { Host: config.apiHost } : {}),
+                ...(config.internalToken ? { 'X-Internal-Token': config.internalToken } : {}),
             }
         });
     }
@@ -341,6 +347,7 @@ export class ApiService {
      */
     public async claimDailyBonus(discordId: string): Promise<{
         already_claimed?: boolean;
+        rate_limited?: boolean;
         hours_left?: number;
         xp_awarded?: number;
         streak?: number;
@@ -355,12 +362,33 @@ export class ApiService {
             if (axios.isAxiosError(error) && error.response?.status === 404) {
                 return null; // User not linked
             }
+            /*
+             * Two different 429s arrive here and they mean opposite things.
+             *
+             * The backend answers an honest "you already claimed today" with
+             * 429 and a body carrying `hours_left`. The rate limiter answers
+             * "too many requests from this address" with 429 and a body that
+             * does not. Treating every 429 as the first told members who had
+             * claimed nothing that they had already claimed, and sent them away
+             * for a day that had not started.
+             */
             if (axios.isAxiosError(error) && error.response?.status === 429) {
-                // Already claimed
-                return {
-                    already_claimed: true,
-                    hours_left: error.response.data?.hours_left || 24
-                };
+                const body = error.response.data as { already_claimed?: boolean; hours_left?: number } | undefined;
+                const isClaimResponse = body?.already_claimed !== undefined || body?.hours_left !== undefined;
+
+                if (isClaimResponse) {
+                    return {
+                        already_claimed: true,
+                        hours_left: body?.hours_left ?? 24,
+                    };
+                }
+
+                // Not `null`: the caller reads that as "this account is not
+                // linked", which would be a third wrong answer to the same
+                // question.
+                console.error('[ApiService] Daily claim was rate limited, not already claimed.');
+
+                return { rate_limited: true };
             }
             console.error('[ApiService] Failed to claim daily bonus:', error instanceof Error ? error.message : 'Unknown error');
             return null;

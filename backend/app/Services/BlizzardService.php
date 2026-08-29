@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -591,8 +592,6 @@ class BlizzardService
                     'locale' => $locale,
                 ];
 
-                $httpClient = $this->http(30);
-
                 return [
                     'profile' => $pool->as('profile')
                         ->withToken($token)
@@ -661,23 +660,38 @@ class BlizzardService
                 ];
             });
 
-            // Process responses - return null for failed requests
+            /*
+             * A pooled request that could not connect leaves the exception in
+             * the slot, not a response — so asking it `successful()` raises an
+             * Error, which `catch (\Exception)` below does not catch. One
+             * Blizzard endpoint refusing a connection therefore turned a
+             * partial-but-usable analysis into a 500, in exactly the case the
+             * nulls here were written to survive.
+             */
+            $body = function (string $key) use ($responses) {
+                $response = $responses[$key] ?? null;
+
+                return $response instanceof Response && $response->successful()
+                    ? $response->json()
+                    : null;
+            };
+
             return [
-                'profile' => $responses['profile']->successful() ? $responses['profile']->json() : null,
-                'achievements' => $responses['achievements']->successful() ? $responses['achievements']->json() : null,
-                'mounts' => $responses['mounts']->successful() ? $responses['mounts']->json() : null,
-                'media' => $responses['media']->successful() ? $responses['media']->json() : null,
-                'equipment' => $responses['equipment']->successful() ? $responses['equipment']->json() : null,
-                'mythic' => $responses['mythic']->successful() ? $responses['mythic']->json() : null,
-                'raids' => $responses['raids']->successful() ? $responses['raids']->json() : null,
-                'pvp' => $responses['pvp']->successful() ? $responses['pvp']->json() : null,
-                'reputations' => $responses['reputations']->successful() ? $responses['reputations']->json() : null,
-                'pets' => $responses['pets']->successful() ? $responses['pets']->json() : null,
-                'toys' => $responses['toys']->successful() ? $responses['toys']->json() : null,
-                'appearances' => $responses['appearances']->successful() ? $responses['appearances']->json() : null,
-                'professions' => $responses['professions']->successful() ? $responses['professions']->json() : null,
+                'profile' => $body('profile'),
+                'achievements' => $body('achievements'),
+                'mounts' => $body('mounts'),
+                'media' => $body('media'),
+                'equipment' => $body('equipment'),
+                'mythic' => $body('mythic'),
+                'raids' => $body('raids'),
+                'pvp' => $body('pvp'),
+                'reputations' => $body('reputations'),
+                'pets' => $body('pets'),
+                'toys' => $body('toys'),
+                'appearances' => $body('appearances'),
+                'professions' => $body('professions'),
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Blizzard Parallel Fetch Exception: '.$e->getMessage(), [
                 'region' => $region,
                 'realm' => $realmSlug,

@@ -596,9 +596,19 @@ class ForumController extends Controller
     {
         // Same defect as showCategory had, and public in the same way: raw
         // Thread models carry the whole author record, email included.
-        $threads = Cache::remember("forum.game_threads.{$gameSlug}", 60, function () use ($gameSlug) {
+        //
+        // The key carries the audience because the query inside filters by it.
+        // Without that, whoever missed the cache first decided what everybody
+        // saw for the next minute: a member of staff warming it put threads
+        // from private boards in front of guests, and a guest warming it hid
+        // visible ones from staff. Every neighbouring listing here — the board
+        // index, active threads, unanswered — already keys this way.
+        $viewer = $this->viewer();
+        $audience = Category::audienceFor($viewer);
+
+        $threads = Cache::remember("forum.game_threads.{$audience}.{$gameSlug}", 60, function () use ($gameSlug, $viewer) {
             $rows = Thread::whereHas('game', fn ($q) => $q->where('slug', $gameSlug))
-                ->whereHas('category', fn ($q) => $q->visibleTo($this->viewer()))
+                ->whereHas('category', fn ($q) => $q->visibleTo($viewer))
                 ->with(['author', 'category'])
                 ->withCount('posts')
                 ->orderByDesc('is_pinned')

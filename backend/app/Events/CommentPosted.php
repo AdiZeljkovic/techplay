@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Events\Concerns\BroadcastsOnTheLiveQueue;
 use App\Models\Comment;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class CommentPosted implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use BroadcastsOnTheLiveQueue, Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Comment $comment;
 

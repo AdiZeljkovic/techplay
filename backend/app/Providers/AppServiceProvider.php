@@ -223,16 +223,31 @@ class AppServiceProvider extends ServiceProvider
     {
         $socialite = $this->app->make(Factory::class);
 
-        $socialite->extend('battlenet', function ($app) use ($socialite) {
-            $config = config('services.battlenet');
+        /*
+         * Socialite builds its own Guzzle client, so the floor set by
+         * Http::globalOptions() in register() does not reach it — and Guzzle's
+         * own default is no timeout at all. Both the token exchange and the
+         * profile fetch happen while somebody is signing in, on an Octane
+         * worker: a discord.com that accepts the connection and then says
+         * nothing would hold that worker until the process was restarted.
+         *
+         * The same numbers as the global floor, for the same reason.
+         */
+        $guzzle = ['guzzle' => ['timeout' => 10, 'connect_timeout' => 3]];
+
+        $socialite->extend('battlenet', function ($app) use ($socialite, $guzzle) {
+            $config = array_merge(config('services.battlenet'), $guzzle);
 
             return $socialite->buildProvider(BattleNetProvider::class, $config);
         });
 
         // Without this, Socialite::driver('discord') throws — which is what
         // both "Sign in with Discord" buttons have been doing.
-        $socialite->extend('discord', function ($app) use ($socialite) {
-            return $socialite->buildProvider(DiscordProvider::class, config('services.discord'));
+        $socialite->extend('discord', function ($app) use ($socialite, $guzzle) {
+            return $socialite->buildProvider(
+                DiscordProvider::class,
+                array_merge(config('services.discord'), $guzzle),
+            );
         });
 
         /*

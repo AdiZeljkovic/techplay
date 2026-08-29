@@ -5,153 +5,193 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 
 /**
- * Validate .env configuration
+ * What the application will actually see when it runs.
  *
- * DEPLOYMENT: Run this command before deploying to production
- * Usage: php artisan env:validate
+ * This used to read env() and refuse to run whenever the configuration was
+ * cached — which is every moment of production's life, since `config:cache` is
+ * a deploy step. So the one tool built to catch a missing credential could
+ * never be pointed at the machine that had one.
+ *
+ * It now reads config(), which is the layer the application itself reads. That
+ * makes it work cached or not, and it makes the answer true rather than merely
+ * available: after `config:cache` the .env file is no longer consulted by
+ * anything, so a value present there and absent from the cache is absent.
+ *
+ * What it would have caught on 29 Aug 2026: DISCORD_CLIENT_SECRET missing, so
+ * every Discord sign-in came back from Discord and died on a 401 — found in the
+ * logs by accident, three real attempts later.
  */
 class ValidateEnv extends Command
 {
     protected $signature = 'env:validate';
 
-    protected $description = 'Validate required environment variables';
+    protected $description = 'Check the configuration the application will actually run with';
 
-    private $errors = [];
+    /** @var array<int, array{0: string, 1: string, 2: string}> */
+    private array $rows = [];
 
-    private $warnings = [];
+    private int $fatal = 0;
+
+    private int $broken = 0;
 
     public function handle(): int
     {
-        if ($this->refuseIfConfigIsCached()) {
-            return 1;
-        }
-
-        $this->info('🔍 Validating environment configuration...');
+        $this->line(app()->configurationIsCached()
+            ? 'Reading the cached configuration — the same one the running app sees.'
+            : 'Reading configuration from source (not cached).');
         $this->newLine();
 
-        $this->validateRequired();
-        $this->validateDatabase();
-        $this->validateMail();
-        $this->validateSecurity();
-        $this->validatePayPal();
-        $this->validateCache();
+        $this->checkFoundations();
+        $this->checkIntegrations();
+        $this->checkAlerting();
 
-        $this->displayResults();
+        $this->table(['', 'Area', 'Detail'], $this->rows);
 
-        return empty($this->errors) ? 0 : 1;
+        if ($this->fatal > 0) {
+            $this->error("{$this->fatal} fatal: the site cannot serve correctly like this.");
+        }
+
+        if ($this->broken > 0) {
+            $this->warn("{$this->broken} feature(s) unavailable — the site runs, these do not.");
+        }
+
+        if ($this->fatal === 0 && $this->broken === 0) {
+            $this->info('Everything the application needs is configured.');
+        }
+
+        $this->newLine();
+
+        return $this->fatal > 0 ? 1 : 0;
     }
 
     /**
-     * This command reads env() on purpose — it is checking the .env file, which
-     * is the one job env() is for. But `config:cache` makes env() return null
-     * for everything, so run afterwards it reports every variable as missing
-     * and every check as failed.
-     *
-     * Rather than let it lie, it says so and stops. Deploy order is: validate,
-     * then cache.
+     * Without these the site does not serve, so they stop a deploy.
      */
-    private function refuseIfConfigIsCached(): bool
+    private function checkFoundations(): void
     {
-        if (! app()->configurationIsCached()) {
-            return false;
-        }
+        $this->require('app', 'APP_KEY', filled(config('app.key')) && strlen((string) config('app.key')) > 20);
+        $this->require('app', 'APP_URL', filled(config('app.url')));
+        $this->require('app', 'FRONTEND_URL', filled(config('app.frontend_url')));
 
-        $this->error('Configuration is cached, so env() reads as null and every check below would fail.');
-        $this->line('  Run <fg=yellow>php artisan config:clear</fg=yellow> first, or run this before config:cache in the deploy.');
+        $connection = config('database.default');
+        $db = config("database.connections.{$connection}");
 
-        return true;
+        $this->require('database', "connection [{$connection}]", is_array($db));
+        $this->require('database', 'database name', filled($db['database'] ?? null));
+        $this->require('database', 'password', filled($db['password'] ?? null));
+
+        // Server-side rendering identifies itself with this to escape the
+        // 60/min per-IP limiter. Without it every SSR request on the site shares
+        // one visitor's budget and readers are shown missing pages under load.
+        $this->require('api', 'INTERNAL_API_TOKEN', filled(config('services.internal.token')));
+
+        $this->require('frontend', 'REVALIDATE_SECRET_TOKEN', filled(config('services.revalidate.secret_token')));
+
+        // A comma-separated FRONTEND_URL is accepted by CORS and read raw by
+        // RevalidationService, which then posts to a hostname that cannot
+        // resolve. Local .env carries three origins; production carries one.
+        $this->flagFeature(
+            'frontend',
+            'FRONTEND_URL is a list, not one origin — revalidation posts to it raw',
+            ! str_contains((string) config('app.frontend_url'), ','),
+        );
     }
 
-    private function validateRequired(): void
+    /**
+     * Each of these is one feature. Missing means that feature is down and the
+     * rest of the site is fine, so they are reported, not fatal.
+     */
+    private function checkIntegrations(): void
     {
-        $required = ['APP_NAME', 'APP_KEY', 'APP_ENV', 'APP_URL'];
+        $this->flagFeature('sign-in: Discord', 'DISCORD_CLIENT_ID + DISCORD_CLIENT_SECRET',
+            filled(config('services.discord.client_id')) && filled(config('services.discord.client_secret')));
 
-        foreach ($required as $var) {
-            if (empty(env($var))) {
-                $this->errors[] = "❌ {$var} is not set";
-            }
-        }
+        $this->flagFeature('sign-in: Battle.net', 'BATTLENET_CLIENT_ID + BATTLENET_CLIENT_SECRET',
+            filled(config('services.battlenet.client_id')) && filled(config('services.battlenet.client_secret')));
 
-        // APP_KEY format validation
-        if (strlen(env('APP_KEY')) < 20) {
-            $this->errors[] = '❌ APP_KEY seems invalid (too short)';
-        }
+        $this->flagFeature('sign-up defence', 'TURNSTILE_SECRET_KEY (verification fails closed without it)',
+            ! config('services.turnstile.enabled') || filled(config('services.turnstile.secret_key')));
+
+        $this->flagFeature('WoW analyzer', 'GROQ_API_KEY', filled(config('services.groq.api_key')));
+        $this->flagFeature('WoW analyzer', 'BLIZZARD_CLIENT_ID + secret',
+            filled(config('services.blizzard.client_id')) && filled(config('services.blizzard.client_secret')));
+
+        $this->flagFeature('game catalogue', 'STEAM_API_KEY', filled(config('services.steam.key')));
+
+        $this->flagFeature('Discord bot', 'DISCORD_BOT_SECRET (bot API auth fails closed)',
+            filled(config('services.discord.bot_secret')));
+
+        $this->checkPayPal();
+
+        $mailer = config('mail.default');
+        $host = config("mail.mailers.{$mailer}.host");
+        $this->flagFeature('mail', "mailer [{$mailer}] host ".($host ?: 'unset'),
+            $mailer !== 'smtp' || filled($host));
     }
 
-    private function validateDatabase(): void
+    /**
+     * Live mode is the only mode where a missing webhook id is worse than
+     * useless: the payment succeeds and the order is never marked paid.
+     */
+    private function checkPayPal(): void
     {
-        if (env('DB_CONNECTION') === 'mysql') {
-            $required = ['DB_HOST', 'DB_DATABASE', 'DB_USERNAME', 'DB_PASSWORD'];
-            foreach ($required as $var) {
-                if (empty(env($var))) {
-                    $this->errors[] = "❌ {$var} is required for MySQL";
-                }
-            }
+        $live = config('services.paypal.mode') === 'live';
+        $credentials = filled(config('services.paypal.client_id')) && filled(config('services.paypal.secret'));
+        $webhook = filled(config('services.paypal.webhook_id'));
+
+        if (! $live) {
+            $this->row('info', 'shop', 'PayPal in sandbox — no real payments'.($webhook ? '' : ', webhook id unset'));
+
+            return;
         }
+
+        $this->require('shop', 'PAYPAL_CLIENT_ID + PAYPAL_SECRET (live mode)', $credentials);
+        $this->require('shop', 'PAYPAL_WEBHOOK_ID (live mode — paid orders stay unpaid without it)', $webhook);
     }
 
-    private function validateMail(): void
+    /**
+     * If something breaks at four in the morning, this decides whether anyone
+     * finds out.
+     */
+    private function checkAlerting(): void
     {
-        if (! env('MAIL_MAILER')) {
-            $this->warnings[] = '⚠️  MAIL_MAILER not set - email features will not work';
-        }
+        $this->flagFeature('alerts', 'TELEGRAM_ALERT_TOKEN + chat id',
+            filled(config('services.telegram.token')) && filled(config('services.telegram.chat_id')));
     }
 
-    private function validateSecurity(): void
+    private function require(string $area, string $detail, bool $ok): void
     {
-        // Sanctum stateful domains
-        if (env('APP_ENV') === 'production' && ! env('SANCTUM_STATEFUL_DOMAINS')) {
-            $this->warnings[] = '⚠️  SANCTUM_STATEFUL_DOMAINS not set - CSRF protection may not work';
+        if ($ok) {
+            $this->row('ok', $area, $detail);
+
+            return;
         }
 
-        // Session lifetime
-        if (env('SESSION_LIFETIME', 120) < 60) {
-            $this->warnings[] = '⚠️  SESSION_LIFETIME is very short - users will be logged out frequently';
-        }
+        $this->fatal++;
+        $this->row('FATAL', $area, $detail);
     }
 
-    private function validatePayPal(): void
+    private function flagFeature(string $area, string $detail, bool $ok): void
     {
-        if (env('PAYPAL_MODE') === 'live') {
-            $required = ['PAYPAL_CLIENT_ID', 'PAYPAL_SECRET', 'PAYPAL_WEBHOOK_ID'];
-            foreach ($required as $var) {
-                if (empty(env($var))) {
-                    $this->errors[] = "❌ {$var} is required for PayPal live mode";
-                }
-            }
+        if ($ok) {
+            $this->row('ok', $area, $detail);
+
+            return;
         }
+
+        $this->broken++;
+        $this->row('DOWN', $area, $detail);
     }
 
-    private function validateCache(): void
+    private function row(string $status, string $area, string $detail): void
     {
-        if (env('APP_ENV') === 'production' && env('CACHE_STORE') === 'file') {
-            $this->warnings[] = '⚠️  Using file cache in production - consider Redis for better performance';
-        }
-    }
+        $mark = match ($status) {
+            'ok' => '<fg=green>ok</>',
+            'DOWN' => '<fg=yellow>DOWN</>',
+            'FATAL' => '<fg=red>FATAL</>',
+            default => '<fg=gray>info</>',
+        };
 
-    private function displayResults(): void
-    {
-        if (! empty($this->errors)) {
-            $this->newLine();
-            $this->error('ERRORS FOUND:');
-            foreach ($this->errors as $error) {
-                $this->line($error);
-            }
-        }
-
-        if (! empty($this->warnings)) {
-            $this->newLine();
-            $this->warn('WARNINGS:');
-            foreach ($this->warnings as $warning) {
-                $this->line($warning);
-            }
-        }
-
-        if (empty($this->errors) && empty($this->warnings)) {
-            $this->newLine();
-            $this->info('✅ Environment configuration is valid!');
-        }
-
-        $this->newLine();
+        $this->rows[] = [$mark, $area, $detail];
     }
 }

@@ -18,9 +18,33 @@ export class BuffyService {
         WELCOME: 0x3B82F6,      // Blue
     };
 
-    // Buffy's avatar/thumbnail URL (update with actual mascot image)
-    public static readonly AVATAR_URL = 'https://techplay.gg/images/buffy-avatar.png';
+    /**
+     * The thumbnail on nearly every embed Buffy sends.
+     *
+     * It pointed at https://techplay.gg/images/buffy-avatar.png, a file that
+     * does not exist in the frontend's public directory and answers 404.
+     * Discord drops a thumbnail it cannot fetch without complaining, so every
+     * embed has been going out plain and nothing said why.
+     *
+     * The bot's own avatar is the obvious source: Discord already hosts it, it
+     * is the same face members see in the member list, and it cannot 404. It is
+     * filled in once the client is ready — see setIdentity() — and until then
+     * `null` simply means no thumbnail, which is what was happening anyway.
+     * BUFFY_AVATAR_URL overrides it if a real asset ever exists.
+     */
+    private static avatarUrl: string | null = process.env.BUFFY_AVATAR_URL || null;
+
     public static readonly FOOTER_TEXT = '🦉 Professor Buffy | TechPlay Community';
+
+    /** Called once the Discord client knows who it is. */
+    public static setIdentity(avatarUrl: string | null | undefined): void {
+        BuffyService.avatarUrl ??= avatarUrl ?? null;
+    }
+
+    /** Null is a valid thumbnail: EmbedBuilder simply omits it. */
+    public static get AVATAR_URL(): string | null {
+        return BuffyService.avatarUrl;
+    }
 
     private constructor() {}
 

@@ -1,6 +1,7 @@
 import { Client, Events, Message, TextChannel } from 'discord.js';
 import { ApiService } from './ApiService';
 import { BuffyService } from './BuffyService';
+import { violatesFilter } from '../handlers/events';
 
 interface LeaderboardUser {
     username: string;
@@ -61,6 +62,12 @@ export class XpService {
     private async handleMessage(message: Message) {
         if (message.author.bot) return;
         if (!message.guild) return;
+
+        // Moderation and XP are separate listeners on the same event, so a
+        // message that was about to be deleted for a slur still earned its
+        // author fifteen points on the way out. Asking the filter the same
+        // question keeps the two from disagreeing without coupling them.
+        if (violatesFilter(message.content)) return;
 
         if (this.cooldowns.has(message.author.id)) {
             return;

@@ -31,11 +31,43 @@ const BAD_WORDS: string[] = [
 
     // Server disruption
     'raid this server', 'nuke server', 'everyone join',
-    'discord.gg/', 'discordapp.com/invite', // Uninvited server ads
 
     // Doxxing / Personal info threats
     'doxx', 'doxing', 'swat', 'swatting', 'i know where you live',
 ];
+
+/**
+ * Invite links, which are matched as fragments rather than words because that
+ * is what they are. Note this still catches an invite back to this very server.
+ */
+const BAD_FRAGMENTS = ['discord.gg/', 'discordapp.com/invite'];
+
+/**
+ * Whole words, not substrings.
+ *
+ * The filter used `content.includes(word)`, which in a gaming server is a
+ * machine for deleting innocent messages: 'spic' is inside "spicy", 'coon' is
+ * inside "tycoon" and "raccoon", 'fag' is inside a dozen ordinary words. Anyone
+ * recommending RollerCoaster Tycoon had their message removed and was sent a
+ * warning about prohibited content.
+ *
+ * `\b` on both ends fixes that and keeps the multi-word phrases working, since
+ * a boundary sits either side of a space too. Deliberately not defending
+ * against letter-substitution — a filter that chases obfuscation is a filter
+ * that starts eating ordinary words again, and a human moderator is the answer
+ * to somebody who is trying.
+ */
+const BAD_WORD_PATTERN = new RegExp(
+    `\\b(${BAD_WORDS.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
+    'i',
+);
+
+/** Does this message trip the filter? Exported so XP can ask the same question. */
+export function violatesFilter(content: string): boolean {
+    const lowered = content.toLowerCase();
+
+    return BAD_WORD_PATTERN.test(lowered) || BAD_FRAGMENTS.some(f => lowered.includes(f));
+}
 
 /**
  * Sets up the welcome message handler for new guild members.
@@ -101,9 +133,7 @@ export function setupModeration(client: Client) {
     client.on(Events.MessageCreate, async (message: Message) => {
         if (message.author.bot) return;
 
-        const content = message.content.toLowerCase();
-
-        if (BAD_WORDS.some(word => content.includes(word))) {
+        if (violatesFilter(message.content)) {
             try {
                 await message.delete();
                 console.log(`🚫 Deleted message from ${message.author.tag} (matched filter)`);

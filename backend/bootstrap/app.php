@@ -79,6 +79,23 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        /*
+         * An API route answers in JSON whether or not the caller thought to ask.
+         *
+         * Laravel decides that from `expectsJson()` alone, which reads the
+         * Accept header. A client that omits it — curl, a webhook, a mobile
+         * build with a stale interceptor — was answered as if it were a browser:
+         * a validation failure tried to redirect back with the errors in the
+         * session, the API group has no session, and the reader got
+         * "Session store not set" as a 500. Not-found and forbidden came back
+         * as HTML error pages to something waiting for a JSON body.
+         *
+         * The path decides, because on `api/*` there is no other correct answer.
+         */
+        $exceptions->shouldRenderJsonWhen(
+            fn ($request) => $request->is('api/*') || $request->expectsJson()
+        );
+
         $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([

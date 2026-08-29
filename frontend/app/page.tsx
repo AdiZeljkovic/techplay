@@ -31,34 +31,45 @@ export interface HomeData {
   popularGlobal: Article[];
 }
 
+/**
+ * The homepage, or nothing at all — never an empty one.
+ *
+ * A failed fetch used to return empty arrays, and ISR published that: for at
+ * least the next sixty seconds every reader got a homepage with no hero, no
+ * news and no reviews, and `HomeClient` renders what it is handed with no
+ * client-side refetch, so nothing recovered it. Nothing had errored, either —
+ * an empty page and a quiet day look identical.
+ *
+ * Throwing is the better failure. During a background regeneration Next keeps
+ * serving the last good copy and tries again on the next pass, so a backend
+ * blip becomes a slightly stale homepage rather than a blank one. On a cold
+ * cache it reaches the error boundary, which says something is wrong — which is
+ * true, and is the trade `lib/fetchContent.ts` already makes everywhere else.
+ */
 async function getHomeData(): Promise<HomeData> {
   const apiUrl = getServerApiUrl();
 
-  try {
-    const res = await fetch(`${apiUrl}/home`, {
-      next: { revalidate: 60 },
-      headers: serverHeaders(),
-    });
+  const res = await fetch(`${apiUrl}/home`, {
+    next: { revalidate: 60 },
+    headers: serverHeaders(),
+  });
 
-    if (!res.ok) {
-      return { gameCount: null, hero: [], news: [], reviews: [], tech: [], latestGlobal: [], popularGlobal: [] };
-    }
-
-    const json = await res.json();
-    const data = json.data || json;
-
-    return {
-      gameCount: await getGameCount(),
-      hero: data.hero ?? [],
-      news: data.news ?? [],
-      reviews: data.reviews ?? [],
-      tech: data.tech ?? [],
-      latestGlobal: data.latest_global ?? [],
-      popularGlobal: data.popular_global ?? [],
-    };
-  } catch {
-    return { gameCount: null, hero: [], news: [], reviews: [], tech: [], latestGlobal: [], popularGlobal: [] };
+  if (!res.ok) {
+    throw new Error(`Homepage payload unavailable (HTTP ${res.status})`);
   }
+
+  const json = await res.json();
+  const data = json.data || json;
+
+  return {
+    gameCount: await getGameCount(),
+    hero: data.hero ?? [],
+    news: data.news ?? [],
+    reviews: data.reviews ?? [],
+    tech: data.tech ?? [],
+    latestGlobal: data.latest_global ?? [],
+    popularGlobal: data.popular_global ?? [],
+  };
 }
 
 /**

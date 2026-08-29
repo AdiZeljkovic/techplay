@@ -348,8 +348,13 @@ CLAUDE.md: 142.110 · docs/07: „200.000 istorijskih" · memorija: ~187,7k · b
 | C1 | Prva narudžba u adminu = 500 (v5 klase + refunded match) | `Filament\Actions\*` + `default` grana + filter | ✅ |
 | B5 | `push_and_deploy.ps1` zove stari deploy.sh (root build) | retarget + stari skript penzionisan + vraćene 5 zaštita frontend deploya | ✅ |
 
-### P1 — ove sedmice
+### P1 — **URAĐENO 29.08.2026** (detalji u odjeljku niže), osim restarta servera
+Ostaje samo: **restart zbog kernela** (čeka 6.8.0-138) — traži dogovor oko trenutka jer nosi prekid, i **Discord/Battle.net kredencijali**, po dogovoru odgođeni za kraj.
+
+<details><summary>Originalna P1 lista</summary>
 Admin: ReleaseCalendar badge keširati (C2) · `pending_review`→`ready_for_review` (C3) · `Closure $set` TypeError (C4) · `filament-jobs-monitor:prune` u scheduler (C5). Backend: guide keš v2/v3 + forgetListings (B15) · gameThreads ključ po publici (B16) · `shouldRenderJsonWhen` (B17) · Blizzard pool `Throwable` (B7) · Socialite guzzle timeouti (B8) · broadcasts na `high` queue (B10) · `failed()` na 5 sync jobova + odglaviti `syncing` (B11). Frontend: fallback naslovnice da ne objavi prazno (D1) · nginx purge za /games pri izmjeni (D2) · kontakt forma kroz serverHeaders (D5). Server: scheduler + SEO cron van roota (A2.1) · sutra provjeriti logrotate (A2.2) · Redis swappiness (A6.1) · **restart zbog kernela — sada čeka -138** (A9). Bot: interni API URL umjesto Cloudflarea (E1) · deploy korak za bota u skripti (E3) · moderacija na word-boundary (E4) · buffy-avatar.png ili maknuti referencu (E6).
+
+</details>
 
 ### P2 — kad dođe red
 IndexNow → jedan job, jedan ključ (B9) · sitemap: `indexable` kolona + keyset paginacija (A5.2) · indeks na `studios.parent_id` (A5.3) i `LOWER(games.name)` (A5.4) · odluka o `igdb_raw`: preseliti/isključiti iz dumpa/prihvatiti (A5.1+F1) · drop lista duplih indeksa iz `\di` + sedmičnih snapshotova (F2) · unpublish grana u observerima (B6) · giveaway reminder prozor (B13) · re-publish latch (B13) · čišćenje ~28 mrtvih ruta (B21) i mrtvog frontend koda (D8) · news/reviews/tech konsolidacija + TechPlay score na jedno mjesto (B18) · shop: metadata + KM/EUR odluka + mrtva PayPal grana (D3, D4) · GDPR rep: `last_disc_signatures` + avatar fajl pri brisanju (F6, B20) · media pipeline: jedan sistem slika (B12) · WoW analyzer sadržajno odmrznuti (B13).
@@ -415,6 +420,57 @@ Mrtva mašinerija u `Guide::booted()` (brisala je `guide.show.{slug}` i `guides.
 - **pet zaštita iz `deploy_frontend.sh`**: arhiva chunkova (ChunkLoadError za otvorene tabove), brisanje `fetch-cache` (bez njega admin izmjene ne stižu — dva deploya 17.08. su otišla uzalud), pražnjenje nginx keša za `/games/` (**to je nalaz D2 iz ove analize** — mehanizam je postojao, samo ga dokumentovani put više nije zvao), Cloudflare purge, i provjera da svaki asset koji stranice traže zaista postoji.
 
 Frontend pola sada delegira na `deploy_frontend.sh`, koji je dobio `run_as_owner` — build i pm2 idu kao vlasnik stabla (`techplay`), a nginx i Cloudflare token ostaju rootu. Referenca je vlasnik direktorija, isti obrazac koji taj fajl već koristi na jednom mjestu, pa ostaje tačan i ako se vlasništvo opet promijeni.
+
+---
+
+# ŠTA JE URAĐENO — P1 (29.08.2026)
+
+### `env:validate` — alat koji nije mogao raditi tamo gdje treba
+
+Odbijao je da se pokrene nad keširanom konfiguracijom, a to je jedino stanje u kojem produkcija živi. Prepisan da čita **`config()` umjesto `env()`** — sloj koji aplikacija stvarno koristi. Poslije `config:cache` `.env` više niko ne čita, pa je vrijednost koja je u fajlu a nije u kešu — nepostojeća; stara verzija to nije mogla ni vidjeti.
+
+Provjerava i integracije, ne samo osnovu: Discord i Battle.net prijavu, Turnstile, Groq, Blizzard, Steam, PayPal (svjesno različito za sandbox i live), Telegram alarme, poštu, interni token, revalidaciju. Razlikuje **fatalno** (sajt ovako ne radi → prekida deploy) od **ugašene funkcije** (sajt radi, ta stvar ne → upozorenje koje ne blokira objavu). Dodata i provjera da `FRONTEND_URL` nije lista — jer ga `RevalidationService` čita sirovo, pa zarez pretvara adresu u host koji ne postoji.
+
+Uvezan u `techplay-deploy.sh` **poslije** `config:cache`, namjerno. Da je postojao ovakav, Discord tajna bi bila prijavljena onog dana kad je nestala, a ne slučajno kroz log tri neuspjele prijave kasnije.
+
+### Admin panel
+
+- **ReleaseCalendar badge** više ne vrti merge-matcher na svaki klik. Bio je najskuplja stvar u panelu: hidrirao je 2.924 igre sa store linkovima, poredio ih u parovima i pitao bazu za svaki par — na svakoj navigaciji, za svakog urednika, jer je panel SPA. Sada je keširan 15 minuta, a **obje** akcije koje mijenjaju red (`same`/`different` kroz `remember()`, i `undo`) čiste ključ, pa TTL služi samo kao mreža.
+- **Red čekanja na dashboardu** broji `ready_for_review` — status koji forme stvarno pišu. Brojao je `pending_review`, vrijednost koju nigdje u kodu niko ne postavlja, pa je jedino pitanje zbog kojeg widget postoji uvijek imalo odgovor „nula".
+- **Auto-slug** u obje kategorije: `Closure $set` → `Set $set`. Filament prosljeđuje objekat, pa je tipizirani parametar bacao TypeError čim polje izgubi fokus.
+- **Prunanje**: `model:prune` za `queue_monitors` (config je tražio 7 dana retencije, ali to niko nije sprovodio — 10.502 reda), `sanctum:prune-expired`, `queue:prune-failed` (30 dana). Provjereno da `model:prune` radi u konzoli bez Filament panela prije nego je zakazan.
+
+### Backend
+
+- **JSON za API rute uvijek** — `shouldRenderJsonWhen` na `api/*`. Bez toga je klijent bez `Accept` headera dobijao 500 „Session store not set" umjesto 422, jer je Laravel pokušavao redirect sa sesijom koje na API grupi nema.
+- **Blizzard pool** više ne ruši analizu: neuspjela konekcija ostavlja izuzetak u slotu, a `->successful()` nad njim baca `Error` koji `catch (\Exception)` ne hvata. Sada `instanceof Response` + `catch (\Throwable)`, plus uklonjena neiskorištena varijabla.
+- **Socialite dobio timeoute** (10 s / 3 s connect). Bio je jedini odlazni put bez njih, i to na prijavi: Guzzle po defaultu čeka zauvijek, pa bi zastoj kod Discorda držao Octane workera do restarta. Provjereno u vendoru da `buildProvider` stvarno prosljeđuje `guzzle` ključ.
+- **Forum keš po publici**: `forum.game_threads.{slug}` → `.{audience}.{slug}`. Ključ nije nosio publiku a upit unutra jeste filtrirao po njoj, pa je onaj ko prvi promaši keš odlučivao šta svi vide narednu minutu.
+- **Sync jobovi ne ostavljaju zaključana vrata**: novi trait `ReleasesTheSyncLock` daje svih pet `failed()` koji oslobađa `syncing` status. Uz to `platforms:resync` sada preskače `syncing` samo dok je svjež (6 h) — jer worker ubijen naprečac ne stigne ni do `failed()` — i više ne ispušta redove gdje je status `NULL` (`whereNotIn` nikad ne propušta NULL, pa bi takav nalog bio isključen zauvijek).
+- **„Real-time" više ne čeka iza kataloga**: broadcast eventi idu na zaseban red `live`, koji ima **vlastiti proces** (`techplay-worker-live`). Prioritet reda na jednom workeru ne bi pomogao — tekući posao svejedno mora završiti prije sljedećeg, a `EnrichSteamBatch` drži workera većinu svake minute. Konfiguracija workera je sada u repou (`deployment/supervisor-worker.conf`) i deploy je sam usklađuje s `/etc/supervisor/`.
+
+### Frontend
+
+- **Naslovnica više ne objavljuje praznu stranicu.** Pad dohvata je vraćao prazne nizove, a ISR ih objavljivao kao stvarnu stranicu na najmanje 60 s, bez ikakvog klijentskog oporavka. Sada baca — a Next pri padu regeneracije **nastavlja služiti prethodnu dobru kopiju** (provjereno u dokumentaciji instalirane verzije, `how-revalidation-works.md`), pa blip backenda postaje malo ustajala naslovnica umjesto prazne.
+- **Kontakt forma** ide kroz `getServerApiUrl()` + `serverHeaders()` kao i ostalih 30 server-side poziva — dakle ne kroz Cloudflare i s internim tokenom.
+- **Notifikacije u zvonu** dobile ikonice za giveaway dobitak, giveaway koji ističe i izlazak igre (dotad generično zvono).
+
+### Discord bot
+
+- **Bot je dobio deploy korak** (`techplay-deploy.sh discord`). Dotad se `dist/` gradio samo ručno, pa je poslije svakog `git pull` mogao vrtjeti stari kod dok pm2 uredno javlja „online".
+- **Moderacija na granice riječi.** `content.includes('coon')` je brisao „tycoon" i „raccoon", `'spic'` je brisao „spicy". Sada regex s `\b`, a invite linkovi ostaju fragmenti jer to i jesu. Provjereno na deset slučajeva: „RollerCoaster Tycoon" i „spicy take" prolaze, stvarne uvrede i pozivnice se i dalje hvataju. Namjerno bez gonjenja zamjene slova — filter koji juri obfuskaciju opet počne jesti obične riječi.
+- **Obrisana poruka više ne nosi XP.** Moderacija i XP su dva nezavisna slušaoca istog eventa, pa je poruka koja se upravo briše zbog uvrede autoru donosila 15 poena na izlazu. XP sada pita isti predikat.
+- **Bot zove backend preko petlje** (`127.0.0.1:8000` s `Host` headerom) umjesto preko javnog imena i Cloudflarea, i **šalje interni token** — čime izlazi iz globalnog limita od 60/min po IP-u, zbog kojeg je deklarisanih `throttle:300,1` na Discord rutama bilo bez značaja.
+- **429 se više ne prevodi u „već si uzeo danas".** Backendov pošten „already claimed" nosi `hours_left` u tijelu; limiterov ne nosi ništa. Razlikuju se, i limiter sada daje treći odgovor („zauzet sam, pokušaj za koji trenutak") umjesto da se pretvara u „nalog nije povezan".
+- **Avatar** u embedima je botova vlastita Discord slika. Hardkodirani URL je pokazivao na fajl koji ne postoji, pa je Discord tiho izostavljao thumbnail na skoro svakom embedu.
+
+### Server
+
+- 🔴 **Nađeno pri radu, i ozbiljnije nego što je nalaz A2.1 slutio.** Scheduler je radio kao root i ostavio trag: **184 root-owned fajla u `storage/`** i **svaki `sitemap*.xml` u `public/` kao `root:root 644`**. `ArticleObserver` pri objavi prepisuje `sitemap-news.xml` — kao `www-data`. Izmjereno: `www-data` **nije mogao pisati** po tom fajlu. U logu nema pada samo zato što od jučerašnje podjele vlasništva ništa nije objavljeno — mina je bila naoružana, ne odapeta. Vlasništvo vraćeno, a `techplay-deploy.sh` sada popravlja i `public/`.
+- **Scheduler preseljen u `www-data` crontab**, root ostao bez ijedne aktivne linije (stari sadržaj u `/root/crontab.backup.2026-08-29.txt`). Provjereno da heartbeat i dalje kuca. `seo:scan-links` preseljen u Laravel scheduler; `cache:forget seo_orphan_count` obrisan — taj ključ nigdje u kodu ne postoji.
+- **logrotate ponovo prolazi** (`Result=success`, izlaz 0) — bio je u `failed` od 28.08. zbog dozvola. Jedini `failed` unit ostaje `techplay-backup`, po dizajnu.
+- **`vm.swappiness`** upisan trajno u `/etc/sysctl.d/`. Zatečena vrijednost je već bila 10, ali nigdje zapisana — poslije restarta bi se vratila na 60.
+- **Redis NIJE restartovan** iako mu 116 MB leži u swapu: RAM-a je slobodno 3,7 GB, dakle to je trag ranijeg pritiska a ne trenutnog, i stranice se vraćaju same. Restart živog keša radi memorije koja nije oskudna se ne isplati.
 
 ---
 

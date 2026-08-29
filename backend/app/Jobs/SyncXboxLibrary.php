@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Jobs\Concerns\ReleasesTheSyncLock;
 use App\Models\ConnectedAccount;
 use App\Models\GameExternalId;
 use App\Models\UserGame;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Log;
  */
 class SyncXboxLibrary implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, ReleasesTheSyncLock, SerializesModels;
 
     public int $tries = 3;
 

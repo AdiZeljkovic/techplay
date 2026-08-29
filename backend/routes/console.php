@@ -20,6 +20,7 @@ use App\Jobs\FlushViewCounters;
 use App\Jobs\PollSteamPresence;
 use App\Jobs\SendGiveawayReminders;
 use App\Jobs\SendReleaseReminders;
+use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -80,6 +81,45 @@ Schedule::command('users:prune-unverified')
 
 // Steam achievements for connected accounts — the chronicle reads what you actually earn.
 Schedule::command('games:sync-steam-achievements')->dailyAt('05:00')->withoutOverlapping(180)->onFailure($reportFailure('games:sync-steam-achievements'));
+
+// Tables that only ever grew.
+//
+// The jobs monitor writes a row per queued job and its config asks for seven
+// days of retention — but nothing was ever scheduled to enforce it, so the
+// retention setting described an intention rather than a behaviour and the
+// table reached 10,502 rows. Sanctum's tokens expire logically after seven days
+// and their rows never left. Failed jobs are kept a month, which is long enough
+// to notice a pattern and short enough not to become an archive.
+Schedule::command('model:prune', ['--model' => QueueMonitor::class])
+    ->dailyAt('02:10')
+    ->onFailure($reportFailure('model:prune (queue monitor)'));
+
+Schedule::command('sanctum:prune-expired --hours=24')
+    ->dailyAt('02:20')
+    ->onFailure($reportFailure('sanctum:prune-expired'));
+
+Schedule::command('queue:prune-failed --hours=720')
+    ->weeklyOn(1, '02:30')
+    ->onFailure($reportFailure('queue:prune-failed'));
+
+/*
+ * Broken links, for the admin list that reports them.
+ *
+ * This lived in root's crontab, which is the last place a Laravel task should
+ * be: everything it touches — the log, the framework's compiled views, the
+ * sitemap files — came out owned by root inside trees that belong to www-data.
+ * That is not theoretical. On 29 Aug 2026 every sitemap in public/ was
+ * root:root 644, so the observer that rewrites sitemap-news.xml on publish —
+ * running as www-data — could not have written it.
+ *
+ * Its neighbour in that crontab cleared a cache key called `seo_orphan_count`
+ * every night. Nothing in the codebase has ever written that key; the entry is
+ * gone rather than moved.
+ */
+Schedule::command('seo:scan-links --limit=500')
+    ->weeklyOn(0, '03:00')
+    ->withoutOverlapping(120)
+    ->onFailure($reportFailure('seo:scan-links'));
 
 // PLATFORMS: the libraries themselves — games, hours, statuses.
 //

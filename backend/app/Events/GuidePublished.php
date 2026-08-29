@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Events\Concerns\BroadcastsOnTheLiveQueue;
 use App\Models\Guide;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class GuidePublished implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use BroadcastsOnTheLiveQueue, Dispatchable, InteractsWithSockets, SerializesModels;
 
     public Guide $guide;
 

@@ -50,15 +50,36 @@ class ResyncConnectedPlatforms extends Command
      */
     private const STAGGER_SECONDS = 30;
 
+    /** After this, a row still marked `syncing` is a leftover, not a sync. */
+    private const STALE_SYNC_HOURS = 6;
+
     public function handle(): int
     {
         $accounts = ConnectedAccount::query()
             ->when($this->option('user'), fn ($q) => $q->where('user_id', $this->option('user')))
             ->when($this->option('provider'), fn ($q) => $q->where('provider', $this->option('provider')))
-            // `expired` is PlayStation's own: the token aged out and only the
-            // reader can renew it, so retrying weekly is noise. `syncing` is
-            // already in flight.
-            ->whereNotIn('sync_status', ['syncing', 'expired'])
+            /*
+             * `expired` is PlayStation's own: the token aged out and only the
+             * reader can renew it, so retrying weekly is noise.
+             *
+             * `syncing` means in flight — but only for as long as a sync could
+             * plausibly still be running. A job killed on its timeout leaves the
+             * row saying `syncing` with nobody behind it, and an exclusion with
+             * no clock made that permanent: the library stopped being refreshed
+             * and nothing said so. The jobs now release the lock in failed(),
+             * and this is the backstop for a worker killed outright, which never
+             * reaches failed() either.
+             *
+             * `whereNotIn` alone also drops rows where the status is NULL,
+             * because NULL NOT IN (…) is NULL rather than true — an account
+             * that never recorded a status would have been skipped forever.
+             */
+            ->where(fn ($q) => $q
+                ->whereNull('sync_status')
+                ->orWhereNotIn('sync_status', ['syncing', 'expired'])
+                ->orWhere(fn ($stale) => $stale
+                    ->where('sync_status', 'syncing')
+                    ->where('updated_at', '<', now()->subHours(self::STALE_SYNC_HOURS))))
             ->when(! $this->option('force'), fn ($q) => $q->where(
                 fn ($w) => $w->whereNull('last_synced_at')
                     ->orWhere('last_synced_at', '<', now()->subHours(self::FRESH_FOR_HOURS))

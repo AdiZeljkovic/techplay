@@ -3,6 +3,7 @@ import { config } from './config';
 import { commands } from './commands/definitions';
 import { handleCommand, handleAutocomplete } from './handlers/commands';
 import { setupWelcome, setupModeration, setupPresenceTracking, setupGuildMembership } from './handlers/events';
+import { BuffyService } from './services/BuffyService';
 import { PollingService } from './services/PollingService';
 import { PublishListener } from './services/PublishListener';
 import { ServerStatsService } from './services/ServerStatsService';
@@ -53,6 +54,10 @@ client.once(Events.ClientReady, async (readyClient) => {
     console.log(`\n🦉 Professor Buffy is online as ${readyClient.user.tag}!`);
     console.log(`📡 Serving ${readyClient.guilds.cache.size} server(s)`);
     console.log('═══════════════════════════════════════════════\n');
+
+    // Embeds take their thumbnail from the bot's own avatar. The hard-coded URL
+    // they used before pointed at a file the site does not have.
+    BuffyService.setIdentity(readyClient.user.displayAvatarURL({ size: 256 }));
 
     // Register commands
     await registerCommands();

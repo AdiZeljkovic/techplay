@@ -325,6 +325,15 @@ async function handleDaily(interaction: ChatInputCommandInteraction, api: ApiSer
         return;
     }
 
+    // The backend was reachable but busy. Saying so is the only honest answer:
+    // the claim is still there to be made.
+    if (result.rate_limited) {
+        await interaction.editReply(
+            '⏳ Too busy right now — try again in a moment. Your bonus is still waiting.'
+        );
+        return;
+    }
+
     if (result.already_claimed) {
         const embed = buffy.createAlreadyClaimedEmbed(result.hours_left || 24);
         await interaction.editReply({ embeds: [embed] });

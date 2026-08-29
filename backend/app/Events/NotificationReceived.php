@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Events\Concerns\BroadcastsOnTheLiveQueue;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class NotificationReceived implements ShouldBroadcast
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use BroadcastsOnTheLiveQueue, Dispatchable, InteractsWithSockets, SerializesModels;
 
     public User $user;
 

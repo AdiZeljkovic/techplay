@@ -70,7 +70,11 @@ class NewsroomConsole extends Widget
     {
         $queues = Cache::remember('dash.queues.v2', 60, fn () => [
             'drafts' => Article::where('status', 'draft')->count(),
-            'review' => Article::where('status', 'pending_review')->count(),
+            // `ready_for_review` is the status the forms write (PublishTab,
+            // ArticleTable). This counted `pending_review`, a value nothing in
+            // the codebase ever set, so the one question this panel exists to
+            // answer — is anything waiting for me — was always answered zero.
+            'review' => Article::where('status', 'ready_for_review')->count(),
             'comments' => Comment::where('status', 'pending')->count(),
             'reports' => Report::where('status', 'pending')->count(),
             'failed' => DB::table('failed_jobs')->count(),

@@ -10,6 +10,7 @@ use App\Services\Releases\GameMerger;
 use App\Services\Releases\TitleNormalizer;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -57,11 +58,35 @@ class ReleaseCalendar extends Page
         return 10;
     }
 
+    /** Where the badge count lives, so the two places that clear it agree. */
+    private const BADGE_KEY = 'release-calendar.pending-count';
+
+    /**
+     * The number in the sidebar, which is drawn on every navigation.
+     *
+     * Uncached, this was the most expensive thing in the panel by a wide
+     * margin: `pending()` hydrates every game carrying a match_key — 2,924 of
+     * them on production — with their store links, compares them pairwise, and
+     * asks the decisions table about each candidate pair. The panel is a SPA,
+     * so that ran on every click, for every member of staff, to render a number
+     * that changes when the weekly pipeline runs or when somebody rules on a
+     * pair. Both of those clear the key, so the TTL is only a backstop.
+     */
     public static function getNavigationBadge(): ?string
     {
-        $waiting = count(app(static::class)->pending());
+        $waiting = Cache::remember(
+            self::BADGE_KEY,
+            now()->addMinutes(15),
+            fn () => count(app(static::class)->pending()),
+        );
 
         return $waiting > 0 ? (string) $waiting : null;
+    }
+
+    /** A ruling changes the queue, so the badge must not answer from before it. */
+    private static function forgetBadge(): void
+    {
+        Cache::forget(self::BADGE_KEY);
     }
 
     public static function canAccess(): bool
@@ -175,6 +200,8 @@ class ReleaseCalendar extends Page
             ['left_key' => $a, 'right_key' => $b],
             ['same_game' => $same, 'decided_by' => auth()->id()],
         );
+
+        self::forgetBadge();
     }
 
     /** @return array{title:string,released:?string,publisher:?string} */
@@ -200,6 +227,8 @@ class ReleaseCalendar extends Page
     public function undo(int $decisionId): void
     {
         GameMatchDecision::whereKey($decisionId)->delete();
+
+        self::forgetBadge();
 
         Notification::make()
             ->title('Ruling withdrawn')
