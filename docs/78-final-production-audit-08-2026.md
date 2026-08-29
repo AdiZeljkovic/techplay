@@ -1006,3 +1006,55 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC9Gu76NZ2FAsbQgpW/9qPcwSUYZh0AiZqzn7lzC2dHQ
 | Disaster Recovery | 3 | **6** — sadržaj kompletan, off-site čeka jedan tvoj korak (bit će 8) |
 | Reliability | 6 | **8** — nalaz je bio pogrešan, sistem je bio bolji nego što sam napisao |
 | **Overall** | **7** | **8** — i **8,5** čim ključ ode na Storage Box |
+
+---
+
+## 🟡 B-2 — Nađeno tokom popravke: deploy skripta ne može ažurirati samu sebe
+
+Dodao sam u `techplay-deploy.sh` korak koji sinhronizuje `healthcheck.sh` i
+`backup.sh` iz repoa. Poslije deploya `check_glitchtip` **nije bio** u živoj
+skripti.
+
+Uzrok: deploy se izvršava iz `/usr/local/bin/techplay-deploy.sh`, a ja sam
+izmijenio `deployment/techplay-deploy.sh` u repou. **Ništa ne prenosi jedno u
+drugo** — skripta ne može instalirati vlastitu novu verziju jer se u trenutku
+izvršavanja već izvršava stara.
+
+Dokaz:
+
+```
+grep -c 'healthcheck.sh:techplay-healthcheck' /usr/local/bin/techplay-deploy.sh   → 0
+grep -c 'healthcheck.sh:techplay-healthcheck' /var/www/techplay/deployment/...    → 1
+```
+
+**Riješeno jednokratno** ručnim `install -m 755`, poslije čega deploy sam
+sinhronizuje ostale dvije skripte — potvrđeno na sljedećem prolazu:
+
+```
+── techplay-healthcheck se promijenila ──
+── techplay-backup se promijenila ──
+OK    glitchtip          ← deveta provjera, radi
+```
+
+**Ostaje kao trajno svojstvo:** svaka buduća izmjena **same deploy skripte**
+traži jedan ručni `install`. To je prihvatljivo — alternativa je da skripta
+prepisuje sebe usred izvršavanja — ali mora biti zapisano, jer inače izgleda kao
+da je deploy prošao a izmjena nije stigla. Isti oblik tišine kao logrotate i
+healthcheck prije njega.
+
+---
+
+## Završna provjera poslije svih popravki
+
+| | |
+|---|---|
+| Testovi | **895 prolazi**, 0 padova |
+| Stranice | `/` 18 ms · `/games` 16 ms · `/impressum` 19 ms · API 22 ms — sve 200 |
+| Procesi | reverb, octane, oba workera `RUNNING`; frontend i bot `online` |
+| **GlitchTip** | **13 `envelope` zahtjeva u zadnjih 400, svi 200** |
+| Laravel log | **0 grešaka** |
+| Healthcheck | 9 provjera, `OK glitchtip`; `FAIL backup` je očekivan dok ključ ne ode na Storage Box |
+| Indeksi | Oba nova prisutna, svih šest sjenki obrisano |
+
+**Preostaje jedan korak, i tvoj je:** autorizovati javni ključ na Storage Boxu.
+Sve ostalo je spremno i čeka ga.
