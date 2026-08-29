@@ -19,7 +19,28 @@ use Laravel\Socialite\Two\User;
  */
 class DiscordProvider extends AbstractProvider
 {
-    protected $scopes = ['identify', 'email'];
+    /**
+     * `guilds.join` is what makes the auto-join on sign-up actually work.
+     *
+     * `SocialAuthController::addUserToGuild()` has been called on every Discord
+     * sign-up since it was written, and it could not have succeeded: Discord's
+     * `PUT /guilds/{id}/members/{user}` needs the *user's* access token to carry
+     * this scope, and it was never asked for. It also needs a bot token the
+     * backend did not hold — that one was on the machine all along, in the bot's
+     * own env, and is now in the backend's too.
+     *
+     * The cost is visible: the consent screen now says the app may join servers
+     * for you, alongside the username and email it already asked for. That is a
+     * fair description of what happens next, and the alternative was a button
+     * that quietly did three-quarters of what it claimed.
+     *
+     * Worth knowing: the call sits on all three branches of the callback — new
+     * account, account linked by email, and returning member — so it runs on
+     * every Discord sign-in, not only the first. Someone who leaves the server
+     * and signs in again is put back. Discord answers 204 for a member who is
+     * already there, so the repeat costs one request and changes nothing.
+     */
+    protected $scopes = ['identify', 'email', 'guilds.join'];
 
     protected $scopeSeparator = ' ';
 

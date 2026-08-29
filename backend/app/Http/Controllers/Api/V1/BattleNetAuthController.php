@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Models\UserIntegration;
 use App\Models\WowCharacter;
 use App\Services\BlizzardService;
+use App\Services\Socialite\BattleNetProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -17,14 +19,42 @@ use Laravel\Socialite\Facades\Socialite;
 class BattleNetAuthController extends Controller
 {
     /**
-     * Redirect to Battle.net OAuth
+     * How long a half-finished sign-in stays valid.
+     *
+     * Long enough to read a Battle.net login page and find the authenticator,
+     * short enough that a `state` value lifted from a browser history is no
+     * longer worth anything.
+     */
+    private const HANDSHAKE_TTL = 600;
+
+    /**
+     * Redirect to Battle.net OAuth.
+     *
+     * The region travels in `state`, which the OAuth provider hands back
+     * untouched. It used to travel in the session, and these are API routes
+     * with no session — see the note on BattleNetProvider.
+     *
+     * `state` doing this job also restores what `stateless()` gives up. Without
+     * it the callback accepts any code from anyone: an attacker obtains a code
+     * for their *own* Battle.net account and gets a victim to open the callback
+     * URL, and the victim is quietly signed in as the attacker — every game
+     * they add and every review they write from then on lands in someone else's
+     * account. A single-use nonce this side issued is what makes that fail.
      */
     public function redirect(Request $request)
     {
-        $region = $request->input('region', 'us'); // Allow frontend to specify region
-        session(['battlenet_region' => $region]); // Store in session for token exchange
+        $region = in_array($request->input('region'), BattleNetProvider::REGIONS, true)
+            ? $request->input('region')
+            : 'us';
 
-        return Socialite::driver('battlenet')->stateless()->redirect();
+        $nonce = Str::random(40);
+        Cache::put($this->handshakeKey($nonce), $region, self::HANDSHAKE_TTL);
+
+        return Socialite::driver('battlenet')
+            ->setRegion($region)
+            ->stateless()
+            ->with(['state' => $nonce])
+            ->redirect();
     }
 
     /**
@@ -32,9 +62,22 @@ class BattleNetAuthController extends Controller
      */
     public function callback(Request $request, BlizzardService $blizzardService)
     {
+        // Cache::pull, so a state cannot be spent twice.
+        $region = Cache::pull($this->handshakeKey((string) $request->query('state')));
+
+        if ($region === null) {
+            Log::warning('Battle.net callback without a handshake this app issued', [
+                'ip' => $request->ip(),
+            ]);
+
+            return redirect(config('app.frontend_url').'/login?error=oauth_expired');
+        }
+
         try {
-            $battlenetUser = Socialite::driver('battlenet')->stateless()->user();
-            $region = session('battlenet_region', 'us');
+            $battlenetUser = Socialite::driver('battlenet')
+                ->setRegion($region)
+                ->stateless()
+                ->user();
 
             // Scenario 1: Existing user with battlenet_id (returning user)
             $user = User::where('battlenet_id', $battlenetUser->id)->first();
@@ -81,6 +124,12 @@ class BattleNetAuthController extends Controller
 
             return redirect(config('app.frontend_url').'/login?error=oauth_failed');
         }
+    }
+
+    /** One namespace for the handshake, so a stray key cannot be mistaken for one. */
+    private function handshakeKey(string $nonce): string
+    {
+        return 'battlenet:handshake:'.$nonce;
     }
 
     /**
