@@ -829,6 +829,49 @@ prvi je bio u martu. Spisak sada zavisi od toga je li lansiranje prošlo.
 Pet testova u `tests/Feature/WowPromptStaysCurrentTest.php` drži da se nijedno od
 ovoga ne može ponovo zamrznuti.
 
+## Poslije deploya: dvije stvari koje je statistika pokazala tek na kraju
+
+Prije nego što sam resetovao `pg_stat_statements`, završni snimak je pokazao dva
+upita koja nisam vidio u prvom prolazu — i jedan od njih dokazuje da sam **ja**
+pogriješio, ne dokument.
+
+**Upit od 36 minuta postoji, i stvarno koristi `developers`.** Nalaz A5.8 je bio
+tačan. Ja sam ga ranije danas odbacio rekavši „nijedan upit ne filtrira po
+`developers`" — to je bilo zato što sam gledao *česte* upite i grepovao
+kontrolere, a ovaj je pokrenut **jednom**:
+
+```sql
+select count(*) from studios
+where exists (select 1 from games where games.developers @> ARRAY[studios.name]::text[])
+   -- 1 poziv · 2.179.127 ms · 36 minuta
+```
+
+Bez GIN-a to je, za svaki od 56.911 studija, sekvencijalni prolaz kroz 332.455
+igara. GIN **bi** pomogao, i to drastično.
+
+**Indeks svejedno nije dodat**, ali sada s pravim razlogom: taj upit dolazi iz
+koda kojeg **više nema u repou** — ništa u `app/` danas ne piše
+`developers @>`, a veza studio↔igra ide kroz pivot `game_studio`, ne kroz array.
+Kolona `developers` se sada samo **piše**, nikad ne filtrira. Indeks bi bio
+osiguranje za upit koji niko ne postavlja, uz cijenu održavanja pri svakom
+upisu u katalog.
+
+> **Ako se ikad piše upit koji filtrira po `developers` ili `publishers`,
+> prvo napravi GIN.** Ovo je jedini zapis o tome šta se desi ako se ne napravi.
+
+**Drugi upit je bio živ i već je riješen.** `studios where parent_id = ?` —
+**235.857 poziva**, prosjek 9,9 ms, ukupno 39 minuta. To je „podstudiji ovog
+studija" na svakoj studio stranici, a njih ima 56.911 i crawler ih obilazi.
+Izmjereno danas s parcijalnim indeksom koji je u međuvremenu nastao:
+**0,42 ms.** Prosjek od 9,9 ms je iz perioda prije indeksa — indeks ima 1.761
+sken naspram 235.857 poziva, što i pokazuje koliko ih je prošlo bez njega.
+
+**Statistika je resetovana 29.08.2026. u 18:23 UTC.** Cache hit ratio je bio
+**61,8%** kumulativno od 17.08., dok je 3,9 GB nepročitanih IGDB podataka
+konkurisalo za `shared_buffers`. Ta brojka se nije mogla pomjeriti unazad, pa je
+sada baza nula: **za sedmicu dana pogledaj ponovo** — to je jedina mjera koja
+će reći je li brisanje pomoglo čitanjima ili samo disku.
+
 ## Nalazi provjereni i ostavljeni, s razlogom
 
 - **Giveaway tabela radi COUNT po redu.** 2 giveawaya, 21 prijava. Ne dira se.
@@ -897,7 +940,7 @@ Ostaje **nula**. Ali tri stavke nisu bile problem, a najveći trošak nije bio u
 | ⬜ | **`ForumController::categories`** raste linearno (B19) | Struktura tačna, **cijena nije: 7 threadova, 0,105 ms.** Popravljeno svejedno |
 | ⬜ | **`CalendarController`** GROUP BY po ~1.100 slugova (B19) | **679 redova u `user_games`, nula wishlist, 0,097 ms.** Ne dira se |
 | ⬜ | **Giveaway tabela** COUNT po redu (C8) | **2 giveawaya, 21 prijava.** Ne dira se |
-| ❌ | **`developers` TEXT[] nema GIN** (A5.8) | **Nijedan upit ne filtrira po `developers`.** Indeks nije dodat |
+| ⬜ | **`developers` TEXT[] nema GIN** (A5.8) | **Ispravka moje ispravke, vidi ispod.** Nalaz je bio tačan; moj prvi odgovor („nijedan upit ne filtrira po developers") bio je pogrešan. Indeks svejedno nije dodat, ali iz drugog razloga |
 | ⚠️ | *(nije bilo u tabeli)* | **Sitemap katalога: 23.278 poziva, ~2,8 sati baze — najskuplja stvar u cijeloj bazi.** Dubok OFFSET; 226.693 → 894 buffera po komadu |
 | ⚠️ | *(nije bilo u tabeli)* | **`games:enrich-steam`: 16.624 poziva, 38 minuta.** Isti obrazac, isti lijek |
 | 🟡 | **Pola miliona view UPDATE-a sedmično** ide red po red; batch upis bi smanjio WAL (0 ms po pozivu, nije hitno) | A5.6 |
@@ -966,7 +1009,40 @@ backfill alat, ne periodičan posao.
 
 ## 8. Čeka provjeru za sedmicu dana
 
-**Cache hit ratio.** Bio je 61% dok je 3,9 GB nepročitanih IGDB podataka konkurisalo za `shared_buffers`. Brojka je zbir od restarta baze 17.08. i ne može se pomjeriti unazad — vrijedi je pogledati na svježoj statistici, jer je to jedina mjera koja će reći da li je brisanje pomoglo čitanjima ili samo disku.
+**Cache hit ratio. Brojač je resetovan 29.08.2026. u 18:23 UTC — pogledaj oko
+05.09.**
+
+Bio je **61,8%** kumulativno od 17.08., dok je 3,9 GB nepročitanih IGDB podataka
+konkurisalo za `shared_buffers`. Ta brojka se nije mogla pomjeriti unazad, pa je
+sada baza nula. Ovo je jedina mjera koja će reći je li brisanje pomoglo
+čitanjima ili samo disku.
+
+```bash
+sudo -u postgres psql -d techplay -c "
+SELECT round(100.0*sum(blks_hit)/nullif(sum(blks_hit)+sum(blks_read),0),1) AS hit_ratio
+FROM pg_stat_database WHERE datname='techplay';"
+```
+
+Uz to vrijedi pogledati i top upite na svježoj statistici, jer su dva najskuplja
+iz starog perioda (sitemap i enrich-steam) popravljena istog dana kad je reset
+urađen — pa bi ih tamo trebalo **nestati**:
+
+```bash
+sudo -u postgres psql -d techplay -c "
+SELECT round(total_exec_time/1000) AS ukupno_s, calls, round(mean_exec_time::numeric,1) AS prosjek_ms,
+       left(regexp_replace(query,'\s+',' ','g'), 90)
+FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 10;"
+```
+
+**Za poređenje, stanje na dan reseta (12 dana, 17.08.–29.08.):**
+
+| Ukupno | Poziva | Prosjek | Upit |
+|---|---|---|---|
+| 5.478 s | 1.770 | 3.095 ms | sitemap kataloga (dubok OFFSET) — **popravljeno** |
+| 4.570 s | 21.508 | 213 ms | isti, stariji oblik — **popravljeno** |
+| 2.345 s | 235.857 | 9,9 ms | `studios where parent_id` — **već riješeno indeksom**, sada 0,42 ms |
+| 2.324 s | 16.691 | 139 ms | `games:enrich-steam` chunk — **popravljeno** |
+| 2.179 s | **1** | 36 min | `studios` count preko `developers @>` — kod obrisan |
 
 ---
 
