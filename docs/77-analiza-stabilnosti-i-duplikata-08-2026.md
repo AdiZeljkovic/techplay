@@ -363,7 +363,9 @@ IndexNow → jedan job, jedan ključ (B9) · sitemap: `indexable` kolona + keyse
 
 </details>
 
-### P3 — higijena
+### P3 — **URAĐENO 29.08.2026** (vidi odjeljak niže; dvije stavke svjesno preskočene)
+
+<details><summary>Originalna P3 lista</summary>
 docs/07 prepisati (F-drift) · CLAUDE.md osvježiti (brojevi, jobs lista, middleware.ts, TriviaService/ChallengeService, ImageService) · root PM2 ugasiti (A8) · /var/www ostaci (A7.1) · open-vm-tools/vgauth/apport disable (A8) · HOME za octane (A4.1) · reverb.log u logrotate (A2.3) · netdata auto-update odluka (A2.4) · error.tsx/loading.tsx raspored (D9) · SWR fetcher + timeAgo + modali konsolidacija (D7) · ApiResponse trait dosljednost ili ukidanje pravila (B22).
 
 ---
@@ -544,6 +546,36 @@ Tri inline kopije (Article, Guide, Game observeri) čitale su ključ iz env-a, j
 
 ---
 
+# ŠTA JE URAĐENO — P3 (29.08.2026)
+
+### `docs/07-database-map.md` prepisan iz žive baze
+
+Stara verzija je bila pisana rukom i razišla se u fikciju: četiri obrisane tabele dokumentovane kao žive, pogrešna imena kolona u dvadesetak (`friendships.user_id` gdje kolona nosi `sender_id`, `messages.recipient_id` gdje je `receiver_id`, `guides.upvotes` koji nikad nije postojao), i oko trideset pet tabela koje se uopšte ne pominju — cijeli profil/journal/social sloj. Nova je generisana iz `information_schema`, dakle tačna po konstrukciji, i na vrhu piše da se **regeneriše, a ne dopisuje**. Dodat je i odjeljak sa zamkama koje su već koštale (`whereNotIn` i NULL, `game_ratings` po slugu, parcijalni indeks koji mora imati identičan izraz, `user_achievements` bez unique).
+
+### Dvije logrotate strofe koje se nikad nisu izvršile
+
+`/var/log` je `root:syslog` i grupa ima pravo pisanja, pa logrotate odbija da dira fajl u takvom direktoriju bez izričite `su` direktive — i odbija **tiho**: preskoči strofu i izađe s nulom. Zato `/var/log/techplay-backup.log` **nije rotiran nijednom** od kad je taj config napravljen. Izašlo je na vidjelo tek kad je `reverb.log` (jedini log na mašini koji nijedan config nije pokrivao) udario u isti zid. Sad su obje u jednom fajlu u repou, deploy ga sinhronizuje, i rotacija je isprobana stvarnim pokretanjem.
+
+### Konfiguracija koja je živjela samo na serveru
+
+`supervisor-octane.conf` u repou je tvrdio **32 workera i 1000 zahtjeva**, a mašina vrti **8 i 500** — fajl je bio primjer koji niko nije održavao, pa bi ga sinhronizacija pretvorila u regresiju. Sad prati stvarnost, nosi `HOME` za Caddy koji FrankenPHP pokreće ispod sebe, i deploy ga drži u koraku zajedno s worker configom i logrotateom. Caddy je uz `HOME` dobio i svoj data direktorij, pa su nestala oba upozorenja koja je ispisivao pri svakom startu.
+
+### Duplikati u frontendu
+
+- **Granica greške je postojala trinaest puta, bajt za bajt** — i nijednom u četiri sekcije koje najviše bacaju (`studios`, `lists`, `gta6`, `author`, sve četiri zovu `fetchContent` koji baca). Sad je jedna komponenta koju osamnaest dvorednih fajlova re-eksportuje; build potvrđuje da Next to prihvata kao granicu.
+- **`timeAgo` je postojao tri puta i kopije su se već razišle:** jedna je za svjež unos govorila „just now", druga „1 min ago", i samo je jedna znala da API ponekad šalje razmak umjesto `T` — što Safari odbija da parsira. Sad su dvije namjerno različite funkcije na jednom mjestu (gruba za kartice, fina za feed) plus `shortDate`, koji je isto bio dupliran.
+
+### Higijena servera i repoa
+
+Rootov PM2 daemon s nula procesa ugašen (držao 23 MB) · `/var/log/techplay-seo.log` više nije world-writable · `open-vm-tools`, `vgauth` i `apport` isključeni (VMware alati na QEMU mašini) · stari SQL dump iz deploy stabla obrisan · pet design mockupa premješteno iz korijena repoa u `design/`, `temp_html.txt` obrisan · CLAUDE.md ispravljen na tri mjesta: nepostojeći `ImageService`, `middleware.ts` koji ne postoji, i dva servisa bota (`TriviaService`, `ChallengeService`) kojih nema u kodu.
+
+### Nije urađeno, i zašto
+
+- **SWR `fetcher` u ~40 fajlova** i **devet ručnih modala** ostaju. Prvo je stilska konsolidacija kroz četrdeset fajlova, drugo je pravi refaktor s rizikom regresije na fokusu, scroll locku i z-indeksu. Nijedno ne popravlja ponašanje koje je danas pokvareno.
+- **`ApiResponse` trait u 41 od 87 kontrolera** ostaje kako jeste. Uvođenje kroz sve mijenja **oblik odgovora** koje frontend već čita — to je prelamanje, ne higijena. Ako se ikad radi, ide sekcija po sekcija uz izmjene na obje strane.
+
+---
+
 ## NAĐENO PRI PROVJERI DEPLOYA — 29.08.2026
 
 🔴 **Prijava kroz Discord je pokvarena na produkciji, i neko je danas pokušao.** U logu su tri neuspjela pokušaja u 21:18–21:19: `Discord OAuth failed: POST https://discord.com/api/oauth2/token resulted in a 401`. Uzrok: **`DISCORD_CLIENT_SECRET` ne postoji u `.env`.** `DISCORD_CLIENT_ID` i redirect jesu postavljeni, pa korisnik prođe kroz Discord ekran, vrati se — i tu padne. Bot ima svoj `DISCORD_BOT_SECRET` i radi normalno; ovo je druga tajna.
@@ -645,6 +677,8 @@ Obje su pokvarene na produkciji i **obje traže podatke iz portala**, ne kod:
 ## 3. Restart servera
 
 Kernel 6.8.0-138 čeka. Put kroz boot je već isproban ranije. Nosi kratak prekid, pa biraš trenutak.
+
+</details>
 
 ---
 
