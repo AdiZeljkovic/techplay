@@ -588,6 +588,100 @@ Rootov PM2 daemon s nula procesa ugašen (držao 23 MB) · `/var/log/techplay-se
 
 ---
 
+# ŠTA JE OSTALO — pregled 29.08.2026
+
+Prolaz kroz **svaki** nalaz iz ovog dokumenta i njegov status danas. Od 🔴 nalaza ostaje **nula**; od 🟠 ostaje devet; ostatak je 🟡 i odluke.
+
+## 1. Čeka tvoju odluku
+
+Tri su gore, u odjeljku „ODLUKE KOJE ČEKAJU VLASNIKA": **28 ruta bez pozivaoca** (grupisane po sigurnosti brisanja) · **Discord i Battle.net prijava** (traže podatke iz portala) · **restart servera** zbog kernela 6.8.0-138.
+
+Dolaze još tri koje ne mogu donijeti sam:
+
+| | Odluka |
+|---|---|
+| 🟠 **D4** | **Shop: KM na ekranu, EUR u PayPal-u, backend prima samo COD.** Niko ne može biti pogrešno naplaćen (iznos se računa na serveru), ali je PayPal grana na shopu mrtav kod koji izgleda živ. Treba odluka: u kojoj valuti se prodaje i da li se PayPal na shopu pali ili briše. |
+| 🟠 **D6** | **Šest real-time hookova je gotovo i nespojeno, a Header pollira isto to svakih 60 s.** Reverb server se plaća. Ili spojiti push i ugasiti polling, ili obrisati hookove. |
+| 🟡 **B12** | **Media WebP pipeline.** `intervention/image` nije u composer.json, pa `ImageOptimizationService` tiho ne radi ništa; paralelno postoji `ImageOptimizer` (GD) s drugom šemom sufiksa. Instalirati paket ili obrisati servis — ali jedan od dva mora biti Pipeline. |
+
+## 2. Bugovi koji su i dalje živi
+
+Ništa od ovoga ne ruši sajt, ali svako radi nešto pogrešno **danas**:
+
+| | Šta | Nalaz |
+|---|---|---|
+| 🟠 | **Admin izmjena korisničkog sadržaja zaobilazi `SanitizationService`** (Comment, GameRating, Post, Thread — sanitizacija živi samo u API kontrolerima), a `PostResource` ga renderuje `->html()` | C6 |
+| 🟠 | **Izmjena igre u adminu ne čisti nginx keš** — deploy ga prazni, pojedinačna izmjena ne; stranica ostaje ustajala do sat vremena | D2 |
+| 🟠 | **Presence se emituje na JAVNI kanal** bez privacy gatea (`new Channel("presence.{id}")`), i to i kad se ništa nije promijenilo — svake 2 min po igraču | B13 |
+| 🟠 | **Vraćanje zaliha pri otkazivanju ide query-builderom**, pa `ProductObserver` ne opali → keš i broadcast ne vide vraćene zalihe | B13 |
+| 🟠 | **Notifikacija o komentaru linkuje na `/articles/{slug}`** — `getContentUrl` gradi `/{type}s/{slug}`, a članci se serviraju pod `/news`, `/reviews`, `/hardware` | B13 |
+| 🟡 | **SeoManager filter „category" gađa kolonu koje nema** — upotreba filtera baca SQL grešku | C7 |
+| 🟡 | **`/hardware` sluša tag `hardware` koji niko ne šalje** (spašava ga path purge; popravka je jedan red na `['tech']`) | D9 |
+| 🟡 | **GTA6 character purge je no-op** (`revalidatePath` na dinamičkoj ruti) — izmjene lika čekaju 1 h | D9 |
+| 🟡 | **WoW analiza je sadržajno zamrznuta na mart 2026** — vječno „0 days left", prošlosezonski afixi u promptu | B13 |
+| 🟡 | **PayPal:** token se ne kešira (dvije runde po operaciji), a `captureOrder` šalje Guzzle opcije **kao tijelo zahtjeva** (radi jer PayPal ignoriše nepoznata polja) | B13 |
+| 🟡 | **Bot:** presence throttle je izvrnut · feed ostaje mrtav do restarta ako backend nije dostupan pri startu · „Member of the Week" broji fiktivnih 15 XP · StatusService na prolaznu grešku javno kaže „Maintenance" · overtake najave slijeću u pogrešan kanal · dispatch komandi bez try/catch | E5, E6 |
+| 🟡 | **Frontend sitno:** verify-email pollira i poslije uspjeha · CartContext ima prozor od jednog frejma u kojem mount pregazi korpu · pad `/auth/me` na cold-loadu šalje ulogovanog na /login · giveaway leaderboard pollira i kad je tab skriven · owner provjera profila je case-sensitive | D10 |
+
+## 3. Trošak koji se i dalje plaća
+
+| | Šta | Nalaz |
+|---|---|---|
+| 🟠 | **`FeedController::personalized`** povlači 400 redova i boduje ih u PHP-u **po svakom requestu**, bez keša | B19 |
+| 🟠 | **`ForumController::categories`** učitava CIJELU threads tabelu s autorima da uzme po jedan red po boardu — raste linearno s forumom | B19 |
+| 🟠 | **N+1 kroz `CommentAuthorResource::is_staff`** — jedan roles upit po redu komentara, do 185 redova po stranici (fix: eager `user.roles`) | B19 |
+| 🟠 | **`CalendarController`** dekoriše mjesec neukeširanim GROUP BY po ~1.100 slugova po requestu | B19 |
+| 🟠 | **Games hub je ostao bez indeksa za sortiranje** — vodeći ORDER BY izraz je neindeksabilan, `released` nema pun indeks, `rating ASC` btree ne služi `DESC NULLS LAST` | F1 |
+| 🟡 | **BrokenLink bulk „check again"** = do 25 sinhronih HTTP provjera u jednom Livewire requestu (~250 s, preko svakog timeouta) | C8 |
+| 🟡 | **MostViewedArticles** bez eager loada (N+1) i bez filtera na published — draftovi u listi | C8 |
+| 🟡 | **Giveaway tabela** radi COUNT po redu za visible i modal | C8 |
+| 🟡 | **`developers` TEXT[] nema GIN** — upit koji ga koristi stajao je 36 minuta jednom; ako se ponovi, stoji opet | A5.8 |
+| 🟡 | **Pola miliona view UPDATE-a sedmično** ide red po red; batch upis bi smanjio WAL (0 ms po pozivu, nije hitno) | A5.6 |
+
+## 4. Dupli sistemi koji su ostali
+
+Od devetnaest iz presjeka **riješeno je devet**. Ostaje:
+
+| # | Sistem | Zašto još stoji |
+|---|---|---|
+| 4 | **Detekcija vijesti u botu** — PollingService + SubscriptionService, dva stanja istine | Traži odluku šta radi DM notifikacije |
+| 5 | **Notifikacije korisniku** — Header polling + mrtav push sistem | = odluka D6 gore |
+| 7 | **Slike** — dva nekompatibilna pipeline-a | = odluka B12 gore |
+| 8 | **TEXT[] parsiranje** ×5 (kanonski cast + 4 kopije, 2 naivne pucaju na zarezu u vrijednosti) | Nije dirano |
+| 9 | **XP→level matematika** FE/BE — Header računa lokalno, ProfileHero čita backend; **drift je već živ** | Nije dirano |
+| 11 | **SWR `fetcher`** — 57 fajlova ima vlastitu definiciju, s različitim unwrapovima | Svjesno preskočeno (vidi 6) |
+| 12 | **Modali** — `ui/Dialog` + 9 ručnih overlaya, z-index 30–9998 | Svjesno preskočeno |
+| 13 | **API base URL** na 4 mjesta — og rute i dalje fallbackuju na `api.techplay.gg` koji **ne rezolvira** | Nije dirano |
+| 14 | **PayPal** — dva obrasca (shop server-side, support client-side) | = odluka D4 |
+| 17 | **robots meta** — helper + 2 ručne kopije koje gube `max-image-preview:large` | Nije dirano |
+| 19 | **Keš guides/products/gta6** — guides riješen, products i gta6 i dalje čiste samo prvih 5 stranica | Djelimično |
+
+## 5. Mrtav kod i nered
+
+Mrtvi hookovi `useRealTime*` (6) i `useMediaKit` — **8 fajlova** · mrtvi rewrites za `/feed` i `/rss` u next.config (filesystem rute ih pregaze) · `getComments()` u `news/[slug]` definisan i nikad pozvan · `remotePatterns` još dozvoljava `media.rawg.io`, pravatar, placeholder, unsplash i mrtvi `api.techplay.gg` · fantomska policy mapa `News::class` (model ne postoji) · `games:enrich-wikidata` radi a nije u scheduleru · šest starih MD fajlova u korijenu repoa · `RECOMMENDATIONS.md` u botu je predprojektni pitch · dep `he` bez importa · hardkodirano „332,000 games" na 2 mjesta u botu · ~15 docblockova s „142.110 igara" · tri mrtve tabele (`forum_categories`, `subscription_plans`, `queue_monitor_failure_groups`) · `users.role` legacy kolona koja se i dalje piše i čita uz Spatie · `motd-news` i `pollinate` enabled.
+
+## 6. Svjesno preskočeno, s razlogom
+
+- **`ApiResponse` trait u 41 od 87 kontrolera** — uvođenje kroz sve mijenja **oblik odgovora** koje frontend već čita. To je prelamanje, ne higijena.
+- **SWR fetcher (57 fajlova) i devet modala** — stilska konsolidacija kroz desetine fajlova, odnosno refaktor s rizikom regresije na fokusu i scroll locku. Nijedno ne popravlja ponašanje koje je danas pokvareno.
+- **Redis restart** radi 116 MB u swapu — RAM-a je slobodno 3,7 GB, dakle to je trag ranijeg pritiska. `swappiness` je trajno upisan; stranice se vraćaju same.
+- **Brisanje 28 ruta** — čeka tvoju odluku, ne moju.
+
+## 7. Ostalo bez strukturne popravke
+
+- **Prozor kod↔šema pri deployu (A10.1).** Oba skripta migriraju prije restarta, ali `git pull` bez momentalne migracije i dalje naoruža prozor — worker se sam reciklira svakih sat. Pravo rješenje je da deploy bude jedini put do koda, ili da se aplikacija odbije dići nad šemom koju ne poznaje.
+- **Nijedan alarm i dalje ne stiže osim Telegrama za backup.** GlitchTip skuplja greške koje ne može javiti (`consolemail://`), mail ne radi. Incident od 27.08. (upis članaka slomljen 7 h) prošao je nečujno.
+- **Test suite ništa ne pokreće automatski** — ni deploy, ni CI. Zelenilo zavisi od discipline.
+- **`/admin`, `/livewire`, `/sanctum` izloženi i na techplay.gg** pored api-beta — dva URL ulaza u isti admin (auth drži, ali je dupla površina).
+- **netdata se sam nadograđuje svake noći** bez nadzora.
+- **Prunanje** i dalje fali za `player_signals`, `session_suggestions`, `notifications` i `content_versions`.
+
+## 8. Čeka provjeru za sedmicu dana
+
+**Cache hit ratio.** Bio je 61% dok je 3,9 GB nepročitanih IGDB podataka konkurisalo za `shared_buffers`. Brojka je zbir od restarta baze 17.08. i ne može se pomjeriti unazad — vrijedi je pogledati na svježoj statistici, jer je to jedina mjera koja će reći da li je brisanje pomoglo čitanjima ili samo disku.
+
+---
+
 # ODLUKE KOJE ČEKAJU VLASNIKA
 
 Ništa ispod nije dirano. Sve je provjereno i spremno; nedostaje samo odluka.
