@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserIntegration;
 use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -33,8 +35,46 @@ class SocialAuthController extends Controller
     use ApiResponse;
 
     /**
-     * Redirect the user to the Discord authentication page.
+     * How long a half-finished link stays valid.
      */
+    private const LINK_TTL = 600;
+
+    /** One namespace, so a stray cache key cannot be mistaken for an intent. */
+    private function linkKey(string $nonce): string
+    {
+        return 'discord:link-intent:'.$nonce;
+    }
+
+    /**
+     * POST /auth/discord/link-intent — "this is me, about to connect Discord".
+     *
+     * Two buttons send people to the redirect below and they mean opposite
+     * things: the one on the login page is a stranger signing in, the one in
+     * Settings is a member already signed in who wants Discord attached to the
+     * account they are sitting in. Until now both arrived with no parameters at
+     * all, so the callback had to guess, and it guessed by email address.
+     *
+     * That is not a detail. On 30.08.2026 a member with 1,895 XP pressed Connect
+     * in Settings, his Discord address was not the address on his account — most
+     * people's are not — and the callback did the only thing left to it: made a
+     * second account with nothing on it and signed him into that. His level
+     * looked reset. Nothing was lost, but nothing about the screen said so.
+     *
+     * So the browser stops carrying the question and starts carrying the answer.
+     * This endpoint requires a token, which means the caller has already proved
+     * who they are; it hands back a nonce that says so, and the callback links
+     * to that member and no one else. Email matching stays only for the case it
+     * was meant for — a stranger signing in whose address we already know.
+     */
+    public function linkIntent(Request $request): JsonResponse
+    {
+        $nonce = Str::random(40);
+
+        Cache::put($this->linkKey($nonce), $request->user()->id, self::LINK_TTL);
+
+        return $this->success(['state' => $nonce]);
+    }
+
     public function redirect(Request $request)
     {
         // An actual redirect, not JSON. The frontend navigates the browser
@@ -42,10 +82,21 @@ class SocialAuthController extends Controller
         // user landed on a page of raw JSON instead of Discord.
         //
         // guilds.join is requested so the callback can add them to the server.
-        return Socialite::driver('discord')
+        //
+        // `state` is passed through untouched when the caller has one. Socialite
+        // in stateless mode adds no state of its own, and `with()` is merged
+        // over the code fields, so this is the whole mechanism.
+        $driver = Socialite::driver('discord')
             ->stateless()
-            ->scopes(['identify', 'email', 'guilds.join'])
-            ->redirect();
+            ->scopes(['identify', 'email', 'guilds.join']);
+
+        $state = (string) $request->query('state', '');
+
+        if ($state !== '') {
+            $driver->with(['state' => $state]);
+        }
+
+        return $driver->redirect();
     }
 
     /**
@@ -149,13 +200,54 @@ class SocialAuthController extends Controller
             return redirect(config('app.frontend_url').'/login?error='.urlencode('Discord authentication failed. Please try again.'));
         }
 
-        // Logic A: Linking to existing logged-in user
-        // Since we are stateless, we can't easily trust $request->user() here unless the client sends the token
-        // BUT the client is the browser redirecting back from Discord, so it likely doesn't have the Bearer token in headers.
+        /*
+         * SCENARIO 0: a member who was signed in and pressed Connect.
+         *
+         * `state` is a nonce this app issued to an authenticated caller, so it
+         * is proof of who asked — the one thing the callback never had before.
+         * Pulled rather than read, so it cannot be replayed.
+         *
+         * This runs first on purpose. Everything below identifies people by
+         * address, and a Discord address is usually not the address on the
+         * account; guessing from it is what attached a second, empty account to
+         * a member with 1,895 XP and made his level look reset.
+         */
+        $linkedUserId = Cache::pull($this->linkKey((string) $request->query('state', '')));
 
-        // SCENARIO 1: Linking Account (User is already logged in on frontend)
-        // Frontend should have sent us a 'state' or we handle linking after getting the discord user?
-        // Actually, if we just identify the user by discord_id:
+        if ($linkedUserId && ($linker = User::find($linkedUserId))) {
+            $takenBy = User::where('discord_id', $discordUser->getId())
+                ->where('id', '!=', $linker->id)
+                ->first();
+
+            if ($takenBy) {
+                Log::warning('Discord link refused: already on another account', [
+                    'discord_id' => $discordUser->getId(),
+                    'held_by' => $takenBy->id,
+                    'requested_by' => $linker->id,
+                ]);
+
+                return redirect(config('app.frontend_url').'/settings?error='.urlencode(
+                    'That Discord account is already connected to another TechPlay account.'
+                ));
+            }
+
+            $linker->update([
+                'discord_id' => $discordUser->getId(),
+                'discord_avatar' => $discordUser->getAvatar(),
+                'gamertags' => array_merge($linker->gamertags ?? [], [
+                    'discord' => $discordUser->getNickname() ?? $discordUser->getName(),
+                ]),
+            ]);
+
+            $this->storeTokens($linker, 'discord', $discordUser->token, $discordUser->refreshToken);
+            $this->addUserToGuild($discordUser->getId(), $discordUser->token);
+
+            Log::info('Discord linked to the account that asked', ['user_id' => $linker->id]);
+
+            // No new token: they were already signed in, and handing back a
+            // fresh one would replace the session they started this from.
+            return redirect(config('app.frontend_url').'/settings?discord=linked');
+        }
 
         $existingUser = User::where('discord_id', $discordUser->getId())->first();
 

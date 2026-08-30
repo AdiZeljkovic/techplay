@@ -111,6 +111,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/email/resend-public', [VerificationController::class, 'resendPublic'])
             ->middleware('throttle:5,10');
         Route::get('/auth/discord/redirect', [SocialAuthController::class, 'redirect']);
+        // Says "this is me" before the browser leaves for Discord. Authenticated,
+        // because that is the whole point: the callback has no other way to know
+        // whether it is a stranger signing in or a member attaching an account.
+        Route::post('/auth/discord/link-intent', [SocialAuthController::class, 'linkIntent'])
+            ->middleware('auth:sanctum');
         Route::get('/auth/discord/callback', [SocialAuthController::class, 'callback']);
 
         // Social Auth (Battle.net)

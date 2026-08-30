@@ -86,6 +86,36 @@ function Section({ title, blurb, children }: { title: string; blurb: string; chi
 }
 
 export default function SettingsClient() {
+
+    /*
+     * Connect Discord — say who is asking before the browser leaves.
+     *
+     * This button used to navigate straight to /auth/discord/redirect with
+     * nothing attached. The callback then had no idea a signed-in member was
+     * behind it, so it fell back to matching on email address — and a Discord
+     * address is usually not the address on the account. On 30.08.2026 that
+     * built a second, empty account for a member with 1,895 XP and signed him
+     * into it, so his level looked reset.
+     *
+     * The POST below is authenticated, which is what makes it proof. It returns
+     * a one-time nonce; the callback trades that nonce for "link Discord to
+     * this member, and nobody else".
+     */
+    const connectDiscord = async () => {
+        try {
+            const { data } = await axios.post("/auth/discord/link-intent");
+            const state = data?.data?.state ?? data?.state;
+
+            if (!state) throw new Error("no state");
+
+            window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/discord/redirect?state=${encodeURIComponent(state)}`;
+        } catch {
+            // Without the nonce the callback would guess by email, which is the
+            // bug. Better to say so than to start a link that attaches to the
+            // wrong account.
+            toast.error("Could not start the Discord link. Please try again.");
+        }
+    };
     const { user, isLoading, logout } = useAuth({ middleware: "auth" });
     // The hook handles the redirect; the context is what actually holds the
     // user everything else renders from, so a save has to update that too.
@@ -612,7 +642,7 @@ export default function SettingsClient() {
                                                 </span>
                                             ) : (
                                                 <button
-                                                    onClick={() => { window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/discord/redirect`; }}
+                                                    onClick={connectDiscord}
                                                     className="shrink-0 inline-flex items-center gap-2 h-9 px-4 rounded-[8px] bg-[#5865F2] hover:brightness-110 font-display text-[10px] font-black uppercase tracking-[0.1em] text-white transition-[filter]"
                                                 >
                                                     <Link2 className="w-3.5 h-3.5" /> Connect
