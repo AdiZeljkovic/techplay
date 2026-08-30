@@ -346,4 +346,27 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return $this->hasMany(UserIntegration::class);
     }
+
+    /**
+     * Find somebody by username, the way people actually type it.
+     *
+     * Usernames are stored with their capitals intact — `XLBanana47` is how he
+     * wrote it and how his profile should read — but nobody retypes capitals
+     * correctly, and nothing should depend on them doing so. Every lookup was
+     * `where('username', $name)`, which in PostgreSQL is case-sensitive, so
+     * `/profile/xlbanana47` answered 404 for an account that plainly exists.
+     *
+     * That is not only a broken link. `uniqueUsername()` lowercases its
+     * candidate and then checked for collisions the same case-sensitive way, so
+     * `xlbanana47` did not collide with `XLBanana47` and a second account was
+     * created under what any reader would call the same name — which is how a
+     * member with 1,895 XP ended up with an empty profile on 30.08.2026.
+     *
+     * `lower(username)` is indexed (users_username_lower_idx), so this stays a
+     * single index lookup rather than a scan.
+     */
+    public function scopeByUsername($query, ?string $username)
+    {
+        return $query->whereRaw('lower(username) = ?', [mb_strtolower((string) $username)]);
+    }
 }

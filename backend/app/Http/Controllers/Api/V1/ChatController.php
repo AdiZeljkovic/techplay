@@ -108,7 +108,7 @@ class ChatController extends Controller
 
         try {
             if ($data['type'] === 'direct') {
-                $other = User::where('username', $data['username'])->firstOrFail();
+                $other = User::byUsername($data['username'])->firstOrFail();
 
                 if ($other->id === $user->id) {
                     return $this->error('You cannot message yourself.', 422);

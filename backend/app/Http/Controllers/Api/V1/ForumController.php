@@ -67,7 +67,9 @@ class ForumController extends Controller
         $mentioner = Auth::user();
         $preview = substr(strip_tags($content), 0, 100);
 
-        User::whereIn('username', $usernames)
+        // Matched without regard to capitals, because @XLBanana47 and
+        // @xlbanana47 are the same person and nobody retypes capitals.
+        User::whereIn(DB::raw('lower(username)'), array_map('mb_strtolower', $usernames))
             ->where('id', '!=', $mentioner->id)
             ->get()
             ->each(function (User $mentioned) use ($thread, $mentioner, $preview) {
@@ -1209,7 +1211,7 @@ class ForumController extends Controller
         };
 
         $authorId = $authorName
-            ? User::where('username', $authorName)->value('id')
+            ? User::byUsername($authorName)->value('id')
             : null;
 
         // Named so the filter reads the same on both queries below.

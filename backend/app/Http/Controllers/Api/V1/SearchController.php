@@ -152,7 +152,7 @@ class SearchController extends Controller
         $result = Cache::remember($cacheKey, 60, function () use ($query) {
             $results = User::query()
                 ->where(function ($q) use ($query) {
-                    $q->where('username', 'ILIKE', "%{$query}%")
+                    $q->byUsername('ILIKE', "%{$query}%")
                         ->orWhere('display_name', 'ILIKE', "%{$query}%");
                 })
                 // Friends-only profiles aren't browsable. A direct link still

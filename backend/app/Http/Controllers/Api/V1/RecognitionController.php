@@ -26,7 +26,7 @@ class RecognitionController extends Controller
      */
     public function index(string $username): JsonResponse
     {
-        $target = User::where('username', $username)->firstOrFail();
+        $target = User::byUsername($username)->firstOrFail();
 
         if ($this->profileHidden($target)) {
             return $this->error('This profile is private.', 403);
@@ -68,7 +68,7 @@ class RecognitionController extends Controller
 
         $type = $request->input('type');
         $giver = Auth::user();
-        $target = User::where('username', $username)->firstOrFail();
+        $target = User::byUsername($username)->firstOrFail();
 
         if ($giver->id === $target->id) {
             return $this->error('You cannot recognise yourself', 422);
@@ -122,7 +122,7 @@ class RecognitionController extends Controller
      */
     public function destroy(string $username, string $type): JsonResponse
     {
-        $target = User::where('username', $username)->firstOrFail();
+        $target = User::byUsername($username)->firstOrFail();
 
         UserRecognition::where('giver_id', Auth::id())
             ->where('receiver_id', $target->id)

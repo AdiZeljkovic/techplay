@@ -221,7 +221,7 @@ class AuthController extends Controller
         $viewer = Auth::guard('sanctum')->user() ?? Auth::user();
         $profileService = new ProfileService;
 
-        $target = User::where('username', $username)->with('rank')->firstOrFail();
+        $target = User::byUsername($username)->with('rank')->firstOrFail();
         $isOwner = $viewer !== null && $viewer->id === $target->id;
 
         // Viewer-specific and therefore never cached alongside the payload.
@@ -321,7 +321,7 @@ class AuthController extends Controller
     private function buildProfilePayload(string $username): array
     {
         // PERFORMANCE: Use loadCount to avoid N+1 queries for counts
-        $user = User::where('username', $username)
+        $user = User::byUsername($username)
             ->with(['rank', 'activeSupport.tier', 'achievements'])
             ->withCount([
                 'threads',

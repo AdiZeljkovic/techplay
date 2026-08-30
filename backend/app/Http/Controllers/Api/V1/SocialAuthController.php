@@ -125,14 +125,14 @@ class SocialAuthController extends Controller
         $base = strtolower(preg_replace('/[^a-zA-Z0-9_]/', '', (string) $preferred));
         $base = substr($base, 0, 20) ?: 'player';
 
-        if (! User::where('username', $base)->exists()) {
+        if (! User::byUsername($base)->exists()) {
             return $base;
         }
 
         for ($attempt = 0; $attempt < 50; $attempt++) {
             $candidate = $base.random_int(1000, 999999);
 
-            if (! User::where('username', $candidate)->exists()) {
+            if (! User::byUsername($candidate)->exists()) {
                 return $candidate;
             }
         }

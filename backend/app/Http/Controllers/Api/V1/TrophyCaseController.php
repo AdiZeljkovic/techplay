@@ -22,7 +22,7 @@ class TrophyCaseController extends Controller
      */
     public function show(string $username): JsonResponse
     {
-        $user = User::where('username', $username)->firstOrFail();
+        $user = User::byUsername($username)->firstOrFail();
 
         if ($this->profileHidden($user)) {
             return $this->error('This profile is private.', 403);

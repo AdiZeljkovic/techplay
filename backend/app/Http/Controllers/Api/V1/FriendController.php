@@ -45,7 +45,7 @@ class FriendController extends Controller
     {
         $request->validate(['username' => 'required|exists:users,username']);
 
-        $receiver = User::where('username', $request->username)->firstOrFail();
+        $receiver = User::byUsername($request->username)->firstOrFail();
         $senderId = Auth::id();
 
         if ($receiver->id === $senderId) {

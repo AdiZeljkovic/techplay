@@ -35,7 +35,7 @@ class TasteMatchController extends Controller
             return $this->error('Sign in to compare libraries.', 401);
         }
 
-        $target = User::where('username', $username)->firstOrFail();
+        $target = User::byUsername($username)->firstOrFail();
 
         // The same door as every other per-user aggregate. A match score is
         // computed from a private shelf, so it is a way of reading one.

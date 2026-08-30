@@ -30,7 +30,7 @@ class GameCollectionController extends Controller
      */
     public function index(Request $request, string $username)
     {
-        $user = User::where('username', $username)->firstOrFail();
+        $user = User::byUsername($username)->firstOrFail();
 
         if ($this->profileHidden($user)) {
             return $this->error('This profile is private.', 403);

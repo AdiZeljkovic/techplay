@@ -28,7 +28,7 @@ class GameListController extends Controller
      */
     public function index(string $username)
     {
-        $user = User::where('username', $username)->firstOrFail();
+        $user = User::byUsername($username)->firstOrFail();
 
         if ($this->profileHidden($user)) {
             return $this->error('This profile is private.', 403);
@@ -92,7 +92,7 @@ class GameListController extends Controller
      */
     public function showBySlug(Request $request, string $username, string $slug)
     {
-        $user = User::where('username', $username)->firstOrFail();
+        $user = User::byUsername($username)->firstOrFail();
 
         $list = GameList::where('user_id', $user->id)
             ->where('slug', $slug)

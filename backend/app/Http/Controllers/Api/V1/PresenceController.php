@@ -24,7 +24,7 @@ class PresenceController extends Controller
      */
     public function show(string $username): JsonResponse
     {
-        $user = User::where('username', $username)->firstOrFail();
+        $user = User::byUsername($username)->firstOrFail();
 
         // Ten other per-user endpoints run this check; presence was the one
         // left out. With `started_at` in the payload, polling it reconstructs a

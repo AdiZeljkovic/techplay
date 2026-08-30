@@ -19,7 +19,7 @@ class ActivityController extends Controller
      */
     public function index(Request $request, string $username, ActivityService $activity)
     {
-        $user = User::where('username', $username)->firstOrFail();
+        $user = User::byUsername($username)->firstOrFail();
 
         if ($this->profileHidden($user)) {
             return $this->error('This profile is private.', 403);
