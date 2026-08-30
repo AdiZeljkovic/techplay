@@ -6,7 +6,6 @@ use App\Models\Giveaway;
 use App\Models\GiveawayPrizeTier;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class GiveawayWinnerNotification extends Notification implements ShouldQueue
@@ -19,16 +18,22 @@ class GiveawayWinnerNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * The bell first, the inbox second.
+     * The bell, not the inbox.
      *
-     * This was mail-only. Outbound mail from this site does not work — the host
-     * in MAIL_HOST has no DNS record — so telling somebody they had won was a
-     * message written into a socket that never opened, and there was no second
-     * channel to notice. Whoever won anything since then has not been told.
+     * Decided 31.08.2026: TechPlay sends exactly four kinds of email — address
+     * verification, password reset, the contact form, and the newsletter
+     * confirmation. Everything else a member might want to know reaches them
+     * in the app.
+     *
+     * The reason is deliverability, and it is not abstract. A domain earns its
+     * way into the inbox slowly and loses it fast; a handful of "mark as spam"
+     * clicks on a weekly digest costs the reputation that the verification and
+     * password-reset mail depends on. Those two have to arrive, so nothing
+     * optional is allowed to put them at risk.
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -46,24 +51,6 @@ class GiveawayWinnerNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
-    {
-        $prizeName = $this->prizeName();
-
-        return (new MailMessage)
-            ->subject('🎉 YOU WON: '.$this->giveaway->title)
-            ->greeting('🏆 CONGRATULATIONS '.strtoupper($notifiable->username).'! 🏆')
-            ->line('**You are the winner of:**')
-            ->line('# '.$prizeName)
-            ->line('You won our '.$this->giveaway->title.' giveaway!')
-            ->line('---')
-            ->line('**What happens next?**')
-            ->line('Our team will contact you within 24-48 hours via email with instructions on how to claim your prize.')
-            ->line('Please make sure to check your spam folder and add us to your contacts.')
-            ->action('View Giveaway', $this->giveaway->getPublicUrl())
-            ->line('Thank you for being part of the TechPlay community! 🎮')
-            ->salutation('Congratulations again, The TechPlay Team');
-    }
 
     /** A tiered giveaway names the prize on the tier; a plain one on itself. */
     private function prizeName(): string

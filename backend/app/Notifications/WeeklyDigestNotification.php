@@ -4,7 +4,6 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
@@ -23,15 +22,22 @@ class WeeklyDigestNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * A digest that can only arrive by mail does not arrive at all here — the
-     * mail host has no DNS record, so the Friday run has been sending nothing
-     * for weeks while reporting success. The bell version is a summary line
-     * rather than the whole letter; it is a nudge back to the profile, and the
-     * profile is where all of it already lives.
+     * The bell, not the inbox.
+     *
+     * Decided 31.08.2026: TechPlay sends exactly four kinds of email — address
+     * verification, password reset, the contact form, and the newsletter
+     * confirmation. Everything else a member might want to know reaches them
+     * in the app.
+     *
+     * The reason is deliverability, and it is not abstract. A domain earns its
+     * way into the inbox slowly and loses it fast; a handful of "mark as spam"
+     * clicks on a weekly digest costs the reputation that the verification and
+     * password-reset mail depends on. Those two have to arrive, so nothing
+     * optional is allowed to put them at risk.
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -56,42 +62,5 @@ class WeeklyDigestNotification extends Notification implements ShouldQueue
             'message' => $parts === [] ? 'Claim today’s bounty to start a streak.' : implode(' · ', $parts),
             'link' => '/profile/'.$notifiable->username,
         ];
-    }
-
-    public function toMail(object $notifiable): MailMessage
-    {
-        $frontend = rtrim(config('app.frontend_url', 'https://techplay.gg'), '/');
-
-        $mail = (new MailMessage)
-            ->subject('Your week on TechPlay 🎮')
-            ->greeting("Hey {$notifiable->username}!");
-
-        if ($this->streakDays > 0) {
-            $mail->line("🔥 Your daily streak is at **{$this->streakDays} days** — keep it alive today!");
-        } else {
-            $mail->line('🔥 Your streak is waiting — claim today\'s bounty to start one.');
-        }
-
-        if (! empty($this->articles)) {
-            $mail->line('**New for the games you play:**');
-            foreach ($this->articles as $article) {
-                $mail->line("• [{$article['title']}]({$frontend}{$article['url']})");
-            }
-        }
-
-        if (! empty($this->upcoming)) {
-            $mail->line('**Releasing soon from your wishlist:**');
-            foreach ($this->upcoming as $game) {
-                $mail->line("• {$game['name']} — {$game['released']}");
-            }
-        }
-
-        if ($this->season) {
-            $mail->line("🏆 **{$this->season['name']}** ends in {$this->season['days_remaining']} days — finish your season quests for the Champion badge!");
-        }
-
-        return $mail
-            ->action('Open your profile', "{$frontend}/profile/{$notifiable->username}")
-            ->line('You can turn this digest off in your settings.');
     }
 }

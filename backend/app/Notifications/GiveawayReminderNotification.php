@@ -5,7 +5,6 @@ namespace App\Notifications;
 use App\Models\Giveaway;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class GiveawayReminderNotification extends Notification implements ShouldQueue
@@ -17,13 +16,22 @@ class GiveawayReminderNotification extends Notification implements ShouldQueue
     ) {}
 
     /**
-     * Mail cannot leave this server, so a reminder that only went by mail was
-     * not a reminder. The bell reaches the entrants who are already on the site,
-     * which is where they would go to add points anyway.
+     * The bell, not the inbox.
+     *
+     * Decided 31.08.2026: TechPlay sends exactly four kinds of email — address
+     * verification, password reset, the contact form, and the newsletter
+     * confirmation. Everything else a member might want to know reaches them
+     * in the app.
+     *
+     * The reason is deliverability, and it is not abstract. A domain earns its
+     * way into the inbox slowly and loses it fast; a handful of "mark as spam"
+     * clicks on a weekly digest costs the reputation that the verification and
+     * password-reset mail depends on. Those two have to arrive, so nothing
+     * optional is allowed to put them at risk.
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database'];
     }
 
     public function toDatabase(object $notifiable): array
@@ -40,19 +48,4 @@ class GiveawayReminderNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
-    {
-        $hoursRemaining = $this->giveaway->getTimeRemaining() / 3600;
-
-        return (new MailMessage)
-            ->subject('⏰ Giveaway Ending Soon: '.$this->giveaway->title)
-            ->greeting('Hey '.$notifiable->username.'! 👋')
-            ->line('The giveaway for **'.$this->giveaway->prize_name.'** is ending in less than 24 hours!')
-            ->line('**Time Remaining:** '.round($hoursRemaining).' hours')
-            ->line('**Your Current Points:** '.($notifiable->entries()->where('giveaway_id', $this->giveaway->id)->first()?->total_points ?? 0))
-            ->line('This is your last chance to complete tasks and increase your chances of winning!')
-            ->action('View Giveaway', $this->giveaway->getPublicUrl())
-            ->line('Good luck! 🍀')
-            ->salutation('Best regards, The TechPlay Team');
-    }
 }

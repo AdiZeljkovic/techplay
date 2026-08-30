@@ -138,6 +138,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'subscription_ends_at' => 'datetime',
             'last_seen_at' => 'datetime',
             'last_daily_claim' => 'datetime',
+            /*
+             * Discord's two timestamps, which had no cast at all.
+             *
+             * Without one Eloquent hands back the raw string, and AuthController's
+             * profile payload calls ->toIso8601String() on it — a fatal 500 on the
+             * profile of anybody whose Discord link had reached the guild sync.
+             *
+             * It stayed hidden because nothing wrote these until Discord sign-in began
+             * working on 30.08.2026, so every row still held null and the ?-> operator
+             * short-circuited. The first account to carry a value was the first to break.
+             */
+            'discord_guild_joined_at' => 'datetime',
+            'discord_guild_checked_at' => 'datetime',
         ];
     }
 

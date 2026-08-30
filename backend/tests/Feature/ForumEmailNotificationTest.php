@@ -11,11 +11,22 @@ use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 /**
- * When a forum reply is allowed to reach an inbox.
+ * A forum reply reaches the bell and never an inbox.
  *
- * Only a reply to your own thread, only if you asked for email, and only if the
- * address has been verified — sending to an unverified address is sending to
- * whoever typed it, which may not be the person who owns it.
+ * This file used to assert the opposite, and correctly so: a reply mailed the
+ * thread's author when they had asked for email and their address was verified.
+ * On 31.08.2026 that changed by decision rather than by accident — TechPlay now
+ * sends four kinds of email and no more: address verification, password reset,
+ * the contact form, and the newsletter confirmation.
+ *
+ * The reason is the first two. A domain earns its way into the inbox slowly and
+ * loses it fast, and every optional message spends reputation that the password
+ * reset is relying on. A forum reply is worth a bell.
+ *
+ * The old assertions are kept, inverted, because the thing worth guarding did
+ * not disappear when the channel did: this notification still has to be sent,
+ * still has to carry the database channel, and must never quietly grow a mail
+ * channel back.
  */
 class ForumEmailNotificationTest extends TestCase
 {
@@ -55,7 +66,11 @@ class ForumEmailNotificationTest extends TestCase
         return $channels;
     }
 
-    public function test_a_member_who_asked_for_email_gets_one(): void
+    /**
+     * Even the member who asked for email, with a verified address — the case
+     * that used to be the whole point of this file.
+     */
+    public function test_a_member_who_asked_for_email_still_only_gets_the_bell(): void
     {
         $author = User::factory()->create([
             'email_notifications' => true,
@@ -65,11 +80,11 @@ class ForumEmailNotificationTest extends TestCase
         // Called once: each call opens a thread, and two would collide on slug.
         $channels = $this->channelsFor($author);
 
-        $this->assertContains('mail', $channels);
         $this->assertContains('database', $channels);
+        $this->assertNotContains('mail', $channels);
     }
 
-    public function test_a_member_who_turned_email_off_only_gets_the_bell(): void
+    public function test_a_member_who_turned_email_off_gets_the_bell(): void
     {
         $author = User::factory()->create([
             'email_notifications' => false,
@@ -84,7 +99,8 @@ class ForumEmailNotificationTest extends TestCase
 
     /**
      * An unverified address belongs to whoever typed it, which is not
-     * necessarily the person who owns it.
+     * necessarily the person who owns it. Nothing is written to it either way
+     * now, but the member is still told in the app.
      */
     public function test_an_unverified_address_is_never_written_to(): void
     {
@@ -93,6 +109,9 @@ class ForumEmailNotificationTest extends TestCase
             'email_verified_at' => null,
         ]);
 
-        $this->assertNotContains('mail', $this->channelsFor($author));
+        $channels = $this->channelsFor($author);
+
+        $this->assertContains('database', $channels);
+        $this->assertNotContains('mail', $channels);
     }
 }
