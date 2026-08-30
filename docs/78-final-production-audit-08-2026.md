@@ -1058,3 +1058,108 @@ healthcheck prije njega.
 
 **Preostaje jedan korak, i tvoj je:** autorizovati javni ključ na Storage Boxu.
 Sve ostalo je spremno i čeka ga.
+
+---
+
+# C-1 ZATVOREN — 30.08.2026.
+
+Off-site backup radi. Ključ je autorizovan preko pristupa koji drugi projekat
+(FuturaOS) već ima na istom Storage Boxu `u634216`, bez ijedne lozinke kroz
+razgovor.
+
+## Provjereno s TechPlay servera, ne po tuđem izvještaju
+
+| | |
+|---|---|
+| Pristup boxu | Radi — ograničeni shell autentifikuje pa odbija `echo`, što je samo po sebi dokaz |
+| Arhiva gore | `techplay/2026-08-30_1624` |
+| `db.dump` | 242 MB |
+| `uploads.tar.gz` | 607 MB |
+| `redis.rdb` | 25,8 MB |
+| **`crontab-www-data.txt`** | **297 B — moja dopuna, stiže off-site** |
+| **`pm2-dump.json`** | **9,8 KB — isto** |
+| Lokalni staging | Očišćen; `/var/backups/techplay` je 4 KB |
+| Kvota | **964 GB slobodno od 1 TB** (6% iskorišteno) — dijeli se s FuturaOS-om, ali prostora ima |
+| Tajmer | Sljedeći prolaz 31.08. u 02:31 |
+| **Healthcheck** | **Svih 9 provjera OK, izlazni kod 0** — prvi put potpuno čisto |
+
+*Broj tabela je pao sa 119 na 117 — to su dvije koje sam obrisao migracijom
+(`forum_categories`, `subscription_plans`), ne gubitak podataka.*
+
+## 🟠 C-2 — Nađeno pri ovoj provjeri: retention off-site nije mogao raditi
+
+Rekao sam da ću ovo pogledati odmah umjesto da čekam četrnaest noći. Dobro je
+što jesam.
+
+**Hetzner Storage Box ne daje shell nego fiksnu listu komandi:** `ls, tree, cd,
+pwd, mkdir, rmdir, du, df, dd, cat, touch, cp, rm, unlink, mv, chmod, md5sum…`
+Nema `sort`, nema `head`, nema `xargs`. I **ne podržava pipe uopšte** — mjereno:
+
+```
+ls -1            → backups files techplay
+ls -1 | head -1  → backups files techplay      ← identično; sve iza pipe-a se odbaci
+```
+
+Retention linija je bila:
+
+```bash
+ssh "$host" "ls -1d ${path}/20* | sort | head -n -${KEEP_REMOTE} | xargs -r rm -rf"
+```
+
+Na boxu to izvrši **samo `ls`**, ne obriše ništa, i **izađe s nulom** — pa se ni
+`|| echo "(remote retention pass failed…)"` nikad ne ispiše. Arhiva bi rasla
+~875 MB po noći bez ičega da je siječe i bez ijedne riječi o tome. Na 1 TB je to
+oko tri godine, ali box dijele dva projekta, pa bi punjenje oborilo oba.
+
+**Gore da je polovično radilo:** `head -n -14` znači „sve osim zadnjih 14" samo
+pod GNU-om. Gdje se čita kao `head -n 14`, poslije `sort`-a bira **najstarijih
+četrnaest** — tačno onaj skup koji je trebalo zadržati.
+
+**Popravljeno:** lista se čita s boxa, računica se radi na TechPlay serveru, a
+brisanje ide jedna po jedna direktorij `rm -rf` — jedina komanda koja tamo za to
+postoji. Uz `case` zaštitu koja je provjerena:
+
+| Ulaz | Ishod |
+|---|---|
+| `2026-08-30_1624` | prihvaćeno |
+| `backups` *(FuturaOS folder)* | **odbijeno** |
+| `../../etc` | **odbijeno** |
+| `2026-08-30_1624; rm -rf /` | **odbijeno** |
+| *(prazno)* | **odbijeno** |
+
+Zaštita nije ukras: box drži tuđe rezervne kopije, pa nijedan neočekivan red iz
+listinga ne smije stići do `rm -rf`.
+
+Testirano protiv živog boxa — 1 kopija naspram praga 14, ispravno ne briše
+ništa: `1 off-site, keeping 14`.
+
+## Jedna stvar koja ostaje na jednom disku
+
+`/var/backups/igdb-archive` (490 MB) nije u off-site kopiji. To je namjerno —
+arhiva penzionisanih IGDB staging podataka koji su već izvedeni u žive tabele
+(`games`, `game_external_ids`, `game_links`, `studios`). Gubitak bi značio da se
+taj jednokratni uvoz ne može ponoviti iz sirovih podataka, ne gubitak sadržaja
+sajta. Ako to smeta, jedan `cp` na Storage Box ga rješava.
+
+---
+
+# PRESUDA, AŽURIRANA
+
+# 🟢 PRODUCTION READY
+
+Oba blokera su zatvorena:
+
+- **A-1 GlitchTip** — radi, dokazano stvarnim prometom, i healthcheck ga sada čuva
+- **C-1 Backup** — odlazi s mašine, sadržaj kompletan, retention popravljen
+
+| Oblast | Prije audita | Sada |
+|---|---|---|
+| Observability | 3 | **7** |
+| Disaster Recovery | 3 | **8** |
+| Reliability | 6 | **8** |
+| **Overall** | **7** | **8,5** |
+
+Nije 🏆 PRODUCTION GOLD, i to namjerno: mail i dalje ne radi (verifikacije,
+digest i reset lozinke ne mogu biti poslani), Shop nema `PAYPAL_WEBHOOK_ID`, a
+62 fajla s vlastitim fetcherom je jedina stavka koja ozbiljno prijeti cilju
+„godinu dana bez novog cleanupa". Nijedna od te tri ne blokira launch.
