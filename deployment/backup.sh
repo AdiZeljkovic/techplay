@@ -204,11 +204,51 @@ if [ -n "$SSH_REMOTE" ]; then
         echo "  copied to ${SSH_REMOTE}/${STAMP}"
         shipped=1
 
-        # Retention on the far side, from the far side's own listing. A local
-        # `find` cannot see what is over there, and an off-site copy that grows
-        # without limit eventually stops being written at all.
-        ssh "$host" "ls -1d ${path}/20* 2>/dev/null | sort | head -n -${KEEP_REMOTE} | xargs -r rm -rf" \
-            2>/dev/null || echo "  (remote retention pass failed — harmless, but check the quota)"
+        # Retention on the far side, listed there but decided here.
+        #
+        # A Hetzner Storage Box does not give you a shell, it gives you a fixed
+        # command list — ls, mkdir, rm, mv, cp, cat, du, df and a few more. There
+        # is no sort, no head, no xargs, and **it does not support pipes at all**:
+        # `ls -1 | head -1` returns the whole listing, because everything after
+        # the pipe is discarded.
+        #
+        # So the one-liner that used to stand here shipped a pipeline that ran
+        # `ls` and nothing else. It deleted nothing, and `ls` exits 0, so the
+        # "retention pass failed" warning below it never fired either. The
+        # off-site archive grew every night with nothing trimming it and nothing
+        # saying so — verified on 30.08.2026 against the live box.
+        #
+        # Worse than useless if it had half-worked: `head -n -14` means "all but
+        # the last 14" only under GNU. Anywhere it is read as `head -n 14` it
+        # selects the OLDEST fourteen, which after `sort` is exactly the set you
+        # meant to keep.
+        #
+        # The listing comes from there; the arithmetic happens here; each removal
+        # is a separate `rm -rf`, which is the only command over there that can
+        # do it. The `case` is not decoration — this box is shared with another
+        # project's backups, so a stray line in that listing must never reach an
+        # `rm -rf`.
+        remote_dirs="$(ssh "$host" "ls -1d ${path}/20*" 2>/dev/null | tr -d '\r' | sed 's#.*/##' | sort)"
+        remote_count="$(printf '%s\n' "$remote_dirs" | grep -c . || true)"
+
+        if [ "${remote_count:-0}" -gt "$KEEP_REMOTE" ]; then
+            printf '%s\n' "$remote_dirs" | head -n "$((remote_count - KEEP_REMOTE))" | while read -r stale; do
+                case "$stale" in
+                    20[0-9][0-9]-[0-1][0-9]-[0-3][0-9]_[0-2][0-9][0-5][0-9])
+                        if ssh "$host" "rm -rf ${path}/${stale}" 2>/dev/null; then
+                            echo "  dropped ${stale} off-site"
+                        else
+                            echo "  !! could not drop ${stale} off-site — check the quota" >&2
+                        fi
+                        ;;
+                    *)
+                        echo "  !! refusing to delete unexpected remote entry: ${stale}" >&2
+                        ;;
+                esac
+            done
+        else
+            echo "  ${remote_count} off-site, keeping ${KEEP_REMOTE}"
+        fi
     else
         echo "  !! rsync to ${SSH_REMOTE} FAILED" >&2
     fi
