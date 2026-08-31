@@ -54,6 +54,9 @@ export default function GameForumThreads({
                 </h2>
                 <Link
                     href={`/forum/create?game=${gameSlug}`}
+                    // One of these on every game page, and there are 332,455 of them.
+                    rel="nofollow"
+                    prefetch={false}
                     className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[var(--accent)] hover:underline"
                 >
                     <Plus className="w-3.5 h-3.5" /> Start a Thread

@@ -163,6 +163,8 @@ function CategoryThreadsPageInner({ initial }: { initial: CategoryData | null })
                 user ? (
                     <Link
                         href={`/forum/create?category=${category.slug}`}
+                        rel="nofollow"
+                        prefetch={false}
                         className="btn-command inline-flex h-9 items-center gap-2 px-4 bg-[var(--accent)] font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white"
                     >
                         <Plus className="h-3.5 w-3.5" strokeWidth={2} /> New thread
@@ -243,6 +245,8 @@ function CategoryThreadsPageInner({ initial }: { initial: CategoryData | null })
                     {user && !activeTag && (
                         <Link
                             href={`/forum/create?category=${category.slug}`}
+                            rel="nofollow"
+                            prefetch={false}
                             className="btn-command mt-4 inline-flex h-9 items-center gap-2 px-4 bg-[var(--accent)] font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white"
                         >
                             <Plus className="h-3.5 w-3.5" strokeWidth={2} /> Start a thread
