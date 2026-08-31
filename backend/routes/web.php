@@ -3,7 +3,11 @@
 use App\Http\Controllers\RssController;
 use App\Http\Controllers\SitemapController;
 use App\Models\SiteSetting;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 Route::get('/', function () {
     return view('welcome');
@@ -68,9 +72,33 @@ Route::get('/robots.txt', function () {
     $content = trim((string) preg_replace('/^[ \t]*Sitemap:.*$/mi', '', $content));
     $content .= "\n\nSitemap: ".$sitemapUrl;
 
+    /*
+     * Cacheable, and without a session attached.
+     *
+     * This route sits in the web group, so StartSession and the cookie
+     * middleware ran on it: every fetch of robots.txt came back with an
+     * XSRF-TOKEN and a techplay-session cookie, and with
+     * `Cache-Control: private, must-revalidate` plus `Expires: -1`.
+     *
+     * A crawler is told by that never to keep a copy. Googlebot asked for
+     * robots.txt 33 times on 31 Aug 2026 — against one page crawled the same
+     * day — and 5,218 times over the preceding fortnight. Every one of those
+     * is a round trip spent asking permission instead of reading the site.
+     * `Set-Cookie` also makes the file uncacheable at the edge, so not one of
+     * them could be answered by Cloudflare either.
+     *
+     * An hour is short enough that a change made in the admin panel is live
+     * the same session, and long enough that nobody asks 33 times a day.
+     */
     return response($content, 200)
-        ->header('Content-Type', 'text/plain');
-});
+        ->header('Content-Type', 'text/plain; charset=UTF-8')
+        ->header('Cache-Control', 'public, max-age=3600');
+})->withoutMiddleware([
+    StartSession::class,
+    AddQueuedCookiesToResponse::class,
+    ShareErrorsFromSession::class,
+    ValidateCsrfToken::class,
+]);
 
 Route::get('/{key}.txt', function ($key) {
     $configuredKey = SiteSetting::get('seo_indexnow_key');
