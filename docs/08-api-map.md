@@ -220,7 +220,7 @@ Pun payload dodatno nosi `friend_status` (`self|none|pending|incoming|accepted`)
 | GET | `/user/streak` | StreakController::show | ✓ | Trenutni streak |
 | POST | `/user/streak/claim` | StreakController::claim | ✓ | Claim dnevni streak |
 | GET | `/quests` | QuestController::index | ✓ | Aktivni questovi |
-| POST | `/quests/{id}/claim` | QuestController::claim | ✓ | Claim nagradu questa |
+| ~~POST~~ | ~~`/quests/{id}/claim`~~ | — | — | **NE POSTOJI.** Nagrada se dodjeljuje sama u `QuestService::grantRewards()` čim `progress >= criteria_value`; nema ni rute ni `claimed_at` kolone. Ruta je bila upisana ovdje a nikad implementirana. |
 
 ---
 

@@ -152,6 +152,24 @@ class GameListController extends Controller
 
         $list->loadCount('items');
 
+        /*
+         * A list can be born published, and this is the only place that notices.
+         *
+         * The quest hook lived solely in update(), on the draft→public
+         * transition — which is the right moment when a list starts as a draft.
+         * But `is_draft` defaults to false above, so a list created straight
+         * from the "New list" form is public the instant it exists and never
+         * passes through that transition. Make Your Case, Curator and the
+         * seasonal list quest could all go unearned by somebody who had in fact
+         * published a list.
+         */
+        if (! $list->is_draft) {
+            try {
+                app(QuestService::class)->progress($request->user(), 'list_published');
+            } catch (\Throwable) {
+            }
+        }
+
         return $this->success($this->presentList($list), 'List created', 201);
     }
 

@@ -65,6 +65,8 @@ class QuestResource extends Resource
         'session_logged' => 'Play session logged',
         'daily_login' => 'Daily login (streak)',
         'streak_days' => 'Streak length reached',
+        'platform_connected' => 'Steam, Xbox, PlayStation, GOG or Epic linked',
+        'giveaway_entered' => 'Giveaway entered',
     ];
 
     public static function form(Schema $schema): Schema

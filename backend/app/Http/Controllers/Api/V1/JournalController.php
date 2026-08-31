@@ -88,8 +88,6 @@ class JournalController extends Controller
      */
     public function store(Request $request, JournalService $journal, SanitizationService $sanitizer): JsonResponse
     {
-        app(QuestService::class)->progress($request->user(), 'session_logged');
-
         $data = $request->validate($this->rules());
 
         $game = Game::where('slug', $data['game_slug'])->firstOrFail();
@@ -101,6 +99,12 @@ class JournalController extends Controller
         ]);
 
         $journal->syncPlaytime($user, $game->id);
+
+        // After the session exists, not before it is even valid. This ran as
+        // the first line of the method, so a request that failed validation —
+        // or named a game that does not exist — still moved the quest along.
+        // `acceptSuggestion()` below already had the order right.
+        app(QuestService::class)->progress($user, 'session_logged');
 
         return $this->success($this->presentSession($session->load('game', 'moments'), true), 'Session logged.');
     }

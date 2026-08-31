@@ -102,8 +102,20 @@ class QuestService
     private function grantRewards(User $user, Quest $quest): void
     {
         if ($quest->xp_reward > 0) {
-            // Single XP path: daily cap, bounty mirror, season multiplier, rank check
-            $this->xpService->awardXp($user, $quest->xp_reward, 'quest');
+            /*
+             * Outside the daily cap, and only quests are.
+             *
+             * The hundred-a-day ceiling stops somebody farming comments and
+             * shelf additions all afternoon. A quest cannot be farmed: it pays
+             * once per day, week, month, or once ever, and `isInCurrentPeriod()`
+             * is what limits it. Inside the cap, every reward this catalogue
+             * advertises was a half-truth — a 600 XP quest paid whatever was
+             * left of a hundred and dropped the rest without saying so.
+             *
+             * Still through awardXp for the season multiplier, the ledger entry
+             * and the rank check.
+             */
+            $this->xpService->awardXp($user, $quest->xp_reward, 'quest', respectDailyCap: false);
         }
 
         if ($quest->bounty_reward > 0) {

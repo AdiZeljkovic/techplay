@@ -111,18 +111,34 @@
 
 **Model:** `Quest`, `QuestProgress`
 **Servis:** `QuestService`
-**API:** `GET /quests`, `POST /quests/{id}/claim`
+**API:** `GET /user/quests` — **samo čitanje. Claim ruta ne postoji i nikad nije postojala.**
 
 ### Quest tipovi
-- `daily` — dnevni zadaci (resetuju se svaki dan)
-- `weekly` — tjedni zadaci
-- `seasonal` — vezani za aktivnu sezonu
+`daily`, `weekly`, `monthly`, `permanent` — to je cijeli enum. **Nema tipa `seasonal`:**
+sezonski quest je `permanent` s postavljenim `season_id`. (Da je `monthly`, resetovao
+bi se usred dvomjesečne sezone.) `QuestBoard` ga na ekranu prebacuje na mjesečni sloj.
 
 ### Quest logika
-- Quest ima `goal_type` i `goal_value` (npr. "write 5 comments")
-- `QuestProgress` prati napredak korisnika
-- Kada je `progress >= goal_value` → quest completan → korisnik može claimati nagradu
-- Claim: `POST /quests/{id}/claim` → XP dodjela
+- Kolone su `criteria_type` i `criteria_value` — **ne `goal_type`/`goal_value`**.
+- `QuestProgress` prati napredak; **nema `claimed_at`**.
+- Kad `progress >= criteria_value`, `QuestService::grantRewards()` odmah isplati XP i
+  Bounty i pošalje `QuestCompletedNotification`. Korisnik ne preuzima ništa.
+- **Quest XP zaobilazi dnevni limit od 100** (`awardXp(..., respectDailyCap: false)`,
+  od 31.08.2026). Prije toga je quest od 600 XP isplaćivao ostatak od stotinu, a
+  razlika je tiho propadala. Ostali izvori XP-a i dalje poštuju limit.
+- Ploča ne prikazuje cijeli katalog: `QuestController::shortlist()` bira **3 dnevna,
+  3 sedmična, 5 mjesečnih i 5 trajnih**, deterministički rotirano po čitaocu i periodu.
+
+### Katalog (od 31.08.2026)
+23 questa u jezgri — 8 trajnih (uvodni lanac), 4 dnevna, 6 sedmičnih, 5 mjesečnih — plus
+4 po sezoni. Prethodnih 42 nastalo je iz četiri odvojena izvora (jedan seeder, dvije
+migracije, jedan ručni seeder) bez `slug` kolone, pa su dvojnici prolazili kao različiti
+questovi. Stari questovi nisu obrisani nego ugašeni: `quest_progress` je `cascadeOnDelete`.
+
+**Kuke:** 15 vrsta uslova, popis u `QuestResource::CRITERIA`. Dodane 31.08.2026:
+`platform_connected` (`ConnectedAccountObserver`) i `giveaway_entered`
+(`GiveawayEntryObserver`) — dvije najkorištenije radnje na sajtu koje ranije nisu
+dodjeljivale ništa.
 
 ---
 
@@ -131,10 +147,24 @@
 **Model:** `Season`
 **API:** `GET /seasons`, `GET /seasons/active`
 
-- Sezona ima `start_date`, `end_date`, `is_active`
-- Aktivna sezona: samo jedna odjednom
-- Seasonal quests vezani za aktivnu sezonu
-- UNKNOWN: da li sezona resetuje XP ili samo dodaje sezonske nagrade
+- Sezona ima `start_date`, `end_date`, `is_active`, `xp_multiplier`, `bounty_multiplier`.
+- `Season::active()` traži `is_active` **i** da je današnji datum u rasponu — više sezona
+  smije nositi zastavicu, živa je samo ona čiji datumi trenutno važe.
+- Sezona **ne resetuje XP.** Množi zaradu dok traje i na kraju dodjeljuje bedž.
+- **XP množilac je u praksi bezopasan** jer se primjenjuje prije dnevnog limita, koji ga
+  pojede. Bounty množilac je onaj koji se osjeti.
+- `season:conclude` (dnevno 00:20) dodjeljuje `{Season} Champion` bedž svakome ko je
+  završio **sve** questove te sezone, pa gasi sezonu.
+
+### Sezone do kraja 2026.
+| Sezona | Traje | XP | Bounty | Questova |
+|---|---|---|---|---|
+| Summer of Gaming 2026 | 20.06 – **31.08.2026** | ×1,25 | ×1,25 | 3 (ugašeni) |
+| Season 1: Ignition | 01.09 – 31.10.2026 | ×1,00 | ×1,15 | 4 |
+| Season 2: Overdrive | 01.11 – 31.12.2026 | ×1,00 | ×1,25 | 4 |
+
+Summer je skraćen s 21.09. na 31.08. da se ne preklopi s prvom sezonom; nijedan član nije
+bio završio sva tri njena questa, pa Champion bedž ionako ne bi bio dodijeljen.
 
 ---
 

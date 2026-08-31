@@ -36,8 +36,15 @@ class XpService
     /**
      * Award XP to a user for a specific action, respecting caps and cooldowns.
      * Season XP multiplier is applied to the base amount (still subject to the daily cap).
+     *
+     * @param  bool  $respectDailyCap  False only for rewards that cannot be
+     *                                 repeated to order. The cap exists to stop somebody farming comments and
+     *                                 shelf additions all afternoon; a quest pays once per day, week, month or
+     *                                 once ever, and the period reset is what limits it. Leaving quests inside
+     *                                 the cap made their advertised rewards fiction — a quest offering 600 XP
+     *                                 paid whatever was left of a hundred, and the rest was silently dropped.
      */
-    public function awardXp(User $user, int $amount, string $actionType): void
+    public function awardXp(User $user, int $amount, string $actionType, bool $respectDailyCap = true): void
     {
         $amount = (int) round($amount * Season::multipliers()['xp']);
 
@@ -67,22 +74,24 @@ class XpService
         // existing TTL alone — so the counter still dies at midnight.
         $date = now()->format('Y-m-d');
         $dailyKey = "user:{$user->id}:xp:{$date}";
-
-        Cache::add($dailyKey, 0, now()->endOfDay());
-
-        $afterAward = (int) Cache::increment($dailyKey, $amount);
         $actualAmount = $amount;
 
-        if ($afterAward > self::DAILY_XP_CAP) {
-            $overshoot = $afterAward - self::DAILY_XP_CAP;
-            $actualAmount = $amount - $overshoot;
+        if ($respectDailyCap) {
+            Cache::add($dailyKey, 0, now()->endOfDay());
 
-            // Hand back what went over so the counter settles on the cap.
-            Cache::decrement($dailyKey, $overshoot);
-        }
+            $afterAward = (int) Cache::increment($dailyKey, $amount);
 
-        if ($actualAmount <= 0) {
-            return; // Daily cap reached
+            if ($afterAward > self::DAILY_XP_CAP) {
+                $overshoot = $afterAward - self::DAILY_XP_CAP;
+                $actualAmount = $amount - $overshoot;
+
+                // Hand back what went over so the counter settles on the cap.
+                Cache::decrement($dailyKey, $overshoot);
+            }
+
+            if ($actualAmount <= 0) {
+                return; // Daily cap reached
+            }
         }
 
         // 3. Award XP

@@ -5,8 +5,10 @@ namespace App\Providers;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Comment;
+use App\Models\ConnectedAccount;
 use App\Models\Game;
 use App\Models\GameRating;
+use App\Models\GiveawayEntry;
 use App\Models\Gta6Character;
 use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
@@ -23,10 +25,12 @@ use App\Observers\ArticleObserver;
 use App\Observers\ArticleVersionObserver;
 use App\Observers\CategoryObserver;
 use App\Observers\CommentObserver;
+use App\Observers\ConnectedAccountObserver;
 use App\Observers\ContentObserver;
 use App\Observers\ForumPostObserver;
 use App\Observers\GameObserver;
 use App\Observers\GameRatingObserver;
+use App\Observers\GiveawayEntryObserver;
 use App\Observers\Gta6CharacterObserver;
 use App\Observers\Gta6VehicleObserver;
 use App\Observers\Gta6WeaponObserver;
@@ -197,6 +201,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Game database — Cloudflare/ISR revalidation + IndexNow on Filament edits
         Game::observe(GameObserver::class);
+
+        // Progression for the two things members actually do that nothing was
+        // watching: linking a library, and entering a giveaway.
+        ConnectedAccount::observe(ConnectedAccountObserver::class);
+        GiveawayEntry::observe(GiveawayEntryObserver::class);
 
         // Prevent N+1 queries in non-production environments
         Model::preventLazyLoading(! app()->isProduction());
