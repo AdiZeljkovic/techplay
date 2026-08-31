@@ -661,7 +661,7 @@ export default function GameDatabaseHub({
                         {hub?.data.most_wishlisted.length ? (
                             <div className="space-y-2.5">
                                 {hub.data.most_wishlisted.map((g) => (
-                                    <Link key={g.slug} href={`/games/${g.slug}`} className="flex items-center gap-2.5 group">
+                                    <Link key={g.slug} href={`/games/${g.slug}`} prefetch={false} className="flex items-center gap-2.5 group">
                                         <span className="w-[44px] h-[29px] shrink-0 rounded-[5px] overflow-hidden bg-white/[0.05]">
                                             {g.cover_url && (
                                                 // eslint-disable-next-line @next/next/no-img-element
@@ -762,7 +762,7 @@ function GameCard({ game }: { game: Game }) {
     const year = game.released ? new Date(game.released).getFullYear() : null;
 
     return (
-        <Link href={`/games/${game.slug}`} className="group block" onClick={() => remember(game)}>
+        <Link href={`/games/${game.slug}`} prefetch={false} className="group block" onClick={() => remember(game)}>
             <span className="relative block h-[190px] rounded-[10px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors">
                 {game.cover_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -838,7 +838,7 @@ function RecentlyViewed() {
             {recent.length ? (
                 <div className="space-y-2.5">
                     {recent.map((g) => (
-                        <Link key={g.slug} href={`/games/${g.slug}`} className="flex items-center gap-2.5 group">
+                        <Link key={g.slug} href={`/games/${g.slug}`} prefetch={false} className="flex items-center gap-2.5 group">
                             <span className="w-[44px] h-[29px] shrink-0 rounded-[5px] overflow-hidden bg-white/[0.05]">
                                 {g.cover_url && (
                                     // eslint-disable-next-line @next/next/no-img-element

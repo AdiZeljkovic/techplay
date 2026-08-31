@@ -174,6 +174,7 @@ export default function StudiosClient({
                                 <Link
                                     key={c.iso}
                                     href={on ? "/studios" : `/studios/country/${c.iso.toLowerCase()}`}
+                                    prefetch={false}
                                     className={`snap-start shrink-0 inline-flex h-[38px] items-center gap-2 rounded-full border px-4 font-display text-[11px] font-black uppercase tracking-[0.1em] transition-colors ${
                                         on
                                             ? "border-transparent bg-[var(--accent)] text-white"
@@ -305,6 +306,7 @@ function StudioTile({ studio }: { studio: StudioCard }) {
     return (
         <Link
             href={`/studios/${studio.slug}`}
+            prefetch={false}
             className="group relative flex flex-col overflow-hidden rounded-[12px] border border-white/[0.07] bg-[var(--surface-1)] transition-colors hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
         >
             {/* A glow that arrives on hover, from the corner the eye starts in.

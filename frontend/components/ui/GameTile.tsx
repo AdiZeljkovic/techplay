@@ -104,7 +104,7 @@ export default function GameTile({
         className,
     );
 
-    return slug ? <Link href={`/games/${slug}`} className={shell}>{body}</Link> : <span className={shell}>{body}</span>;
+    return slug ? <Link href={`/games/${slug}`} prefetch={false} className={shell}>{body}</Link> : <span className={shell}>{body}</span>;
 }
 
 /**
@@ -150,7 +150,7 @@ export function EmptySlot({
         className,
     );
 
-    if (href) return <Link href={href} className={shell}>{inner}</Link>;
+    if (href) return <Link href={href} prefetch={false} className={shell}>{inner}</Link>;
 
     return <button type="button" onClick={onClick} className={shell}>{inner}</button>;
 }

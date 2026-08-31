@@ -57,7 +57,7 @@ export default function GamesIndexShell({
             {games.length > 0 && (
                 <div className="mt-8 grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
                     {games.map((g) => (
-                        <Link key={g.slug} href={`/games/${g.slug}`} className="group flex flex-col">
+                        <Link key={g.slug} href={`/games/${g.slug}`} prefetch={false} className="group flex flex-col">
                             <span className="relative block aspect-[3/4] rounded-[10px] overflow-hidden border border-white/[0.07]">
                                 {g.cover_url ? (
                                     // eslint-disable-next-line @next/next/no-img-element

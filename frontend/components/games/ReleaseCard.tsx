@@ -117,6 +117,7 @@ export default function ReleaseCard({
         <div className={`group flex flex-col ${className}`}>
             <Link
                 href={href}
+                prefetch={false}
                 aria-label={game.name}
                 className="relative block aspect-[3/4] rounded-[12px] overflow-hidden border border-white/[0.07] group-hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)] transition-colors"
             >
