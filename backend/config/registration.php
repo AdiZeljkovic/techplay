@@ -40,14 +40,23 @@ return [
     /*
      * Whether registration checks that the domain can receive mail at all.
      *
-     * Measured on this server: a real domain answers in 1–12 ms, a domain that
-     * does not exist in about 85, and a near-miss like `gmial.com` took 1.76
-     * seconds — the slow case is a typo, which is also the case where the reader
-     * most needs to be told rather than left waiting for mail that will never
+     * Measured on this server: gmail.com answers from MX in 1 ms, techplay.gg in
+     * 35, and a domain that does not exist at all in 47. The check is MX first
+     * and A second, because a domain with no MX record still receives mail at
+     * its A record — refusing those would turn away small real domains.
+     *
+     * That fallback is also the limit of what this catches. `gmial.com` — the
+     * typo you would most want caught — has an A record, so it is accepted, and
+     * a first version of this comment wrongly claimed otherwise. What is caught
+     * is a domain that resolves to nothing: a fat-fingered TLD, a dead company
+     * domain, an address invented on the spot. That is the common case, and
+     * telling someone at the form beats letting them wait for mail that cannot
      * arrive.
      *
      * Switchable because it is a network call inside a request: if the resolver
      * ever becomes the slow part of signing up, this is the thing to turn off.
+     * It fails open — a resolver that is down lets registrations through rather
+     * than closing the door.
      */
     'verify_mx' => env('REGISTRATION_VERIFY_MX', true),
 
