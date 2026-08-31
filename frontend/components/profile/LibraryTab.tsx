@@ -1,12 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutGrid, BookOpen, History } from "lucide-react";
+import { LayoutGrid, BookOpen } from "lucide-react";
 import Segmented from "@/components/ui/Segmented";
 import CollectionGrid from "./CollectionGrid";
 import JournalTab, { type JournalView } from "./JournalTab";
 
-type LibraryView = "shelf" | JournalView;
+/**
+ * Two, since Timeline moved up to the profile's own tab strip.
+ *
+ * Shelf and Diary are two readings of the same set of games — what is on it,
+ * and what happened this week. Timeline was never that: it is the record of
+ * what somebody finished and what they thought of it, which is what a visitor
+ * comes to a profile to read, and it sat two clicks down behind a switch.
+ */
+type LibraryView = "shelf" | Extract<JournalView, "diary">;
 
 /**
  * Two voices, because the page has two readers.
@@ -19,7 +27,6 @@ type LibraryView = "shelf" | JournalView;
 const VIEWS = (who: string | null): { id: LibraryView; label: string; icon: typeof LayoutGrid; hint: string }[] => [
     { id: "shelf", label: "Shelf", icon: LayoutGrid, hint: who ? `Everything ${who} owns, by status` : "Everything you own, by status" },
     { id: "diary", label: "Diary", icon: BookOpen, hint: who ? `What ${who} played, and when` : "What you played, and when" },
-    { id: "timeline", label: "Timeline", icon: History, hint: who ? `What ${who} finished, and what they said` : "What you finished, and what you said" },
 ];
 
 interface Props {

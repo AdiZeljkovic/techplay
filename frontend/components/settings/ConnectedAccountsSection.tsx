@@ -71,6 +71,17 @@ const PROVIDERS: {
     connectMode?: "redirect" | "gamertag" | "npsso" | "gogcode" | "epiccode";
     /** Said plainly on the card, because it is not obvious and it matters. */
     caveat?: string;
+    /**
+     * Written, but never yet run against a real account.
+     *
+     * Steam, Xbox, Epic and GOG have each been taken end to end on a live
+     * library — Epic and GOG only after being found broken and fixed, which is
+     * the argument for saying which ones have and have not. A card that
+     * describes an untried import in the same voice as a proven one is a claim
+     * we have not earned, and the person who tries it first deserves to know
+     * they are the one testing it.
+     */
+    untested?: string;
     logo: React.ReactNode;
 }[] = [
     {
@@ -103,11 +114,12 @@ const PROVIDERS: {
     {
         id: "playstation",
         name: "PlayStation",
-        description: "Import the games you have trophies in, and how far through each one you are",
+        description: "Built to import the games you have trophies in, and how far through each one you are",
         color: "#003791",
         iconBg: "#00246b",
         connectMode: "npsso",
-        caveat: "Sony has no official sign-in for other sites, so this needs a token you copy from your own browser — and it needs renewing about every two months.",
+        caveat: "Sony has no official sign-in for other sites, so this needs a token you copy from your own browser — and it needs renewing about every two months. PlayStation shows trophies rather than a library, so what arrives is what you have played, not everything you own.",
+        untested: "Nobody has linked a PlayStation account here yet, so this one is written but unproven. If you are the first, tell us how it goes.",
         logo: (
             <svg viewBox="0 0 24 24" className="w-6 h-6" fill="#5B8BF7" xmlns="http://www.w3.org/2000/svg">
                 <path d="M8.985 2.596v17.548l3.915 1.261V6.688c0-.69.304-1.151.794-.991.636.181.76.814.76 1.505v5.876c2.441 1.193 4.362-.002 4.362-3.153 0-3.237-1.126-4.675-4.438-5.827-1.307-.448-3.728-1.186-5.393-1.502zm4.656 16.242l6.296-2.275c.715-.258.826-.625.246-.818-.586-.192-1.637-.139-2.357.123l-4.205 1.499v-2.385l.24-.085s1.201-.42 2.913-.615c1.696-.18 3.785.03 5.437.661 1.848.601 2.06 1.472 1.588 2.072-.473.601-1.622 1.03-1.622 1.03l-8.536 3.079v-2.276zM1.807 18.867c-1.9-.535-2.213-1.65-1.348-2.29.802-.594 2.16-1.04 2.16-1.04l5.626-2.003v2.286l-4.05 1.45c-.715.257-.826.62-.246.813.586.192 1.637.14 2.352-.117l1.944-.705v2.045c-.124.02-.26.04-.386.06-1.939.318-4.004.187-6.052-.5z"/>
@@ -448,6 +460,12 @@ export default function ConnectedAccountsSection() {
                                     <span className="text-[12px] text-white/55">{provider.description}</span>
                                     {provider.caveat && (
                                         <span className="text-[11px] text-white/45 leading-snug">{provider.caveat}</span>
+                                    )}
+                                    {provider.untested && (
+                                        <span className="mt-1 inline-flex items-start gap-1.5 text-[11px] text-amber-400/85 leading-snug">
+                                            <AlertCircle aria-hidden className="w-3.5 h-3.5 shrink-0 mt-[1px]" />
+                                            <span>{provider.untested}</span>
+                                        </span>
                                     )}
                                 </div>
                             )}

@@ -6,11 +6,11 @@ import { PROFILE_TABS, type ProfileTab } from "@/lib/profileTabs";
 /**
  * The profile's section bar.
  *
- * Every section is on it, and there are seven now — an overflow menu that
- * hides two of them is a menu you have to open to find out what it was
- * hiding. The bay padding is tuned so the full set clears a desktop
- * container; below that it scrolls, which is honest about there being more
- * to the right.
+ * Every section is on it, and there are eight since Timeline came up out of
+ * the Library's own switch — an overflow menu that hides two of them is a menu
+ * you have to open to find out what it was hiding. The bay padding is tuned so
+ * the set clears a desktop container; below that it scrolls, which is honest
+ * about there being more to the right.
  *
  * The marks are drawn the way the Community and Tools menus draw theirs: line
  * art at a light stroke, no plate under them, sized large enough to be a mark

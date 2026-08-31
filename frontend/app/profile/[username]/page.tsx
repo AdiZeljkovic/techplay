@@ -19,6 +19,7 @@ import LockedProfile from "@/components/profile/LockedProfile";
 import ProfileOverviewDashboard from "@/components/profile/ProfileOverviewDashboard";
 import DashboardHome from "@/components/home-dashboard/DashboardHome";
 import LibraryTab from "@/components/profile/LibraryTab";
+import JournalTab from "@/components/profile/JournalTab";
 import ListsTab from "@/components/profile/ListsTab";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
@@ -259,6 +260,13 @@ function ProfilePageInner() {
 
                     {activeTab === "library" && (
                         <LibraryTab username={userData.username} isOwnProfile={isOwnProfile} displayName={userData.display_name} />
+                    )}
+
+                    {/* The journal in its timeline reading — a section of its
+                        own now rather than the third position in the Library's
+                        switch. Same component, one view. */}
+                    {activeTab === "timeline" && (
+                        <JournalTab username={userData.username} view="timeline" />
                     )}
 
                     {activeTab === "progression" && isOwnProfile && (

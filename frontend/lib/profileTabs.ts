@@ -1,10 +1,10 @@
-import { UserRound, Library, Flame, Trophy, ListOrdered, Dna, ShoppingBag, type LucideIcon } from "lucide-react";
+import { UserRound, Library, Flame, Trophy, ListOrdered, Dna, ShoppingBag, History, type LucideIcon } from "lucide-react";
 
 /**
  * The profile's section set — one source of truth for the tab strip, the
  * page's tab router and any deep link that wants to name a section.
  */
-export type ProfileTab = "overview" | "library" | "lists" | "progression" | "achievements" | "rewards" | "stats";
+export type ProfileTab = "overview" | "library" | "timeline" | "lists" | "progression" | "achievements" | "rewards" | "stats";
 
 /**
  * Sections that used to exist on their own, and where they went.
@@ -30,6 +30,16 @@ export const PROFILE_TABS: {
 }[] = [
     { id: "overview", label: "Overview", icon: UserRound },
     { id: "library", label: "Library", icon: Library },
+    /*
+     * Out of the Library's own switch and up here beside it.
+     *
+     * The shelf and the diary are two ways of reading the same set of games —
+     * what is on it, and what happened this week. The timeline is neither: it
+     * is the record of what somebody finished and what they thought of it, the
+     * part of a profile a visitor actually comes to read, and it was two clicks
+     * down behind a segmented control most people never touched.
+     */
+    { id: "timeline", label: "Timeline", icon: History },
     // Ordered, not a checklist: every list type on the site is a ranking —
     // Top 10, Top 25, Top 100 — and ticks would promise a to-do.
     { id: "lists", label: "Lists", icon: ListOrdered },
