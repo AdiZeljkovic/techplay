@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
+use App\Notifications\VerifyEmailNotification;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -381,5 +383,25 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function scopeByUsername($query, ?string $username)
     {
         return $query->whereRaw('lower(username) = ?', [mb_strtolower((string) $username)]);
+    }
+
+    /**
+     * Both account emails use TechPlay's own design rather than the framework's.
+     *
+     * Overridden here rather than swapped in a service provider so that the two
+     * places anybody would look — the model that sends them and the classes that
+     * render them — are the same two places.
+     *
+     * Only the appearance changes. The signed URL, the expiry and the single-use
+     * token all still come from the framework's own classes, which these extend.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
