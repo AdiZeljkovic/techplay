@@ -553,6 +553,7 @@ export default function ProfileHero({
                                      * goes there and the caret opens the specific sections.
                                      * "Continue playing" left the menu because the dashboard
                                      * gives it a whole panel of its own, six inches below. */
+                                    <>
                                     <MoreMenu
                                         before={
                                             <Link href="/settings" className={`${BTN_PRIMARY} rounded-r-none`}>
@@ -561,9 +562,6 @@ export default function ProfileHero({
                                         }
                                     >
                                         <p className={MENU_LABEL}>Manage</p>
-                                        <Link href="/settings?section=connections" className={MENU_ITEM}>
-                                            <Link2 className="w-3.5 h-3.5" /> Connected platforms
-                                        </Link>
                                         <Link href="/settings?section=privacy" className={MENU_ITEM}>
                                             <ShieldCheck className="w-3.5 h-3.5" /> Privacy &amp; visibility
                                         </Link>
@@ -576,6 +574,24 @@ export default function ProfileHero({
                                             <LinkIcon className="w-3.5 h-3.5" /> {copied ? "Link copied" : "Copy profile link"}
                                         </button>
                                     </MoreMenu>
+
+                                    {/*
+                                     * Out of the caret and onto the surface.
+                                     *
+                                     * Linking a store is the one action that turns an empty
+                                     * profile into a full one — a click on Steam and the shelf
+                                     * has two hundred games with hours already on them. Two
+                                     * members out of fifty-five have found it, which is what a
+                                     * hidden menu item gets you.
+                                     *
+                                     * Ghost rather than primary: Edit profile keeps the accent,
+                                     * and two filled buttons side by side would make the reader
+                                     * choose between them rather than notice the second one.
+                                     */}
+                                    <Link href="/settings?section=connections" className={BTN_GHOST}>
+                                        <Link2 className="w-4 h-4" /> Connect platforms
+                                    </Link>
+                                    </>
                                 ) : viewerSignedIn ? (
                                     <>
                                         <FriendAction status={friendStatus} busy={friendActionBusy} onAdd={() => onAddFriend?.()} />
