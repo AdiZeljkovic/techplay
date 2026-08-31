@@ -63,14 +63,27 @@
     <tr>
         <td align="center" style="padding:40px 12px;">
 
-            <table role="presentation" class="shell" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px;">
+                {{-- The logo, with the wordmark as its fallback.
 
-                {{-- Wordmark, set as text. An image here would be blocked by
-                     default in Outlook and Gmail, and the first thing the reader
-                     sees would be a broken rectangle. --}}
+                     Gmail and Outlook block images by default, so an <img> alone
+                     would open every account email with a broken rectangle. The
+                     alt text is styled to read as the wordmark when that happens:
+                     blocked, it still says TECHPLAY in the right weight; loaded,
+                     the real mark replaces it.
+
+                     Served at 320px and displayed at 160 so it stays sharp on a
+                     retina screen. Height is set explicitly because Outlook will
+                     otherwise reserve the full 135px of the source and leave a
+                     gap under it. --}}
                 <tr>
                     <td align="center" style="padding:0 0 28px 0;">
-                        <span style="font-family:'Instrument Sans',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; font-weight:700; letter-spacing:0.14em; color:#FFFFFF;">TECH</span><span style="font-family:'Instrument Sans',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; font-weight:700; letter-spacing:0.14em; color:#DC143C;">PLAY</span>
+                        <a href="{{ $appUrl }}" style="text-decoration:none; border:0;">
+                            <img src="{{ $appUrl }}/techplay-logo.png"
+                                 width="160" height="27" alt="TECHPLAY"
+                                 style="display:block; width:160px; height:27px; border:0; outline:none; text-decoration:none;
+                                        font-family:'Instrument Sans',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                                        font-size:22px; font-weight:700; letter-spacing:0.14em; color:#FFFFFF;" />
+                        </a>
                     </td>
                 </tr>
 
