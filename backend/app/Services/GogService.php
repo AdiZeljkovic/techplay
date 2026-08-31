@@ -84,6 +84,35 @@ class GogService
     }
 
     /**
+     * The name on the GOG account.
+     *
+     * The token exchange hands back an id and nothing else, so a linked GOG
+     * account sat in the settings list with an empty name beside it while Steam
+     * showed a persona and Xbox a gamertag — it read as half-finished rather
+     * than as a store that simply says less.
+     *
+     * `userData.json` is the same endpoint Galaxy reads and carries plenty
+     * besides: currency, country, an email address. Only the username is taken.
+     * A display name is what we needed and the rest is not ours to keep.
+     */
+    public function username(string $accessToken): ?string
+    {
+        $response = Http::withToken($accessToken)
+            ->timeout(15)
+            ->get(self::EMBED_BASE.'/userData.json');
+
+        if (! $response->successful()) {
+            $this->note('user data refused', ['status' => $response->status()]);
+
+            return null;
+        }
+
+        $name = $response->json('username');
+
+        return is_string($name) && $name !== '' ? $name : null;
+    }
+
+    /**
      * The product ids this account owns, or null when GOG refuses.
      *
      * Null and an empty array are different answers and the caller has to be

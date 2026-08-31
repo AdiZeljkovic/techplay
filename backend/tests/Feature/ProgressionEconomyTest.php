@@ -62,6 +62,18 @@ class ProgressionEconomyTest extends TestCase
 
     public function test_a_quest_pays_out_once_even_when_the_trigger_fires_twice(): void
     {
+        /*
+         * No season, so the figures below are the quest's own.
+         *
+         * This asks whether a quest pays once or once per trigger, and a live
+         * season multiplies whatever it pays — which turned the assertion into
+         * a claim about the calendar. It passed for a day and then failed on
+         * 1 September, the morning Season 1 opened at 1.15× bounty, because 50
+         * had quietly become 58. Season arithmetic has its own test below.
+         */
+        Season::query()->delete();
+        Cache::flush();
+
         $user = User::factory()->create(['xp' => 0, 'bounty_balance' => 0]);
 
         $quest = Quest::create([

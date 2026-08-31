@@ -68,6 +68,10 @@ class GogLibraryImportTest extends TestCase
         Http::fake([
             '*embed.gog.com/user/data/games*' => Http::response(['owned' => $owned]),
             '*api.gog.com/products*' => Http::response($products),
+            // The third one: GOG's token exchange returns an id and no name, so
+            // the account name is asked for separately. Stubbed here so a
+            // library test never reaches the network for a piece of decoration.
+            '*embed.gog.com/userData.json*' => Http::response(['username' => 'Chroniclus']),
         ]);
     }
 

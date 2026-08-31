@@ -415,16 +415,24 @@ class ConnectedAccountController extends Controller
             return $this->error('That GOG account is already linked to another TechPlay account.', 409);
         }
 
+        // The token exchange returns an id and no name. Asked for separately so
+        // the settings list has something to show beside the account, the way
+        // Steam shows a persona and Xbox a gamertag.
+        $displayName = $gog->username($tokens['access_token']);
+
         $account = ConnectedAccount::updateOrCreate(
             ['user_id' => $request->user()->id, 'provider' => 'gog'],
-            [
+            array_filter([
                 'provider_user_id' => $gogUserId,
                 'access_token' => $tokens['access_token'],
                 'refresh_token' => $tokens['refresh_token'],
                 'token_expires_at' => now()->addSeconds($tokens['expires_in']),
                 'sync_status' => 'pending',
                 'visibility' => 'public',
-            ]
+                // Dropped by array_filter when GOG did not answer, so a name we
+                // already hold survives a reconnect that could not fetch one.
+                'display_name' => $displayName,
+            ], fn ($v) => $v !== null)
         );
 
         SyncGogLibrary::dispatch($account->id)->onQueue('default');

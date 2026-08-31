@@ -113,7 +113,7 @@ class SyncGogLibrary implements ShouldQueue
                 ]);
             }
 
-            $account->update([
+            $account->update(array_filter([
                 'sync_status' => 'done',
                 'last_synced_at' => now(),
                 'metadata' => array_merge($account->metadata ?? [], [
@@ -121,7 +121,11 @@ class SyncGogLibrary implements ShouldQueue
                     'games' => count($titles),
                     'matched' => $matched,
                 ]),
-            ]);
+                // Backfill for accounts linked before the name was asked for.
+                // Only when it is missing: a sync should not overwrite a name
+                // somebody is already shown under.
+                'display_name' => $account->display_name ?: $this->nameOrNull($gog, $token),
+            ], fn ($v) => $v !== null && $v !== ''));
         } catch (\Throwable $e) {
             Log::warning('SyncGogLibrary failed', [
                 'account' => $account->id,
@@ -133,6 +137,24 @@ class SyncGogLibrary implements ShouldQueue
     }
 
     /** A live access token, refreshing the stored one when it has aged out. */
+    /**
+     * The account name, or nothing, and never an exception.
+     *
+     * This sits inside the block that decides whether the import succeeded, and
+     * a name is decoration: a library of a hundred and eighty games must not be
+     * reported as a failed sync because GOG would not say what the account is
+     * called. Caught here rather than relied on being caught outside, where it
+     * would land in the same handler that writes "Could not reach GOG".
+     */
+    private function nameOrNull(GogService $gog, string $token): ?string
+    {
+        try {
+            return $gog->username($token);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     private function usableToken(GogService $gog, ConnectedAccount $account): ?string
     {
         if ($account->access_token && $account->token_expires_at?->isFuture()) {
