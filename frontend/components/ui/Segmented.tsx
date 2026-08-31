@@ -66,7 +66,10 @@ export default function Segmented({
                         aria-selected={on}
                         title={title}
                         onClick={() => onChange(id)}
-                        className={`shrink-0 inline-flex items-center gap-2 h-8 pl-3 pr-2.5 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.12em] transition-colors duration-300 ${
+                        // Tighter than the site's other uppercase runs on
+                        // purpose: nine of these share a line, and 0.12em of
+                        // tracking across nine words is most of a tenth chip.
+                        className={`shrink-0 inline-flex items-center gap-1.5 h-8 pl-2.5 pr-2 rounded-[7px] font-display text-[10.5px] font-bold uppercase tracking-[0.09em] transition-colors duration-300 ${
                             on
                                 ? "bg-[var(--accent)] text-white shadow-[0_2px_10px_color-mix(in_srgb,var(--accent)_35%,transparent)]"
                                 : empty

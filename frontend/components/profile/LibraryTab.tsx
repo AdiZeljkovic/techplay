@@ -62,23 +62,44 @@ export default function LibraryTab({ username, isOwnProfile, displayName = null 
         setView("diary");
     };
 
+    /*
+     * Where the shelf hangs Import and Add game.
+     *
+     * They used to sit on the filter row, and nine status chips plus two
+     * buttons do not fit a line — the last two filters were scrolled out of
+     * sight behind a hidden scrollbar. Up here the view switch leaves most of
+     * the row empty, so the buttons cost nothing and the filters get the whole
+     * width to themselves.
+     *
+     * State rather than a ref, because a portal needs the node to exist before
+     * it can draw into it and a ref does not re-render when it fills.
+     */
+    const [actionsHost, setActionsHost] = useState<HTMLElement | null>(null);
+
     return (
         <div className="space-y-5">
-            {/* One switch, not three loose buttons — and the same switch the
-                status filters below are drawn with, so the two bars on this
-                page read as one instrument rather than two conventions. */}
-            <Segmented
-                ariaLabel="Library views"
-                value={view}
-                onChange={(id) => setView(id as LibraryView)}
-                items={VIEWS(isOwnProfile ? null : displayName || username).map(({ id, label, icon, hint }) => ({ id, label, icon, title: hint }))}
-            />
+            <div className="flex items-center justify-between gap-3">
+                {/* One switch, not two loose buttons — and the same switch the
+                    status filters below are drawn with, so the two bars on this
+                    page read as one instrument rather than two conventions. */}
+                <Segmented
+                    ariaLabel="Library views"
+                    value={view}
+                    onChange={(id) => setView(id as LibraryView)}
+                    items={VIEWS(isOwnProfile ? null : displayName || username).map(({ id, label, icon, hint }) => ({ id, label, icon, title: hint }))}
+                />
+
+                {/* Filled by CollectionGrid, and empty on the diary — the two
+                    actions belong to the shelf, so they leave with it. */}
+                <div ref={setActionsHost} className="flex items-center gap-2 shrink-0" />
+            </div>
 
             {view === "shelf" ? (
                 <CollectionGrid
                     username={username}
                     isOwnProfile={isOwnProfile}
                     onLogSession={openDiaryWith}
+                    actionsHost={actionsHost}
                 />
             ) : (
                 <JournalTab
