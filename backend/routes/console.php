@@ -18,6 +18,7 @@ $reportFailure = function (string $task) {
 
 use App\Jobs\FlushViewCounters;
 use App\Jobs\PollSteamPresence;
+use App\Jobs\RefreshRecentSteamPlaytime;
 use App\Jobs\SendGiveawayReminders;
 use App\Jobs\SendReleaseReminders;
 use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
@@ -148,6 +149,22 @@ Schedule::command('articles:publish-scheduled')->everyMinute()->withoutOverlappi
 
 // PRESENCE: Poll Steam for currently-playing status every 2 minutes
 Schedule::job(new PollSteamPresence)->everyTwoMinutes();
+/*
+ * PLAYTIME: the cheap half of the sync, often.
+ *
+ * The weekly pass above is weekly because it costs an achievements call per
+ * played game, and it skips anybody synced in the last six days so it cannot
+ * undo a manual Re-sync. Correct, and together they left the shelf up to a
+ * week behind: a game bought and played on Thursday did not appear until the
+ * following Wednesday, and hours on games already there stood still.
+ *
+ * GetRecentlyPlayedGames is one call per account for exactly the games touched
+ * in the last fortnight. Half-hourly, that is 48 calls a day per connected
+ * account, and the shelf is never more than half an hour out of date.
+ */
+Schedule::job(new RefreshRecentSteamPlaytime)->everyThirtyMinutes()
+    ->withoutOverlapping(25)
+    ->onFailure($reportFailure('steam:refresh-recent-playtime'));
 
 // WISHLIST: Notify users when wishlisted games release today (runs at 09:00 daily)
 Schedule::command('wishlist:check-releases')->dailyAt('09:00')->onFailure($reportFailure('wishlist:check-releases'));

@@ -126,6 +126,9 @@ class SyncSteamLibrary implements ShouldQueue
                     // array_filter() drops nulls, so a game Steam has no date
                     // for leaves whatever is already recorded alone.
                     $existingEntry->update(array_filter([
+                        // Steam reported hours on something this import filed
+                        // as unplayed. See correctedStatus().
+                        'status' => $this->correctedStatus($existingEntry, $minutesPlayed, $isRecent),
                         'hours_played' => max($existingEntry->hours_played, $hoursPlayed),
                         'playtime_minutes' => max((int) $existingEntry->playtime_minutes, $minutesPlayed),
                         'playtime_source' => 'steam',
@@ -276,5 +279,30 @@ class SyncSteamLibrary implements ShouldQueue
 
             throw $e;
         }
+    }
+
+    /**
+     * The one status this import may revise: its own wrong guess.
+     *
+     * A first sync files anything Steam reports zero minutes for as `backlog`,
+     * which is right on the day and wrong the moment somebody plays it. This
+     * job then never revisits status — deliberately, so it cannot overwrite a
+     * member's own filing — so `backlog` on a game with hours on it was a state
+     * nothing in the system could leave. It updated the hours every week and
+     * left the shelf saying the game had never been started.
+     *
+     * Backlog means unplayed, so backlog *with* playtime is not a preference to
+     * respect but a contradiction to settle, and Steam is the one that knows.
+     * Every other status is a verdict somebody reached — `completed`,
+     * `dropped`, `played`, `wishlist` — and returns null, which the
+     * array_filter around the update drops.
+     */
+    private function correctedStatus(UserGame $entry, int $minutesPlayed, bool $isRecent): ?string
+    {
+        if ($entry->status !== 'backlog' || $minutesPlayed <= 0) {
+            return null;
+        }
+
+        return $isRecent ? 'playing' : 'played';
     }
 }

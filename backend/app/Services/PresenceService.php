@@ -213,17 +213,46 @@ class PresenceService
             return;
         }
 
-        UserGame::firstOrCreate(
-            ['user_id' => $user->id, 'game_id' => $game->id],
-            [
+        $entry = UserGame::firstOrNew(['user_id' => $user->id, 'game_id' => $game->id]);
+
+        if (! $entry->exists) {
+            $entry->fill([
                 'status' => 'playing',
                 'last_played_at' => now(),
                 // The same ledger every store import writes to, so the shelf
                 // can say the site noticed this one rather than the member
                 // filing it.
                 'sources' => UserGame::withSource(null, $presence->source ?: 'presence'),
-            ]
-        );
+            ])->save();
+
+            return;
+        }
+
+        /*
+         * Already on the shelf, and still filed as unplayed.
+         *
+         * This was a firstOrCreate, which does nothing at all when the row is
+         * there — and after a library import the row is always there. So a game
+         * Steam handed over with no minutes on it was filed `backlog`, and it
+         * stayed `backlog` while its owner played it: presence saw the session
+         * every two minutes and stamped last_played_at, the profile said the
+         * game was unplayed, and nothing in the system was ever going to
+         * disagree. Steam's own sync does not settle it either — it updates
+         * hours and deliberately leaves status alone.
+         *
+         * Backlog and a session in progress cannot both be true, so the session
+         * wins. Only from backlog: `completed`, `dropped` and `played` are
+         * verdicts somebody reached, and `wishlist` is left alone too — a
+         * presence string matched to the wrong game should never be able to
+         * quietly empty a wishlist.
+         */
+        if ($entry->status === 'backlog') {
+            $entry->update([
+                'status' => 'playing',
+                'last_played_at' => now(),
+                'sources' => UserGame::withSource($entry->sources, $presence->source ?: 'presence'),
+            ]);
+        }
     }
 
     private function bankSession(User $user, Presence $presence): void

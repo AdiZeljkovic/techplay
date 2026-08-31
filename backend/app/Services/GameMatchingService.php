@@ -84,14 +84,35 @@ class GameMatchingService
         return null;
     }
 
+    /**
+     * A title reduced to the thing it is a version of.
+     *
+     * Only ever reached after an exact name and a slug have both missed, so a
+     * game genuinely catalogued as "... Complete Edition" still matches itself
+     * first and never gets folded into its own base game.
+     */
     private function normalizeTitle(string $name): string
     {
         // Strip trademark symbols, roman numerals at end, "Game of the Year" suffixes, etc.
         $name = preg_replace('/[™®©]/u', '', $name);
         $name = preg_replace('/\s+[\-–:]\s*(game of the year|goty|complete edition|definitive edition|remastered|deluxe edition|gold edition).*/i', '', $name);
+
+        /*
+         * The same suffixes again, for titles that arrive without a separator.
+         *
+         * The rule above needs a dash or a colon in front of the edition, and
+         * Steam does not always write one: "Metro: Last Light Complete Edition"
+         * has nothing between the title and the edition, so it missed, and
+         * twenty hours of it stayed off the shelf while "Metro: Last Light" sat
+         * in the catalogue the whole time. Checked against a real 215-game
+         * library: this recovers that one and matches nothing else, wrongly or
+         * otherwise.
+         */
+        $name = preg_replace('/\s+(complete|definitive|deluxe|gold|enhanced|ultimate|anniversary|legendary)\s+edition\b.*/i', '', $name);
         $name = preg_replace('/\s*\(\d{4}\)\s*$/', '', $name); // trailing year
 
-        return strtolower(trim($name));
+        // Trailing punctuation the strip can expose — "Dying Light 2:" and such.
+        return strtolower(preg_replace('/[\s:–-]+$/u', '', trim($name)));
     }
 
     private function storeExternalId(int $gameId, string $provider, string $externalId): void
