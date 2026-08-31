@@ -101,7 +101,7 @@ export default function ShareCard({
                 <div className="fixed inset-0 z-[80] flex items-center justify-center px-4 bg-black/75 backdrop-blur-sm">
                     <button aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 cursor-default" />
 
-                    <div className="relative w-full max-w-[620px] rounded-[var(--radius-panel)] border border-[var(--line-strong)] bg-[var(--surface-2)] shadow-[0_30px_80px_rgba(0,0,0,0.7)] overflow-hidden">
+                    <div className="relative w-full max-w-[620px] max-h-[88vh] overflow-y-auto rounded-[var(--radius-panel)] border border-[var(--line-strong)] bg-[var(--surface-2)] shadow-[0_30px_80px_rgba(0,0,0,0.7)] overflow-hidden">
                         <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-white/[0.07]">
                             <p className="font-display text-[11px] font-black uppercase tracking-[0.15em] text-white">Share card</p>
                             <button onClick={() => setOpen(false)} aria-label="Close" className="text-white/50 hover:text-white transition-colors">
