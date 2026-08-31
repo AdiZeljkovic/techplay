@@ -99,7 +99,14 @@ const FILTERS: { id: string; label: string; countKey?: keyof NonNullable<UserPro
     { id: "completed", label: "Completed", countKey: "completed_count" },
     { id: "wishlist", label: "Wishlist", countKey: "wishlist_count" },
     { id: "favorites", label: "Favorites", countKey: "favorites_count" },
-    { id: "dropped", label: "Dropped" },
+    // The API has sent `dropped_count` all along — ProfileService builds it
+    // beside the other seven — and this row simply never asked for it, so
+    // Dropped was the one status chip with no figure on it.
+    { id: "dropped", label: "Dropped", countKey: "dropped_count" },
+    // Upcoming has none and should not: it is not a status but a reading of the
+    // wishlist against the release calendar, and the number that would mean
+    // something there is "how many are dated", which the shelf stats do not
+    // hold.
     { id: "upcoming", label: "Upcoming" },
 ];
 
@@ -794,17 +801,27 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
             <div className="xl:col-span-9 min-w-0">
             {/* ── toolbar ──
 
-                Two tiers, and neither of them wraps. Filters and the two
-                buttons shared one flex-wrap row before, so on any width where
-                the chips did not quite fit, Import and Add game dropped to a
-                line of their own and then justify-between pinned them to the
-                left margin under the chips, looking like a rendering fault. */}
+                The filters wrap; the buttons do not.
+
+                Everything shared one non-wrapping row, so the track scrolled —
+                with `scrollbar-none`, which means the last chip was gone and
+                nothing said so. On a 340-game shelf that was Dropped: a filter
+                that existed, held games, and could not be reached or even seen.
+
+                So the chips run onto a second line when they need one, and the
+                two buttons are pinned to the top of the row with items-start
+                rather than centred against a block whose height now changes.
+                An earlier version let both halves wrap together, which put
+                Import and Add game on their own line hard against the left
+                margin and read as a rendering fault; keeping them out of the
+                wrapping half is what stops that. */}
             <div className="mb-5 space-y-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
                 <Segmented
                     ariaLabel="Filter the shelf"
                     value={filter}
                     onChange={pick}
+                    wrap
                     className="flex-1 min-w-0"
                     items={FILTERS.map((f) => ({
                         id: f.id,
@@ -827,13 +844,13 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession }:
                             onClick={() => fileRef.current?.click()}
                             disabled={importing}
                             title="Import CSV (name,status,hours) — works with Backloggd/HLTB exports"
-                            className="inline-flex items-center gap-2 h-9 px-3.5 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors disabled:opacity-50"
+                            className="inline-flex items-center gap-2 h-10 px-3.5 rounded-[8px] bg-white/[0.04] hover:bg-white/[0.09] border border-white/[0.12] text-white font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-colors disabled:opacity-50"
                         >
                             {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />} Import
                         </button>
                         <button
                             onClick={() => setAddOpen(true)}
-                            className="inline-flex items-center gap-2 h-9 px-3.5 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-[filter]"
+                            className="inline-flex items-center gap-2 h-10 px-3.5 rounded-[8px] bg-[var(--accent)] hover:brightness-110 text-white font-display text-[10.5px] font-bold uppercase tracking-[0.08em] transition-[filter]"
                         >
                             <Plus className="w-3.5 h-3.5" /> Add game
                         </button>
