@@ -335,49 +335,80 @@ function GameCard({
                 </span>
             </Link>
 
-            {/* owner controls slide up over the art */}
+            {/*
+             * The owner's controls, as a shelf under the art rather than a
+             * drawer over it.
+             *
+             * This was `translate-y-full group-hover:translate-y-0`, so it slid
+             * up across the bottom of the cover and covered the title and the
+             * hours while it was open — the two things the card exists to show.
+             * Worse, a drawer that opens on hover does not open at all on a
+             * phone: every one of these controls was unreachable on touch, and
+             * the collection is a page people scroll on a phone.
+             *
+             * Standing still it can also afford to be legible. The icons were
+             * white/35 on a translucent panel over artwork, which is where the
+             * whole strip read as an afterthought; they sit on a solid surface
+             * now, brighter, in squares big enough to hit with a thumb, and
+             * each one keeps its own colour when it is on — amber for a
+             * favourite, accent for pinned, red only on the way to deleting.
+             */}
             {isOwnProfile && entry.game && (
-                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-[var(--ease-hud)] bg-[var(--surface-1)]/97 backdrop-blur-sm border-t border-white/[0.09] p-2 flex items-center gap-1.5">
+                <div className="flex items-center gap-1 p-1.5 bg-[var(--surface-2)] border-t border-white/[0.07]">
                     <span className="flex-1 min-w-0">
                         <Select
                             value={entry.status}
                             onChange={(v) => onUpdate(entry.game!.slug, { status: v })}
                             ariaLabel="Change status"
                             options={STATUS_OPTIONS.map((s) => ({ value: s, label: STATUS[s].label }))}
-                            className="w-full px-2 py-1.5 bg-white/[0.06] font-display text-[9.5px] font-bold uppercase tracking-[0.08em] text-white"
+                            className="w-full px-2 py-[7px] rounded-[6px] bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.06] font-display text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/85 transition-colors"
                             menuClassName="w-[150px]"
                         />
                     </span>
 
+                    {/* The status is a choice; these are switches. The rule
+                        keeps them from reading as one row of five things. */}
+                    <span aria-hidden className="shrink-0 w-px h-5 bg-white/[0.07] mx-0.5" />
+
                     <button
                         onClick={() => onUpdate(entry.game!.slug, { status: entry.status, is_favorite: !entry.is_favorite })}
                         title={entry.is_favorite ? "Remove from favorites" : "Mark as favorite"}
-                        className={`shrink-0 p-1.5 rounded-[6px] hover:bg-white/10 transition-colors ${entry.is_favorite ? "text-amber-400" : "text-white/35"}`}
+                        aria-pressed={!!entry.is_favorite}
+                        className={`shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] transition-colors ${
+                            entry.is_favorite
+                                ? "bg-amber-400/15 text-amber-400"
+                                : "text-white/50 hover:bg-white/[0.09] hover:text-amber-400"
+                        }`}
                     >
-                        <Heart className={`w-3.5 h-3.5 ${entry.is_favorite ? "fill-amber-400" : ""}`} />
+                        <Heart className={`w-4 h-4 ${entry.is_favorite ? "fill-amber-400" : ""}`} />
                     </button>
                     {onLog && (
                         <button
                             onClick={() => onLog({ slug: entry.game!.slug, name: entry.game!.name, cover_url: entry.game!.cover_url ?? null })}
                             title="Log a session"
-                            className="shrink-0 p-1.5 rounded-[6px] hover:bg-white/10 text-white/35 hover:text-[var(--accent)] transition-colors"
+                            className="shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] text-white/50 hover:bg-white/[0.09] hover:text-[var(--accent)] transition-colors"
                         >
-                            <NotebookPen className="w-3.5 h-3.5" />
+                            <NotebookPen className="w-4 h-4" />
                         </button>
                     )}
                     <button
                         onClick={() => onShowcase(entry.game!.slug)}
                         title={pinned ? "Unpin from showcase" : "Pin to showcase"}
-                        className={`shrink-0 p-1.5 rounded-[6px] hover:bg-white/10 transition-colors ${pinned ? "text-[var(--accent)]" : "text-white/35"}`}
+                        aria-pressed={pinned}
+                        className={`shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] transition-colors ${
+                            pinned
+                                ? "bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] text-[var(--accent)]"
+                                : "text-white/50 hover:bg-white/[0.09] hover:text-[var(--accent)]"
+                        }`}
                     >
-                        <Pin className={`w-3.5 h-3.5 ${pinned ? "fill-[var(--accent)]" : ""}`} />
+                        <Pin className={`w-4 h-4 ${pinned ? "fill-[var(--accent)]" : ""}`} />
                     </button>
                     <button
                         onClick={() => onRemove(entry.game!.slug)}
                         title="Remove from collection"
-                        className="shrink-0 p-1.5 rounded-[6px] hover:bg-red-500/15 text-white/35 hover:text-red-400 transition-colors"
+                        className="shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] text-white/50 hover:bg-red-500/15 hover:text-red-400 transition-colors"
                     >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                     </button>
                 </div>
             )}
