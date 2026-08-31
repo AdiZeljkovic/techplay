@@ -175,6 +175,27 @@ class Game extends Model
         return $this->hasMany(Thread::class);
     }
 
+    /**
+     * Ratings written here, by members — not the ones that arrived with the
+     * catalogue.
+     *
+     * `games.rating` and `games.ratings_count` are the importer's figures, and
+     * the game page was using the latter to decide whether to ask for our own
+     * reviews. It is non-zero for most of the catalogue — 106 for Cyberpunk,
+     * 61 for Metro: Last Light — so the guard passed almost every time and the
+     * request went out anyway, to come back with an empty aggregate: 985 of
+     * those in one day, from real browsers, on a table holding zero rows.
+     *
+     * Joined on the slug and filtered to published, because that is exactly
+     * what GET /games/{slug}/ratings counts. A guard that counts differently
+     * from the endpoint it guards is the same bug wearing a different number.
+     */
+    public function readerRatings(): HasMany
+    {
+        return $this->hasMany(GameRating::class, 'game_slug', 'slug')
+            ->where('is_draft', false);
+    }
+
     public function developedBy(): BelongsToMany
     {
         return $this->belongsToMany(Studio::class)->wherePivot('role', 'developer');

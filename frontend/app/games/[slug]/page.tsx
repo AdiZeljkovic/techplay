@@ -86,9 +86,13 @@ interface GameDetail {
     release_precision: string | null;
     cover_url: string | null;
     website: string | null;
+    /** The catalogue's aggregate, imported with the game. Not our members'. */
     rating: number;
     rating_top: number;
+    /** The catalogue's vote count. For our own, see reader_ratings_count. */
     ratings_count: number;
+    /** Ratings written here, by members. Zero means the page does not ask for the list. */
+    reader_ratings_count?: number;
     /** Forum threads about this game; zero means the page does not ask for the list. */
     threads_count?: number;
     esrb_rating: { name: string } | null;
@@ -1539,7 +1543,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         precision={game.release_precision}
                     />
 
-                    <GameRating slug={slug} ratingsCount={game.ratings_count ?? 0} />
+                    {/* reader_ratings_count, not ratings_count — the second is the catalogue's. */}
+                    <GameRating slug={slug} ratingsCount={game.reader_ratings_count ?? 0} />
                 </div>
 
                 {/* ── sidebar ── */}

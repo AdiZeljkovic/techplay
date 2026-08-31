@@ -338,8 +338,8 @@ class GameController extends Controller
                 'links:id,game_id,kind,service,url',
                 'relations.other:id,name,slug,cover_url,released',
             ])
-            // One subquery here saves the page two client requests per render.
-            ->withCount('threads')
+            // Two subqueries here save the page two client requests per render.
+            ->withCount(['threads', 'readerRatings'])
             ->first();
 
         if (! $game) {
@@ -366,7 +366,19 @@ class GameController extends Controller
             'website' => $game->website,
             'rating' => $game->rating,
             'rating_top' => 10,
+            // The importer's vote count, not ours. See reader_ratings_count.
             'ratings_count' => (int) $game->ratings_count,
+
+            /*
+             * How many members have rated this game here.
+             *
+             * Distinct from `ratings_count` above, which arrived with the
+             * catalogue and is non-zero for most of it. The page was guarding
+             * the ratings request on that one, so it asked on nearly every
+             * game and got an empty aggregate back — 985 such calls in a single
+             * day, from real browsers, against a table with no rows in it.
+             */
+            'reader_ratings_count' => (int) ($game->reader_ratings_count ?? 0),
             /*
              * So the page can decide not to ask.
              *
