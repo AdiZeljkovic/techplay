@@ -591,7 +591,7 @@ function SessionRow({ session, onEdit, onDelete, onChanged }: { session: PlaySes
             </div>
 
             {session.can_edit && (
-                <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-3 right-3 flex items-center gap-1 reveal-on-hover">
                     <button onClick={onEdit} title="Edit" className="w-7 h-7 rounded-[6px] bg-black/50 flex items-center justify-center text-white/50 hover:text-[var(--accent)] transition-colors">
                         <Pencil className="w-3.5 h-3.5" />
                     </button>

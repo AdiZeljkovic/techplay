@@ -198,7 +198,7 @@ export default function ListSocialBar({
                                             <button
                                                 onClick={() => remove(c.id)}
                                                 title="Delete comment"
-                                                className="shrink-0 p-1.5 rounded-[6px] text-white/20 opacity-0 group-hover:opacity-100 hover:text-red-400 transition-all"
+                                                className="shrink-0 p-1.5 rounded-[6px] text-white/25 reveal-on-hover hover:text-red-400 transition-colors"
                                             >
                                                 <Trash2 className="w-3.5 h-3.5" />
                                             </button>

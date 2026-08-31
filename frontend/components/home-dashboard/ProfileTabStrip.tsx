@@ -51,7 +51,17 @@ export default function ProfileTabStrip({
             }}
             aria-label="Profile sections"
         >
-            <div className="flex items-stretch overflow-x-auto scrollbar-none">
+            <div className="flex items-stretch">
+                {/*
+                 * The tabs scroll; the wallet does not.
+                 *
+                 * It used to live inside this scroller with `ml-auto`, and
+                 * `hidden sm:flex` on top of that — so on a phone the balance
+                 * was not merely pushed off the end, it was never drawn. That
+                 * is the only place on the site a member can read their
+                 * Bounty, and the phone is where they read everything.
+                 */}
+                <div className="flex-1 min-w-0 flex items-stretch overflow-x-auto scrollbar-none">
                 <span className="flex items-stretch divide-x divide-white/[0.04]">
                 {tabs.map(({ id, label, icon: Icon }) => {
                     const active = id === activeTab;
@@ -107,6 +117,7 @@ export default function ProfileTabStrip({
                     );
                 })}
                 </span>
+                </div>
 
                 {/* The wallet rides the bar's dead right-hand end, which is
                     where a game puts its currency: always in view, never in
@@ -117,7 +128,7 @@ export default function ProfileTabStrip({
                     <Link
                         href={`${base}?tab=rewards`}
                         scroll={false}
-                        className="group/wallet ml-auto shrink-0 hidden sm:flex items-center gap-2.5 pl-5 pr-5 border-l border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                        className="group/wallet shrink-0 flex items-center gap-2.5 pl-3.5 pr-3.5 sm:pl-5 sm:pr-5 border-l border-white/[0.04] hover:bg-white/[0.02] transition-colors"
                     >
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
@@ -129,7 +140,7 @@ export default function ProfileTabStrip({
                         <span className="font-display text-[15px] font-black tabular-nums leading-none text-amber-400">
                             {bounty.toLocaleString("en-US")}
                         </span>
-                        <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50">
+                        <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/50 hidden sm:inline">
                             Bounty
                         </span>
                     </Link>

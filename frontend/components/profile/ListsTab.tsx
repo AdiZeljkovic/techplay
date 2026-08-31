@@ -205,7 +205,7 @@ function ListCard({
             </>)}
 
             {isOwnProfile && (
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 reveal-on-hover">
                     <button
                         onClick={onEdit}
                         title="Edit list"

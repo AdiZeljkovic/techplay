@@ -853,6 +853,50 @@ body.tp-navigating .tp-page {
 .tp-d5 { animation-delay: 0.33s; }
 .tp-d6 { animation-delay: 0.40s; }
 
+/* ── controls a mouse uncovers, and a finger cannot ────────────────────────
+ *
+ * The pattern `opacity-0 group-hover:opacity-100` puts a control behind a
+ * gesture that does not exist on a touch screen. Four of them were doing real
+ * work: editing and deleting a logged session, editing and deleting your own
+ * list, deleting your own comment on a list, and messaging a friend from the
+ * dashboard. On a phone none of those could be reached at all — and the
+ * profile is a page people scroll with a thumb.
+ *
+ * So the control is simply there by default, and only hides itself where
+ * hovering is possible. `pointer: fine` as well as `hover: hover`, because a
+ * Windows tablet reports both and a stylus should not lose the buttons.
+ *
+ * Focus-within keeps it visible while a keyboard is inside it, which the
+ * opacity-0 version never did: tabbing to an invisible button was already a
+ * bug on the desktop the pattern was written for.
+ *
+ * On touch the target also grows to 36px. 28 is fine under a cursor and under
+ * the recommended minimum for a fingertip.
+ */
+.reveal-on-hover {
+  opacity: 1;
+  transition: opacity 0.2s var(--ease-hud);
+}
+
+@media (hover: none) {
+  .reveal-on-hover button,
+  .reveal-on-hover a,
+  button.reveal-on-hover,
+  a.reveal-on-hover {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reveal-on-hover { opacity: 0; }
+
+  .group:hover .reveal-on-hover,
+  .reveal-on-hover:hover,
+  .reveal-on-hover:focus-within { opacity: 1; }
+}
+
+
 /* ========================================
    STAT ICONS — rendered objects that behave like objects
    ========================================

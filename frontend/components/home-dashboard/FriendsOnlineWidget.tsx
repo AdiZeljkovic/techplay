@@ -81,7 +81,7 @@ export default function FriendsOnlineWidget({ friends }: { friends: FriendOnline
                                 <Link
                                     href="/social"
                                     title={`Message ${f.display_name ?? f.username}`}
-                                    className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-white/25 opacity-0 group-hover:opacity-100 hover:text-[var(--accent)] hover:bg-white/[0.06] transition-all duration-200"
+                                    className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-[8px] text-white/35 reveal-on-hover hover:text-[var(--accent)] hover:bg-white/[0.06] transition-all duration-200"
                                 >
                                     <MessageSquare className="w-4 h-4" />
                                 </Link>
