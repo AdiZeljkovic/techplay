@@ -354,27 +354,41 @@ function GameCard({
              * favourite, accent for pinned, red only on the way to deleting.
              */}
             {isOwnProfile && entry.game && (
-                <div className="flex items-center gap-1 p-1.5 bg-[var(--surface-2)] border-t border-white/[0.07]">
-                    <span className="flex-1 min-w-0">
-                        <Select
-                            value={entry.status}
-                            onChange={(v) => onUpdate(entry.game!.slug, { status: v })}
-                            ariaLabel="Change status"
-                            options={STATUS_OPTIONS.map((s) => ({ value: s, label: STATUS[s].label }))}
-                            className="w-full px-2 py-[7px] rounded-[6px] bg-white/[0.05] hover:bg-white/[0.09] border border-white/[0.06] font-display text-[9.5px] font-bold uppercase tracking-[0.08em] text-white/85 transition-colors"
-                            menuClassName="w-[150px]"
-                        />
-                    </span>
+                <div className="p-1.5 bg-[var(--surface-2)] border-t border-white/[0.07] space-y-1.5">
+                    {/*
+                     * The status gets the whole width, and it needs it.
+                     *
+                     * Sharing a line with four buttons, at six cards to a row,
+                     * left the trigger narrow enough that `truncate` took the
+                     * label down to nothing — so the control read as an empty
+                     * pill with a chevron stranded beside it. The chevron was
+                     * never outside the button; the word in front of it had
+                     * been squeezed out of existence.
+                     *
+                     * The dot carries the status colour that the badge on the
+                     * art already uses, so the two agree, and the chevron is
+                     * the accent — the one moving part, and the only thing here
+                     * that opens something.
+                     */}
+                    <Select
+                        value={entry.status}
+                        onChange={(v) => onUpdate(entry.game!.slug, { status: v })}
+                        ariaLabel="Change status"
+                        options={STATUS_OPTIONS.map((s) => ({ value: s, label: STATUS[s].label }))}
+                        icon={<span aria-hidden className="w-[7px] h-[7px] rounded-full shrink-0" style={{ background: meta.color }} />}
+                        className="w-full px-2.5 py-[7px] rounded-[7px] bg-white/[0.05] hover:bg-white/[0.09] border-white/[0.08] hover:border-white/15 font-display text-[10px] font-bold uppercase tracking-[0.09em] text-white/85 [&>svg]:text-[var(--accent)] [&>svg]:w-3.5 [&>svg]:h-3.5"
+                        menuClassName="w-[150px]"
+                    />
 
-                    {/* The status is a choice; these are switches. The rule
-                        keeps them from reading as one row of five things. */}
-                    <span aria-hidden className="shrink-0 w-px h-5 bg-white/[0.07] mx-0.5" />
-
+                    {/* Four switches, sharing the width evenly — a row of equal
+                        squares reads as a set, and each is wide enough to hit
+                        with a thumb. */}
+                    <div className="flex items-center gap-1">
                     <button
                         onClick={() => onUpdate(entry.game!.slug, { status: entry.status, is_favorite: !entry.is_favorite })}
                         title={entry.is_favorite ? "Remove from favorites" : "Mark as favorite"}
                         aria-pressed={!!entry.is_favorite}
-                        className={`shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] transition-colors ${
+                        className={`flex-1 h-[30px] grid place-items-center rounded-[7px] transition-colors ${
                             entry.is_favorite
                                 ? "bg-amber-400/15 text-amber-400"
                                 : "text-white/50 hover:bg-white/[0.09] hover:text-amber-400"
@@ -386,7 +400,7 @@ function GameCard({
                         <button
                             onClick={() => onLog({ slug: entry.game!.slug, name: entry.game!.name, cover_url: entry.game!.cover_url ?? null })}
                             title="Log a session"
-                            className="shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] text-white/50 hover:bg-white/[0.09] hover:text-[var(--accent)] transition-colors"
+                            className="flex-1 h-[30px] grid place-items-center rounded-[7px] text-white/50 hover:bg-white/[0.09] hover:text-[var(--accent)] transition-colors"
                         >
                             <NotebookPen className="w-4 h-4" />
                         </button>
@@ -395,7 +409,7 @@ function GameCard({
                         onClick={() => onShowcase(entry.game!.slug)}
                         title={pinned ? "Unpin from showcase" : "Pin to showcase"}
                         aria-pressed={pinned}
-                        className={`shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] transition-colors ${
+                        className={`flex-1 h-[30px] grid place-items-center rounded-[7px] transition-colors ${
                             pinned
                                 ? "bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] text-[var(--accent)]"
                                 : "text-white/50 hover:bg-white/[0.09] hover:text-[var(--accent)]"
@@ -406,10 +420,11 @@ function GameCard({
                     <button
                         onClick={() => onRemove(entry.game!.slug)}
                         title="Remove from collection"
-                        className="shrink-0 w-[30px] h-[30px] grid place-items-center rounded-[7px] text-white/50 hover:bg-red-500/15 hover:text-red-400 transition-colors"
+                        className="flex-1 h-[30px] grid place-items-center rounded-[7px] text-white/50 hover:bg-red-500/15 hover:text-red-400 transition-colors"
                     >
                         <Trash2 className="w-4 h-4" />
                     </button>
+                    </div>
                 </div>
             )}
         </div>
