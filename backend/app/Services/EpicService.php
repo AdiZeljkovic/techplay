@@ -90,7 +90,19 @@ class EpicService
      */
     public function ownedArtifacts(string $accessToken): ?array
     {
-        $response = $this->client($accessToken)->get(self::LAUNCHER_BASE.'/assets/Windows');
+        /*
+         * `label=Live` is not optional, whatever the shape of the URL suggests.
+         *
+         * Without it the launcher service answers 200 with an empty array — not
+         * an error, not a refusal, just nothing — and an import reported "done,
+         * 0 games" against an account that owns plenty. Measured on a real
+         * library: 0 items without the label, 80 with it, same token, same
+         * second.
+         *
+         * The label names which build channel to list. Legendary and Heroic
+         * both send Live and so does the launcher itself; there is no default.
+         */
+        $response = $this->client($accessToken)->get(self::LAUNCHER_BASE.'/assets/Windows', ['label' => 'Live']);
 
         if (! $response->successful()) {
             $this->note('assets refused', ['status' => $response->status()]);
@@ -147,9 +159,23 @@ class EpicService
 
         foreach ($byNamespace as $namespace => $ids) {
             foreach (array_chunk(array_unique($ids), 30) as $batch) {
+                /*
+                 * `id` repeats; it is not an array parameter.
+                 *
+                 * Passing `['id' => $batch]` builds `id[0]=…&id[1]=…`, which
+                 * Epic does not read — it answers 200 with an empty object, so
+                 * eighty owned artifacts turned into nought games and the
+                 * import called itself finished. The catalogue wants the key
+                 * repeated: `id=a&id=b`. Same ids, same token, same second: 0
+                 * items the first way, every one of them the second.
+                 */
+                $query = implode('&', array_map(
+                    fn (string $id) => 'id='.rawurlencode($id),
+                    $batch,
+                )).'&country=US&locale=en&includeDLCDetails=false';
+
                 $response = $this->client($accessToken)->get(
-                    self::CATALOG_BASE.'/namespace/'.rawurlencode($namespace).'/bulk/items',
-                    ['id' => $batch, 'country' => 'US', 'locale' => 'en', 'includeDLCDetails' => 'false'],
+                    self::CATALOG_BASE.'/namespace/'.rawurlencode($namespace).'/bulk/items?'.$query,
                 );
 
                 if (! $response->successful()) {
