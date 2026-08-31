@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -35,6 +36,21 @@ use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
     use ApiResponse;
+
+    /**
+     * A hash to compare against when there is no account to compare with.
+     *
+     * Computed once per worker rather than written in as a literal: a bcrypt
+     * digest embedded in source is a value somebody will eventually mistake for
+     * a credential, and this one only has to cost the same time as a real
+     * comparison. Its input is deliberately unusable.
+     */
+    private static ?string $dummyHash = null;
+
+    private static function dummyHash(): string
+    {
+        return self::$dummyHash ??= Hash::make('no-such-account:'.Str::random(32));
+    }
 
     protected ReCaptchaService $recaptcha;
 
@@ -126,13 +142,58 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        /*
+         * Five wrong passwords a minute for this address, from this address.
+         *
+         * The route carries throttle:60,1 — the generic API allowance, not an
+         * authentication one. Sixty guesses a minute is 86,400 a day against a
+         * chosen account, and the limit is keyed to the caller's IP alone, so
+         * anyone with a handful of addresses multiplies it.
+         *
+         * Keyed on the email *and* the IP together: on the email so one account
+         * cannot be ground down from many machines, and on the IP so one machine
+         * cannot walk a list of accounts. A wrong guess costs a hit; a correct
+         * one clears the counter, so nobody is locked out of their own account
+         * by somebody else's guessing.
+         */
+        $throttleKey = 'login:'.sha1(mb_strtolower((string) $request->input('email')).'|'.$request->ip());
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                'email' => ["Too many attempts. Try again in {$seconds} seconds."],
+            ]);
+        }
+
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        /*
+         * The hash is always checked, even when there is no such account.
+         *
+         * `! $user || ! Hash::check(...)` short-circuits, so a request for an
+         * address nobody has registered returned in a fraction of the time one
+         * for a real account took — bcrypt is deliberately slow, and its absence
+         * is measurable over a network. That difference answers "does this
+         * person have an account here", which is the question the identical
+         * error message exists to refuse.
+         *
+         * Hashing a throwaway value costs the same work and gives the same
+         * answer in the same time.
+         */
+        $passwordMatches = $user
+            ? Hash::check($request->password, $user->password)
+            : Hash::check($request->password, self::dummyHash()) && false;
+
+        if (! $user || ! $passwordMatches) {
+            RateLimiter::hit($throttleKey, 900);
+
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials provided.'],
             ]);
         }
+
+        RateLimiter::clear($throttleKey);
 
         // Check email verification
         $requiresVerification = ! $user->hasVerifiedEmail();

@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPasswordNotification as ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -17,6 +17,18 @@ use Tests\TestCase;
  * a lost account, permanently. Accounts created through Discord were worse off
  * still: they were handed a random password nobody ever saw, and changePassword
  * demands the current one.
+ */
+/*
+ * Aliased to the class that is actually sent.
+ *
+ * `assertSentTo` matches on the exact class name rather than on instanceof, so
+ * naming the framework's ResetPassword here started failing the moment TechPlay
+ * began sending its own — which extends it, carries the same single-use token
+ * and the same expiry, and differs only in what the message looks like.
+ *
+ * These three assertions caught that swap, which is what they are for. Aliased
+ * rather than renamed at each call site so they still read as being about a
+ * password reset, and so a future change is one line at the top.
  */
 class PasswordResetTest extends TestCase
 {
