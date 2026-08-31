@@ -4,8 +4,40 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import PlatformMark from "@/components/games/PlatformMark";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Loader2, Link2, Link2Off, RefreshCw, CheckCircle2, Clock, AlertCircle, Shield, X, Eye, EyeOff } from "lucide-react";
+
+/**
+ * Numbered steps for the two stores that hand their code over on a page that
+ * looks broken.
+ *
+ * Neither GOG nor Epic runs a sign-in a website may use to read a library, so
+ * both flows end somewhere no reader expects: GOG on a blank white page, Epic
+ * on a single line of raw text. Written as a paragraph, the sentence that says
+ * "this is supposed to happen" sits in the middle of it and gets skipped — a
+ * member reported the blank page as a fault, which is exactly the paragraph
+ * failing rather than the integration.
+ *
+ * A numbered list puts the surprise on its own line, in order, where it is read
+ * before it happens instead of after.
+ */
+function CodeSteps({ steps }: { steps: ReactNode[] }) {
+    return (
+        <ol className="mt-3 grid gap-2 max-w-[560px]">
+            {steps.map((step, i) => (
+                <li key={i} className="flex gap-2.5 text-[12.5px] text-white/60 leading-relaxed">
+                    <span
+                        aria-hidden
+                        className="shrink-0 mt-[2px] w-[18px] h-[18px] rounded-full bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] text-[var(--accent)] font-display text-[10px] font-black grid place-items-center"
+                    >
+                        {i + 1}
+                    </span>
+                    <span className="min-w-0">{step}</span>
+                </li>
+            ))}
+        </ol>
+    );
+}
 
 interface ConnectedAccount {
     id: number;
@@ -580,19 +612,28 @@ export default function ConnectedAccountsSection() {
                         <div>
                             <p className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">Connect Epic Games</p>
                             <p className="mt-2 text-[12px] text-white/45 leading-relaxed max-w-[560px]">
-                                Epic&apos;s sign-in for other sites can see your name and friends but not what you own, so this
-                                works the way the Epic launcher does. Sign in to Epic in this browser, then{" "}
-                                <a
-                                    href="https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[var(--accent)] hover:underline"
-                                >
-                                    open this page
-                                </a>{" "}
-                                — it answers with a short line of text. Paste the whole thing here.
+                                Epic&apos;s sign-in for other sites can see your name and your friends, but not what you own —
+                                so this works the way the Epic launcher does.
                             </p>
-                            <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
+                            <CodeSteps
+                                steps={[
+                                    <>Sign in to Epic in this browser, in another tab.</>,
+                                    <>
+                                        <a
+                                            href="https://www.epicgames.com/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[var(--accent)] font-semibold hover:underline"
+                                        >
+                                            Open this page
+                                        </a>
+                                        . <span className="text-white/80 font-semibold">It answers with one line of raw text, not a website</span>{" "}
+                                        — that is the code, and it is what should happen.
+                                    </>,
+                                    <>Copy that line, come back here, and paste it below.</>,
+                                ]}
+                            />
+                            <p className="mt-3 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
                                 The code works once and expires in minutes. Epic tells us what you own and what it is called
                                 — no playtime, no achievements — so those games land on your shelf as backlog.
                             </p>
@@ -630,19 +671,33 @@ export default function ConnectedAccountsSection() {
                         <div>
                             <p className="font-display text-[11px] font-black uppercase tracking-[0.14em] text-white">Connect GOG</p>
                             <p className="mt-2 text-[12px] text-white/45 leading-relaxed max-w-[560px]">
-                                GOG runs no sign-in for other sites, so this works the way the GOG Galaxy app does.{" "}
-                                <a
-                                    href="https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=client2"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[var(--accent)] hover:underline"
-                                >
-                                    Open this sign-in page
-                                </a>
-                                , log in, and you will land on a blank page. Copy its whole address — or just the{" "}
-                                <span className="text-white/70">code=</span> part — and paste it here.
+                                GOG runs no sign-in for other websites, so this works the way the GOG Galaxy app does.
                             </p>
-                            <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
+                            <CodeSteps
+                                steps={[
+                                    <>
+                                        <a
+                                            href="https://auth.gog.com/auth?client_id=46899977096215655&redirect_uri=https%3A%2F%2Fembed.gog.com%2Fon_login_success%3Forigin%3Dclient&response_type=code&layout=client2"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-[var(--accent)] font-semibold hover:underline"
+                                        >
+                                            Open GOG&apos;s sign-in page
+                                        </a>{" "}
+                                        and sign in. It opens in a new tab, so this one stays put.
+                                    </>,
+                                    <>
+                                        <span className="text-white/80 font-semibold">The page will go completely blank. That is correct</span>{" "}
+                                        — GOG built it for its own app, not for a browser, so there is nothing on it to see.
+                                    </>,
+                                    <>
+                                        Copy the whole address out of the address bar, come back here, and paste it below.
+                                        The part that matters is <span className="text-white/70">code=</span>, but paste all
+                                        of it and we will find it.
+                                    </>,
+                                ]}
+                            />
+                            <p className="mt-3 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
                                 The code works once and expires quickly. GOG tells us what you own and nothing more — no
                                 playtime, no achievements — so those games land on your shelf as backlog.
                             </p>
