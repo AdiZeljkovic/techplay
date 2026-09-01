@@ -286,6 +286,38 @@ export default async function RootLayout({
           });
         `}} />
 
+        {/* GA4 itself, in the head rather than after hydration.
+
+            It used to mount through next/script with `afterInteractive`, which
+            waits for React to hydrate before it executes. On 1 September GA
+            counted 124 people against 198 real browsers the server saw, and of
+            127 visitors arriving from a paid ad it recorded 52. The missing
+            ones are not a mystery: 43 of 84 ad visitors that day left inside
+            ten seconds, and on a phone over mobile data hydration has not
+            finished by then. The people most worth measuring — the ones who
+            bounce — were the only ones never measured.
+
+            This costs almost nothing. next/script was already emitting
+            `<link rel="preload" as="script">` for the same URL, so the download
+            was always starting early; only execution waited. `async` keeps it
+            off the parser's critical path, and the queue above means the
+            page_view is already waiting for the library the moment it lands.
+
+            `client_storage: 'none'` stays. It is why no consent banner is
+            needed, and it is also why GA cannot tell a returning reader from a
+            new one — the "5s average engagement" is that, not real behaviour.
+            Changing it is a separate decision with a GDPR bill attached. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: `
+          gtag('js', new Date());
+          gtag('config', '${process.env.NEXT_PUBLIC_GA_ID || 'G-0J974Y0X23'}', {
+            client_storage: 'none',
+            send_page_view: true
+          });
+        `}}
+        />
+        <script async src={`/proxy/gtag?id=${process.env.NEXT_PUBLIC_GA_ID || 'G-0J974Y0X23'}`} />
+
         {/* AdSense script moved to body via Script component (afterInteractive) */}
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>

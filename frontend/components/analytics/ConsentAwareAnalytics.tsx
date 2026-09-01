@@ -1,17 +1,30 @@
 "use client";
 
-import Script from "next/script";
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-0J974Y0X23";
-
+/**
+ * The page views a single-page app would otherwise never report.
+ *
+ * GA4 sends the first one by itself; every navigation after that happens in the
+ * router without a document load, so it has to be told. That is all this does
+ * now — the library and its config moved into the document head in
+ * app/layout.tsx.
+ *
+ * They were here, mounted through next/script with `afterInteractive`, which
+ * holds a script back until React has hydrated. A reader who leaves before
+ * that was never counted, and those are exactly the readers a bounce rate is
+ * about: on 1 September GA saw 52 of the 127 people who arrived from a paid ad.
+ * Nothing measures the first page view from inside the app that is waiting to
+ * become interactive, so it belongs in the HTML instead.
+ */
 export default function ConsentAwareAnalytics() {
     const pathname = usePathname();
 
-    // Track SPA navigations after initial load
-    // Initial page_view is sent automatically by GA4 (send_page_view: true)
+    // The first view is GA4's own (`send_page_view: true`), fired the moment
+    // the library lands. Sending another here would count every entry twice.
     const isFirstRender = useRef(true);
+
     useEffect(() => {
         if (isFirstRender.current) {
             isFirstRender.current = false;
@@ -23,25 +36,5 @@ export default function ConsentAwareAnalytics() {
         });
     }, [pathname]);
 
-    return (
-        <>
-            {/* GA4 — cookieless mode (client_storage: none), no consent required, counts all visits */}
-            <Script
-                src={`/proxy/gtag?id=${GA_ID}`}
-                strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-                {`
-                    window.dataLayer = window.dataLayer || [];
-                    function gtag(){dataLayer.push(arguments);}
-                    gtag('js', new Date());
-                    gtag('config', '${GA_ID}', {
-                        anonymize_ip: true,
-                        client_storage: 'none',
-                        send_page_view: true
-                    });
-                `}
-            </Script>
-        </>
-    );
+    return null;
 }
