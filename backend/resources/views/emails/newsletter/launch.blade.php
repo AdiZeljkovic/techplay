@@ -337,9 +337,13 @@
             <td align="center" style="padding:22px 20px 4px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:19px; color:#63636D;">
               You are receiving this because you created a TechPlay account.<br>
               <span style="color:#84848E;">TECHPLAY.GG</span> &nbsp;&middot;&nbsp; One Platform. Everything for Gamers.<br><br>
+              {{-- No fallback on $unsubscribeUrl. It used to fall back to the
+                   settings page, which is not an unsubscribe and quietly
+                   shipped a dead link to everyone. A missing token is now a
+                   loud failure at render time, before anything is sent. --}}
               <a href="{{ $appUrl }}/settings?section=notifications" style="color:#84848E; text-decoration:underline;">Email preferences</a>
               &nbsp;&middot;&nbsp;
-              <a href="{{ $unsubscribeUrl ?? $appUrl.'/settings?section=notifications' }}" style="color:#84848E; text-decoration:underline;">Unsubscribe</a>
+              <a href="{{ $unsubscribeUrl }}" style="color:#84848E; text-decoration:underline;">Unsubscribe</a>
             </td>
           </tr>
 

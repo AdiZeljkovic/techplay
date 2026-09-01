@@ -7,8 +7,13 @@ use Illuminate\Support\Str;
 
 class NewsletterSubscriber extends Model
 {
+    public const FROM_FORM = 'form';
+
+    public const FROM_ACCOUNT = 'account';
+
     protected $fillable = [
         'email',
+        'source',
         'is_active',
         'verification_token',
         'unsubscribe_token',
@@ -38,6 +43,30 @@ class NewsletterSubscriber extends Model
         static::creating(function (self $subscriber) {
             $subscriber->unsubscribe_token ??= Str::random(64);
         });
+    }
+
+    /**
+     * A row for an address, whether or not it ever signed up.
+     *
+     * The launch mail goes to registered members, and every recipient needs a
+     * row here because the row is what carries the unsubscribe token. Creating
+     * one is not a claim that they subscribed — `source` records which it is,
+     * and an existing row is never rewritten: somebody who signed up through
+     * the form stays `form` even if they later create an account.
+     */
+    public static function forAddress(string $email, string $source = self::FROM_FORM): self
+    {
+        $email = mb_strtolower(trim($email));
+
+        return static::firstOrCreate(
+            ['email' => $email],
+            [
+                'source' => $source,
+                'is_active' => true,
+                // An account's address is already confirmed by the account.
+                'email_verified_at' => $source === self::FROM_ACCOUNT ? now() : null,
+            ],
+        );
     }
 
     /**

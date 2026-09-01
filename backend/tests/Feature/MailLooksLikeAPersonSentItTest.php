@@ -48,7 +48,10 @@ class MailLooksLikeAPersonSentItTest extends TestCase
                 'appUrl' => $appUrl, 'expiresInMinutes' => 60,
             ])->render(),
 
-            'newsletter' => view('emails.newsletter.launch', ['appUrl' => $appUrl])->render(),
+            'newsletter' => view('emails.newsletter.launch', [
+                'appUrl' => $appUrl,
+                'unsubscribeUrl' => $appUrl.'/api/v1/newsletter/unsubscribe/token',
+            ])->render(),
         ];
     }
 

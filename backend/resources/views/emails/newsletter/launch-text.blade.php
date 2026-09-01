@@ -59,3 +59,4 @@ Link your first store: {{ $appUrl }}/settings?section=connections
 --
 TechPlay · {{ $appUrl }}
 You are receiving this because you created a TechPlay account.
+To stop receiving these: {{ $unsubscribeUrl }}

@@ -85,8 +85,24 @@ korišten.
 | `broken_links` | 62 | Puni `seo:scan-links` (nedjeljom) |
 | `faq_items` | 0 | Morph |
 | `ad_campaigns` | 2 | `view_count`/`click_count` puni **samo** `FlushViewCounters` (GETDEL) |
-| `newsletter_subscribers` | 7 | **`is_active`, `email_verified_at`, `verification_token`, `unsubscribe_token`** |
+| `newsletter_subscribers` | 7 | **`source`** (`form` = prijavio se kroz formu, `account` = registrovan korisnik, `test`), `is_active`, `email_verified_at`, `verification_token`, **`unsubscribe_token`** |
+| `mail_suppressions` | 0 | **Jedino mjesto koje smije reći ne.** `email` (unique), `reason` (`unsubscribed`/`bounced`/`complained`), `source`. Svako slanje prolazi kroz `MailSuppression::filter()`. |
 | `site_settings` | 42 | Ključ/vrijednost |
+
+### Newsletter: red u tabeli nije pristanak
+
+Launch mail ide **registrovanim korisnicima**, koji se nikad nisu prijavili na
+newsletter. Svaki primalac ipak mora imati red u `newsletter_subscribers`, jer
+taj red nosi `unsubscribe_token` — bez tokena jedina odjava koju možemo ponuditi
+je link na podešavanja, što nije odjava (RFC 8058, Gmail/Yahoo od 02/2024).
+
+Zato `source` razdvaja dvoje: `form` je neko ko je tražio, `account` je neko kome
+smijemo pisati jer ima nalog. Bez te kolone bi broj pretplatnika u adminu skočio
+za veličinu članstva i prestao išta značiti. `forAddress()` nikad ne prepisuje
+postojeći `source`.
+
+Publiku računa `NewsletterAudience`, šalje `newsletter:launch` (bez `--force`
+samo ispiše kome bi išlo).
 
 ## Forum
 
