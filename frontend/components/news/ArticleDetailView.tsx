@@ -15,6 +15,7 @@ import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
 import SocialShare from "@/components/share/SocialShare";
 import RecommendedNews from "@/components/news/RecommendedNews";
+import JoinPrompt from "@/components/news/JoinPrompt";
 import ReadingTracker from "@/components/news/ReadingTracker";
 import ReleaseCalendarSection from "@/components/home/ReleaseCalendarSection";
 import DiscordWidget from "@/components/home/DiscordWidget";
@@ -313,6 +314,18 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         </>
                                     )}
                                     </div>
+
+                                    {/* The first thing after the last sentence,
+                                        deliberately ahead of the three ad slots
+                                        below rather than buried under them.
+                                        Renders nothing for a signed-in reader.
+
+                                        Until now an article asked a stranger for
+                                        nothing at all. Eighty-four people came
+                                        from a paid ad on 1 September and not one
+                                        reached the registration page — they had
+                                        no reason to look for it. */}
+                                    <JoinPrompt />
 
                                     {/* Mid-Article Ad */}
                                     <div className="my-12 xl:hidden">
