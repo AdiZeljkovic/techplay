@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useSWR from "swr";
 import axios from "@/lib/axios";
 import { LayoutGrid, Newspaper, Star, Cpu, BookOpen, FileText } from "lucide-react";
@@ -34,8 +34,56 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
     /** The pager sits under the grid; a new page starts at its top. */
     const { ref: listTop, scrollToTop } = usePagedList<HTMLDivElement>();
 
+    /*
+     * Which page you are on belongs in the address, not only in memory.
+     *
+     * It was state and nothing else, so it survived exactly as long as the
+     * component did: read to page six, open an article, press back, and you
+     * landed on page one at the top of the profile with five pages to walk
+     * again. The browser had done its job — it returned you to
+     * /author/adi-zeljkovic, which is genuinely all the page had ever said
+     * about where you were.
+     *
+     * history.replaceState rather than the router: this is a filter on a list,
+     * not a navigation. The router would fetch the route again on every page
+     * turn, and push would bury the way out under six back-presses. This
+     * writes the address and nothing else moves.
+     */
+    const rememberInUrl = useCallback((nextPage: number, nextTab: TabId) => {
+        if (typeof window === "undefined") return;
+
+        const q = new URLSearchParams(window.location.search);
+        // The defaults stay out of the address — a clean URL is the shareable one.
+        if (nextTab === "all") q.delete("type"); else q.set("type", nextTab);
+        if (nextPage <= 1) q.delete("page"); else q.set("page", String(nextPage));
+
+        const qs = q.toString();
+        window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+    }, []);
+
+    /*
+     * Read back on mount, not during render.
+     *
+     * The page is ISR-cached, so the server renders it with no query string at
+     * all while the browser arriving back from an article has ?page=6 in the
+     * address. Seeding state from the URL during render would make those two
+     * disagree and break hydration; an effect runs after, when only the
+     * browser's answer exists. It costs one extra request, and only on the
+     * return journey this exists to fix.
+     */
+    useEffect(() => {
+        const q = new URLSearchParams(window.location.search);
+
+        const tab = q.get("type");
+        if (tab && TABS.some((t) => t.id === tab)) setActiveTab(tab as TabId);
+
+        const p = Number(q.get("page"));
+        if (Number.isFinite(p) && p > 1) setPage(p);
+    }, []);
+
     const goToPage = (next: number) => {
         setPage(next);
+        rememberInUrl(next, activeTab);
         scrollToTop();
     };
 
@@ -55,6 +103,7 @@ export default function AuthorArticleGrid({ slug, stats }: AuthorArticleGridProp
     function handleTabChange(tab: TabId) {
         setActiveTab(tab);
         setPage(1);
+        rememberInUrl(1, tab);
     }
 
     function getStatCount(tabId: TabId): number {
