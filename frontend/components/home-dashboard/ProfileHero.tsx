@@ -96,9 +96,12 @@ function FriendAction({ status, busy, onAdd }: { status: FriendStatus; busy: boo
 function MoreMenu({
     before,
     label = "More profile actions",
+    className = "",
     children }: {
     before?: React.ReactNode;
     label?: string;
+    /** Lets the caller give it a share of a flex row. */
+    className?: string;
     children: React.ReactNode;
 }) {
     const [open, setOpen] = useState(false);
@@ -119,7 +122,7 @@ function MoreMenu({
     }, [open]);
 
     return (
-        <div ref={ref} className="relative inline-flex">
+        <div ref={ref} className={`relative inline-flex ${className}`}>
             {before}
             <button
                 onClick={() => setOpen((v) => !v)}
@@ -184,7 +187,7 @@ interface StripCell {
  * edge, the way a lit control does. Dimming the cell would fight the icon,
  * which rises and catches light on the same gesture.
  */
-function StatBay({ cell, lit = false }: { cell: StripCell; lit?: boolean }) {
+function StatBay({ cell, lit = false, wide = false }: { cell: StripCell; lit?: boolean; wide?: boolean }) {
     const body = (
         <>
             {/* the recess the icon sits in */}
@@ -201,13 +204,13 @@ function StatBay({ cell, lit = false }: { cell: StripCell; lit?: boolean }) {
                 style={{ background: "linear-gradient(90deg, transparent, var(--accent), transparent)" }}
             />
 
-            <span className="relative flex items-center gap-3.5 min-w-0">
+            <span className="relative flex items-center gap-2.5 lg:gap-3.5 min-w-0">
                 {cell.icon}
                 <span className="min-w-0">
-                    <span className="block font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50 group-hover/cell:text-white/60 transition-colors duration-300 whitespace-nowrap">
+                    <span className="block font-display text-[8.5px] lg:text-[9px] font-bold uppercase tracking-[0.16em] lg:tracking-[0.18em] text-white/50 group-hover/cell:text-white/60 transition-colors duration-300 truncate lg:whitespace-nowrap">
                         {cell.label}
                     </span>
-                    <span className="block mt-1.5 font-display text-[22px] font-black tabular-nums leading-none text-white truncate">
+                    <span className="block mt-1 lg:mt-1.5 font-display text-[17px] lg:text-[22px] font-black tabular-nums leading-none text-white truncate">
                         {cell.value}
                     </span>
                 </span>
@@ -217,15 +220,31 @@ function StatBay({ cell, lit = false }: { cell: StripCell; lit?: boolean }) {
 
     // The lit bay carries a longer line — "209 XP to go" against a bare
     // count — so it gets more of the row. Equal widths truncated the one
-    // sentence on the strip that is trying to pull you somewhere.
+    // sentence on the strip that is trying to pull you somewhere. On the grid
+    // there are no widths to give, so it keeps only its tint.
     const shell = [
-        "group/cell relative flex items-center min-w-max md:min-w-0 px-4 lg:px-5 py-4 transition-colors duration-300",
-        lit ? "md:flex-[1.5] bg-[color-mix(in_srgb,var(--accent)_7%,transparent)]" : "md:flex-1",
+        "group/cell relative flex items-center min-w-0 px-3 py-3 lg:px-5 lg:py-4 transition-colors duration-300",
+        lit ? "lg:flex-[1.5]" : "lg:flex-1",
+        wide ? "col-span-2 lg:col-span-1" : "",
     ].join(" ");
 
+    /* The cell paints its own floor so the grid's 1px gaps read as hairlines
+       between bays — `divide-x` has no equivalent across grid rows. On the
+       desktop flex row the panel behind it is the same colour, so this is
+       invisible there and `divide-x` still draws the seams.
+       Both the base and the lit tint go through `style`: two background
+       utilities would be decided by their order in the generated stylesheet
+       rather than here, which is the argument that once hid the caret in
+       MoreMenu. */
+    const skin = {
+        background: lit
+            ? "color-mix(in srgb, var(--accent) 7%, var(--surface-2))"
+            : "var(--surface-2)",
+    };
+
     return cell.href
-        ? <Link href={cell.href} className={shell}>{body}</Link>
-        : <span className={shell}>{body}</span>;
+        ? <Link href={cell.href} className={shell} style={skin}>{body}</Link>
+        : <span className={shell} style={skin}>{body}</span>;
 }
 
 /**
@@ -239,7 +258,20 @@ function StatBay({ cell, lit = false }: { cell: StripCell; lit?: boolean }) {
  * The tier's own colour lights the plate. The emblems are struck with their
  * own glow, so the plate stays dark and lets them carry it.
  */
-function RankConsole({ hero, tier, base }: { hero: HeroModel; tier: string | null; base: string }) {
+function RankConsole({
+    hero,
+    tier,
+    base,
+    percent,
+    toGo }: {
+    hero: HeroModel;
+    tier: string | null;
+    base: string;
+    /** How far through the current level band, 0–100. */
+    percent: number;
+    /** XP still owed to the next level. */
+    toGo: number;
+}) {
     const colour = hero.rank_color || "#9ca3af";
 
     const artSlug = (hero.rank_name || '').toLowerCase().replace(/[^a-z]/g, '');
@@ -248,7 +280,17 @@ function RankConsole({ hero, tier, base }: { hero: HeroModel; tier: string | nul
         <Link
             href={`${base}?tab=stats`}
             title="View rank progress"
-            className="group/rank relative shrink-0 self-stretch lg:self-end w-full lg:w-[336px] flex flex-col items-center justify-end text-center"
+            /* Two shapes, one element.
+             *
+             * On a desktop the emblem is a monument at the end of the row and
+             * it has the space to be one. On a phone the same block was 230px
+             * of centred column — a quarter of the screen — sitting between
+             * the identity and every number about it, so you scrolled past
+             * your own profile to reach your own profile. Here it lies down:
+             * emblem on the left at a third of the size, and the room that
+             * frees goes to the question a rank actually raises, which is how
+             * far the next one is. */
+            className="group/rank relative shrink-0 self-stretch lg:self-end w-full lg:w-[336px] flex flex-row lg:flex-col items-center lg:justify-end gap-3.5 lg:gap-0 text-left lg:text-center p-3 lg:p-0 rounded-[14px] lg:rounded-none border border-white/[0.08] lg:border-0 bg-black/30 lg:bg-transparent backdrop-blur-sm lg:backdrop-blur-none"
         >
             {/* The commissioned rank art carries its own presence — no panel,
                 no pooled light, nothing behind it. Image, then the name. */}
@@ -257,20 +299,37 @@ function RankConsole({ hero, tier, base }: { hero: HeroModel; tier: string | nul
                 <img
                     src={`/images/ranks/${artSlug}.webp`}
                     alt={hero.rank_name || 'Rank'}
-                    className="w-[190px] h-auto select-none transition-transform duration-500 ease-[var(--ease-hud)] group-hover/rank:scale-[1.04]"
+                    className="w-[68px] lg:w-[190px] h-auto shrink-0 select-none transition-transform duration-500 ease-[var(--ease-hud)] group-hover/rank:scale-[1.04]"
                     style={{ filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.6))' }}
                 />
             ) : (
                 <RankInsigniaMark icon={hero.rank_icon} color={hero.rank_color} name={hero.rank_name} size={148} />
             )}
 
-            <p
-                className="mt-2 font-display text-[26px] font-black uppercase tracking-[0.02em] leading-none"
-                style={{ color: colour }}
-                title={tier ?? undefined}
-            >
-                {hero.rank_name || 'Unranked'}
-            </p>
+            <span className="min-w-0 flex-1 lg:flex-none">
+                <span className="flex items-baseline gap-2 lg:block">
+                    <span
+                        className="font-display text-[19px] lg:text-[26px] lg:mt-2 lg:block font-black uppercase tracking-[0.02em] leading-none truncate"
+                        style={{ color: colour }}
+                        title={tier ?? undefined}
+                    >
+                        {hero.rank_name || 'Unranked'}
+                    </span>
+                    <span className="lg:hidden shrink-0 font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                        Level {hero.level}
+                    </span>
+                </span>
+
+                {/* The gauge, on the phone only. On a desktop it runs along
+                    the floor of the record panel, where there is a row to
+                    spare; here that row is the one being saved. */}
+                <span className="lg:hidden block mt-2.5">
+                    <XpRail percent={percent} segments={10} className="w-full" />
+                    <span className="block mt-1.5 text-[11px] font-semibold text-white/45">
+                        <span className="text-[var(--xp-bright)] tabular-nums">{toGo.toLocaleString()} XP</span> to Level {hero.level + 1}
+                    </span>
+                </span>
+            </span>
         </Link>
     );
 }
@@ -439,14 +498,30 @@ export default function ProfileHero({
                     )}
                 </div>
 
-                <div className="relative flex flex-col lg:flex-row lg:items-end gap-6 p-5 md:p-8">
-                    {/* portrait + identity */}
-                    <div className="flex items-start gap-4 md:gap-7 flex-1 min-w-0">
-                        <Link href={base} aria-label={`${hero.display_name} profile picture`} className="group/av block shrink-0">
-                            <AvatarRing src={hero.avatar_url} alt={hero.display_name} frame={hero.frame_value} online={online} />
+                <div className="relative flex flex-col lg:flex-row lg:items-end gap-5 lg:gap-6 p-4 sm:p-5 md:p-8">
+                    {/* Portrait and identity.
+                     *
+                     * A grid rather than a row, because the two want different
+                     * shapes. On a desktop the portrait stands beside a column
+                     * holding everything else. On a phone that column is about
+                     * 190px wide, and a bio, a join date, two platform tags and
+                     * two buttons were all being squeezed into it beside a
+                     * 124px portrait -- which is why the bio read "He liv...".
+                     * Here the name sits beside the portrait and everything
+                     * below it spans the full width. Same DOM, no duplication,
+                     * two layouts. */}
+                    <div className="grid grid-cols-[auto_1fr] items-start gap-x-4 md:gap-x-7 flex-1 min-w-0">
+                        <Link href={base} aria-label={`${hero.display_name} profile picture`} className="group/av block shrink-0 row-start-1 col-start-1 lg:row-span-2">
+                            <AvatarRing
+                                src={hero.avatar_url}
+                                alt={hero.display_name}
+                                frame={hero.frame_value}
+                                online={online}
+                                className="w-[104px] h-[104px] sm:w-[124px] sm:h-[124px] md:w-[150px] md:h-[150px]"
+                            />
                         </Link>
 
-                        <div className="min-w-0 flex-1 pt-0.5">
+                        <div className="min-w-0 row-start-1 col-start-2 self-center lg:self-start lg:pt-0.5">
                             {/* the level wears a chip above the name */}
                             <span className="inline-flex items-center h-[22px] px-2.5 rounded-[6px] bg-[var(--accent)] font-display text-[10px] font-black uppercase tracking-[0.14em] text-white">
                                 Level {hero.level}
@@ -488,15 +563,19 @@ export default function ProfileHero({
                                     )
                                 )}
                             </p>
+                        </div>
 
+                        {/* Everything below the name: full width on a phone,
+                            back in the right-hand column from lg up. */}
+                        <div className="min-w-0 row-start-2 col-span-2 lg:col-span-1 lg:col-start-2 mt-3 lg:mt-0">
                             {(hero.tagline || hero.bio) && (
-                                <p className="mt-3 flex items-center gap-2 text-[13.5px] text-white/75 min-w-0">
-                                    <span className="truncate">{hero.tagline || hero.bio}</span>
+                                <p className="mt-0 lg:mt-3 flex items-start lg:items-center gap-2 text-[13.5px] text-white/75 min-w-0">
+                                    <span className="line-clamp-2 lg:truncate">{hero.tagline || hero.bio}</span>
                                     {isOwnProfile && (
                                         <Link
                                             href="/settings"
                                             title="Edit your tagline"
-                                            className="shrink-0 text-white/35 hover:text-[var(--accent)] transition-colors duration-200"
+                                            className="shrink-0 mt-0.5 lg:mt-0 text-white/35 hover:text-[var(--accent)] transition-colors duration-200"
                                         >
                                             <Pencil className="w-3.5 h-3.5" />
                                         </Link>
@@ -542,7 +621,12 @@ export default function ProfileHero({
                             )}
 
                             {/* actions live with the identity, mockup-style */}
-                            <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                            {/* `flex-1` on each control with wrapping does the
+                                right thing at both ends: on a wide phone the two
+                                sit side by side, and on a narrow one they wrap and
+                                each becomes a full-width tap target rather than a
+                                small button marooned on its own line. */}
+                            <div className="mt-4 flex flex-wrap items-center gap-2 lg:gap-2.5">
                                 {isOwnProfile ? (
                                     /* One control for the owner.
                                      *
@@ -555,8 +639,9 @@ export default function ProfileHero({
                                      * gives it a whole panel of its own, six inches below. */
                                     <>
                                     <MoreMenu
+                                        className="flex-1 lg:flex-none"
                                         before={
-                                            <Link href="/settings" className={`${BTN_PRIMARY} rounded-r-none`}>
+                                            <Link href="/settings" className={`${BTN_PRIMARY} rounded-r-none flex-1 lg:flex-none whitespace-nowrap`}>
                                                 <Pencil className="w-3.5 h-3.5" /> Edit profile
                                             </Link>
                                         }
@@ -588,7 +673,7 @@ export default function ProfileHero({
                                      * and two filled buttons side by side would make the reader
                                      * choose between them rather than notice the second one.
                                      */}
-                                    <Link href="/settings?section=connections" className={BTN_GHOST}>
+                                    <Link href="/settings?section=connections" className={`${BTN_GHOST} flex-1 lg:flex-none whitespace-nowrap`}>
                                         <Link2 className="w-4 h-4" /> Connect platforms
                                     </Link>
                                     </>
@@ -622,7 +707,7 @@ export default function ProfileHero({
                         </div>
                     </div>
 
-                    <RankConsole hero={hero} tier={tier} base={base} />
+                    <RankConsole hero={hero} tier={tier} base={base} percent={fillShown} toGo={levelToGoShown} />
                 </div>
             </section>
 
@@ -642,13 +727,33 @@ export default function ProfileHero({
                     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
                 }}
             >
-                <div className="flex items-stretch min-w-max md:min-w-0 overflow-x-auto scrollbar-none divide-x divide-white/[0.05]">
+                {/* A grid on a phone, the row it has always been from lg up.
+                    It used to be one horizontally scrolling row at every width,
+                    which on a phone showed two and a half of six bays with no
+                    sign there were more — the half-cut third bay read as a
+                    layout fault rather than an invitation to swipe. Nothing is
+                    hidden now.
+
+                    The 1px gaps are the hairlines: `divide-x` cannot draw seams
+                    between grid rows, so the container's colour shows through
+                    the gaps and each bay paints its own floor over it. */}
+                <div className="grid grid-cols-2 gap-px bg-white/[0.06] lg:flex lg:items-stretch lg:gap-0 lg:bg-transparent lg:divide-x lg:divide-white/[0.05] [--stat-icon-size:38px] sm:[--stat-icon-size:46px] lg:[--stat-icon-size:initial]">
                     {cells.map((cell, i) => (
-                        <StatBay key={cell.label} cell={cell} lit={i === cells.length - 1} />
+                        <StatBay
+                            key={cell.label}
+                            cell={cell}
+                            lit={i === cells.length - 1}
+                            /* An odd count would leave a hole in the last row,
+                               so the last bay takes the whole width instead. */
+                            wide={cells.length % 2 === 1 && i === cells.length - 1}
+                        />
                     ))}
                 </div>
 
-                <div className="flex items-center gap-3 px-4 lg:px-5 py-3 border-t border-white/[0.06] bg-black/25">
+                {/* The gauge lives in the rank band on a phone, where it is
+                    beside the emblem it is filling toward. Drawing it twice
+                    would be the same bar in two places on one screen. */}
+                <div className="hidden lg:flex items-center gap-3 px-4 lg:px-5 py-3 border-t border-white/[0.06] bg-black/25">
                     <XpRail percent={fillShown} className="flex-1" />
                     <span className="shrink-0 font-display text-[12px] font-black tabular-nums text-[var(--xp-bright)]">
                         {fillShown}%

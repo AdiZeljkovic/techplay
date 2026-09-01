@@ -77,7 +77,16 @@ export default function StatIcon({ src, size = 60, active = true, idle = "none",
             onPointerMove={track}
             onPointerLeave={rest}
             className={cn("tp-stat-icon relative shrink-0 block select-none", !active && "is-spent", className)}
-            style={{ width: size, height: size }}
+            /* The size is a `var()` with `size` as its fallback so a container
+               can shrink every icon in it at a breakpoint — an inline width
+               would win over any class the parent could set. An ancestor that
+               sets `--stat-icon-size: initial` makes the variable invalid, and
+               the fallback takes over again; that is how the desktop keeps its
+               own per-icon sizes while the phone flattens them all. */
+            style={{
+                width: `var(--stat-icon-size, ${size}px)`,
+                height: `var(--stat-icon-size, ${size}px)`,
+            }}
         >
             {/* Two layers, because they both want `transform`: the body
                 turns toward the pointer, the image breathes. On one element
