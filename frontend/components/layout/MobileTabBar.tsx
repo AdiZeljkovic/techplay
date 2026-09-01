@@ -30,8 +30,7 @@ import { isOwnUpload } from "@/lib/imageUrl";
  *
  *   the frame      a crimson hairline around the console, with the glow
  *                  pooling at the two ends where it meets the screen edge
- *   the switch     a crimson tile under the icon of the tab you are on,
- *                  under a white cap rule sitting on the console's top edge
+ *   the switch     a crimson tile under the icon of the tab you are on
  *   the portrait   a crimson ring around you, in the middle
  *
  * Everything is mixed from `--accent`, so a profile theme recolours the frame,
@@ -126,14 +125,12 @@ export default function MobileTabBar() {
                         active ? "text-white" : "text-white/85 active:text-white"
                     }`}
                 >
-                    {/* The cap: a short white rule on the console's top edge,
-                        over the tab you are on. */}
-                    <span
-                        aria-hidden
-                        className={`absolute top-0 h-[3px] w-[38px] rounded-b-full bg-white transition-opacity duration-200 ${
-                            active ? "opacity-100" : "opacity-0"
-                        }`}
-                    />
+                    {/* No cap rule. There used to be a short white one on the
+                        console's top edge over the active tab — a second answer
+                        to a question the tile below already answers, and the
+                        only white on a bar built out of near-blacks and one
+                        crimson. It read as a seam in the frame rather than as
+                        state. The tile carries it alone. */}
 
                     {/* The tile. Only the icon sits on it, not the label —
                         a tile the height of both reads as a button somebody
