@@ -123,6 +123,20 @@ class SearchController extends Controller
                 // The game before its editions — same demote as the catalogue list.
                 ->when(DB::getDriverName() === 'pgsql', fn ($q) => $q
                     ->orderByRaw("(genres && ARRAY['Add-on','Compilation','Special edition']::text[])::int asc"))
+                /*
+                 * Unrated last, then best first.
+                 *
+                 * `ORDER BY rating DESC` puts NULL *first* in Postgres, and
+                 * most of a 332,000-row catalogue has no rating at all — so the
+                 * tie-break handed every position to games nobody has scored.
+                 * "Half" came back as Half Minute Hero, Halfbrick Rocket
+                 * Racing, Half and HalfMoon Adventures, all unrated, with
+                 * Half-Life and its 7.7 nowhere in the five.
+                 *
+                 * `rating IS NULL` sorts false before true in both Postgres and
+                 * SQLite, which NULLS LAST does not.
+                 */
+                ->orderByRaw('(rating IS NULL) asc')
                 ->orderByDesc('rating')
                 ->select('id', 'name', 'slug', 'cover_url', 'released', 'rating')
                 ->limit(5)

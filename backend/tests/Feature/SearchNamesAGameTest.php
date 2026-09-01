@@ -80,6 +80,27 @@ class SearchNamesAGameTest extends TestCase
         $this->assertSame(['Half-Life'], $names);
     }
 
+    /**
+     * Most of the catalogue has no rating, and `ORDER BY rating DESC` puts NULL
+     * first in Postgres — so the tie-break handed every position to games
+     * nobody has scored. This is the case that shipped: four unrated titles
+     * above Half-Life, from a query that had just been "fixed".
+     */
+    #[Test]
+    public function an_unrated_game_never_outranks_a_rated_one(): void
+    {
+        Game::create(['name' => 'Half Minute Hero', 'slug' => 'hmh', 'description' => 'A game.', 'rating' => null]);
+        Game::create(['name' => 'Halfbrick Rocket Racing', 'slug' => 'hrr', 'description' => 'A game.', 'rating' => null]);
+        $this->game('Half-Life', 7.7);
+
+        $names = collect($this->getJson('/api/v1/search/games?q=Half')->json('results'))
+            ->pluck('title')
+            ->all();
+
+        $this->assertSame('Half-Life', $names[0] ?? null,
+            'a game nobody has rated came before one that is rated 7.7');
+    }
+
     /** Two characters is the floor; one would scan the whole catalogue. */
     #[Test]
     public function a_single_letter_is_refused(): void
