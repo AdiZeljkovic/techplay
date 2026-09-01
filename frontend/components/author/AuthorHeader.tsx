@@ -139,12 +139,19 @@ export default function AuthorHeader({ author, stats }: AuthorHeaderProps) {
                     </div>
                 </div>
 
-                {/* Stats strip */}
-                <div className="mt-6 grid grid-cols-5 gap-3">
+                {/* Stats strip.
+
+                    Three across on a phone, five from sm up. It was five at
+                    every width, which on a 360px screen leaves about 55px of
+                    card — and "REVIEWS" at `tracking-widest` needs past 60,
+                    so the longest label ran out of its own box. Shrinking the
+                    type would have bought a few pixels and left the next
+                    narrow screen to find the edge again. */}
+                <div className="mt-6 grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
                     {STATS.map(({ key, label }) => (
-                        <div key={key} className="bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] px-3 py-3 text-center">
-                            <span className="block text-[22px] font-black text-white font-display">{stats[key]}</span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">{label}</span>
+                        <div key={key} className="min-w-0 bg-[var(--surface-0)] border border-white/[0.07] rounded-[var(--radius-card)] px-2 sm:px-3 py-3 text-center">
+                            <span className="block text-[20px] sm:text-[22px] font-black text-white font-display tabular-nums">{stats[key]}</span>
+                            <span className="block truncate text-[10px] font-bold uppercase tracking-wider sm:tracking-widest text-white/50">{label}</span>
                         </div>
                     ))}
                 </div>
