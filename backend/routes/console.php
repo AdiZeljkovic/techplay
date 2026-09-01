@@ -19,6 +19,7 @@ $reportFailure = function (string $task) {
 use App\Jobs\FlushViewCounters;
 use App\Jobs\PollSteamPresence;
 use App\Jobs\RefreshRecentSteamPlaytime;
+use App\Jobs\RefreshShelfPrices;
 use App\Jobs\SendGiveawayReminders;
 use App\Jobs\SendReleaseReminders;
 use Croustibat\FilamentJobsMonitor\Models\QueueMonitor;
@@ -165,6 +166,20 @@ Schedule::job(new PollSteamPresence)->everyTwoMinutes();
 Schedule::job(new RefreshRecentSteamPlaytime)->everyThirtyMinutes()
     ->withoutOverlapping(25)
     ->onFailure($reportFailure('steam:refresh-recent-playtime'));
+/*
+ * PRICES: what the shelves are worth, refreshed nightly.
+ *
+ * Only games somebody owns — 1,017 of a 332,455-game catalogue — so the whole
+ * pass is nine batch calls plus up to sixty name lookups for titles that
+ * arrived from Epic, GOG or Xbox and were never given a Steam id. Those are
+ * kept once found, so the name pass shrinks to nothing within a week.
+ *
+ * 04:40 keeps it clear of the sitemap walk at 04:00 and the Wednesday library
+ * resync; nothing here is urgent enough to compete with either.
+ */
+Schedule::job(new RefreshShelfPrices)->dailyAt('04:40')
+    ->withoutOverlapping(60)
+    ->onFailure($reportFailure('prices:refresh-shelves'));
 
 // WISHLIST: Notify users when wishlisted games release today (runs at 09:00 daily)
 Schedule::command('wishlist:check-releases')->dailyAt('09:00')->onFailure($reportFailure('wishlist:check-releases'));

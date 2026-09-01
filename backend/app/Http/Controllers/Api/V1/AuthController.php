@@ -486,6 +486,16 @@ class AuthController extends Controller
             'wishlist_count' => $collectionCounts['wishlist_count'],
             'favorites_count' => $collectionCounts['favorites_count'],
             'dropped_count' => $collectionCounts['dropped_count'],
+            /*
+             * What the shelf is worth, at full price and in dollars.
+             *
+             * Full rather than today's price: a library should not lose sixty
+             * dollars because four of its games are on sale this week. The
+             * discounted total rides beside it, and `unpriced` says how many
+             * games carry no figure at all — free-to-play, or withdrawn from
+             * sale, which is not the same as worth nothing.
+             */
+            'shelf_worth' => $profileService->shelfWorth($user),
             // the shelf's "+N this month" — growth, not a total
             'games_added_this_month' => UserGame::where('user_id', $user->id)
                 ->where('created_at', '>=', now()->startOfMonth())

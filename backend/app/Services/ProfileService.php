@@ -58,6 +58,47 @@ class ProfileService
         return (int) UserGame::where('user_id', $user->id)->sum('hours_played');
     }
 
+    /**
+     * What the shelf is worth, at full price.
+     *
+     * Full rather than today's price on purpose: a collection should not be
+     * worth sixty dollars less because four of its games happen to be on sale
+     * this week, and worth it again on Monday. `on_sale_cents` carries the
+     * discounted total beside it, so the page can say what is cheap today
+     * without the headline number moving.
+     *
+     * `unpriced` is reported rather than swallowed. The catalogue holds
+     * free-to-play games and games the store has since withdrawn — GTA V is
+     * both delisted on Steam and on people's shelves — and a total that counts
+     * those as zero without saying how many there were is a total that
+     * understates itself quietly. Wishlisted games are left out entirely: you
+     * do not own them.
+     *
+     * @return array{full_cents:int,on_sale_cents:int,priced:int,unpriced:int,currency:string}
+     */
+    public function shelfWorth(User $user): array
+    {
+        $row = DB::table('user_games as ug')
+            ->leftJoin('game_prices as p', 'p.game_id', '=', 'ug.game_id')
+            ->where('ug.user_id', $user->id)
+            ->where('ug.status', '!=', 'wishlist')
+            ->selectRaw("
+                coalesce(sum(p.full_cents) filter (where p.status in ('priced','free')), 0) as full_cents,
+                coalesce(sum(coalesce(p.final_cents, p.full_cents)) filter (where p.status in ('priced','free')), 0) as sale_cents,
+                count(*) filter (where p.status in ('priced','free')) as priced,
+                count(*) filter (where p.id is null or p.status = 'unavailable') as unpriced
+            ")
+            ->first();
+
+        return [
+            'full_cents' => (int) ($row->full_cents ?? 0),
+            'on_sale_cents' => (int) ($row->sale_cents ?? 0),
+            'priced' => (int) ($row->priced ?? 0),
+            'unpriced' => (int) ($row->unpriced ?? 0),
+            'currency' => 'USD',
+        ];
+    }
+
     /** Ids of everyone this user has an accepted friendship with. */
     public function friendIds(User $user): array
     {
