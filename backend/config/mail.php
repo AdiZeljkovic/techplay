@@ -110,6 +110,20 @@ return [
     |
     */
 
+    /*
+     * Where a reply actually lands.
+     *
+     * Mail leaves as no-reply@techplay.gg and that stays — it is the address
+     * SPF, DKIM and the relay are aligned on, and none of that gets touched.
+     * But a message nobody can answer is a weaker signal to a filter than one
+     * that can receive an answer, and a member who hits reply on a confirmation
+     * should reach a person rather than a bounce.
+     */
+    'reply_to' => [
+        'address' => env('MAIL_REPLY_TO_ADDRESS', 'redakcija@techplay.gg'),
+        'name' => env('MAIL_REPLY_TO_NAME', 'TechPlay'),
+    ],
+
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),

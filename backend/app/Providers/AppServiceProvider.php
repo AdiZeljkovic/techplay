@@ -50,8 +50,10 @@ use Filament\Forms\Components\FileUpload;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
@@ -59,6 +61,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Contracts\Factory;
+use Symfony\Component\Mime\Address;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -104,6 +107,42 @@ class AppServiceProvider extends ServiceProvider
      * now identifies itself with a shared-secret header instead; source IP
      * proves nothing here, since X-Forwarded-For passes through.
      */
+    /**
+     * Two headers every message leaves with, set in one place.
+     *
+     * Our mail server's filter reported the message as having nowhere to reply
+     * to and nothing saying what sent it. Neither is worth much alone; together
+     * they are part of how a filter decides whether a sender is a person or a
+     * mailing.
+     *
+     * `Reply-To` matters most. A message nobody can answer is a weaker signal
+     * than one that can receive an answer — and a member who hits reply on a
+     * confirmation mail should reach somebody rather than a bounce from
+     * no-reply. The From address stays as it is; only the reply path is added.
+     *
+     * Set on the event rather than per Mailable so nothing can be missed: the
+     * verification mail, the reset, the contact form, the newsletter and
+     * anything added later all pass through here.
+     */
+    private function bootOutgoingMailHeaders(): void
+    {
+        Event::listen(function (MessageSending $event) {
+            $message = $event->message;
+
+            $replyTo = (string) config('mail.reply_to.address');
+
+            if ($replyTo !== '' && $message->getReplyTo() === []) {
+                $message->replyTo(new Address($replyTo, (string) config('mail.reply_to.name')));
+            }
+
+            $headers = $message->getHeaders();
+
+            if (! $headers->has('X-Mailer')) {
+                $headers->addTextHeader('X-Mailer', 'TechPlay');
+            }
+        });
+    }
+
     private function bootApiRateLimiter(): void
     {
         RateLimiter::for('api', function ($request) {
@@ -123,6 +162,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->bootApiRateLimiter();
+        $this->bootOutgoingMailHeaders();
 
         // Register custom Socialite providers
         $this->bootSocialite();

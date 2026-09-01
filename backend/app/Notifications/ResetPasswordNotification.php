@@ -28,7 +28,10 @@ class ResetPasswordNotification extends ResetPassword
     {
         return (new MailMessage)
             ->subject('Set a new password — TechPlay')
-            ->view('emails.auth.reset', [
+            // Both halves. A mail carrying only HTML reads as a mailing to a
+            // filter — ours scored MIME_HTML_ONLY for it — and the text part is
+            // also what reaches somebody with images off.
+            ->view(['emails.auth.reset', 'emails.auth.reset-text'], [
                 'url' => $url,
                 'username' => $this->notifiable?->username ?: null,
                 'appUrl' => rtrim(config('app.frontend_url'), '/'),

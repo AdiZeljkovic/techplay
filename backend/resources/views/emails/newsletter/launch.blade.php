@@ -62,7 +62,19 @@
   </style>
 </head>
 <body>
-  <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">TechPlay has evolved. Your library, XP, achievements, community and 332,000+ games now live in one place.</div>
+  {{--
+    No preheader.
+
+    The line that shows beside the subject in an inbox list is drawn hidden —
+    zero-height, zero-opacity, padded with zero-width joiners to stop the client
+    spilling body text after it. Our mail server's filter scored exactly that:
+    ZERO_FONT 0.50 for five zero-size elements, MANY_INVISIBLE_PARTS 0.80 for
+    nine invisible ones. Hidden text carrying keywords is how spam works, so
+    every filter reads it that way whatever it actually says.
+
+    Hiding it some other way scores the same. So it is gone, and the first
+    visible line of the message does the job instead.
+--}}
   <table role="presentation" width="100%" class="shell">
     <tr><td align="center">
       <table role="presentation" width="100%" class="container">

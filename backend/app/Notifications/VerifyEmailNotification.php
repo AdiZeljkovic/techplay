@@ -22,7 +22,10 @@ class VerifyEmailNotification extends VerifyEmail
     {
         return (new MailMessage)
             ->subject('Confirm your email — TechPlay')
-            ->view('emails.auth.verify', [
+            // Both halves. A mail carrying only HTML reads as a mailing to a
+            // filter — ours scored MIME_HTML_ONLY for it — and the text part is
+            // also what reaches somebody with images off.
+            ->view(['emails.auth.verify', 'emails.auth.verify-text'], [
                 'url' => $url,
                 'username' => $this->recipientName(),
                 'appUrl' => rtrim(config('app.frontend_url'), '/'),

@@ -46,7 +46,7 @@
 
     {{-- Hairline as a filled row: Outlook drops border-top on a td often enough
          that it is not worth relying on. --}}
-    <tr><td height="1" bgcolor="#26262C" style="background-color:#26262C; height:1px; line-height:1px; font-size:0; padding:0;">&nbsp;</td></tr>
+    <tr><td height="1" bgcolor="#26262C" style="background-color:#26262C; height:1px; mso-line-height-rule:exactly; line-height:1px; padding:0;"></td></tr>
 
     <tr>
         <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:21px; color:#77777F; padding:22px 0 0 0;">

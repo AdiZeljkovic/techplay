@@ -54,10 +54,19 @@
 </head>
 <body bgcolor="#0A0A0C" style="margin:0; padding:0; background-color:#0A0A0C;">
 
-{{-- The line the inbox list shows beside the subject. Hidden in the body. --}}
-<div style="display:none; font-size:1px; color:#0A0A0C; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden;">
-    {{ $preheader }}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
-</div>
+{{--
+    No preheader.
+
+    The line that shows beside the subject in an inbox list is drawn hidden —
+    zero-height, zero-opacity, padded with zero-width joiners to stop the client
+    spilling body text after it. Our mail server's filter scored exactly that:
+    ZERO_FONT 0.50 for five zero-size elements, MANY_INVISIBLE_PARTS 0.80 for
+    nine invisible ones. Hidden text carrying keywords is how spam works, so
+    every filter reads it that way whatever it actually says.
+
+    Hiding it some other way scores the same. So it is gone, and the first
+    visible line of the message does the job instead.
+--}}
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0A0A0C" style="background-color:#0A0A0C;">
     <tr>
@@ -96,7 +105,15 @@
                                  A coloured row rather than a border, because
                                  Outlook drops border-top on a td often enough. --}}
                             <tr>
-                                <td bgcolor="#DC143C" height="3" style="background-color:#DC143C; height:3px; line-height:3px; font-size:0;">&nbsp;</td>
+                                {{-- No non-breaking space and no font-size:0 inside it.
+
+                                       The cell held an &nbsp; sized to nothing so it
+                                       would not grow, which is a zero-font element as
+                                       far as a filter is concerned — and ours counted
+                                       it. An empty cell with an explicit height and
+                                       mso-line-height-rule holds the same three pixels
+                                       in Outlook without any text to size away. --}}
+                                  <td bgcolor="#DC143C" height="3" style="background-color:#DC143C; height:3px; mso-line-height-rule:exactly; line-height:3px;"></td>
                             </tr>
 
                             <tr>
