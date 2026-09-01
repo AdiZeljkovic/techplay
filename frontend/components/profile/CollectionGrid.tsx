@@ -9,7 +9,7 @@ import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { differenceInDays, parseISO } from "date-fns";
 import {
-    Library, Trash2, Plus, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, NotebookPen, ChevronDown as ChevronMore,
+    Library, Trash2, Plus, Wallet, Search, X, Loader2, Heart, CalendarClock, Pin, Upload, Clock3, Gamepad2, NotebookPen, ChevronDown as ChevronMore,
 } from "lucide-react";
 import Segmented from "@/components/ui/Segmented";
 import { ShelfMark, FinishMark, PileMark, WishMark } from "./ShelfMarks";
@@ -496,6 +496,64 @@ function StatCell({
 }
 
 /** The shelf's headline figures, plus how much of it has actually been finished. */
+/**
+ * What the shelf cost, at the prices the stores ask today.
+ *
+ * Its own line rather than a seventh cell in the ledger above: the other six
+ * are counts of what somebody has done, and this is a number with a caveat
+ * attached — a caveat that will not fit in a stat cell and must not be dropped.
+ *
+ * Full price, not this week's. A library that lost sixty dollars because four
+ * of its games went on sale, and got them back on Monday, would be a number
+ * nobody could trust. What is cheap today is said beside it instead.
+ *
+ * And it says what it does not know. Free-to-play games count as nothing and
+ * that is correct; games the store has withdrawn are not worth nothing, they
+ * are unknown, and there are fifty-two of those across the shelves today. The
+ * count is on the line, not in a tooltip.
+ */
+function ShelfWorth({ worth, isOwnProfile }: { worth?: UserProfile["stats"] extends infer S ? S extends { shelf_worth?: infer W } ? W : never : never; isOwnProfile: boolean }) {
+    if (!worth || worth.priced === 0) return null;
+
+    const money = (cents: number) =>
+        (cents / 100).toLocaleString("en-US", { style: "currency", currency: worth.currency || "USD", maximumFractionDigits: 0 });
+
+    const saving = worth.full_cents - worth.on_sale_cents;
+
+    return (
+        <div
+            className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[var(--radius-panel)] border px-5 py-3.5"
+            style={{ borderColor: "var(--line-strong)", background: "var(--surface-1)" }}
+        >
+            <Wallet className="w-[18px] h-[18px] shrink-0 text-amber-400" strokeWidth={1.7} />
+
+            <span className="font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/55">
+                {isOwnProfile ? "Your library is worth" : "This library is worth"}
+            </span>
+
+            <span className="font-display text-[22px] font-black tabular-nums leading-none text-amber-400">
+                {money(worth.full_cents)}
+            </span>
+
+            <span className="text-[12px] text-white/45">
+                at full price
+                {saving > 0 && (
+                    <>
+                        {" · "}
+                        <span className="text-white/70">{money(worth.on_sale_cents)}</span> at today&apos;s prices
+                    </>
+                )}
+                {worth.unpriced > 0 && (
+                    <>
+                        {" · "}
+                        {worth.unpriced} {worth.unpriced === 1 ? "game has" : "games have"} no price
+                    </>
+                )}
+            </span>
+        </div>
+    );
+}
+
 function CollectionLedger({ stats, isOwnProfile }: { stats?: UserProfile["stats"]; isOwnProfile: boolean }) {
     const total = stats?.games_count ?? 0;
     const completed = stats?.completed_count ?? 0;
@@ -808,6 +866,7 @@ export default function CollectionGrid({ username, isOwnProfile, onLogSession, a
     return (
         <div className="space-y-5">
             <CollectionLedger stats={stats} isOwnProfile={isOwnProfile} />
+            <ShelfWorth worth={stats?.shelf_worth} isOwnProfile={isOwnProfile} />
 
             {/* shelf on the left, the reading of it on the right */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">

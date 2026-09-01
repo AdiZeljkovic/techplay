@@ -308,6 +308,21 @@ export interface ProfileStats {
     favorites_count?: number;
     dropped_count?: number;
     games_added_this_month?: number;
+    /**
+     * What the shelf is worth, in US cents at full price.
+     *
+     * `unpriced` is part of the answer, not a footnote: a shelf holds
+     * free-to-play games and games the store has withdrawn, and a total that
+     * counted those as zero without saying how many there were would quietly
+     * understate itself.
+     */
+    shelf_worth?: {
+        full_cents: number;
+        on_sale_cents: number;
+        priced: number;
+        unpriced: number;
+        currency: string;
+    };
     bounty_balance?: number;
 }
 
