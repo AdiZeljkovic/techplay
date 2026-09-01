@@ -1,6 +1,6 @@
 import { Article } from "@/types";
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import SectionHub from "@/components/editorial/SectionHub";
 import ArticleDetailView from "@/components/news/ArticleDetailView";
 import { NEWS_CATEGORIES } from "@/lib/categories";
@@ -27,6 +27,43 @@ async function getInitialCategoryData(categorySlug: string) {
     } catch {
         return null;
     }
+}
+
+/**
+ * The same slug, asked of the other sections.
+ *
+ * Only ever called when /news has already missed, so it costs nothing on the
+ * path readers actually take. It exists because links to /news/{slug} were
+ * being written by hand all over the site for articles that do not live there
+ * — the author page did it for all 51 of one author's tech pieces, and the
+ * share button on the article page did it for every tech article anyone
+ * shared. Those links are already out in the world; one reached Discord as
+ * "how am I supposed to read this if it throws an error?".
+ *
+ * Fixing the generators stops new ones. This is what rescues the ones already
+ * sent, and hands Google a 301 where it was collecting a 404.
+ */
+async function elsewhere(slug: string): Promise<string | null> {
+    // API segment → the path a reader sees. `tech` is the one that differs.
+    const sections: Array<[string, string]> = [
+        ["tech", "hardware"],
+        ["reviews", "reviews"],
+        ["guides", "guides"],
+    ];
+
+    for (const [api, web] of sections) {
+        try {
+            const json = await fetchContent<{ data?: Article } & Article>(
+                `${getServerApiUrl()}/${api}/${slug}`,
+                { cache: "force-cache", next: { tags: [api, `${api}-${slug}`] } },
+            );
+            if (json && (json.data ?? json)?.slug) return `/${web}/${slug}`;
+        } catch {
+            // A section that cannot answer must not turn a redirect into a 500.
+        }
+    }
+
+    return null;
 }
 
 async function getArticle(slug: string): Promise<Article | null> {
@@ -231,6 +268,8 @@ export default async function NewsSlugPage({ params }: Props) {
     const article = await getArticle(slug);
 
     if (!article) {
+        const home = await elsewhere(slug);
+        if (home) permanentRedirect(home);
         notFound();
     }
 

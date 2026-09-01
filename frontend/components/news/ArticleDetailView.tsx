@@ -23,6 +23,7 @@ import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import ArticleFooter from "@/components/ui/ArticleFooter";
 import GoogleNewsFollow from "@/components/ui/GoogleNewsFollow";
 import { decodeHtml } from "@/lib/decode";
+import { articleHref } from "@/lib/articleHref";
 
 interface ArticleDetailViewProps {
     article: Article;
@@ -268,7 +269,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                     <div className="flex items-center gap-2.5 flex-nowrap">
                                         <span className="hidden md:inline text-white/50 text-[11px] font-bold uppercase tracking-widest shrink-0">SHARE:</span>
                                         <SocialShare
-                                            url={`/news/${article.slug}`}
+                                            url={articleHref(article)}
                                             title={decodeHtml(article.title)}
                                             description={decodeHtml(article.excerpt) || ''}
                                             vertical={false}
@@ -344,7 +345,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                     <ArticleFooter
                                         author={article.author}
                                         tags={[decodeHtml(article.category?.name), 'Gaming'].filter(Boolean) as string[]}
-                                        shareUrl={`/news/${article.slug}`}
+                                        shareUrl={articleHref(article)}
                                         shareTitle={decodeHtml(article.title)}
                                         shareDescription={decodeHtml(article.excerpt) || ''}
                                         commentableId={article.id}

@@ -9,6 +9,7 @@ import { Article } from "@/types";
 import { formatDistanceToNow } from "date-fns";
 import { getImageUrl } from "@/lib/imageUrl";
 import { decodeHtml } from "@/lib/decode";
+import { articleHref } from "@/lib/articleHref";
 
 interface NewsCardProps {
     article: Article;
@@ -28,7 +29,18 @@ export default memo(function NewsCard({ article, index }: NewsCardProps) {
         : null;
 
     return (
-        <Link href={`/news/${article.slug}`}>
+        /* The card asks the article where it lives.
+
+           This was hardcoded to /news/{slug}, which is right for a news item
+           and wrong for everything else: tech articles are served from
+           /hardware and guides from /guides. The author page is the only
+           surface that renders this card, and it renders every category
+           through it — so all 51 of one author's tech pieces linked to a 404,
+           and a reader reported one from Discord.
+
+           lib/articleHref already held the mapping and three other components
+           were already using it. */
+        <Link href={articleHref(article)}>
             <motion.article
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

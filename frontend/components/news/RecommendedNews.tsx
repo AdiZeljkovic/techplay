@@ -4,6 +4,7 @@ import useSWR from "swr";
 import axios from "@/lib/axios";
 import { Article } from "@/types";
 import Link from "next/link";
+import { articleHref } from "@/lib/articleHref";
 import Image from "next/image";
 import Panel from "@/components/ui/Panel";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -63,7 +64,7 @@ export default function RecommendedNews({ excludeSlug }: RecommendedNewsProps) {
                     return (
                         <Link
                             key={article.slug}
-                            href={`/news/${article.slug}`}
+                            href={articleHref(article)}
                             className="group flex gap-3 p-3.5 hover:bg-white/[0.02] transition-colors"
                         >
                             <div className="relative w-[96px] h-[64px] rounded-[var(--radius-card)] overflow-hidden shrink-0 border border-white/[0.06] bg-black/40">

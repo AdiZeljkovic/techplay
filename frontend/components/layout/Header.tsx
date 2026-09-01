@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/context/CartContext";
 import { useMobileMenu } from "@/context/MobileMenuContext";
 import axios from "@/lib/axios";
+import { articleHref } from "@/lib/articleHref";
 import {
     Menu, X, Search, User, LogOut, ShoppingCart, ChevronDown, Mail, Users, Tag, ArrowRight, Bookmark, Settings, MessagesSquare, Trophy, Gift, Swords, ChevronLeft,
 } from "lucide-react";
@@ -178,8 +179,9 @@ interface NavArticle {
 const navNewsFetcher = () =>
     axios.get("/news").then((r) => ((r.data?.data ?? []) as NavArticle[]).slice(0, 5));
 
-const articleHref = (a: NavArticle) =>
-    a.category?.type === "reviews" ? `/reviews/${a.slug}` : `/news/${a.slug}`;
+/* Was a local copy that knew about reviews and nothing else, so tech and
+   guides in the dropdown pointed at /news and returned 404. lib/articleHref
+   has the whole mapping. */
 
 const navReviewsFetcher = () =>
     axios.get("/reviews").then((r) =>
