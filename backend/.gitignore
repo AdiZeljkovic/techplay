@@ -39,3 +39,22 @@ Thumbs.db
 # `git pull` refused to run. Untracked here on 28.08.2026; the root .gitignore
 # already carried a one-off line for sitemap-news.xml, which is the same
 # papercut patched once for the one file that hurt first.
+
+# What Octane installs and runs with, and what plugins publish into public/.
+#
+# All of it is generated on the machine it runs on: `octane:install
+# --server=frankenphp` writes the worker, downloads the 149 MB binary beside
+# artisan, and FrankenPHP keeps its Caddy state in caddy/. `filament:assets`
+# and the jobs-monitor plugin publish theirs under public/.
+#
+# None of it belongs in the repository, and leaving it untracked is not free:
+# `git status` on the server listed five real files as junk alongside five
+# genuine accidents — captured tinker output with names like `);exit` — and
+# the binary holding port 8000 was one keystroke from being cleaned up with
+# them. Untracked files also blocked a `git pull` here once already, which is
+# the same papercut the sitemap rule above was written for.
+/frankenphp
+/caddy/
+/public/frankenphp-worker.php
+/public/js/app/
+/public/css/croustibat/
