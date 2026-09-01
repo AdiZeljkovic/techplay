@@ -80,7 +80,37 @@ export default function JoinPrompt({ variant = "panel" }: { variant?: "panel" | 
                 style={{ background: "radial-gradient(90% 120% at 8% 0%, color-mix(in srgb, var(--accent) 13%, transparent) 0%, transparent 62%)" }}
             />
 
-            <div className="relative p-5 sm:p-7">
+            {/* Buffy, from sm up.
+                Not on a narrow phone: the panel is one column there and an
+                image above the list would push the button below the fold on the
+                screen size that most of this audience is using. The art has its
+                own near-black ground, so it needs no plate — only a fade on its
+                left edge so it dissolves into the panel instead of ending on a
+                seam. Decorative, so no alt text: a reader on a screen reader
+                gains nothing from being told there is a picture of an owl. */}
+            <div
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 right-0 hidden sm:block w-[168px] md:w-[210px] lg:w-[258px]"
+                style={{
+                    WebkitMaskImage: "linear-gradient(to right, transparent 0%, #000 42%)",
+                    maskImage: "linear-gradient(to right, transparent 0%, #000 42%)",
+                }}
+            >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                    src="/images/buffy-controller.webp"
+                    alt=""
+                    width={560}
+                    height={560}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-cover object-center select-none"
+                />
+            </div>
+
+            {/* The copy keeps its own width so a long line never runs under the
+                art, whatever the panel is asked to be. */}
+            <div className="relative p-5 sm:p-7 sm:max-w-[calc(100%-150px)] md:max-w-[calc(100%-190px)] lg:max-w-[calc(100%-236px)]">
                 <p className="font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
                     Free TechPlay account
                 </p>
@@ -107,7 +137,7 @@ export default function JoinPrompt({ variant = "panel" }: { variant?: "panel" | 
 
                 {/* Full width on a phone, because a thumb should not have to
                     aim. Side by side from the first breakpoint up. */}
-                <div className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2.5">
+                <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2.5">
                     <Link
                         href="/register?from=article"
                         className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] px-6 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-white transition-[filter] duration-300 hover:brightness-110"
