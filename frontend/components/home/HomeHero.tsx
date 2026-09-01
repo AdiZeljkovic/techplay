@@ -1,11 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
 import { Article } from "@/types";
 import HeroSlider from "./HeroSlider";
+import SearchDropdown from "@/components/layout/SearchDropdown";
 
 /**
  * Public homepage hero. Left: the promise, search, CTAs and a stat row.
@@ -36,8 +34,6 @@ export default function HomeHero({
     /** Omitted entirely when the API could not confirm it. */
     gameCount?: number | null;
 }) {
-    const router = useRouter();
-    const [query, setQuery] = useState("");
 
     // Grouped to the thousand: "141,580" reads as a moving meter and invites
     // nobody to check it, while "141,000 games" is both true and legible.
@@ -48,12 +44,6 @@ export default function HomeHero({
         catalogue ? { value: catalogue, label: "Games in the catalogue" } : null,
         { value: "Free", label: "To keep a library" },
     ].filter(Boolean) as { value: string; label: string }[];
-
-    const submitSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        const q = query.trim();
-        if (q) router.push(`/games?search=${encodeURIComponent(q)}`);
-    };
 
     return (
         <section className="relative rounded-[var(--radius-panel)] overflow-hidden bg-[var(--surface-1)] border border-[var(--line)] lg:min-h-[500px]">
@@ -98,25 +88,20 @@ export default function HomeHero({
                         it back: your taste, your year, and what to play tonight.
                     </p>
 
-                    <form onSubmit={submitSearch} className="mt-4 md:mt-7 max-w-[440px]">
-                        <div className="flex items-center gap-2 h-[52px] pl-4 pr-1.5 rounded-[var(--radius-card)] bg-[var(--surface-0)]/70 backdrop-blur-sm border border-[var(--line-strong)] focus-within:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] focus-within:shadow-[var(--glow-accent)] transition-all duration-300">
-                            <Search className="w-4 h-4 text-[var(--ink-faint)] shrink-0" />
-                            <input
-                                value={query}
-                                onChange={(e) => setQuery(e.target.value)}
-                                placeholder={catalogue ? `Search ${catalogue} games…` : "Search the catalogue…"}
-                                aria-label="Search games"
-                                className="flex-1 min-w-0 bg-transparent text-[14px] text-white placeholder:text-[var(--ink-faint)] outline-none"
-                            />
-                            <button
-                                type="submit"
-                                aria-label="Search"
-                                className="shrink-0 w-10 h-10 rounded-[var(--radius-inner)] bg-[var(--fill-2)] hover:bg-[var(--accent)] text-[var(--ink-low)] hover:text-white flex items-center justify-center transition-colors duration-300"
-                            >
-                                <Search className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </form>
+                    {/* The header's search box, at hero size.
+                        It was a plain form: type, press Enter, land on the
+                        catalogue and read a grid. Now the five best matches
+                        appear as you type and one tap goes straight to the
+                        game — which is what a search box on a front page is
+                        for. Same component as the header rather than a second
+                        one, so the debounce, the abort, the keyboard handling
+                        and the click-outside exist once. */}
+                    <SearchDropdown
+                        variant="hero"
+                        className="mt-4 md:mt-7 max-w-[440px]"
+                        placeholder={catalogue ? `Search ${catalogue} games…` : "Search the catalogue…"}
+                        seeAllHref={(q) => `/games?search=${encodeURIComponent(q)}`}
+                    />
 
                     {/* Same 440px as the search field above, split in two — the
                         pair reads as one block with it rather than a shorter

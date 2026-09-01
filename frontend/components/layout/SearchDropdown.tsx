@@ -28,9 +28,25 @@ interface SearchDropdownProps {
     autoFocus?: boolean;
     /** Register Ctrl/⌘+K to focus the input and show a kbd hint chip. */
     hotkey?: boolean;
+    /**
+     * The homepage hero wears the same control at a different size — 52px tall
+     * with a submit button on its end. A second component would have been a
+     * traced copy of the debounce, the abort, the keyboard handling and the
+     * click-outside; this is one prop instead.
+     */
+    variant?: "default" | "hero";
+    /**
+     * Where plain Enter goes when nothing in the list is highlighted.
+     *
+     * Without it Enter did nothing at all unless you had arrowed onto a row,
+     * which is the wrong answer to a keypress in a search box. The hero passes
+     * the catalogue; the header does not, and keeps its old behaviour.
+     */
+    seeAllHref?: (query: string) => string;
 }
 
-export default function SearchDropdown({ className, placeholder = "Search...", isMobile = false, onClose, autoFocus = false, hotkey = false }: SearchDropdownProps) {
+export default function SearchDropdown({ className, placeholder = "Search...", isMobile = false, onClose, autoFocus = false, hotkey = false, variant = "default", seeAllHref }: SearchDropdownProps) {
+    const isHero = variant === "hero";
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -115,6 +131,18 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
 
     // Keyboard navigation
     const handleKeyDown = (e: React.KeyboardEvent) => {
+        // Enter is answered even with the list closed or empty — somebody who
+        // typed a word and pressed return has asked for the full results, and
+        // returning nothing is how a search box earns "it doesn't work".
+        if (e.key === "Enter" && seeAllHref && selectedIndex < 0) {
+            const q = query.trim();
+            if (q.length >= 2) {
+                e.preventDefault();
+                navigateTo(seeAllHref(q));
+            }
+            return;
+        }
+
         if (!isOpen || results.length === 0) return;
 
         switch (e.key) {
@@ -157,8 +185,8 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
             {/* Search Input */}
             <div className="relative group">
                 <Search className={cn(
-                    "absolute top-1/2 -translate-y-1/2 transition-colors pointer-events-none",
-                    isMobile ? "w-5 h-5 left-4" : "w-4 h-4 left-3",
+                    "absolute top-1/2 -translate-y-1/2 transition-colors pointer-events-none z-10",
+                    isHero ? "w-4 h-4 left-4" : isMobile ? "w-5 h-5 left-4" : "w-4 h-4 left-3",
                     isLoading ? "text-[var(--accent)]" : "text-[var(--ink-faint)] group-focus-within:text-[var(--accent)]"
                 )} />
 
@@ -171,10 +199,18 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                     onFocus={() => query.length >= 2 && results.length > 0 && setIsOpen(true)}
                     placeholder={placeholder}
                     className={cn(
-                        "w-full bg-[var(--surface-2)] border border-[var(--line-strong)] text-white focus:outline-none focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)] transition-all placeholder:text-[var(--ink-faint)]",
-                        isMobile
-                            ? "rounded-[var(--radius-card)] py-3 pl-12 pr-10 text-base"
-                            : "rounded-[var(--radius-card)] py-2 pl-9 pr-8 text-sm"
+                        "w-full text-white focus:outline-none transition-all placeholder:text-[var(--ink-faint)]",
+                        isHero
+                            // The hero's own field: taller, translucent over the
+                            // art behind it, and leaving room on the right for
+                            // the submit button rather than a clear icon.
+                            ? "h-[52px] rounded-[var(--radius-card)] bg-[var(--surface-0)]/70 backdrop-blur-sm border border-[var(--line-strong)] pl-10 pr-[104px] text-[14px] focus:border-[color-mix(in_srgb,var(--accent)_50%,transparent)] focus:shadow-[var(--glow-accent)]"
+                            : cn(
+                                "bg-[var(--surface-2)] border border-[var(--line-strong)] focus:border-[color-mix(in_srgb,var(--accent)_60%,transparent)] focus:ring-1 focus:ring-[var(--accent-soft)]",
+                                isMobile
+                                    ? "rounded-[var(--radius-card)] py-3 pl-12 pr-10 text-base"
+                                    : "rounded-[var(--radius-card)] py-2 pl-9 pr-8 text-sm"
+                            )
                     )}
                 />
 
@@ -182,9 +218,11 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                 {(isLoading || query.length > 0) && (
                     <button
                         onClick={clearSearch}
+                        type="button"
+                        aria-label="Clear search"
                         className={cn(
-                            "absolute top-1/2 -translate-y-1/2 text-white/45 hover:text-white transition-colors",
-                            isMobile ? "right-4" : "right-3"
+                            "absolute top-1/2 -translate-y-1/2 text-white/45 hover:text-white transition-colors z-10",
+                            isHero ? "right-[58px]" : isMobile ? "right-4" : "right-3"
                         )}
                     >
                         {isLoading ? (
@@ -192,6 +230,24 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         ) : (
                             <X className="w-4 h-4" />
                         )}
+                    </button>
+                )}
+
+                {/* The hero keeps its button. A dropdown answers the person who
+                    types and waits; the button answers the one who types and
+                    reaches for the obvious control, and on a phone that is the
+                    same gesture as tapping "go". */}
+                {isHero && (
+                    <button
+                        type="button"
+                        aria-label="Search"
+                        onClick={() => {
+                            const q = query.trim();
+                            if (q.length >= 2) navigateTo(seeAllHref ? seeAllHref(q) : `/games?search=${encodeURIComponent(q)}`);
+                        }}
+                        className="absolute top-1/2 right-1.5 -translate-y-1/2 w-10 h-10 rounded-[var(--radius-inner)] bg-[var(--fill-2)] hover:bg-[var(--accent)] text-[var(--ink-low)] hover:text-white flex items-center justify-center transition-colors duration-300 z-10"
+                    >
+                        <Search className="w-4 h-4" />
                     </button>
                 )}
             </div>
@@ -206,7 +262,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
                             "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-[var(--radius-card)] shadow-2xl overflow-hidden",
-                            isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
+                            isHero || isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(400px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(220, 20, 60,0.1)" }}
                     >
@@ -253,13 +309,28 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                             ))}
                         </div>
 
-                        {/* Footer */}
-                        <div className="px-4 py-2 border-t border-[var(--line-strong)] bg-[var(--fill-2)]">
-                            <p className="text-xs text-white/45 text-center">
-                                Press <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-white/45">↵</kbd> to select,
-                                <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-white/45 ml-1">↑↓</kbd> to navigate
-                            </p>
-                        </div>
+                        {/* Footer.
+
+                            The keyboard hint is for a keyboard. Where a
+                            see-all destination exists it becomes a real row
+                            instead — five suggestions are not the catalogue,
+                            and a phone has no arrow keys to be told about. */}
+                        {seeAllHref ? (
+                            <button
+                                type="button"
+                                onClick={() => navigateTo(seeAllHref(query.trim()))}
+                                className="w-full px-4 py-3 border-t border-[var(--line-strong)] bg-[var(--fill-2)] text-left text-[12.5px] font-semibold text-white/70 hover:text-white hover:bg-[var(--fill-3)] transition-colors"
+                            >
+                                See every result for <span className="text-[var(--accent)]">&ldquo;{query.trim()}&rdquo;</span>
+                            </button>
+                        ) : (
+                            <div className="px-4 py-2 border-t border-[var(--line-strong)] bg-[var(--fill-2)]">
+                                <p className="text-xs text-white/45 text-center">
+                                    Press <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-white/45">↵</kbd> to select,
+                                    <kbd className="px-1 py-0.5 bg-[var(--fill-3)] rounded text-white/45 ml-1">↑↓</kbd> to navigate
+                                </p>
+                            </div>
+                        )}
                     </motion.div>
                 )}
 
@@ -272,7 +343,7 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                         transition={{ duration: 0.15, ease: "easeOut" }}
                         className={cn(
                             "absolute z-50 bg-[var(--surface-2)] backdrop-blur-xl border border-white/[0.07] rounded-[var(--radius-card)] shadow-2xl p-6 text-center",
-                            isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(300px,calc(100vw-2rem))]"
+                            isHero || isMobile ? "left-0 right-0 mt-2" : "left-0 mt-2 w-[min(300px,calc(100vw-2rem))]"
                         )}
                         style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.7)" }}
                     >

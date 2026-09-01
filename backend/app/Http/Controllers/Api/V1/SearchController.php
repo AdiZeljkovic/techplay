@@ -88,9 +88,38 @@ class SearchController extends Controller
         $cacheKey = 'search.games.'.md5($query);
 
         $result = Cache::remember($cacheKey, 60, function () use ($query) {
+            /*
+             * ILIKE is Postgres's. The suite runs on SQLite, where the operator
+             * does not exist and this query quietly matched nothing — so the
+             * ranking below could not be tested at all until it was asked for
+             * by name. SQLite's own LIKE is already case-insensitive for ASCII,
+             * which is what the comparison needs.
+             */
+            $like = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
+
             $results = Game::query()
-                ->where('name', 'ILIKE', "%{$query}%")
+                ->where('name', $like, "%{$query}%")
                 ->whereNotNull('description')
+                /*
+                 * Where the word lands, before how well the game was reviewed.
+                 *
+                 * This used to sort on rating alone, so anything with the typed
+                 * word anywhere in its title competed on equal footing. Typing
+                 * "Half" offered Rise of the Half Moon, Dragon Half and a game
+                 * called Half — and not Half-Life, which the catalogue's own
+                 * list endpoint returns first. Somebody typing four letters is
+                 * naming a game, not asking for the best-reviewed title that
+                 * happens to contain them.
+                 *
+                 * Three tiers: the title starts with what was typed, the word
+                 * starts somewhere inside the title, or it merely appears.
+                 * Rating breaks ties, which is what puts Half-Life above the
+                 * obscure game named exactly Half.
+                 */
+                ->orderByRaw(
+                    "CASE WHEN name {$like} ? THEN 0 WHEN name {$like} ? THEN 1 ELSE 2 END",
+                    ["{$query}%", "% {$query}%"]
+                )
                 // The game before its editions — same demote as the catalogue list.
                 ->when(DB::getDriverName() === 'pgsql', fn ($q) => $q
                     ->orderByRaw("(genres && ARRAY['Add-on','Compilation','Special edition']::text[])::int asc"))
