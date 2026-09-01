@@ -1,208 +1,332 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <meta name="supported-color-schemes" content="dark">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <title>The new TechPlay is here</title>
+
+  {{--
+    Outlook renders mail through Word, not a browser. It ignores padding on
+    everything except <td>, ignores display:inline-block, border-radius,
+    max-width, and width/height on a <div>. A version of this template built
+    from styled divs came back looking broken: the icon chips stretched into
+    full-width bars, the buttons collapsed to flat red text with no shape, the
+    metric numbers ran into their labels because display:block on a <strong>
+    was dropped, and the layout spilled past the viewport because max-width
+    meant nothing to it.
+
+    So every box here is a real <td>: padding, background and borders live on
+    table cells, widths are HTML attributes as well as CSS, and nothing that
+    has to hold a shape is a div. border-radius is the one thing left to
+    degrade — Outlook squares the corners, which reads as deliberate rather
+    than broken.
+  --}}
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <![endif]-->
+
   <style>
-    html, body { margin:0 !important; padding:0 !important; width:100% !important; background:#050506; }
-    body { font-family: Arial, Helvetica, sans-serif; -webkit-font-smoothing:antialiased; }
-    table { border-collapse:collapse !important; border-spacing:0 !important; }
-    img { border:0; display:block; max-width:100%; }
+    html, body { margin:0 !important; padding:0 !important; width:100% !important; background:#08080A; }
+    body { -webkit-font-smoothing:antialiased; -ms-text-size-adjust:100%; -webkit-text-size-adjust:100%; }
+    table { border-collapse:collapse; border-spacing:0; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+    img { border:0; outline:none; display:block; -ms-interpolation-mode:bicubic; }
     a { text-decoration:none; }
-    .shell { width:100%; background:#050506; padding:34px 16px 48px; }
-    .container { width:100%; max-width:680px; margin:0 auto; }
-    .topbar { color:#8f8f98; font-size:12px; line-height:18px; }
-    .logo { color:#ffffff; font-weight:900; letter-spacing:-1px; font-size:24px; }
-    .logo-mark { display:inline-block; vertical-align:middle; width:26px; height:26px; line-height:26px; text-align:center; border-radius:7px; background:#DC143C; color:#fff; font-size:13px; margin-right:9px; letter-spacing:-.6px; }
-    .panel { background:#0d0d10; border:1px solid #24242a; border-radius:22px; overflow:hidden; box-shadow:0 20px 80px rgba(0,0,0,.45); }
-    .hero { background:#0c0c0f; }
-    .eyebrow { display:inline-block; padding:7px 10px; border-radius:999px; border:1px solid #48202b; background:#1b0c11; color:#FF4D6A; font-weight:800; font-size:10px; letter-spacing:1.4px; }
-    h1 { margin:16px 0 14px; color:#fff; font-size:42px; line-height:44px; letter-spacing:-1.9px; }
-    .lead { margin:0; color:#b7b7c0; font-size:16px; line-height:25px; }
-    .cta { display:inline-block; margin-top:24px; padding:14px 20px; border-radius:12px; background:#DC143C; color:#fff !important; font-weight:800; font-size:14px; box-shadow:0 10px 32px rgba(220,20,60,.22); }
-    .subcta { display:inline-block; margin:24px 0 0 10px; color:#a9a9b2 !important; font-weight:700; font-size:13px; }
-    .hero-art { background:radial-gradient(circle at 50% 50%, rgba(220,20,60,.22), rgba(220,20,60,0) 63%); }
-    .buffy-frame { margin:20px 20px 20px 0; border:1px solid #322127; border-radius:18px; overflow:hidden; background:#15090d; }
-    .buffy-note { color:#dadbe0; font-size:12px; line-height:18px; padding:10px 12px 12px; border-top:1px solid #2a2024; }
-    .buffy-note b { color:#fff; }
-    .section { padding:42px 34px; }
-    .section-kicker { color:#FF4D6A; font-size:11px; letter-spacing:1.35px; font-weight:900; text-transform:uppercase; }
-    .section-title { margin:9px 0 10px; color:#fff; font-size:26px; line-height:32px; letter-spacing:-.8px; }
-    .section-copy { margin:0; color:#9f9fa8; font-size:14px; line-height:22px; }
-    .feature { background:#121216; border:1px solid #27272d; border-radius:16px; padding:18px; height:100%; }
-    .feature-icon { width:34px; height:34px; border-radius:10px; background:#1c0b10; border:1px solid #4c1724; color:#FF4D6A; text-align:center; line-height:34px; font-size:16px; font-weight:900; }
-    .feature h3 { margin:14px 0 7px; color:#fff; font-size:16px; line-height:21px; }
-    .feature p { margin:0; color:#92929c; font-size:13px; line-height:20px; }
-    .metric { text-align:center; padding:22px 12px; }
-    .metric strong { display:block; color:#fff; font-size:24px; line-height:28px; letter-spacing:-.6px; }
-    .metric span { color:#7f7f89; font-size:11px; text-transform:uppercase; letter-spacing:1px; }
-    .divider { height:1px; background:#24242a; }
-    .briefing { background:#130a0d; border:1px solid #3a1721; border-radius:18px; padding:22px; }
-    .briefing-title { color:#fff; font-size:18px; line-height:24px; font-weight:900; }
-    .briefing-copy { margin:8px 0 0; color:#c1adb2; font-size:14px; line-height:22px; }
-    .coming { color:#fff; font-size:13px; line-height:20px; }
-    .coming span { color:#FF4D6A; font-weight:800; }
-    .footer { color:#696971; font-size:11px; line-height:18px; text-align:center; padding:26px 24px 10px; }
-    .footer a { color:#85858e; text-decoration:underline; }
-    @media screen and (max-width: 620px) {
-      .shell { padding:14px 8px 30px !important; }
-      .mobile-block, .mobile-block td { display:block !important; width:100% !important; }
-      .hero-copy { padding:30px 24px 14px !important; }
-      .hero-art-cell { padding:0 24px 24px !important; }
-      .buffy-frame { margin:0 !important; }
-      h1 { font-size:34px !important; line-height:37px !important; }
-      .section { padding:34px 22px !important; }
-      .feature-cell { display:block !important; width:100% !important; padding:0 0 12px !important; }
-      .metric-cell { width:33.333% !important; }
-      .subcta { display:block !important; margin:13px 0 0 !important; }
+
+    /* Phones. Outlook desktop ignores media queries, but it is fixed-width
+       there anyway, so nothing below has to reach it. */
+    @media screen and (max-width:620px) {
+      .shell          { padding:16px 10px 28px !important; }
+      .stack          { display:block !important; width:100% !important; }
+      .hero-copy      { padding:30px 24px 4px !important; }
+      .hero-art       { padding:0 24px 26px !important; }
+      .hero-art-inner { width:100% !important; }
+      .hero-img       { width:100% !important; height:auto !important; }
+      .h1             { font-size:32px !important; line-height:36px !important; letter-spacing:-1.2px !important; }
+      .pad            { padding-left:22px !important; padding-right:22px !important; }
+      .card-cell      { display:block !important; width:100% !important; padding:0 0 12px 0 !important; }
+      .metric-num     { font-size:21px !important; }
+      .metric-cell    { padding-left:4px !important; padding-right:4px !important; }
+      .subcta         { padding:14px 0 0 0 !important; }
+      /* The masthead stacks rather than shrinking. Hiding the tagline on
+         narrow screens is the obvious move and it is off the table: every
+         way of doing it is a zero-size or hidden element, which is what our
+         filter scored us on in the first place. */
+      .mast-logo      { display:block !important; width:100% !important; }
+      .mast-line      { display:block !important; width:100% !important; text-align:left !important; padding:9px 0 0 !important; }
     }
   </style>
 </head>
-<body>
+<body style="margin:0; padding:0; background:#08080A;">
+
   {{--
-    No preheader.
+    No preheader. The line an inbox shows beside the subject is normally drawn
+    hidden — zero height, zero opacity, padded with zero-width joiners. Our own
+    mail server scored exactly that: ZERO_FONT 0.50, MANY_INVISIBLE_PARTS 0.80.
+    Hidden text carrying words is how spam works, so every filter reads it that
+    way whatever ours actually said. The first visible line does the job.
+  --}}
 
-    The line that shows beside the subject in an inbox list is drawn hidden —
-    zero-height, zero-opacity, padded with zero-width joiners to stop the client
-    spilling body text after it. Our mail server's filter scored exactly that:
-    ZERO_FONT 0.50 for five zero-size elements, MANY_INVISIBLE_PARTS 0.80 for
-    nine invisible ones. Hidden text carrying keywords is how spam works, so
-    every filter reads it that way whatever it actually says.
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#08080A;">
+    <tr>
+      <td align="center" class="shell" style="padding:32px 16px 44px;">
 
-    Hiding it some other way scores the same. So it is gone, and the first
-    visible line of the message does the job instead.
---}}
-  <table role="presentation" width="100%" class="shell">
-    <tr><td align="center">
-      <table role="presentation" width="100%" class="container">
-        <tr>
-          <td style="padding:0 6px 18px;">
-            <table role="presentation" width="100%">
-              <tr>
-                <td align="left"><a href="https://techplay.gg" style="text-decoration:none;"><img src="https://techplay.gg/techplay-logo.png" width="150" height="25" alt="TECHPLAY" style="display:block; border:0; width:150px; height:auto;"></a></td>
-                <td align="right" class="topbar">One Platform. Everything for Gamers.</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px;">
 
-        <tr><td class="panel hero">
-          <table role="presentation" width="100%" class="mobile-block">
-            <tr>
-              <td width="58%" valign="middle" class="hero-copy" style="padding:42px 20px 42px 36px;">
-                <span class="eyebrow">THE NEW TECHPLAY IS LIVE</span>
-                <h1>Your gaming life.<br>Now in one place.</h1>
-                <p class="lead">We rebuilt TechPlay around you — your games, your progress, your achievements and your community.</p>
-                <a href="https://techplay.gg" class="cta">Explore the new TechPlay →</a>
-                <a href="https://techplay.gg" class="subcta">See what changed</a>
-              </td>
-              <td width="42%" valign="middle" class="hero-art hero-art-cell">
-                <div class="buffy-frame">
-                  <img src="https://techplay.gg/images/buffy-portrait.jpg" width="100%" alt="Professor Buffy, the TechPlay owl" style="display:block; width:100%; height:auto; border:0;">
-                  <div class="buffy-note"><b>Professor Buffy:</b> “Your backlog definitely didn’t get smaller while you were away.”</div>
-                </div>
-              </td>
-            </tr>
-          </table>
-        </td></tr>
+          {{-- Masthead --}}
+          <tr>
+            <td style="padding:0 4px 16px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="left" valign="middle" class="mast-logo">
+                    <a href="{{ $appUrl }}"><img src="{{ $appUrl }}/techplay-logo.png" width="148" height="25" alt="TechPlay" style="display:block; width:148px; height:25px; border:0;"></a>
+                  </td>
+                  <td align="right" valign="middle" class="mast-line" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:12px; line-height:18px; color:#7C7C86;">
+                    One&nbsp;Platform. Everything&nbsp;for&nbsp;Gamers.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-        <tr><td style="height:18px"></td></tr>
+          {{-- Hero --}}
+          <tr>
+            <td style="background:#0D0D11; border:1px solid #22222A; border-radius:20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="336" valign="middle" class="stack hero-copy" style="width:336px; padding:38px 12px 38px 32px;">
 
-        <tr><td class="panel">
-          <div class="section">
-            <div class="section-kicker">MORE THAN A GAMING PORTAL</div>
-            <div class="section-title">TechPlay has evolved.</div>
-            <p class="section-copy">News, reviews and guides are still here. But now they are only one part of a much bigger platform built to become your gaming home.</p>
-          </div>
-          <div class="divider"></div>
-          <table role="presentation" width="100%">
-            <tr>
-              <td width="33.33%" class="metric metric-cell"><strong>332,833</strong><span>Games</span></td>
-              <td width="33.33%" class="metric metric-cell" style="border-left:1px solid #24242a;border-right:1px solid #24242a;"><strong>20</strong><span>Ranks</span></td>
-              <td width="33.33%" class="metric metric-cell"><strong>1</strong><span>Gaming identity</span></td>
-            </tr>
-          </table>
-        </td></tr>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="background:#1C0B11; border:1px solid #4A2029; border-radius:999px; padding:7px 12px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:10px; line-height:12px; font-weight:700; letter-spacing:1.3px; color:#FF4D6A;">
+                          THE NEW TECHPLAY IS LIVE
+                        </td>
+                      </tr>
+                    </table>
 
-        <tr><td style="height:18px"></td></tr>
+                    <div class="h1" style="padding:18px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:38px; line-height:42px; letter-spacing:-1.6px; font-weight:700; color:#FFFFFF;">
+                      Your gaming&nbsp;life.<br>Now in one&nbsp;place.
+                    </div>
 
-        <tr><td class="panel">
-          <div class="section" style="padding-bottom:24px;">
-            <div class="section-kicker">WHAT'S NEW</div>
-            <div class="section-title">Everything you do now connects.</div>
-            <p class="section-copy">Build your library, track progress, earn XP and turn every visit into part of your TechPlay profile.</p>
-          </div>
-          <table role="presentation" width="100%" style="padding:0 24px 26px;">
-            <tr>
-              <td width="50%" valign="top" class="feature-cell" style="padding:0 6px 12px 24px;">
-                <div class="feature"><div class="feature-icon">▣</div><h3>Your Game Library</h3><p>Bring your games together, organize your collection and keep your gaming history in one place.</p></div>
-              </td>
-              <td width="50%" valign="top" class="feature-cell" style="padding:0 24px 12px 6px;">
-                <div class="feature"><div class="feature-icon">XP</div><h3>XP, Levels & Ranks</h3><p>Your activity finally means something. Earn XP, level up and climb from Newcomer all the way to Eternal.</p></div>
-              </td>
-            </tr>
-            <tr>
-              <td width="50%" valign="top" class="feature-cell" style="padding:0 6px 12px 24px;">
-                <div class="feature"><div class="feature-icon">★</div><h3>Achievements</h3><p>Unlock badges through games, community activity and hidden challenges across the platform.</p></div>
-              </td>
-              <td width="50%" valign="top" class="feature-cell" style="padding:0 24px 12px 6px;">
-                <div class="feature"><div class="feature-icon">∞</div><h3>332,000+ Games</h3><p>Explore a huge game database, discover something new and add titles directly to your library.</p></div>
-              </td>
-            </tr>
-            <tr>
-              <td width="50%" valign="top" class="feature-cell" style="padding:0 6px 28px 24px;">
-                <div class="feature"><div class="feature-icon">◫</div><h3>Release Calendar</h3><p>See what is launching next and keep track of the games you actually care about.</p></div>
-              </td>
-              <td width="50%" valign="top" class="feature-cell" style="padding:0 24px 28px 6px;">
-                <div class="feature"><div class="feature-icon">→</div><h3>Backlog Advisor</h3><p>Too many games, no idea what to play? Let TechPlay help you choose your next one.</p></div>
-              </td>
-            </tr>
-          </table>
-        </td></tr>
+                    <div style="padding:14px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#A9A9B4;">
+                      We rebuilt TechPlay around you &mdash; your games, your progress, your achievements and your community.
+                    </div>
 
-        <tr><td style="height:18px"></td></tr>
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;">
+                      <tr>
+                        <td style="background:#DC143C; border-radius:10px; padding:14px 22px;">
+                          <a href="{{ $appUrl }}" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:18px; font-weight:700; color:#FFFFFF; text-decoration:none;">Explore the new TechPlay&nbsp;&rarr;</a>
+                        </td>
+                        <td valign="middle" class="subcta" style="padding:0 0 0 16px;">
+                          <a href="{{ $appUrl }}/news" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; font-weight:600; color:#9A9AA4; text-decoration:none;">See what changed</a>
+                        </td>
+                      </tr>
+                    </table>
 
-        <tr><td class="panel">
-          <div class="section">
-            <div class="section-kicker">YOUR PROFILE = YOUR GAMING IDENTITY</div>
-            <div class="section-title">More than an account.</div>
-            <p class="section-copy">Your profile now brings together your games, achievements, XP, rank, reviews, activity and friends. The more you use TechPlay, the more your profile becomes yours.</p>
-            <div style="height:20px"></div>
-            <table role="presentation" width="100%"><tr>
-              <td style="padding:11px 12px;background:#111116;border:1px solid #292930;border-radius:12px;color:#b8b8c0;font-size:12px;line-height:18px;">Library&nbsp;&nbsp;•&nbsp;&nbsp;Playing Now&nbsp;&nbsp;•&nbsp;&nbsp;Achievements&nbsp;&nbsp;•&nbsp;&nbsp;Reviews&nbsp;&nbsp;•&nbsp;&nbsp;Friends&nbsp;&nbsp;•&nbsp;&nbsp;Activity</td>
-            </tr></table>
-          </div>
-        </td></tr>
+                  </td>
 
-        <tr><td style="height:18px"></td></tr>
+                  <td width="264" valign="middle" class="stack hero-art" style="width:264px; padding:30px 32px 30px 8px;">
+                    <table role="presentation" width="224" cellpadding="0" cellspacing="0" border="0" align="right" class="hero-art-inner" style="width:224px; background:#16090D; border:1px solid #3A222A; border-radius:16px;">
+                      <tr>
+                        <td style="padding:0;">
+                          <img src="{{ $appUrl }}/images/buffy-portrait.jpg" width="222" height="222" alt="Professor Buffy, the TechPlay owl" class="hero-img" style="display:block; width:222px; height:222px; border:0; border-radius:15px 15px 0 0;">
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:11px 13px 13px; border-top:1px solid #2C1F24; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:12px; line-height:18px; color:#C9C9D2;">
+                          <strong style="color:#FFFFFF;">Professor Buffy:</strong> &ldquo;Your backlog definitely didn&rsquo;t get smaller while you were away.&rdquo;
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
 
-        <tr><td class="panel">
-          <div class="section">
-            <div class="briefing">
-              <table role="presentation" width="100%"><tr>
-                <td width="42" valign="top"><div style="width:34px;height:34px;border-radius:10px;background:#DC143C;color:#fff;text-align:center;line-height:34px;font-weight:900;font-size:16px;">B</div></td>
-                <td valign="top">
-                  <div class="briefing-title">Buffy's briefing: we're just getting started.</div>
-                  <p class="briefing-copy">The new platform is live, but this is not the finish line. More integrations, deeper community features and new ways to use your gaming data are already on the way.</p>
-                </td>
-              </tr></table>
-            </div>
-            <div style="height:24px"></div>
-            <div class="coming"><span>Next up:</span> deeper platform integrations, expanded Library features, community systems and more surprises across TechPlay.</div>
-            <a href="https://techplay.gg" class="cta">Return to TechPlay →</a>
-          </div>
-        </td></tr>
+          <tr><td height="16" style="height:16px; line-height:16px; mso-line-height-rule:exactly;">&nbsp;</td></tr>
 
-        <tr><td class="footer">
-          You received this email because you created a TechPlay account.<br>
-          <span style="color:#8a8a93;">TECHPLAY.GG</span> &nbsp;•&nbsp; One Platform. Everything for Gamers.<br><br>
-          <a href="#">Manage preferences</a> &nbsp;•&nbsp; <a href="#">Unsubscribe</a>
-        </td></tr>
-      </table>
-    </td></tr>
+          {{-- What TechPlay is now, and the three numbers --}}
+          <tr>
+            <td style="background:#0D0D11; border:1px solid #22222A; border-radius:20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="pad" style="padding:36px 32px 30px;">
+                    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:14px; font-weight:700; letter-spacing:1.3px; color:#FF4D6A;">MORE THAN A GAMING PORTAL</div>
+                    <div style="padding:10px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:25px; line-height:31px; letter-spacing:-.7px; font-weight:700; color:#FFFFFF;">TechPlay has evolved.</div>
+                    <div style="padding:10px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:22px; color:#95959F;">News, reviews and guides are still here. But now they are only one part of a much bigger platform built to become your gaming home.</div>
+                  </td>
+                </tr>
+                <tr><td height="1" style="height:1px; line-height:1px; mso-line-height-rule:exactly; background:#22222A;">&nbsp;</td></tr>
+                <tr>
+                  <td style="padding:0;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="33%" align="center" class="metric-cell" style="padding:24px 10px;">
+                          <div class="metric-num" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:25px; line-height:30px; font-weight:700; letter-spacing:-.5px; color:#FFFFFF;">332,833</div>
+                          <div style="padding:5px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:14px; letter-spacing:.9px; color:#787882;">GAMES</div>
+                        </td>
+                        <td width="34%" align="center" class="metric-cell" style="padding:24px 10px; border-left:1px solid #22222A; border-right:1px solid #22222A;">
+                          <div class="metric-num" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:25px; line-height:30px; font-weight:700; letter-spacing:-.5px; color:#FFFFFF;">20</div>
+                          <div style="padding:5px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:14px; letter-spacing:.9px; color:#787882;">RANKS</div>
+                        </td>
+                        <td width="33%" align="center" class="metric-cell" style="padding:24px 10px;">
+                          <div class="metric-num" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:25px; line-height:30px; font-weight:700; letter-spacing:-.5px; color:#FFFFFF;">1</div>
+                          <div style="padding:5px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:14px; letter-spacing:.9px; color:#787882;">GAMING IDENTITY</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr><td height="16" style="height:16px; line-height:16px; mso-line-height-rule:exactly;">&nbsp;</td></tr>
+
+          {{-- The six features.
+
+               The glyph chips are gone. The old ones were 34px divs, which
+               Word stretched to the full width of the card, and half of the
+               characters in them (the geometric shapes especially) fall back
+               to a missing-glyph box in Outlook anyway. A crimson word above
+               each title carries the same structure, renders identically
+               everywhere, and reads better on a phone. --}}
+          <tr>
+            <td style="background:#0D0D11; border:1px solid #22222A; border-radius:20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="pad" style="padding:36px 32px 24px;">
+                    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:14px; font-weight:700; letter-spacing:1.3px; color:#FF4D6A;">WHAT'S NEW</div>
+                    <div style="padding:10px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:25px; line-height:31px; letter-spacing:-.7px; font-weight:700; color:#FFFFFF;">Everything you do now connects.</div>
+                    <div style="padding:10px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:22px; color:#95959F;">Build your library, track progress, earn XP and turn every visit into part of your TechPlay profile.</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="pad" style="padding:0 32px 32px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      @foreach ([
+                          [['COLLECTION', 'Your Game Library', 'Steam, Xbox, PlayStation, GOG and Epic in one shelf &mdash; plus anything you add by hand.'],
+                           ['PROGRESSION', 'XP, Levels &amp; Ranks', 'Your activity finally means something. Climb twenty ranks, from Newcomer to Eternal.']],
+                          [['REWARDS', 'Achievements', 'Sixty-seven of them, across your shelf, the community, and a few nobody has found yet.'],
+                           ['DATABASE', '332,000+ Games', 'Search a catalogue the size of the medium, and add straight from it to your shelf.']],
+                          [['CALENDAR', 'Release Calendar', 'What is launching next, and a reminder for the ones you actually care about.'],
+                           ['GUIDANCE', 'Backlog Advisor', 'Too many games and no idea which one? It reads your shelf and picks for you.']],
+                      ] as $row)
+                        <tr>
+                          @foreach ($row as $i => $card)
+                            <td width="50%" valign="top" class="card-cell" style="width:50%; padding:0 {{ $i === 0 ? '6px' : '0' }} 12px {{ $i === 0 ? '0' : '6px' }};">
+                              <table role="presentation" width="100%" height="100%" cellpadding="0" cellspacing="0" border="0" style="height:100%; background:#131318; border:1px solid #26262E; border-radius:14px;">
+                                <tr>
+                                  <td valign="top" style="padding:18px 18px 20px;">
+                                    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:10px; line-height:13px; font-weight:700; letter-spacing:1.2px; color:#FF4D6A;">{{ $card[0] }}</div>
+                                    <div style="padding:9px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:16px; line-height:21px; font-weight:700; letter-spacing:-.3px; color:#FFFFFF;">{!! $card[1] !!}</div>
+                                    <div style="padding:7px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:20px; color:#8B8B95;">{!! $card[2] !!}</div>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          @endforeach
+                        </tr>
+                      @endforeach
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr><td height="16" style="height:16px; line-height:16px; mso-line-height-rule:exactly;">&nbsp;</td></tr>
+
+          {{-- The profile --}}
+          <tr>
+            <td style="background:#0D0D11; border:1px solid #22222A; border-radius:20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="pad" style="padding:36px 32px 30px;">
+                    <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:14px; font-weight:700; letter-spacing:1.3px; color:#FF4D6A;">YOUR PROFILE IS YOUR GAMING IDENTITY</div>
+                    <div style="padding:10px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:25px; line-height:31px; letter-spacing:-.7px; font-weight:700; color:#FFFFFF;">More than an account.</div>
+                    <div style="padding:10px 0 18px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:22px; color:#95959F;">Your profile brings together your games, achievements, XP, rank, reviews, activity and friends. The more you use TechPlay, the more it becomes yours.</div>
+
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      @foreach ([['Library', 'Playing Now', 'Achievements'], ['Reviews', 'Friends', 'Activity']] as $row)
+                        <tr>
+                          @foreach ($row as $i => $chip)
+                            <td width="33%" valign="top" style="width:33.33%; padding:0 {{ $i === 2 ? '0' : '4px' }} 8px {{ $i === 0 ? '0' : '4px' }};">
+                              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#131318; border:1px solid #26262E; border-radius:9px;">
+                                <tr><td align="center" style="padding:10px 6px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:12px; line-height:16px; color:#B4B4BF;">{{ $chip }}</td></tr>
+                              </table>
+                            </td>
+                          @endforeach
+                        </tr>
+                      @endforeach
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <tr><td height="16" style="height:16px; line-height:16px; mso-line-height-rule:exactly;">&nbsp;</td></tr>
+
+          {{-- Buffy's briefing and the last call to action --}}
+          <tr>
+            <td style="background:#0D0D11; border:1px solid #22222A; border-radius:20px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="pad" style="padding:32px 32px 34px;">
+
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#140A0E; border:1px solid #38161F; border-radius:16px;">
+                      <tr>
+                        <td width="62" valign="top" style="width:62px; padding:22px 0 22px 22px;">
+                          <table role="presentation" width="40" cellpadding="0" cellspacing="0" border="0" style="width:40px;">
+                            <tr>
+                              <td width="40" height="40" align="center" valign="middle" style="width:40px; height:40px; background:#DC143C; border-radius:11px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:17px; line-height:40px; font-weight:700; color:#FFFFFF;">B</td>
+                            </tr>
+                          </table>
+                        </td>
+                        <td valign="top" style="padding:22px;">
+                          <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:17px; line-height:23px; font-weight:700; letter-spacing:-.3px; color:#FFFFFF;">Buffy&rsquo;s briefing: we&rsquo;re just getting started.</div>
+                          <div style="padding:9px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:22px; color:#B9A8AD;">The platform is live, but this is not the finish line. More store integrations, deeper Library tools and a proper community layer are already on the way.</div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div style="padding:24px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:22px; color:#C6C6D0;">
+                      <span style="color:#FF4D6A; font-weight:700;">Next up:</span> deeper platform integrations, expanded Library features, community systems and more surprises across TechPlay.
+                    </div>
+
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;">
+                      <tr>
+                        <td style="background:#DC143C; border-radius:10px; padding:14px 22px;">
+                          <a href="{{ $appUrl }}/settings?section=connections" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:18px; font-weight:700; color:#FFFFFF; text-decoration:none;">Link your first store&nbsp;&rarr;</a>
+                        </td>
+                      </tr>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          {{-- Footer --}}
+          <tr>
+            <td align="center" style="padding:26px 20px 4px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:19px; color:#63636D;">
+              You are receiving this because you created a TechPlay account.<br>
+              <span style="color:#84848E;">TECHPLAY.GG</span> &nbsp;&middot;&nbsp; One Platform. Everything for Gamers.<br><br>
+              <a href="{{ $appUrl }}/settings?section=notifications" style="color:#84848E; text-decoration:underline;">Email preferences</a>
+              &nbsp;&middot;&nbsp;
+              <a href="{{ $unsubscribeUrl ?? $appUrl.'/settings?section=notifications' }}" style="color:#84848E; text-decoration:underline;">Unsubscribe</a>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
   </table>
 </body>
 </html>
