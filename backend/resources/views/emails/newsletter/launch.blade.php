@@ -35,21 +35,27 @@
     img { border:0; outline:none; display:block; -ms-interpolation-mode:bicubic; }
     a { text-decoration:none; }
 
+    /* Word hyphenates a narrow column on its own and breaks words with a
+       hyphen — "integra-tions", "defi-nitely". Nothing else does this, and
+       there is no way to see it outside Outlook. */
+    body, table, td, div, p, a, span, strong { mso-hyphenate:none; hyphens:none; -webkit-hyphens:none; }
+
     /* Phones. Outlook desktop ignores media queries, but it is fixed-width
        there anyway, so nothing below has to reach it. */
     @media screen and (max-width:620px) {
       .shell          { padding:16px 10px 28px !important; }
       .stack          { display:block !important; width:100% !important; }
-      .hero-copy      { padding:30px 24px 4px !important; }
+      .hero-copy      { padding:30px 24px 6px !important; }
       .hero-art       { padding:0 24px 26px !important; }
-      .hero-art-inner { width:100% !important; }
-      .hero-img       { width:100% !important; height:auto !important; }
+      /* Buffy at full width is a 330px square that swallows the screen and
+         pushes everything the mail is about below the fold. Held to 240. */
+      .hero-art-inner { width:240px !important; }
+      .hero-img       { width:238px !important; height:238px !important; }
       .h1             { font-size:32px !important; line-height:36px !important; letter-spacing:-1.2px !important; }
       .pad            { padding-left:22px !important; padding-right:22px !important; }
       .card-cell      { display:block !important; width:100% !important; padding:0 0 12px 0 !important; }
       .metric-num     { font-size:21px !important; }
       .metric-cell    { padding-left:4px !important; padding-right:4px !important; }
-      .subcta         { padding:14px 0 0 0 !important; }
       /* The masthead stacks rather than shrinking. Hiding the tagline on
          narrow screens is the obvious move and it is off the table: every
          way of doing it is a zero-size or hidden element, which is what our
@@ -96,7 +102,7 @@
             <td style="background:#0D0D11; border:1px solid #22222A; border-radius:20px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td width="336" valign="middle" class="stack hero-copy" style="width:336px; padding:38px 12px 38px 32px;">
+                  <td width="344" valign="middle" class="stack hero-copy" style="width:344px; padding:38px 16px 38px 32px;">
 
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                       <tr>
@@ -114,21 +120,26 @@
                       We rebuilt TechPlay around you &mdash; your games, your progress, your achievements and your community.
                     </div>
 
+                    {{-- The button gets its own line. Side by side with the
+                         secondary link it was 310px of content in a 296px
+                         column, so Word wrapped the label onto two lines and
+                         the link ended up floating beside a tall red slab. --}}
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:24px;">
                       <tr>
                         <td style="background:#DC143C; border-radius:10px; padding:14px 22px;">
-                          <a href="{{ $appUrl }}" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:18px; font-weight:700; color:#FFFFFF; text-decoration:none;">Explore the new TechPlay&nbsp;&rarr;</a>
-                        </td>
-                        <td valign="middle" class="subcta" style="padding:0 0 0 16px;">
-                          <a href="{{ $appUrl }}/news" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; font-weight:600; color:#9A9AA4; text-decoration:none;">See what changed</a>
+                          <a href="{{ $appUrl }}" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:18px; font-weight:700; color:#FFFFFF; text-decoration:none; white-space:nowrap;">Explore the new TechPlay&nbsp;&rarr;</a>
                         </td>
                       </tr>
                     </table>
 
+                    <div style="padding:15px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:18px;">
+                      <a href="{{ $appUrl }}/profile" style="font-weight:600; color:#9A9AA4; text-decoration:none;">See your new profile&nbsp;&rarr;</a>
+                    </div>
+
                   </td>
 
-                  <td width="264" valign="middle" class="stack hero-art" style="width:264px; padding:30px 32px 30px 8px;">
-                    <table role="presentation" width="224" cellpadding="0" cellspacing="0" border="0" align="right" class="hero-art-inner" style="width:224px; background:#16090D; border:1px solid #3A222A; border-radius:16px;">
+                  <td width="256" valign="middle" align="center" class="stack hero-art" style="width:256px; padding:30px 32px 30px 0;">
+                    <table role="presentation" width="224" cellpadding="0" cellspacing="0" border="0" class="hero-art-inner" style="width:224px; background:#16090D; border:1px solid #3A222A; border-radius:16px;">
                       <tr>
                         <td style="padding:0;">
                           <img src="{{ $appUrl }}/images/buffy-portrait.jpg" width="222" height="222" alt="Professor Buffy, the TechPlay owl" class="hero-img" style="display:block; width:222px; height:222px; border:0; border-radius:15px 15px 0 0;">
@@ -278,30 +289,38 @@
                 <tr>
                   <td class="pad" style="padding:32px 32px 34px;">
 
+                    {{-- "Next up" used to sit loose between the briefing box
+                         and the button — an orphan sentence belonging to
+                         neither. It is Buffy talking, so it goes inside the
+                         box, under a hairline, as the footnote it is. --}}
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#140A0E; border:1px solid #38161F; border-radius:16px;">
                       <tr>
-                        <td width="62" valign="top" style="width:62px; padding:22px 0 22px 22px;">
-                          <table role="presentation" width="40" cellpadding="0" cellspacing="0" border="0" style="width:40px;">
+                        <td width="64" valign="top" style="width:64px; padding:22px 0 18px 22px;">
+                          <table role="presentation" width="42" cellpadding="0" cellspacing="0" border="0" style="width:42px;">
                             <tr>
-                              <td width="40" height="40" align="center" valign="middle" style="width:40px; height:40px; background:#DC143C; border-radius:11px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:17px; line-height:40px; font-weight:700; color:#FFFFFF;">B</td>
+                              <td width="42" height="42" align="center" valign="middle" style="width:42px; height:42px; background:#DC143C; border-radius:12px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:18px; line-height:42px; font-weight:700; color:#FFFFFF;">B</td>
                             </tr>
                           </table>
                         </td>
-                        <td valign="top" style="padding:22px;">
+                        <td valign="top" style="padding:22px 22px 18px 0;">
                           <div style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:17px; line-height:23px; font-weight:700; letter-spacing:-.3px; color:#FFFFFF;">Buffy&rsquo;s briefing: we&rsquo;re just getting started.</div>
                           <div style="padding:9px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:22px; color:#B9A8AD;">The platform is live, but this is not the finish line. More store integrations, deeper Library tools and a proper community layer are already on the way.</div>
                         </td>
                       </tr>
+                      <tr>
+                        <td colspan="2" height="1" style="height:1px; line-height:1px; mso-line-height-rule:exactly; background:#38161F;">&nbsp;</td>
+                      </tr>
+                      <tr>
+                        <td colspan="2" style="padding:16px 22px 18px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:13px; line-height:21px; color:#A99298;">
+                          <span style="color:#FF4D6A; font-weight:700; letter-spacing:.4px;">NEXT UP</span>&nbsp;&nbsp;deeper platform integrations, expanded Library features, community systems and more surprises across TechPlay.
+                        </td>
+                      </tr>
                     </table>
 
-                    <div style="padding:24px 0 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:22px; color:#C6C6D0;">
-                      <span style="color:#FF4D6A; font-weight:700;">Next up:</span> deeper platform integrations, expanded Library features, community systems and more surprises across TechPlay.
-                    </div>
-
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:22px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:26px;">
                       <tr>
                         <td style="background:#DC143C; border-radius:10px; padding:14px 22px;">
-                          <a href="{{ $appUrl }}/settings?section=connections" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:18px; font-weight:700; color:#FFFFFF; text-decoration:none;">Link your first store&nbsp;&rarr;</a>
+                          <a href="{{ $appUrl }}/settings?section=connections" style="font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:14px; line-height:18px; font-weight:700; color:#FFFFFF; text-decoration:none; white-space:nowrap;">Link your first store&nbsp;&rarr;</a>
                         </td>
                       </tr>
                     </table>
@@ -313,8 +332,9 @@
           </tr>
 
           {{-- Footer --}}
+          <tr><td style="padding:28px 60px 0;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td height="1" style="height:1px; line-height:1px; mso-line-height-rule:exactly; background:#1D1D24;">&nbsp;</td></tr></table></td></tr>
           <tr>
-            <td align="center" style="padding:26px 20px 4px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:19px; color:#63636D;">
+            <td align="center" style="padding:22px 20px 4px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11px; line-height:19px; color:#63636D;">
               You are receiving this because you created a TechPlay account.<br>
               <span style="color:#84848E;">TECHPLAY.GG</span> &nbsp;&middot;&nbsp; One Platform. Everything for Gamers.<br><br>
               <a href="{{ $appUrl }}/settings?section=notifications" style="color:#84848E; text-decoration:underline;">Email preferences</a>
