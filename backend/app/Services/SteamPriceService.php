@@ -91,26 +91,41 @@ class SteamPriceService
             return null;
         }
 
-        $item = $response->json('items.0');
+        $items = $response->json('items');
 
-        if (! is_array($item) || empty($item['id'])) {
+        if (! is_array($items) || $items === []) {
             return null;
         }
 
         /*
-         * Only an exact title is accepted.
+         * The whole first page, not just the first row.
          *
-         * The search is a search: "Cave Story+" returns whatever it likes, and
-         * a shelf that quietly priced one game as another would be worse than a
-         * shelf that admits it does not know. Compared with punctuation and case
-         * stripped, since stores disagree about apostrophes and trademarks —
-         * "DEATH STRANDING DIRECTOR'S CUT" and "Death Stranding Director's Cut"
-         * are the same game.
+         * Steam ranks a search the way a shop does, so an exact title is often
+         * not first: searching "Inside" returns "Inside the Backrooms",
+         * "Organized Inside", and INSIDE itself in third place. Reading
+         * `items.0` alone left that game — and everything else with a common
+         * word for a name — recorded as having no price at all.
          */
-        if ($this->flatten($item['name'] ?? '') !== $this->flatten($name)) {
-            return null;
+        $wanted = $this->flatten($name);
+
+        foreach (array_slice($items, 0, 8) as $item) {
+            if (! is_array($item) || empty($item['id'])) {
+                continue;
+            }
+
+            if ($this->flatten((string) ($item['name'] ?? '')) !== $wanted) {
+                continue;
+            }
+
+            return $this->fromSearchItem($item);
         }
 
+        return null;
+    }
+
+    /** @param  array<string,mixed>  $item */
+    private function fromSearchItem(array $item): array
+    {
         $price = $item['price'] ?? null;
 
         return [
@@ -165,9 +180,18 @@ class SteamPriceService
         ];
     }
 
-    /** Case, punctuation and trademarks removed, for comparing two titles. */
+    /**
+     * Case, punctuation and trademarks removed, for comparing two titles.
+     *
+     * A trailing year in brackets goes too. Steam distinguishes remakes that
+     * way — "Layers of Fear 2 (2019)" is the game our catalogue simply calls
+     * "Layers of Fear 2" — and without this the search finds the right row and
+     * then throws it away.
+     */
     private function flatten(string $s): string
     {
+        $s = preg_replace('/\s*\((?:19|20)\d{2}\)\s*$/', '', trim($s)) ?? $s;
+
         return preg_replace('/[^a-z0-9]+/', '', mb_strtolower($s)) ?? '';
     }
 }

@@ -8,6 +8,7 @@ use App\Models\GameExternalId;
 use App\Models\GamePrice;
 use App\Models\User;
 use App\Models\UserGame;
+use App\Services\GogService;
 use App\Services\ProfileService;
 use App\Services\SteamPriceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -181,7 +182,7 @@ class ShelfWorthTest extends TestCase
             '*appdetails*' => Http::response([]),
         ]);
 
-        (new RefreshShelfPrices)->handle(app(SteamPriceService::class));
+        (new RefreshShelfPrices)->handle(app(SteamPriceService::class), app(GogService::class));
 
         $this->assertSame(1999, GamePrice::where('game_id', $game->id)->value('full_cents'));
         $this->assertDatabaseHas('game_external_ids', [
@@ -207,7 +208,7 @@ class ShelfWorthTest extends TestCase
             '*appdetails*' => Http::response([]),
         ]);
 
-        (new RefreshShelfPrices)->handle(app(SteamPriceService::class));
+        (new RefreshShelfPrices)->handle(app(SteamPriceService::class), app(GogService::class));
 
         $this->assertSame('unavailable', GamePrice::where('game_id', $game->id)->value('status'));
         $this->assertDatabaseMissing('game_external_ids', ['external_id' => '99999']);
@@ -231,8 +232,59 @@ class ShelfWorthTest extends TestCase
             '*appdetails*' => Http::response([]),
         ]);
 
-        (new RefreshShelfPrices)->handle(app(SteamPriceService::class));
+        (new RefreshShelfPrices)->handle(app(SteamPriceService::class), app(GogService::class));
 
         $this->assertSame(3999, GamePrice::where('game_id', $game->id)->value('full_cents'));
+    }
+
+    /**
+     * Steam ranks a search the way a shop does, not the way a lookup does.
+     *
+     * "Inside" returns Inside the Backrooms, then Organized Inside, then the
+     * game itself. Reading only the first row left INSIDE — and everything else
+     * named after a common word — recorded as having no price at all.
+     */
+    #[Test]
+    public function an_exact_title_further_down_the_results_is_still_found(): void
+    {
+        $user = User::factory()->create();
+        $game = $this->game('inside', 'Inside');
+        $this->shelve($user, $game);
+
+        Http::fake([
+            '*storesearch*' => Http::response(['items' => [
+                ['id' => 1, 'name' => 'Inside the Backrooms', 'price' => ['currency' => 'USD', 'initial' => 699, 'final' => 699]],
+                ['id' => 2, 'name' => 'Organized Inside', 'price' => ['currency' => 'USD', 'initial' => 799, 'final' => 799]],
+                ['id' => 304430, 'name' => 'INSIDE', 'price' => ['currency' => 'USD', 'initial' => 2499, 'final' => 2499]],
+            ]]),
+            '*appdetails*' => Http::response([]),
+        ]);
+
+        (new RefreshShelfPrices)->handle(app(SteamPriceService::class), app(GogService::class));
+
+        $this->assertSame(2499, GamePrice::where('game_id', $game->id)->value('full_cents'));
+    }
+
+    /**
+     * Steam marks a remake with the year; our catalogue does not.
+     */
+    #[Test]
+    public function a_year_in_brackets_is_not_a_different_game(): void
+    {
+        $user = User::factory()->create();
+        $game = $this->game('lof2', 'Layers of Fear 2');
+        $this->shelve($user, $game);
+
+        Http::fake([
+            '*storesearch*' => Http::response(['items' => [
+                ['id' => 1, 'name' => 'Layers of Fear 2－Original Soundtrack', 'price' => ['currency' => 'USD', 'initial' => 999, 'final' => 999]],
+                ['id' => 1029890, 'name' => 'Layers of Fear 2 (2019)', 'price' => ['currency' => 'USD', 'initial' => 1999, 'final' => 1999]],
+            ]]),
+            '*appdetails*' => Http::response([]),
+        ]);
+
+        (new RefreshShelfPrices)->handle(app(SteamPriceService::class), app(GogService::class));
+
+        $this->assertSame(1999, GamePrice::where('game_id', $game->id)->value('full_cents'));
     }
 }

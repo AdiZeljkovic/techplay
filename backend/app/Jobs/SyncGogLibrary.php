@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Jobs\Concerns\ReleasesTheSyncLock;
 use App\Models\ConnectedAccount;
+use App\Models\GameExternalId;
 use App\Models\UserGame;
 use App\Services\GameMatchingService;
 use App\Services\GogService;
@@ -90,6 +91,22 @@ class SyncGogLibrary implements ShouldQueue
 
                 $matched++;
 
+                /*
+                 * GOG's own id for the game, kept.
+                 *
+                 * It was in hand on every import and thrown away, so a game
+                 * GOG sells and Steam does not had no identity anywhere and no
+                 * way to be priced. GOG publishes a price endpoint that takes
+                 * exactly this id; the shelf-price job uses it for the titles
+                 * Steam has never heard of.
+                 */
+                if (! empty($product['id'])) {
+                    GameExternalId::firstOrCreate(
+                        ['provider' => 'gog', 'external_id' => (string) $product['id']],
+                        ['game_id' => $game->id],
+                    );
+                }
+
                 $existing = UserGame::where('user_id', $account->user_id)
                     ->where('game_id', $game->id)
                     ->first();
@@ -136,7 +153,6 @@ class SyncGogLibrary implements ShouldQueue
         }
     }
 
-    /** A live access token, refreshing the stored one when it has aged out. */
     /**
      * The account name, or nothing, and never an exception.
      *
@@ -155,6 +171,7 @@ class SyncGogLibrary implements ShouldQueue
         }
     }
 
+    /** A live access token, refreshing the stored one when it has aged out. */
     private function usableToken(GogService $gog, ConnectedAccount $account): ?string
     {
         if ($account->access_token && $account->token_expires_at?->isFuture()) {

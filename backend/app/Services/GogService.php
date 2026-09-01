@@ -113,6 +113,62 @@ class GogService
     }
 
     /**
+     * What GOG charges, for a game Steam has never heard of.
+     *
+     * One call per product — GOG prices no lists — so this is only ever used
+     * for the residue: titles GOG sells and Steam does not, which is a few
+     * dozen across every shelf on the site rather than a thousand.
+     *
+     * The endpoint answers in the currency of the country asked for and reports
+     * `basePrice` and `finalPrice` as strings like "1999 USD". Base is the one
+     * that matters here, for the same reason Steam's `initial` is: a library
+     * should not be worth less because something is on sale this week.
+     *
+     * @return array{status:string,currency:string,full:?int,final:?int,discount:int}|null
+     */
+    public function priceFor(string $productId): ?array
+    {
+        $response = Http::timeout(15)->retry(1, 1500, throw: false)
+            ->get(self::CATALOGUE_BASE."/products/{$productId}/prices", ['countryCode' => 'US']);
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $price = $response->json('_embedded.prices.0');
+
+        if (! is_array($price)) {
+            // GOG answering without a price is a game it no longer sells, which
+            // is not the same as a game that costs nothing.
+            return null;
+        }
+
+        $cents = function (?string $raw): ?int {
+            // "1999 USD" — the number is already in cents.
+            if (! $raw || ! preg_match('/^(\d+)/', $raw, $m)) {
+                return null;
+            }
+
+            return (int) $m[1];
+        };
+
+        $full = $cents($price['basePrice'] ?? null);
+        $final = $cents($price['finalPrice'] ?? null) ?? $full;
+
+        if ($full === null) {
+            return null;
+        }
+
+        return [
+            'status' => $full === 0 ? 'free' : 'priced',
+            'currency' => (string) (($price['currency']['code'] ?? null) ?: 'USD'),
+            'full' => $full,
+            'final' => $final,
+            'discount' => $full > 0 && $final !== null ? (int) round((1 - $final / $full) * 100) : 0,
+        ];
+    }
+
+    /**
      * The product ids this account owns, or null when GOG refuses.
      *
      * Null and an empty array are different answers and the caller has to be

@@ -1389,20 +1389,42 @@ oružja nemaju. Nespojena funkcija, ne mrtav kod.
 
 Tri stvari za koje je mapa govorila jedno, a stvarnost drugo.
 
-### Discord bot — **NE RADI U PRODUKCIJI**
+### Discord bot — **RADI U PRODUKCIJI** (provjereno 01.09.2026)
 
-Prethodni status je opisivao servise kao da rade. Provjereno 09.08.2026 na
-serveru: bota **nema** ni u pm2, ni u supervisoru, ni u systemd, ni u dockeru,
-ni kao goli node proces. Kod postoji i gradi se (`tsc` prolazi), `.env` je
-kompletan i tajna se poklapa s backendom — jednostavno ga ništa ne pokreće.
+Ovaj odjeljak je od 09.08.2026. tvrdio suprotno, i tada je bio tačan: bota nije
+bilo ni u pm2, ni u supervisoru, ni u systemd, ni u dockeru. U međuvremenu je
+pokrenut i sada radi kao `techplay-bot` pod pm2, korisnik `techplay`, iz
+`/var/www/techplay/discord/dist/index.js`.
 
-Sve što ova mapa piše pod "**Discord bot:**" treba čitati kao *napisano i
-spremno*, ne *aktivno*. Bot je i dalje jedina komponenta bez deploy putanje —
-nije ni u jednoj skripti u `deployment/`.
+Izmjereno 01.09.2026:
 
-Posljedica koju vrijedi znati: `API_URL` u botu pokazuje na `techplay.gg`, i to
-je **ispravno** — nginx tamo proxy-ra `/api`, dok `api-beta.techplay.gg` vraća
-403 na serverske pozive (Cloudflare). Ne "popravljati" to na api-beta.
+- **proces**: online, 13,8 sati bez pada, 3 restarta, 123 MB
+- **pri startu**: `✅ Slash commands registered`, `✅ All services started`,
+  `⭐ XP Service started`, `📬 Subscription Service started`
+- **objave**: tri članka stvarno poslana u `#latest-news` — DLSS 5, GTA 6,
+  Stranded Deep 2
+- **polling**: sve četiri liste u koraku (news 715, tech 692, reviews 638,
+  guides 6 — `lastCheckedId` jednak zadnjem s API-ja)
+- **rangovi**: `GET /api/v1/discord/ranks` vraća svih 20, identično tabeli
+  `ranks`. Bot ih **ne drži tvrdo upisane** — čita ih uživo.
+
+**Sve četiri vrste sadržaja idu u isti kanal**, `#latest-news`
+(`PollingService.CHANNEL_NAME`). Recenzije, vodiči i hardver dijele kanal s
+vijestima — namjerno, ali ime kanala to ne odražava.
+
+**Usklađivanje rola je ručno.** `RoleLadderService.plan()` i `apply()` zovu se
+samo iz slash komande; ništa ih ne pokreće po rasporedu. Ljestvica na Discordu
+može se razići od tabele `ranks` a da to niko ne primijeti dok neko ne pokrene
+komandu.
+
+**Discord XP praktično ne teče**: povezan je **jedan** nalog od 55 članova, pa
+15 XP po poruci nema kome da se dodijeli.
+
+`API_URL` u botu pokazuje na `techplay.gg` i to je **ispravno** — nginx tamo
+proxy-ra `/api`, dok `api-beta.techplay.gg` vraća 403 na serverske pozive
+(Cloudflare). Ne "popravljati" to na api-beta. U error logu stoje `ECONNREFUSED
+127.0.0.1:8000` iz prozora dok se backend restartovao pri deployima; polling je
+poslije toga uredno nastavio.
 
 ### Podrška / pledge — bio slomljen, sada radi
 

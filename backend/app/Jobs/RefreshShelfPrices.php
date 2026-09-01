@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\GameExternalId;
 use App\Models\GamePrice;
+use App\Services\GogService;
 use App\Services\SteamPriceService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -45,7 +46,7 @@ class RefreshShelfPrices implements ShouldQueue
     /** A price older than this is asked for again. */
     private const STALE_DAYS = 7;
 
-    public function handle(SteamPriceService $steam): void
+    public function handle(SteamPriceService $steam, GogService $gog): void
     {
         $shelfGameIds = DB::table('user_games')->distinct()->pluck('game_id');
 
@@ -114,16 +115,44 @@ class RefreshShelfPrices implements ShouldQueue
             $found++;
         }
 
+        // ── pass three: GOG, for what Steam has never sold ──────────────────
+        //
+        // Only the residue reaches here: a game Steam has no listing for at all,
+        // which GOG does. One call each, and there are a few dozen of them
+        // across every shelf on the site — not a thousand, because everything
+        // Steam knows about was settled two passes ago.
+        $gogless = GamePrice::where('status', 'unavailable')
+            ->whereIn('game_id', $shelfGameIds)
+            ->pluck('game_id');
+
+        $gogIds = GameExternalId::where('provider', 'gog')
+            ->whereIn('game_id', $gogless)
+            ->pluck('external_id', 'game_id');
+
+        $viaGog = 0;
+
+        foreach ($gogIds->take(self::NAME_LOOKUPS) as $gameId => $productId) {
+            $price = $gog->priceFor((string) $productId);
+
+            if (! $price) {
+                continue;
+            }
+
+            $this->store($gameId, $price, 'gog');
+            $viaGog++;
+        }
+
         Log::info('RefreshShelfPrices', [
             'shelf_games' => $shelfGameIds->count(),
             'refreshed' => $priced,
             'found_by_name' => $found,
             'names_tried' => $missing->count(),
+            'via_gog' => $viaGog,
         ]);
     }
 
     /** @param  array{status:string,currency:string,full:?int,final:?int,discount:int}  $p */
-    private function store(int $gameId, array $p): void
+    private function store(int $gameId, array $p, string $source = 'steam'): void
     {
         GamePrice::updateOrCreate(
             ['game_id' => $gameId],
@@ -133,7 +162,7 @@ class RefreshShelfPrices implements ShouldQueue
                 'full_cents' => $p['full'],
                 'final_cents' => $p['final'],
                 'discount_percent' => $p['discount'],
-                'source' => 'steam',
+                'source' => $source,
                 'fetched_at' => now(),
             ],
         );
