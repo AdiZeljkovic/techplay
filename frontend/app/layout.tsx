@@ -306,13 +306,26 @@ export default async function RootLayout({
             `client_storage: 'none'` stays. It is why no consent banner is
             needed, and it is also why GA cannot tell a returning reader from a
             new one — the "5s average engagement" is that, not real behaviour.
-            Changing it is a separate decision with a GDPR bill attached. */}
+            Changing it is a separate decision with a GDPR bill attached.
+
+            `transport_url` is the other half of the same problem. The library
+            was already served from our own domain, which is why it loads — but
+            it still posted its measurements to google-analytics.com, which
+            every serious content blocker refuses. So the tag ran and the data
+            never left: 52 of 127 visitors from a paid ad were counted, and a
+            member who registered from Serbia did not appear at all while his
+            browser had demonstrably fetched the script a minute earlier.
+
+            app/proxy/ga has relayed those hits since before any of this, and
+            nothing had ever pointed at it. Now the beacon is first-party too,
+            and there is nothing left on a blocklist for a blocker to match. */}
         <script
           dangerouslySetInnerHTML={{ __html: `
           gtag('js', new Date());
           gtag('config', '${process.env.NEXT_PUBLIC_GA_ID || 'G-0J974Y0X23'}', {
             client_storage: 'none',
-            send_page_view: true
+            send_page_view: true,
+            transport_url: '${(process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg').replace(/\/$/, '')}/proxy/ga'
           });
         `}}
         />

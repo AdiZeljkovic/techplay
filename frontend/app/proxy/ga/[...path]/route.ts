@@ -12,19 +12,38 @@ async function proxy(request: NextRequest, path: string[]): Promise<NextResponse
         return new NextResponse(null, { status: 404 });
     }
     const { searchParams } = new URL(request.url);
-    const qs = searchParams.toString();
-    const upstreamUrl = `${GA_UPSTREAM}${upstreamPath}${qs ? `?${qs}` : ""}`;
 
-    // Forward real client IP and User-Agent so GA4 doesn't attribute everything to the server
+    /*
+     * Whose visit this is, said in the one place GA4 will read it.
+     *
+     * Geography is derived from the IP that opens the connection, and once a
+     * hit is relayed that is this server — so without this every reader in the
+     * world files as one datacentre in Germany, which is worse for a report
+     * than the readers we were losing. `_uip` / `_uipv6` are what Google's own
+     * server-side Tag Manager sends when it forwards to /g/collect for exactly
+     * this reason. The X-Forwarded-For header below is not enough on its own;
+     * GA does not read it.
+     *
+     * Not officially documented for this endpoint, so it is verified against
+     * Realtime after deploying rather than assumed.
+     */
     const clientIp =
+        request.headers.get("cf-connecting-ip") ||
         request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
         request.headers.get("x-real-ip") ||
-        "127.0.0.1";
+        "";
+
+    if (clientIp && !searchParams.has("_uip") && !searchParams.has("_uipv6")) {
+        searchParams.set(clientIp.includes(":") ? "_uipv6" : "_uip", clientIp);
+    }
+
+    const qs = searchParams.toString();
+    const upstreamUrl = `${GA_UPSTREAM}${upstreamPath}${qs ? `?${qs}` : ""}`;
     const userAgent = request.headers.get("user-agent") || "";
 
     const upstreamHeaders: Record<string, string> = {
         "User-Agent": userAgent,
-        "X-Forwarded-For": clientIp,
+        "X-Forwarded-For": clientIp || "127.0.0.1",
     };
 
     // Forward Content-Type for POST requests
@@ -51,8 +70,16 @@ async function proxy(request: NextRequest, path: string[]): Promise<NextResponse
         }
     });
 
-    // Always return 204 so the browser doesn't retry
-    return new NextResponse(null, { status: 204 });
+    /*
+     * Always 204 so the browser does not retry — and never stored. gtag sends
+     * small hits by GET, and a cached 204 at the edge would answer the next
+     * reader's page view without it ever reaching Google. That failure is
+     * completely silent: the beacon looks delivered from every side.
+     */
+    return new NextResponse(null, {
+        status: 204,
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
 }
 
 export async function GET(
