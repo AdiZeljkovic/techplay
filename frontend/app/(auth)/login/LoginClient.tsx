@@ -94,6 +94,11 @@ export default function LoginClient() {
 
     const handleTurnstileVerify = useCallback((token: string) => {
         setTurnstileToken(token);
+        // A token can arrive after the watchdog has already given up on a slow
+        // connection. Leaving the warning on screen beside a button that now
+        // works reads as a broken page.
+        setCaptchaFailed(false);
+        setErrors([]);
     }, []);
 
     const handleTurnstileError = useCallback(() => {
