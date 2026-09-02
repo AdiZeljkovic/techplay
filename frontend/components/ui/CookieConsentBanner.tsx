@@ -6,6 +6,7 @@ import { Cookie, X, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { applyConsent, CONSENT_STORAGE_KEY, DEFAULT_PREFERENCES, type CookiePreferences } from "@/lib/consent";
 
 /** Stored preferences are untrusted input; a bad value must not take the page. */
 function safeParse(raw: string) {
@@ -17,17 +18,10 @@ function safeParse(raw: string) {
     }
 }
 
-interface CookiePreferences {
-    necessary: boolean;
-    analytics: boolean;
-    marketing: boolean;
-}
-
-const defaultPreferences: CookiePreferences = {
-    necessary: true,
-    analytics: false,
-    marketing: false,
-};
+/* The shape and the defaults live in lib/consent, beside the mapping that
+   turns them into Consent Mode signals — three copies of "analytics: false"
+   is how a banner comes to promise one thing and a tag to do another. */
+const defaultPreferences = DEFAULT_PREFERENCES;
 
 export default function CookieConsentBanner() {
     const { user, isAuthenticated } = useAuth();
@@ -36,12 +30,18 @@ export default function CookieConsentBanner() {
     const [preferences, setPreferences] = useState<CookiePreferences>(defaultPreferences);
 
     useEffect(() => {
-        const saved = localStorage.getItem("cookie_preferences");
+        const saved = localStorage.getItem(CONSENT_STORAGE_KEY);
         if (!saved) {
             if (isAuthenticated && user?.cookie_preferences) {
-                localStorage.setItem("cookie_preferences", JSON.stringify(user.cookie_preferences));
-                setPreferences(user.cookie_preferences as unknown as CookiePreferences);
+                const fromAccount = user.cookie_preferences as unknown as CookiePreferences;
+                localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(fromAccount));
+                setPreferences(fromAccount);
                 setIsVisible(false);
+
+                // A choice arriving from the account is still a choice. The head
+                // script could not have seen it — it was not in this browser's
+                // storage when the page loaded.
+                applyConsent(fromAccount);
             }
             // No consent yet — banner already visible (initial state true)
         } else {
@@ -52,9 +52,20 @@ export default function CookieConsentBanner() {
 
     const savePreferences = async (newPreferences: CookiePreferences) => {
         // 1. Save to LocalStorage
-        localStorage.setItem("cookie_preferences", JSON.stringify(newPreferences));
+        localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(newPreferences));
         setPreferences(newPreferences);
         setIsVisible(false);
+
+        /*
+         * Tell Google, which nothing here has ever done.
+         *
+         * The banner asked, stored the answer, synced it to the account and
+         * notified the ad slots — and Analytics was never in the conversation.
+         * A reader could accept and still be counted as a stranger on their
+         * next visit, because the tag was never allowed a cookie to recognise
+         * them by.
+         */
+        applyConsent(newPreferences);
 
         // Writing localStorage fires no storage event in the tab that did the
         // writing, so anything already on screen that depends on consent —

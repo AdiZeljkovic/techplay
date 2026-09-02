@@ -11,6 +11,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { SiteSettingsProvider } from "@/context/SiteSettingsContext";
 import { MobileMenuProvider } from "@/context/MobileMenuContext";
 import CookieConsentBanner from "@/components/ui/CookieConsentBanner";
+import { consentBootstrapScript } from "@/lib/consent";
 import GlobalSeo from "@/components/seo/GlobalSeo";
 import ConsentAwareAnalytics from "@/components/analytics/ConsentAwareAnalytics";
 import AdSenseScript from "@/components/ads/AdSenseScript";
@@ -274,17 +275,18 @@ export default async function RootLayout({
         */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,t;addEventListener('popstate',function(){d.style.scrollBehavior='auto';clearTimeout(t);t=setTimeout(function(){d.style.scrollBehavior='';},400);});})();` }} />
 
-        {/* dataLayer + Consent Mode: analytics granted (cookieless), ads denied */}
-        <script dangerouslySetInnerHTML={{ __html: `
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('consent', 'default', {
-            analytics_storage: 'granted',
-            ad_storage: 'denied',
-            ad_user_data: 'denied',
-            ad_personalization: 'denied'
-          });
-        `}} />
+        {/* dataLayer, Consent Mode defaults, and the reader's saved answer.
+
+            This said `analytics_storage: 'granted'` while the config below said
+            `client_storage: 'none'` — so it claimed consent it then made
+            impossible to act on. The banner had been collecting a real choice
+            the whole time and telling only the ad slots about it.
+
+            Denied by default now, and the stored answer applied in the same
+            breath, before gtag.js runs. A reader who consented last week would
+            otherwise lose the first page view of every visit — the one that
+            decides which landing page gets the credit. */}
+        <script dangerouslySetInnerHTML={{ __html: consentBootstrapScript() }} />
 
         {/* GA4 itself, in the head rather than after hydration.
 
@@ -323,7 +325,6 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: `
           gtag('js', new Date());
           gtag('config', '${process.env.NEXT_PUBLIC_GA_ID || 'G-0J974Y0X23'}', {
-            client_storage: 'none',
             send_page_view: true,
             transport_url: '${(process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg').replace(/\/$/, '')}/proxy/ga'
           });
