@@ -4,7 +4,6 @@ import { Article } from "@/types";
 import Link from "next/link";
 import { ArrowLeft, Play } from "lucide-react";
 import Image from "next/image";
-import { format } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
 import { processContent } from "@/lib/content";
 import { ARTICLE_PROSE, splitForAd, tidyExcerpt } from "@/lib/prose";
@@ -24,30 +23,35 @@ import ArticleFooter from "@/components/ui/ArticleFooter";
 import GoogleNewsFollow from "@/components/ui/GoogleNewsFollow";
 import { decodeHtml } from "@/lib/decode";
 import { articleHref } from "@/lib/articleHref";
+import { formatArticleDate } from "@/lib/articleDates";
 
 interface ArticleDetailViewProps {
     article: Article;
     initialComments?: any[];
 }
 
-const ClientDate = ({ date }: { date: string }) => {
-    const [formatted, setFormatted] = useState<string>("");
+/**
+ * The publication date, in the HTML rather than after it.
+ *
+ * This was a `ClientDate` component that formatted inside an effect and
+ * rendered `Loading...` until then — so the served page carried no date at all.
+ * Google News asks that publication times be "easily identifiable by our
+ * automated crawler" and Googlebot-News barely runs JavaScript, so the one
+ * field that surface ranks on was the one field it could not see.
+ *
+ * The effect was there to dodge a hydration mismatch: formatted in local time,
+ * the server and a reader in another timezone produce different days.
+ * lib/articleDates formats in a fixed publishing timezone instead, so both
+ * sides write the same string and it can be rendered where it belongs.
+ *
+ * `<time datetime>` because a machine reading this wants the full ISO instant,
+ * not the reader's dd/MM/yyyy.
+ */
+const PublishedAt = ({ date }: { date?: string | null }) => {
+    const shown = formatArticleDate(date);
+    if (!shown) return null;
 
-    useEffect(() => {
-        try {
-            const d = new Date(date);
-            if (!isNaN(d.getTime())) {
-                setFormatted(format(d, 'dd/MM/yyyy'));
-            } else {
-                setFormatted("Date unavailable");
-            }
-        } catch (e) {
-            setFormatted("Date unavailable");
-        }
-    }, [date]);
-
-    if (!formatted) return <span className="opacity-0">Loading...</span>;
-    return <span>{formatted}</span>;
+    return <time dateTime={new Date(date as string).toISOString()}>{shown}</time>;
 };
 
 function getVideoEmbed(url: string): { embedUrl: string; thumbnailUrl: string | null } | null {
@@ -245,7 +249,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                                     </Link>
                                                 </span>
                                                 <div className="flex items-center gap-2 text-white/50 text-[11px] font-bold uppercase tracking-widest mt-1">
-                                                    <ClientDate date={article.published_at || article.created_at} />
+                                                    <PublishedAt date={article.published_at || article.created_at} />
                                                     <span className="w-1 h-1 rounded-full bg-white/12" />
                                                     <span>{readingTime.toUpperCase()}</span>
                                                 </div>

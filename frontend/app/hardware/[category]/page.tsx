@@ -7,6 +7,7 @@ import { getServerApiUrl, serverHeaders } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import type { Article } from "@/types";
 import { ROBOTS_INDEX, ROBOTS_NOINDEX, generatePageMetadata } from "@/lib/seo";
+import { articleDates } from "@/lib/articleDates";
 
 // ISR: revalidate every 10 minutes
 export const revalidate = 600;
@@ -187,8 +188,12 @@ export default async function HardwareSlugPage({ params }: Props) {
         "headline": article.meta_title || article.title,
         "description": article.meta_description || article.excerpt || "",
         "image": featuredImage ? [featuredImage] : [],
-        "datePublished": article.published_at || article.created_at,
-        "dateModified": article.updated_at,
+        // Never a modification that precedes publication: a draft written
+        // and published later leaves updated_at behind published_at, and an
+        // article claiming to have been edited before it existed is not a
+        // timestamp a freshness surface can trust. See lib/articleDates.
+        "datePublished": articleDates(article).published,
+        "dateModified": articleDates(article).modified,
         "author": article.author ? [{
             "@type": "Person",
             "name": article.author.display_name || article.author.username || "TechPlay",

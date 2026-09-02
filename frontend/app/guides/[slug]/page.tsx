@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import { getServerApiUrl } from "@/lib/api";
 import { fetchContent } from "@/lib/fetchContent";
 import { ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
+import { articleDates } from "@/lib/articleDates";
 
 // ISR enabled with on-demand revalidation
 export const revalidate = false; // 15 minutes (guides are more evergreen content)
@@ -126,8 +127,12 @@ export default async function GuidePage({ params }: Props) {
         "headline": guide.title,
         "description": guide.excerpt || "",
         "image": featuredImage ? [featuredImage] : [],
-        "datePublished": guide.published_at || guide.created_at,
-        "dateModified": guide.updated_at,
+        // Never a modification that precedes publication: a draft written
+        // and published later leaves updated_at behind published_at, and an
+        // article claiming to have been edited before it existed is not a
+        // timestamp a freshness surface can trust. See lib/articleDates.
+        "datePublished": articleDates(guide).published,
+        "dateModified": articleDates(guide).modified,
         "author": guide.author ? [{
             "@type": "Person",
             "name": guide.author.display_name || guide.author.username || "TechPlay",
