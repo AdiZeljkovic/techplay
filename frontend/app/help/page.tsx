@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import { ArrowRight, LifeBuoy } from "lucide-react";
 import HelpSearch from "@/components/help/HelpSearch";
+import StillNeedHelp from "@/components/help/StillNeedHelp";
 import TopicIcon from "@/components/help/TopicIcon";
-import { generatePageMetadata, ROBOTS_NOINDEX } from "@/lib/seo";
+import { fetchSiteSettings, generatePageMetadata, ROBOTS_NOINDEX } from "@/lib/seo";
 import { getHelpIndex, HELP_URL, SITE_URL } from "@/lib/help";
 
 export const revalidate = 3600;
 
 /** How many answers a card lists before it defers to the topic page. */
 const PREVIEW = 4;
+
+const DISCORD_FALLBACK = "https://discord.gg/wPQG9gUMXH";
 
 export async function generateMetadata(): Promise<Metadata> {
     // The /help row in page_seo carries the canonical, and it points at this
@@ -76,7 +79,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * after hydration and Googlebot has never seen one.
  */
 export default async function HelpIndexPage() {
-    const data = await getHelpIndex();
+    const [data, settings] = await Promise.all([getHelpIndex(), fetchSiteSettings()]);
     const topics = data?.topics ?? [];
     const popular = data?.popular ?? [];
 
@@ -235,6 +238,27 @@ export default async function HelpIndexPage() {
                                     </section>
                                 );
                             })}
+                        </div>
+                        {/*
+                          * The reader has read twelve topic names and none of
+                          * them was theirs. That is a different moment from
+                          * reaching the end of one answer, and it is the point
+                          * at which a help centre either hands somebody on or
+                          * loses them — so it gets the width of the page
+                          * rather than a box in a column.
+                          */}
+                        <div className="mt-10 md:mt-14">
+                            <StillNeedHelp
+                                variant="panel"
+                                heading="Didn't find what you need?"
+                                blurb="Tell us what you were looking for. Every question asked is one of the pages that ends up here — so asking is not an imposition, it is how this section gets written."
+                                discordUrl={settings.discord_url || DISCORD_FALLBACK}
+                                liveChatUrl={
+                                    ["1", "true"].includes(String(settings.help_livechat_enabled)) && settings.help_livechat_url
+                                        ? String(settings.help_livechat_url)
+                                        : null
+                                }
+                            />
                         </div>
                     </>
                 ) : (
