@@ -290,58 +290,74 @@ export default async function AboutPage() {
                     </SectionTitle>
 
                     {/*
-                      * Centred, and stacked rather than set in three columns.
+                      * Three cards, not three paragraphs in a narrow strip.
                       *
-                      * Side by side they would read as three equal offerings,
-                      * which is the opposite of what the copy says — each one
-                      * stands on the one before it. One column keeps that
-                      * reading, and holding it to 42rem keeps the paragraphs at
-                      * a length somebody can follow while centred.
+                      * The first attempt at "centred" stacked them in a 42rem
+                      * column down the middle of a 1500px page: centred, and
+                      * not composed — three identical lumps of text separated
+                      * by hairlines that reached nowhere.
+                      *
+                      * Left to right still reads as a sequence, so the argument
+                      * survives; the numbers and the accent rule along the top
+                      * of each card are what carry it. They are deliberately
+                      * larger and warmer than the four cards below, because
+                      * two adjacent grids of the same weight is one grid twice
+                      * — and this is the half of the page that matters more.
                       */}
-                    <div className="mx-auto max-w-2xl">
+                    <div className="grid gap-4 md:grid-cols-3">
                         {BUILT.map((block) => (
                             <div
                                 key={block.n}
-                                className="border-t py-9 text-center"
-                                style={{ borderColor: "var(--line)" }}
+                                className="flex flex-col rounded-[var(--radius-panel)] border p-6 transition-colors hover:border-[color-mix(in_srgb,var(--accent)_40%,transparent)]"
+                                style={{
+                                    background: "var(--surface-1)",
+                                    borderColor: "var(--line-strong)",
+                                    borderTopWidth: "2px",
+                                    borderTopColor: "color-mix(in srgb, var(--accent) 55%, transparent)",
+                                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
+                                }}
                             >
                                 <span
                                     aria-hidden
-                                    className="block font-display text-[13px] font-black leading-none tracking-[0.2em] tabular-nums"
-                                    style={{ color: "color-mix(in srgb, var(--accent) 80%, transparent)" }}
+                                    className="font-display text-[30px] font-black leading-none tabular-nums"
+                                    style={{ color: "color-mix(in srgb, var(--accent) 40%, transparent)" }}
                                 >
                                     {block.n}
                                 </span>
 
-                                <div>
-                                    <h3 className="mt-4 font-display text-[20px] md:text-[24px] font-bold leading-snug text-[var(--ink-hi)] text-balance">
-                                        {block.title}
-                                    </h3>
-                                    <p className="mt-3.5 text-[14.5px] leading-relaxed text-[var(--ink-mid)]">{block.body}</p>
+                                <h3 className="mt-4 font-display text-[18px] md:text-[19px] font-bold leading-snug text-[var(--ink-hi)] text-balance">
+                                    {block.title}
+                                </h3>
 
-                                    <div className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2">
-                                        {block.links.map((link) =>
-                                            link.external ? (
-                                                <a
-                                                    key={link.href}
-                                                    href={link.href}
-                                                    className="inline-flex items-center gap-1.5 font-display text-[11px] font-black uppercase tracking-[0.12em] text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
-                                                >
-                                                    {link.label}
-                                                    <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-                                                </a>
-                                            ) : (
-                                                <Link
-                                                    key={link.href}
-                                                    href={link.href}
-                                                    className="inline-flex items-center gap-1.5 font-display text-[11px] font-black uppercase tracking-[0.12em] text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
-                                                >
-                                                    {link.label}
-                                                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-                                                </Link>
-                                            ),
-                                        )}
-                                    </div>
+                                <p className="mt-3 text-[14px] leading-relaxed text-[var(--ink-mid)]">{block.body}</p>
+
+                                {/* Stacked and pinned to the foot. Wrapped in a
+                                    row they broke across two lines at different
+                                    points in each card, which made three cards
+                                    of the same design look like three
+                                    accidents. */}
+                                <div className="mt-auto flex flex-col items-start gap-2 pt-5">
+                                    {block.links.map((link) =>
+                                        link.external ? (
+                                            <a
+                                                key={link.href}
+                                                href={link.href}
+                                                className="inline-flex items-center gap-1.5 font-display text-[10.5px] font-black uppercase tracking-[0.12em] text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
+                                            >
+                                                {link.label}
+                                                <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                key={link.href}
+                                                href={link.href}
+                                                className="inline-flex items-center gap-1.5 font-display text-[10.5px] font-black uppercase tracking-[0.12em] text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
+                                            >
+                                                {link.label}
+                                                <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+                                            </Link>
+                                        ),
+                                    )}
                                 </div>
                             </div>
                         ))}
