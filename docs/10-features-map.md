@@ -62,6 +62,39 @@
 
 ---
 
+## Help centre (help.techplay.gg)
+
+**Status:** U IZRADI — faze 1–3 gotove i na produkciji (03.09.2026), ostaje front
+
+**Opis:** Vlastita poddomena na kojoj stoje pisani odgovori na ono što najčešće
+zapne — prijava, povezivanje Steam/Xbox/PlayStation/GOG/Epic naloga, XP, mailovi,
+brisanje naloga. Piše se u Filamentu, ispravka ide bez deploya.
+
+**Frontend:** `app/help/` (faza 4 — još ne postoji); poddomena je isti Next
+proces, mapiran host-rewriteom u `next.config.ts`
+**Backend:** `HelpController`, `HelpArticle` + `HelpCategory`, `HelpArticleObserver`
++ `HelpCategoryObserver`, `SitemapController::helpRobots/helpSitemap`
+**Admin:** `HelpArticleResource`, `HelpCategoryResource` (Content Studio)
+**Database:** `help_categories`, `help_articles`
+**API:** `GET /help`, `/help/search`, `/help/topics/{slug}`, `/help/answers/{slug}`,
+`POST /help/answers/{slug}/helpful`, `GET /search/help`
+
+**Napomene:**
+- **Dvije stvari se zovu support i znače suprotno.** `techplay.gg/support` prima
+  donacije, help centar je na `help.techplay.gg`. Svugdje u navigaciji: donacije
+  su „Support us", poddomena je „Help centre".
+- **`HelpArticle::scopeVisible()` je pravilo koje drži sekciju** — odgovor je
+  javan samo ako je i njegova tema objavljena. Svaki javni upit ide kroz njega,
+  uključujući sitemap.
+- **Sitemap i robots pripadaju poddomeni.** `sitemap-help.xml` na glavnom sajtu
+  ne postoji i ne smije se praviti.
+- Glasanje je anonimno, bez tabele glasova; brojači se pune iz Redisa kroz
+  `FlushViewCounters` i **nisu u `$fillable`**.
+- Rocket.Chat live chat je faza 7; mjesto u „Still need help" bloku i postavke
+  `help_livechat_enabled` / `help_livechat_url` dolaze ranije.
+
+---
+
 ## Videos — UKLONJENO 08/2026
 
 **Status:** REMOVED
