@@ -188,13 +188,11 @@ class HelpController extends Controller
         $term = trim((string) $request->input('q'));
         $key = 'help.search.v1.'.md5(mb_strtolower($term));
 
-        $results = Cache::remember($key, CacheService::TTL_MEDIUM, fn () => HelpArticle::visible()
-            ->matching($term)
-            ->with('category:id,name,slug')
-            ->limit(10)
-            ->get(self::CARD_COLUMNS)
-            ->map(fn (HelpArticle $a) => $this->cardPayload($a, $a->category?->slug, $a->category?->name))
-            ->all());
+        $results = Cache::remember(
+            $key,
+            CacheService::TTL_MEDIUM,
+            fn () => $this->look($term, all: true) ?: $this->look($term, all: false),
+        );
 
         CacheService::rememberListingKey('help', $key);
 
@@ -249,6 +247,36 @@ class HelpController extends Controller
         }
 
         return $this->success(['counted' => $counted], 'Thanks for the feedback.');
+    }
+
+    /**
+     * One pass of the search.
+     *
+     * Called twice: first requiring every word, and only if that finds nothing,
+     * again requiring any of them.
+     *
+     * The second pass exists because of a spelling. "cant sign in" found
+     * nothing at all — every page here writes "can't", so requiring the word
+     * ruled out the one answer the reader wanted. One misplaced apostrophe and
+     * the help centre says it has never heard of signing in.
+     *
+     * Loosening to OR always would fill the list with answers that share a
+     * common word, which is its own way of being useless. Loosening only when
+     * the strict pass came back empty costs one extra query on the queries
+     * that were about to fail anyway, and the ranking — longest words in the
+     * title first — is what puts the likeliest answer at the top of it.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function look(string $term, bool $all): array
+    {
+        return HelpArticle::visible()
+            ->matching($term, $all)
+            ->with('category:id,name,slug')
+            ->limit(10)
+            ->get(self::CARD_COLUMNS)
+            ->map(fn (HelpArticle $a) => $this->cardPayload($a, $a->category?->slug, $a->category?->name))
+            ->all();
     }
 
     // ---------------------------------------------------------------- shapes

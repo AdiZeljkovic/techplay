@@ -244,6 +244,32 @@ class HelpCentreApiTest extends TestCase
         $response->assertJsonPath('data.results.0.title', 'Your Steam library is not syncing');
     }
 
+    /**
+     * One misplaced apostrophe must not empty the help centre.
+     *
+     * "cant sign in" found nothing at all: every page here writes "can't", so
+     * requiring the word ruled out the one answer the reader wanted. The
+     * second pass only runs when the strict one came back empty, so an
+     * ordinary query never pays for it.
+     */
+    public function test_a_query_that_matches_nothing_strictly_falls_back_to_the_closest_answer(): void
+    {
+        $topic = $this->topic();
+        $this->answer($topic, [
+            'title' => 'The Create account button is greyed out',
+            'excerpt' => "If you can't sign in, the anti-spam check is the usual cause.",
+            'content' => '<p>Turnstile has to finish first.</p>',
+        ]);
+        $this->answer($topic, ['title' => 'Connect your Xbox account', 'content' => '<p>Type your gamertag.</p>']);
+
+        // "cant" appears nowhere — the text says "can't". Requiring every word
+        // finds nothing, so the second pass takes over on "sign".
+        $response = $this->getJson('/api/v1/help/search?q='.urlencode('cant sign in'))->assertOk();
+
+        $response->assertJsonPath('data.count', 1);
+        $response->assertJsonPath('data.results.0.title', 'The Create account button is greyed out');
+    }
+
     /** A query of nothing but short words still has to work. */
     public function test_a_two_letter_query_still_searches(): void
     {

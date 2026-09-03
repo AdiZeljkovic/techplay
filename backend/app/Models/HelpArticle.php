@@ -99,7 +99,7 @@ class HelpArticle extends Model
      * search uses and is right for tens of thousands of rows; a help centre is
      * a few dozen, and a stemmed index would only add a thing to keep in step.
      */
-    public function scopeMatching($query, string $term)
+    public function scopeMatching($query, string $term, bool $all = true)
     {
         $term = trim($term);
         $like = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
@@ -143,18 +143,24 @@ class HelpArticle extends Model
 
         $needles = $words === [] ? [$lower] : $words;
 
-        $query->where(function ($outer) use ($needles, $like) {
+        $query->where(function ($outer) use ($needles, $like, $all) {
             foreach ($needles as $needle) {
                 $wrapped = '%'.$needle.'%';
+
+                $clause = fn ($q) => $q
+                    ->where('title', $like, $wrapped)
+                    ->orWhere('excerpt', $like, $wrapped)
+                    ->orWhere('focus_keyword', $like, $wrapped)
+                    ->orWhere('content', $like, $wrapped);
 
                 // AND between words, OR between the columns each is looked for
                 // in — so "steam" may be in the title while "syncing" is in the
                 // body, and the answer still counts as a match.
-                $outer->where(fn ($q) => $q
-                    ->where('title', $like, $wrapped)
-                    ->orWhere('excerpt', $like, $wrapped)
-                    ->orWhere('focus_keyword', $like, $wrapped)
-                    ->orWhere('content', $like, $wrapped));
+                //
+                // `$all: false` loosens the first half to OR. That is the
+                // second pass, used only when requiring every word found
+                // nothing — see the caller.
+                $all ? $outer->where($clause) : $outer->orWhere($clause);
             }
         });
 
@@ -178,8 +184,23 @@ class HelpArticle extends Model
         );
 
         if ($words !== []) {
+            /*
+             * Weighted by word length, not counted flat.
+             *
+             * Counting flat, "how do I get bounty" put "How the forum works"
+             * above "Bounty, and what to spend it on": each title carried
+             * exactly one of the words, so the two tied and the tie-break was
+             * alphabetical. Length is a cheap stand-in for rarity — "bounty"
+             * is six characters and tells you what the reader wants, "how" is
+             * three and tells you nothing.
+             */
+            $cases = implode(' + ', array_map(
+                fn (string $word) => 'CASE WHEN LOWER(title) LIKE ? THEN '.mb_strlen($word).' ELSE 0 END',
+                $words,
+            ));
+
             $query->orderByRaw(
-                '('.implode(' + ', array_fill(0, count($words), 'CASE WHEN LOWER(title) LIKE ? THEN 1 ELSE 0 END')).') DESC',
+                '('.$cases.') DESC',
                 array_map(fn (string $word) => '%'.$word.'%', $words),
             );
         }
