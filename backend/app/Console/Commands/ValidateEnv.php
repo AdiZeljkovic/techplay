@@ -112,6 +112,8 @@ class ValidateEnv extends Command
         $this->flagFeature('sign-up defence', 'TURNSTILE_SECRET_KEY (verification fails closed without it)',
             ! config('services.turnstile.enabled') || filled(config('services.turnstile.secret_key')));
 
+        $this->checkTurnstileKeysAgree();
+
         $this->flagFeature('WoW analyzer', 'GROQ_API_KEY', filled(config('services.groq.api_key')));
         $this->flagFeature('WoW analyzer', 'BLIZZARD_CLIENT_ID + secret',
             filled(config('services.blizzard.client_id')) && filled(config('services.blizzard.client_secret')));
@@ -191,6 +193,47 @@ class ValidateEnv extends Command
     {
         $this->flagFeature('alerts', 'TELEGRAM_ALERT_TOKEN + chat id',
             filled(config('services.telegram.token')) && filled(config('services.telegram.chat_id')));
+    }
+
+    /**
+     * The two halves of the sign-up check have to be the same pair.
+     *
+     * The site key is compiled into the browser bundle at build time, and the
+     * secret is read by the API at request time — two files, two processes,
+     * and nothing that ever compared them. For months the frontend had no
+     * NEXT_PUBLIC_TURNSTILE_SITE_KEY at all and ran on a value hardcoded in
+     * the component, which happened to be right.
+     *
+     * Rotate the key and update only one side and the failure is silent and
+     * total: the widget renders against a key the secret does not belong to,
+     * every solved challenge is refused, and nobody can register. Worth one
+     * line of a table on every deploy.
+     *
+     * Reported rather than fatal. A missing or unreadable frontend env file is
+     * not a reason to refuse a deploy of the backend.
+     */
+    private function checkTurnstileKeysAgree(): void
+    {
+        if (! config('services.turnstile.enabled')) {
+            return;
+        }
+
+        $envFile = base_path('../frontend/.env.local');
+
+        if (! is_readable($envFile)) {
+            return;
+        }
+
+        preg_match('/^NEXT_PUBLIC_TURNSTILE_SITE_KEY=(.*)$/m', (string) file_get_contents($envFile), $m);
+
+        $frontend = trim($m[1] ?? '', " 	\"'");
+        $backend = (string) config('services.turnstile.site_key');
+
+        $this->flagFeature(
+            'sign-up defence',
+            'NEXT_PUBLIC_TURNSTILE_SITE_KEY matches the backend site key',
+            $frontend !== '' && $backend !== '' && hash_equals($backend, $frontend),
+        );
     }
 
     private function require(string $area, string $detail, bool $ok): void

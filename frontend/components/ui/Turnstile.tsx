@@ -20,7 +20,28 @@ declare global {
     }
 }
 
+/**
+ * The key the widget renders against.
+ *
+ * The fallback stays, because a missing variable must not take sign-up down
+ * for everybody — but it says so out loud. For months this ran on the
+ * hardcoded value with no environment variable set anywhere, and it worked
+ * only because the constant happened to still be the live key.
+ *
+ * That is the shape of the next outage rather than a tidy default: rotate the
+ * key, update the backend, and the browser keeps rendering against the old one
+ * while every solved challenge is refused. Silent, total, and impossible to
+ * see from the page. `env:validate` now compares the two on every deploy; this
+ * is the same warning where a developer will actually meet it.
+ */
 const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "0x4AAAAAACQelqz05sxYB2FD";
+
+if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+    console.warn(
+        "[turnstile] NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set — falling back to the key compiled into the component. " +
+            "If the key has been rotated, sign-up is refusing every challenge.",
+    );
+}
 
 /**
  * How long to wait before deciding the widget is never coming.
