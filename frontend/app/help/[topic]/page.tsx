@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import HelpBreadcrumbs from "@/components/help/HelpBreadcrumbs";
 import HelpSearch from "@/components/help/HelpSearch";
+import TopicIcon from "@/components/help/TopicIcon";
 import { getHelpTopic, HELP_URL } from "@/lib/help";
 import { ROBOTS_INDEX } from "@/lib/seo";
 
@@ -57,16 +58,34 @@ export default async function HelpTopicPage({ params }: Props) {
         <div className="container-page py-8 md:py-12">
             <HelpBreadcrumbs trail={[{ label: "Help centre", href: "/" }, { label: topic.name }]} />
 
-            <header className="mt-5 max-w-2xl">
-                <h1 className="font-display text-[26px] md:text-[34px] font-black uppercase leading-tight tracking-tight text-[var(--ink-hi)]">
-                    {topic.name}
-                </h1>
+            <header className="mt-5 flex max-w-2xl items-start gap-4">
+                {/* The same mark the topic carries on the index, so arriving
+                    from a card feels like opening it rather than leaving. */}
+                <span
+                    className="mt-1 hidden h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-inner)] text-[var(--accent)] sm:flex"
+                    style={{
+                        background: "var(--accent-soft)",
+                        border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)",
+                    }}
+                >
+                    <TopicIcon icon={topic.icon} className="h-[22px] w-[22px]" />
+                </span>
 
-                {topic.description && (
-                    <p className="mt-3 text-[14.5px] leading-relaxed" style={{ color: "var(--ink-low)" }}>
-                        {topic.description}
+                <div className="min-w-0">
+                    <h1 className="font-display text-[26px] md:text-[34px] font-black uppercase leading-tight tracking-tight text-[var(--ink-hi)]">
+                        {topic.name}
+                    </h1>
+
+                    {topic.description && (
+                        <p className="mt-2.5 text-[14.5px] leading-relaxed" style={{ color: "var(--ink-low)" }}>
+                            {topic.description}
+                        </p>
+                    )}
+
+                    <p className="mt-3 font-display text-[10.5px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--ink-low)" }}>
+                        {topic.articles.length} {topic.articles.length === 1 ? "answer" : "answers"}
                     </p>
-                )}
+                </div>
             </header>
 
             {topic.articles.length > 0 ? (
