@@ -82,7 +82,13 @@ class Settings extends Page implements HasForms
      * because the next boolean setting belongs in it, and finding that out the
      * hard way costs an afternoon.
      */
-    private const BOOLEANS = [];
+    private const BOOLEANS = [
+        // The help centre's live chat. On this list because the column is a
+        // string for everything: a toggle that is not here writes '' and the
+        // next reader has to guess whether that meant false or meant nobody
+        // ever touched it.
+        'help_livechat_enabled',
+    ];
 
     /** Keys that live in the `socials` group. Everything else is `general`. */
     private const SOCIALS_GROUP = [
@@ -253,6 +259,34 @@ class Settings extends Page implements HasForms
                                     ->helperText('Two-letter code, e.g. BA.'),
                             ]),
 
+                        /*
+                         * The help centre's one switch.
+                         *
+                         * Every answer on help.techplay.gg ends with two ways
+                         * to reach a person — email and Discord. This adds a
+                         * third when there is somebody at the other end of it.
+                         *
+                         * Off, and it stays off until the Rocket.Chat server
+                         * is running. That is the whole point of putting it
+                         * behind a setting rather than behind a deploy: a
+                         * "Chat with us" button that opens onto nobody is
+                         * worse than not offering chat at all, and the day it
+                         * is ready should not need a release.
+                         */
+                        Tab::make('Help centre')
+                            ->icon('heroicon-o-lifebuoy')
+                            ->schema([
+                                Toggle::make('help_livechat_enabled')
+                                    ->label('Offer live chat')
+                                    ->helperText('Adds a chat option to the bottom of every help answer. Leave off until somebody is actually there to answer it.'),
+
+                                TextInput::make('help_livechat_url')
+                                    ->label('Live chat address')
+                                    ->url()
+                                    ->placeholder('https://chat.techplay.gg/livechat')
+                                    ->helperText('Where the chat button goes. The switch above does nothing without it.'),
+                            ]),
+
                         Tab::make('Social')
                             ->icon('heroicon-o-share')
                             ->schema([
@@ -341,6 +375,7 @@ class Settings extends Page implements HasForms
             ['seo_google_verification', 'seo_bing_verification', 'seo_google_analytics_id', 'seo_gtm_id', 'seo_indexnow_key'],
             ['seo_organization_name', 'seo_organization_legal_name', 'seo_organization_type', 'seo_organization_founding_year', 'seo_organization_founders', 'seo_organization_logo'],
             ['seo_contact_email', 'seo_contact_phone', 'seo_address_street', 'seo_address_city', 'seo_address_postal', 'seo_address_country'],
+            ['help_livechat_enabled', 'help_livechat_url'],
             self::SOCIALS_GROUP,
             ['seo_social_facebook', 'seo_social_instagram', 'seo_social_twitter', 'seo_social_youtube', 'seo_social_discord'],
         );

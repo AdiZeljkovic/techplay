@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Loader2, FileText, Gamepad2, User as UserIcon } from "lucide-react";
+import { Search, X, Loader2, FileText, Gamepad2, LifeBuoy, User as UserIcon } from "lucide-react";
 import axios from "@/lib/axios";
 import { cn } from "@/lib/utils";
 import { decodeHtml } from "@/lib/decode";
@@ -17,6 +17,18 @@ interface SearchResult {
     category: string;
     category_slug: string;
     type: string;
+    url: string;
+}
+
+/** What `/search/help` answers with — a different shape from the other three. */
+interface HelpSearchRow {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt: string | null;
+    topic: string | null;
+    topic_slug: string | null;
+    /** Absolute, and the only one here that is: it leaves for help.techplay.gg. */
     url: string;
 }
 
@@ -86,17 +98,46 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
         const timer = setTimeout(async () => {
             setIsLoading(true);
             try {
-                const [articlesRes, gamesRes, usersRes] = await Promise.allSettled([
+                const [articlesRes, gamesRes, usersRes, helpRes] = await Promise.allSettled([
                     axios.get('/search/articles', { params: { q: query }, signal: abortController.signal }),
                     axios.get('/search/games', { params: { q: query }, signal: abortController.signal }),
                     axios.get('/search/users', { params: { q: query }, signal: abortController.signal }),
+                    axios.get('/search/help', { params: { q: query }, signal: abortController.signal }),
                 ]);
                 // Only update state if not aborted
                 if (!abortController.signal.aborted) {
                     const articles = articlesRes.status === 'fulfilled' ? (articlesRes.value.data.results || []) : [];
                     const games = gamesRes.status === 'fulfilled' ? (gamesRes.value.data.results || []) : [];
                     const users = usersRes.status === 'fulfilled' ? (usersRes.value.data.results || []) : [];
-                    setResults([...articles, ...games, ...users]);
+
+                    /*
+                     * Help answers, and they go first.
+                     *
+                     * Somebody typing "steam not syncing" into the bar at the
+                     * top of the site is exactly who the help centre was built
+                     * for, and three unrelated news stories are what sends
+                     * them to email instead. Putting help above the rest costs
+                     * nothing on an ordinary query — a search for a game or a
+                     * studio matches no help answer, so nothing moves — and it
+                     * is the whole difference on the queries that do.
+                     *
+                     * The endpoint returns at most five, and the rows carry
+                     * their topic so it is obvious what kind of result this is.
+                     */
+                    const help = (helpRes.status === 'fulfilled' ? (helpRes.value.data.results || []) : [])
+                        .map((row: HelpSearchRow): SearchResult => ({
+                            id: row.id,
+                            title: row.title,
+                            slug: row.slug,
+                            excerpt: row.excerpt,
+                            image: null,
+                            category: row.topic ? `Help · ${row.topic}` : 'Help centre',
+                            category_slug: row.topic_slug ?? 'help',
+                            type: 'help',
+                            url: row.url,
+                        }));
+
+                    setResults([...help, ...articles, ...games, ...users]);
                     setIsOpen(true);
                 }
             } catch (error: any) {
@@ -170,6 +211,20 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
         setIsOpen(false);
         setQuery("");
         onClose?.();
+
+        /*
+         * A help answer lives on another hostname.
+         *
+         * `router.push` navigates inside this application's route tree; handed
+         * an absolute URL to help.techplay.gg it has no route to match and the
+         * click does nothing at all. Every other result here is a path, so
+         * this branch is only ever taken by a help row.
+         */
+        if (/^https?:\/\//i.test(url)) {
+            window.location.href = url;
+            return;
+        }
+
         router.push(url);
     };
 
@@ -292,7 +347,9 @@ export default function SearchDropdown({ className, placeholder = "Search...", i
                                                 ? <Gamepad2 className="w-5 h-5 text-white/45" />
                                                 : result.type === 'user'
                                                     ? <UserIcon className="w-5 h-5 text-white/45" />
-                                                    : <FileText className="w-5 h-5 text-white/45" />}
+                                                    : result.type === 'help'
+                                                        ? <LifeBuoy className="w-5 h-5 text-[var(--accent)]" />
+                                                        : <FileText className="w-5 h-5 text-white/45" />}
                                         </div>
                                     )}
 

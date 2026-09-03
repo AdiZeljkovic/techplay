@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {
-    BookOpen, Building2, Compass, Cpu, Disc3, Gamepad2, Gift, House, Layers, LogOut,
+    BookOpen, Building2, Compass, Cpu, Disc3, Gamepad2, Gift, House, Layers, LifeBuoy, LogOut,
     MapPinned, MessageSquare, Newspaper, Settings, ShieldHalf, ShoppingCart,
     Sparkles, Swords, Trophy, Users,
 } from "lucide-react";
@@ -56,6 +56,9 @@ const TOOLS: Row[] = [
     { name: "Backlog Advisor", href: "/backlog-advisor", icon: Compass, description: "What should you play next?" },
     { name: "GTA 6 Hub", href: "/gta6", icon: MapPinned, description: "Map, characters, vehicles, weapons" },
     { name: "The Last Disc", href: "/last-disc", icon: Disc3, description: "Open letter: keep physical games" },
+    // Its own hostname, so the href is absolute — a bare path here would
+    // land on a page of this site that does not exist.
+    { name: "Help Centre", href: `https://${process.env.NEXT_PUBLIC_HELP_HOST || "help.techplay.gg"}`, icon: LifeBuoy, description: "Accounts, connected platforms, XP and your data" },
 ];
 
 const SHOP: Row = { name: "Shop", href: "/shop", icon: ShoppingCart, description: "Merch, keys and gear" };

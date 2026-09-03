@@ -57,8 +57,18 @@ const DISCORD_FALLBACK = "https://discord.gg/wPQG9gUMXH";
  * up there does not — who runs the site, how to reach us, and how to work with
  * us — laid out as one rail rather than a grid of columns.
  */
+const HELP_URL = `https://${process.env.NEXT_PUBLIC_HELP_HOST || "help.techplay.gg"}`;
+
 const ABOUT = [
     { name: "About Us",          href: "/about" },
+    /*
+     * Two things on this site are called support and they mean opposite
+     * things: this is the one that answers questions, "Support Us" below is
+     * the one that takes donations. The labels have to carry that difference
+     * on their own, because a reader scanning a footer column will not read
+     * further than the words.
+     */
+    { name: "Help Centre",       href: HELP_URL },
     { name: "Contact",           href: "/contact" },
     { name: "Advertise With Us", href: "/marketing" },
     { name: "Our Rating System", href: "/rating-system" },

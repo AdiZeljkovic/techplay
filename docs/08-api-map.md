@@ -82,6 +82,13 @@ prijaviti**. Ništa ovdje ne pita ko si.
 | POST | `/help/answers/{slug}/helpful` | HelpController::helpful | throttle:10,1 | `helpful` bool, **anonimno**. Jedan glas po adresi dnevno; ponovljeni vraća 200 s `counted: false` |
 | GET | `/search/help?q=` | SearchController::help | - | Do 5 rezultata za padajuću pretragu na techplay.gg. **Jedini** URL ovdje koji je apsolutan — vodi na drugi host |
 
+**Help rezultati idu prvi u header dropdownu.** Onaj ko kuca „steam not syncing"
+u traku na vrhu sajta je tačno onaj zbog koga help centar postoji, a tri
+nepovezane vijesti su ono što ga šalje na mail. Na običnom upitu ovo ne mijenja
+ništa — pretraga za igrom ne pogađa nijedan help odgovor. `SearchDropdown` za te
+redove **mora** ići kroz `window.location`: `router.push` navigira unutar rutnog
+stabla ove aplikacije i s apsolutnim URL-om ne uradi ništa.
+
 **Pravilo koje drži cijelu sekciju — `HelpArticle::scopeVisible()`.** Odgovor je
 javan samo ako je i **njegova tema** objavljena. Sakrivanje teme je način na koji
 urednik povlači cijelu temu; bez ovoga svaki odgovor unutra ostaje dostupan na

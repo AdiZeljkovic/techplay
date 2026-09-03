@@ -64,14 +64,16 @@
 
 ## Help centre (help.techplay.gg)
 
-**Status:** U IZRADI — faze 1–3 gotove i na produkciji (03.09.2026), ostaje front
+**Status:** RADI — faze 1–6 na produkciji (03.09.2026). Ostaje samo Rocket.Chat
+(faza 7) i objavljivanje dvanaest odgovora, koji čekaju kao nacrti
 
 **Opis:** Vlastita poddomena na kojoj stoje pisani odgovori na ono što najčešće
 zapne — prijava, povezivanje Steam/Xbox/PlayStation/GOG/Epic naloga, XP, mailovi,
 brisanje naloga. Piše se u Filamentu, ispravka ide bez deploya.
 
-**Frontend:** `app/help/` (faza 4 — još ne postoji); poddomena je isti Next
-proces, mapiran host-rewriteom u `next.config.ts`
+**Frontend:** `app/help/` — indeks, tema, odgovor, pretraga; `components/help/`.
+Poddomena je isti Next proces, mapiran host-rewriteom u `next.config.ts`, s
+vlastitom ljuskom (`app/help/layout.tsx`) jer glavni header ovdje ne radi
 **Backend:** `HelpController`, `HelpArticle` + `HelpCategory`, `HelpArticleObserver`
 + `HelpCategoryObserver`, `SitemapController::helpRobots/helpSitemap`
 **Admin:** `HelpArticleResource`, `HelpCategoryResource` (Content Studio)
@@ -90,8 +92,16 @@ proces, mapiran host-rewriteom u `next.config.ts`
   ne postoji i ne smije se praviti.
 - Glasanje je anonimno, bez tabele glasova; brojači se pune iz Redisa kroz
   `FlushViewCounters` i **nisu u `$fillable`**.
-- Rocket.Chat live chat je faza 7; mjesto u „Still need help" bloku i postavke
-  `help_livechat_enabled` / `help_livechat_url` dolaze ranije.
+- **Rocket.Chat live chat čeka iza dva ključa** — `help_livechat_enabled` i
+  `help_livechat_url`, u adminu pod Settings → Help centre. Dok su ugašeni,
+  „Still stuck" blok izgleda isto kao i prije: mail i Discord. Kad se upale,
+  dolazi treće dugme i mail se povlači u sekundarni stil, jer dva puna dugmeta
+  jedno pored drugog su dva prva, što je nijedno. Toggle **mora** ostati na
+  `Settings::BOOLEANS` listi — kolona je string za sve, pa bi inače upisao
+  prazan string koji se ne razlikuje od „nikad podešeno".
+- **Ulaz s glavnog sajta:** footer (Help Centre, iznad Contact) i MoreSheet.
+  Oba s apsolutnim URL-om; gola putanja bi vodila na stranicu koja ne postoji.
+  Plus help rezultati u header pretrazi — vidi `docs/08-api-map.md`.
 
 ---
 

@@ -137,7 +137,18 @@ export default async function HelpAnswerPage({ params }: Props) {
 
                     <HelpHelpful slug={article.slug} />
 
-                    <StillNeedHelp slug={article.slug} discordUrl={settings.discord_url || DISCORD_FALLBACK} />
+                    <StillNeedHelp
+                        slug={article.slug}
+                        discordUrl={settings.discord_url || DISCORD_FALLBACK}
+                        // Both, or nothing. The switch on its own would render
+                        // a chat button with nowhere to go, and an address on
+                        // its own would open a chat nobody is watching.
+                        liveChatUrl={
+                            ["1", "true"].includes(String(settings.help_livechat_enabled)) && settings.help_livechat_url
+                                ? String(settings.help_livechat_url)
+                                : null
+                        }
+                    />
 
                     {related.length > 0 && (
                         <section className="mt-10">

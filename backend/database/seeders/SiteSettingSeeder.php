@@ -22,6 +22,13 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'youtube_url', 'value' => 'https://youtube.com/techplay', 'type' => 'text', 'group' => 'socials'],
             ['key' => 'discord_url', 'value' => 'https://discord.gg/techplay', 'type' => 'text', 'group' => 'socials'],
 
+            // The help centre's live chat, off until somebody is there to
+            // answer it. Seeded rather than left absent so the switch exists
+            // in the admin before Rocket.Chat does — the day it is ready
+            // should be a toggle, not a release.
+            ['key' => 'help_livechat_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'general'],
+            ['key' => 'help_livechat_url', 'value' => '', 'type' => 'text', 'group' => 'general'],
+
             // Contact
             ['key' => 'contact_email', 'value' => 'info@techplay.gg', 'type' => 'text', 'group' => 'contact'],
             ['key' => 'support_email', 'value' => 'support@techplay.gg', 'type' => 'text', 'group' => 'contact'],
