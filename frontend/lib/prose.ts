@@ -148,8 +148,8 @@ export const DOC_PROSE = [
  */
 export const HELP_PROSE = [
     ...DOC_SHARED,
-    "prose-h2:text-[17.5px] prose-h2:font-bold prose-h2:mt-9 prose-h2:mb-2.5 prose-h2:leading-snug",
-    "prose-h3:text-[14.5px] prose-h3:font-bold prose-h3:mt-7 prose-h3:mb-2",
+    "prose-h2:text-[19px] prose-h2:font-bold prose-h2:mt-10 prose-h2:mb-3 prose-h2:leading-snug",
+    "prose-h3:text-[15px] prose-h3:font-bold prose-h3:mt-7 prose-h3:mb-2",
     "prose-p:text-[15.5px] prose-p:leading-[1.72] prose-p:text-[var(--ink-mid)] prose-p:my-4",
     "prose-li:text-[15.5px] prose-li:leading-[1.65] prose-li:text-[var(--ink-mid)] prose-li:my-1.5",
 ].join(" ");

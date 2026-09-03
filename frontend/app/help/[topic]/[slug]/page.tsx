@@ -94,8 +94,24 @@ export default async function HelpAnswerPage({ params }: Props) {
     };
 
     return (
+        /*
+         * Held to a reading width.
+         *
+         * `container-page` is 1500px, and this laid an article across all of it
+         * minus the sidebar — a line of running text about 1,100 pixels long,
+         * which is roughly 130 characters. Somewhere past 75 the eye stops
+         * finding the start of the next line reliably and a page stops looking
+         * set at all; it reads as text sprayed onto a background, which is
+         * exactly what it looked like.
+         *
+         * 940px for the whole thing puts the column at about 75 characters and
+         * leaves the sidebar within reach of it instead of stranded at the far
+         * edge of a widescreen monitor.
+         */
         <div className="container-page py-8 md:py-12">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+
+            <div className="mx-auto max-w-[940px]">
 
             <HelpBreadcrumbs
                 trail={[
@@ -105,8 +121,15 @@ export default async function HelpAnswerPage({ params }: Props) {
                 ]}
             />
 
-            <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_260px] lg:gap-10 items-start">
+            <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_212px] lg:gap-10 items-start">
                 <article className="min-w-0">
+                    {/* One surface, the way the legal documents already do it.
+                        Body text loose on the page background is what made this
+                        read as unformatted next to an index made of cards. */}
+                    <div
+                        className="rounded-[var(--radius-panel)] border p-5 md:p-7"
+                        style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                    >
                     <header className="border-b pb-6" style={{ borderColor: "var(--line)" }}>
                         {/* The topic, above the title and linked. A reader who
                             arrived from Google has no idea what else is here,
@@ -146,6 +169,7 @@ export default async function HelpAnswerPage({ params }: Props) {
                         className={`mt-7 ${HELP_PROSE}`}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
+                    </div>
 
                     <HelpHelpful slug={article.slug} />
 
@@ -214,6 +238,7 @@ export default async function HelpAnswerPage({ params }: Props) {
                         </ul>
                     </aside>
                 )}
+            </div>
             </div>
         </div>
     );
