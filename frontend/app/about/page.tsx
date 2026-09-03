@@ -176,7 +176,7 @@ const PRINCIPLES = [
 
 function Figure({ value, label }: { value: string; label: string }) {
     return (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col items-center gap-1.5 text-center">
             <span className="font-display text-[26px] md:text-[34px] font-black leading-none tabular-nums text-[var(--ink-hi)]">
                 {value}
             </span>
@@ -187,14 +187,34 @@ function Figure({ value, label }: { value: string; label: string }) {
     );
 }
 
-function SectionTitle({ children, sub }: { children: React.ReactNode; sub?: string }) {
+function SectionTitle({
+    children,
+    sub,
+    centred = false,
+}: {
+    children: React.ReactNode;
+    sub?: string;
+    centred?: boolean;
+}) {
     return (
-        <div className="mb-7">
-            <h2 className="flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)]">
+        <div className={centred ? "mb-9 text-center" : "mb-7"}>
+            <h2
+                className={`flex items-center gap-2.5 font-display text-[15px] font-bold uppercase tracking-[0.12em] text-[var(--ink-hi)] ${
+                    centred ? "justify-center" : ""
+                }`}
+            >
                 <span aria-hidden className="h-[14px] w-[3px] rounded-full bg-[var(--accent)]" />
                 {children}
             </h2>
-            {sub && <p className="mt-2.5 max-w-2xl text-[13.5px] leading-relaxed text-[var(--ink-low)]">{sub}</p>}
+            {sub && (
+                <p
+                    className={`mt-2.5 max-w-2xl text-[13.5px] leading-relaxed text-[var(--ink-low)] ${
+                        centred ? "mx-auto" : ""
+                    }`}
+                >
+                    {sub}
+                </p>
+            )}
         </div>
     );
 }
@@ -213,20 +233,20 @@ export default async function AboutPage() {
                     className="pointer-events-none absolute inset-0"
                     style={{
                         background:
-                            "radial-gradient(58% 120% at 18% -10%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 66%)",
+                            "radial-gradient(56% 120% at 50% -10%, color-mix(in srgb, var(--accent) 15%, transparent), transparent 68%)",
                     }}
                 />
 
-                <div className="relative container-page py-14 md:py-20">
+                <div className="relative container-page py-16 md:py-24 text-center">
                     <p className="font-display text-[10.5px] font-black uppercase tracking-[0.2em] text-[var(--accent)]">
                         Independent · Sarajevo
                     </p>
 
-                    <h1 className="mt-5 max-w-3xl font-display text-[30px] md:text-[46px] font-black leading-[1.06] tracking-tight text-[var(--ink-hi)]">
+                    <h1 className="mx-auto mt-5 max-w-3xl font-display text-[30px] md:text-[46px] font-black leading-[1.06] tracking-tight text-[var(--ink-hi)] text-balance">
                         Everyone writes about games. We also keep the record of yours.
                     </h1>
 
-                    <div className="mt-6 max-w-2xl space-y-4 text-[15px] leading-relaxed text-[var(--ink-mid)]">
+                    <div className="mx-auto mt-6 max-w-2xl space-y-4 text-[15px] leading-relaxed text-[var(--ink-mid)]">
                         <p>
                             TechPlay is a gaming and hardware publication with a games database
                             underneath it and a library on top. Six of us write here. There is no
@@ -246,7 +266,11 @@ export default async function AboutPage() {
             {/* ─────────────────────────────────────────────── the figures */}
             {figures && (
                 <section className="border-b" style={{ borderColor: "var(--line)", background: "var(--surface-1)" }}>
-                    <div className="container-page grid grid-cols-2 gap-8 py-8 md:grid-cols-4 md:py-9">
+                    {/* Held to a width and centred. Spread across the full
+                        1500px container these four sat so far apart that they
+                        read as four unrelated facts rather than one measure of
+                        the same thing. */}
+                    <div className="container-page mx-auto grid max-w-4xl grid-cols-2 gap-x-8 gap-y-9 py-9 md:grid-cols-4 md:py-10">
                         <Figure value={nf.format(figures.games)} label="Games catalogued" />
                         <Figure value={nf.format(figures.studios)} label="Studios" />
                         <Figure value={nf.format(figures.articles)} label="Pieces published" />
@@ -258,32 +282,44 @@ export default async function AboutPage() {
             <div className="container-page space-y-14 py-12 md:space-y-20 md:py-16">
                 {/* ──────────────────────────────────────────── what we built */}
                 <section className="tp-fade-up tp-d1">
-                    <SectionTitle sub="Three things, and the order is the argument: the catalogue is the ground, the library is built on it, and the profile is a reading of the library.">
+                    <SectionTitle
+                        centred
+                        sub="Three things, and the order is the argument: the catalogue is the ground, the library is built on it, and the profile is a reading of the library."
+                    >
                         What we built
                     </SectionTitle>
 
-                    <div className="space-y-px">
+                    {/*
+                      * Centred, and stacked rather than set in three columns.
+                      *
+                      * Side by side they would read as three equal offerings,
+                      * which is the opposite of what the copy says — each one
+                      * stands on the one before it. One column keeps that
+                      * reading, and holding it to 42rem keeps the paragraphs at
+                      * a length somebody can follow while centred.
+                      */}
+                    <div className="mx-auto max-w-2xl">
                         {BUILT.map((block) => (
                             <div
                                 key={block.n}
-                                className="grid gap-4 border-t py-7 md:grid-cols-[64px_1fr] md:gap-8"
+                                className="border-t py-9 text-center"
                                 style={{ borderColor: "var(--line)" }}
                             >
                                 <span
                                     aria-hidden
-                                    className="font-display text-[26px] font-black leading-none tabular-nums"
-                                    style={{ color: "color-mix(in srgb, var(--accent) 55%, transparent)" }}
+                                    className="block font-display text-[13px] font-black leading-none tracking-[0.2em] tabular-nums"
+                                    style={{ color: "color-mix(in srgb, var(--accent) 80%, transparent)" }}
                                 >
                                     {block.n}
                                 </span>
 
-                                <div className="max-w-2xl">
-                                    <h3 className="font-display text-[19px] md:text-[22px] font-bold leading-snug text-[var(--ink-hi)]">
+                                <div>
+                                    <h3 className="mt-4 font-display text-[20px] md:text-[24px] font-bold leading-snug text-[var(--ink-hi)] text-balance">
                                         {block.title}
                                     </h3>
-                                    <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--ink-mid)]">{block.body}</p>
+                                    <p className="mt-3.5 text-[14.5px] leading-relaxed text-[var(--ink-mid)]">{block.body}</p>
 
-                                    <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                                    <div className="mt-5 flex flex-wrap justify-center gap-x-5 gap-y-2">
                                         {block.links.map((link) =>
                                             link.external ? (
                                                 <a
