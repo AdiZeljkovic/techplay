@@ -49,12 +49,21 @@ const MARKS: Record<string, LucideIcon> = {
 
 export default function TopicIcon({
     icon,
-    className = "w-[18px] h-[18px]",
+    className = "w-[26px] h-[26px]",
+    strokeWidth = 1.4,
 }: {
     icon?: string | null;
     className?: string;
+    /**
+     * 1.4 to match the main site's dropdown, which is where a reader will have
+     * seen this treatment before. Its own comment says the rule: the mark IS
+     * the icon — line art in the accent at a light stroke, with no tinted box
+     * under it, because a filled square behind every entry makes several
+     * different destinations look like several of the same thing.
+     */
+    strokeWidth?: number;
 }) {
     const Mark = (icon && MARKS[icon]) || LifeBuoy;
 
-    return <Mark className={className} strokeWidth={1.75} aria-hidden />;
+    return <Mark className={className} strokeWidth={strokeWidth} aria-hidden />;
 }

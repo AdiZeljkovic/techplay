@@ -61,14 +61,8 @@ export default async function HelpTopicPage({ params }: Props) {
             <header className="mt-5 flex max-w-2xl items-start gap-4">
                 {/* The same mark the topic carries on the index, so arriving
                     from a card feels like opening it rather than leaving. */}
-                <span
-                    className="mt-1 hidden h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius-inner)] text-[var(--accent)] sm:flex"
-                    style={{
-                        background: "var(--accent-soft)",
-                        border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)",
-                    }}
-                >
-                    <TopicIcon icon={topic.icon} className="h-[22px] w-[22px]" />
+                <span className="mt-1 hidden h-11 w-11 shrink-0 items-center justify-center text-[var(--accent)] sm:flex">
+                    <TopicIcon icon={topic.icon} className="h-[34px] w-[34px]" strokeWidth={1.3} />
                 </span>
 
                 <div className="min-w-0">

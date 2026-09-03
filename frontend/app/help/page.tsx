@@ -175,7 +175,7 @@ export default async function HelpIndexPage() {
                                 return (
                                     <section
                                         key={topic.slug}
-                                        className="flex flex-col rounded-[var(--radius-panel)] border p-5 transition-colors hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)]"
+                                        className="group flex flex-col rounded-[var(--radius-panel)] border p-5 transition-colors hover:border-[color-mix(in_srgb,var(--accent)_35%,transparent)]"
                                         style={{
                                             background: "var(--surface-1)",
                                             borderColor: "var(--line-strong)",
@@ -183,14 +183,19 @@ export default async function HelpIndexPage() {
                                         }}
                                     >
                                         <div className="flex items-start gap-3">
-                                            <span
-                                                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-inner)] text-[var(--accent)]"
-                                                style={{
-                                                    background: "var(--accent-soft)",
-                                                    border: "1px solid color-mix(in srgb, var(--accent) 26%, transparent)",
-                                                }}
-                                            >
-                                                <TopicIcon icon={topic.icon} />
+                                            {/* No box. The main site's own
+                                                dropdown makes the point: a
+                                                tinted square behind every mark
+                                                turns twelve different subjects
+                                                into twelve of the same thing.
+                                                Same size, same stroke, same
+                                                hover as over there, so this
+                                                reads as the same site. */}
+                                            <span className="flex h-9 w-9 shrink-0 items-center justify-center text-[var(--accent)]">
+                                                <TopicIcon
+                                                    icon={topic.icon}
+                                                    className="h-[26px] w-[26px] transition-transform duration-300 group-hover:scale-110"
+                                                />
                                             </span>
 
                                             <div className="min-w-0">
