@@ -7,6 +7,7 @@ use App\Services\CacheService;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
@@ -61,6 +62,7 @@ class PublishTab
         array $extra = [],
         bool $withScheduling = true,
         bool $withTags = true,
+        bool $withAuthor = true,
     ): Tab {
         return Tab::make('Publish')
             ->icon('heroicon-o-paper-airplane')
@@ -122,7 +124,17 @@ class PublishTab
                     ->getOptionLabelUsing(fn ($value) => Game::find($value)?->name)
                     ->helperText('Auto-detected from the title on save; set it here to override.'),
 
-                Select::make('author_id')
+                /*
+                 * Off where nothing is listening.
+                 *
+                 * The same argument as $withScheduling above: a control is only
+                 * offered where something reads it. help_articles has no
+                 * author_id — help copy is institutional, and a byline invites
+                 * "ask Adi", which is the support burden it exists to remove —
+                 * so an author picked here would be required, discarded on save,
+                 * and never explained.
+                 */
+                ! $withAuthor ? null : Select::make('author_id')
                     ->label('Author')
                     ->options(fn () => CacheService::getAuthors())
                     ->searchable()
@@ -150,5 +162,40 @@ class PublishTab
             ->required()
             ->native(false)
             ->helperText('Skill level required');
+    }
+
+    /**
+     * Which topic a help answer files under.
+     *
+     * Not `$categoryType` above: that builds a `category` relationship against
+     * the `categories` table, and help topics are their own table with their own
+     * ordering. Same shape on screen, different spine underneath.
+     */
+    public static function helpCategory(): Select
+    {
+        return Select::make('help_category_id')
+            ->label('Topic')
+            ->relationship('category', 'name', fn (Builder $query) => $query->orderBy('sort_order'))
+            ->searchable()
+            ->preload()
+            ->required()
+            ->native(false)
+            ->helperText('Where this answer appears in the help centre');
+    }
+
+    /**
+     * Where it sits inside that topic.
+     *
+     * A help centre is curated, never reverse-chronological: the order is the
+     * editor's answer to "what goes wrong most", and it is the thing they will
+     * change most often after launch.
+     */
+    public static function sortOrder(): TextInput
+    {
+        return TextInput::make('sort_order')
+            ->label('Position')
+            ->numeric()
+            ->default(0)
+            ->helperText('Lower comes first. Ties fall back to the title.');
     }
 }

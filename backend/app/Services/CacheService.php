@@ -85,8 +85,12 @@ class CacheService
      */
     public const ARTICLE_TYPES = ['news', 'tech', 'reviews'];
 
-    /** Sections with cached listings. Guides have one, even though they are not Articles. */
-    public const LISTING_TYPES = ['news', 'tech', 'reviews', 'guides'];
+    /**
+     * Sections with cached listings. Guides and help have one each, even
+     * though neither is an Article — which is why this list is separate from
+     * ARTICLE_TYPES above rather than derived from it.
+     */
+    public const LISTING_TYPES = ['news', 'tech', 'reviews', 'guides', 'help'];
 
     /** The cached single article — bounded by slug, so it clears exactly. */
     public static function articleShowKey(string $type, string $slug): string

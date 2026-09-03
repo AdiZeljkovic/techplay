@@ -35,6 +35,13 @@ class FlushViewCounters implements ShouldQueue
         $this->flushPattern('views:article:*', 'articles', 'views');
         $this->flushPattern('views:game:*', 'games', 'views');
         $this->flushPattern('views:guide:*', 'guides', 'views');
+        $this->flushPattern('views:help:*', 'help_articles', 'views');
+
+        // Helpfulness is buffered like a view and for the same reason: it is
+        // an anonymous click on a page that may be getting a lot of them at
+        // once, and an UPDATE per click serialises on the row.
+        $this->flushPattern('helpful:help:*', 'help_articles', 'helpful_count');
+        $this->flushPattern('unhelpful:help:*', 'help_articles', 'unhelpful_count');
         $this->flushPattern('views:ad:*', 'ad_campaigns', 'view_count');
         $this->flushPattern('clicks:ad:*', 'ad_campaigns', 'click_count');
     }

@@ -48,8 +48,18 @@ class ArticleEditorFields
      * @param  string  $attachmentsDirectory  where images dropped into the body are stored
      * @return array<int, Component>
      */
-    public static function make(string $urlPrefix, string $noun = 'article', string $attachmentsDirectory = 'articles/content'): array
-    {
+    /**
+     * @param  string|null  $excerptLabel  Overrides "Standfirst". Newsroom language
+     *                                     reads as nonsense above the one-line answer
+     *                                     on a help page; every existing caller passes
+     *                                     positionally and is unaffected.
+     */
+    public static function make(
+        string $urlPrefix,
+        string $noun = 'article',
+        string $attachmentsDirectory = 'articles/content',
+        ?string $excerptLabel = null,
+    ): array {
         return [
             Section::make()
                 ->schema([
@@ -96,7 +106,7 @@ class ArticleEditorFields
                         ->extraInputAttributes(['class' => 'tp-permalink'], merge: true),
 
                     Textarea::make('excerpt')
-                        ->label('Standfirst')
+                        ->label($excerptLabel ?? 'Standfirst')
                         ->placeholder('The sentence that has to sell this on a card, in search, and in a share.')
                         ->rows(3)
                         ->maxLength(200)

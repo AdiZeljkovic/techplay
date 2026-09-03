@@ -17,6 +17,8 @@ use App\Models\Gta6Character;
 use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
 use App\Models\Guide;
+use App\Models\HelpArticle;
+use App\Models\HelpCategory;
 use App\Models\MailSuppression;
 use App\Models\Media;
 use App\Models\NewsletterSubscriber;
@@ -76,6 +78,8 @@ class AuthServiceProvider extends ServiceProvider
         Gta6Vehicle::class => ContentPolicy::class,
         Gta6Weapon::class => ContentPolicy::class,
         Guide::class => ContentPolicy::class,
+        HelpArticle::class => ContentPolicy::class,
+        HelpCategory::class => ContentPolicy::class,
         Media::class => ContentPolicy::class,
         PageSeo::class => ContentPolicy::class,
 

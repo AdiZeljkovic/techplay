@@ -164,6 +164,29 @@ return [
         trim(explode(',', (string) env('FRONTEND_URL', 'http://localhost:3000'))[0]),
         '/'
     ),
+
+    /*
+     | The help centre answers on its own hostname.
+     |
+     | It is the same Next application — a host-matched rewrite maps
+     | help.techplay.gg/:path onto /help/:path — but every URL that leaves this
+     | codebase for a reader or a crawler has to be the public one. An IndexNow
+     | submission or a canonical built from `site_url` would name
+     | techplay.gg/help/…, which is a URL we then redirect away from, and asking
+     | a search engine to index a redirect is how a section indexes as nothing.
+     |
+     | Defaulting to site_url keeps local development working with no extra
+     | variable: there the two are the same host and the /help paths answer
+     | directly.
+     */
+    'help_url' => rtrim(
+        (string) env('HELP_URL', rtrim(
+            trim(explode(',', (string) env('FRONTEND_URL', 'http://localhost:3000'))[0]),
+            '/'
+        ).'/help'),
+        '/'
+    ),
+
     'revalidation_secret' => env('REVALIDATE_SECRET_TOKEN', env('REVALIDATION_SECRET')),
 
 ];

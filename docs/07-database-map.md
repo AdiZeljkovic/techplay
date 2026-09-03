@@ -73,6 +73,8 @@ korišten.
 | `categories` | 31 | `parent_id`, `type` (news/reviews/tech/forum), `visibility`, `rules` |
 | `guides` | 4 | `status`, `published_at`, `difficulty`, `game_id`, `steps`, `views` — **nema** `category_id` ni `upvotes` |
 | `guide_votes` | 0 | **`is_helpful`** (bool), ne upvote/downvote |
+| `help_categories` | 0 | Teme centra za pomoć: `slug`, `name`, `description`, `icon`, `sort_order`, `is_published` |
+| `help_articles` | 0 | `help_category_id` (cascade), `slug` **globalno unikatan**, `status`, `published_at`, `sort_order`, `seo_*`, `views`, **`helpful_count`/`unhelpful_count`** — nema `author_id`, `game_id` ni slike |
 | `videos` | 0 | **`youtube_url`**, ne `embed_url` |
 | `media` | 1.175 | `path`, `webp_path`, `width`, `height`, `collection`, `uploaded_by` — **nije morphable** |
 | `content_versions` | 65 | Snapshot pri svakoj izmjeni naslova/sadržaja. Bez capa i bez prunanja |
@@ -103,6 +105,26 @@ postojeći `source`.
 
 Publiku računa `NewsletterAudience`, šalje `newsletter:launch` (bez `--force`
 samo ispiše kome bi išlo).
+
+### Centar za pomoć: dva pravila koja se lako pogriješe
+
+**`slug` na `help_articles` je unikatan globalno, ne unutar teme.** Članak se
+dohvata po slugu samom, a tema stiže uz njega — pa premještanje odgovora iz jedne
+teme u drugu mijenja adresu na kojoj je kanonski, a ne ruši red. Bez toga bi
+svako premještanje tražilo unos u `redirects`.
+
+**`HelpArticle::scopeVisible()`, ne `scopePublished()`, za sve javno čitanje.**
+`published()` gleda samo stanje samog odgovora; `visible()` traži i da je tema
+objavljena. Skrivanje teme je način na koji urednik povlači cijelu oblast — bez
+`visible()` odgovori unutar nje ostaju dostupni na svojim adresama dok tema
+vraća 404 oko njih. `published()` postoji zasebno jer sitemap i admin pitaju baš
+za stanje samog odgovora.
+
+Ocjena korisnosti su brojači na redu, **ne tabela glasova** kao `guide_votes`.
+Čitalac kome to najviše treba — onaj koji ne može završiti registraciju — po
+definiciji nije prijavljen, pa bi unikatni red po korisniku značio da se
+najvažniji odgovor na sajtu jedini ne može ocijeniti. Brojači se pune preko
+Redisa (`helpful:help:*`) i sliježu kroz `FlushViewCounters`.
 
 ## Forum
 
