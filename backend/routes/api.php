@@ -46,6 +46,7 @@ use App\Http\Controllers\Api\V1\Gta6Controller;
 use App\Http\Controllers\Api\V1\Gta6VehiclesController;
 use App\Http\Controllers\Api\V1\Gta6WeaponsController;
 use App\Http\Controllers\Api\V1\GuideController;
+use App\Http\Controllers\Api\V1\HelpController;
 use App\Http\Controllers\Api\V1\HomeController;
 use App\Http\Controllers\Api\V1\JournalController;
 use App\Http\Controllers\Api\V1\LastDiscController;
@@ -459,6 +460,20 @@ Route::prefix('v1')->group(function () {
         Route::get('/search/articles', [SearchController::class, 'articles']);
         Route::get('/search/games', [SearchController::class, 'games']);
         Route::get('/search/users', [SearchController::class, 'users']);
+        Route::get('/search/help', [SearchController::class, 'help']);
+
+        // Help centre (help.techplay.gg)
+        //
+        // Anonymous throughout, deliberately: the two questions this section
+        // was built for are asked by people who cannot sign in.
+        Route::get('/help', [HelpController::class, 'index']);
+        Route::get('/help/search', [HelpController::class, 'search']);
+        Route::get('/help/topics/{slug}', [HelpController::class, 'topic']);
+        Route::get('/help/answers/{slug}', [HelpController::class, 'answer']);
+        // Ten a minute is far above reading a page and pressing a button, and
+        // far below what it takes to move a counter that nothing else guards.
+        Route::middleware('throttle:10,1')
+            ->post('/help/answers/{slug}/helpful', [HelpController::class, 'helpful']);
 
         // Latest across the editorial sections, for the dashboard strip
         Route::get('/feed/latest', [FeedController::class, 'latest']);

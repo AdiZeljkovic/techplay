@@ -23,7 +23,13 @@ class PageSeoSeeder extends Seeder
             ['page_path' => '/calendar', 'page_name' => 'Release Calendar', 'meta_title' => 'Game Release Calendar - Upcoming Titles | TechPlay', 'meta_description' => 'Stay ahead with our up-to-date release calendar. See upcoming game releases on all major platforms.', 'meta_keywords' => 'game release calendar, upcoming games, release dates'],
             ['page_path' => '/forum', 'page_name' => 'Community Forums', 'meta_title' => 'Community Forums - Gaming Discussions | TechPlay', 'meta_description' => 'Join the TechPlay community forums. Discuss games, share PC builds, get help, and connect with fellow gamers.', 'meta_keywords' => 'gaming forum, PC gaming community, gaming discussions'],
             ['page_path' => '/shop', 'page_name' => 'Shop', 'meta_title' => 'Shop - Gaming Gear & Merchandise | TechPlay', 'meta_description' => 'Official TechPlay merchandise, premium gaming gear, and exclusive accessories. Support the team and level up your setup.', 'meta_keywords' => 'gaming merchandise, gaming gear, TechPlay shop'],
-            ['page_path' => '/support', 'page_name' => 'Support', 'meta_title' => 'Support Center - Help & FAQs | TechPlay', 'meta_description' => 'Need help? Browse our FAQs, troubleshoot account issues, or contact our support team.', 'meta_keywords' => 'techplay support, help center, FAQs'],
+            // Two things called support, meaning opposite things: this page
+            // takes donations, and the help centre lives on help.techplay.gg.
+            // The row below described a support centre for eight months while
+            // the page asked for money — see the 2026_09_03_100001 migration.
+            // Label it "Support us" everywhere and the confusion stays fixed.
+            ['page_path' => '/support', 'page_name' => 'Support us', 'meta_title' => 'Support Us — Back Independent Gaming Media | TechPlay', 'meta_description' => 'TechPlay runs without a publisher behind it. Back the site with a one-off contribution or a monthly supporter tier, and help keep the reviews independent.', 'meta_keywords' => 'support techplay, donate, supporter tiers, independent gaming media'],
+            ['page_path' => '/help', 'page_name' => 'Help centre', 'meta_title' => 'Help Centre — Answers and Troubleshooting | TechPlay', 'meta_description' => 'Answers to what we are asked most: sign-in trouble, connecting Steam, Xbox, PlayStation, GOG and Epic, how XP works, emails, and what happens to your data.', 'meta_keywords' => 'techplay help, help centre, account help, connect steam account'],
 
             // Legal pages
             ['page_path' => '/privacy', 'page_name' => 'Privacy Policy', 'meta_title' => 'Privacy Policy | TechPlay', 'meta_description' => 'Read our Privacy Policy to understand how we collect, use, and protect your personal data.', 'meta_keywords' => 'privacy policy, data protection, GDPR'],

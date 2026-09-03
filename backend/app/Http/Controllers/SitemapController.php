@@ -9,6 +9,8 @@ use App\Models\GameList;
 use App\Models\GameSeries;
 use App\Models\Gta6Character;
 use App\Models\Guide;
+use App\Models\HelpArticle;
+use App\Models\HelpCategory;
 use App\Models\Product;
 use App\Models\Studio;
 use Carbon\Carbon;
@@ -784,6 +786,102 @@ class SitemapController extends Controller
         $xml .= '</urlset>';
 
         return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    // ========== Help centre (help.techplay.gg) ==========
+
+    /*
+     * The help centre is a different hostname, so it needs its own pair.
+     *
+     * A sitemap may only list URLs on the host that serves it. Everything above
+     * is built from `config('app.site_url')` — techplay.gg — and adding help
+     * pages to any of those files would produce a sitemap listing a hostname it
+     * does not belong to, which Google refuses outright unless both hosts are
+     * verified as the same property. There is no `sitemap-help.xml` on the main
+     * site and there must not be one.
+     *
+     * These two are reached at `help.techplay.gg/sitemap.xml` and
+     * `/robots.txt`, mapped there by nginx on that server block. They are the
+     * only place in this controller where the base URL is not `$this->frontendUrl`.
+     */
+
+    public function helpRobots(): Response
+    {
+        $base = rtrim((string) config('app.help_url'), '/');
+
+        $content = implode("\n", [
+            'User-agent: *',
+            'Allow: /',
+            '',
+            // Search result pages are thin, infinite and duplicate the answers
+            // they point at. Google asks not to be sent into them, and a crawl
+            // budget spent on ?q= permutations is budget not spent on answers.
+            'Disallow: /search',
+            '',
+            'Sitemap: '.$base.'/sitemap.xml',
+            '',
+        ]);
+
+        // An hour, and no session. The main site's robots.txt was being fetched
+        // 33 times a day because the web middleware attached a cookie to it and
+        // made it uncacheable — for the crawler and for Cloudflare both. This
+        // route is registered outside that group for the same reason.
+        return response($content, 200)
+            ->header('Content-Type', 'text/plain; charset=UTF-8')
+            ->header('Cache-Control', 'public, max-age=3600');
+    }
+
+    public function helpSitemap(): Response
+    {
+        $base = rtrim((string) config('app.help_url'), '/');
+        $xml = $this->xmlHeader();
+
+        $xml .= $this->urlEntry($base.'/', null, 'weekly', '0.8');
+
+        /*
+         * `visible()`, not `published()`.
+         *
+         * An answer's URL carries its topic's slug, so a published answer
+         * inside a hidden topic has no reachable address — the topic page 404s
+         * around it. Listing it would hand Google a URL the site itself does
+         * not serve, which is how a section earns a coverage error for pages
+         * nobody meant to publish.
+         */
+        $topics = HelpCategory::published()
+            ->whereHas('articles', fn ($q) => $q->published()->where('is_noindex', false))
+            ->orderBy('sort_order')
+            ->get(['slug', 'updated_at']);
+
+        foreach ($topics as $topic) {
+            $xml .= $this->urlEntry(
+                $base.'/'.$topic->slug,
+                $topic->updated_at?->toIso8601String(),
+                'weekly',
+                '0.7'
+            );
+        }
+
+        $answers = HelpArticle::visible()
+            ->where('is_noindex', false)
+            ->with('category:id,slug')
+            ->orderBy('help_category_id')
+            ->orderBy('sort_order')
+            ->get(['id', 'help_category_id', 'slug', 'updated_at']);
+
+        foreach ($answers as $answer) {
+            $xml .= $this->urlEntry(
+                $base.'/'.$answer->category->slug.'/'.$answer->slug,
+                $answer->updated_at?->toIso8601String(),
+                'monthly',
+                '0.6'
+            );
+        }
+
+        $xml .= '</urlset>';
+
+        return response($xml, 200)
+            ->header('Content-Type', 'application/xml')
+            ->header('Cache-Control', 'public, max-age=300');
     }
 
     // ========== Helper Methods ==========

@@ -67,6 +67,35 @@
 | GET | `/guides/{slug}` | GuideController::show | - | Detalj guidea. Vraća `helpful_count`, `unhelpful_count`, `user_vote`. Neobjavljen → 404 (isti scope) |
 | POST | `/guides/{slug}/vote` | GuideController::vote | auth:sanctum, throttle:30,1 | `is_helpful` bool. Isti odgovor drugi put povlači glas. Briše keš guidea kroz `CacheService::articleShowKey('guide', …)` — ključ se nigdje ne ispisuje rukom |
 
+## Help centre (help.techplay.gg) — 03.09.2026
+
+Sve javno i bez prijave, namjerno: dva najčešća pitanja („dugme Create account
+ne radi", „verifikacijski mail nije stigao") postavljaju ljudi koji se **ne mogu
+prijaviti**. Ništa ovdje ne pita ko si.
+
+| Metoda | Ruta | Controller::Metoda | Auth | Opis |
+|--------|------|--------------------|------|------|
+| GET | `/help` | HelpController::index | - | Cijeli centar u jednom odgovoru — teme s odgovorima ispod, plus `popular`. Tema bez ijednog objavljenog odgovora **ne izlazi** (kartica koja obećava pomoć a otvara praznu stranicu) |
+| GET | `/help/search?q=` | HelpController::search | - | Do 10 rezultata. Traži i po tijelu teksta; rangira `LOWER(title)` u četiri nivoa |
+| GET | `/help/topics/{slug}` | HelpController::topic | - | Tema i njeni odgovori. Sakrivena tema → 404, ne prazna stranica |
+| GET | `/help/answers/{slug}` | HelpController::answer | - | Odgovor, njegova tema i ostatak te teme. Broji pregled u `views:help:{id}` |
+| POST | `/help/answers/{slug}/helpful` | HelpController::helpful | throttle:10,1 | `helpful` bool, **anonimno**. Jedan glas po adresi dnevno; ponovljeni vraća 200 s `counted: false` |
+| GET | `/search/help?q=` | SearchController::help | - | Do 5 rezultata za padajuću pretragu na techplay.gg. **Jedini** URL ovdje koji je apsolutan — vodi na drugi host |
+
+**Pravilo koje drži cijelu sekciju — `HelpArticle::scopeVisible()`.** Odgovor je
+javan samo ako je i **njegova tema** objavljena. Sakrivanje teme je način na koji
+urednik povlači cijelu temu; bez ovoga svaki odgovor unutra ostaje dostupan na
+svojoj adresi dok stranica teme oko njega vraća 404, a čovjek koji dođe s Googlea
+dobija odgovor za koji sajt misli da je povučen. Vrijedi i za sitemap.
+
+**Sitemap i robots su na poddomeni, ne na techplay.gg.** Sitemap smije nabrajati
+samo URL-ove sa svog hosta, pa `sitemap-help.xml` na glavnom sajtu ne postoji i
+ne smije se praviti. Laravel ih servira na `/help/robots.txt` i
+`/help/sitemap.xml` (`SitemapController::helpRobots` / `helpSitemap`), a nginx
+blok `help.techplay.gg` ih mapira na `/robots.txt` i `/sitemap.xml` te poddomene.
+Obje rute su **izvan `web` middleware grupe** — kolačić sesije na fajlu koji čita
+crawler čini ga nekeširajućim i na rubu i u crawleru.
+
 ## Content — Tech/Hardware
 
 | Metoda | Ruta | Controller::Metoda | Auth | Opis |

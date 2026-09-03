@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Game;
+use App\Models\HelpArticle;
 use App\Models\User;
 use App\Services\LevelService;
 use Illuminate\Http\Request;
@@ -66,6 +67,51 @@ class SearchController extends Controller
                         'url' => $url,
                     ];
                 }),
+                'count' => $results->count(),
+            ];
+        });
+
+        return response()->json($result)->header('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+
+    /**
+     * Help answers, for the header dropdown on techplay.gg.
+     *
+     * Someone typing "steam not syncing" into the search box at the top of the
+     * site is exactly who the help centre was built for, and without this they
+     * get three unrelated news stories and give up — or write an email, which
+     * is the outcome the section exists to prevent. Five results, alongside the
+     * articles, games and users the dropdown already fans out to.
+     *
+     * The URL is absolute here and relative everywhere else in the help API.
+     * This is the one link that leaves techplay.gg for help.techplay.gg, and a
+     * path would resolve against the wrong host — which reads as a 404 to the
+     * person who searched and as a broken internal link to a crawler.
+     */
+    public function help(Request $request)
+    {
+        $request->validate(['q' => 'required|string|min:2|max:100']);
+
+        $query = trim((string) $request->input('q'));
+        $base = rtrim((string) config('app.help_url'), '/');
+
+        $result = Cache::remember('search.help.'.md5(mb_strtolower($query)), 60, function () use ($query, $base) {
+            $results = HelpArticle::visible()
+                ->matching($query)
+                ->with('category:id,name,slug')
+                ->limit(5)
+                ->get(['id', 'help_category_id', 'title', 'slug', 'excerpt', 'sort_order']);
+
+            return [
+                'results' => $results->map(fn (HelpArticle $article) => [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'slug' => $article->slug,
+                    'excerpt' => $article->excerpt ? Str::limit(strip_tags($article->excerpt), 80) : null,
+                    'topic' => $article->category?->name,
+                    'topic_slug' => $article->category?->slug,
+                    'url' => $base.'/'.$article->category?->slug.'/'.$article->slug,
+                ])->all(),
                 'count' => $results->count(),
             ];
         });

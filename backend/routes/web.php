@@ -45,6 +45,35 @@ Route::get('/sitemap-games-{page}.xml', [SitemapController::class, 'games'])->wh
 Route::get('/sitemap-studios.xml', [SitemapController::class, 'studios']);
 Route::get('/sitemap-series.xml', [SitemapController::class, 'series']);
 
+/*
+ * The help centre's own robots.txt and sitemap.
+ *
+ * Internal addresses. nginx on the help.techplay.gg server block maps that
+ * host's `/robots.txt` and `/sitemap.xml` onto these two, so what a crawler
+ * sees is a sitemap served from the same hostname as the URLs inside it —
+ * which is the only arrangement Google accepts without both hosts being
+ * verified as one property.
+ *
+ * Outside the web middleware group for the same reason the main robots.txt is:
+ * a session cookie on a crawler-facing file makes it uncacheable everywhere,
+ * at the edge and in the crawler, and turns one fetch a day into thirty.
+ */
+Route::get('/help/robots.txt', [SitemapController::class, 'helpRobots'])
+    ->withoutMiddleware([
+        StartSession::class,
+        AddQueuedCookiesToResponse::class,
+        ShareErrorsFromSession::class,
+        ValidateCsrfToken::class,
+    ]);
+
+Route::get('/help/sitemap.xml', [SitemapController::class, 'helpSitemap'])
+    ->withoutMiddleware([
+        StartSession::class,
+        AddQueuedCookiesToResponse::class,
+        ShareErrorsFromSession::class,
+        ValidateCsrfToken::class,
+    ]);
+
 // Dynamic robots.txt from admin panel
 Route::get('/robots.txt', function () {
     $content = SiteSetting::get('seo_robots_txt_content', "User-agent: *\nAllow: /");
