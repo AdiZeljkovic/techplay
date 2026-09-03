@@ -99,7 +99,12 @@ export default function HelpLayout({ children }: { children: React.ReactNode }) 
                                 </a>
                             </li>
                             <li>
-                                <a href="/search" className="hover:text-[var(--accent)] transition-colors" style={{ color: "var(--ink-low)" }}>
+                                {/* The index, at its search field — not /search,
+                                    which without a query is a blank page whose
+                                    only content is an apology for existing. The
+                                    fragment is what keeps this a different
+                                    destination from "All topics" above. */}
+                                <a href="/#help-q" className="hover:text-[var(--accent)] transition-colors" style={{ color: "var(--ink-low)" }}>
                                     Search
                                 </a>
                             </li>

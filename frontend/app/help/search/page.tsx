@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import HelpBreadcrumbs from "@/components/help/HelpBreadcrumbs";
 import HelpSearch from "@/components/help/HelpSearch";
 import { searchHelp, SITE_URL } from "@/lib/help";
@@ -31,7 +32,24 @@ export default async function HelpSearchPage({
     const raw = Array.isArray(params.q) ? params.q[0] : params.q;
     const query = (raw ?? "").trim();
 
-    const results = query.length >= 2 ? await searchHelp(query) : [];
+    /*
+     * There is no such thing as a search page without a search.
+     *
+     * Reached with nothing to look for — from the footer, a bookmark, an empty
+     * form submission — this rendered a breadcrumb, a heading, an empty box
+     * and "type at least two characters", with the footer floating at the
+     * bottom of an otherwise blank screen. That is a page whose entire content
+     * is an apology for existing.
+     *
+     * The index is the search page: it carries the same box, centred, with the
+     * whole directory under it. So an empty search goes there instead, and the
+     * route only ever renders when it has something to show.
+     */
+    if (query.length < 2) {
+        redirect("/");
+    }
+
+    const results = await searchHelp(query);
 
     return (
         <div className="container-page py-8 md:py-12">
@@ -48,11 +66,7 @@ export default async function HelpSearchPage({
             </div>
 
             <div className="mt-8 max-w-3xl">
-                {query.length < 2 ? (
-                    <p className="text-[13.5px]" style={{ color: "var(--ink-low)" }}>
-                        Type at least two characters.
-                    </p>
-                ) : results.length > 0 ? (
+                {results.length > 0 ? (
                     <>
                         <p className="text-[12px]" style={{ color: "var(--ink-low)" }}>
                             {results.length} {results.length === 1 ? "answer" : "answers"} for “{query}”
