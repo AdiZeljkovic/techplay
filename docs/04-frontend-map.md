@@ -109,8 +109,18 @@ Pravilo koje iz toga slijedi, i koje vrijedi za svaki novi link u toj sekciji:
 Nikad gola putanja na glavni sajt, i nikad apsolutan URL unutar help centra.
 Oba oblika su u `lib/help.ts` (`HELP_URL`, `SITE_URL`).
 
-Provjera je kroz `usePathname()`, a **ne** kroz čitanje `headers()`: `headers()`
-bi cijeli sajt pretvorio u dinamički render i pojeo ISR zbog jedne poddomene.
+Provjera je kroz **`useSelectedLayoutSegment()`**, a ne kroz `usePathname()` i
+ne kroz `headers()`.
+
+`headers()` bi cijeli sajt pretvorio u dinamički render i pojeo ISR zbog jedne
+poddomene. `usePathname()` je bio prvi pokušaj i **nije radio ništa**: router
+vraća putanju koju je browser tražio, a rewrite se dešava na serveru ispod
+routera — pa je na poddomeni pathname `/` ili `/account-and-sign-in` i nikad ne
+počinje s `/help`. Provjera je bila netačna na svakoj stranici zbog koje postoji,
+i glavni header se renderovao na poddomeni s `<a href="/news">` koji tamo vodi u
+404. `useSelectedLayoutSegment()` odgovara na drugo pitanje — koja se ruta ispod
+root layouta **stvarno renderuje** — a to je ona na koju je rewrite već
+primijenjen.
 
 Sekcija koristi **`<a>`, ne `next/link`** — `next/link` razrješava href kroz
 rutno stablo ove aplikacije, ne kroz rewrite, pa bi prefetchao pogrešnu rutu pod

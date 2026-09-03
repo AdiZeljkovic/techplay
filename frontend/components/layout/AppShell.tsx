@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from 'next/navigation';
+import { useSelectedLayoutSegment } from 'next/navigation';
 import Header from './Header';
 import Footer from './Footer';
 import PageTransition from './PageTransition';
@@ -27,8 +27,23 @@ import MobileTabBar from './MobileTabBar';
  *
  * Making Header and Footer host-aware would mean reading the request headers,
  * which turns every page on the site dynamic and costs the whole ISR strategy
- * to fix one subdomain. `usePathname()` costs nothing: it is known at
- * prerender time, so the static pages stay static.
+ * to fix one subdomain.
+ *
+ * ── Why the segment and not the path ────────────────────────────────────
+ *
+ * The first version of this asked `usePathname()`, and it did nothing at all.
+ * The router's pathname is the URL **the browser asked for**, and the rewrite
+ * that maps this hostname onto /help/* happens on the server, below the
+ * router — so on help.techplay.gg the pathname is `/`, or
+ * `/account-and-sign-in`, and never begins with /help. The check was false on
+ * every page it existed to catch, and the site header rendered on the
+ * subdomain with its whole navigation pointing at 404s. Verified in the
+ * shipped HTML: `<a href="/news">Discover</a>`, live on help.techplay.gg.
+ *
+ * `useSelectedLayoutSegment()` answers the other question — which route below
+ * the root layout is **actually rendering** — and that is the one the rewrite
+ * has already been applied to. It costs nothing and is known at prerender
+ * time, so the static pages stay static.
  *
  * `app/help/layout.tsx` supplies its own header and footer, whose outbound
  * links are absolute and name techplay.gg. techplay.gg/help/* is a 301 to the
@@ -36,10 +51,9 @@ import MobileTabBar from './MobileTabBar';
  * nothing on the main site loses its chrome.
  */
 export default function AppShell({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
-    const isHelp = pathname === '/help' || pathname.startsWith('/help/');
+    const segment = useSelectedLayoutSegment();
 
-    if (isHelp) {
+    if (segment === 'help') {
         return <>{children}</>;
     }
 
