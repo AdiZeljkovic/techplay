@@ -13,6 +13,10 @@
 | `/guides/[slug]` | `GET /guides/{slug}` | GuideController::show | guides, guide_votes |
 | `/hardware` | `GET /tech` | TechController::index | articles (tech categorija) |
 | `/hardware/[slug]` | `GET /tech/{slug}` | TechController::show | articles |
+| `help.techplay.gg/` (repo: `/help`) | `GET /help` | HelpController::index | help_categories, help_articles |
+| `help.techplay.gg/{tema}` | `GET /help/topics/{slug}` | HelpController::topic | help_categories, help_articles |
+| `help.techplay.gg/{tema}/{odgovor}` | `GET /help/answers/{slug}`, `POST /help/answers/{slug}/helpful` | HelpController::answer, ::helpful | help_articles |
+| `help.techplay.gg/search` | `GET /help/search?q=` | HelpController::search | help_articles |
 | `/videos` | `GET /videos` | VideoController::index | videos |
 | `/videos/[slug]` | `GET /videos/{slug}` | VideoController::show | videos |
 | `/games` | `GET /games?q=&genre=&platform=&year=` | GameController::index | games |

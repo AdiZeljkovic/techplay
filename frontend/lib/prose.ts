@@ -58,6 +58,32 @@ export const ARTICLE_PROSE = `prose prose-invert max-w-none break-words
     [&_.fb-post]:mx-auto [&_.fb-post]:my-8`;
 
 /**
+ * Typography for documents rather than for articles.
+ *
+ * Same job as ARTICLE_PROSE above, different register. An article body opens
+ * with a 30px headline behind an accent bar because it is being read for
+ * pleasure; a document is being read to find one thing. Headings here are
+ * small, uppercase and quiet, and the text is set tighter — the reader is
+ * scanning for the paragraph that answers them, not settling in.
+ *
+ * This lived privately inside LegalLayout, which made it the site's second set
+ * of prose tokens with no name and no way to reach it. The help centre needs
+ * exactly this register, and copying it would have made a third — so it moved
+ * here unchanged, and Privacy, Terms, Cookies and every help answer now read
+ * the same way on purpose rather than by coincidence.
+ */
+export const DOC_PROSE = [
+    "prose prose-invert max-w-none",
+    "prose-headings:font-display prose-headings:uppercase prose-headings:tracking-wide",
+    "prose-h2:text-[15px] prose-h2:text-[var(--ink-hi)] prose-h2:mt-10 prose-h2:mb-3",
+    "prose-h3:text-[13px] prose-h3:text-[var(--ink-hi)] prose-h3:mt-6 prose-h3:mb-2",
+    "prose-p:text-[14px] prose-p:leading-relaxed prose-p:text-[var(--ink-mid)]",
+    "prose-li:text-[14px] prose-li:text-[var(--ink-mid)]",
+    "prose-strong:text-[var(--ink-hi)]",
+    "prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline",
+].join(" ");
+
+/**
  * Block elements a paragraph can be *inside*.
  *
  * A `</p>` within one of these is not a gap between paragraphs — it is a cell

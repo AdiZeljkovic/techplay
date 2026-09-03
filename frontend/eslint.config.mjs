@@ -38,6 +38,23 @@ const eslintConfig = defineConfig([
     files: ["scripts/**/*.js"],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
+  {
+    /*
+     * The help centre links with plain anchors, on purpose.
+     *
+     * It is served from help.techplay.gg, where a host rewrite maps every path
+     * onto /help/*. So a bare `/` there is the help index, not the site
+     * homepage — and next/link resolves hrefs against this app's route tree
+     * rather than against the rewrite, so it would prefetch and cache the
+     * wrong route under the right URL.
+     *
+     * Anchors also keep these pages at zero JavaScript, which matters more
+     * here than anywhere else on the site: the reader most likely to need the
+     * help centre is the one whose browser is already the problem.
+     */
+    files: ["app/help/**", "components/help/**"],
+    rules: { "@next/next/no-html-link-for-pages": "off" },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

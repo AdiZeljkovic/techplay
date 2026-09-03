@@ -1,91 +1,195 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { LifeBuoy, Mail, MessagesSquare } from "lucide-react";
+import { ArrowRight, LifeBuoy } from "lucide-react";
+import HelpSearch from "@/components/help/HelpSearch";
+import { generatePageMetadata, ROBOTS_NOINDEX } from "@/lib/seo";
+import { getHelpIndex, HELP_URL, SITE_URL } from "@/lib/help";
 
-import PageHero from "@/components/ui/PageHero";
-import Panel from "@/components/ui/Panel";
-import { ROBOTS_NOINDEX } from "@/lib/seo";
+export const revalidate = 3600;
+
+export async function generateMetadata(): Promise<Metadata> {
+    // The /help row in page_seo carries the canonical, and it points at this
+    // hostname rather than at techplay.gg/help — the two are the same pages
+    // and only one of them should be indexed.
+    const base = await generatePageMetadata("/help", {
+        title: "TechPlay Help Centre",
+        description:
+            "Answers to what we are asked most: sign-in trouble, connecting Steam, Xbox, PlayStation, GOG and Epic, how XP works, emails, and what happens to your data.",
+    });
+
+    /*
+     * Indexable the moment it has something to say, and not a day before.
+     *
+     * The placeholder this page replaces was noindex on purpose, with a note
+     * saying it becomes indexable in the commit that gives it content. The
+     * content is written in the admin panel, not in a commit — so the switch
+     * is made here instead, by the same condition: an index with no published
+     * topics is an empty shell, and an empty shell that gets crawled is filed
+     * as thin and remembered that way. This site spent eight days climbing out
+     * of a hole with Google last week.
+     *
+     * The same fetch as the page body, so this costs nothing — Next dedupes
+     * identical requests within one render.
+     */
+    const data = await getHelpIndex();
+
+    return {
+        ...base,
+        robots: (data?.topics.length ?? 0) > 0 ? base.robots : ROBOTS_NOINDEX,
+    };
+}
 
 /**
- * The help centre, before it has anything in it.
+ * The front of the help centre.
  *
- * This exists so the hostname can be proved end to end — DNS, certificate,
- * nginx, and the host rewrite in next.config.ts — before any of the machinery
- * behind it is built. help.techplay.gg reaching this page means all four links
- * in that chain hold.
+ * Search first, then everything, on one page. A help centre is a few dozen
+ * answers — small enough that listing all of them beats making somebody guess
+ * which of five categories their problem belongs to, and small enough that the
+ * whole thing arrives in one cached API call.
  *
- * Deliberately `noindex`. An empty shell is exactly the kind of page that gets
- * crawled once, filed as thin, and remembered that way — and this site spent
- * eight days this week climbing out of a hole with Google. It becomes
- * indexable in the same commit that gives it something to say.
+ * Every answer is a real link in the server-rendered HTML. That is the lesson
+ * this site paid for two weeks ago: the author page fetches its articles in
+ * the browser and ships zero links, so Googlebot has never seen one of them.
+ * A help centre whose answers are only reachable after hydration is a help
+ * centre that will never rank for the long-tail questions it was written for.
  */
-export const metadata: Metadata = {
-    title: "Help centre",
-    description: "Answers about accounts, connected platforms, your library and XP.",
-    robots: ROBOTS_NOINDEX,
-};
+export default async function HelpIndexPage() {
+    const data = await getHelpIndex();
+    const topics = data?.topics ?? [];
+    const popular = data?.popular ?? [];
 
-const ROUTES = [
-    {
-        href: "/contact",
-        icon: Mail,
-        title: "Email us",
-        body: "Tell us what happened and what you expected. A person reads it.",
-    },
-    {
-        href: "https://discord.gg/techplay",
-        icon: MessagesSquare,
-        title: "Ask on Discord",
-        body: "Usually the fastest answer, and somebody has often hit it before you.",
-    },
-];
+    const collection = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "TechPlay Help Centre",
+        url: `${HELP_URL}/`,
+        isPartOf: { "@type": "WebSite", name: "TechPlay", url: SITE_URL },
+        hasPart: topics.map((topic) => ({
+            "@type": "WebPage",
+            name: topic.name,
+            url: `${HELP_URL}/${topic.slug}`,
+        })),
+    };
 
-export default function HelpPlaceholderPage() {
     return (
-        <main className="min-h-screen bg-[var(--surface-0)]">
-            <PageHero
-                title="Help centre"
-                description="Written answers about accounts, connected platforms, your library and XP."
-                iconNode={<LifeBuoy className="w-6 h-6 text-[var(--accent)]" strokeWidth={1.75} />}
-            />
+        <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collection) }} />
 
-            <div className="container-page py-10 md:py-14">
-                <Panel>
-                    <div className="p-5 sm:p-7 max-w-[62ch]">
-                        <h2 className="font-display text-[19px] font-black text-white">
-                            We are still writing this.
-                        </h2>
-                        <p className="mt-3 text-[14px] leading-relaxed text-[var(--ink-mid)]">
-                            The first answers cover connecting Steam, Xbox, PlayStation, GOG and
-                            Epic, why a library sometimes stops syncing, how XP and its daily cap
-                            work, and what happens to your data if you delete your account.
-                        </p>
-                        <p className="mt-3 text-[14px] leading-relaxed text-[var(--ink-mid)]">
-                            Until they are here, both of these reach us.
+            <section className="border-b" style={{ borderColor: "var(--line)" }}>
+                <div className="container-page py-12 md:py-16">
+                    <div className="max-w-2xl">
+                        <h1 className="font-display text-[30px] md:text-[42px] font-black uppercase leading-[1.05] tracking-tight text-[var(--ink-hi)]">
+                            How can we <span className="text-[var(--accent)]">help?</span>
+                        </h1>
+                        <p className="mt-3 text-[14.5px] leading-relaxed" style={{ color: "var(--ink-low)" }}>
+                            Written answers to the things that go wrong most. If none of them fits, the
+                            bottom of every page reaches a person.
                         </p>
 
-                        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                            {ROUTES.map(({ href, icon: Icon, title, body }) => (
-                                <Link
-                                    key={href}
-                                    href={href}
-                                    className="group rounded-[var(--radius-card)] border border-white/[0.08] bg-[var(--surface-2)] p-4 transition-colors hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
-                                >
-                                    <span className="flex items-center gap-2.5">
-                                        <Icon className="h-4 w-4 shrink-0 text-[var(--accent)]" />
-                                        <span className="font-display text-[13px] font-bold uppercase tracking-[0.08em] text-white">
-                                            {title}
-                                        </span>
-                                    </span>
-                                    <span className="mt-2 block text-[13px] leading-snug text-[var(--ink-low)]">
-                                        {body}
-                                    </span>
-                                </Link>
-                            ))}
+                        <div className="mt-6">
+                            <HelpSearch />
                         </div>
                     </div>
-                </Panel>
+                </div>
+            </section>
+
+            <div className="container-page py-10 md:py-14">
+                {popular.length > 0 && (
+                    <section className="mb-12">
+                        <h2 className="font-display text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--ink-low)" }}>
+                            Read most
+                        </h2>
+
+                        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                            {popular.map((answer) => (
+                                <li key={answer.slug}>
+                                    <a
+                                        href={answer.url}
+                                        className="group flex items-center gap-3 rounded-[var(--radius-panel)] border px-4 py-3.5 transition-colors hover:border-[color-mix(in_srgb,var(--accent)_45%,transparent)]"
+                                        style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                                    >
+                                        <span className="min-w-0 flex-1 text-[14px] font-medium text-[var(--ink-mid)] group-hover:text-[var(--ink-hi)] transition-colors">
+                                            {answer.title}
+                                        </span>
+                                        <ArrowRight
+                                            className="w-4 h-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-[var(--accent)]"
+                                            aria-hidden
+                                        />
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+
+                {topics.length > 0 ? (
+                    <div className="grid gap-6 md:grid-cols-2">
+                        {topics.map((topic) => (
+                            <section
+                                key={topic.slug}
+                                className="rounded-[var(--radius-panel)] border p-5 md:p-6"
+                                style={{
+                                    background: "var(--surface-1)",
+                                    borderColor: "var(--line-strong)",
+                                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                                }}
+                            >
+                                <h2 className="font-display text-[15px] font-black uppercase tracking-[0.1em] text-[var(--ink-hi)]">
+                                    <a href={`/${topic.slug}`} className="hover:text-[var(--accent)] transition-colors">
+                                        {topic.name}
+                                    </a>
+                                </h2>
+
+                                {topic.description && (
+                                    <p className="mt-2 text-[13px] leading-relaxed" style={{ color: "var(--ink-low)" }}>
+                                        {topic.description}
+                                    </p>
+                                )}
+
+                                <ul className="mt-4 space-y-1">
+                                    {topic.articles.map((answer) => (
+                                        <li key={answer.slug}>
+                                            <a
+                                                href={answer.url}
+                                                className="block py-1.5 text-[13.5px] leading-snug transition-colors hover:text-[var(--accent)]"
+                                                style={{ color: "var(--ink-mid)" }}
+                                            >
+                                                {answer.title}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+                        ))}
+                    </div>
+                ) : (
+                    /*
+                     * Nothing published yet.
+                     *
+                     * The section ships before its writing does, and an index
+                     * that renders as a blank page reads as a broken one. This
+                     * says what is true and still gets the reader somewhere.
+                     */
+                    <section
+                        className="rounded-[var(--radius-panel)] border px-6 py-10 text-center"
+                        style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                    >
+                        <LifeBuoy className="mx-auto w-7 h-7 text-[var(--accent)]" aria-hidden />
+                        <h2 className="mt-4 font-display text-[15px] font-black uppercase tracking-[0.1em] text-[var(--ink-hi)]">
+                            The first answers are being written
+                        </h2>
+                        <p className="mx-auto mt-2 max-w-md text-[13.5px] leading-relaxed" style={{ color: "var(--ink-low)" }}>
+                            Nothing here yet. In the meantime, ask us directly — every question asked now
+                            is one of the pages that ends up here.
+                        </p>
+                        <a
+                            href={`${SITE_URL}/contact?from=help`}
+                            className="mt-5 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-[var(--radius-inner)] font-display text-[11.5px] font-black uppercase tracking-[0.1em] text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors"
+                        >
+                            Ask us
+                        </a>
+                    </section>
+                )}
             </div>
-        </main>
+        </>
     );
 }

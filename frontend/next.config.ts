@@ -262,16 +262,50 @@ const nextConfig: NextConfig = {
    */
   async redirects() {
     const backendBase = (process.env.NEXT_PRIVATE_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/v1").replace(/\/$/, '');
+
+    /*
+     * The help centre has exactly one address, and this is what enforces it.
+     *
+     * Its pages live at /help/* in this repo, which means they are reachable
+     * three ways unless something stops it:
+     *
+     *     techplay.gg/help/connections/x        the repo path, on the main host
+     *     help.techplay.gg/help/connections/x   the repo path, on the subdomain
+     *     help.techplay.gg/connections/x        the address we publish
+     *
+     * Three URLs, one page. Google picks whichever it likes, splits the
+     * ranking signal between them, and the canonical tag is only a hint. A 301
+     * is not a hint.
+     *
+     * No host condition, deliberately: the rule reads the same on both
+     * hostnames and closes both duplicates with one line. There is no loop,
+     * because redirects are matched against the *incoming* path and the host
+     * rewrite that turns /connections/x back into /help/connections/x runs
+     * afterwards and internally — it never becomes a request.
+     *
+     * Declared outside the try below so that an unreachable API, which empties
+     * the editor's redirect list for that build, cannot also reopen the
+     * duplicates.
+     */
+    const helpHostname = process.env.NEXT_PUBLIC_HELP_HOST || 'help.techplay.gg';
+    const helpDuplicates = [
+      { source: '/help', destination: `https://${helpHostname}/`, statusCode: 301 },
+      { source: '/help/:path*', destination: `https://${helpHostname}/:path*`, statusCode: 301 },
+    ];
+
     try {
       const res = await fetch(`${backendBase}/redirects`, {
         headers: { Accept: 'application/json' },
         signal: AbortSignal.timeout(8000),
       });
-      if (!res.ok) { console.error("[redirects] " + backendBase + "/redirects answered " + res.status + " — no redirects in this build"); return []; }
+      if (!res.ok) { console.error("[redirects] " + backendBase + "/redirects answered " + res.status + " — no redirects in this build"); return helpDuplicates; }
       const rows: Array<{ source_url?: string; target_url?: string; status_code?: number }> = await res.json();
 
-      const seen = new Set<string>();
-      return rows.flatMap((r) => {
+      // Seeded with the two rules above: Next throws on a duplicate source,
+      // and an editor is perfectly able to have typed /help into the admin.
+      const seen = new Set<string>(helpDuplicates.map((r) => r.source));
+
+      return [...helpDuplicates, ...rows.flatMap((r) => {
         const source = (r.source_url || '').trim();
         const destination = (r.target_url || '').trim();
         // Next throws on a duplicate source, and a rule pointing at itself is
@@ -282,10 +316,11 @@ const nextConfig: NextConfig = {
         // The editor picks 301 or 302 in the admin; `permanent: true` would
         // silently turn every one of them into a 308.
         return [{ source, destination, statusCode: r.status_code || 301 }];
-      });
+      })];
     } catch {
-      // A build must not fail because the API was briefly unreachable.
-      return [];
+      // A build must not fail because the API was briefly unreachable — but
+      // the duplicate-closing rules are ours and do not depend on it.
+      return helpDuplicates;
     }
   },
 

@@ -230,6 +230,23 @@ class HelpCentreApiTest extends TestCase
             ->assertJsonPath('data.counted', true);
     }
 
+    /**
+     * The subdomain is a second origin, and the browser treats it as a stranger.
+     *
+     * Every read in the help centre happens on the server, so nothing there
+     * needs CORS — until the helpful button, which is a POST from the reader's
+     * own browser and therefore preflighted. Drop this origin and the button
+     * fails with nothing anywhere to explain it: no error the page can show,
+     * and no line in the API log, because the request never arrives.
+     */
+    public function test_the_help_subdomain_is_allowed_to_call_the_api_from_a_browser(): void
+    {
+        $this->assertContains(
+            rtrim((string) config('app.help_url'), '/'),
+            config('cors.allowed_origins'),
+        );
+    }
+
     public function test_voting_on_an_answer_that_is_not_public_is_a_404(): void
     {
         $article = $this->answer($this->topic(['is_published' => false]));

@@ -21,6 +21,7 @@ Sve stranice su u `frontend/app/`. Svaki folder = ruta.
 | `/news` | `app/news/` | News listing + `[slug]` detalj |
 | `/reviews` | `app/reviews/` | Reviews listing + `[slug]` detalj |
 | `/guides` | `app/guides/` | Guides listing + `[slug]` detalj — dijeli `components/editorial/SectionHub` |
+| `/help/*` | `app/help/` | **Nije putanja na techplay.gg.** Servira se s `help.techplay.gg/*`, gdje host-rewrite skida `/help`. `techplay.gg/help/*` je 301 na poddomenu. Vidi „Druga ljuska" niže — pravila za linkove su drukčija |
 
 ### Sekcijske stranice (news / reviews / hardware / guides)
 
@@ -86,6 +87,42 @@ na vrhu), a articles resource collection (`meta`). `SectionHub` čita oba oblika
   - `ThemeContext` — dark/light
   - `SiteSettingsContext` — site-wide postavke iz API
   - `MobileMenuContext` — mobile nav
+
+### Druga ljuska: help centar (03.09.2026)
+
+`AppShell` na `/help` **ne renderuje** Header, Footer ni MobileTabBar, nego samo
+`{children}` — a `app/help/layout.tsx` daje svoju ljusku.
+
+Nije stvar ukusa. Help centar se servira s `help.techplay.gg`, gdje host-rewrite
+u `next.config.ts` mapira **svaku** putanju na `/help/*`. Linkovi u glavnom
+headeru su pisani kao gole putanje (`/news`, `/games`, `/forum`), pa bi se na
+poddomeni `/news` razriješio u help temu „news" koja ne postoji — cijela
+navigacija bi vraćala 404, na hostu koji upravo tražimo od Googlea da indeksira.
+
+Pravilo koje iz toga slijedi, i koje vrijedi za svaki novi link u toj sekciji:
+
+| Link | Oblik |
+|------|-------|
+| ostaje u help centru | gola putanja — `/`, `/{tema}`, `/{tema}/{odgovor}`, `/search` |
+| izlazi na glavni sajt | **apsolutan** — `${SITE_URL}/contact` |
+
+Nikad gola putanja na glavni sajt, i nikad apsolutan URL unutar help centra.
+Oba oblika su u `lib/help.ts` (`HELP_URL`, `SITE_URL`).
+
+Provjera je kroz `usePathname()`, a **ne** kroz čitanje `headers()`: `headers()`
+bi cijeli sajt pretvorio u dinamički render i pojeo ISR zbog jedne poddomene.
+
+Sekcija koristi **`<a>`, ne `next/link`** — `next/link` razrješava href kroz
+rutno stablo ove aplikacije, ne kroz rewrite, pa bi prefetchao pogrešnu rutu pod
+tačnim URL-om. Uz to sve stranice ostaju na nula JavaScripta osim jednog otoka
+(`HelpHelpful`). ESLint pravilo `no-html-link-for-pages` je isključeno za
+`app/help/**` i `components/help/**` s tim obrazloženjem.
+
+**Duplikati su zatvoreni u `next.config.ts`:** `/help` i `/help/:path*` su 301 na
+poddomenu, bez uslova na host — isto pravilo zatvara i `techplay.gg/help/*` i
+`help.techplay.gg/help/*`. Nema petlje jer se redirecti mjere na **dolaznoj**
+putanji, a rewrite koji vraća `/x` u `/help/x` je interni i nikad ne postane
+zahtjev.
 
 ---
 

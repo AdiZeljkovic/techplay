@@ -28,6 +28,12 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
+        <!-- The help centre answers on its own hostname in production, and a
+             good deal of its behaviour is about that being a *different* host:
+             its own sitemap, its own robots.txt, its own CORS origin. Without
+             this the suite would test the local-development shape, where /help
+             is a path on the main site and none of those distinctions exist. -->
+        <env name="HELP_URL" value="https://help.techplay.gg"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>

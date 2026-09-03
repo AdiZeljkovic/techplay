@@ -2,6 +2,7 @@ import type { LucideIcon, } from "lucide-react";
 import { Calendar } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
+import { DOC_PROSE } from "@/lib/prose";
 
 /**
  * The shell the three legal documents share.
@@ -16,17 +17,7 @@ import Panel from "@/components/ui/Panel";
  * pages render on the server and ship no JavaScript of their own.
  */
 
-/** Prose colours as ink tokens, so the documents follow the theme like everything else. */
-const PROSE = [
-    "prose prose-invert max-w-none",
-    "prose-headings:font-display prose-headings:uppercase prose-headings:tracking-wide",
-    "prose-h2:text-[15px] prose-h2:text-[var(--ink-hi)] prose-h2:mt-10 prose-h2:mb-3",
-    "prose-h3:text-[13px] prose-h3:text-[var(--ink-hi)] prose-h3:mt-6 prose-h3:mb-2",
-    "prose-p:text-[14px] prose-p:leading-relaxed prose-p:text-[var(--ink-mid)]",
-    "prose-li:text-[14px] prose-li:text-[var(--ink-mid)]",
-    "prose-strong:text-[var(--ink-hi)]",
-    "prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline",
-].join(" ");
+
 
 interface LegalLayoutProps {
     title: string;
@@ -80,7 +71,7 @@ export default function LegalLayout({
                     </aside>
 
                     <article className="tp-fade-up tp-d2 rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] p-6 md:p-9">
-                        <div className={PROSE}>{children}</div>
+                        <div className={DOC_PROSE}>{children}</div>
                     </article>
                 </div>
             </div>
