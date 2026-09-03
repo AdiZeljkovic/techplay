@@ -4,9 +4,19 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Cookie, X, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { applyConsent, CONSENT_STORAGE_KEY, DEFAULT_PREFERENCES, type CookiePreferences } from "@/lib/consent";
+
+/**
+ * Absolute, because this banner appears on two hostnames.
+ *
+ * It is rendered from the root layout, so it shows on help.techplay.gg as
+ * well — where a host rewrite maps every path onto /help/*, and `/privacy`
+ * would resolve to a help topic called "privacy" and 404. The two policies
+ * are one document on the main site, so naming that site is also the more
+ * honest link.
+ */
+const SITE_URL = (process.env.NEXT_PUBLIC_APP_URL || "https://techplay.gg").replace(/\/$/, "");
 
 /** Stored preferences are untrusted input; a bad value must not take the page. */
 function safeParse(raw: string) {
@@ -130,7 +140,7 @@ export default function CookieConsentBanner() {
                                         <h3 className="text-xl font-bold text-white mb-2">We value your privacy</h3>
                                         <p className="text-white/55 text-sm leading-relaxed max-w-2xl">
                                             We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.
-                                            You can choose to accept all or customize your preferences. Read our <Link href="/privacy" prefetch={false} className="text-[var(--accent)] hover:underline">Privacy Policy</Link> and <Link href="/cookies" prefetch={false} className="text-[var(--accent)] hover:underline">Cookie Policy</Link>.
+                                            You can choose to accept all or customize your preferences. Read our <a href={`${SITE_URL}/privacy`} className="text-[var(--accent)] hover:underline">Privacy Policy</a> and <a href={`${SITE_URL}/cookies`} className="text-[var(--accent)] hover:underline">Cookie Policy</a>.
                                         </p>
                                     </div>
                                 </div>
