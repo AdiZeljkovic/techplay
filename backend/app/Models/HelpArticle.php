@@ -104,23 +104,87 @@ class HelpArticle extends Model
         $term = trim($term);
         $like = DB::getDriverName() === 'pgsql' ? 'ILIKE' : 'LIKE';
         $lower = mb_strtolower($term);
-        $contains = '%'.$term.'%';
+
+        /*
+         * Word by word, not as one string.
+         *
+         * The first version of this searched for the whole phrase as a single
+         * needle, and it failed at exactly the thing a help search is for.
+         * Measured against the live section the day everything was published:
+         *
+         *     "paypal"             4 results
+         *     "xp"                10 results
+         *     "steam not syncing"  0
+         *     "delete my account"  0
+         *
+         * Both of those have an answer written for them. Nothing contained the
+         * phrase contiguously — the article is called "Delete your account",
+         * and somebody in trouble types "my". A search that only rewards
+         * guessing our wording is a search that sends people to email.
+         *
+         * So every word of three letters or more has to appear somewhere in
+         * the answer, in any order and any distance apart. Words shorter than
+         * that are dropped rather than required: "my", "a" and "is" carry no
+         * meaning and would rule out answers that are otherwise exactly right.
+         * A query made only of short words falls back to the whole phrase, so
+         * "xp" still behaves.
+         *
+         * Capped at eight words, because the cost is one LIKE per word and a
+         * pasted paragraph is not a search.
+         */
+        $words = array_slice(
+            array_filter(
+                preg_split('/\s+/u', $lower, -1, PREG_SPLIT_NO_EMPTY) ?: [],
+                fn (string $word) => mb_strlen($word) >= 3,
+            ),
+            0,
+            8,
+        );
+
+        $needles = $words === [] ? [$lower] : $words;
+
+        $query->where(function ($outer) use ($needles, $like) {
+            foreach ($needles as $needle) {
+                $wrapped = '%'.$needle.'%';
+
+                // AND between words, OR between the columns each is looked for
+                // in — so "steam" may be in the title while "syncing" is in the
+                // body, and the answer still counts as a match.
+                $outer->where(fn ($q) => $q
+                    ->where('title', $like, $wrapped)
+                    ->orWhere('excerpt', $like, $wrapped)
+                    ->orWhere('focus_keyword', $like, $wrapped)
+                    ->orWhere('content', $like, $wrapped));
+            }
+        });
+
+        /*
+         * Ranking, in two passes.
+         *
+         * The phrase tiers first, because an answer whose title *is* the
+         * question is unarguably the answer. Then, among everything else, how
+         * many of the words landed in the title — which is what separates the
+         * answer about Steam syncing from the four other answers that merely
+         * mention Steam.
+         */
+        $query->orderByRaw(
+            'CASE
+                WHEN LOWER(title) = ? THEN 0
+                WHEN LOWER(title) LIKE ? THEN 1
+                WHEN LOWER(title) LIKE ? THEN 2
+                ELSE 3
+            END',
+            [$lower, $lower.'%', '%'.$lower.'%']
+        );
+
+        if ($words !== []) {
+            $query->orderByRaw(
+                '('.implode(' + ', array_fill(0, count($words), 'CASE WHEN LOWER(title) LIKE ? THEN 1 ELSE 0 END')).') DESC',
+                array_map(fn (string $word) => '%'.$word.'%', $words),
+            );
+        }
 
         return $query
-            ->where(fn ($q) => $q
-                ->where('title', $like, $contains)
-                ->orWhere('excerpt', $like, $contains)
-                ->orWhere('focus_keyword', $like, $contains)
-                ->orWhere('content', $like, $contains))
-            ->orderByRaw(
-                'CASE
-                    WHEN LOWER(title) = ? THEN 0
-                    WHEN LOWER(title) LIKE ? THEN 1
-                    WHEN LOWER(title) LIKE ? THEN 2
-                    ELSE 3
-                END',
-                [$lower, $lower.'%', '%'.$lower.'%']
-            )
             ->orderBy('sort_order')
             ->orderBy('title');
     }

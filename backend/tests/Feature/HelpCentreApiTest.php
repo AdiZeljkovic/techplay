@@ -197,6 +197,63 @@ class HelpCentreApiTest extends TestCase
         $response->assertJsonPath('data.results.0.title', 'Your Steam library is not syncing');
     }
 
+    /**
+     * The way somebody in trouble actually types.
+     *
+     * Searching for the whole phrase as one string was the first version, and
+     * it returned nothing for "steam not syncing" and nothing for "delete my
+     * account" — both of which have an answer written for them. It only ever
+     * rewarded guessing our exact wording.
+     */
+    public function test_search_finds_an_answer_from_words_that_are_not_next_to_each_other(): void
+    {
+        $topic = $this->topic();
+        $this->answer($topic, [
+            'title' => 'Delete your account, and what happens to your data',
+            'excerpt' => 'Everything that names you is removed.',
+            'content' => '<p>Go to Settings and choose to delete.</p>',
+        ]);
+        $this->answer($topic, ['title' => 'Connect your Xbox account', 'content' => '<p>Type your gamertag.</p>']);
+
+        // "my" is dropped as too short to mean anything; "delete" and
+        // "account" both have to appear, and they do — three words apart.
+        $response = $this->getJson('/api/v1/help/search?q='.urlencode('delete my account'))->assertOk();
+
+        $response->assertJsonPath('data.count', 1);
+        $response->assertJsonPath('data.results.0.title', 'Delete your account, and what happens to your data');
+    }
+
+    public function test_the_answer_whose_title_carries_the_words_comes_first(): void
+    {
+        $topic = $this->topic();
+        // Carries all three words in its body, and is about something else —
+        // so it is a genuine match that must nonetheless come second.
+        $this->answer($topic, [
+            'title' => 'Connect your Xbox account',
+            'content' => '<p>Xbox is not Steam, and it is not syncing the same way.</p>',
+        ]);
+        $this->answer($topic, [
+            'title' => 'Your Steam library is not syncing',
+            'content' => '<p>Check both privacy switches.</p>',
+        ]);
+
+        $response = $this->getJson('/api/v1/help/search?q='.urlencode('steam not syncing'))->assertOk();
+
+        $response->assertJsonPath('data.count', 2);
+        // Both match. The one whose title carries the words is the answer.
+        $response->assertJsonPath('data.results.0.title', 'Your Steam library is not syncing');
+    }
+
+    /** A query of nothing but short words still has to work. */
+    public function test_a_two_letter_query_still_searches(): void
+    {
+        $this->answer($this->topic(), ['title' => 'How XP and the daily cap work']);
+
+        $this->getJson('/api/v1/help/search?q=xp')
+            ->assertOk()
+            ->assertJsonPath('data.count', 1);
+    }
+
     public function test_search_will_not_return_an_answer_from_a_hidden_topic(): void
     {
         $this->answer($this->topic(['is_published' => false]), ['title' => 'Withdrawn Steam answer']);
