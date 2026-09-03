@@ -62,25 +62,96 @@ export const ARTICLE_PROSE = `prose prose-invert max-w-none break-words
  *
  * Same job as ARTICLE_PROSE above, different register. An article body opens
  * with a 30px headline behind an accent bar because it is being read for
- * pleasure; a document is being read to find one thing. Headings here are
- * small, uppercase and quiet, and the text is set tighter — the reader is
- * scanning for the paragraph that answers them, not settling in.
+ * pleasure; a document is being read to find one thing.
  *
- * This lived privately inside LegalLayout, which made it the site's second set
- * of prose tokens with no name and no way to reach it. The help centre needs
- * exactly this register, and copying it would have made a third — so it moved
- * here unchanged, and Privacy, Terms, Cookies and every help answer now read
- * the same way on purpose rather than by coincidence.
+ * ── Two registers, one set of parts ──────────────────────────────────────
+ *
+ * The legal documents and the help centre want the same *materials* — the same
+ * link colour, the same table, the same code chip — and different **sizes**. A
+ * privacy clause is scanned for a phrase and is set small and dense; a help
+ * answer is read while somebody follows it, and 14px uppercase headings turn
+ * "unplug it and plug it back in" into a legal notice.
+ *
+ * So the shared part is a list and each register adds its own sizes to it.
+ * Appending overrides to a finished string would not have worked: two Tailwind
+ * utilities for the same property have the same specificity, so which one wins
+ * depends on their order in the compiled stylesheet rather than on the order
+ * they appear in the class attribute. That is the kind of bug that renders
+ * correctly on your machine and wrong after an unrelated build.
+ *
+ * The bottom half of this list is why it exists at all. DOC_PROSE covered
+ * headings, paragraphs, list items, strong and links, and nothing else — so
+ * the ten help answers that carry a table drew it in Tailwind's own greys,
+ * off the site's palette entirely, and code, quotes and rules were bare.
+ */
+const DOC_SHARED = [
+    "prose prose-invert max-w-none break-words",
+
+    "prose-headings:font-display prose-headings:text-[var(--ink-hi)]",
+    "prose-strong:text-[var(--ink-hi)] prose-strong:font-semibold",
+    "prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4",
+
+    // Bullets in the accent. The one place a list gets any colour, and it is
+    // what makes a set of steps read as steps.
+    "prose-li:marker:text-[var(--accent)]",
+    "prose-ul:pl-5 prose-ol:pl-5",
+
+    "prose-code:bg-[var(--surface-2)] prose-code:text-[var(--ink-hi)] prose-code:border prose-code:border-[var(--line)]",
+    "prose-code:rounded-[var(--radius-inner)] prose-code:px-1.5 prose-code:py-0.5 prose-code:font-normal",
+    "prose-code:before:content-none prose-code:after:content-none",
+    "prose-pre:bg-[var(--surface-2)] prose-pre:border prose-pre:border-[var(--line)] prose-pre:rounded-[var(--radius-panel)]",
+
+    "prose-blockquote:not-italic prose-blockquote:border-l-2 prose-blockquote:border-[var(--accent)]",
+    "prose-blockquote:pl-4 prose-blockquote:text-[var(--ink-mid)]",
+
+    "prose-hr:border-[var(--line)] prose-hr:my-8",
+    "prose-img:rounded-[var(--radius-panel)] prose-img:border prose-img:border-[var(--line)]",
+
+    /*
+     * Tables, and the scroll that keeps them from taking the page with them.
+     *
+     * `display:block` on the table is what makes overflow-x work on it at all;
+     * without it a wide table pushes the whole body sideways on a phone and
+     * the reader loses the left edge of every line.
+     */
+    "[&_table]:block [&_table]:w-full [&_table]:overflow-x-auto [&_table]:my-6",
+    "prose-th:text-left prose-th:font-display prose-th:text-[10.5px] prose-th:font-black",
+    "prose-th:uppercase prose-th:tracking-[0.12em] prose-th:text-[var(--ink-low)]",
+    "prose-th:border-b prose-th:border-[var(--line-strong)] prose-th:pb-2 prose-th:pr-5",
+    "prose-td:border-b prose-td:border-[var(--line)] prose-td:py-2.5 prose-td:pr-5",
+    "prose-td:text-[var(--ink-mid)] prose-td:tabular-nums",
+];
+
+/**
+ * Privacy, Terms, Cookies and Impressum — small, dense, uppercase headings.
+ *
+ * This is what lived privately inside LegalLayout, which made it the site's
+ * second set of prose tokens with no name and no way to reach it.
  */
 export const DOC_PROSE = [
-    "prose prose-invert max-w-none",
-    "prose-headings:font-display prose-headings:uppercase prose-headings:tracking-wide",
-    "prose-h2:text-[15px] prose-h2:text-[var(--ink-hi)] prose-h2:mt-10 prose-h2:mb-3",
-    "prose-h3:text-[13px] prose-h3:text-[var(--ink-hi)] prose-h3:mt-6 prose-h3:mb-2",
+    ...DOC_SHARED,
+    "prose-headings:uppercase prose-headings:tracking-wide",
+    "prose-h2:text-[15px] prose-h2:mt-10 prose-h2:mb-3",
+    "prose-h3:text-[13px] prose-h3:mt-6 prose-h3:mb-2",
     "prose-p:text-[14px] prose-p:leading-relaxed prose-p:text-[var(--ink-mid)]",
-    "prose-li:text-[14px] prose-li:text-[var(--ink-mid)]",
-    "prose-strong:text-[var(--ink-hi)]",
-    "prose-a:text-[var(--accent)] prose-a:no-underline hover:prose-a:underline",
+    "prose-li:text-[14px] prose-li:text-[var(--ink-mid)] prose-li:my-1",
+].join(" ");
+
+/**
+ * A help answer, which is read rather than referred to.
+ *
+ * Bigger, looser, and its headings are left in the case they were written in.
+ * "If it never finishes" is a signpost through a set of instructions; setting
+ * it in 15px uppercase turns a troubleshooting step into a subsection of a
+ * contract, which is the register the reader is least able to use while
+ * something is broken.
+ */
+export const HELP_PROSE = [
+    ...DOC_SHARED,
+    "prose-h2:text-[17.5px] prose-h2:font-bold prose-h2:mt-9 prose-h2:mb-2.5 prose-h2:leading-snug",
+    "prose-h3:text-[14.5px] prose-h3:font-bold prose-h3:mt-7 prose-h3:mb-2",
+    "prose-p:text-[15.5px] prose-p:leading-[1.72] prose-p:text-[var(--ink-mid)] prose-p:my-4",
+    "prose-li:text-[15.5px] prose-li:leading-[1.65] prose-li:text-[var(--ink-mid)] prose-li:my-1.5",
 ].join(" ");
 
 /**

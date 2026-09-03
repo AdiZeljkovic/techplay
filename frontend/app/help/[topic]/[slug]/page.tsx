@@ -3,7 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import HelpBreadcrumbs from "@/components/help/HelpBreadcrumbs";
 import HelpHelpful from "@/components/help/HelpHelpful";
 import StillNeedHelp from "@/components/help/StillNeedHelp";
-import { DOC_PROSE } from "@/lib/prose";
+import { HELP_PROSE } from "@/lib/prose";
 import { fetchSiteSettings, ROBOTS_INDEX, ROBOTS_NOINDEX } from "@/lib/seo";
 import { getHelpAnswer, getHelpTopic, HELP_URL, reviewedOn, SITE_URL } from "@/lib/help";
 
@@ -107,31 +107,43 @@ export default async function HelpAnswerPage({ params }: Props) {
 
             <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_260px] lg:gap-10 items-start">
                 <article className="min-w-0">
-                    <header>
-                        <h1 className="font-display text-[26px] md:text-[34px] font-black leading-tight tracking-tight text-[var(--ink-hi)]">
+                    <header className="border-b pb-6" style={{ borderColor: "var(--line)" }}>
+                        {/* The topic, above the title and linked. A reader who
+                            arrived from Google has no idea what else is here,
+                            and the breadcrumb above is too quiet to tell them. */}
+                        {topic.name && topic.slug && (
+                            <a
+                                href={`/${topic.slug}`}
+                                className="font-display text-[10.5px] font-black uppercase tracking-[0.16em] text-[var(--accent)] transition-colors hover:text-[var(--accent-hover)]"
+                            >
+                                {topic.name}
+                            </a>
+                        )}
+
+                        <h1 className="mt-2.5 font-display text-[26px] md:text-[34px] font-black leading-[1.15] tracking-tight text-[var(--ink-hi)]">
                             {article.title}
                         </h1>
 
+                        {/* The summary was written for every answer and was
+                            only ever used in listings — so the page that most
+                            needs to say "yes, this is the one" opened without
+                            it, and the reader had to read a paragraph to find
+                            out whether they were in the right place. */}
+                        {article.excerpt && (
+                            <p className="mt-3.5 max-w-2xl text-[16px] leading-relaxed" style={{ color: "var(--ink-low)" }}>
+                                {article.excerpt}
+                            </p>
+                        )}
+
                         {reviewed && (
-                            <p className="mt-3 text-[12px]" style={{ color: "var(--ink-low)" }}>
+                            <p className="mt-5 font-display text-[10.5px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--ink-low)" }}>
                                 Last reviewed {reviewed}
                             </p>
                         )}
                     </header>
 
-                    {/*
-                      * The table rule is not decoration.
-                      *
-                      * DOC_PROSE was written for the legal documents, which
-                      * have no tables; help answers do — the XP page is a
-                      * table of what earns what, and a hardware answer will
-                      * be worse. A `prose` table takes its natural width, so
-                      * a wide one pushes the whole page sideways on a phone,
-                      * and the reader loses the left edge of every line. This
-                      * makes the table scroll inside itself instead.
-                      */}
                     <div
-                        className={`mt-6 ${DOC_PROSE} [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto`}
+                        className={`mt-7 ${HELP_PROSE}`}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
 
@@ -175,7 +187,7 @@ export default async function HelpAnswerPage({ params }: Props) {
                 {siblings && siblings.articles.length > 1 && (
                     <aside className="lg:sticky lg:top-20">
                         <h2 className="font-display text-[11px] font-black uppercase tracking-[0.14em]" style={{ color: "var(--ink-low)" }}>
-                            {siblings.name}
+                            More in {siblings.name}
                         </h2>
 
                         <ul className="mt-3 space-y-0.5 border-l" style={{ borderColor: "var(--line-strong)" }}>
