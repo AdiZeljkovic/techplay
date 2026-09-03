@@ -119,8 +119,19 @@ export default async function HelpAnswerPage({ params }: Props) {
                         )}
                     </header>
 
+                    {/*
+                      * The table rule is not decoration.
+                      *
+                      * DOC_PROSE was written for the legal documents, which
+                      * have no tables; help answers do — the XP page is a
+                      * table of what earns what, and a hardware answer will
+                      * be worse. A `prose` table takes its natural width, so
+                      * a wide one pushes the whole page sideways on a phone,
+                      * and the reader loses the left edge of every line. This
+                      * makes the table scroll inside itself instead.
+                      */}
                     <div
-                        className={`mt-6 ${DOC_PROSE}`}
+                        className={`mt-6 ${DOC_PROSE} [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto`}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
 
