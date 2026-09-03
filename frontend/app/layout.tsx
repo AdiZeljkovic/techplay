@@ -320,13 +320,20 @@ export default async function RootLayout({
 
             app/proxy/ga has relayed those hits since before any of this, and
             nothing had ever pointed at it. Now the beacon is first-party too,
-            and there is nothing left on a blocklist for a blocker to match. */}
+            and there is nothing left on a blocklist for a blocker to match.
+
+            `location.origin` rather than a baked-in techplay.gg: the help
+            centre is served from a second hostname over the same application,
+            and an absolute URL would make every beacon from there a
+            cross-origin POST the relay answers with no CORS headers — so
+            analytics would be silently dead on that whole subdomain. Each host
+            now relays through itself. */}
         <script
           dangerouslySetInnerHTML={{ __html: `
           gtag('js', new Date());
           gtag('config', '${process.env.NEXT_PUBLIC_GA_ID || 'G-0J974Y0X23'}', {
             send_page_view: true,
-            transport_url: '${(process.env.NEXT_PUBLIC_APP_URL || 'https://techplay.gg').replace(/\/$/, '')}/proxy/ga'
+            transport_url: location.origin + '/proxy/ga'
           });
         `}}
         />

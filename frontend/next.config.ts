@@ -291,24 +291,60 @@ const nextConfig: NextConfig = {
 
   async rewrites() {
     const backendBase = (process.env.NEXT_PUBLIC_API_URL || 'https://api-beta.techplay.gg/api/v1').replace(/\/api\/v1\/?$/, '');
-    return [
-      // /feed i /rss nemaju rewrite: app/feed/route.ts i app/rss/route.ts
-      // postoje, a filesystem rute pobjedjuju afterFiles rewrite — pa ovi
-      // nikad nisu ni opalili. Da jesu, vodili bi kroz javno ime i Cloudflare
-      // challenge, umjesto kroz interni poziv s tokenom koji rute rade.
 
-      // IndexNow's ownership proof. The protocol wants the key file on the
-      // same host as the URLs being submitted, and the URLs are ours while
-      // the key lives in the backend's settings — so the frontend serves it
-      // by proxy rather than by keeping a second copy that can drift.
-      //
-      // Scoped to the key's own shape (tp + hex) so this cannot shadow
-      // robots.txt, sitemap.xml or anything else ending in .txt.
-      {
-        source: '/:key(tp[a-f0-9]{24,48}).txt',
-        destination: `${backendBase}/:key.txt`,
-      },
-    ];
+    /*
+     * The help centre is a second hostname over the same application.
+     *
+     * Its pages live at /help/* in this repo and are served from
+     * help.techplay.gg/*. Keeping the internal paths under /help is not
+     * cosmetic: page_seo rows key on the path, and a subdomain rooted at "/"
+     * would collide with the homepage's own "/" row.
+     *
+     * These have to be `beforeFiles`. `afterFiles` runs only once the
+     * filesystem has been consulted, and the filesystem has a route for "/" —
+     * so the root of the subdomain would serve the main site's homepage and
+     * every other rule here would look like it worked.
+     *
+     * Which is also why the first three rules exist. `beforeFiles` intercepts
+     * everything, so the framework's own paths have to be handed back
+     * explicitly or /_next/image and the analytics relay would be rewritten
+     * into /help and 404. The last rule's `(?!.*\.)` covers the rest of that
+     * hazard: anything with a dot in it is a file in public/ — the logo, the
+     * favicon, the manifest — and is left to the filesystem. Help URLs are
+     * slugs and never contain one.
+     */
+    const helpHost = process.env.NEXT_PUBLIC_HELP_HOST || 'help.techplay.gg';
+    const onHelpHost = [{ type: 'host' as const, value: helpHost }];
+
+    return {
+      beforeFiles: [
+        { source: '/_next/:path*', has: onHelpHost, destination: '/_next/:path*' },
+        { source: '/api/:path*', has: onHelpHost, destination: '/api/:path*' },
+        { source: '/proxy/:path*', has: onHelpHost, destination: '/proxy/:path*' },
+        { source: '/:path((?!.*\\.).*)', has: onHelpHost, destination: '/help/:path' },
+      ],
+
+      afterFiles: [
+        // /feed i /rss nemaju rewrite: app/feed/route.ts i app/rss/route.ts
+        // postoje, a filesystem rute pobjedjuju afterFiles rewrite — pa ovi
+        // nikad nisu ni opalili. Da jesu, vodili bi kroz javno ime i Cloudflare
+        // challenge, umjesto kroz interni poziv s tokenom koji rute rade.
+
+        // IndexNow's ownership proof. The protocol wants the key file on the
+        // same host as the URLs being submitted, and the URLs are ours while
+        // the key lives in the backend's settings — so the frontend serves it
+        // by proxy rather than by keeping a second copy that can drift.
+        //
+        // Scoped to the key's own shape (tp + hex) so this cannot shadow
+        // robots.txt, sitemap.xml or anything else ending in .txt.
+        {
+          source: '/:key(tp[a-f0-9]{24,48}).txt',
+          destination: `${backendBase}/:key.txt`,
+        },
+      ],
+
+      fallback: [],
+    };
   },
 };
 
