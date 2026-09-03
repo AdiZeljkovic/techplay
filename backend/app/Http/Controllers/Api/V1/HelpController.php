@@ -85,6 +85,21 @@ class HelpController extends Controller
         if ($payload === null) {
             $topic = HelpCategory::published()
                 ->where('slug', $slug)
+                /*
+                 * Empty is missing, not empty.
+                 *
+                 * The index already leaves out a topic with nothing published
+                 * in it, and so does the sitemap — but the topic's own address
+                 * answered 200 with a page saying there was nothing on it,
+                 * which is the exact shape of a soft 404. Google files those as
+                 * thin rather than absent, and a section that ships several of
+                 * them while an editor works through a backlog is a section
+                 * teaching a crawler that its URLs are not worth much.
+                 *
+                 * Same rule in all three places now: a topic exists when there
+                 * is something published inside it.
+                 */
+                ->whereHas('articles', fn ($q) => $q->published())
                 ->with(['articles' => fn ($q) => $q
                     ->published()
                     ->select(self::CARD_COLUMNS)

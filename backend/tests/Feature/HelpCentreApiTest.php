@@ -103,6 +103,29 @@ class HelpCentreApiTest extends TestCase
         $this->getJson('/api/v1/help/topics/'.$topic->slug)->assertNotFound();
     }
 
+    /**
+     * And so is a topic that exists but has nothing published in it.
+     *
+     * The index and the sitemap already leave those out. The topic's own
+     * address used to answer 200 with a page saying there was nothing on it,
+     * which is a soft 404 — filed as thin rather than absent, and shipped in
+     * quantity whenever an editor is part-way through publishing a backlog.
+     */
+    public function test_a_topic_with_nothing_published_in_it_is_a_404(): void
+    {
+        $topic = $this->topic();
+        $this->answer($topic, ['status' => 'draft']);
+
+        $this->getJson('/api/v1/help/topics/'.$topic->slug)->assertNotFound();
+
+        // And answers as soon as one of them goes up.
+        $this->answer($topic, ['title' => 'Now there is something']);
+
+        $this->getJson('/api/v1/help/topics/'.$topic->slug)
+            ->assertOk()
+            ->assertJsonCount(1, 'data.articles');
+    }
+
     // ------------------------------------------------------------- an answer
 
     public function test_an_answer_carries_its_topic_and_the_rest_of_that_topic(): void
