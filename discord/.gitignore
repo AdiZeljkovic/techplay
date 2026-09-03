@@ -1,3 +1,7 @@
 
 # Build output — the bot is compiled on the server.
 dist/
+
+# Where the poller remembers what it has already announced. Machine state,
+# not source: committing it would hand every deploy somebody else's watermark.
+.poll-state.json

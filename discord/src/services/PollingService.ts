@@ -1,7 +1,19 @@
 import { Client, TextChannel, EmbedBuilder } from 'discord.js';
+import fs from 'fs';
+import path from 'path';
 import { ApiService } from './ApiService';
 import { BuffyService } from './BuffyService';
 import { config } from '../config';
+
+/**
+ * Where the watermarks live between restarts.
+ *
+ * Beside the project rather than in dist/, which the build deletes outright.
+ */
+const STATE_FILE = path.resolve(__dirname, '../../.poll-state.json');
+
+/** How many items to read when working out where a feed already stands. */
+const WINDOW = 20;
 
 interface FeedTracker {
     lastCheckedId: number;
@@ -73,15 +85,81 @@ export class PollingService {
         this.checkInterval = setInterval(() => this.checkAllFeeds(), config.checkInterval);
     }
 
+    /**
+     * Where each feed already stands, from disk and from the API.
+     *
+     * ── The bug this replaces ────────────────────────────────────────────
+     *
+     * This took `items[0].id` from a single-item fetch, and the feed is
+     * ordered by **publish date** while the watermark is an **id**. Those are
+     * two different orderings, and an article published with a backdated date
+     * sits below a lower id while carrying a higher one.
+     *
+     * Article 717 did exactly that: `published_at` an hour before its own
+     * `created_at`. Every start set the watermark to 716, the next poll found
+     * 717 "new", and Professor Buffy announced the same piece again. Three
+     * times in one day, once per restart, and it would have gone on forever.
+     *
+     * Two changes close it. The watermark is the **highest id in a window**
+     * rather than the first row, so ordering no longer matters. And it is
+     * written to disk, so a restart resumes instead of reverting — without
+     * that, a backdated article deeper than the window repeats the whole
+     * story on the next deploy.
+     *
+     * The larger of the two wins. A fresh install with no file falls back to
+     * the API and announces no backlog; a restart keeps whatever it had
+     * already reached.
+     */
     private async initializeFeeds() {
+        const saved = this.readState();
+
         for (const feed of this.feeds) {
-            const items = await this.fetchFeed(feed.type, 1);
-            if (items.length > 0) {
-                feed.lastCheckedId = items[0].id;
-                console.log(`🔄 [PollingService] ${feed.type} initialized — last ID: ${feed.lastCheckedId}`);
+            const items = await this.fetchFeed(feed.type, WINDOW);
+            const fromApi = items.length > 0 ? Math.max(...items.map((n: any) => n.id)) : 0;
+            const fromDisk = saved[feed.type] ?? 0;
+
+            feed.lastCheckedId = Math.max(fromApi, fromDisk);
+
+            if (feed.lastCheckedId > 0) {
+                console.log(
+                    `🔄 [PollingService] ${feed.type} initialized — last ID: ${feed.lastCheckedId}` +
+                        ` (api: ${fromApi}, saved: ${fromDisk})`,
+                );
             } else {
                 console.warn(`⚠️ [PollingService] ${feed.type} init returned 0 items`);
             }
+        }
+
+        this.writeState();
+    }
+
+    /** @returns the watermark per feed, or an empty map if there is no file yet. */
+    private readState(): Record<string, number> {
+        try {
+            if (!fs.existsSync(STATE_FILE)) return {};
+
+            const parsed = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+
+            return typeof parsed === 'object' && parsed !== null ? parsed : {};
+        } catch (error) {
+            // A corrupt file must not stop the bot: the API fallback above is
+            // still correct, it only costs the resume.
+            console.warn('⚠️ [PollingService] could not read poll state:', error instanceof Error ? error.message : error);
+
+            return {};
+        }
+    }
+
+    private writeState(): void {
+        try {
+            const state: Record<string, number> = {};
+            for (const feed of this.feeds) state[feed.type] = feed.lastCheckedId;
+
+            fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+        } catch (error) {
+            // Losing the file costs a repeat after the next restart, which is
+            // the old behaviour — not a reason to stop announcing.
+            console.warn('⚠️ [PollingService] could not write poll state:', error instanceof Error ? error.message : error);
         }
     }
 
@@ -114,10 +192,20 @@ export class PollingService {
             return false;
         }
 
+        // Already covered. The site pushes on publish and the poll is the
+        // safety net behind it, so the same piece can legitimately arrive
+        // twice — the watermark is what tells them apart.
+        if (item.id <= feed.lastCheckedId) {
+            console.log(`⏭️  [PollingService] ${type} #${item.id} already announced — skipping`);
+
+            return false;
+        }
+
         const posted = await this.postToChannel([item], feed);
 
-        if (posted && item.id > feed.lastCheckedId) {
+        if (posted) {
             feed.lastCheckedId = item.id;
+            this.writeState();
         }
 
         return posted;
@@ -137,7 +225,9 @@ export class PollingService {
             return;
         }
 
-        const latestId = items[0].id;
+        // The highest id in the window, not the first row — the feed is
+        // ordered by publish date and these are not the same thing.
+        const latestId = Math.max(...items.map((n: any) => n.id));
         console.log(`🔍 [PollingService] ${feed.type} — latest API id: ${latestId}, lastCheckedId: ${feed.lastCheckedId}`);
 
         /*
@@ -155,6 +245,7 @@ export class PollingService {
          */
         if (feed.lastCheckedId === 0) {
             feed.lastCheckedId = latestId;
+            this.writeState();
             console.log(`🔄 [PollingService] ${feed.type} armed on a later poll — last ID: ${latestId}`);
             return;
         }
@@ -167,6 +258,7 @@ export class PollingService {
             // Only advance lastCheckedId if posting succeeded
             if (posted) {
                 feed.lastCheckedId = Math.max(...newItems.map(n => n.id));
+                this.writeState();
             }
         }
     }
