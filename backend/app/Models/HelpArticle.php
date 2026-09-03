@@ -73,6 +73,28 @@ class HelpArticle extends Model
     }
 
     /**
+     * Words a question is made of rather than about.
+     *
+     * Every word in a query has to appear in the answer, which is precise and
+     * brittle in exactly one way: a natural question is half scaffolding. "how
+     * do I get bounty" found four answers and *not* the one called "Bounty,
+     * and what to spend it on" — because that page never happens to use the
+     * word "get", so requiring it threw out the only page the reader wanted.
+     *
+     * Dropping these leaves the words that carry the question. Kept short and
+     * strictly functional: anything that could name a feature stays, because a
+     * stop list that swallows a real term is worse than no stop list.
+     *
+     * @var list<string>
+     */
+    private const FILLER = [
+        'and', 'are', 'but', 'can', 'cannot', 'did', 'does', 'doing', 'for', 'from',
+        'get', 'getting', 'got', 'has', 'have', 'how', 'not', 'the', 'their', 'them',
+        'there', 'these', 'they', 'this', 'those', 'want', 'was', 'were', 'what',
+        'when', 'where', 'which', 'who', 'why', 'will', 'with', 'would', 'you', 'your',
+    ];
+
+    /**
      * Answers matching what somebody typed, best first.
      *
      * Lives on the model rather than in a controller because two places search
@@ -135,7 +157,7 @@ class HelpArticle extends Model
         $words = array_slice(
             array_filter(
                 preg_split('/\s+/u', $lower, -1, PREG_SPLIT_NO_EMPTY) ?: [],
-                fn (string $word) => mb_strlen($word) >= 3,
+                fn (string $word) => mb_strlen($word) >= 3 && ! in_array($word, self::FILLER, true),
             ),
             0,
             8,

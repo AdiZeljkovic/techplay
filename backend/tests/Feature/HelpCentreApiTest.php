@@ -270,6 +270,32 @@ class HelpCentreApiTest extends TestCase
         $response->assertJsonPath('data.results.0.title', 'The Create account button is greyed out');
     }
 
+    /**
+     * A question is half scaffolding, and the scaffolding must not filter.
+     *
+     * "how do I get bounty" returned four answers and not the one called
+     * "Bounty, and what to spend it on" — that page never happens to use the
+     * word "get", so requiring it threw out the only page the reader wanted.
+     */
+    public function test_filler_words_in_a_question_do_not_rule_out_the_answer(): void
+    {
+        $topic = $this->topic();
+        $this->answer($topic, [
+            'title' => 'How the forum works',
+            // Mentions bounty, and happens to use every filler word in the
+            // query — which is exactly how it beat the right answer before.
+            'content' => '<p>Reputation and Bounty work differently, and you get both here.</p>',
+        ]);
+        $this->answer($topic, [
+            'title' => 'Bounty, and what to spend it on',
+            'content' => '<p>Bounty is the currency.</p>',
+        ]);
+
+        $response = $this->getJson('/api/v1/help/search?q='.urlencode('how do I get bounty'))->assertOk();
+
+        $response->assertJsonPath('data.results.0.title', 'Bounty, and what to spend it on');
+    }
+
     /** A query of nothing but short words still has to work. */
     public function test_a_two_letter_query_still_searches(): void
     {
