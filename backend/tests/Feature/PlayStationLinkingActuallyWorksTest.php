@@ -11,31 +11,49 @@ use Tests\TestCase;
 /**
  * Linking PlayStation had never once worked, and nothing said so.
  *
- * Sony's `me` profile answers with onlineId, avatars, languages and isPlus —
- * and no accountId, because the caller is the account. We read `accountId`
- * from it anyway, got null every time, and told every reader "PlayStation
- * didn't say who you are". Zero PlayStation accounts existed on 4 September
- * 2026 while Steam, Epic, Xbox and GOG all had rows.
+ * Two wrong assumptions, one on top of the other. The profile was asked for
+ * at `/users/me/profiles`, which Sony answers with 400 — `me` works on some
+ * PSN endpoints and not that one. And the account id it needs in the path was
+ * looked for under `accountId` in the response, then under `sub` in the token;
+ * Sony sends neither. The claim is `account_id`. Zero PlayStation accounts
+ * existed on 4 September 2026 while Steam, Epic, Xbox and GOG all had rows.
  *
  * Three things hid it. The message went out as a 502, and Cloudflare replaces
  * a 502 body with its own error page, so no reader ever saw the sentence.
  * Production runs LOG_LEVEL=error while the service logged warnings, so no
- * line reached disk. And no test ever put Sony's real answer in front of the
- * code — the fixtures all included an accountId that Sony does not send.
+ * line reached disk. And no test ever put Sony's real answers in front of the
+ * code — the fixtures answered whatever the code happened to ask for.
  *
- * This is that fixture.
+ * This is that fixture. The claim set and the 400 are copied from a live
+ * attempt on 4 September, not invented.
  */
 class PlayStationLinkingActuallyWorksTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** A PSN access token: three dots-separated segments, `sub` is the account id. */
+    /**
+     * A PSN access token, carrying the claims Sony actually sends.
+     *
+     * `account_id` is the one that matters. There is deliberately no `sub`
+     * here, and `account_uuid` is deliberately a different value: both were
+     * guessed at in turn, and a fixture that quietly offers the guess is how a
+     * test passes while production fails.
+     */
     private function jwt(string $accountId): string
     {
         $segment = fn (array $claims) => rtrim(strtr(base64_encode(json_encode($claims)), '+/', '-_'), '=');
 
         return $segment(['alg' => 'RS256', 'typ' => 'JWT'])
-            .'.'.$segment(['sub' => $accountId, 'scp' => ['psn:mobile.v2.core'], 'exp' => time() + 3600])
+            .'.'.$segment([
+                'account_id' => $accountId,
+                'account_uuid' => 'f0e1d2c3-4b5a-6978-8796-a5b4c3d2e1f0',
+                'client_id' => '09515159-7237-4370-9b40-3806e67c0891',
+                'grant_type' => 'authorization_code',
+                'is_child' => false,
+                'legal_country' => 'GB',
+                'locale' => 'en-GB',
+                'exp' => time() + 3600,
+            ])
             .'.signature';
     }
 
@@ -55,7 +73,10 @@ class PlayStationLinkingActuallyWorksTest extends TestCase
                 'refresh_token' => 'refresh-me',
                 'expires_in' => 3600,
             ]),
-            'm.np.playstation.com/api/userProfile/v1/internal/users/me/profiles' => Http::response([
+            // Sony refuses `me` on this endpoint. Anything asking for it gets
+            // the 400 a live attempt got, so a regression cannot pass quietly.
+            'm.np.playstation.com/api/userProfile/v1/internal/users/me/profiles' => Http::response('', 400),
+            "m.np.playstation.com/api/userProfile/v1/internal/users/{$accountId}/profiles" => Http::response([
                 'onlineId' => 'GaramelSpawn',
                 'aboutMe' => '',
                 'avatars' => [['size' => 'l', 'url' => 'https://example.test/a.png']],
@@ -92,7 +113,8 @@ class PlayStationLinkingActuallyWorksTest extends TestCase
 
         $this->assertNotNull($account, 'Linking answered OK but stored nothing.');
         $this->assertSame('GaramelSpawn', $account->display_name);
-        // Taken from the token's `sub`, since the profile does not carry it.
+        // Taken from the token's `account_id`, which is also what put the
+        // profile call on a path Sony answers.
         $this->assertSame('1234567890123456789', $account->provider_user_id);
     }
 
@@ -115,9 +137,8 @@ class PlayStationLinkingActuallyWorksTest extends TestCase
             'ca.account.sony.com/api/authz/v3/oauth/token' => Http::sequence()
                 ->push(['access_token' => $this->jwt('1111111111111111111'), 'refresh_token' => 'a', 'expires_in' => 3600])
                 ->push(['access_token' => $this->jwt('2222222222222222222'), 'refresh_token' => 'b', 'expires_in' => 3600]),
-            'm.np.playstation.com/api/userProfile/v1/internal/users/me/profiles' => Http::sequence()
-                ->push(['onlineId' => 'FirstReader', 'isMe' => true])
-                ->push(['onlineId' => 'SecondReader', 'isMe' => true]),
+            'm.np.playstation.com/api/userProfile/v1/internal/users/1111111111111111111/profiles' => Http::response(['onlineId' => 'FirstReader', 'isMe' => true]),
+            'm.np.playstation.com/api/userProfile/v1/internal/users/2222222222222222222/profiles' => Http::response(['onlineId' => 'SecondReader', 'isMe' => true]),
         ]);
 
         $first = User::factory()->create();
@@ -148,7 +169,7 @@ class PlayStationLinkingActuallyWorksTest extends TestCase
 
         // Sony answers the profile call, but with nothing in it.
         Http::fake([
-            'm.np.playstation.com/api/userProfile/v1/internal/users/me/profiles' => Http::response([]),
+            'm.np.playstation.com/api/userProfile/v1/internal/users/*/profiles' => Http::response([]),
         ]);
 
         $user = User::factory()->create();

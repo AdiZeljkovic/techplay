@@ -167,46 +167,53 @@ class PlayStationService
      */
     public function profile(string $accessToken): ?array
     {
+        /*
+         * The account id first, because the profile call needs it in the path.
+         *
+         * This used to ask for `/users/me/profiles`, which Sony answers with
+         * 400: `me` is accepted on some PSN endpoints and not on this one. So
+         * the profile came back empty, the account id came back null, and the
+         * endpoint told every reader "PlayStation didn't say who you are".
+         * Nobody linked a PlayStation account for as long as that stood.
+         */
+        $accountId = $this->accountIdFromToken($accessToken);
+
+        if (! $accountId) {
+            return null;
+        }
+
         // Six seconds. This is the last of three calls in the connect request
         // and the only one whose budget the sync does not share.
-        $json = $this->get($accessToken, '/userProfile/v1/internal/users/me/profiles', self::CONNECT_PROFILE_TIMEOUT);
+        $json = $this->get(
+            $accessToken,
+            "/userProfile/v1/internal/users/{$accountId}/profiles",
+            self::CONNECT_PROFILE_TIMEOUT
+        );
 
         $onlineId = $json['onlineId'] ?? null;
 
-        /*
-         * Sony's `me` profile does not carry an account id.
-         *
-         * It answers with onlineId, avatars, languages, isPlus and the rest —
-         * and no accountId, because the caller is the account and Sony sees no
-         * reason to tell you your own number. This code read `$json['accountId']`
-         * anyway, found null every time, and returned null; the endpoint then
-         * answered "PlayStation didn't say who you are" to everybody. Not one
-         * PlayStation account was ever linked, and every 502 in the access log
-         * from 2 and 4 September is that same sentence, 103 bytes each.
-         *
-         * The id is in the access token instead, which is the reason the
-         * exchange asks for `token_format=jwt`: the `sub` claim is the account
-         * id, and the trophy endpoints take it directly. No extra call to Sony.
-         */
-        $accountId = $json['accountId'] ?? $this->accountIdFromToken($accessToken);
-
-        if (! $accountId || ! $onlineId) {
-            // Which half was missing, in a log that survives. Guessing this
-            // once was expensive enough.
-            $this->note('profile incomplete', [
-                'has_account_id' => $accountId !== null,
-                'has_online_id' => $onlineId !== null,
-                'keys' => array_keys($json),
-            ]);
+        if (! is_string($onlineId) || $onlineId === '') {
+            // What Sony did send, in a log that survives. Guessing at this
+            // shape has cost two rounds already.
+            $this->note('profile carried no online id', ['keys' => array_keys($json)]);
 
             return null;
         }
 
-        return ['account_id' => (string) $accountId, 'online_id' => (string) $onlineId];
+        return ['account_id' => $accountId, 'online_id' => $onlineId];
     }
 
     /**
-     * The `sub` claim of Sony's JWT access token, which is the account id.
+     * The account id, read out of Sony's JWT access token.
+     *
+     * The claim is `account_id`. It is worth naming the ones that are not:
+     * there is no `sub`, and `account_uuid` is a different identifier that the
+     * trophy endpoints do not take. The full claim set Sony sends is
+     * account_id, account_uuid, age, authz_c, client_id, dcim_id, env_iss_id,
+     * exp, grant_type, iat, is_child, iss, jti, legal_country, locale,
+     * user_device_ip and ver — recorded here because reading it off a live
+     * token was the only way to find out, and the next person should not have
+     * to do that again.
      *
      * Read rather than verified. We are not deciding whether to trust this
      * token — Sony minted it for us seconds ago, over TLS, in exchange for a
@@ -218,8 +225,8 @@ class PlayStationService
         $parts = explode('.', $accessToken);
 
         if (count($parts) !== 3) {
-            // Not a JWT. Sony honours `token_format=jwt`, so this means the
-            // format changed under us — worth a line rather than a shrug.
+            // Not a JWT. The exchange asks for `token_format=jwt`, so this
+            // means the format changed under us — worth a line, not a shrug.
             $this->note('access token is not a jwt', ['segments' => count($parts)]);
 
             return null;
@@ -230,24 +237,19 @@ class PlayStationService
             true
         );
 
-        $sub = is_array($payload) ? ($payload['sub'] ?? null) : null;
+        $accountId = is_array($payload) ? ($payload['account_id'] ?? null) : null;
 
-        if (! is_string($sub) || $sub === '') {
-            $this->note('jwt carried no sub', [
+        if ((! is_string($accountId) && ! is_int($accountId)) || (string) $accountId === '') {
+            $this->note('jwt carried no account id', [
                 'claims' => is_array($payload) ? array_keys($payload) : null,
             ]);
 
             return null;
         }
 
-        return $sub;
+        return (string) $accountId;
     }
 
-    /**
-     * Every game with a trophy list this account has touched.
-     *
-     * @return array<int, array{np_id:string, name:string, platform:string, image:?string, progress:int, earned:array}>
-     */
     public function trophyTitles(string $accessToken, string $accountId, int $limit = 800): array
     {
         $json = $this->get($accessToken, "/trophy/v1/users/{$accountId}/trophyTitles?limit={$limit}");
