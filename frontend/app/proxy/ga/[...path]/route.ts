@@ -1,4 +1,4 @@
-import { after, NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const GA_UPSTREAM = "https://www.google-analytics.com";
 
@@ -55,19 +55,36 @@ async function proxy(request: NextRequest, path: string[]): Promise<NextResponse
             ? await request.arrayBuffer()
             : undefined;
 
-    // Genuinely fire-and-forget. Awaiting Google before answering the browser
-    // meant every page_view held the event loop and a socket open — on a
-    // single Node process, that is the first thing to saturate under a spike.
-    after(async () => {
-        try {
-            await fetch(upstreamUrl, {
-                method: request.method,
-                headers: upstreamHeaders,
-                body: body ? body : undefined,
-            });
-        } catch {
-            // upstream errors are not the visitor's problem
-        }
+    /*
+     * Fire and forget, but it has to actually fire.
+     *
+     * This used `after()`, and measured on the server it forwarded nothing at
+     * all: twenty-five beacons through the relay, sampled every 100ms across
+     * both address families, produced **zero** outbound connections from the
+     * Next process — while the same request by curl from the same machine got
+     * a 204 from Google in sixty milliseconds. The relay answered 204 to every
+     * caller the whole time, so from the page, from the log and from this file
+     * it looked delivered.
+     *
+     * That is the failure this endpoint's own comment warns about one
+     * paragraph down, arriving through a different door: a beacon that looks
+     * sent from every side and reaches nobody.
+     *
+     * A floating promise instead. The response still goes out first — nothing
+     * here is awaited — but the request is started inside the handler, where
+     * it is an ordinary pending I/O the process keeps alive, rather than work
+     * handed to a lifecycle hook that may never be drained.
+     *
+     * The catch is not optional: an unhandled rejection in Node takes the
+     * process down, and the whole point is that a failed beacon costs nothing.
+     * It logs, because the previous silence is what let this run unnoticed.
+     */
+    void fetch(upstreamUrl, {
+        method: request.method,
+        headers: upstreamHeaders,
+        body: body ? body : undefined,
+    }).catch((error) => {
+        console.error("[proxy/ga] forward failed:", error instanceof Error ? error.message : error);
     });
 
     /*
