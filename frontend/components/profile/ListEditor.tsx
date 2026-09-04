@@ -24,7 +24,15 @@ const TYPES: { id: ListType; label: string; limit: number | null }[] = [
     { id: "tier", label: "Tier List (S–F)", limit: null },
 ];
 
-const CATEGORIES = ["RPG", "Action", "Adventure", "Shooter", "Strategy", "Horror", "Indie", "Sports", "Racing", "Simulation"];
+/*
+ * Genres, then the one option that is not a genre.
+ *
+ * "Mixed" is last on purpose. Most lists worth writing do not sit inside a
+ * single genre — a favourites-of-the-year list, a comfort-games list — and
+ * before this the only honest answer was to leave the field empty, which
+ * reads as unfinished rather than as a choice.
+ */
+const CATEGORIES = ["RPG", "Action", "Adventure", "Shooter", "Strategy", "Horror", "Indie", "Sports", "Racing", "Simulation", "Mixed"];
 
 const TIPS = [
     "Use a clear, engaging title that tells players what your list is about.",
@@ -563,7 +571,13 @@ export default function ListEditor({
                                     onChange={(v) => setForm((f) => ({ ...f, category: v }))}
                                     ariaLabel="Category"
                                     placeholder="Select category"
-                                    options={CATEGORIES.map((c) => ({ value: c, label: c }))}
+                                    options={CATEGORIES.map((c) => ({
+                                        value: c,
+                                        // The only entry that needs saying out
+                                        // loud: on its own "Mixed" could mean
+                                        // mixed quality rather than mixed genre.
+                                        label: c === "Mixed" ? "Mixed / Various genres" : c,
+                                    }))}
                                     className="w-full h-10 px-3 text-[13px] text-white"
                                 />
                             </div>
