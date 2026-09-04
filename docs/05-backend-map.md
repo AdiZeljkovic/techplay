@@ -9,6 +9,30 @@
 - **Laravel Reverb** (WebSocket, Pusher protokol)
 - **Filament v5** (admin panel, integrisan unutar iste aplikacije)
 
+### Octane obara zahtjev na 30 sekundi
+
+Nema `config/octane.php`, pa vrijedi Octaneov vlastiti default:
+`config('octane.max_execution_time', 30)`. Radnik se **ubija**, ne vraća grešku —
+veza pukne, nginx upiše 502 **bez tijela**, a naša poruka nikad ne bude
+napisana. U logu to izgleda kao pad servera, a zapravo je prekoračen budžet.
+
+Svaki zahtjev koji zove tuđi API mora stati ispod toga sa **zbrojem** svih
+poziva, ne pojedinačno — i `retry(2, …)` su **tri** pokušaja, ne dva. Povezivanje
+PlayStationa je 2. 9. 2026. imalo 15 + 15 + 20 = 50 s i sedam praznih 502 za
+redom; kad su ostale tri platforme pregledane istim okom, sve su bile gore.
+
+| | Prije | Sada | Budžet |
+|---|---|---|---|
+| PlayStation | 50 s | 22 s | `PlayStationService::CONNECT_TIMEOUT`, `CONNECT_PROFILE_TIMEOUT` |
+| Epic | 63 s | 8 s | `EpicService::CONNECT_TIMEOUT`, jedan pokušaj |
+| GOG | 78 s | 14 s | `GogService::CONNECT_TIMEOUT`, `CONNECT_NAME_TIMEOUT`, jedan pokušaj |
+| Xbox | 94 s | 10 s | `OpenXblService::CONNECT_TIMEOUT`, jedan pokušaj |
+
+Ponavljanje jednokratnog koda koji je trgovina već odbila ne može uspjeti, pa
+connect putanje traže jedan pokušaj. **Sinkronizacije zadržavaju duge budžete** —
+one su u queueu gdje strop ne postoji, i tamo je strpljenje ispravno.
+`ConnectingFitsInsideTheRequestTest` čuva sve četiri.
+
 ---
 
 ## API rute (`routes/api.php`)

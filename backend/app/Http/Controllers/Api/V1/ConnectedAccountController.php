@@ -252,8 +252,21 @@ class ConnectedAccountController extends Controller
         $tokens = $psn->exchangeNpsso(trim($data['npsso']));
 
         if (! $tokens) {
+            /*
+             * Three causes, and the reader cannot tell them apart from here.
+             *
+             * The token expires in minutes, so a stale copy is the common one.
+             * The awkward one is a second application — Playnite, PS Profiles,
+             * anything that keeps a PlayStation session — because Sony rotates
+             * the npsso underneath it, and the value copied a moment ago is
+             * already dead. A reader spent two browsers and two fresh tokens
+             * working that out for himself before revoking the other app fixed
+             * it, so it is named here rather than left to be rediscovered.
+             */
             return $this->error(
-                "That token didn't work. It expires quickly — sign in to Sony, open the npsso page again and copy a fresh one.",
+                'Sony would not accept that token. It expires within minutes, so copy a fresh one — and if '
+                    .'another app is signed in to your PlayStation account (Playnite and similar keep a session), '
+                    .'remove its access first: it rotates the token underneath you as you paste it.',
                 422
             );
         }
@@ -418,7 +431,7 @@ class ConnectedAccountController extends Controller
         // The token exchange returns an id and no name. Asked for separately so
         // the settings list has something to show beside the account, the way
         // Steam shows a persona and Xbox a gamertag.
-        $displayName = $gog->username($tokens['access_token']);
+        $displayName = $gog->username($tokens['access_token'], GogService::CONNECT_NAME_TIMEOUT);
 
         $account = ConnectedAccount::updateOrCreate(
             ['user_id' => $request->user()->id, 'provider' => 'gog'],

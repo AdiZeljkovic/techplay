@@ -60,13 +60,32 @@ class GogService
      *
      * @return array{access_token:string, refresh_token:?string, expires_in:int, user_id:?string}|null
      */
+    /*
+     * ── The connect path answers inside the request's thirty seconds ─────
+     *
+     * Octane kills a worker at `config('octane.max_execution_time', 30)`, and
+     * a killed worker writes nothing: the connection drops and nginx answers
+     * 502 with no body, so our own explanation never reaches the reader. That
+     * is what happened to PlayStation on 2 September — seven empty 502s in a
+     * row — and the numbers here were worse than PlayStation's.
+     *
+     * `retry(2, 1500)` is three attempts, not two, so the old exchange could spend 63 seconds, and the name lookup after it another 15. The queue keeps the
+     * long budget: a library sync has no ceiling over it and should be patient.
+     */
+
+    /** Seconds GOG gets for the token exchange, and for the name that follows it. */
+    public const CONNECT_TIMEOUT = 8;
+
+    public const CONNECT_NAME_TIMEOUT = 6;
+
     public function exchangeCode(string $code): ?array
     {
+        // One attempt. A single-use code GOG refused once will be refused again.
         return $this->token([
             'grant_type' => 'authorization_code',
             'code' => $code,
             'redirect_uri' => self::REDIRECT_URI,
-        ]);
+        ], timeout: self::CONNECT_TIMEOUT, attempts: 1);
     }
 
     /**
@@ -95,10 +114,15 @@ class GogService
      * besides: currency, country, an email address. Only the username is taken.
      * A display name is what we needed and the rest is not ours to keep.
      */
-    public function username(string $accessToken): ?string
+    /**
+     * @param  int  $timeout  seconds. Fifteen for the sync in the queue; the
+     *                        connect request passes less, because it is racing
+     *                        Octane's thirty-second ceiling.
+     */
+    public function username(string $accessToken, int $timeout = 15): ?string
     {
         $response = Http::withToken($accessToken)
-            ->timeout(15)
+            ->timeout($timeout)
             ->get(self::EMBED_BASE.'/userData.json');
 
         if (! $response->successful()) {
@@ -248,10 +272,14 @@ class GogService
      * @param  array<string,string>  $grant
      * @return array{access_token:string, refresh_token:?string, expires_in:int, user_id:?string}|null
      */
-    private function token(array $grant): ?array
+    /**
+     * @param  int  $timeout  seconds per attempt
+     * @param  int  $attempts  total attempts, not retries after the first
+     */
+    private function token(array $grant, int $timeout = 20, int $attempts = 3): ?array
     {
-        $response = Http::timeout(20)
-            ->retry(2, 1500, throw: false)
+        $response = Http::timeout($timeout)
+            ->retry($attempts, 1500, throw: false)
             ->get(self::AUTH_BASE.'/token', $grant + [
                 'client_id' => self::CLIENT_ID,
                 'client_secret' => self::CLIENT_SECRET,

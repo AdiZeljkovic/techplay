@@ -26,6 +26,44 @@ use Illuminate\Support\Facades\Log;
  */
 class PlayStationService
 {
+    /*
+     * ── Why the connect flow's timeouts are short ────────────────────────
+     *
+     * Octane kills a request at thirty seconds — `config('octane.max_execution_time', 30)`,
+     * and nothing sets that key. Linking an account made three calls to Sony
+     * with fifteen, fifteen and twenty second budgets: fifty seconds worst
+     * case, comfortably past the point where the worker is terminated.
+     *
+     * A terminated worker does not produce an error page. The connection drops,
+     * nginx answers 502 with no body, and the browser falls back to a generic
+     * "couldn't connect" — so the reader is told nothing while the backend's
+     * own, accurate message never gets written.
+     *
+     * Measured on 2 September: one attempt answered 422 with the real reason,
+     * then seven in a row came back 502. The reader tried two browsers and two
+     * fresh tokens before working out for himself that another application
+     * holding his PlayStation session was the cause.
+     *
+     * Eight, eight and six is twenty-two seconds worst case, which leaves eight
+     * for our own work. Failing inside the budget with a sentence beats dying
+     * outside it without one — and if Sony needs longer than eight seconds to
+     * answer an OAuth call, the request was not going to succeed anyway.
+     *
+     * The sync path keeps twenty: it runs in the queue, where no such ceiling
+     * applies.
+     */
+
+    /**
+     * Seconds Sony gets for each of the two OAuth calls a connect request makes.
+     *
+     * Named rather than typed in twice so the test that adds them up has
+     * something to add up.
+     */
+    public const CONNECT_TIMEOUT = 8;
+
+    /** And for the profile read that follows them, which is the cheaper call. */
+    public const CONNECT_PROFILE_TIMEOUT = 6;
+
     /** The PlayStation mobile app's own client. Public knowledge, not a secret of ours. */
     private const CLIENT_ID = '09515159-7237-4370-9b40-3806e67c0891';
 
@@ -58,7 +96,8 @@ class PlayStationService
         try {
             $response = Http::asForm()
                 ->withBasicAuth(self::CLIENT_ID, self::CLIENT_SECRET)
-                ->timeout(15)
+                // Eight, not fifteen — see the note on the class.
+                ->timeout(self::CONNECT_TIMEOUT)
                 ->post(self::AUTH_BASE.'/token', [
                     'code' => $code,
                     'redirect_uri' => self::REDIRECT_URI,
@@ -128,7 +167,9 @@ class PlayStationService
      */
     public function profile(string $accessToken): ?array
     {
-        $json = $this->get($accessToken, '/userProfile/v1/internal/users/me/profiles');
+        // Six seconds. This is the last of three calls in the connect request
+        // and the only one whose budget the sync does not share.
+        $json = $this->get($accessToken, '/userProfile/v1/internal/users/me/profiles', self::CONNECT_PROFILE_TIMEOUT);
 
         $accountId = $json['accountId'] ?? null;
         $onlineId = $json['onlineId'] ?? null;
@@ -176,7 +217,8 @@ class PlayStationService
         try {
             $response = Http::withoutRedirecting()
                 ->withHeaders(['Cookie' => 'npsso='.$npsso])
-                ->timeout(15)
+                // Eight, not fifteen — see the note on the class.
+                ->timeout(self::CONNECT_TIMEOUT)
                 ->get(self::AUTH_BASE.'/authorize', [
                     'access_type' => 'offline',
                     'client_id' => self::CLIENT_ID,
@@ -203,11 +245,17 @@ class PlayStationService
         }
     }
 
-    private function get(string $accessToken, string $path): array
+    /**
+     * @param  int  $timeout  seconds. Twenty by default, which is right for a
+     *                        library sync in the queue; the connect flow passes
+     *                        less, because it is inside a request that gets
+     *                        thirty seconds in total.
+     */
+    private function get(string $accessToken, string $path, int $timeout = 20): array
     {
         try {
             $response = Http::withToken($accessToken)
-                ->timeout(20)
+                ->timeout($timeout)
                 ->get(self::API_BASE.$path);
 
             if (! $response->successful()) {

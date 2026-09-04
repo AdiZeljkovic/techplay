@@ -237,8 +237,17 @@ export default function ConnectedAccountsSection() {
             setNpsso("");
             mutate();
         } catch (err: unknown) {
+            /*
+             * The fallback is what a reader actually saw.
+             *
+             * When the backend answers 422 its message is specific and useful.
+             * When the request dies without a body — a 502 from a worker that
+             * ran out of time — there is no message to show, and "couldn't
+             * connect" told one reader nothing across seven attempts and two
+             * browsers. It says what to do now.
+             */
             const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            toast.error(message ?? "Couldn't connect to PlayStation.");
+            toast.error(message ?? "PlayStation did not answer in time. Try once more — and if it keeps failing, remove any other app signed in to your PlayStation account first.");
         } finally {
             setConnecting(null);
         }
@@ -591,6 +600,29 @@ export default function ConnectedAccountsSection() {
                                     this page
                                 </a>{" "}
                                 and copy the long value next to <span className="text-white/70">npsso</span>.
+                            </p>
+                            {/*
+                              * Said before the attempt, not after it fails.
+                              *
+                              * A reader burned two browsers and two fresh tokens
+                              * on this in September: Playnite was signed in to
+                              * his PlayStation account and Sony kept rotating
+                              * the npsso underneath him. Nothing about the
+                              * failure could have told him that, so it is here.
+                              */}
+                            <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
+                                If <span className="text-white/70">Playnite</span> or another app is signed in to your
+                                PlayStation account, remove its access first — it rotates the token as you paste it, and
+                                fresh ones will keep being refused.{" "}
+                                <a
+                                    href="https://help.techplay.gg/connected-accounts/connect-your-playstation-account"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[var(--accent)] hover:underline"
+                                >
+                                    More on this
+                                </a>
+                                .
                             </p>
                             <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
                                 The token is encrypted before it is stored and is only used to read your trophy list. It stops

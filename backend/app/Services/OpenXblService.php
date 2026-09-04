@@ -11,13 +11,34 @@ use Illuminate\Support\Facades\Http;
  */
 class OpenXblService
 {
-    private function http()
+    /*
+     * ── The gamertag lookup answers inside the request's thirty seconds ──
+     *
+     * Octane kills a worker at `config('octane.max_execution_time', 30)`, and
+     * a killed worker writes nothing: the connection drops and nginx answers
+     * 502 with no body, so our own message never reaches the reader. Thirty
+     * seconds with `retry(2, 2000)` is three attempts — ninety-four seconds
+     * worst case for the one call linking an Xbox account makes, which is
+     * three times the budget the whole request has.
+     *
+     * The sync keeps the patient client. It runs in the queue, where there is
+     * no ceiling and giving up early only means an incomplete library.
+     */
+
+    /** Seconds OpenXBL gets for the single lookup a connect request makes. */
+    public const CONNECT_TIMEOUT = 10;
+
+    /**
+     * @param  int  $timeout  seconds per attempt
+     * @param  int  $attempts  total attempts, not retries after the first
+     */
+    private function http(int $timeout = 30, int $attempts = 3)
     {
         return Http::withHeaders([
             'X-Authorization' => config('services.openxbl.api_key'),
             'Accept' => 'application/json',
         ])->baseUrl(config('services.openxbl.base_url', 'https://xbl.io/api/v2'))
-            ->timeout(30)
+            ->timeout($timeout)
             /*
              * `throw: false`, because every method below ends a failed call
              * with `if (! $response->successful()) return null` — and none of
@@ -26,7 +47,7 @@ class OpenXblService
              * came back as a 500 from our own API rather than as the null each
              * caller was written to handle.
              */
-            ->retry(2, 2000, throw: false);
+            ->retry($attempts, 2000, throw: false);
     }
 
     /**
@@ -34,7 +55,11 @@ class OpenXblService
      */
     public function findByGamertag(string $gamertag): ?array
     {
-        $response = $this->http()->get('/search/'.rawurlencode(trim($gamertag)));
+        // The only caller is the connect endpoint, so this one is short: ten
+        // seconds, one attempt. A gamertag that does not resolve now will not
+        // resolve on the third try either.
+        $response = $this->http(self::CONNECT_TIMEOUT, 1)
+            ->get('/search/'.rawurlencode(trim($gamertag)));
 
         if (! $response->successful()) {
             return null;

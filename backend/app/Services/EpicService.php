@@ -61,9 +61,31 @@ class EpicService
     /**
      * @return array{access_token:string, refresh_token:?string, expires_in:int, account_id:?string, display_name:?string}|null
      */
+    /*
+     * ── The connect path answers inside the request's thirty seconds ─────
+     *
+     * Octane kills a worker at `config('octane.max_execution_time', 30)`, and
+     * a killed worker writes nothing: the connection drops and nginx answers
+     * 502 with no body, so our own explanation never reaches the reader. That
+     * is what happened to PlayStation on 2 September — seven empty 502s in a
+     * row — and the numbers here were worse than PlayStation's.
+     *
+     * `retry(2, 1500)` is three attempts, not two, so the old exchange could spend 63 seconds before giving up. The queue keeps the
+     * long budget: a library sync has no ceiling over it and should be patient.
+     */
+
+    /** Seconds Epic gets to answer the one call a connect request makes. */
+    public const CONNECT_TIMEOUT = 8;
+
     public function exchangeCode(string $code): ?array
     {
-        return $this->token(['grant_type' => 'authorization_code', 'code' => $code]);
+        // One attempt, eight seconds. A single-use code that Epic refused once
+        // will be refused again, so the retries bought nothing but a dead worker.
+        return $this->token(
+            ['grant_type' => 'authorization_code', 'code' => $code],
+            timeout: self::CONNECT_TIMEOUT,
+            attempts: 1,
+        );
     }
 
     /**
@@ -224,13 +246,17 @@ class EpicService
      * @param  array<string,string>  $grant
      * @return array{access_token:string, refresh_token:?string, expires_in:int, account_id:?string, display_name:?string}|null
      */
-    private function token(array $grant): ?array
+    /**
+     * @param  int  $timeout  seconds per attempt
+     * @param  int  $attempts  total attempts, not retries after the first
+     */
+    private function token(array $grant, int $timeout = 20, int $attempts = 3): ?array
     {
         $response = Http::asForm()
             ->withBasicAuth(self::CLIENT_ID, self::CLIENT_SECRET)
             ->withHeaders(['User-Agent' => self::USER_AGENT])
-            ->timeout(20)
-            ->retry(2, 1500, throw: false)
+            ->timeout($timeout)
+            ->retry($attempts, 1500, throw: false)
             ->post(self::OAUTH_BASE.'/token', $grant);
 
         if (! $response->successful() || ! $response->json('access_token')) {
