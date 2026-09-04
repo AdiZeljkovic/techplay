@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Casts\PostgresArray;
 use App\Models\Game;
 use App\Models\User;
+use App\Models\UserGame;
 use App\Services\Chronicle\TasteProfileService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -331,7 +332,7 @@ class GameRecommendationService
             ->where('user_id', $user->id)
             ->when(
                 ! ($filters['exclude_backlog'] ?? true) && ! ($filters['exclude_played'] ?? true),
-                fn ($q) => $q->whereIn('status', ['playing', 'completed', 'dropped', 'wishlist'])
+                fn ($q) => $q->whereIn('status', [...UserGame::ACTIVE, 'completed', 'dropped', 'wishlist'])
             )
             ->pluck('game_id')
             ->all();

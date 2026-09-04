@@ -41,7 +41,11 @@ class ProfileService
 
         return [
             'games_count' => (int) $byStatus->sum(),
-            'playing_count' => (int) ($byStatus['playing'] ?? 0),
+            // Replays count as playing. Somebody on their second lap of
+            // Bloodborne is playing Bloodborne, and a "Playing" tile that
+            // excluded them would be describing the status rather than them.
+            'playing_count' => (int) (($byStatus['playing'] ?? 0) + ($byStatus['replaying'] ?? 0)),
+            'replaying_count' => (int) ($byStatus['replaying'] ?? 0),
             // Played once, not playing now, and never claimed to be finished.
             'played_count' => (int) ($byStatus['played'] ?? 0),
             'backlog_count' => (int) ($byStatus['backlog'] ?? 0),
@@ -177,7 +181,15 @@ class ProfileService
 
         return array_map(function ($b) use ($user) {
             $q = UserGame::where('user_id', $user->id)
-                ->when($b['favorite'], fn ($q) => $q->where('is_favorite', true), fn ($q) => $q->where('status', $b['status']));
+                ->when(
+                    $b['favorite'],
+                    fn ($q) => $q->where('is_favorite', true),
+                    // Playing is the one bucket that covers two statuses, so
+                    // the tile counts both and clicking it shows both.
+                    fn ($q) => $b['status'] === 'playing'
+                        ? $q->whereIn('status', UserGame::ACTIVE)
+                        : $q->where('status', $b['status'])
+                );
 
             $count = (clone $q)->count();
             $cover = (clone $q)->with('game:id,cover_url')
@@ -260,11 +272,11 @@ class ProfileService
         return array_slice(array_merge([$live], $rest), 0, $limit);
     }
 
-    /** The shelf itself — everything the member marked as playing. */
+    /** The shelf itself — everything the member marked as playing, replays included. */
     private function shelfPlaying(User $user, int $limit): array
     {
         return UserGame::where('user_id', $user->id)
-            ->where('status', 'playing')
+            ->whereIn('status', UserGame::ACTIVE)
             ->with(['game:id,slug,name,cover_url,platforms'])
             ->orderByRaw('COALESCE(last_played_at, updated_at) DESC')
             ->limit($limit)

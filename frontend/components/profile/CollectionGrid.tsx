@@ -37,13 +37,45 @@ const STATUS: Record<string, { label: string; color: string }> = {
     // import can honestly fill. Amber sits between the green of an active
     // game and the blue of one not started.
     played: { label: "Played", color: "#fbbf24" },
+    // Playing it again, having finished it before. Teal rather than the
+    // green of "playing": the same family, because it is playing, but its own
+    // colour, because the distinction is the entire point of the status.
+    replaying: { label: "Replaying", color: "#2dd4bf" },
     backlog: { label: "Backlog", color: "#60a5fa" },
     completed: { label: "Completed", color: "#22c55e" },
     wishlist: { label: "Wishlist", color: "#f472b6" },
     dropped: { label: "Dropped", color: "#9ca3af" },
 };
 
-const STATUS_OPTIONS: CollectionStatus[] = ["playing", "played", "backlog", "completed", "wishlist", "dropped"];
+const STATUS_OPTIONS: CollectionStatus[] = ["playing", "replaying", "played", "backlog", "completed", "wishlist", "dropped"];
+
+/**
+ * "2nd", "8th" — the lap somebody is on, or has finished.
+ *
+ * A count on its own reads as a quantity of games. An ordinal reads as a
+ * story, which is what a fourth run at Dark Souls is.
+ */
+function ordinal(n: number): string {
+    const tens = n % 100;
+
+    if (tens >= 11 && tens <= 13) return `${n}th`;
+
+    return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
+
+/** What to say beside a replay, or nothing when there is nothing to say. */
+function lapLabel(entry: { status: string; playthroughs?: number }): string | null {
+    const finished = entry.playthroughs ?? 0;
+
+    if (entry.status === "replaying") {
+        // Mid-run, so the lap is the one after the last finish. Somebody who
+        // replays a game they never finished here is simply on their first.
+        return `${ordinal(finished + 1)} playthrough`;
+    }
+
+    // Only worth saying once it is more than one. "Finished 1×" is noise.
+    return finished > 1 ? `Finished ${finished}×` : null;
+}
 
 /** How the shelf can be ordered. The API keeps the same names. */
 const SORTS = [
@@ -262,6 +294,7 @@ function GameCard({
     onLog?: (game: { slug: string; name: string; cover_url: string | null }) => void;
 }) {
     const meta = STATUS[entry.status] ?? STATUS.backlog;
+    const lap = lapLabel(entry);
     const marks = sourceMarks(entry);
     const pinned = entry.showcase_order != null;
     const hours = entry.hours_played ?? 0;
@@ -300,6 +333,18 @@ function GameCard({
                     <span className="w-1.5 h-1.5 rounded-full" style={{ background: meta.color }} />
                     {meta.label}
                 </span>
+
+                {/* Which lap this is, under the status it qualifies. Only drawn
+                    when there is something to say: a first playthrough is just
+                    playing, and saying so on every card would be noise. */}
+                {lap && (
+                    <span
+                        className="absolute top-[26px] left-2.5 inline-flex items-center h-[17px] px-1.5 rounded-[4px] backdrop-blur-md font-display text-[8px] font-black uppercase tracking-[0.12em]"
+                        style={{ backgroundColor: `${meta.color}1f`, color: meta.color }}
+                    >
+                        {lap}
+                    </span>
+                )}
 
                 {/* Top-right: where it came from, then the two marks you can
                     set. Provenance leads because it is on every card and the

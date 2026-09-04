@@ -43,7 +43,21 @@ class GameCollectionController extends Controller
 
         $q = UserGame::query()
             ->where('user_id', $user->id)
-            ->when($status && in_array($status, UserGame::STATUSES), fn ($q) => $q->where('status', $status))
+            /*
+             * Asking for "playing" gets replays too.
+             *
+             * A replay is playing, and every count of playing on the site says
+             * so — the stats strip, the snapshot tile, the achievement tally.
+             * A filter that disagreed would make the tile read 5 and the list
+             * show 4, which reads as a bug in the count rather than a
+             * definition. Asking for "replaying" still narrows to those alone.
+             */
+            ->when(
+                $status && in_array($status, UserGame::STATUSES),
+                fn ($q) => $status === 'playing'
+                    ? $q->whereIn('status', UserGame::ACTIVE)
+                    : $q->where('status', $status)
+            )
             ->when($favorite, fn ($q) => $q->where('is_favorite', true))
             // A shelf you cannot search is fine at twenty games and useless at
             // four hundred, which is what one Steam import produces.
@@ -114,24 +128,50 @@ class GameCollectionController extends Controller
 
         $entry->fill($data);
 
+        $wasNew = ! $entry->exists;
+        // Capture BEFORE save() — save() syncs originals, which made the
+        // completion bounty unreachable for status transitions
+        $previousStatus = $wasNew ? null : $entry->getOriginal('status');
+
         // Lifecycle timestamps
-        if ($entry->status === 'playing' && ! $entry->started_at) {
+        if (in_array($entry->status, UserGame::ACTIVE, true) && ! $entry->started_at) {
             $entry->started_at = now();
         }
-        if ($entry->status === 'playing') {
+        if (in_array($entry->status, UserGame::ACTIVE, true)) {
             $entry->last_played_at = now();
         }
+
+        /*
+         * Starting a replay is not un-finishing the game.
+         *
+         * `completed_at` stays where it was — it is the day this was first
+         * finished, and a replay does not undo that. `progress` does go back
+         * to zero: it describes the run in progress, and a replay that opens
+         * at 100% would have nowhere to go.
+         */
+        if ($entry->status === 'replaying' && $previousStatus !== 'replaying') {
+            $entry->progress = $request->filled('progress') ? $entry->progress : 0;
+        }
+
         if ($entry->status === 'completed') {
             $entry->completed_at = $entry->completed_at ?? now();
             if (! $request->filled('progress')) {
                 $entry->progress = 100;
             }
-        }
 
-        $wasNew = ! $entry->exists;
-        // Capture BEFORE save() — save() syncs originals, which made the
-        // completion bounty unreachable for status transitions
-        $previousStatus = $wasNew ? null : $entry->getOriginal('status');
+            /*
+             * The count only moves on the way in.
+             *
+             * Editing a finished entry — adding hours, changing the platform —
+             * sends `status: completed` again, and counting those would turn a
+             * single finish into however many times somebody touched the row.
+             * A second lap is the transition from replaying (or from anything
+             * else) into completed, and that is what this counts.
+             */
+            if ($previousStatus !== 'completed') {
+                $entry->playthroughs = (int) $entry->playthroughs + 1;
+            }
+        }
 
         // The backlog line is scored separately from plain completions, so mark
         // the entry the moment it graduates from backlog to completed. Sticky:
@@ -314,6 +354,10 @@ class GameCollectionController extends Controller
             }
             if ($entry->status === 'completed' && ! $entry->completed_at) {
                 $entry->completed_at = now();
+                // An imported finish is still a finish. Guarded on the stamp
+                // rather than the status so re-importing the same file does
+                // not keep adding laps to rows that already have one.
+                $entry->playthroughs = max(1, (int) $entry->playthroughs);
             }
 
             $entry->save();
@@ -441,6 +485,9 @@ class GameCollectionController extends Controller
             'sources' => $ug->sources ?? [],
             'started_at' => $ug->started_at,
             'completed_at' => $ug->completed_at,
+            // How many times it has been finished. The shelf says "playing
+            // again"; this is what makes it the second or the eighth time.
+            'playthroughs' => (int) $ug->playthroughs,
             // when it entered the shelf, distinct from the last edit — the
             // "Recently added" rail needs the former
             'added_at' => $ug->created_at,

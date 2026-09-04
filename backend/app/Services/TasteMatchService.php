@@ -103,7 +103,7 @@ class TasteMatchService
         // Wishlist is intent, not taste — somebody's wishlist is who they would
         // like to be. The shelf is who they are.
         $rows = UserGame::where('user_id', $userId)
-            ->whereIn('status', ['playing', 'completed', 'backlog', 'dropped'])
+            ->whereIn('status', [...UserGame::ACTIVE, 'completed', 'backlog', 'dropped'])
             ->pluck('game_id')
             ->all();
 

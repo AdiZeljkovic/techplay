@@ -467,7 +467,7 @@ export interface PlayerCard {
     achievements: { total: number; earned: number; rate: number } | null;
 }
 
-export type CollectionStatus = "playing" | "played" | "backlog" | "completed" | "wishlist" | "dropped";
+export type CollectionStatus = "playing" | "replaying" | "played" | "backlog" | "completed" | "wishlist" | "dropped";
 
 export interface CollectionEntry {
     id: number;
@@ -482,6 +482,8 @@ export interface CollectionEntry {
     sources?: string[];
     started_at: string | null;
     completed_at: string | null;
+    /** How many times it has been finished. A replay is the next one after. */
+    playthroughs?: number;
     /** When it entered the shelf — distinct from the last edit. */
     added_at?: string | null;
     updated_at: string;

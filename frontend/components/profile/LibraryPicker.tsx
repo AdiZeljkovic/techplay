@@ -29,6 +29,7 @@ interface Entry {
 const STATUSES = [
     { value: "", label: "Whole library" },
     { value: "playing", label: "Playing" },
+    { value: "replaying", label: "Replaying" },
     { value: "played", label: "Played" },
     { value: "completed", label: "Completed" },
     { value: "backlog", label: "Backlog" },

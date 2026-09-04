@@ -96,7 +96,7 @@ class GamerDnaService
 
         $counts = [
             'total' => $entries->count(),
-            'playing' => $entries->where('status', 'playing')->count(),
+            'playing' => $entries->whereIn('status', UserGame::ACTIVE)->count(),
             // `played` arrived with the library imports and this never counted
             // it, so on a shelf of 191 the statuses summed to 92 and ninety-nine
             // games — 3,104 hours of them — were invisible to every figure
@@ -283,7 +283,7 @@ class GamerDnaService
     {
         $cutoff = now()->subMonths(6);
 
-        $dormant = $entries->filter(fn (UserGame $e) => in_array($e->status, ['playing', 'backlog'], true)
+        $dormant = $entries->filter(fn (UserGame $e) => in_array($e->status, [...UserGame::ACTIVE, 'backlog'], true)
             && $e->last_played_at
             && Carbon::parse($e->last_played_at)->lt($cutoff));
 

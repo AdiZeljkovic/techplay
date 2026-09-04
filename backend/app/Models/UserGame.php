@@ -21,7 +21,18 @@ class UserGame extends Model
      * abandonment, `playing` a session happening now. `played` claims only the
      * one thing the platform actually told us.
      */
-    public const STATUSES = ['playing', 'played', 'backlog', 'completed', 'wishlist', 'dropped'];
+    public const STATUSES = ['playing', 'replaying', 'played', 'backlog', 'completed', 'wishlist', 'dropped'];
+
+    /**
+     * The two states that mean "playing it right now".
+     *
+     * A replay is play. Every count of what somebody is currently playing, and
+     * every query that must not recommend them a game already in their hands,
+     * reads this rather than the bare string — because a new status that is
+     * missing from those lists does not fail loudly, it just quietly makes the
+     * game disappear from the shelf that describes it.
+     */
+    public const ACTIVE = ['playing', 'replaying'];
 
     protected $fillable = [
         'user_id',
@@ -30,6 +41,14 @@ class UserGame extends Model
         'is_favorite',
         'showcase_order',
         'progress',
+        /*
+         * How many times this has been finished.
+         *
+         * Completions, not attempts, because a completion is the only moment
+         * anyone can point at. Written by the controller on the transition
+         * into `completed`; never accepted from request input.
+         */
+        'playthroughs',
         'hours_played',
         // The reader's own word for where they play it — free text they can
         // edit. Which stores *reported* the game is `sources`, and conflating
@@ -63,6 +82,7 @@ class UserGame extends Model
         'notify_on_release' => 'boolean',
         'showcase_order' => 'integer',
         'progress' => 'integer',
+        'playthroughs' => 'integer',
         'hours_played' => 'integer',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',

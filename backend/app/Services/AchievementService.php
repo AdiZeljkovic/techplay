@@ -8,6 +8,7 @@ use App\Models\Friendship;
 use App\Models\GameRating;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\UserGame;
 use App\Notifications\AchievementUnlockedNotification;
 use Carbon\Carbon;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -193,7 +194,9 @@ class AchievementService
 
             'games_completed' => $user->userGames()->where('status', 'completed')->count(),
 
-            'games_playing' => $user->userGames()->where('status', 'playing')->count(),
+            // A replay is play, so it counts here too — otherwise starting
+            // one would take a game off this tally and could revoke a badge.
+            'games_playing' => $user->userGames()->whereIn('status', UserGame::ACTIVE)->count(),
 
             'games_wishlisted' => $user->userGames()->where('status', 'wishlist')->count(),
 

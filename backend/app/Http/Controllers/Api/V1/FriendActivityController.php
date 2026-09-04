@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Achievement;
 use App\Models\Friendship;
 use App\Models\Presence;
+use App\Models\UserGame;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -62,7 +63,7 @@ class FriendActivityController extends Controller
             ->join('games', 'games.id', '=', 'user_games.game_id')
             ->whereIn('user_games.user_id', $friendIds)
             ->where('user_games.updated_at', '>=', now()->subDays(7))
-            ->whereIn('user_games.status', ['playing', 'completed', 'backlog', 'wishlist'])
+            ->whereIn('user_games.status', [...UserGame::ACTIVE, 'completed', 'backlog', 'wishlist'])
             ->orderByDesc('user_games.updated_at')
             ->limit(20)
             ->select([

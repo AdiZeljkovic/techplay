@@ -6,13 +6,16 @@ import axios from "@/lib/axios";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import {
-    Plus, Check, Gamepad2, Layers, CheckCircle2, Heart, Archive, ChevronDown, Loader2, X, History,
+    Plus, Check, Gamepad2, Layers, CheckCircle2, Heart, Archive, ChevronDown, Loader2, X, History, RotateCcw,
 } from "lucide-react";
 
-type Status = "playing" | "played" | "backlog" | "completed" | "wishlist" | "dropped";
+type Status = "playing" | "replaying" | "played" | "backlog" | "completed" | "wishlist" | "dropped";
 
 const STATUSES: { value: Status; label: string; icon: any; color: string }[] = [
     { value: "playing", label: "Playing", icon: Gamepad2, color: "#34d399" },
+    // Playing it again, having finished it before — the shelf's answer to a
+    // second or an eighth run. Teal: the same family as playing, its own value.
+    { value: "replaying", label: "Replaying", icon: RotateCcw, color: "#2dd4bf" },
     { value: "played", label: "Played", icon: History, color: "#fbbf24" },
     { value: "backlog", label: "Backlog", icon: Layers, color: "#60a5fa" },
     { value: "completed", label: "Completed", icon: CheckCircle2, color: "#22c55e" },

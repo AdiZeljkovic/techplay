@@ -115,6 +115,11 @@ class DashboardController extends Controller
             'stats' => [
                 'games_count' => $counts['games_count'],
                 'playing_count' => $counts['playing_count'],
+                // How many of those playing are on a second lap. Sent even where
+                // nothing draws it yet, because a count computed and dropped on
+                // the way out is indistinguishable from a count of zero — which is
+                // the exact bug this payload's test was written for.
+                'replaying_count' => $counts['replaying_count'],
                 // Dropped here too — same omission as the profile payload.
                 'played_count' => $counts['played_count'],
                 'backlog_count' => $counts['backlog_count'],

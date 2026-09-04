@@ -156,7 +156,7 @@ Redisa (`helpful:help:*`) i sliježu kroz `FlushViewCounters`.
 
 | Tabela | Redova | Ključne kolone |
 |---|---:|---|
-| `user_games` | 679 | `status`, `is_favorite`, `hours_played`, `playtime_minutes`, `playtime_source`, `device_playtime`, `sources`, `last_played_at`, `notify_on_release`, `showcase_order`, `from_backlog` |
+| `user_games` | 679 | `status`, `playthroughs`, `is_favorite`, `hours_played`, `playtime_minutes`, `playtime_source`, `device_playtime`, `sources`, `last_played_at`, `notify_on_release`, `showcase_order`, `from_backlog` |
 | `game_lists` | 7 | `is_public`, `is_draft`, `list_type`, `category`, `tags`, `allow_comments`, `has_spoilers` |
 | `game_list_items` / `_likes` / `_comments` | 13 / 1 / 1 | `position`, `note`, `score`, `tier` |
 | `collection_goals` | 0 | |
@@ -170,6 +170,18 @@ Redisa (`helpful:help:*`) i sliježu kroz `FlushViewCounters`.
 | `steam_achievements` | 10.656 | |
 | `user_wow_characters` | 0 | |
 | `wow_analyses` / `wow_analysis_history` | 316 / 332 | |
+
+**`user_games.status` ima sedam vrijednosti**, od 4. 9. 2026: `playing`,
+`replaying`, `played`, `backlog`, `completed`, `wishlist`, `dropped`.
+`replaying` je ponovno igranje nečega što je već završeno — Goodreads model za
+ponovno čitanje. `UserGame::ACTIVE` je `['playing','replaying']` i **svaki
+upit koji broji "trenutno igra" mora ga koristiti**, inače ponavljanje tiho
+nestane sa police koja ga opisuje.
+
+`playthroughs` (unsigned smallint, default 0) broji **završetke, ne pokušaje** —
+raste samo na prelazu *u* `completed`, pa uređivanje već završenog unosa ne
+dodaje krug. Migracija je postojećim redovima sa `completed_at` upisala 1.
+Bounty i XP su i dalje jednom po igri zauvijek (čuva `ReplayingAGameTest`).
 
 ## Gejmifikacija
 
