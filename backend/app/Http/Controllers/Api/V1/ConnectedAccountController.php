@@ -253,20 +253,19 @@ class ConnectedAccountController extends Controller
 
         if (! $tokens) {
             /*
-             * Three causes, and the reader cannot tell them apart from here.
+             * Sony refused the token, and the expiry is the cause we can stand
+             * behind.
              *
-             * The token expires in minutes, so a stale copy is the common one.
-             * The awkward one is a second application — Playnite, PS Profiles,
-             * anything that keeps a PlayStation session — because Sony rotates
-             * the npsso underneath it, and the value copied a moment ago is
-             * already dead. A reader spent two browsers and two fresh tokens
-             * working that out for himself before revoking the other app fixed
-             * it, so it is named here rather than left to be rediscovered.
+             * This message briefly also blamed a second application holding
+             * the PlayStation session — a reader's own theory, which read well
+             * and was never true of his case: linking was broken on our side
+             * for everyone. Naming an unverified cause sends people off to
+             * revoke things that were never the problem, so it says the one
+             * thing that is documented and leaves the rest to the help page.
              */
             return $this->error(
-                'Sony would not accept that token. It expires within minutes, so copy a fresh one — and if '
-                    .'another app is signed in to your PlayStation account (Playnite and similar keep a session), '
-                    .'remove its access first: it rotates the token underneath you as you paste it.',
+                'Sony would not accept that token. It expires within minutes, so reload the Sony page and '
+                    .'copy a fresh one rather than reusing what is on your clipboard.',
                 422
             );
         }
@@ -274,7 +273,24 @@ class ConnectedAccountController extends Controller
         $profile = $psn->profile($tokens['access_token']);
 
         if (! $profile) {
-            return $this->error("Signed in, but PlayStation didn't say who you are. Try again in a minute.", 502);
+            /*
+             * 503, not 502 — the reader has to be able to read this.
+             *
+             * Cloudflare replaces a 502 or a 504 from the origin with its own
+             * error page, body and all, so a message sent with either status
+             * never reaches the browser. This exact sentence was returned eight
+             * times across two days and not one reader saw it; they all saw the
+             * generic fallback and had nothing to go on.
+             *
+             * 503 is also the more honest code. Nothing here is a bad gateway:
+             * we reached Sony, Sony answered, and the answer was short of what
+             * we needed.
+             */
+            return $this->error(
+                "Signed in, but PlayStation didn't say who you are. Try again in a minute — and if it "
+                    .'keeps happening, tell us, because that one is on our side rather than yours.',
+                503
+            );
         }
 
         $takenByAnother = ConnectedAccount::where('provider', 'playstation')
@@ -345,7 +361,9 @@ class ConnectedAccountController extends Controller
         }
 
         if (! $tokens['account_id']) {
-            return $this->error("Signed in, but Epic didn't say who you are. Try again in a minute.", 502);
+            // 503, not 502: Cloudflare swaps a 502 body for its own error page,
+            // so the reader would see nothing. See the note on playstationConnect.
+            return $this->error("Signed in, but Epic didn't say who you are. Try again in a minute.", 503);
         }
 
         $takenByAnother = ConnectedAccount::where('provider', 'epic')
@@ -416,7 +434,9 @@ class ConnectedAccountController extends Controller
         $gogUserId = $tokens['user_id'];
 
         if (! $gogUserId) {
-            return $this->error("Signed in, but GOG didn't say who you are. Try again in a minute.", 502);
+            // 503, not 502: Cloudflare swaps a 502 body for its own error page,
+            // so the reader would see nothing. See the note on playstationConnect.
+            return $this->error("Signed in, but GOG didn't say who you are. Try again in a minute.", 503);
         }
 
         $takenByAnother = ConnectedAccount::where('provider', 'gog')

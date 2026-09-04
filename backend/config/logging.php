@@ -89,6 +89,29 @@ return [
             'dedup_seconds' => env('LOG_TELEGRAM_DEDUP', 600),
         ],
 
+        /*
+         * Linking a store account, at a level the production LOG_LEVEL cannot
+         * discard.
+         *
+         * Production runs LOG_LEVEL=error, and every diagnostic the five
+         * platform services write is a warning or an info. So when PlayStation
+         * linking failed for every reader who ever tried it, the log held
+         * nothing at all — not the status Sony returned, not the fields it
+         * sent back. Two separate investigations went looking and found an
+         * empty file.
+         *
+         * These are a handful of lines per day: five providers, a few dozen
+         * links a week. Cheap to keep, and the only witness to a class of
+         * failure that leaves no other trace.
+         */
+        'connections' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/connections.log'),
+            'level' => 'debug',
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),

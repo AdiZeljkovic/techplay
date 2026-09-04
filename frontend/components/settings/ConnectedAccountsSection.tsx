@@ -238,16 +238,17 @@ export default function ConnectedAccountsSection() {
             mutate();
         } catch (err: unknown) {
             /*
-             * The fallback is what a reader actually saw.
+             * The fallback runs when there is genuinely no message to show.
              *
-             * When the backend answers 422 its message is specific and useful.
-             * When the request dies without a body — a 502 from a worker that
-             * ran out of time — there is no message to show, and "couldn't
-             * connect" told one reader nothing across seven attempts and two
-             * browsers. It says what to do now.
+             * It used to say "Couldn't connect to PlayStation", which sounded
+             * like the reader's problem and was not: the backend's real answer
+             * went out as a 502, and Cloudflare replaces a 502 body with its
+             * own error page, so nobody ever read it. That is fixed on the API
+             * side — but when a message really is missing, saying so beats
+             * inventing a cause.
              */
             const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-            toast.error(message ?? "PlayStation did not answer in time. Try once more — and if it keeps failing, remove any other app signed in to your PlayStation account first.");
+            toast.error(message ?? "Couldn't reach PlayStation, and it didn't say why. Try once more — if it keeps failing, tell us and we'll look.");
         } finally {
             setConnecting(null);
         }
@@ -602,18 +603,19 @@ export default function ConnectedAccountsSection() {
                                 and copy the long value next to <span className="text-white/70">npsso</span>.
                             </p>
                             {/*
-                              * Said before the attempt, not after it fails.
+                              * The token's short life, said before the attempt.
                               *
-                              * A reader burned two browsers and two fresh tokens
-                              * on this in September: Playnite was signed in to
-                              * his PlayStation account and Sony kept rotating
-                              * the npsso underneath him. Nothing about the
-                              * failure could have told him that, so it is here.
+                              * This paragraph first blamed Playnite, on a
+                              * reader's own theory that his failure came from
+                              * another app holding the session. It did not: the
+                              * fault was ours, and linking had never worked for
+                              * anyone. The expiry below is the part that is
+                              * actually documented, so it is the part that
+                              * stayed.
                               */}
                             <p className="mt-2 text-[11px] text-white/45 leading-relaxed max-w-[560px]">
-                                If <span className="text-white/70">Playnite</span> or another app is signed in to your
-                                PlayStation account, remove its access first — it rotates the token as you paste it, and
-                                fresh ones will keep being refused.{" "}
+                                Copy it and paste it straight away — the value expires within minutes, and one left
+                                sitting in a tab will be refused.{" "}
                                 <a
                                     href="https://help.techplay.gg/connected-accounts/connect-your-playstation-account"
                                     target="_blank"

@@ -171,12 +171,76 @@ class PlayStationService
         // and the only one whose budget the sync does not share.
         $json = $this->get($accessToken, '/userProfile/v1/internal/users/me/profiles', self::CONNECT_PROFILE_TIMEOUT);
 
-        $accountId = $json['accountId'] ?? null;
         $onlineId = $json['onlineId'] ?? null;
 
-        return $accountId && $onlineId
-            ? ['account_id' => (string) $accountId, 'online_id' => (string) $onlineId]
-            : null;
+        /*
+         * Sony's `me` profile does not carry an account id.
+         *
+         * It answers with onlineId, avatars, languages, isPlus and the rest —
+         * and no accountId, because the caller is the account and Sony sees no
+         * reason to tell you your own number. This code read `$json['accountId']`
+         * anyway, found null every time, and returned null; the endpoint then
+         * answered "PlayStation didn't say who you are" to everybody. Not one
+         * PlayStation account was ever linked, and every 502 in the access log
+         * from 2 and 4 September is that same sentence, 103 bytes each.
+         *
+         * The id is in the access token instead, which is the reason the
+         * exchange asks for `token_format=jwt`: the `sub` claim is the account
+         * id, and the trophy endpoints take it directly. No extra call to Sony.
+         */
+        $accountId = $json['accountId'] ?? $this->accountIdFromToken($accessToken);
+
+        if (! $accountId || ! $onlineId) {
+            // Which half was missing, in a log that survives. Guessing this
+            // once was expensive enough.
+            $this->note('profile incomplete', [
+                'has_account_id' => $accountId !== null,
+                'has_online_id' => $onlineId !== null,
+                'keys' => array_keys($json),
+            ]);
+
+            return null;
+        }
+
+        return ['account_id' => (string) $accountId, 'online_id' => (string) $onlineId];
+    }
+
+    /**
+     * The `sub` claim of Sony's JWT access token, which is the account id.
+     *
+     * Read rather than verified. We are not deciding whether to trust this
+     * token — Sony minted it for us seconds ago, over TLS, in exchange for a
+     * code — only reading the id out of it. Verifying the signature would need
+     * Sony's public keys and would answer a question nobody asked.
+     */
+    private function accountIdFromToken(string $accessToken): ?string
+    {
+        $parts = explode('.', $accessToken);
+
+        if (count($parts) !== 3) {
+            // Not a JWT. Sony honours `token_format=jwt`, so this means the
+            // format changed under us — worth a line rather than a shrug.
+            $this->note('access token is not a jwt', ['segments' => count($parts)]);
+
+            return null;
+        }
+
+        $payload = json_decode(
+            (string) base64_decode(strtr($parts[1], '-_', '+/'), false),
+            true
+        );
+
+        $sub = is_array($payload) ? ($payload['sub'] ?? null) : null;
+
+        if (! is_string($sub) || $sub === '') {
+            $this->note('jwt carried no sub', [
+                'claims' => is_array($payload) ? array_keys($payload) : null,
+            ]);
+
+            return null;
+        }
+
+        return $sub;
     }
 
     /**
@@ -276,8 +340,16 @@ class PlayStationService
      * Warning, not error. An undocumented API changing shape is expected
      * behaviour, and it should not page anybody at three in the morning.
      */
+    /**
+     * Written to its own channel, because production runs LOG_LEVEL=error.
+     *
+     * These lines were warnings and infos on the stack channel, which means
+     * they were thrown away before they reached disk — and that is how a
+     * provider could fail for every reader who tried it while the log stayed
+     * empty. See the `connections` channel in config/logging.php.
+     */
     private function note(string $message, array $context = []): void
     {
-        Log::warning("PlayStationService: {$message}", $context);
+        Log::channel('connections')->info("PlayStation: {$message}", $context);
     }
 }

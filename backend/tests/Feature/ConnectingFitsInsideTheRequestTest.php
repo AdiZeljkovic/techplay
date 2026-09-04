@@ -128,9 +128,8 @@ class ConnectingFitsInsideTheRequestTest extends TestCase
         $message = $response->json('message');
 
         $this->assertNotEmpty($message);
-        // The two things that actually go wrong, in the reader's words rather
-        // than ours: the token's short life, and another app holding the session.
+        // The cause we can stand behind: the token's short life. It is the
+        // reason we can name without guessing, so it is the one stated.
         $this->assertStringContainsStringIgnoringCase('expires', $message);
-        $this->assertStringContainsStringIgnoringCase('another app', $message);
     }
 }

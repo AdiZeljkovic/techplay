@@ -285,8 +285,16 @@ class EpicService
             ->retry(2, 1500, throw: false);
     }
 
+    /**
+     * Written to its own channel, because production runs LOG_LEVEL=error.
+     *
+     * These lines were warnings and infos on the stack channel, which means
+     * they were thrown away before they reached disk — and that is how a
+     * provider could fail for every reader who tried it while the log stayed
+     * empty. See the `connections` channel in config/logging.php.
+     */
     private function note(string $message, array $context = []): void
     {
-        Log::info("Epic: {$message}", $context);
+        Log::channel('connections')->info("Epic: {$message}", $context);
     }
 }
