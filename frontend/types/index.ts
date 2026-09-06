@@ -221,6 +221,14 @@ export interface Comment {
     commentable_type?: string;
     commentable_id?: number;
     parent_id?: number | null;
+    /**
+     * Yours, and still waiting for an editor.
+     *
+     * A thread carries approved comments plus the reader's own held ones, so
+     * this can only ever be true of a comment you wrote — there is no way for
+     * it to describe somebody else's.
+     */
+    is_pending?: boolean;
     status?: string;
 }
 

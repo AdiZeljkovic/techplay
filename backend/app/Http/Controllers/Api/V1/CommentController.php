@@ -28,9 +28,34 @@ class CommentController extends Controller
             return response()->json(['message' => 'Invalid content type'], 400);
         }
 
+        // Read before the query is built, not after: whose comments these are
+        // decides what the query may return, and the votes below need it too.
+        $user = Auth::guard('sanctum')->user();
+
+        /*
+         * Approved to everyone, plus your own comment while it waits.
+         *
+         * A held comment used to vanish the instant it was written — the
+         * author included. Told it was under review and then shown a thread
+         * without it, people reasonably concluded the site had lost it; one
+         * reported exactly that. Seeing your own comment sitting there,
+         * labelled, is the difference between a queue and a hole.
+         *
+         * `pending` only. A comment a moderator marked `spam` stays invisible:
+         * that is a decision about the comment, and showing a spammer which of
+         * their posts were caught only teaches them what gets through.
+         */
+        $visible = function ($query) use ($user) {
+            $query->where('status', 'approved');
+
+            if ($user) {
+                $query->orWhere(fn ($q) => $q->where('status', 'pending')->where('user_id', $user->id));
+            }
+        };
+
         $comments = Comment::where('commentable_type', $modelClass)
             ->where('commentable_id', $id)
-            ->where('status', 'approved')
+            ->where($visible)
             ->whereNull('parent_id')
             ->with([
                 'user.rank',
@@ -41,16 +66,16 @@ class CommentController extends Controller
                 // The status filter above covers top-level comments only, and
                 // Comment has no global scope — so a reply left `pending` by
                 // probation or the two-link spam rule was rendered to every
-                // visitor anyway. Moderation has to apply at every depth.
-                'replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank', 'user.roles')->limit(100), // Prevent memory overload
-                'replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank', 'user.roles')->limit(50),
-                'replies.replies.replies' => fn ($q) => $q->where('status', 'approved')->with('user.rank', 'user.roles')->limit(25),
+                // visitor anyway. Moderation has to apply at every depth, and
+                // so does the exception for your own.
+                'replies' => fn ($q) => $q->where($visible)->with('user.rank', 'user.roles')->limit(100), // Prevent memory overload
+                'replies.replies' => fn ($q) => $q->where($visible)->with('user.rank', 'user.roles')->limit(50),
+                'replies.replies.replies' => fn ($q) => $q->where($visible)->with('user.rank', 'user.roles')->limit(25),
             ])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
         // PERFORMANCE FIX: Bulk load all likes in ONE query instead of N+1
-        $user = Auth::guard('sanctum')->user();
         if ($user) {
             $userId = $user->id;
 

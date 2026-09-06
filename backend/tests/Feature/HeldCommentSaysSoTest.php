@@ -41,6 +41,18 @@ class HeldCommentSaysSoTest extends TestCase
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
+    /**
+     * Back to being nobody.
+     *
+     * `actingAs` lasts for the rest of the test, so a plain getJson after one
+     * is still signed in as that user — which is how a leak test came to pass
+     * a comment to its own author and call it a stranger.
+     */
+    private function asGuest(): void
+    {
+        $this->app->get('auth')->forgetGuards();
+    }
+
     private function comment(User $user, Article $article, string $content): TestResponse
     {
         return $this->actingAs($user)->postJson('/api/v1/comments', [
@@ -140,18 +152,116 @@ class HeldCommentSaysSoTest extends TestCase
         );
     }
 
-    /**
-     * A held comment stays off the page, which is the whole reason the message
-     * matters. If this ever changed, the message would be the wrong fix.
-     */
-    public function test_a_held_comment_does_not_appear_in_the_thread(): void
+    /** A held comment stays off the page for everybody who did not write it. */
+    public function test_a_held_comment_does_not_appear_to_other_people(): void
     {
         $user = User::factory()->create();
         $article = Article::factory()->create(['status' => 'published']);
 
         $this->comment($user, $article, 'My very first comment on this site.')->assertSuccessful();
 
+        // A passer-by.
+        $this->asGuest();
         $thread = $this->getJson("/api/v1/comments/article/{$article->id}")->assertOk()->json('data');
+        $this->assertSame([], $thread ?? [], 'A signed-out reader was shown a comment awaiting review.');
+
+        // And a different member, who must not see it either.
+        $stranger = User::factory()->create();
+        $thread = $this->actingAs($stranger)
+            ->getJson("/api/v1/comments/article/{$article->id}")
+            ->assertOk()
+            ->json('data');
+
+        $this->assertSame([], $thread ?? [], 'A held comment leaked to another member.');
+    }
+
+    /**
+     * But its author sees it, marked.
+     *
+     * Being told a comment is under review and then shown a thread without it
+     * reads as the site having lost it — which is what was reported. The
+     * queue only feels like a queue if you can see your place in it.
+     */
+    public function test_the_author_sees_their_own_held_comment(): void
+    {
+        $user = User::factory()->create();
+        $article = Article::factory()->create(['status' => 'published']);
+
+        $this->comment($user, $article, 'My very first comment on this site.')->assertSuccessful();
+
+        $thread = $this->actingAs($user)
+            ->getJson("/api/v1/comments/article/{$article->id}")
+            ->assertOk()
+            ->json('data');
+
+        $this->assertCount(1, $thread);
+        $this->assertTrue($thread[0]['is_pending'], 'The author sees it, but not that it is still waiting.');
+    }
+
+    /** The same rule applies to a reply, at every depth the thread draws. */
+    public function test_the_author_sees_their_own_held_reply(): void
+    {
+        $author = User::factory()->create();
+        $article = Article::factory()->create(['status' => 'published']);
+        $this->settled($author, $article);
+
+        $parent = Comment::create([
+            'user_id' => User::factory()->create()->id,
+            'commentable_id' => $article->id,
+            'commentable_type' => Article::class,
+            'content' => 'Somebody else started this.',
+            'status' => 'approved',
+        ]);
+
+        $held = Comment::create([
+            'user_id' => $author->id,
+            'commentable_id' => $article->id,
+            'commentable_type' => Article::class,
+            'parent_id' => $parent->id,
+            'content' => 'A reply that is waiting.',
+            'status' => 'pending',
+        ]);
+
+        $seenByAuthor = $this->actingAs($author)
+            ->getJson("/api/v1/comments/article/{$article->id}")
+            ->assertOk()
+            ->json('data.0.replies');
+
+        $this->assertCount(1, $seenByAuthor);
+        $this->assertSame($held->id, $seenByAuthor[0]['id']);
+        $this->assertTrue($seenByAuthor[0]['is_pending']);
+
+        $this->asGuest();
+        $seenByStranger = $this->getJson("/api/v1/comments/article/{$article->id}")
+            ->assertOk()
+            ->json('data.0.replies');
+
+        $this->assertSame([], $seenByStranger ?? [], 'A held reply leaked to everyone else.');
+    }
+
+    /**
+     * A comment a moderator called spam stays gone, from its author too.
+     *
+     * Showing a spammer which of their posts were caught is a lesson in what
+     * gets through. `pending` is a queue; `spam` is a decision.
+     */
+    public function test_a_spam_comment_stays_hidden_from_its_author(): void
+    {
+        $user = User::factory()->create();
+        $article = Article::factory()->create(['status' => 'published']);
+
+        Comment::create([
+            'user_id' => $user->id,
+            'commentable_id' => $article->id,
+            'commentable_type' => Article::class,
+            'content' => 'Something a moderator threw out.',
+            'status' => 'spam',
+        ]);
+
+        $thread = $this->actingAs($user)
+            ->getJson("/api/v1/comments/article/{$article->id}")
+            ->assertOk()
+            ->json('data');
 
         $this->assertSame([], $thread ?? []);
     }

@@ -34,6 +34,17 @@ class CommentResource extends JsonResource
             'replies' => CommentResource::collection($this->whenLoaded('replies')),
             'score' => (int) ($this->score ?? 0),
             'user_vote' => $this->user_vote,
+            /*
+             * Whether this one is still waiting for an editor.
+             *
+             * The thread only ever contains approved comments and the reader's
+             * own held ones, so a true here always means "yours, not published
+             * yet" — there is no way for it to describe somebody else. It is a
+             * boolean rather than the status string for that reason: `status`
+             * would invite a screen to render `spam`, which nobody is ever
+             * sent.
+             */
+            'is_pending' => $this->status !== 'approved',
         ];
     }
 }

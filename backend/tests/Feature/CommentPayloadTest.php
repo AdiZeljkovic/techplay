@@ -66,7 +66,11 @@ class CommentPayloadTest extends TestCase
         $comment = $body[0];
 
         $this->assertEqualsCanonicalizing(
-            ['id', 'content', 'created_at', 'user', 'parent_id', 'replies', 'score', 'user_vote'],
+            // `is_pending` joined the list deliberately on 7 September: a
+            // thread now carries the reader's own held comments, and the screen
+            // has to be able to mark them as waiting rather than draw them as
+            // published. Everything else here still has to earn its place.
+            ['id', 'content', 'created_at', 'user', 'parent_id', 'replies', 'score', 'user_vote', 'is_pending'],
             array_keys($comment),
             'a field nobody reads is a field sent once per comment and once per reply'
         );

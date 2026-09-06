@@ -9,7 +9,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { User, Comment } from "@/types";
 import { Button } from "../ui/Button";
-import { MessageSquare, Send, ShieldCheck, Gamepad2, ChevronUp, ChevronDown } from "lucide-react";
+import { MessageSquare, Send, ShieldCheck, Gamepad2, ChevronUp, ChevronDown, Clock } from "lucide-react";
 import { decodeHtml } from "@/lib/decode";
 import { isOwnUpload } from "@/lib/imageUrl";
 
@@ -368,6 +368,17 @@ const CommentItem = memo(function CommentItem({
     // shown its ring or its badge. The server answers the question directly.
     const isStaff = !!comment.user.is_staff;
 
+    /*
+     * Yours, still with an editor.
+     *
+     * The thread carries approved comments plus the reader's own held ones, so
+     * this is only ever true of something you wrote. It is drawn quieter than
+     * a published comment and says why — a held comment rendered like any
+     * other would be a worse lie than hiding it, because you would think it
+     * was live.
+     */
+    const isPending = !!comment.is_pending;
+
     return (
         <div className={`group animate-fade-in-up ${depth > 0 ? 'mt-4' : ''}`}>
             <div className="flex gap-4">
@@ -410,14 +421,37 @@ const CommentItem = memo(function CommentItem({
                         )}
 
                         <span className="text-[11px] text-white/50 font-bold uppercase tracking-wider" suppressHydrationWarning>• {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
+
+                        {isPending && (
+                            <span
+                                className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 uppercase tracking-wide"
+                                title="Only you can see this until an editor approves it"
+                            >
+                                <Clock className="w-3 h-3" />
+                                Awaiting review
+                            </span>
+                        )}
                     </div>
 
-                    <div className={`text-white/45 leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''}`}>
+                    <div className={`leading-relaxed text-sm ${depth === 0 ? 'text-base' : ''} ${isPending ? 'text-white/35 border-l-2 border-yellow-500/30 pl-3' : 'text-white/45'}`}>
                         {decodeHtml(comment.content)}
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-4 mt-3">
+                    {isPending && (
+                        <p className="mt-2 text-[11px] text-yellow-500/70">
+                            Only you can see this. It appears for everyone once an editor approves it.
+                        </p>
+                    )}
+
+                    {/* Actions.
+
+                        Not drawn while the comment is held: there is nothing to
+                        vote on that anyone else can see, and the endpoints
+                        refuse both anyway — voting answers 404 for an
+                        unapproved id, deliberately, so the queue cannot be
+                        enumerated. Offering buttons that cannot work is how a
+                        working queue comes to look broken. */}
+                    <div className={`flex items-center gap-4 mt-3 ${isPending ? 'hidden' : ''}`}>
                         {/* Vote Pill */}
                         <div className="flex items-center gap-1 bg-[var(--surface-0)] rounded-[var(--radius-card)] p-0.5 border border-white/[0.07]">
                             <button
