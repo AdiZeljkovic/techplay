@@ -1,11 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Cookie, X, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
-import { applyConsent, CONSENT_STORAGE_KEY, DEFAULT_PREFERENCES, type CookiePreferences } from "@/lib/consent";
+import {
+    applyConsent,
+    CONSENT_ANSWERED_ATTR,
+    CONSENT_DISMISSED_KEY,
+    CONSENT_STORAGE_KEY,
+    DEFAULT_PREFERENCES,
+    type CookiePreferences,
+} from "@/lib/consent";
 
 /**
  * Absolute, because this banner appears on two hostnames.
@@ -41,6 +48,15 @@ export default function CookieConsentBanner() {
 
     useEffect(() => {
         const saved = localStorage.getItem(CONSENT_STORAGE_KEY);
+
+        // Already waved away in this tab. The head script has hidden it
+        // already; this keeps React's idea of the world matching the DOM's.
+        if (!saved && sessionStorage.getItem(CONSENT_DISMISSED_KEY)) {
+            setIsVisible(false);
+
+            return;
+        }
+
         if (!saved) {
             if (isAuthenticated && user?.cookie_preferences) {
                 const fromAccount = user.cookie_preferences as unknown as CookiePreferences;
@@ -65,6 +81,10 @@ export default function CookieConsentBanner() {
         localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(newPreferences));
         setPreferences(newPreferences);
         setIsVisible(false);
+
+        // So the next page load hides it before paint rather than after
+        // hydration — the same stamp the head script applies on a later visit.
+        document.documentElement.setAttribute(CONSENT_ANSWERED_ATTR, "answered");
 
         /*
          * Tell Google, which nothing here has ever done.
@@ -101,6 +121,31 @@ export default function CookieConsentBanner() {
         }
     };
 
+    /*
+     * The × means "not now", and nothing more.
+     *
+     * It used to call handleRejectAll, which wrote `analytics: false` to
+     * localStorage — permanently. A reader who tapped it to clear their screen
+     * was excluded from measurement on that visit and on every visit
+     * afterwards, having never been asked a question they answered. Waving a
+     * banner away is not a decision about cookies.
+     *
+     * Nothing is measured in the meantime: consent stays denied, which is the
+     * default and needs no storing. The only thing kept is that this tab has
+     * already been asked, so the banner does not reappear on the next click.
+     */
+    const handleDismiss = () => {
+        try {
+            sessionStorage.setItem(CONSENT_DISMISSED_KEY, "1");
+        } catch {
+            // Storage blocked. The banner returns on the next page, which is
+            // the safe way to be wrong.
+        }
+
+        document.documentElement.setAttribute(CONSENT_ANSWERED_ATTR, "dismissed");
+        setIsVisible(false);
+    };
+
     const handleAcceptAll = () => {
         savePreferences({ necessary: true, analytics: true, marketing: true });
     };
@@ -118,122 +163,137 @@ export default function CookieConsentBanner() {
         setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
     };
 
+    /*
+     * Drawn visible in the HTML, not after React hydrates.
+     *
+     * This used to ship at `opacity: 0, translateY(100px)` and only appear
+     * once framer-motion ran, which is after hydration — so a reader who left
+     * in the first seconds was never asked. Five people out of ninety-two
+     * consented on 5 September, and analytics reported six visitors against a
+     * hundred and thirty-five real ones.
+     *
+     * It is exactly the fault that was fixed on the analytics tag itself in
+     * 0e104b43 ("the readers who leave fastest were the only ones never
+     * counted"). The tag moved into the head; the question it depends on was
+     * left waiting for React.
+     *
+     * A returning reader is spared the flash by the head script instead: it
+     * reads the stored answer synchronously, before the first paint, and
+     * stamps <html data-consent>, which the stylesheet acts on. That runs
+     * whether or not hydration ever happens, which is the point.
+     */
+    if (!isVisible) return null;
+
     return (
-        <AnimatePresence>
-            {isVisible && (
-                <motion.div
-                    id="cookie-banner"
-                    suppressHydrationWarning
-                    initial={{ y: 100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pb-[calc(1rem+var(--tabbar-h)+var(--safe-b))] md:pb-6 flex justify-center pointer-events-none"
-                >
-                    <div className="bg-[var(--surface-2)]/90 backdrop-blur-xl border border-[var(--line)] rounded-[var(--radius-panel)] shadow-2xl w-full max-w-4xl overflow-hidden pointer-events-auto ring-1 ring-white/10">
-                        <div className="p-6 md:p-8">
-                            <div className="flex items-start justify-between gap-6 mb-6">
-                                <div className="flex gap-4">
-                                    <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-card)] flex items-center justify-center flex-shrink-0 text-[var(--accent)]">
-                                        <Cookie className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white mb-2">We value your privacy</h3>
-                                        <p className="text-white/55 text-sm leading-relaxed max-w-2xl">
-                                            We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.
-                                            You can choose to accept all or customize your preferences. Read our <a href={`${SITE_URL}/privacy`} className="text-[var(--accent)] hover:underline">Privacy Policy</a> and <a href={`${SITE_URL}/cookies`} className="text-[var(--accent)] hover:underline">Cookie Policy</a>.
-                                        </p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => handleRejectAll()}
-                                    className="text-white/35 hover:text-white transition-colors"
-                                    aria-label="Close cookie consent"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
+        <div
+            id="cookie-banner"
+            suppressHydrationWarning
+            className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pb-[calc(1rem+var(--tabbar-h)+var(--safe-b))] md:pb-6 flex justify-center pointer-events-none"
+        >
+            <div className="tp-consent-card bg-[var(--surface-2)]/90 backdrop-blur-xl border border-[var(--line)] rounded-[var(--radius-panel)] shadow-2xl w-full max-w-4xl overflow-hidden pointer-events-auto ring-1 ring-white/10">
+                <div className="p-6 md:p-8">
+                    <div className="flex items-start justify-between gap-6 mb-6">
+                        <div className="flex gap-4">
+                            <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-card)] flex items-center justify-center flex-shrink-0 text-[var(--accent)]">
+                                <Cookie className="w-6 h-6" />
                             </div>
-
-                            {/* Customization Panel */}
-                            <AnimatePresence>
-                                {showDetails && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden mb-6"
-                                    >
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
-                                            {/* Necessary */}
-                                            <div className="bg-[var(--surface-1)] border border-[var(--line)] p-4 rounded-[var(--radius-card)] flex items-center justify-between">
-                                                <div>
-                                                    <span className="font-bold text-white block">Essential</span>
-                                                    <span className="text-xs text-white/50">Required for the site to work.</span>
-                                                </div>
-                                                <div className="relative flex items-center">
-                                                    <Check className="w-5 h-5 text-green-500" />
-                                                </div>
-                                            </div>
-
-                                            {/* Analytics */}
-                                            <div
-                                                className={`cursor-pointer border p-4 rounded-[var(--radius-card)] flex items-center justify-between transition-all ${preferences.analytics ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--surface-1)] border-[var(--line)]'}`}
-                                                onClick={() => togglePreference('analytics')}
-                                            >
-                                                <div>
-                                                    <span className={`font-bold block ${preferences.analytics ? 'text-[var(--accent)]' : 'text-white'}`}>Analytics</span>
-                                                    <span className="text-xs text-white/50">Help us improve the site.</span>
-                                                </div>
-                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.analytics ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
-                                                    {preferences.analytics && <Check className="w-4 h-4 text-white" />}
-                                                </div>
-                                            </div>
-
-                                            {/* Marketing */}
-                                            <div
-                                                className={`cursor-pointer border p-4 rounded-[var(--radius-card)] flex items-center justify-between transition-all ${preferences.marketing ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--surface-1)] border-[var(--line)]'}`}
-                                                onClick={() => togglePreference('marketing')}
-                                            >
-                                                <div>
-                                                    <span className={`font-bold block ${preferences.marketing ? 'text-[var(--accent)]' : 'text-white'}`}>Marketing</span>
-                                                    <span className="text-xs text-white/50">Personalized offers.</span>
-                                                </div>
-                                                <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.marketing ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
-                                                    {preferences.marketing && <Check className="w-4 h-4 text-white" />}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-[var(--line)]">
-                                <button
-                                    onClick={() => setShowDetails(!showDetails)}
-                                    className="text-sm font-medium text-white/55 hover:text-white flex items-center gap-1 transition-colors"
-                                >
-                                    {showDetails ? 'Hide Details' : 'Customize Preferences'}
-                                    {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                </button>
-
-                                <div className="flex items-center gap-3 w-full md:w-auto">
-                                    {showDetails ? (
-                                        <Button variant="outline" onClick={handleSaveCustom} className="flex-1 md:flex-none">
-                                            Save Preferences
-                                        </Button>
-                                    ) : (
-                                        <Button variant="outline" onClick={handleRejectAll} className="flex-1 md:flex-none">
-                                            Reject All
-                                        </Button>
-                                    )}
-                                    <Button onClick={handleAcceptAll} className="flex-1 md:flex-none min-w-[140px]">
-                                        Accept All
-                                    </Button>
-                                </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-white mb-2">We value your privacy</h3>
+                                <p className="text-white/55 text-sm leading-relaxed max-w-2xl">
+                                    We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.
+                                    You can choose to accept all or customize your preferences. Read our <a href={`${SITE_URL}/privacy`} className="text-[var(--accent)] hover:underline">Privacy Policy</a> and <a href={`${SITE_URL}/cookies`} className="text-[var(--accent)] hover:underline">Cookie Policy</a>.
+                                </p>
                             </div>
                         </div>
+                        <button
+                            onClick={handleDismiss}
+                            className="text-white/35 hover:text-white transition-colors"
+                            aria-label="Ask me later"
+                            title="Ask me later"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+
+                    {/* Customization Panel */}
+                    <AnimatePresence>
+                        {showDetails && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden mb-6"
+                            >
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-2">
+                                    {/* Necessary */}
+                                    <div className="bg-[var(--surface-1)] border border-[var(--line)] p-4 rounded-[var(--radius-card)] flex items-center justify-between">
+                                        <div>
+                                            <span className="font-bold text-white block">Essential</span>
+                                            <span className="text-xs text-white/50">Required for the site to work.</span>
+                                        </div>
+                                        <div className="relative flex items-center">
+                                            <Check className="w-5 h-5 text-green-500" />
+                                        </div>
+                                    </div>
+
+                                    {/* Analytics */}
+                                    <div
+                                        className={`cursor-pointer border p-4 rounded-[var(--radius-card)] flex items-center justify-between transition-all ${preferences.analytics ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--surface-1)] border-[var(--line)]'}`}
+                                        onClick={() => togglePreference('analytics')}
+                                    >
+                                        <div>
+                                            <span className={`font-bold block ${preferences.analytics ? 'text-[var(--accent)]' : 'text-white'}`}>Analytics</span>
+                                            <span className="text-xs text-white/50">Help us improve the site.</span>
+                                        </div>
+                                        <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.analytics ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
+                                            {preferences.analytics && <Check className="w-4 h-4 text-white" />}
+                                        </div>
+                                    </div>
+
+                                    {/* Marketing */}
+                                    <div
+                                        className={`cursor-pointer border p-4 rounded-[var(--radius-card)] flex items-center justify-between transition-all ${preferences.marketing ? 'bg-[var(--accent)]/10 border-[var(--accent)]' : 'bg-[var(--surface-1)] border-[var(--line)]'}`}
+                                        onClick={() => togglePreference('marketing')}
+                                    >
+                                        <div>
+                                            <span className={`font-bold block ${preferences.marketing ? 'text-[var(--accent)]' : 'text-white'}`}>Marketing</span>
+                                            <span className="text-xs text-white/50">Personalized offers.</span>
+                                        </div>
+                                        <div className={`w-6 h-6 rounded-full border flex items-center justify-center transition-colors ${preferences.marketing ? 'bg-[var(--accent)] border-[var(--accent)]' : 'border-[var(--text-muted)]'}`}>
+                                            {preferences.marketing && <Check className="w-4 h-4 text-white" />}
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-4 border-t border-[var(--line)]">
+                        <button
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="text-sm font-medium text-white/55 hover:text-white flex items-center gap-1 transition-colors"
+                        >
+                            {showDetails ? 'Hide Details' : 'Customize Preferences'}
+                            {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </button>
+
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            {showDetails ? (
+                                <Button variant="outline" onClick={handleSaveCustom} className="flex-1 md:flex-none">
+                                    Save Preferences
+                                </Button>
+                            ) : (
+                                <Button variant="outline" onClick={handleRejectAll} className="flex-1 md:flex-none">
+                                    Reject All
+                                </Button>
+                            )}
+                            <Button onClick={handleAcceptAll} className="flex-1 md:flex-none min-w-[140px]">
+                                Accept All
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

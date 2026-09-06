@@ -26,6 +26,30 @@ export interface CookiePreferences {
 /** Where the choice is kept. The account copy is a mirror of this. */
 export const CONSENT_STORAGE_KEY = "cookie_preferences";
 
+/**
+ * Where "not now" is kept, and why it is not the same place.
+ *
+ * Closing the banner with the × used to store a rejection, so a reader who
+ * only wanted it off their screen was excluded from measurement for good — on
+ * that visit and every visit after it, having never said no. That is not an
+ * answer, it is a refusal to answer, and the two should not look alike.
+ *
+ * sessionStorage, so it lasts exactly as long as the tab. The question comes
+ * back next time.
+ */
+export const CONSENT_DISMISSED_KEY = "cookie_banner_dismissed";
+
+/**
+ * What the head stamps on <html> so CSS can hide the banner before paint.
+ *
+ * The banner has to be visible in the HTML itself — see the note in
+ * CookieConsentBanner — which means a reader who already answered would see it
+ * flash on every page load unless something hides it before the first paint.
+ * Only the head script can know: the answer is in localStorage, and no server
+ * can read that.
+ */
+export const CONSENT_ANSWERED_ATTR = "data-consent";
+
 /** Nothing but what the site cannot run without, until somebody says otherwise. */
 export const DEFAULT_PREFERENCES: CookiePreferences = {
     necessary: true,
@@ -97,8 +121,15 @@ try {
         ad_personalization: p.marketing ? 'granted' : 'denied'
       });
     }
+    document.documentElement.setAttribute(${JSON.stringify(CONSENT_ANSWERED_ATTR)}, 'answered');
+  } else if (sessionStorage.getItem(${JSON.stringify(CONSENT_DISMISSED_KEY)})) {
+    /* Asked and waved away this session. Not an answer — the banner comes
+       back next visit, and until then nothing is measured. */
+    document.documentElement.setAttribute(${JSON.stringify(CONSENT_ANSWERED_ATTR)}, 'dismissed');
   }
 } catch (e) {
-  /* A reader with storage blocked stays denied, which is already the default. */
+  /* A reader with storage blocked stays denied, which is already the default,
+     and sees the banner — which is the right way round: better to ask twice
+     than to assume an answer nobody gave. */
 }`.trim();
 }

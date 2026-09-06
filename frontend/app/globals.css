@@ -1190,3 +1190,45 @@ body.tp-navigating .tp-page {
 @media (prefers-reduced-motion: reduce) {
   .tp-404-scan::after { animation: none; opacity: 0; }
 }
+
+/* ── The cookie banner, hidden before it can flash ──────────────────────────
+
+   The banner is drawn visible in the HTML on purpose: it used to wait for
+   React to hydrate and framer-motion to animate, so readers who left in the
+   first seconds were never asked. Five of ninety-two consented on 5 September
+   and analytics reported six people against a hundred and thirty-five.
+
+   The cost of drawing it immediately is that a reader who already answered
+   would see it flash on every page load — the server cannot know, because the
+   answer is in their localStorage. So the head script reads that answer
+   synchronously and stamps <html data-consent> before the first paint, and
+   this rule acts on the stamp. No JavaScript of ours has to run afterwards.
+
+   `display: none` rather than opacity: the wrapper is fixed to the bottom of
+   the viewport and would otherwise sit over the tab bar, invisible and still
+   swallowing nothing (it is pointer-events-none) but present to a screen
+   reader. */
+html[data-consent="answered"] #cookie-banner,
+html[data-consent="dismissed"] #cookie-banner {
+  display: none !important;
+}
+
+/* The slide it used to get from framer-motion, in CSS.
+
+   Same look, and it cannot fail the way the old one did: an animation that
+   runs from the stylesheet needs no library, no hydration and no React. It
+   starts slightly down and slightly transparent and lands immediately — the
+   card is legible from the first frame either way, because `opacity` never
+   starts at zero. */
+.tp-consent-card {
+  animation: tp-consent-in 260ms var(--ease-hud, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+@keyframes tp-consent-in {
+  from { transform: translateY(12px); opacity: 0.35; }
+  to   { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-consent-card { animation: none; }
+}
