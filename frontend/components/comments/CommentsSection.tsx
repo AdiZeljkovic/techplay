@@ -31,7 +31,16 @@ export default function CommentsSection({ commentableId, commentableType, initia
     const [replyingTo, setReplyingTo] = useState<number | null>(null);
     const [replyContent, setReplyContent] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'warning' } | null>(null);
+    /*
+     * `parentId` is which form this answers: null for the composer at the top,
+     * a comment id for a reply box.
+     *
+     * There is one message and several places to put it. Rendered only under
+     * the top composer, the answer to a reply left halfway down a thread
+     * appeared above everything the reader could see — which, for a held
+     * comment, is the same as no answer at all.
+     */
+    const [statusMessage, setStatusMessage] = useState<{ text: string, type: 'success' | 'warning', parentId: number | null } | null>(null);
 
     // PERFORMANCE: Use useCallback to prevent unnecessary re-renders
     const fetchComments = useCallback(async (signal?: AbortSignal) => {
@@ -131,24 +140,51 @@ export default function CommentsSection({ commentableId, commentableType, initia
                 parent_id: parentId
             });
 
-            const data = res.data.data || res.data;
+            /*
+             * `status` sits beside `data`, not inside it.
+             *
+             * The endpoint answers with a CommentResource plus `additional`,
+             * so the body is { data: {...the comment}, message, status } — and
+             * CommentResource has never carried a `status` field. This read
+             * `data.status` off the comment itself, found undefined every
+             * time, and took the success branch for every held comment.
+             *
+             * The result was the worst possible answer: a reader on probation
+             * was told the comment posted, refreshed, and found nothing —
+             * because the listing serves approved comments only. One reported
+             * it as a bug and guessed at a blocker. Nothing was broken except
+             * this line.
+             *
+             * The message is the server's, because the server is what knows
+             * why: probation and the link rule are different reasons and used
+             * to be described with the same sentence about new members.
+             */
+            const pending = res.data?.status === 'pending';
 
-            // Check specifically for pending status
-            if (data.status === 'pending') {
-                setStatusMessage({
-                    text: "Your comment is under review. To ensure quality discussion, the first 3 comments from new members are moderated. Thank you for your patience!",
-                    type: 'warning'
-                });
-            } else {
-                setStatusMessage({ text: "Comment posted successfully!", type: 'success' });
-            }
+            setStatusMessage(
+                pending
+                    ? {
+                        text:
+                            res.data?.message ||
+                            "Thanks — an editor will read this before it goes up. It will appear once it is approved.",
+                        type: 'warning',
+                        parentId,
+                    }
+                    : { text: "Comment posted successfully!", type: 'success', parentId }
+            );
 
             // Refresh comments without signal (user-initiated action)
             await fetchComments();
 
             if (parentId) {
-                setReplyingTo(null);
                 setReplyContent("");
+
+                // A published reply is on the page now, so the box has done its
+                // job and closes. A held one has nowhere else to say what
+                // happened, so it stays open with the message under it.
+                if (!pending) {
+                    setReplyingTo(null);
+                }
             } else {
                 setContent("");
             }
@@ -200,7 +236,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                                 required
                             />
                             {error && <p className="text-red-500 text-[12px] mt-2">{error}</p>}
-                            {statusMessage && (
+                            {statusMessage && statusMessage.parentId === null && (
                                 <div className={`mt-3 p-3 rounded-[var(--radius-card)] text-[13px] border ${statusMessage.type === 'warning'
                                     ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
                                     : 'bg-green-500/10 border-green-500/20 text-green-500'
@@ -282,6 +318,7 @@ export default function CommentsSection({ commentableId, commentableType, initia
                             handleSubmit={handleSubmit}
                             handleVote={handleVote}
                             isSubmitting={isSubmitting}
+                            statusMessage={statusMessage}
                         />
                     ))}
                 </div>
@@ -308,6 +345,8 @@ interface CommentItemProps {
     handleSubmit: (e: React.FormEvent, parentId: number | null) => void;
     handleVote: (id: number, type: 'up' | 'down') => void;
     isSubmitting: boolean;
+    /** The answer to a reply, drawn under the box that asked for it. */
+    statusMessage: { text: string, type: 'success' | 'warning', parentId: number | null } | null;
 }
 
 const CommentItem = memo(function CommentItem({
@@ -320,7 +359,8 @@ const CommentItem = memo(function CommentItem({
     setReplyContent,
     handleSubmit,
     handleVote,
-    isSubmitting
+    isSubmitting,
+    statusMessage
 }: CommentItemProps) {
     const displayName = decodeHtml(comment.user.name || comment.user.username);
     // `role` was never a field the API sent — authorization moved to Spatie
@@ -433,13 +473,21 @@ const CommentItem = memo(function CommentItem({
                                         <Send className="w-4 h-4" />
                                     </Button>
                                 </div>
+                                {statusMessage?.parentId === comment.id && (
+                                    <div className={`mt-3 p-3 rounded-[var(--radius-card)] text-[13px] border ${statusMessage.type === 'warning'
+                                        ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-500'
+                                        : 'bg-green-500/10 border-green-500/20 text-green-500'
+                                        }`}>
+                                        {statusMessage.text}
+                                    </div>
+                                )}
                                 <div className="flex justify-end mt-2">
                                     <button
                                         type="button"
                                         className="text-xs text-white/50 hover:text-white"
                                         onClick={() => setReplyingTo(null)}
                                     >
-                                        Cancel
+                                        {statusMessage?.parentId === comment.id ? 'Close' : 'Cancel'}
                                     </button>
                                 </div>
                             </form>
@@ -466,6 +514,7 @@ const CommentItem = memo(function CommentItem({
                                         handleSubmit={handleSubmit}
                                         handleVote={handleVote}
                                         isSubmitting={isSubmitting}
+                                        statusMessage={statusMessage}
                                     />
                                 ))}
                             </div>

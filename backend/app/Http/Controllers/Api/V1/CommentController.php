@@ -124,7 +124,17 @@ class CommentController extends Controller
             return response()->json(['message' => 'You have already posted this comment recently.'], 422);
         }
 
-        // C. Determine Status (Probation & Spam Heuristics)
+        /*
+         * C. Determine Status (Probation & Spam Heuristics)
+         *
+         * These messages are shown to the person who wrote the comment, so
+         * they are written for them rather than for a log line. A held comment
+         * does not appear on the page — the listing serves approved comments
+         * only — so this sentence is the only thing standing between "we are
+         * checking it" and "the site swallowed what I wrote". One reader
+         * posted, was told it worked, refreshed, found nothing, and reported
+         * the site as broken. It was not broken; it just never said so.
+         */
         $status = 'approved';
         $message = 'Comment posted successfully.';
 
@@ -134,7 +144,8 @@ class CommentController extends Controller
 
         if ($approvedCount < 3) {
             $status = 'pending';
-            $message = 'Comment submitted for approval (New user probation).';
+            $message = 'Thanks — an editor will read this before it goes up. '
+                .'We check the first three comments from a new member; after that yours appear straight away.';
         }
 
         // Rule 2: Link Limit (More than 1 link = pending)
@@ -146,7 +157,8 @@ class CommentController extends Controller
             // two links was told "Comment posted successfully" while the
             // comment sat in the moderation queue.
             if ($status === 'approved') {
-                $message = 'Comment submitted for approval (Link limit).';
+                $message = 'Thanks — an editor will read this before it goes up, '
+                    .'because comments with more than one link are checked first.';
             }
 
             $status = 'pending';
