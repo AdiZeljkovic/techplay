@@ -201,7 +201,7 @@ function ShelfCard({ entry }: { entry: ShelfEntry }) {
 
     return (
         <Pressable
-            onPress={() => entry.game && router.push(`/game/${entry.game.slug}`)}
+            onPress={() => entry.game && router.push(`/games/${entry.game.slug}`)}
             style={({ pressed }) => [styles.card, pressed && { opacity: 0.7 }]}
             accessibilityRole="button"
             accessibilityLabel={`${entry.game?.name ?? 'Game'}, ${status.label}`}

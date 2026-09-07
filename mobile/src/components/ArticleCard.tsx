@@ -21,7 +21,7 @@ export function ArticleCard({ article, lead = false }: { article: Article; lead?
 
     return (
         <Pressable
-            onPress={() => router.push(`/article/${article.slug}`)}
+            onPress={() => router.push(`/news/${article.slug}`)}
             style={({ pressed }) => [styles.card, pressed && { backgroundColor: colors.surface2 }]}
             accessibilityRole="button"
             accessibilityLabel={article.title}

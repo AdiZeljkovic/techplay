@@ -11,7 +11,11 @@
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "gg.techplay.app",
       "supportsTablet": false,
-      "userInterfaceStyle": "dark"
+      "userInterfaceStyle": "dark",
+      "associatedDomains": [
+        "applinks:techplay.gg",
+        "applinks:help.techplay.gg"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +26,29 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "gg.techplay.app",
-      "userInterfaceStyle": "dark"
+      "userInterfaceStyle": "dark",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "techplay.gg",
+              "pathPrefix": "/news"
+            },
+            {
+              "scheme": "https",
+              "host": "techplay.gg",
+              "pathPrefix": "/games"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "output": "static",

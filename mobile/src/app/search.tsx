@@ -193,7 +193,7 @@ export default function SearchScreen() {
                     renderItem={({ item }) => (
                         <Pressable
                             onPress={() =>
-                                router.push(scope === 'games' ? `/game/${item.slug}` : `/article/${item.slug}`)
+                                router.push(scope === 'games' ? `/games/${item.slug}` : `/news/${item.slug}`)
                             }
                             style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.surface2 }]}
                             accessibilityRole="button"

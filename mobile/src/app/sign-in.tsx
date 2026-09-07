@@ -141,16 +141,21 @@ export default function SignIn() {
 
                     <Button label="Sign in" onPress={submit} busy={busy} style={{ marginTop: space.sm }} />
 
+                    <Button
+                        label="Create an account"
+                        variant="quiet"
+                        onPress={() => router.push('/register')}
+                    />
+
                     {/*
-                      * Discord and Battle.net are not here yet, and neither is
-                      * Sign in with Apple — which the App Store will require
-                      * the moment the first of those appears. All three need
-                      * the developer accounts, so the screen does not pretend
-                      * to offer them.
+                      * Discord and Battle.net are still absent, and so is Sign
+                      * in with Apple — which the App Store requires the moment
+                      * the first of those appears. All three need the developer
+                      * accounts, so the screen does not pretend to offer them.
                       */}
                     <Body style={styles.footnote}>
-                        Creating an account and connecting Steam, Xbox or PlayStation still happen on
-                        techplay.gg. They are coming here.
+                        Connecting Steam, Xbox or PlayStation still happens on techplay.gg.
+                        It is coming here.
                     </Body>
                 </ScrollView>
             </KeyboardAvoidingView>
