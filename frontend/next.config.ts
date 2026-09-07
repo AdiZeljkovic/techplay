@@ -71,6 +71,16 @@ const nextConfig: NextConfig = {
               "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://twitter.com https://x.com https://platform.twitter.com https://www.instagram.com https://www.facebook.com https://accounts.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://www.google.com https://*.adtrafficquality.google https://challenges.cloudflare.com",
               "media-src 'self' blob: https://api-beta.techplay.gg",
               "object-src 'none'",
+              /*
+               * Clickjacking, said the way browsers still read it.
+               *
+               * X-Frame-Options above is the older header and covers the same
+               * ground, but it has no standard and browsers differ on what it
+               * means inside nested frames. `frame-ancestors` is the one in the
+               * spec, and where both are present it wins — so this is the rule
+               * that will still be enforced when the other stops being.
+               */
+              "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self' https://accounts.google.com",
             ].join('; ')

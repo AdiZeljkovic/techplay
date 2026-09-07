@@ -36,9 +36,32 @@ class SecurityHeaders
         // SECURITY: Permissions policy (disable unnecessary browser features)
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
-        // SECURITY: Content Security Policy (adjust as needed)
-        // Note: Disabled by default as it can break functionality if not configured properly
-        // $response->headers->set('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';");
+        /*
+         * A policy for JSON, which is almost every response this host sends.
+         *
+         * There was no CSP here at all — commented out years ago with a note
+         * that it "can break functionality", which is true of a policy written
+         * for HTML and applied to Filament: the admin panel is Livewire and
+         * Alpine, both of which live on inline script. So the admin keeps the
+         * headers above and no CSP, and that stays a known gap.
+         *
+         * A JSON response is a different question and an easy one. It loads
+         * nothing — no script, no style, no image, no frame — so the strictest
+         * policy there is is also the one that cannot break it. `default-src
+         * 'none'` says exactly that, and `frame-ancestors 'none'` says a JSON
+         * body has no business inside anybody's iframe.
+         *
+         * It matters because a browser will happily render a JSON response it
+         * was tricked into treating as a document. This closes that off for
+         * the whole API without touching the one part of the host that renders
+         * pages.
+         */
+        if ($response->headers->get('Content-Type') && str_contains((string) $response->headers->get('Content-Type'), 'json')) {
+            $response->headers->set(
+                'Content-Security-Policy',
+                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+            );
+        }
 
         // SECURITY: HSTS (Force HTTPS) - only in production
         if (app()->environment('production')) {
