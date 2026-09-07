@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
@@ -129,17 +129,26 @@ export default function ProfileTab() {
                         </View>
 
                         <View style={styles.tiles}>
-                            <Tile label="Games" value={stats.games_count.toLocaleString('en-GB')} />
+                            {/* The games tile opens the shelf. A number that
+                                cannot be tapped is a number somebody has to
+                                go and find somewhere else. */}
+                            <Tile
+                                label="Games"
+                                value={stats.games_count.toLocaleString('en-GB')}
+                                onPress={() => router.push('/library')}
+                            />
                             <Tile label="Hours" value={stats.hours_played.toLocaleString('en-GB')} />
                             <Tile label="Achievements" value={String(stats.achievements_count)} />
                         </View>
+
+                        <Button label="Open your shelf" variant="quiet" onPress={() => router.push('/library')} />
                     </>
                 )}
 
                 <View style={styles.rest}>
                     <Eyebrow>Still on the web</Eyebrow>
                     <Body style={{ fontSize: size.small }}>
-                        Your shelf, connected platforms, lists and settings live on techplay.gg for now.
+                        Connected platforms, lists and settings live on techplay.gg for now.
                         They are coming here.
                     </Body>
                 </View>
@@ -154,12 +163,27 @@ export default function ProfileTab() {
     );
 }
 
-function Tile({ label, value }: { label: string; value: string }) {
-    return (
-        <View style={styles.tile}>
+function Tile({ label, value, onPress }: { label: string; value: string; onPress?: () => void }) {
+    const inner = (
+        <>
             <Text style={styles.tileValue}>{value}</Text>
             <Eyebrow>{label}</Eyebrow>
-        </View>
+        </>
+    );
+
+    if (!onPress) {
+        return <View style={styles.tile}>{inner}</View>;
+    }
+
+    return (
+        <Pressable
+            onPress={onPress}
+            style={({ pressed }) => [styles.tile, styles.tileLink, pressed && { backgroundColor: colors.surface2 }]}
+            accessibilityRole="button"
+            accessibilityLabel={`${label}: ${value}`}
+        >
+            {inner}
+        </Pressable>
     );
 }
 
@@ -223,6 +247,9 @@ const styles = StyleSheet.create({
         fontFamily: font.mono,
         fontSize: size.title,
         color: colors.inkHi,
+    },
+    tileLink: {
+        borderColor: colors.lineStrong,
     },
     rest: {
         gap: space.sm,
