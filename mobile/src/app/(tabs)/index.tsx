@@ -98,8 +98,12 @@ export default function Feed() {
                     <View style={styles.header}>
                         <View>
                             <Eyebrow tone="accent">TechPlay</Eyebrow>
+                            {/* Signed out, this is a masthead. Signed in, it
+                                is a greeting. Neither pretends to be the
+                                other — "Reader" as a stand-in name reads as a
+                                database column somebody forgot to fill. */}
                             <Text style={styles.greeting}>
-                                {user?.display_name || user?.username || 'Reader'}
+                                {user?.display_name || user?.username || 'Latest'}
                             </Text>
                         </View>
                         {/* Search reaches 333,198 games and 638 articles, and

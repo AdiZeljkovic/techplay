@@ -81,6 +81,26 @@ export default function Library() {
         return () => controller.abort();
     }, [load, filter]);
 
+    /*
+     * A shelf belongs to somebody. Signed out there is nothing to show and
+     * nothing to fetch — so this says what the shelf is for rather than
+     * drawing an empty grid with a spinner that never resolves.
+     */
+    if (!user) {
+        return (
+            <Screen>
+                <View style={styles.guest}>
+                    <Eyebrow tone="accent">Your shelf</Eyebrow>
+                    <Body>
+                        Sign in to keep track of what you are playing, what you have finished, and
+                        what is still waiting. Connect Steam and it fills itself.
+                    </Body>
+                    <Button label="Sign in" onPress={() => router.replace('/sign-in')} style={{ marginTop: space.md }} />
+                </View>
+            </Screen>
+        );
+    }
+
     return (
         <Screen>
             <View style={styles.bar}>
@@ -288,6 +308,7 @@ const styles = StyleSheet.create({
     },
     chipTextOn: { color: colors.accentInk },
     centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    guest: { flex: 1, justifyContent: 'center', padding: space.xl, gap: space.sm },
     grid: { padding: space.lg, paddingTop: 0, gap: space.md, paddingBottom: space.xxl },
     card: { flex: 1, gap: 6 },
     coverWrap: { position: 'relative' },

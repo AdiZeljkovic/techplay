@@ -56,6 +56,34 @@ export default function ProfileTab() {
         return () => controller.abort();
     }, [load]);
 
+    /*
+     * Signed out, this tab is the invitation rather than an error.
+     *
+     * It is the one place in the app where an account buys something concrete,
+     * so it is the place that asks — instead of a gate in front of the news,
+     * which is what this app used to open with.
+     */
+    if (!user) {
+        return (
+            <Screen>
+                <View style={styles.guest}>
+                    <Eyebrow tone="accent">Not signed in</Eyebrow>
+                    <Title style={{ fontSize: size.hero }}>
+                        YOUR{'\n'}
+                        <Text style={{ color: colors.accentInk }}>PROFILE</Text>
+                    </Title>
+                    <Body style={{ marginTop: space.sm }}>
+                        Sign in for your shelf, your XP and rank, the games you have finished, and
+                        everything you are following.
+                    </Body>
+                    <Button label="Sign in" onPress={() => router.push('/sign-in')} style={{ marginTop: space.lg }} />
+                    <Button label="Create an account" variant="quiet" onPress={() => router.push('/register')} />
+                    <Button label="Saved for offline" variant="quiet" onPress={() => router.push('/saved')} />
+                </View>
+            </Screen>
+        );
+    }
+
     if (loading) {
         return (
             <Screen>
@@ -191,6 +219,7 @@ function Tile({ label, value, onPress }: { label: string; value: string; onPress
 
 const styles = StyleSheet.create({
     centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    guest: { flex: 1, justifyContent: 'center', padding: space.xl, gap: space.sm },
     content: { padding: space.lg, gap: space.lg, paddingBottom: space.xxl },
     head: { flexDirection: 'row', gap: space.lg, alignItems: 'center' },
     avatar: {

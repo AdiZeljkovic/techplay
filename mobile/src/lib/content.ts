@@ -20,7 +20,15 @@ export interface Article {
     featured_image_alt: string | null;
     published_at: string;
     published_at_human: string | null;
-    reading_time: number | null;
+    /**
+     * Already a sentence: "8 min read", not 8.
+     *
+     * Typed as a number here at first, and the card appended " min" to it —
+     * which put "8 min read min" on the front page. The API formats this
+     * server-side so every client says it the same way, and the app's job is
+     * to print it rather than to build it.
+     */
+    reading_time: string | null;
     review_score: number | null;
     author: { username: string; name?: string | null; avatar_url?: string | null } | null;
     category: { name: string; slug: string } | null;

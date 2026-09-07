@@ -7,15 +7,23 @@ import { checkVersion } from '@/lib/version';
 import { colors } from '@/theme/tokens';
 
 /**
- * The fork, and nothing else.
+ * Straight into the app. There is no fork.
  *
- * It holds while the stored session is checked — which involves reading the
- * keychain and a refresh call — and then sends the reader to the feed or to
- * the sign-in screen. Drawing anything here would mean drawing it twice, once
- * before the answer and once after.
+ * This used to send anybody without a session to a sign-in screen, which was
+ * wrong twice over. The front page is public — `/home` takes no token — so
+ * demanding an account to read the news is asking for something the app does
+ * not need. And App Store rule 5.1.1 forbids exactly that: an app may not
+ * require an account for features that work without one, which is a rejection
+ * rather than an opinion.
+ *
+ * So the reader lands on the feed, and signing in is asked for at the point
+ * where it actually buys something — a shelf, XP, a profile.
+ *
+ * The wait here is only for the version check and the stored session, neither
+ * of which is worth drawing a screen for.
  */
 export default function Entry() {
-    const { user, loading } = useAuth();
+    const { loading } = useAuth();
 
     /*
      * Asked once, on launch, beside the session check.
@@ -57,5 +65,5 @@ export default function Entry() {
         );
     }
 
-    return <Redirect href={user ? '/(tabs)' : '/sign-in'} />;
+    return <Redirect href="/(tabs)" />;
 }

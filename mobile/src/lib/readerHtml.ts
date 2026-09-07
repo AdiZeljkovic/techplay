@@ -23,7 +23,8 @@ interface Reader {
     category: string | null;
     author: string | null;
     published: string | null;
-    readingTime: number | null;
+    /** The API's own wording: "8 min read". */
+    readingTime: string | null;
     content: string;
 }
 
@@ -44,7 +45,7 @@ function esc(value: string): string {
 }
 
 export function readerHtml(a: Reader): string {
-    const meta = [a.author, a.published, a.readingTime ? `${a.readingTime} min read` : null]
+    const meta = [a.author, a.published, a.readingTime]
         .filter(Boolean)
         .map((part) => esc(String(part)))
         .join(' &middot; ');

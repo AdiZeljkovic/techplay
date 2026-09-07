@@ -19,7 +19,8 @@ interface FullArticle {
     featured_image_url: string | null;
     featured_image_alt: string | null;
     published_at_human: string | null;
-    reading_time: number | null;
+    /** Already formatted by the API: "8 min read". */
+    reading_time: string | null;
     category: { name: string } | null;
     author: { name?: string | null; username: string } | null;
 }

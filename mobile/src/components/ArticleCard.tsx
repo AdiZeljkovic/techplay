@@ -15,7 +15,9 @@ import { colors, font, radius, size, space } from '@/theme/tokens';
  * sizes.
  */
 export function ArticleCard({ article, lead = false }: { article: Article; lead?: boolean }) {
-    const meta = [article.published_at_human, article.reading_time ? `${article.reading_time} min` : null]
+    // Both fields arrive formatted — "6 days ago", "8 min read". Adding a unit
+    // to either is how "8 min read min" reached the front page.
+    const meta = [article.published_at_human, article.reading_time]
         .filter(Boolean)
         .join('  ·  ');
 
