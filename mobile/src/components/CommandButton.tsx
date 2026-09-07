@@ -23,6 +23,15 @@ export function CommandButton({
     busy = false,
     variant = 'primary',
     /**
+     * `.btn-command` is on full-height controls and on the 32px CTA inside a
+     * quick-link panel alike, so this carries both. The notch shrinks with the
+     * button: 11px cut off a 32px control is a third of its height, and reads
+     * as a broken corner rather than as the treatment.
+     */
+    compact = false,
+    /** A mark after the label, as the panel CTAs have. */
+    trailing,
+    /**
      * What sits behind the button. The notch is drawn rather than cut, so it
      * has to be painted in the colour it is meant to reveal — on a panel that
      * is surface-1, not the page.
@@ -34,10 +43,13 @@ export function CommandButton({
     onPress: () => void;
     busy?: boolean;
     variant?: 'primary' | 'quiet';
+    compact?: boolean;
+    trailing?: React.ReactNode;
     behind?: string;
     style?: StyleProp<ViewStyle>;
 }) {
     const primary = variant === 'primary';
+    const notch = compact ? 7 : NOTCH;
 
     return (
         <Pressable
@@ -48,6 +60,7 @@ export function CommandButton({
             accessibilityState={{ busy }}
             style={({ pressed }) => [
                 styles.base,
+                compact && styles.compact,
                 primary ? styles.primary : styles.quiet,
                 pressed && (primary ? styles.primaryPressed : styles.quietPressed),
                 busy && { opacity: 0.7 },
@@ -57,7 +70,18 @@ export function CommandButton({
             {busy ? (
                 <ActivityIndicator color={primary ? colors.inkHi : colors.inkMid} />
             ) : (
-                <Text style={[styles.label, !primary && { color: colors.inkHi }]}>{label}</Text>
+                <View style={styles.labelRow}>
+                    <Text
+                        style={[
+                            styles.label,
+                            compact && styles.labelCompact,
+                            !primary && { color: colors.inkHi },
+                        ]}
+                    >
+                        {label}
+                    </Text>
+                    {trailing}
+                </View>
             )}
 
             {/*
@@ -73,15 +97,24 @@ export function CommandButton({
               */}
             <View
                 pointerEvents="none"
-                style={[styles.notchTop, { borderTopColor: behind }]}
+                style={[
+                    styles.notchTop,
+                    { borderTopColor: behind, borderTopWidth: notch, borderRightWidth: notch },
+                ]}
             />
             <View
                 pointerEvents="none"
-                style={[styles.notchBottom, { borderBottomColor: behind }]}
+                style={[
+                    styles.notchBottom,
+                    { borderBottomColor: behind, borderBottomWidth: notch, borderLeftWidth: notch },
+                ]}
             />
 
             {/* The hatch, in the corner the notch cuts through. */}
-            <View pointerEvents="none" style={styles.hatch}>
+            <View
+                pointerEvents="none"
+                style={[styles.hatch, compact && { width: 34, height: notch * 1.35 }]}
+            >
                 {Array.from({ length: 9 }).map((_, i) => (
                     <View
                         key={i}
@@ -114,6 +147,8 @@ const styles = StyleSheet.create({
         // underneath it would fight the diagonal and round off the point.
         borderRadius: 0,
     },
+    compact: { height: 32, paddingHorizontal: 14 },
+    labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     primary: { backgroundColor: colors.accent },
     primaryPressed: { backgroundColor: colors.accentHover },
     quiet: { backgroundColor: colors.fill2 },
@@ -125,6 +160,7 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
         color: colors.inkHi,
     },
+    labelCompact: { fontSize: 9.5, letterSpacing: 1.1 },
     notchTop: {
         position: 'absolute',
         top: 0,

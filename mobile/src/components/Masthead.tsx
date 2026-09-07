@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { SearchMark } from '@/components/Marks';
 import { colors, space, TOUCH_TARGET } from '@/theme/tokens';
 
 /**
@@ -44,7 +45,7 @@ export function Masthead({ onSearch }: { onSearch?: () => void }) {
                     accessibilityRole="button"
                     accessibilityLabel="Search"
                 >
-                    <Text style={styles.glyph}>⌕</Text>
+                    <SearchMark size={21} color={colors.inkMid} />
                 </Pressable>
             </View>
 
@@ -71,7 +72,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    glyph: { fontSize: 22, lineHeight: 26, color: colors.inkMid },
     rule: {
         height: 1,
         backgroundColor: colors.accent,

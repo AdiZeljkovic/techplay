@@ -1,100 +1,38 @@
 import { Tabs } from 'expo-router';
-import { StyleSheet, Text, View, type ColorValue } from 'react-native';
 
-import { colors, font, size, TOUCH_TARGET } from '@/theme/tokens';
+import { TabBar } from '@/components/TabBar';
 
 /**
- * Four tabs, and no more.
+ * Five tabs, which is the ceiling.
  *
- * The site has fourteen sections. Putting them all here would rebuild the
- * problem the mobile-web audit measured in August: two to four taps to reach
- * anything, because the way in was a menu rather than a place.
+ * It was four, and they were the app's own idea of the sections — Read, News,
+ * Dates, You. The site had already answered this question and answered it
+ * differently: Home, Feed, you, Games, Forum, with a written reason for the
+ * count (past five the labels stop fitting at 390px and the targets drop under
+ * the 44px floor) and for the centre slot being a person rather than a place.
+ * Two products disagreeing about their own navigation is a thing a reader
+ * feels immediately and cannot name.
  *
- * The calendar earned the fourth place rather than being given it. It is the
- * only screen here with a reason to be opened on a day when nothing has been
- * published — a release date is checked repeatedly and forgotten in between —
- * and it is what push notifications will eventually be for. Everything else
- * is reached from inside one of these four.
+ * So the app takes the site's five. The catalogue stands in the slot the forum
+ * holds on the web, because the app has no forum yet; the calendar keeps the
+ * fifth place it earned — it is the only screen here worth opening on a day
+ * when nothing was published, and it is what push will eventually be for.
+ *
+ * The bar itself is `TabBar`, which draws the site's console. `tabBarStyle`
+ * still hides the platform's own: passing a `tabBar` replaces the component,
+ * not the space the navigator reserves for it.
  */
 export default function TabsLayout() {
     return (
         <Tabs
-            screenOptions={{
-                headerShown: false,
-                tabBarStyle: styles.bar,
-                tabBarActiveTintColor: colors.accentInk,
-                tabBarInactiveTintColor: colors.inkLow,
-                tabBarLabelStyle: styles.label,
-                /* The bar is drawn, not tinted by the platform: a translucent
-                   iOS bar over a near-black app shows the wrong grey. */
-                tabBarBackground: () => <View style={styles.barFill} />,
-            }}
+            tabBar={(props) => <TabBar {...props} />}
+            screenOptions={{ headerShown: false, tabBarStyle: { display: 'none' } }}
         >
-            <Tabs.Screen
-                name="index"
-                options={{
-                    title: 'Read',
-                    tabBarIcon: ({ color }) => <Glyph glyph="▤" color={color} />,
-                }}
-            />
-            <Tabs.Screen
-                name="news"
-                options={{
-                    title: 'News',
-                    tabBarIcon: ({ color }) => <Glyph glyph="◈" color={color} />,
-                }}
-            />
-            <Tabs.Screen
-                name="calendar"
-                options={{
-                    title: 'Dates',
-                    tabBarIcon: ({ color }) => <Glyph glyph="▦" color={color} />,
-                }}
-            />
-            <Tabs.Screen
-                name="profile"
-                options={{
-                    title: 'You',
-                    tabBarIcon: ({ color }) => <Glyph glyph="◉" color={color} />,
-                }}
-            />
+            <Tabs.Screen name="index" options={{ title: 'Home' }} />
+            <Tabs.Screen name="news" options={{ title: 'Feed' }} />
+            <Tabs.Screen name="profile" options={{ title: 'You' }} />
+            <Tabs.Screen name="search" options={{ title: 'Games' }} />
+            <Tabs.Screen name="calendar" options={{ title: 'Calendar' }} />
         </Tabs>
     );
 }
-
-/**
- * Glyphs rather than an icon package.
- *
- * Three icons is not worth 400 KB of vector font, and the site's own language
- * is geometric marks rather than outlined pictograms. When the tab bar grows
- * past this, it earns a proper set.
- */
-function Glyph({ glyph, color }: { glyph: string; color: ColorValue }) {
-    return <Text style={[styles.glyph, { color }]}>{glyph}</Text>;
-}
-
-const styles = StyleSheet.create({
-    bar: {
-        height: TOUCH_TARGET + 26,
-        paddingTop: 6,
-        borderTopColor: colors.line,
-        borderTopWidth: StyleSheet.hairlineWidth,
-        backgroundColor: 'transparent',
-        elevation: 0,
-    },
-    barFill: {
-        flex: 1,
-        backgroundColor: colors.surface0,
-    },
-    label: {
-        fontFamily: font.display,
-        fontSize: 9.5,
-        letterSpacing: 1.1,
-        textTransform: 'uppercase',
-        marginTop: 2,
-    },
-    glyph: {
-        fontSize: size.lead,
-        lineHeight: size.lead + 2,
-    },
-});

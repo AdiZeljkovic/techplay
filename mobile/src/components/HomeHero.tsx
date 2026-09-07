@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { CommandButton } from '@/components/CommandButton';
+import { SearchMark } from '@/components/Marks';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
 
 /**
@@ -42,7 +43,7 @@ export function HomeHero({ signedIn }: { signedIn: boolean }) {
                 accessibilityRole="search"
                 accessibilityLabel="Search the catalogue"
             >
-                <Text style={styles.searchGlyph}>⌕</Text>
+                <SearchMark size={17} color={colors.inkLow} />
                 <Text style={styles.searchText}>Search 333,000 games…</Text>
             </Pressable>
 
@@ -102,7 +103,6 @@ const styles = StyleSheet.create({
         borderWidth: StyleSheet.hairlineWidth,
         borderRadius: radius.card,
     },
-    searchGlyph: { fontSize: 18, color: colors.inkLow },
     searchText: { fontFamily: font.body, fontSize: size.body, color: colors.inkFaint },
     actions: { gap: space.sm },
 });

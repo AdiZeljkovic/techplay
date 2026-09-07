@@ -11,6 +11,7 @@ import {
     View,
 } from 'react-native';
 
+import { SearchMark } from '@/components/Marks';
 import { Body, Eyebrow, Notice, Screen } from '@/components/Screen';
 import { api } from '@/lib/api';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
@@ -117,15 +118,18 @@ export default function SearchScreen() {
     return (
         <Screen>
             <View style={styles.bar}>
-                <Pressable
-                    onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
-                    hitSlop={12}
-                    style={styles.barButton}
-                    accessibilityRole="button"
-                    accessibilityLabel="Back"
-                >
-                    <Text style={styles.barGlyph}>‹</Text>
-                </Pressable>
+                {/*
+                  * A search mark, not a back arrow.
+                  *
+                  * This was a screen you pushed, so it had somewhere to go
+                  * back to. It is a tab now: `canGoBack()` is false on a tab
+                  * root, so the chevron fell through to replacing the route
+                  * with Home — a button labelled Back that went somewhere
+                  * else. The mark says what the field is instead.
+                  */}
+                <View style={styles.barButton}>
+                    <SearchMark size={20} color={colors.inkLow} />
+                </View>
 
                 <TextInput
                     style={styles.input}
@@ -133,7 +137,12 @@ export default function SearchScreen() {
                     onChangeText={setTerm}
                     placeholder={scope === 'games' ? 'Search 333,198 games' : 'Search articles'}
                     placeholderTextColor={colors.inkFaint}
-                    autoFocus
+                    /*
+                     * Not autofocused. It was, when reaching this screen meant
+                     * deliberately opening a search box. As a tab it is one
+                     * thumb-tap from anywhere, and a keyboard that throws
+                     * itself up on every tap also covers the bar you tapped.
+                     */
                     autoCorrect={false}
                     autoCapitalize="none"
                     returnKeyType="search"
@@ -229,7 +238,6 @@ const styles = StyleSheet.create({
         gap: space.sm,
     },
     barButton: { width: TOUCH_TARGET, height: TOUCH_TARGET, alignItems: 'center', justifyContent: 'center' },
-    barGlyph: { fontSize: 30, lineHeight: 34, color: colors.inkHi },
     input: {
         flex: 1,
         height: TOUCH_TARGET,

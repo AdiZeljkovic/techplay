@@ -14,6 +14,7 @@ import { Button } from '@/components/Button';
 import { FeaturedSlider } from '@/components/FeaturedSlider';
 import { HomeHero } from '@/components/HomeHero';
 import { Masthead } from '@/components/Masthead';
+import { QuickLinks } from '@/components/QuickLinks';
 import { Rail } from '@/components/Rail';
 import { Body, Eyebrow, Notice, Screen } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
@@ -121,19 +122,10 @@ export default function Feed() {
                 {/*
                   * The quick links band, as the site has it — the four places
                   * somebody might have opened the app to reach, before any
-                  * scrolling. On a phone this replaces a navigation menu
-                  * nobody would otherwise find.
+                  * scrolling. This was a row of bare text pills: the same four
+                  * words with none of the reason to tap any of them.
                   */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.links}
-                >
-                    <Quick label="Games" onPress={() => router.push('/search')} />
-                    <Quick label="Calendar" onPress={() => router.push('/(tabs)/calendar')} />
-                    <Quick label="All news" onPress={() => router.push('/(tabs)/news')} />
-                    <Quick label={user ? 'Your shelf' : 'Sign in'} onPress={() => router.push(user ? '/library' : '/sign-in')} />
-                </ScrollView>
+                <QuickLinks />
 
                 <Rail title="Latest" articles={latest} />
                 <Rail title="Reviews" articles={home?.reviews ?? []} variant="score" />
@@ -170,18 +162,6 @@ export default function Feed() {
     );
 }
 
-function Quick({ label, onPress }: { label: string; onPress: () => void }) {
-    return (
-        <Pressable
-            onPress={onPress}
-            style={({ pressed }) => [styles.quick, pressed && { backgroundColor: colors.surface2 }]}
-            accessibilityRole="button"
-        >
-            <Text style={styles.quickText}>{label}</Text>
-        </Pressable>
-    );
-}
-
 /** The rails overlap by design; a piece must not appear twice on one screen. */
 function dedupe(articles: Article[], ...excludeIds: number[]): Article[] {
     const seen = new Set<number>(excludeIds);
@@ -198,23 +178,6 @@ function dedupe(articles: Article[], ...excludeIds: number[]): Article[] {
 const styles = StyleSheet.create({
     centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     content: { gap: space.xl, paddingBottom: space.xxl },
-    links: { paddingHorizontal: space.lg, gap: space.sm },
-    quick: {
-        height: 38,
-        paddingHorizontal: 16,
-        borderRadius: radius.card,
-        borderColor: colors.lineStrong,
-        borderWidth: StyleSheet.hairlineWidth,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    quickText: {
-        fontFamily: font.display,
-        fontSize: 11,
-        letterSpacing: 1.1,
-        textTransform: 'uppercase',
-        color: colors.inkMid,
-    },
     popular: { paddingHorizontal: space.lg, gap: space.xs },
     rank: {
         flexDirection: 'row',

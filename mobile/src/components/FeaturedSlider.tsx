@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
@@ -65,10 +66,32 @@ export function FeaturedSlider({ articles }: { articles: Article[] }) {
                             />
                         )}
 
-                        {/* A scrim, so white type over somebody's cover art is
-                            legible whatever the art happens to be. Without it
-                            a pale hero image eats the headline. */}
-                        <View style={styles.scrim} />
+                        {/*
+                          * A scrim, so white type over somebody's cover art is
+                          * legible whatever the art happens to be.
+                          *
+                          * A gradient, not a flat panel. At one alpha it draws
+                          * a hard horizontal line across the picture wherever
+                          * its top edge falls — plainly visible on a collage
+                          * cover, where it looked like the image had been cut
+                          * in half rather than darkened. The site fades it.
+                          */}
+                        <LinearGradient
+                            colors={[
+                                'transparent',
+                                'rgba(5, 7, 10, 0.60)',
+                                'rgba(5, 7, 10, 0.97)',
+                                'rgba(5, 7, 10, 0.97)',
+                            ]}
+                            /* Full darkness is reached before the text block
+                               begins, not at the bottom edge: a ramp that is
+                               still fading behind the headline puts white type
+                               on a pale face, which is the case this scrim
+                               exists for. The fade happens above the words. */
+                            locations={[0, 0.34, 0.62, 1]}
+                            style={styles.scrim}
+                            pointerEvents="none"
+                        />
 
                         {/* Only the badge sits on the open image, and it has
                             its own crimson fill. The category moved down into
@@ -133,8 +156,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        height: '62%',
-        backgroundColor: 'rgba(5, 7, 10, 0.86)',
+        height: '85%',
     },
     badgeRow: {
         position: 'absolute',
