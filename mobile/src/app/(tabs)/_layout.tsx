@@ -4,14 +4,17 @@ import { StyleSheet, Text, View, type ColorValue } from 'react-native';
 import { colors, font, size, TOUCH_TARGET } from '@/theme/tokens';
 
 /**
- * Three tabs, and no more.
+ * Four tabs, and no more.
  *
  * The site has fourteen sections. Putting them all here would rebuild the
  * problem the mobile-web audit measured in August: two to four taps to reach
- * anything, because the way in was a menu rather than a place. A phone has
- * room for the three things somebody opens the app to do — read, look at
- * their shelf, be themselves — and everything else is reached from inside
- * one of them.
+ * anything, because the way in was a menu rather than a place.
+ *
+ * The calendar earned the fourth place rather than being given it. It is the
+ * only screen here with a reason to be opened on a day when nothing has been
+ * published — a release date is checked repeatedly and forgotten in between —
+ * and it is what push notifications will eventually be for. Everything else
+ * is reached from inside one of these four.
  */
 export default function TabsLayout() {
     return (
@@ -39,6 +42,13 @@ export default function TabsLayout() {
                 options={{
                     title: 'News',
                     tabBarIcon: ({ color }) => <Glyph glyph="◈" color={color} />,
+                }}
+            />
+            <Tabs.Screen
+                name="calendar"
+                options={{
+                    title: 'Dates',
+                    tabBarIcon: ({ color }) => <Glyph glyph="▦" color={color} />,
                 }}
             />
             <Tabs.Screen
