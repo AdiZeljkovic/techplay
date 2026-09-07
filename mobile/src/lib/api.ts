@@ -9,11 +9,15 @@ import { clearToken, getToken } from './session';
  * a phone that hangs on a train with one bar looks broken. `fetch` has no
  * timeout of its own, so every request gets an AbortController.
  *
- * **It says what went wrong.** The API answers `{ success, message, data }`
- * on every route without exception, and `message` is written for readers —
+ * **It says what went wrong.** Where the API uses the ApiResponse trait it
+ * answers `{ success, message, data }`, and `message` is written for readers —
  * the backend has been through several rounds of making it so. Throwing that
  * message rather than a status code is what lets a screen show something
  * worth reading instead of "Request failed".
+ *
+ * Not every route uses the trait, though CLAUDE.md says they all do. Measured
+ * on 7 September 2026, seven listing endpoints answered in six different
+ * shapes; lib/paging carries the list. Reads that page go through it.
  */
 
 const BASE = process.env.EXPO_PUBLIC_API_URL ?? 'https://api-beta.techplay.gg/api/v1';
@@ -49,6 +53,16 @@ type Options = {
     /** Send the stored token. On by default; the few public reads pass false. */
     auth?: boolean;
     signal?: AbortSignal;
+    /**
+     * Return the whole body rather than its `data`.
+     *
+     * Unwrapping is right for the routes that use the ApiResponse trait, and
+     * wrong for a paginated one: `{success, data, pagination}` unwrapped to
+     * `data` loses the page numbers with it. Listing endpoints ask for the
+     * envelope and read it in lib/paging, which knows all six shapes this API
+     * actually sends.
+     */
+    raw?: boolean;
 };
 
 /**
@@ -65,7 +79,7 @@ export function setUnauthorizedHandler(handler: (() => void) | null): void {
 }
 
 export async function api<T>(path: string, options: Options = {}): Promise<T> {
-    const { method = 'GET', body, auth = true, signal } = options;
+    const { method = 'GET', body, auth = true, signal, raw = false } = options;
 
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -144,10 +158,13 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
     }
 
     /*
-     * `data` is where everything lives, because the API wraps every response
-     * in the ApiResponse trait. A route that answers without it is a route
-     * that forgot the trait, and returning the envelope itself would hide
-     * that rather than surface it.
+     * Unwrap `data` when there is one, which covers every route that uses the
+     * trait and does no harm to the few that answer with a bare object.
+     * Callers that need the envelope — anything paginated — ask for it.
      */
+    if (raw) {
+        return payload as T;
+    }
+
     return (payload?.data ?? payload) as T;
 }

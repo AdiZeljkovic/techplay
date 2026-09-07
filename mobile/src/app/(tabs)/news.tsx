@@ -42,15 +42,15 @@ export default function News() {
 
             setArticles((current) =>
                 mode === 'replace'
-                    ? result.data
+                    ? result.items
                     // A piece published while somebody is scrolling shifts
                     // every later page by one, so the same article can arrive
                     // twice. The list must not show it twice.
-                    : [...current, ...result.data.filter((a) => !current.some((c) => c.id === a.id))]
+                    : [...current, ...result.items.filter((a) => !current.some((c) => c.id === a.id))]
             );
 
-            setPage(result.current_page);
-            setLastPage(result.last_page);
+            setPage(result.page);
+            setLastPage(result.lastPage);
             setError(null);
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Could not load the news.');

@@ -208,8 +208,31 @@ Za PlayStation nema OAuth-a — korisnik sam kopira `npsso`. Vidi [Zamke](#16-za
 Laravel 12 pod Octaneom (FrankenPHP). Sve rute su pod `/api/v1/`, kontroleri u
 `app/Http/Controllers/Api/V1/` (**88 kontrolera**).
 
-**Svaki kontroler koristi `ApiResponse` trait** — odgovor je uvijek
-`{ success, message, data }`. Bez izuzetka.
+**Namjera je da svaki kontroler koristi `ApiResponse` trait** — odgovor
+`{ success, message, data }`. **Stvarnost je drugačija i to je izmjereno.**
+
+Sedam listing endpointa, 7. 9. 2026, odgovaraju u **šest oblika**:
+
+| Endpoint | Oblik |
+|---|---|
+| `/news`, `/reviews` | `{ data, links, meta }` — resource kolekcija, bez `success` |
+| `/guides` | goli Laravelov paginator |
+| `/games` | `{ count, next, previous, results }` |
+| `/studios` | `{ success, data, pagination }` — `ApiResponse::paginated` |
+| `/home` | `{ success, message, data }` — `ApiResponse::success` |
+| `/settings` | goli objekat, bez omotača |
+
+Uz to, ime parametra za veličinu stranice nije isto — `per_page` radi na
+`/news`, a `/studios` i `/games` ga ignorišu.
+
+Web to nije primijetio jer je svaka stranica pisana uz svoj endpoint: stranica
+koja čita jedan nikad ne sazna da se sljedeći ne slaže. **Aplikacija ne može
+tako** — ona je jedan program koji čita sve, i za razliku od sajta se ne može
+redeployati da se uskladi: oblik promijenjen nakon izdanja lomi kopiju koja je
+već na nečijem telefonu.
+
+Do normalizacije (koja je **prekidajuća izmjena** za web, dakle odluka a ne
+commit), razliku upija `mobile/src/lib/paging.ts` — jedno mjesto, s popisom.
 
 ### Brojke
 

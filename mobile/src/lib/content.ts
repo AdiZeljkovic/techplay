@@ -1,4 +1,5 @@
 import { api } from './api';
+import { getPage, type Paged } from './paging';
 
 /**
  * The shapes the API actually sends, read off the running endpoints on
@@ -48,19 +49,15 @@ export function getHome(signal?: AbortSignal): Promise<Home> {
 }
 
 /**
- * A paginated section.
+ * A section, a page at a time.
  *
- * Laravel's paginator puts the rows under `data` and the envelope around
- * them, and the ApiResponse trait wraps that again — so what arrives here is
- * already unwrapped once by the client and still has the paginator's own
- * `data` inside it.
+ * Through `getPage` rather than `api` directly: /news answers with a resource
+ * collection — `{ data, links, meta }`, no `success` anywhere — while
+ * /studios answers with the ApiResponse trait and /games with something else
+ * again. The first version of this file assumed one shape, typed it, and
+ * TypeScript agreed because a type is a claim rather than a check. The
+ * pagination would simply never have advanced.
  */
-export interface Page<T> {
-    data: T[];
-    current_page: number;
-    last_page: number;
-}
-
-export function getNews(page = 1, signal?: AbortSignal): Promise<Page<Article>> {
-    return api<Page<Article>>(`/news?page=${page}&per_page=15`, { auth: false, signal });
+export function getNews(page = 1, signal?: AbortSignal): Promise<Paged<Article>> {
+    return getPage<Article>(`/news?page=${page}&per_page=15`, signal);
 }
