@@ -22,7 +22,7 @@ class GuideController extends Controller
         $page = $request->input('page', 1);
         $difficulty = $request->input('difficulty', 'all');
         $search = $request->input('search', '');
-        $cacheKey = "guides.index.v3.page_{$page}.diff_{$difficulty}.search_".md5($search);
+        $cacheKey = "guides.index.v4.page_{$page}.diff_{$difficulty}.search_".md5($search);
         // Recorded so the observer can clear this exact variant; a listing
         // key carries page, category and search, and cannot be guessed.
         CacheService::rememberListingKey('guides', $cacheKey);
@@ -54,7 +54,18 @@ class GuideController extends Controller
                 });
             }
 
-            return $query->latest()->paginate(13);
+            $paginator = $query->latest()->paginate(13);
+
+            /*
+             * `pagination`, beside Laravel's own top-level keys.
+             *
+             * This endpoint returns the paginator itself, so `current_page`
+             * and `last_page` already sit at the root — under different names
+             * from every other listing endpoint, which is the whole problem.
+             * The canonical block goes in beside them; the old keys stay until
+             * nothing reads them.
+             */
+            return $paginator->toArray() + ['pagination' => $this->paginationMeta($paginator)];
         });
 
         return response()->json($resource)->header('Cache-Control', 'no-cache, no-store, must-revalidate');

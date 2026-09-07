@@ -14,6 +14,7 @@ use App\Services\CacheService;
 use App\Services\Chronicle\TasteProfileService;
 use App\Services\SanitizationService;
 use App\Support\TechplayScore;
+use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -23,6 +24,8 @@ use Illuminate\Support\Facades\Redis;
 
 class GameController extends Controller
 {
+    use ApiResponse;
+
     /** Parse PostgreSQL TEXT[] string like `{Action,"Role-Playing (RPG)"}` into a PHP array. */
     private function pgArray(mixed $value): array
     {
@@ -178,7 +181,7 @@ class GameController extends Controller
             ? GameSeries::where('slug', $seriesSlug)->value('series_key')
             : null;
 
-        $cacheKey = 'games.index.v3.'.md5(json_encode([
+        $cacheKey = 'games.index.v4.'.md5(json_encode([
             $search, $genre, $platform, $tag, $ordering, $yearFrom, $yearTo, $minRating, $status, $page, $pageSize, $seriesKey,
         ]));
 
@@ -238,6 +241,21 @@ class GameController extends Controller
                 'next' => $games->hasMorePages() ? $request->fullUrlWithQuery(['page' => $page + 1]) : null,
                 'previous' => $page > 1 ? $request->fullUrlWithQuery(['page' => $page - 1]) : null,
                 'results' => $games->items(),
+                /*
+                 * `pagination`, beside the count-and-next convention this one
+                 * grew up with. Note what the old keys cannot say: `next` is a
+                 * URL, so a client asking "which page am I on, and how many
+                 * are there" has to parse it out of a query string. This block
+                 * answers that directly, and it is the same block every other
+                 * listing endpoint now sends.
+                 *
+                 * `results` is deliberately not duplicated as `data` — that
+                 * would write a page of games into the response twice, and
+                 * this one is cached. The item key is normalised when the
+                 * eighteen front-end files that read `results` are, which is
+                 * its own commit.
+                 */
+                'pagination' => $this->paginationMeta($games),
             ];
         });
 

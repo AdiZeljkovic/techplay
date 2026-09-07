@@ -3,15 +3,18 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\V1\ReviewResource; // Reverted to Article
-use App\Models\Article; // Use correct resource
-use App\Services\CacheService;
+use App\Http\Resources\V1\ReviewResource;
+use App\Models\Article; // Reverted to Article
+use App\Services\CacheService; // Use correct resource
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 
 class ReviewController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of reviews.
      */
@@ -19,7 +22,7 @@ class ReviewController extends Controller
     {
         $page = $request->input('page', 1);
         $category = $request->input('category', 'all');
-        $cacheKey = "reviews.index.v3.page_{$page}.cat_{$category}";
+        $cacheKey = "reviews.index.v4.page_{$page}.cat_{$category}";
         // Recorded so the observer can clear this exact variant; a listing
         // key carries page, category and search, and cannot be guessed.
         CacheService::rememberListingKey('reviews', $cacheKey);
@@ -48,9 +51,21 @@ class ReviewController extends Controller
                 }
             }
 
-            return ReviewResource::collection(
-                $query->latest('published_at')->paginate(13)
-            );
+            $paginator = $query->latest('published_at')->paginate(13);
+
+            /*
+             * `pagination`, beside what this endpoint already sends.
+             *
+             * Seven listing endpoints answered in six shapes, measured 7 Sep 2026.
+             * This one is a resource collection, so the page numbers live under
+             * `meta` and nothing named `success` appears at all. The block added
+             * here is the same on every listing endpoint, so a client has one
+             * place to look — and it is added rather than substituted, so nothing
+             * reading `meta` today notices.
+             */
+
+            return ReviewResource::collection($paginator)
+                ->additional(['pagination' => $this->paginationMeta($paginator)]);
         });
 
         return $resource->response()->header('Cache-Control', 'public, max-age=3600');

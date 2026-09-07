@@ -54,19 +54,42 @@ trait ApiResponse
     /**
      * Paginated response
      */
+    /**
+     * The one block every paginated response states, whatever else it says.
+     *
+     * Measured on 7 September 2026, seven listing endpoints answered in six
+     * shapes: a resource collection with `meta`, a raw Laravel paginator with
+     * the numbers at the top level, a hand-built `{count, next, previous,
+     * results}`, this trait's own, and two more. The web never noticed because
+     * each page was written against the endpoint it reads — but an app is one
+     * program reading all of them, and one that cannot be redeployed to match
+     * a change after it ships.
+     *
+     * So this is added to every one of them, beside whatever they already
+     * send rather than instead of it. Nothing that reads the old keys breaks,
+     * and anything new has a single place to look. The old keys come out once
+     * nothing reads them, which is a separate commit and a separate risk.
+     *
+     * @return array{total:int, per_page:int, current_page:int, last_page:int, from:?int, to:?int}
+     */
+    protected function paginationMeta(LengthAwarePaginator $paginator): array
+    {
+        return [
+            'total' => $paginator->total(),
+            'per_page' => $paginator->perPage(),
+            'current_page' => $paginator->currentPage(),
+            'last_page' => $paginator->lastPage(),
+            'from' => $paginator->firstItem(),
+            'to' => $paginator->lastItem(),
+        ];
+    }
+
     protected function paginated(LengthAwarePaginator $paginator, ?string $message = null): JsonResponse
     {
         $response = [
             'success' => true,
             'data' => $paginator->items(),
-            'pagination' => [
-                'total' => $paginator->total(),
-                'per_page' => $paginator->perPage(),
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-                'from' => $paginator->firstItem(),
-                'to' => $paginator->lastItem(),
-            ],
+            'pagination' => $this->paginationMeta($paginator),
         ];
 
         if ($message) {

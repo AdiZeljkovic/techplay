@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\ArticleResource;
 use App\Models\Article;
 use App\Services\CacheService;
+use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 
 class TechController extends Controller
 {
+    use ApiResponse;
+
     /**
      * Display a listing of tech articles.
      */
@@ -19,7 +22,7 @@ class TechController extends Controller
     {
         $page = $request->input('page', 1);
         $category = $request->input('category', 'all');
-        $cacheKey = "tech.index.v3.page_{$page}.cat_{$category}";
+        $cacheKey = "tech.index.v4.page_{$page}.cat_{$category}";
         // Recorded so the observer can clear this exact variant; a listing
         // key carries page, category and search, and cannot be guessed.
         CacheService::rememberListingKey('tech', $cacheKey);
@@ -42,9 +45,21 @@ class TechController extends Controller
                 });
             }
 
-            return ArticleResource::collection(
-                $query->latest('published_at')->paginate(13)
-            );
+            $paginator = $query->latest('published_at')->paginate(13);
+
+            /*
+             * `pagination`, beside what this endpoint already sends.
+             *
+             * Seven listing endpoints answered in six shapes, measured 7 Sep 2026.
+             * This one is a resource collection, so the page numbers live under
+             * `meta` and nothing named `success` appears at all. The block added
+             * here is the same on every listing endpoint, so a client has one
+             * place to look — and it is added rather than substituted, so nothing
+             * reading `meta` today notices.
+             */
+
+            return ArticleResource::collection($paginator)
+                ->additional(['pagination' => $this->paginationMeta($paginator)]);
         });
 
         return $resource->response()->header('Cache-Control', 'public, max-age=3600');
