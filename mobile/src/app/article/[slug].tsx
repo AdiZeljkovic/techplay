@@ -59,7 +59,7 @@ export default function ArticleScreen() {
               */}
             <View style={styles.bar}>
                 <Pressable
-                    onPress={() => (router.canGoBack() ? router.back() : router.replace('/feed'))}
+                    onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
                     hitSlop={12}
                     style={styles.barButton}
                     accessibilityRole="button"

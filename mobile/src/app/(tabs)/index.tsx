@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -11,11 +10,12 @@ import {
     View,
 } from 'react-native';
 
+import { ArticleCard } from '@/components/ArticleCard';
 import { Button } from '@/components/Button';
 import { Body, Eyebrow, Notice, Screen } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
 import { getHome, type Article } from '@/lib/content';
-import { colors, font, radius, size, space } from '@/theme/tokens';
+import { colors, font, size, space } from '@/theme/tokens';
 
 /**
  * The feed, and the first screen anybody sees signed in.
@@ -122,43 +122,9 @@ export default function Feed() {
                         <Body>Nothing published yet.</Body>
                     )
                 }
-                renderItem={({ item, index }) => <Card article={item} lead={index === 0} />}
+                renderItem={({ item, index }) => <ArticleCard article={item} lead={index === 0} />}
             />
         </Screen>
-    );
-}
-
-function Card({ article, lead }: { article: Article; lead: boolean }) {
-    return (
-        <Pressable
-            onPress={() => router.push(`/article/${article.slug}`)}
-            style={({ pressed }) => [styles.card, pressed && { backgroundColor: colors.surface2 }]}
-            accessibilityRole="button"
-            accessibilityLabel={article.title}
-        >
-            {article.featured_image_url && (
-                <Image
-                    source={{ uri: article.featured_image_url }}
-                    style={[styles.cover, lead && styles.coverLead]}
-                    contentFit="cover"
-                    /* A grey box while it arrives, not a flash of nothing. */
-                    placeholder={{ blurhash: 'L02rjT00000000000000000000' }}
-                    transition={160}
-                    accessibilityLabel={article.featured_image_alt ?? undefined}
-                />
-            )}
-            <View style={styles.cardBody}>
-                {article.category && <Eyebrow tone="accent">{article.category.name}</Eyebrow>}
-                <Text style={[styles.cardTitle, lead && styles.cardTitleLead]} numberOfLines={lead ? 4 : 3}>
-                    {article.title}
-                </Text>
-                <Text style={styles.meta}>
-                    {[article.published_at_human, article.reading_time ? `${article.reading_time} min` : null]
-                        .filter(Boolean)
-                        .join('  ·  ')}
-                </Text>
-            </View>
-        </Pressable>
     );
 }
 
@@ -181,32 +147,5 @@ const styles = StyleSheet.create({
         fontFamily: font.bodyMedium,
         fontSize: size.small,
         color: colors.inkLow,
-    },
-    card: {
-        backgroundColor: colors.surface1,
-        borderColor: colors.line,
-        borderWidth: StyleSheet.hairlineWidth,
-        borderRadius: radius.panel,
-        overflow: 'hidden',
-    },
-    cover: { width: '100%', height: 150, backgroundColor: colors.surface2 },
-    coverLead: { height: 210 },
-    cardBody: { padding: space.lg, gap: space.xs },
-    cardTitle: {
-        fontFamily: font.bodySemi,
-        fontSize: size.lead,
-        lineHeight: size.lead * 1.32,
-        color: colors.inkHi,
-    },
-    cardTitleLead: {
-        fontFamily: font.display,
-        fontSize: size.title,
-        lineHeight: size.title * 1.22,
-    },
-    meta: {
-        fontFamily: font.mono,
-        fontSize: size.caption,
-        color: colors.inkLow,
-        marginTop: 2,
     },
 });

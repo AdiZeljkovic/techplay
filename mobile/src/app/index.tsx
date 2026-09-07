@@ -23,5 +23,5 @@ export default function Entry() {
         );
     }
 
-    return <Redirect href={user ? '/feed' : '/sign-in'} />;
+    return <Redirect href={user ? '/(tabs)' : '/sign-in'} />;
 }

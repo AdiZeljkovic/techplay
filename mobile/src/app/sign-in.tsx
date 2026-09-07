@@ -63,7 +63,7 @@ export default function SignIn() {
                 return;
             }
 
-            router.replace('/feed');
+            router.replace('/(tabs)');
         } catch (e) {
             if (e instanceof OfflineError) {
                 setError(e.message);
