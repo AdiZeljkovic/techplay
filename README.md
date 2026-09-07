@@ -109,11 +109,14 @@ them back after building, so browsers holding stale HTML can still fetch the
 files it asks for. Restarting Octane uses `supervisorctl restart`, never
 `octane:reload` — reload has leaked database connections here before.
 
-More detail, and the things that still need doing, in `docs/`:
+**Everything else is in [`docs/README.md`](docs/README.md)** — one document, in
+Bosnian, covering the architecture, what runs where, the request lifecycles, the
+database, caching, the schedule, SEO, deployment, and a section on the traps
+this codebase has already fallen into. Written from measured state, not from
+memory.
 
-- `docs/34-sistemski-pregled-08-2026.md` — the current system audit and work plan
-- `docs/02-system-architecture.md` — how the pieces fit
-- `docs/04-frontend-map.md`, `docs/05-backend-map.md`, `docs/07-database-map.md`
+- [`docs/README.md`](docs/README.md) — the documentation
+- `docs/incidenti/` — incident write-ups
 - `deployment/README.md` — server provisioning
 
 ---

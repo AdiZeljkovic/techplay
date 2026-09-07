@@ -176,19 +176,27 @@ Bot authenticates to the backend using a shared API token (not Sanctum — uses 
 
 ## Documentation
 
-Full project documentation is in `/docs/`. Always read before major changes:
+**`docs/README.md` is the documentation.** One document, written 7 Sep 2026 from
+measured state — schema, counts, versions and route lists all read off the
+running system rather than copied from prose. Read it before any substantial
+change; its "Zamke" section is the part that saves time, because it records the
+things that are not visible in the code and were each paid for with a bug.
 
-| When | Read |
-|------|------|
-| Any change | `docs/10-features-map.md` (feature status) |
-| Frontend changes | `docs/04-frontend-map.md`, `docs/23-frontend-backend-connections.md` |
-| Backend/API changes | `docs/05-backend-map.md`, `docs/08-api-map.md` |
-| Database changes | `docs/07-database-map.md` |
-| Discord bot changes | `docs/18-discord-bot-map.md` |
-| Architecture questions | `docs/02-system-architecture.md` |
-| AI agent onboarding | `docs/32-future-ai-instructions.md` |
+It replaced 89 files. Most of those were one-off audits and plans tied
+to a date — records of decisions rather than reference — which is exactly why
+they read as stale: they were never meant to stay true. They are gone from the
+working tree and kept in git:
 
-Update the relevant doc file after every code change.
+```bash
+git log --diff-filter=D --name-only -- docs/
+git show <commit>:docs/76-puni-pregled-08-2026.md
+```
+
+`docs/incidenti/` stays. Incident write-ups do not go stale.
+
+**Update `docs/README.md` in the same commit as the change it describes.** A
+document that lies is worse than none, and that is the one lesson the 84 files
+it replaced actually carry.
 
 ---
 
@@ -218,8 +226,8 @@ TechPlay.gg is NOT just a gaming news blog. Platform areas:
 - Keep frontend, backend, admin panel, database and Discord bot aligned
 - When changing frontend behavior, check related API and backend logic
 - When changing backend/API behavior, check frontend usage
-- When changing database structure, update `docs/07-database-map.md`
-- When implementing new features, update `/docs`
+- When changing database structure, update the Baza section of `docs/README.md`
+- When implementing new features, update `docs/README.md`
 - If something is unclear, write UNKNOWN and ask for clarification
 - Prefer small, safe changes over large risky rewrites
 - Always use `SanitizationService` for user-generated content
