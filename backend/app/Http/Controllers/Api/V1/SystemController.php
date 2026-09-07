@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,57 @@ class SystemController extends Controller
             'status' => 'ok',
             'version' => '1.0.0',
             'timestamp' => now()->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * What the app on somebody's phone needs to know about itself.
+     *
+     * This is the one piece of API discipline that cannot be added after the
+     * fact. The site and the API deploy together, so a change to one is a
+     * change to both in the same minute. A released app breaks that: copies
+     * of it are on phones that will never be updated, and a response edited on
+     * a Tuesday breaks a version from March — silently, because that reader
+     * simply stops appearing rather than filing a report.
+     *
+     * So the server states the oldest build it is still willing to serve, and
+     * the app checks on launch. `minimum` is a refusal: below it the app shows
+     * an update screen rather than making calls it cannot understand.
+     * `recommended` is a nudge, dismissible, for a build that still works.
+     *
+     * Both are settings rather than constants, so raising the floor is an
+     * admin edit rather than a deploy — which matters on the day a bad build
+     * is discovered, when a deploy is the last thing anybody wants to do.
+     *
+     * Deliberately public and unauthenticated: an app too old to sign in still
+     * has to be able to learn that it is too old.
+     */
+    public function appVersion()
+    {
+        return response()->json([
+            'data' => [
+                /*
+                 * Build numbers, not marketing versions. A store build number
+                 * only ever increases and never carries a dot, which makes
+                 * "is this older than that" an integer comparison rather than
+                 * an argument about whether 1.10 comes after 1.9.
+                 */
+                'minimum' => (int) SiteSetting::get('app_min_build', 1),
+                'recommended' => (int) SiteSetting::get('app_recommended_build', 1),
+                'store_url' => [
+                    'ios' => SiteSetting::get('app_store_url_ios', ''),
+                    'android' => SiteSetting::get('app_store_url_android', ''),
+                ],
+                /*
+                 * Said by the server so the reason can be changed without a
+                 * release — which is the entire point, since the app being
+                 * told this is by definition one that cannot be changed.
+                 */
+                'message' => SiteSetting::get(
+                    'app_update_message',
+                    'This version of the app is too old to talk to TechPlay. Update it to carry on.'
+                ),
+            ],
         ]);
     }
 

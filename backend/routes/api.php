@@ -93,6 +93,13 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // System Status (Public)
     Route::get('/system/status', [SystemController::class, 'status']);
+    /*
+     * The oldest app build this API will still serve.
+     *
+     * Public and unauthenticated on purpose: an app too old to sign in has to
+     * be able to find out that it is too old. See SystemController.
+     */
+    Route::get('/system/app-version', [SystemController::class, 'appVersion']);
     Route::get('/system/health', [SystemController::class, 'health']);
 
     // Auth (Rate Limited - 60 per minute)
