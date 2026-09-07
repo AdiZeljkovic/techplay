@@ -26,7 +26,7 @@ import { colors, font, size, space } from '@/theme/tokens';
  * memory to show the top of it.
  */
 export default function Feed() {
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
 
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
@@ -102,13 +102,17 @@ export default function Feed() {
                                 {user?.display_name || user?.username || 'Reader'}
                             </Text>
                         </View>
+                        {/* Search reaches 333,198 games and 638 articles, and
+                            until it existed the only way to any of them was
+                            scrolling. It belongs on the first screen. */}
                         <Pressable
-                            onPress={async () => { await signOut(); router.replace('/sign-in'); }}
+                            onPress={() => router.push('/search')}
                             hitSlop={12}
+                            style={styles.searchButton}
                             accessibilityRole="button"
-                            accessibilityLabel="Sign out"
+                            accessibilityLabel="Search"
                         >
-                            <Text style={styles.signOut}>Sign out</Text>
+                            <Text style={styles.searchGlyph}>⌕</Text>
                         </Pressable>
                     </View>
                 }
@@ -143,9 +147,18 @@ const styles = StyleSheet.create({
         color: colors.inkHi,
         marginTop: 2,
     },
-    signOut: {
-        fontFamily: font.bodyMedium,
-        fontSize: size.small,
-        color: colors.inkLow,
+    searchButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 20,
+        borderColor: colors.lineStrong,
+        borderWidth: StyleSheet.hairlineWidth,
+    },
+    searchGlyph: {
+        fontSize: 22,
+        lineHeight: 26,
+        color: colors.inkMid,
     },
 });
