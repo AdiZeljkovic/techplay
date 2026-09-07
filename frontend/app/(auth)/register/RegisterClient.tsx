@@ -9,15 +9,23 @@ import Turnstile from "@/components/ui/Turnstile";
 
 interface PasswordRequirement {
     label: string;
+    /** The same rule as something to add, for the sentence under the list. */
+    short: string;
     test: (password: string) => boolean;
 }
 
+/*
+ * These five are the API's rules, not decoration: RegisterRequest asks for
+ * Password::min(8)->mixedCase()->numbers()->symbols(). A password missing any
+ * of them is refused by the server too, so the form is right to hold it back —
+ * it was only ever wrong about how it said so.
+ */
 const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
-    { label: "At least 8 characters", test: (p) => p.length >= 8 },
-    { label: "One uppercase letter", test: (p) => /[A-Z]/.test(p) },
-    { label: "One lowercase letter", test: (p) => /[a-z]/.test(p) },
-    { label: "One number", test: (p) => /[0-9]/.test(p) },
-    { label: "One special character (!@#$%^&*)", test: (p) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
+    { label: "At least 8 characters", short: "two more characters", test: (p) => p.length >= 8 },
+    { label: "One uppercase letter", short: "an uppercase letter", test: (p) => /[A-Z]/.test(p) },
+    { label: "One lowercase letter", short: "a lowercase letter", test: (p) => /[a-z]/.test(p) },
+    { label: "One number", short: "a number", test: (p) => /[0-9]/.test(p) },
+    { label: "One special character (!@#$%^&*)", short: "a special character", test: (p) => /[!@#$%^&*(),.?":{}|<>]/.test(p) },
 ];
 
 const PERKS = [
@@ -30,8 +38,18 @@ const PERKS = [
 const inputClass = "w-full h-[48px] bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-card)] px-4 text-[14px] text-[var(--ink-hi)] placeholder:text-[var(--ink-faint)] focus:outline-none focus:border-[var(--accent)]/60 transition-colors";
 const labelClass = "block text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--ink-low)] mb-2";
 
-const STRENGTH_LABELS = ["WEAK", "WEAK", "OK", "GOOD", "STRONG", "MAX"];
-const STRENGTH_COLORS = ["bg-red-500", "bg-red-500", "bg-yellow-500", "bg-yellow-500", "bg-green-500", "bg-green-500"];
+/*
+ * Every label but the last says "not yet", because every one but the last is.
+ *
+ * This read WEAK / WEAK / OK / GOOD / STRONG / MAX, so a password meeting
+ * three of the five rules was told it was GOOD — in yellow, beside a button
+ * that would not submit. A reader filled the form, saw GOOD and a green
+ * Turnstile tick, pressed the button, and nothing happened; he reported the
+ * site as broken. It was telling him he had done well at the exact moment it
+ * was refusing him.
+ */
+const STRENGTH_LABELS = ["TOO SHORT", "NOT YET", "NOT YET", "ALMOST", "ONE MORE", "READY"];
+const STRENGTH_COLORS = ["bg-red-500", "bg-red-500", "bg-yellow-500", "bg-yellow-500", "bg-yellow-500", "bg-green-500"];
 
 export default function RegisterClient() {
     const [isLoading, setIsLoading] = useState(false);
@@ -80,9 +98,33 @@ export default function RegisterClient() {
     }, []);
 
     const onSubmit = async (data: any) => {
-        setIsLoading(true);
         setErrors([]);
         setSuccess(false);
+
+        /*
+         * The refusal the button used to make silently, said out loud.
+         *
+         * The password rules are not checked here: react-hook-form validates
+         * the field first and never calls this when they fail, so its own
+         * message is the one that reaches the reader. Repeating it here would
+         * be dead code that drifts.
+         *
+         * Turnstile is different — the form knows nothing about it, so it is
+         * checked here. Either way the API would refuse; the difference is
+         * that the reader now learns which it was instead of pressing a button
+         * that does nothing.
+         */
+        if (!captchaReady) {
+            setErrors([
+                captchaFailed
+                    ? "The security check could not load, so we cannot verify this form. Reload the page, or sign up with Discord or Battle.net below — neither goes through it."
+                    : "The security check has not finished yet. Give it a moment, or sign up with Discord or Battle.net below.",
+            ]);
+
+            return;
+        }
+
+        setIsLoading(true);
 
         try {
             await registerAuth({
@@ -100,6 +142,14 @@ export default function RegisterClient() {
 
     const metCount = PASSWORD_REQUIREMENTS.filter(req => req.test(password)).length;
     const allRequirementsMet = metCount === PASSWORD_REQUIREMENTS.length;
+
+    /** What is still missing, written as things to add rather than rules failed. */
+    const missingLabels = PASSWORD_REQUIREMENTS
+        .filter(req => !req.test(password))
+        .map(req => req.short);
+
+    const captchaRequired = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false';
+    const captchaReady = !captchaRequired || !!turnstileToken;
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -227,14 +277,21 @@ export default function RegisterClient() {
                         </div>
 
                         <div>
-                            <label className={labelClass}>Password</label>
+                            <label className={labelClass} htmlFor="password">Password</label>
                             <input
+                                id="password"
                                 type="password"
                                 placeholder="••••••••"
                                 className={inputClass}
                                 {...register("password", {
                                     required: "Password is required",
-                                    validate: () => allRequirementsMet || "Password doesn't meet all requirements"
+                                    // Names what is missing rather than that
+                                    // something is. This message existed before
+                                    // and was unreachable: the button was
+                                    // disabled under the same condition that
+                                    // would have raised it.
+                                    validate: () => allRequirementsMet
+                                        || `Your password still needs ${missingLabels.join(" and ")}.`,
                                 })}
                             />
                             {formErrors.password && <p className="text-[var(--danger)] text-xs mt-1.5">{formErrors.password.message as string}</p>}
@@ -246,7 +303,7 @@ export default function RegisterClient() {
                                         <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--ink-low)]">
                                             Security Level
                                         </span>
-                                        <span className={`text-[9px] font-bold uppercase tracking-[0.18em] ${metCount >= 4 ? "text-[var(--success)]" : metCount >= 2 ? "text-yellow-500" : "text-[var(--danger)]"}`}>
+                                        <span className={`text-[9px] font-bold uppercase tracking-[0.18em] ${allRequirementsMet ? "text-[var(--success)]" : metCount >= 2 ? "text-yellow-500" : "text-[var(--danger)]"}`}>
                                             {STRENGTH_LABELS[metCount]}
                                         </span>
                                     </div>
@@ -270,6 +327,34 @@ export default function RegisterClient() {
                                             );
                                         })}
                                     </div>
+
+                                    {/*
+                                      * The list shows ticks and crosses; this
+                                      * says what to do about them. A reader
+                                      * scanning five rows has to work out which
+                                      * two are red and translate that into an
+                                      * action — this is that sentence, written
+                                      * once.
+                                      */}
+                                    {!allRequirementsMet && (
+                                        <p className="mt-3 pt-3 border-t border-[var(--line)] text-[11px] text-[var(--ink-mid)]">
+                                            Add {missingLabels.join(" and ")} to continue.
+                                        </p>
+                                    )}
+
+                                    {/*
+                                      * The sixth rule, which had no row.
+                                      *
+                                      * The API also refuses any password found
+                                      * in a known breach — Password::uncompromised().
+                                      * Somebody could tick all five above and
+                                      * still be turned away, with no warning
+                                      * that a sixth test existed.
+                                      */}
+                                    <p className="mt-2 text-[10.5px] text-[var(--ink-low)] leading-relaxed">
+                                        Passwords that appear in known data breaches are refused, however many
+                                        of the rules above they meet.
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -324,7 +409,28 @@ export default function RegisterClient() {
 
                         <button
                             type="submit"
-                            disabled={isLoading || (!allRequirementsMet && password.length > 0) || (!turnstileToken && process.env.NEXT_PUBLIC_TURNSTILE_ENABLED !== 'false')}
+                            /*
+                              * Disabled only while the request is in flight.
+                              *
+                              * It used to go dead whenever the password fell
+                              * short or Turnstile had not answered — and the
+                              * field already carried the sentence explaining
+                              * why ("Password doesn't meet all requirements"),
+                              * which the disabled button made unreachable. The
+                              * form had the answer ready and guaranteed nobody
+                              * would ever see it.
+                              *
+                              * Two readers reported the same thing in a week:
+                              * they filled everything in, pressed the button,
+                              * and nothing happened. One of them was blocked by
+                              * Turnstile never loading, the other by a missing
+                              * uppercase letter. Neither was told.
+                              *
+                              * Now it always presses, and onSubmit says what is
+                              * wrong. Nothing reaches the API that the API would
+                              * refuse — the check moved, it did not go away.
+                              */
+                            disabled={isLoading}
                             className="btn-command group w-full h-[52px] bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white font-bold transition-colors uppercase tracking-[0.1em] text-[13px] flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isLoading ? "Creating account..." : (
