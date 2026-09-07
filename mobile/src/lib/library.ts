@@ -1,3 +1,4 @@
+import { api } from './api';
 import { getPage, type Paged } from './paging';
 
 /**
@@ -95,4 +96,49 @@ export function getShelf(
     // Authenticated: a private shelf answers 403 to everyone else, and this
     // reader is looking at their own.
     return getPage<ShelfEntry>(`/users/${username}/collection?${params}`, signal, true);
+}
+
+/**
+ * Every status a game can be put on, in the order the picker offers them.
+ *
+ * The filter list above is shorter on purpose — `replaying` is not a filter
+ * because the API folds replays into `playing`, but it very much is a thing
+ * somebody chooses.
+ */
+export const SHELF_CHOICES: ShelfStatus[] = [
+    'playing',
+    'replaying',
+    'played',
+    'backlog',
+    'completed',
+    'wishlist',
+    'dropped',
+];
+
+/** What this reader has already said about one game, or null if nothing. */
+export function getShelfEntry(slug: string, signal?: AbortSignal): Promise<ShelfEntry | null> {
+    return api<ShelfEntry | null>(`/collection/games/${slug}`, { signal });
+}
+
+/**
+ * Put a game on a shelf, or move it between them.
+ *
+ * One call for both, because the API upserts: there is no separate "add" and
+ * "change", and inventing the distinction in the app would mean guessing
+ * which one applies and getting it wrong the first time somebody taps twice.
+ *
+ * Completing a game pays 50 Bounty and 15 XP — once per game, ever, gated on
+ * the ledger rather than on the status. So this is safe to call repeatedly:
+ * moving a finished game back and forth cannot farm anything.
+ */
+export function setShelfStatus(slug: string, status: ShelfStatus): Promise<ShelfEntry> {
+    return api<ShelfEntry>(`/collection/games/${slug}`, {
+        method: 'PUT',
+        body: { status },
+    });
+}
+
+/** Take it off the shelf entirely. */
+export function removeFromShelf(slug: string): Promise<void> {
+    return api<void>(`/collection/games/${slug}`, { method: 'DELETE' });
 }

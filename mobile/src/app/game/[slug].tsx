@@ -14,7 +14,10 @@ import {
 
 import { Button } from '@/components/Button';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
+import { ShelfPicker } from '@/components/ShelfPicker';
+import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
+import { getShelfEntry, SHELF_STATUS, type ShelfStatus } from '@/lib/library';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
 
 /**
@@ -45,10 +48,15 @@ const SITE = 'https://techplay.gg';
 
 export default function GameScreen() {
     const { slug } = useLocalSearchParams<{ slug: string }>();
+    const { user } = useAuth();
 
     const [game, setGame] = useState<Game | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+
+    /** What this reader has already said about it, or null. */
+    const [shelf, setShelf] = useState<ShelfStatus | null>(null);
+    const [picking, setPicking] = useState(false);
 
     const load = useCallback(async (signal?: AbortSignal) => {
         setError(null);
@@ -73,6 +81,26 @@ export default function GameScreen() {
 
         return () => controller.abort();
     }, [load]);
+
+    /*
+     * The shelf state, asked for separately.
+     *
+     * It could ride along with the game, but it is the one part of this screen
+     * that is about the reader rather than the game — so a signed-out visitor
+     * never asks for it, and a failure here leaves the page intact rather than
+     * taking it down over a button.
+     */
+    useEffect(() => {
+        if (!user) { return; }
+
+        const controller = new AbortController();
+
+        getShelfEntry(slug, controller.signal)
+            .then((entry) => setShelf(entry?.status ?? null))
+            .catch(() => { /* The button simply reads "Add to shelf". */ });
+
+        return () => controller.abort();
+    }, [slug, user]);
 
     return (
         <Screen>
@@ -165,21 +193,32 @@ export default function GameScreen() {
 
                     <Facts game={game} />
 
+                    {user ? (
+                        <Button
+                            label={shelf ? `On your shelf: ${SHELF_STATUS[shelf].label}` : 'Add to your shelf'}
+                            onPress={() => setPicking(true)}
+                        />
+                    ) : (
+                        <Body style={styles.footnote}>
+                            Sign in to put this on your shelf.
+                        </Body>
+                    )}
+
                     <Button
                         label="Open on techplay.gg"
                         variant="quiet"
                         onPress={() => Share.share({ message: `${SITE}/games/${game.slug}` })}
                     />
-
-                    {/*
-                      * Adding to a shelf is a write, and writes are the half
-                      * of this app that is not built yet. Saying so beats a
-                      * button that does nothing.
-                      */}
-                    <Body style={styles.footnote}>
-                        Adding this to your shelf still happens on techplay.gg. It is coming here.
-                    </Body>
                 </ScrollView>
+            )}
+
+            {picking && game && (
+                <ShelfPicker
+                    slug={game.slug}
+                    current={shelf}
+                    onChanged={setShelf}
+                    onClose={() => setPicking(false)}
+                />
             )}
         </Screen>
     );
