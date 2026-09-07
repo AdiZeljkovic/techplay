@@ -6,7 +6,8 @@ import { WebView } from 'react-native-webview';
 
 import { Button } from '@/components/Button';
 import { Notice, Screen } from '@/components/Screen';
-import { api } from '@/lib/api';
+import { api, OfflineError } from '@/lib/api';
+import { isSaved, read as readSaved, remove as removeSaved, save as saveArticle } from '@/lib/offline';
 import { readerHtml } from '@/lib/readerHtml';
 import { colors, font, size, space, TOUCH_TARGET } from '@/theme/tokens';
 
@@ -30,13 +31,38 @@ export default function ArticleScreen() {
 
     const [article, setArticle] = useState<FullArticle | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [saved, setSaved] = useState(false);
+
+    /** Set when the copy on screen came off the phone rather than the network. */
+    const [fromDisk, setFromDisk] = useState<string | null>(null);
 
     const load = useCallback(async (signal?: AbortSignal) => {
         setError(null);
 
         try {
             setArticle(await api<FullArticle>(`/news/${slug}`, { auth: false, signal }));
+            setFromDisk(null);
         } catch (e) {
+            /*
+             * The saved copy is a fallback, not the truth.
+             *
+             * With a signal the article is fetched fresh every time, because a
+             * piece can be corrected after somebody saved it and quietly
+             * serving them the stale one is worse than not having saved it at
+             * all. Only when the network fails does the phone answer — and the
+             * screen says when that copy was taken.
+             */
+            if (e instanceof OfflineError) {
+                const copy = await readSaved(slug);
+
+                if (copy) {
+                    setArticle(copy);
+                    setFromDisk(copy.saved_at);
+
+                    return;
+                }
+            }
+
             setError(e instanceof Error ? e.message : 'Could not open this piece.');
         }
     }, [slug]);
@@ -47,6 +73,8 @@ export default function ArticleScreen() {
 
         return () => controller.abort();
     }, [load]);
+
+    useEffect(() => { isSaved(slug).then(setSaved); }, [slug]);
 
     return (
         <Screen>
@@ -73,6 +101,28 @@ export default function ArticleScreen() {
                 </Text>
 
                 <Pressable
+                    onPress={async () => {
+                        if (!article) { return; }
+
+                        if (saved) {
+                            await removeSaved(slug);
+                            setSaved(false);
+                        } else {
+                            await saveArticle({ ...article, slug });
+                            setSaved(true);
+                        }
+                    }}
+                    hitSlop={12}
+                    style={styles.barButton}
+                    accessibilityRole="button"
+                    accessibilityLabel={saved ? 'Remove from saved' : 'Save for offline'}
+                >
+                    <Text style={[styles.barSave, saved && { color: colors.accentInk }]}>
+                        {saved ? '★' : '☆'}
+                    </Text>
+                </Pressable>
+
+                <Pressable
                     onPress={() => {
                         if (!article) { return; }
 
@@ -91,6 +141,14 @@ export default function ArticleScreen() {
                     <Text style={styles.barShare}>Share</Text>
                 </Pressable>
             </View>
+
+            {fromDisk && (
+                <View style={styles.offline}>
+                    <Text style={styles.offlineText}>
+                        Saved copy · {new Date(fromDisk).toLocaleDateString('en-GB')}
+                    </Text>
+                </View>
+            )}
 
             {error ? (
                 <View style={styles.centre}>
@@ -186,6 +244,21 @@ const styles = StyleSheet.create({
         fontFamily: font.bodyMedium,
         fontSize: size.small,
         color: colors.accentInk,
+    },
+    barSave: { fontSize: 20, lineHeight: 24, color: colors.inkLow },
+    /* A quiet strip rather than a banner. It is a fact about where the words
+       came from, not a warning — the article underneath is still the article. */
+    offline: {
+        paddingVertical: space.sm,
+        paddingHorizontal: space.lg,
+        backgroundColor: colors.fill1,
+        borderBottomColor: colors.line,
+        borderBottomWidth: StyleSheet.hairlineWidth,
+    },
+    offlineText: {
+        fontFamily: font.mono,
+        fontSize: 11,
+        color: colors.inkLow,
     },
     web: {
         flex: 1,

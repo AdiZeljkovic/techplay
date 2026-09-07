@@ -145,6 +145,8 @@ export default function ProfileTab() {
                     </>
                 )}
 
+                <Button label="Saved for offline" variant="quiet" onPress={() => router.push('/saved')} />
+
                 <View style={styles.rest}>
                     <Eyebrow>Still on the web</Eyebrow>
                     <Body style={{ fontSize: size.small }}>
