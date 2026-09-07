@@ -88,6 +88,17 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
     # Nedostajuca integracija (Discord prijava, PayPal webhook) je upozorenje i
     # ne prekida nista — jedna ugasena funkcija ne smije blokirati objavu.
     php artisan env:validate
+
+    # Mapa obrisanih igara, pa 410 umjesto 404.
+    #
+    # Aplikacija je jedina koja zna sta je obrisano, a /etc/nginx je rootov —
+    # zato komanda pise u storage, a skripta ispod prenosi i reloaduje, i to
+    # samo kad se sadrzaj stvarno promijenio. `nginx -t` prije svakog reloada,
+    # jer mapa od 61.000 unosa je jedan lose citiran znak od konfiguracije s
+    # kojom se nginx odbija podici.
+    step "mapa obrisanih igara"
+    sudo -u www-data php artisan games:gone-map 2>&1 | tail -1
+    "$ROOT/deployment/sync_gone_games.sh"
     # Logrotate isto zivi u repou. Tri zasebna fajla su bila samo na serveru i
     # dva su se tiho preskakala mjesecima jer im je falila `su` direktiva —
     # logrotate to ne prijavi kao gresku, samo preskoci i izadje s nulom.

@@ -8,6 +8,7 @@ use App\Services\CacheService;
 use App\Services\NginxPageCache;
 use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class GameObserver
@@ -90,6 +91,27 @@ class GameObserver
         if (! $game->slug) {
             return;
         }
+
+        /*
+         * The tombstone, without which the URL answers 404 forever.
+         *
+         * Only the two purge commands wrote these, so every other way a game
+         * left the catalogue — the 08/2026 rebuild, a merge, a delete from the
+         * admin — left Google holding an indexed URL that answers "maybe
+         * temporary". Fifty-three of the game pages Googlebot crawled in the
+         * first week of September were exactly that: slugs it still asks for,
+         * that nothing here has a record of ever having removed.
+         *
+         * An upsert because the purge commands write their own with a more
+         * specific reason, and a re-created and re-deleted game must not
+         * collide on the unique slug.
+         */
+        DB::table('game_tombstones')->upsert([[
+            'slug' => $game->slug,
+            'name' => $game->name ?: $game->slug,
+            'reason' => 'deleted',
+            'deleted_at' => now(),
+        ]], ['slug'], ['name', 'reason', 'deleted_at']);
 
         Cache::forget(CacheService::gameShowKey($game->slug));
         Cache::forget("games.articles.v2.{$game->id}");
