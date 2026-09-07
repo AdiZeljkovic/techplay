@@ -131,6 +131,7 @@ export default function Feed() {
 function Card({ article, lead }: { article: Article; lead: boolean }) {
     return (
         <Pressable
+            onPress={() => router.push(`/article/${article.slug}`)}
             style={({ pressed }) => [styles.card, pressed && { backgroundColor: colors.surface2 }]}
             accessibilityRole="button"
             accessibilityLabel={article.title}
