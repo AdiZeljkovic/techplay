@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -12,6 +11,9 @@ import {
 } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { FeaturedSlider } from '@/components/FeaturedSlider';
+import { HomeHero } from '@/components/HomeHero';
+import { Masthead } from '@/components/Masthead';
 import { Rail } from '@/components/Rail';
 import { Body, Eyebrow, Notice, Screen } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
@@ -75,18 +77,19 @@ export default function Feed() {
         );
     }
 
-    const lead = home?.hero?.[0] ?? home?.latest_global?.[0] ?? null;
-
     /*
-     * The hero's remaining pieces join the latest rail rather than sitting in
-     * one of their own. Five hero slots is an editorial decision made for a
-     * carousel a metre wide; on a phone the lead is the lead and the rest are
-     * simply recent.
+     * The five hero slots are a deck, not a lead and four spares — which is
+     * how the site treats them, and why it prints "01 / 05". Flattening them
+     * into one card threw away four editorial decisions.
      */
-    const latest = dedupe([...(home?.hero ?? []).slice(1), ...(home?.latest_global ?? [])], lead?.id);
+    const featured = home?.hero?.length ? home.hero : (home?.latest_global ?? []).slice(0, 5);
+
+    const latest = dedupe(home?.latest_global ?? [], ...featured.map((a) => a.id));
 
     return (
         <Screen>
+            <Masthead />
+
             <ScrollView
                 contentContainerStyle={styles.content}
                 refreshControl={
@@ -97,26 +100,14 @@ export default function Feed() {
                     />
                 }
             >
-                <View style={styles.masthead}>
-                    <View>
-                        <Eyebrow tone="accent">TechPlay</Eyebrow>
-                        {/* Signed out this is a masthead, signed in a greeting.
-                            Neither pretends to be the other. */}
-                        <Text style={styles.greeting}>
-                            {user?.display_name || user?.username || 'Latest'}
-                        </Text>
-                    </View>
-
-                    <Pressable
-                        onPress={() => router.push('/search')}
-                        hitSlop={12}
-                        style={styles.searchButton}
-                        accessibilityRole="button"
-                        accessibilityLabel="Search"
-                    >
-                        <Text style={styles.searchGlyph}>⌕</Text>
-                    </Pressable>
-                </View>
+                {/*
+                  * The site's own order: the pitch, then what is featured,
+                  * then the sections. The app used to open straight into
+                  * cards, which is a feed rather than a front page — and left
+                  * anybody who arrived without knowing what TechPlay is with
+                  * no way to find out.
+                  */}
+                <HomeHero signedIn={!!user} />
 
                 {error && (
                     <View style={{ paddingHorizontal: space.lg, gap: space.md }}>
@@ -125,7 +116,7 @@ export default function Feed() {
                     </View>
                 )}
 
-                {lead && <Lead article={lead} />}
+                <FeaturedSlider articles={featured} />
 
                 {/*
                   * The quick links band, as the site has it — the four places
@@ -179,41 +170,6 @@ export default function Feed() {
     );
 }
 
-/**
- * The lead, and it is allowed to be big.
- *
- * A front page that opens with five equal cards has decided nothing. This one
- * takes the full width and a taller image, because the difference between a
- * lead and the rest is the only thing that makes it a lead.
- */
-function Lead({ article }: { article: Article }) {
-    return (
-        <Pressable
-            onPress={() => router.push(`/news/${article.slug}`)}
-            style={({ pressed }) => [styles.lead, pressed && { opacity: 0.8 }]}
-            accessibilityRole="button"
-            accessibilityLabel={article.title}
-        >
-            {article.featured_image_url && (
-                <Image
-                    source={{ uri: article.featured_image_url }}
-                    style={styles.leadCover}
-                    contentFit="cover"
-                    transition={160}
-                    accessibilityLabel={article.featured_image_alt ?? undefined}
-                />
-            )}
-            <View style={styles.leadBody}>
-                {article.category && <Eyebrow tone="accent">{article.category.name}</Eyebrow>}
-                <Text style={styles.leadTitle} numberOfLines={3}>{article.title}</Text>
-                <Text style={styles.leadMeta}>
-                    {[article.published_at_human, article.reading_time].filter(Boolean).join('  ·  ')}
-                </Text>
-            </View>
-        </Pressable>
-    );
-}
-
 function Quick({ label, onPress }: { label: string; onPress: () => void }) {
     return (
         <Pressable
@@ -227,8 +183,8 @@ function Quick({ label, onPress }: { label: string; onPress: () => void }) {
 }
 
 /** The rails overlap by design; a piece must not appear twice on one screen. */
-function dedupe(articles: Article[], excludeId?: number): Article[] {
-    const seen = new Set<number>(excludeId ? [excludeId] : []);
+function dedupe(articles: Article[], ...excludeIds: number[]): Article[] {
+    const seen = new Set<number>(excludeIds);
 
     return articles.filter((article) => {
         if (seen.has(article.id)) { return false; }
@@ -242,47 +198,6 @@ function dedupe(articles: Article[], excludeId?: number): Article[] {
 const styles = StyleSheet.create({
     centre: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     content: { gap: space.xl, paddingBottom: space.xxl },
-    masthead: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
-        paddingHorizontal: space.lg,
-        paddingTop: space.sm,
-    },
-    greeting: {
-        fontFamily: font.display,
-        fontSize: size.title,
-        color: colors.inkHi,
-        marginTop: 2,
-    },
-    searchButton: {
-        width: 40,
-        height: 40,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 20,
-        borderColor: colors.lineStrong,
-        borderWidth: StyleSheet.hairlineWidth,
-    },
-    searchGlyph: { fontSize: 22, lineHeight: 26, color: colors.inkMid },
-    lead: {
-        marginHorizontal: space.lg,
-        backgroundColor: colors.surface1,
-        borderColor: colors.line,
-        borderWidth: StyleSheet.hairlineWidth,
-        borderRadius: radius.panel,
-        overflow: 'hidden',
-    },
-    leadCover: { width: '100%', height: 210, backgroundColor: colors.surface2 },
-    leadBody: { padding: space.lg, gap: space.xs },
-    leadTitle: {
-        fontFamily: font.display,
-        fontSize: 23,
-        lineHeight: 28,
-        letterSpacing: -0.3,
-        color: colors.inkHi,
-    },
-    leadMeta: { fontFamily: font.mono, fontSize: size.caption, color: colors.inkLow, marginTop: 2 },
     links: { paddingHorizontal: space.lg, gap: space.sm },
     quick: {
         height: 38,
