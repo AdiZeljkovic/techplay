@@ -37,6 +37,7 @@ Ostao je `docs/incidenti/` — zapisi incidenata ne zastarijevaju.
 15. [Testovi](#15-testovi)
 16. [Zamke](#16-zamke)
 17. [Šta nije ono što izgleda](#17-šta-nije-ono-što-izgleda)
+18. [Mobilna aplikacija](#18-mobilna-aplikacija)
 
 ---
 
@@ -786,6 +787,34 @@ Mrtvo, prazno ili nedovršeno — da niko ne gradi na tome.
 | `SendChatReminder`, `FetchOgData`, `MobyEnrichmentJob`, `PingIndexNow` | navođeni u staroj dokumentaciji, **ne postoje**. |
 | `GeminiService`, `OpenAIService` | opisivani mjesecima, nije ih zvao niko; obrisani 18. 8. 2026. |
 | MobyGames, RAWG | penzionisani u pregradnji kataloga 08/2026. Nisu izvor. |
+
+---
+
+## 18. Mobilna aplikacija
+
+Četvrti dio, mlađi od ostala tri i **pauziran 9. 9. 2026**. Expo / React
+Native klijent u `mobile/`, čita isti API kao sajt (`api-beta.techplay.gg`).
+
+Ne opisuje se ovdje — ima svoj zapis, i taj je detaljan:
+
+**[`mobile/README.md`](../mobile/README.md)** — šta radi, šta ne, zamke, i
+tačan popis onoga što je sljedeće.
+
+Tri stvari vrijedi znati i bez otvaranja tog fajla:
+
+**Aplikacija čita isti API i zato pokazuje njegove nedosljednosti.** Sedam
+listajućih endpointa odgovara u šest oblika (vidi §16), a sajt to ne primjećuje
+jer je svaka stranica pisana uz svoj endpoint. Jedan binarni klijent nema tu
+mogućnost — razliku upija `mobile/src/lib/paging.ts`. **Kad se mijenja oblik
+odgovora, mijenja se i ugovor s aplikacijom koja je već na nečijem telefonu.**
+
+**Ikone su generisane iz `lucide-react` verzije koju frontend ima instaliranu**,
+ne prepisane. Ako se ta verzija podigne, generiši ih ponovo — inače se setovi
+tiho raziđu.
+
+**Ništa se ne može poslati u prodavnice bez developerskih naloga.** Apple 99 $
+godišnje s provjerom identiteta koja traje sedmicama, Google Play 25 $
+jednokratno. Push, Sign in with Apple i provjereni deep linkovi svi čekaju to.
 
 ---
 
