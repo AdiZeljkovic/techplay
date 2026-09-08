@@ -325,6 +325,45 @@ export function XMark(props: MarkProps) {
     );
 }
 
+export function ClockMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M12 6v6l4 2" />
+            <Circle cx="12" cy="12" r="10" />
+        </Mark>
+    );
+}
+
+export function SparklesMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" />
+            <Path d="M20 2v4" />
+            <Path d="M22 4h-4" />
+            <Circle cx="4" cy="20" r="2" />
+        </Mark>
+    );
+}
+
+export function InfoMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Circle cx="12" cy="12" r="10" />
+            <Path d="M12 16v-4" />
+            <Path d="M12 8h.01" />
+        </Mark>
+    );
+}
+
+export function UserRoundMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+            <Circle cx="12" cy="7" r="4" />
+        </Mark>
+    );
+}
+
 /**
  * The two marks the shell draws itself.
  *

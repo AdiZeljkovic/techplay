@@ -56,19 +56,6 @@ export function getHome(signal?: AbortSignal): Promise<Home> {
     return api<Home>('/home', { auth: false, signal });
 }
 
-/**
- * A section, a page at a time.
- *
- * Through `getPage` rather than `api` directly: /news answers with a resource
- * collection — `{ data, links, meta }`, no `success` anywhere — while
- * /studios answers with the ApiResponse trait and /games with something else
- * again. The first version of this file assumed one shape, typed it, and
- * TypeScript agreed because a type is a claim rather than a check. The
- * pagination would simply never have advanced.
- */
-export function getNews(page = 1, signal?: AbortSignal): Promise<Paged<Article>> {
-    return getPage<Article>(`/news?page=${page}&per_page=15`, signal);
-}
 
 /**
  * The four section pages the More sheet lists.
