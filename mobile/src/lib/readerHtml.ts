@@ -44,6 +44,61 @@ function esc(value: string): string {
         .replace(/"/g, '&quot;');
 }
 
+
+/**
+ * Bare social URLs become embeds, as they do on the site.
+ *
+ * The editor stores a pasted YouTube link as `<p><a href="…">…</a></p>`, and
+ * the site's `lib/content.ts` turns that into an iframe before rendering. The
+ * app skipped that step, so an article whose whole point was a trailer showed
+ * a red link instead of the video — measured on the World of Tanks piece.
+ *
+ * The regexes are that file's, carried over rather than rewritten, including
+ * the two rules that are easy to lose:
+ *
+ *   a link is only unwrapped when its text IS the URL, so
+ *   `<a href="youtube…">Watch here</a>` stays a link on purpose;
+ *
+ *   the negative lookbehind stops a URL inside an href or src being matched,
+ *   which would corrupt the markup it is sitting in.
+ */
+function withEmbeds(html: string): string {
+    /*
+     * A pasted link is stored as `<p><a href="…">…</a></p>`, so it is unwrapped
+     * back to a bare URL before the embed rules run. Only when the link's text
+     * IS the URL: `<a href="youtube…">Watch here</a>` is a link somebody meant
+     * to write, and stays one.
+     */
+    let out = html.replace(
+        /<p\b[^>]*>[\s\u00A0]*<a\b[^>]*?href=["'](https?:\/\/(?:www\.)?(?:youtube\.com\/watch|youtu\.be|twitter\.com|x\.com)[^"']*?)["'][^>]*>\s*https?:\/\/[^<]*?<\/a>[\s\u00A0]*<\/p>/gi,
+        '<p>$1</p>'
+    );
+
+    out = out.replace(
+        /(?<!["'=])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi,
+        (_match, id: string) => frame(`https://www.youtube.com/embed/${id}`, 'YouTube video')
+    );
+
+    // Embed code pasted whole, normalised into the same responsive frame so a
+    // fixed width cannot push the column sideways.
+    out = out.replace(
+        /<iframe\b[^>]*?src=["']https?:\/\/(?:www\.)?youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})[^"']*["'][^>]*>(?:\s*<\/iframe>)?/gi,
+        (_match, id: string) => frame(`https://www.youtube.com/embed/${id}`, 'YouTube video')
+    );
+
+    out = out.replace(
+        /(?<!["'=])(?:<p\b[^>]*>)?[\s\u00A0]*https?:\/\/(?:www\.)?(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)[^\s<"']*[\s\u00A0]*(?:<\/p>)?/gi,
+        (_match, id: string) =>
+            frame(`https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${id}&theme=dark`, 'Post', 'embed-tweet')
+    );
+
+    return out;
+}
+
+function frame(src: string, title: string, extra = ''): string {
+    return `<div class="embed ${extra}"><iframe src="${src}" title="${title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen scrolling="no"></iframe></div>`;
+}
+
 export function readerHtml(a: Reader): string {
     const meta = [a.author, a.published, a.readingTime]
         .filter(Boolean)
@@ -164,6 +219,22 @@ export function readerHtml(a: Reader): string {
   img, video { max-width: 100%; height: auto; border-radius: ${radius.card}px; }
 
   figure { margin: 24px 0; }
+
+  /* The embed frame. aspect-ratio rather than the padding-bottom trick, so
+     the box reserves its real height from the first layout and the paragraph
+     under it never jumps once the iframe loads. */
+  .embed { margin: 24px 0; }
+  .embed iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: ${radius.card}px;
+    background: var(--surface-2);
+  }
+  /* A tweet is not 16:9 and cannot be measured from out here, so it gets a
+     floor instead and grows past it if the post is long. */
+  .embed-tweet iframe { aspect-ratio: auto; min-height: 320px; }
   figcaption { font-size: 13px; color: var(--ink-low); margin-top: 8px; }
 
   blockquote {
@@ -207,7 +278,7 @@ export function readerHtml(a: Reader): string {
     <h1>${esc(a.title)}</h1>
     ${a.excerpt ? `<p class="standfirst">${esc(a.excerpt)}</p>` : ''}
     ${meta ? `<div class="byline">${meta}</div>` : ''}
-    ${a.content}
+    ${withEmbeds(a.content)}
   </div>
 
 <script>
