@@ -133,3 +133,99 @@ export function SearchMark(props: MarkProps) {
         </Mark>
     );
 }
+
+export function LifeBuoyMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Circle cx="12" cy="12" r="10" />
+            <Path d="m4.93 4.93 4.24 4.24" />
+            <Path d="m14.83 9.17 4.24-4.24" />
+            <Path d="m14.83 14.83 4.24 4.24" />
+            <Path d="m9.17 14.83-4.24 4.24" />
+            <Circle cx="12" cy="12" r="4" />
+        </Mark>
+    );
+}
+
+export function LogOutMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="m16 17 5-5-5-5" />
+            <Path d="M21 12H9" />
+            <Path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        </Mark>
+    );
+}
+
+export function LogInMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="m10 17 5-5-5-5" />
+            <Path d="M15 12H3" />
+            <Path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+        </Mark>
+    );
+}
+
+/**
+ * The two marks the shell draws itself.
+ *
+ * `TabMarks.tsx` on the site keeps exactly this pair and says why: they are
+ * what the header needs and lucide does not supply in this shape. They are
+ * also drawn in a different language from the rest — square caps, miter
+ * joins, a 2.2 stroke — so they take their own wrapper rather than `Mark`,
+ * which is round-capped at 1.4 for the lucide set.
+ */
+function Shell({
+    size = 22,
+    color,
+    children,
+}: {
+    size?: number;
+    color: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <Svg
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={color}
+            strokeWidth={2.2}
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+        >
+            {children}
+        </Svg>
+    );
+}
+
+/**
+ * More — everything the five tabs do not carry.
+ *
+ * Three dots, not three lines. The site's own note: a hamburger would say
+ * "this is the navigation", which since the tab bar exists it no longer is.
+ */
+export function MoreMark({ size = 22, color }: MarkProps) {
+    return (
+        <Shell size={size} color={color}>
+            <Circle cx="5.6" cy="12" r="1.7" fill={color} stroke="none" />
+            <Circle cx="12" cy="12" r="1.7" fill={color} stroke="none" />
+            <Circle cx="18.4" cy="12" r="1.7" fill={color} stroke="none" />
+        </Shell>
+    );
+}
+
+/** The notification bell, which fills when something is waiting. */
+export function BellMark({ size = 22, color, active = false }: MarkProps & { active?: boolean }) {
+    return (
+        <Shell size={size} color={color}>
+            <Path
+                d="M6 17.4v-5.6a6 6 0 0 1 12 0v5.6l1.6 2.2H4.4z"
+                fill={active ? color : 'none'}
+            />
+            <Path d="M10.2 20.8a2 2 0 0 0 3.6 0" />
+        </Shell>
+    );
+}

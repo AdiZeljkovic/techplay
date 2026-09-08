@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { Masthead } from '@/components/Masthead';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { api } from '@/lib/api';
 import { colors, font, radius, size, space } from '@/theme/tokens';
@@ -86,6 +87,8 @@ export default function CalendarTab() {
 
     return (
         <Screen>
+            <Masthead />
+
             <View style={styles.header}>
                 <View style={{ flex: 1 }}>
                     <Eyebrow tone="accent">Coming out</Eyebrow>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { Masthead } from '@/components/Masthead';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
@@ -66,6 +67,8 @@ export default function ProfileTab() {
     if (!user) {
         return (
             <Screen>
+                <Masthead />
+
                 <View style={styles.guest}>
                     <Eyebrow tone="accent">Not signed in</Eyebrow>
                     <Title style={{ fontSize: size.hero }}>
@@ -87,6 +90,8 @@ export default function ProfileTab() {
     if (loading) {
         return (
             <Screen>
+                <Masthead />
+
                 <View style={styles.centre}>
                     <ActivityIndicator color={colors.accentInk} />
                 </View>
@@ -98,6 +103,8 @@ export default function ProfileTab() {
 
     return (
         <Screen>
+            <Masthead />
+
             <ScrollView
                 contentContainerStyle={styles.content}
                 refreshControl={

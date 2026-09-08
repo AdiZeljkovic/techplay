@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'r
 
 import { ArticleCard } from '@/components/ArticleCard';
 import { Button } from '@/components/Button';
+import { Masthead } from '@/components/Masthead';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { getNews, type Article } from '@/lib/content';
 import { colors, space } from '@/theme/tokens';
@@ -72,6 +73,8 @@ export default function News() {
     if (loading) {
         return (
             <Screen>
+                <Masthead />
+
                 <View style={styles.centre}>
                     <ActivityIndicator color={colors.accentInk} />
                 </View>
@@ -81,6 +84,8 @@ export default function News() {
 
     return (
         <Screen>
+            <Masthead />
+
             <FlatList
                 data={articles}
                 keyExtractor={(item) => String(item.id)}
