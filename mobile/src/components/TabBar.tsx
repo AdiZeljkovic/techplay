@@ -64,12 +64,10 @@ const SLOTS: Slot[] = [
     { portrait: true },
     /*
      * The site's fourth slot is the forum, which the app does not have yet.
-     * The catalogue takes the place rather than the label: this is `/search`,
-     * and it is the games tab because searching 333,000 rows is how you reach
-     * a game on a phone. The route keeps its old name, so every existing
-     * `router.push('/search')` still lands here.
+     * The catalogue takes the place: this was `/search` — a text field and a
+     * list — until the tab became the Game Database it is called after.
      */
-    { name: 'search', label: 'Games', Mark: GamepadMark },
+    { name: 'games', label: 'Games', Mark: GamepadMark },
     { name: 'calendar', label: 'Calendar', Mark: CalendarMark },
 ];
 

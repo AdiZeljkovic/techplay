@@ -118,18 +118,17 @@ export default function SearchScreen() {
     return (
         <Screen>
             <View style={styles.bar}>
-                {/*
-                  * A search mark, not a back arrow.
-                  *
-                  * This was a screen you pushed, so it had somewhere to go
-                  * back to. It is a tab now: `canGoBack()` is false on a tab
-                  * root, so the chevron fell through to replacing the route
-                  * with Home — a button labelled Back that went somewhere
-                  * else. The mark says what the field is instead.
-                  */}
-                <View style={styles.barButton}>
+                {/* A pushed screen again — the Games tab is the catalogue
+                    now — so back has somewhere to go and the arrow is true. */}
+                <Pressable
+                    onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
+                    hitSlop={12}
+                    style={styles.barButton}
+                    accessibilityRole="button"
+                    accessibilityLabel="Back"
+                >
                     <SearchMark size={20} color={colors.inkLow} />
-                </View>
+                </Pressable>
 
                 <TextInput
                     style={styles.input}
@@ -137,12 +136,7 @@ export default function SearchScreen() {
                     onChangeText={setTerm}
                     placeholder={scope === 'games' ? 'Search 333,198 games' : 'Search articles'}
                     placeholderTextColor={colors.inkFaint}
-                    /*
-                     * Not autofocused. It was, when reaching this screen meant
-                     * deliberately opening a search box. As a tab it is one
-                     * thumb-tap from anywhere, and a keyboard that throws
-                     * itself up on every tap also covers the bar you tapped.
-                     */
+                    autoFocus
                     autoCorrect={false}
                     autoCapitalize="none"
                     returnKeyType="search"

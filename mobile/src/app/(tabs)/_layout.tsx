@@ -13,9 +13,9 @@ import { TabBar } from '@/components/TabBar';
  * Two products disagreeing about their own navigation is a thing a reader
  * feels immediately and cannot name.
  *
- * So the app takes the site's five. The catalogue stands in the slot the forum
- * holds on the web, because the app has no forum yet; the calendar keeps the
- * fifth place it earned — it is the only screen here worth opening on a day
+ * So the app takes the site's five. The Game Database stands in the slot the
+ * forum holds on the web, because the app has no forum yet; the calendar keeps
+ * the fifth place it earned — it is the only screen here worth opening on a day
  * when nothing was published, and it is what push will eventually be for.
  *
  * The bar itself is `TabBar`, which draws the site's console. `tabBarStyle`
@@ -31,7 +31,7 @@ export default function TabsLayout() {
             <Tabs.Screen name="index" options={{ title: 'Home' }} />
             <Tabs.Screen name="news" options={{ title: 'Feed' }} />
             <Tabs.Screen name="profile" options={{ title: 'You' }} />
-            <Tabs.Screen name="search" options={{ title: 'Games' }} />
+            <Tabs.Screen name="games" options={{ title: 'Games' }} />
             <Tabs.Screen name="calendar" options={{ title: 'Calendar' }} />
         </Tabs>
     );

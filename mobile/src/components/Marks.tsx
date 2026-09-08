@@ -364,6 +364,75 @@ export function UserRoundMark(props: MarkProps) {
     );
 }
 
+export function StarMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+        </Mark>
+    );
+}
+
+export function TrendingUpMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M16 7h6v6" />
+            <Path d="m22 7-8.5 8.5-5-5L2 17" />
+        </Mark>
+    );
+}
+
+export function CalendarDaysMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M8 2v4" />
+            <Path d="M16 2v4" />
+            <Rect width="18" height="18" x="3" y="4" rx="2" />
+            <Path d="M3 10h18" />
+            <Path d="M8 14h.01" />
+            <Path d="M12 14h.01" />
+            <Path d="M16 14h.01" />
+            <Path d="M8 18h.01" />
+            <Path d="M12 18h.01" />
+            <Path d="M16 18h.01" />
+        </Mark>
+    );
+}
+
+export function SlidersHorizontalMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M10 5H3" />
+            <Path d="M12 19H3" />
+            <Path d="M14 3v4" />
+            <Path d="M16 17v4" />
+            <Path d="M21 12h-9" />
+            <Path d="M21 19h-5" />
+            <Path d="M21 5h-7" />
+            <Path d="M8 10v4" />
+            <Path d="M8 12H3" />
+        </Mark>
+    );
+}
+
+export function ArrowDownUpMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="m3 16 4 4 4-4" />
+            <Path d="M7 20V4" />
+            <Path d="m21 8-4-4-4 4" />
+            <Path d="M17 4v16" />
+        </Mark>
+    );
+}
+
+export function CheckMark(props: MarkProps) {
+    return (
+        <Mark {...props}>
+            <Path d="M20 6 9 17l-5-5" />
+        </Mark>
+    );
+}
+
 /**
  * The two marks the shell draws itself.
  *
