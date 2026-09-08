@@ -56,7 +56,7 @@ export function HomeHero({ signedIn }: { signedIn: boolean }) {
                 <CommandButton
                     label="Browse the catalogue"
                     variant="quiet"
-                    onPress={() => router.push('/(tabs)/games')}
+                    onPress={() => router.push('/(tabs)/catalogue')}
                     behind={colors.surface1}
                 />
             </View>

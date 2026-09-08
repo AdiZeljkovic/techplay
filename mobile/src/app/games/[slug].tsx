@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { Button } from '@/components/Button';
+import { ClockMark } from '@/components/Marks';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { ShelfPicker } from '@/components/ShelfPicker';
 import { useAuth } from '@/context/AuthContext';
@@ -40,8 +41,15 @@ interface Game {
     platforms: string[];
     developers: string[];
     publishers: string[];
-    time_to_beat: number | null;
-    esrb_rating: string | null;
+    /*
+     * Both of these are objects, not scalars — read off the live payload for
+     * elden-ring, not guessed. `esrb_rating` typed as a string is what crashed
+     * this screen: React was handed `{name: 'M'}` as a Text child and threw
+     * "Objects are not valid as a React child". `time_to_beat` did not crash,
+     * which is worse — it rendered "[object Object] h" and looked like data.
+     */
+    time_to_beat: { hastily?: number; normally?: number; completely?: number; count: number } | null;
+    esrb_rating: { name: string } | null;
 }
 
 const SITE = 'https://techplay.gg';
@@ -191,6 +199,8 @@ export default function GameScreen() {
                         </View>
                     )}
 
+                    <TimeToBeat times={game.time_to_beat} />
+
                     <Facts game={game} />
 
                     {user ? (
@@ -233,6 +243,57 @@ function Score({ label, value, accent = false }: { label: string; value: number;
     );
 }
 
+/**
+ * How long to beat, in the site's three paces.
+ *
+ * It used to be one row in the facts table reading "[object Object] h". The
+ * payload carries three figures and a report count, and the count is the part
+ * that decides whether to believe the rest: three numbers from three people is
+ * not the same claim as three from three thousand. The site says so plainly
+ * below five reports rather than tucking it into grey, and so does this.
+ */
+function TimeToBeat({ times }: { times: Game['time_to_beat'] }) {
+    if (!times) { return null; }
+
+    const paces = [
+        { key: 'hastily' as const, label: 'Rushed', note: 'main story only' },
+        { key: 'normally' as const, label: 'Normally', note: 'story and some extras' },
+        { key: 'completely' as const, label: 'Completionist', note: 'everything in it' },
+    ].filter((p) => times[p.key]);
+
+    if (!paces.length) { return null; }
+
+    const thin = times.count > 0 && times.count < 5;
+
+    return (
+        <View style={styles.htb}>
+            <View style={styles.htbHead}>
+                <ClockMark size={13} color={colors.accent} />
+                <Eyebrow>How long to beat</Eyebrow>
+                {times.count > 0 && (
+                    <View style={[styles.htbCount, thin && styles.htbCountThin]}>
+                        <Text style={[styles.htbCountText, thin && { color: colors.warning }]}>
+                            {thin
+                                ? `only ${times.count} ${times.count === 1 ? 'report' : 'reports'}`
+                                : `${times.count.toLocaleString()} players`}
+                        </Text>
+                    </View>
+                )}
+            </View>
+
+            <View style={styles.htbRow}>
+                {paces.map((pace) => (
+                    <View key={pace.key} style={styles.htbPace}>
+                        <Text style={styles.htbHours}>{times[pace.key]} h</Text>
+                        <Text style={styles.htbLabel}>{pace.label}</Text>
+                        <Text style={styles.htbNote}>{pace.note}</Text>
+                    </View>
+                ))}
+            </View>
+        </View>
+    );
+}
+
 function Facts({ game }: { game: Game }) {
     const rows: [string, string][] = [];
 
@@ -241,8 +302,7 @@ function Facts({ game }: { game: Game }) {
     if (game.developers.length) { rows.push(['Developer', game.developers.join(', ')]); }
     if (game.publishers.length) { rows.push(['Publisher', game.publishers.join(', ')]); }
     if (game.released) { rows.push(['Released', game.released]); }
-    if (game.time_to_beat) { rows.push(['Time to beat', `${game.time_to_beat} h`]); }
-    if (game.esrb_rating) { rows.push(['Rated', game.esrb_rating]); }
+    if (game.esrb_rating?.name) { rows.push(['Rated', game.esrb_rating.name]); }
 
     if (!rows.length) { return null; }
 
@@ -275,6 +335,38 @@ function stripTags(html: string): string {
 }
 
 const styles = StyleSheet.create({
+    htb: {
+        gap: space.md,
+        padding: space.lg,
+        borderRadius: 14,
+        borderColor: colors.line,
+        borderWidth: StyleSheet.hairlineWidth,
+        backgroundColor: colors.fill1,
+    },
+    htbHead: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' },
+    htbCount: {
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 5,
+        backgroundColor: colors.fill2,
+    },
+    htbCountThin: {
+        backgroundColor: 'rgba(240, 180, 41, 0.10)',
+        borderColor: 'rgba(240, 180, 41, 0.25)',
+        borderWidth: StyleSheet.hairlineWidth,
+    },
+    htbCountText: { fontFamily: font.display, fontSize: 9.5, color: colors.inkLow },
+    htbRow: { flexDirection: 'row' },
+    htbPace: { flex: 1, gap: 1 },
+    htbHours: { fontFamily: font.display, fontSize: 19, color: colors.inkHi },
+    htbLabel: {
+        fontFamily: font.display,
+        fontSize: 9.5,
+        letterSpacing: 1.1,
+        textTransform: 'uppercase',
+        color: colors.accentInk,
+    },
+    htbNote: { fontFamily: font.body, fontSize: 10.5, lineHeight: 14, color: colors.inkLow },
     bar: {
         height: TOUCH_TARGET,
         flexDirection: 'row',

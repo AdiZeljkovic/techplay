@@ -53,6 +53,13 @@ import { colors, font, radius, space, TOUCH_TARGET } from '@/theme/tokens';
  * field, four ways in, a facet filter and a grid of covers. The search screen it
  * replaced is not gone — it went back to being pushed from the masthead, where
  * it also searches articles, which a games catalogue does not.
+ *
+ * The route is `/catalogue`, not `/games`, and that is not cosmetic. A tab file
+ * named `games.tsx` claims `/games`, which shadowed `/games/[slug]` — every
+ * cover in this very grid stopped opening, and `techplay://games/<slug>` landed
+ * back here. `app.json` declares an Android intent filter on
+ * `techplay.gg/games`, so that also silently broke every shared game link into
+ * the app. The tab is still labelled Games; only the path moved.
  */
 const SHELF_MARKS: Record<string, (p: MarkProps) => React.JSX.Element> = {
     '-rating': StarMark,

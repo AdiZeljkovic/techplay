@@ -31,7 +31,7 @@ export default function TabsLayout() {
             <Tabs.Screen name="index" options={{ title: 'Home' }} />
             <Tabs.Screen name="news" options={{ title: 'Feed' }} />
             <Tabs.Screen name="profile" options={{ title: 'You' }} />
-            <Tabs.Screen name="games" options={{ title: 'Games' }} />
+            <Tabs.Screen name="catalogue" options={{ title: 'Games' }} />
             <Tabs.Screen name="calendar" options={{ title: 'Calendar' }} />
         </Tabs>
     );

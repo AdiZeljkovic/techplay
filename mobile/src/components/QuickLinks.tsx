@@ -30,7 +30,7 @@ const LINKS = [
         title: 'Game Database',
         sub: 'Every release, with the detail to decide',
         cta: 'Browse games',
-        go: () => router.push('/(tabs)/games'),
+        go: () => router.push('/(tabs)/catalogue'),
     },
     {
         art: require('../../assets/quicklinks/release-calendar.webp'),

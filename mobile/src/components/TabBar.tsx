@@ -66,8 +66,12 @@ const SLOTS: Slot[] = [
      * The site's fourth slot is the forum, which the app does not have yet.
      * The catalogue takes the place: this was `/search` — a text field and a
      * list — until the tab became the Game Database it is called after.
+     *
+     * The route is `/catalogue` and the label is Games, deliberately: a file
+     * named `games.tsx` here claims `/games` and shadows `/games/[slug]`, so
+     * no cover in the grid opened and shared game links stopped resolving.
      */
-    { name: 'games', label: 'Games', Mark: GamepadMark },
+    { name: 'catalogue', label: 'Games', Mark: GamepadMark },
     { name: 'calendar', label: 'Calendar', Mark: CalendarMark },
 ];
 
