@@ -69,3 +69,37 @@ export function getHome(signal?: AbortSignal): Promise<Home> {
 export function getNews(page = 1, signal?: AbortSignal): Promise<Paged<Article>> {
     return getPage<Article>(`/news?page=${page}&per_page=15`, signal);
 }
+
+/**
+ * The four section pages the More sheet lists.
+ *
+ * `/latest` on the site is the mixed feed — the app's Feed tab — and these are
+ * the four streams it mixes. All four answer on their own endpoint, verified
+ * live: /news, /reviews, /tech and /guides each return 200. That matters,
+ * because the alternative for these four rows was a web view, and a section
+ * of this site rendered in a browser inside the app is the thing an app is
+ * supposed to replace.
+ *
+ * `/videos` is the fifth on the site and answers 404 here, so it is not
+ * offered — a menu row that 404s is worse than a row that is missing.
+ */
+export const SECTIONS = {
+    news: { path: '/news', title: 'News', eyebrow: 'Everything' },
+    reviews: { path: '/reviews', title: 'Reviews', eyebrow: 'Scored' },
+    tech: { path: '/tech', title: 'Tech', eyebrow: 'Hardware' },
+    guides: { path: '/guides', title: 'Guides', eyebrow: 'How to' },
+} as const;
+
+export type SectionKey = keyof typeof SECTIONS;
+
+export function isSection(value: string | undefined): value is SectionKey {
+    return !!value && value in SECTIONS;
+}
+
+export function getSection(
+    section: SectionKey,
+    page = 1,
+    signal?: AbortSignal
+): Promise<Paged<Article>> {
+    return getPage<Article>(`${SECTIONS[section].path}?page=${page}&per_page=15`, signal);
+}
