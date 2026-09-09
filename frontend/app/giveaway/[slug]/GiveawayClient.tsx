@@ -6,16 +6,15 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import {
-    Gift, Clock, Users, Trophy, Check, Share2, Loader2, Zap, Award,
+    Gift, Clock, Users, Trophy, Check, Share2, Loader2, Zap,
     CalendarDays, ChevronDown, Copy, Flame, Target, Star, Link2, UserPlus,
     CalendarCheck, MessageCircle, Repeat2, ThumbsUp, Facebook, Instagram,
-    Youtube, Twitter, type LucideIcon,
+    Youtube, Twitter, Tag, ArrowRight, Crown, type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import toast from "react-hot-toast";
 import Panel from "@/components/ui/Panel";
-import Readout from "@/components/ui/Readout";
 import Meter from "@/components/ui/Meter";
 
 interface Task {
@@ -104,9 +103,16 @@ const MILESTONE_DAYS = [3, 7, 14, 30];
 const HOUSE_BACKDROP = "/images/page-hero.webp";
 const HOUSE_CONFETTI = ["#DC143C", "#FF4D6A", "#FFFFFF"];
 
-/** The pill the hub uses for its four figures. Same shape, same material. */
-const STAT_PILL =
-    "inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm";
+/**
+ * The chrome that sits on top of the artwork.
+ *
+ * The hub's pill is a white film at 5% — right over a dark backdrop, invisible
+ * over a bright one. Now that the hero shows the picture instead of drowning
+ * it, everything laid over it needs its own darkness to stay readable against
+ * neon, sky or headlights.
+ */
+const HERO_GLASS =
+    "inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-black/55 border border-white/[0.12] backdrop-blur-sm";
 
 /**
  * What a task actually is.
@@ -126,23 +132,23 @@ const STAT_PILL =
  * other is precisely the pile of foreign palettes this page was just dug out
  * of; the glyph carries the identity and the accent stays the house crimson.
  */
-const TASK_KINDS: Record<string, { icon: LucideIcon; what: string; verb: string }> = {
-    facebook_like:     { icon: ThumbsUp,      what: "Facebook",  verb: "Like" },
-    facebook_share:    { icon: Facebook,      what: "Facebook",  verb: "Share" },
-    instagram_follow:  { icon: Instagram,     what: "Instagram", verb: "Follow" },
-    youtube_subscribe: { icon: Youtube,       what: "YouTube",   verb: "Subscribe" },
-    twitter_follow:    { icon: Twitter,       what: "X",         verb: "Follow" },
-    twitter_retweet:   { icon: Repeat2,       what: "X",         verb: "Repost" },
-    discord_join:      { icon: MessageCircle, what: "Discord",   verb: "Join" },
-    forum_post:        { icon: MessageCircle, what: "Forum",     verb: "Post" },
-    visit_url:         { icon: Link2,         what: "Link",      verb: "Open" },
-    share_giveaway:    { icon: Share2,        what: "Share",     verb: "Share" },
-    daily_visit:       { icon: CalendarCheck, what: "Every day", verb: "Check in" },
-    referral:          { icon: UserPlus,      what: "Invite",    verb: "Invite" },
-    custom:            { icon: Star,          what: "Bonus",     verb: "Start" },
+const TASK_KINDS: Record<string, { icon: LucideIcon; what: string; cta: string }> = {
+    facebook_like:     { icon: ThumbsUp,      what: "Follow our Facebook page",   cta: "Like now" },
+    facebook_share:    { icon: Facebook,      what: "Share us on Facebook",       cta: "Share now" },
+    instagram_follow:  { icon: Instagram,     what: "Follow us on Instagram",     cta: "Follow" },
+    youtube_subscribe: { icon: Youtube,       what: "Subscribe on YouTube",       cta: "Subscribe" },
+    twitter_follow:    { icon: Twitter,       what: "Follow us on X",             cta: "Follow" },
+    twitter_retweet:   { icon: Repeat2,       what: "Repost us on X",             cta: "Repost" },
+    discord_join:      { icon: MessageCircle, what: "Be part of our community",   cta: "Join" },
+    forum_post:        { icon: MessageCircle, what: "Post once in the forum",     cta: "Post" },
+    visit_url:         { icon: Link2,         what: "Open the link",              cta: "Open" },
+    share_giveaway:    { icon: Share2,        what: "Share this giveaway",        cta: "Share" },
+    daily_visit:       { icon: CalendarCheck, what: "Visit daily to keep your streak", cta: "Check in" },
+    referral:          { icon: Users,         what: "Get points for each friend", cta: "Invite" },
+    custom:            { icon: Star,          what: "Bonus task",                 cta: "Start" },
 };
 
-const FALLBACK_KIND = { icon: Star, what: "Task", verb: "Start" };
+const FALLBACK_KIND = { icon: Star, what: "Bonus task", cta: "Start" };
 
 /**
  * Where an invite actually gets sent.
@@ -165,6 +171,39 @@ const SHARE_TARGETS: { label: string; href: (url: string, text: string) => strin
 ];
 
 /**
+ * The head every big section on this page wears.
+ *
+ * An eyebrow naming the section, a sentence saying what it is for, and a
+ * right-hand slot for the figures that belong to it. Panel's own `title` is a
+ * label — right for a prize-tier list, too quiet for the three panels that are
+ * asking the reader to do something.
+ */
+function SectionHead({
+    eyebrow, icon, title, sub, right,
+}: {
+    eyebrow: string;
+    icon: React.ReactNode;
+    title: string;
+    sub?: string;
+    right?: React.ReactNode;
+}) {
+    return (
+        <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 mb-5">
+            <div className="min-w-0">
+                <p className="flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent-ink)]">
+                    {icon} {eyebrow}
+                </p>
+                <h2 className="mt-2 font-display text-[22px] sm:text-[26px] font-black tracking-tight text-white leading-none text-balance">
+                    {title}
+                </h2>
+                {sub && <p className="mt-1.5 text-[12.5px] text-white/50 leading-relaxed">{sub}</p>}
+            </div>
+            {right && <div className="shrink-0">{right}</div>}
+        </div>
+    );
+}
+
+/**
  * A fold, drawn on the same matte sheet as Panel.
  *
  * Panel's own header is a title, not a control, so About and Rules build their
@@ -172,9 +211,10 @@ const SHARE_TARGETS: { label: string; href: (url: string, text: string) => strin
  * the same family as everything around it.
  */
 function Fold({
-    title, icon, open, onToggle, children,
+    title, sub, icon, open, onToggle, children,
 }: {
     title: string;
+    sub?: string;
     icon: React.ReactNode;
     open: boolean;
     onToggle: () => void;
@@ -190,10 +230,15 @@ function Fold({
                 aria-expanded={open}
                 className="w-full flex items-center justify-between gap-4 px-5 py-3.5 text-left hover:bg-white/[0.02] transition-colors duration-200"
             >
-                <h2 className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.15em] text-white/55">
-                    {icon}
-                    {title}
-                </h2>
+                <span className="flex items-start gap-3 min-w-0">
+                    <span className="mt-0.5 shrink-0">{icon}</span>
+                    <span className="min-w-0">
+                        <span className="block font-display text-[11px] font-bold uppercase tracking-[0.15em] text-white/70">
+                            {title}
+                        </span>
+                        {sub && <span className="block mt-1 text-[11.5px] text-white/45 truncate">{sub}</span>}
+                    </span>
+                </span>
                 <ChevronDown
                     className={`w-4 h-4 text-white/30 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
                 />
@@ -217,7 +262,7 @@ function Fold({
 }
 
 export default function GiveawayClient({ slug }: GiveawayClientProps) {
-    const { user, isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
     const [giveaway, setGiveaway]           = useState<Giveaway | null>(null);
     const [entry, setEntry]                 = useState<Entry | null>(null);
     const [loading, setLoading]             = useState(true);
@@ -424,23 +469,24 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
 
     const time             = formatTime(timeRemaining);
     const isEntered        = !!entry;
-    /* The referral task is not a task you do, it is a rate you are paid at:
-       enter() awards its points once per person who arrives on your link. It
-       is kept out of the clickable list — where every other row is completed by
-       the click alone, so this one was a button that paid out for nothing —
-       and its points become the headline of the invite panel instead. */
+    /* The referral task is a rate, not a chore. enter() pays its points once
+       per person who arrives on your link, so it can never be "completed" —
+       which is why it stays out of every counter. It does belong in the list,
+       because inviting is one of the best ways to score and hiding it hid
+       that; its button jumps to the invite panel instead of reporting itself
+       done, and the server refuses it either way. */
     const referralTask     = giveaway.tasks.find(t => t.type === "referral") ?? null;
-    const doableTasks      = giveaway.tasks.filter(t => t.type !== "referral");
-    const requiredTasks    = doableTasks.filter(t => t.is_required);
-    const optionalTasks    = doableTasks.filter(t => !t.is_required);
-    const completedTotal   = doableTasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
+    const scoredTasks      = giveaway.tasks.filter(t => t.type !== "referral");
+    const requiredTasks    = scoredTasks.filter(t => t.is_required);
+    const completedTotal   = scoredTasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
     const completedRequired = requiredTasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
-    /* Required first, otherwise the editor's order. The old page split them
-       into two headed grids; with the Required chip on the row itself, the
-       headings said a second time what the row already says. */
-    const orderedTasks     = [...requiredTasks, ...optionalTasks];
-    const pointsOnOffer    = doableTasks.reduce((sum, t) => sum + t.points, 0);
-    const pointsEarned     = doableTasks
+    /* Required first, otherwise the editor's order. */
+    const orderedTasks     = [
+        ...giveaway.tasks.filter(t => t.is_required),
+        ...giveaway.tasks.filter(t => !t.is_required),
+    ];
+    const pointsOnOffer    = scoredTasks.reduce((sum, t) => sum + t.points, 0);
+    const pointsEarned     = scoredTasks
         .filter(t => entry?.completed_task_ids.includes(t.id))
         .reduce((sum, t) => sum + t.points, 0);
     const shareText        = `I'm in to win ${giveaway.prize.name || giveaway.title} on TechPlay — enter with me:`;
@@ -454,226 +500,295 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
             .share({ title: giveaway.title, text: shareText, url: entry.referral_url })
             .catch(() => { /* dismissed */ });
     };
-    const nextMilestone    = MILESTONE_DAYS.find(m => m > (entry?.streak_days ?? 0));
-    const heroBgImage      = giveaway.featured_image || giveaway.prize.image;
-    /* The thumbnail only earns its place when it is a different picture from
-       the backdrop. Most giveaways are set up with one image and no separate
-       prize shot — test giveaway #7 is — and floating a sharp copy of the
-       backdrop on top of its own blur looks like a mistake, because it is. */
-    const prizeImage       = giveaway.prize.image && giveaway.prize.image !== heroBgImage
-        ? giveaway.prize.image
-        : null;
 
-    // ── One task, as a row you can read at a glance ───────────────────────────
-    const TaskRow = ({ task }: { task: Task }) => {
+    const nextMilestone    = MILESTONE_DAYS.find(m => m > (entry?.streak_days ?? 0));
+    const streakTarget     = nextMilestone ?? MILESTONE_DAYS[MILESTONE_DAYS.length - 1];
+    const heroBgImage      = giveaway.featured_image || giveaway.prize.image;
+
+    /*
+     * When the editor has uploaded a designed banner, that banner is the
+     * headline — GTA 6's carries its own lettering, its own tagline and its own
+     * lighting — and printing our H1 on top of it prints the title twice. So
+     * the heading goes to screen readers only in that case, and stays visible
+     * whenever the hero falls back to a prize photo or the house art, which are
+     * pictures rather than titles.
+     *
+     * The trade: a featured image with no lettering on it leaves the hero
+     * without a visible title. That is the editor's call at upload time, and it
+     * is the right way round — a banner is commissioned, a fallback is not.
+     */
+    const titleIsInArt = !!giveaway.featured_image;
+
+    const scrollToInvite = () => {
+        document.getElementById("invite")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+
+    // ── One task, as the mockup draws it: what, what it pays, and one button ──
+    const TaskCard = ({ task }: { task: Task }) => {
         const kind         = TASK_KINDS[task.type] ?? FALLBACK_KIND;
         const KindIcon     = kind.icon;
-        const isCompleted  = entry?.completed_task_ids.includes(task.id);
+        const isReferral   = task.type === "referral";
+        const isCompleted  = !isReferral && entry?.completed_task_ids.includes(task.id);
         const isCompleting = completingTask === task.id;
 
         return (
-            <li
-                className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 transition-colors duration-200"
-                style={isCompleted ? { background: "color-mix(in srgb, var(--success) 4%, transparent)" } : undefined}
+            <div
+                className="flex flex-col rounded-[var(--radius-panel)] border p-4 transition-colors duration-200"
+                style={{
+                    background: isCompleted
+                        ? "color-mix(in srgb, var(--success) 6%, var(--surface-1))"
+                        : "var(--surface-1)",
+                    borderColor: isCompleted
+                        ? "color-mix(in srgb, var(--success) 30%, transparent)"
+                        : "var(--line)",
+                }}
             >
-                <span
-                    className="w-10 h-10 shrink-0 rounded-[var(--radius-inner)] flex items-center justify-center"
-                    style={{
-                        background: isCompleted
-                            ? "color-mix(in srgb, var(--success) 14%, transparent)"
-                            : "var(--accent-soft)",
-                    }}
-                >
-                    {isCompleted
-                        ? <Check className="w-[18px] h-[18px]" style={{ color: "var(--success)" }} />
-                        : <KindIcon className="w-[18px] h-[18px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
-                </span>
+                <div className="flex items-start justify-between gap-3">
+                    <span
+                        className="w-11 h-11 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center border"
+                        style={{
+                            background: isCompleted
+                                ? "color-mix(in srgb, var(--success) 14%, transparent)"
+                                : "var(--accent-soft)",
+                            borderColor: isCompleted
+                                ? "color-mix(in srgb, var(--success) 30%, transparent)"
+                                : "color-mix(in srgb, var(--accent) 28%, transparent)",
+                        }}
+                    >
+                        {isCompleted
+                            ? <Check className="w-[19px] h-[19px]" style={{ color: "var(--success)" }} />
+                            : <KindIcon className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                    </span>
 
-                <span className="flex-1 min-w-0">
-                    <span className="flex items-center gap-2 min-w-0">
-                        <span className="text-[13px] font-bold text-white truncate">{task.title}</span>
+                    <span
+                        className="shrink-0 font-display text-[10.5px] font-black uppercase tracking-[0.08em] tabular-nums"
+                        style={{ color: isCompleted ? "var(--success)" : "var(--accent-ink)" }}
+                    >
+                        +{task.points} {task.points === 1 ? "Point" : "Points"}
+                    </span>
+                </div>
+
+                <h3 className="mt-3.5 text-[13.5px] font-bold text-white leading-snug">{task.title}</h3>
+
+                {/* The type's own words when the editor left the field empty —
+                    which is the usual case, and a blank line under every title
+                    made the cards look unfinished. */}
+                <p className="mt-1 flex-1 text-[11.5px] text-white/45 leading-relaxed line-clamp-2">
+                    {task.description || kind.what}
+                </p>
+
+                {(task.is_required || task.is_repeatable) && (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {task.is_required && (
-                            <span className="shrink-0 font-display text-[8.5px] font-black uppercase tracking-[0.12em] px-1.5 h-[17px] inline-flex items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)]">
+                            <span className="font-display text-[8.5px] font-black uppercase tracking-[0.12em] px-2 h-[18px] inline-flex items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)]">
                                 Required
                             </span>
                         )}
                         {task.is_repeatable && (
-                            <span className="shrink-0 font-display text-[8.5px] font-black uppercase tracking-[0.12em] px-1.5 h-[17px] inline-flex items-center rounded-full bg-[var(--fill-2)] text-white/55">
+                            <span className="font-display text-[8.5px] font-black uppercase tracking-[0.12em] px-2 h-[18px] inline-flex items-center rounded-full bg-[var(--fill-2)] text-white/55">
                                 Daily
                             </span>
                         )}
-                    </span>
-                    {/* The platform is the part that cannot be typed in wrong,
-                        so it leads — the editor's own words follow it. */}
-                    <span className="block mt-0.5 text-[11.5px] text-white/45 truncate">
-                        {kind.what}{task.description ? ` · ${task.description}` : ""}
-                    </span>
-                </span>
-
-                <span
-                    className="shrink-0 font-display text-[15px] font-black tabular-nums leading-none"
-                    style={{ color: isCompleted ? "var(--success)" : "var(--accent-ink)" }}
-                >
-                    +{task.points}
-                </span>
-
-                {isCompleted ? (
-                    <span
-                        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-inner)] font-display text-[10px] font-black uppercase tracking-[0.1em]"
-                        style={{
-                            background: "color-mix(in srgb, var(--success) 12%, transparent)",
-                            color: "var(--success)",
-                        }}
-                    >
-                        {task.is_repeatable
-                            ? <><Clock className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Tomorrow</span></>
-                            : <><Check className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Done</span></>}
-                    </span>
-                ) : (
-                    <button
-                        onClick={() => handleCompleteTask(task.id, task.url)}
-                        disabled={isCompleting || !giveaway.timing.is_active || !isEntered}
-                        className="btn-command h-9 shrink-0 inline-flex items-center justify-center gap-1.5 min-w-[86px] px-3.5 bg-[var(--accent)] text-white font-display text-[10px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                        {isCompleting
-                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            : kind.verb}
-                    </button>
+                    </div>
                 )}
-            </li>
+
+                <div className="mt-4">
+                    {isCompleted ? (
+                        <span
+                            className="w-full h-10 inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-inner)] font-display text-[10.5px] font-black uppercase tracking-[0.1em]"
+                            style={{
+                                background: "color-mix(in srgb, var(--success) 12%, transparent)",
+                                color: "var(--success)",
+                            }}
+                        >
+                            {task.is_repeatable
+                                ? <><Clock className="w-3.5 h-3.5" /> Come back tomorrow</>
+                                : <><Check className="w-3.5 h-3.5" /> Done</>}
+                        </span>
+                    ) : (
+                        <button
+                            onClick={() => (isReferral ? scrollToInvite() : handleCompleteTask(task.id, task.url))}
+                            disabled={isCompleting || !giveaway.timing.is_active || (!isReferral && !isEntered)}
+                            className="btn-command w-full h-10 inline-flex items-center justify-center gap-1.5 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            {isCompleting
+                                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                : <>{kind.cta} <ArrowRight className="w-3.5 h-3.5" /></>}
+                        </button>
+                    )}
+                </div>
+            </div>
         );
     };
+
+    // ── One figure, drawn as the mockup draws it ──────────────────────────────
+    const StatTile = ({
+        icon, label, value, unit, hint,
+    }: { icon: React.ReactNode; label: string; value: string | number; unit?: string; hint: string }) => (
+        <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] p-4">
+            <div className="flex items-start gap-3">
+                <span className="w-11 h-11 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)]">
+                    {icon}
+                </span>
+                <div className="min-w-0">
+                    <p className="font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50 truncate">{label}</p>
+                    <p className="mt-1 flex items-baseline gap-1">
+                        <span className="font-display text-[26px] font-black tabular-nums leading-none text-white">{value}</span>
+                        {unit && (
+                            <span className="font-display text-[11px] font-bold uppercase tracking-[0.12em] text-white/50">{unit}</span>
+                        )}
+                    </p>
+                </div>
+            </div>
+            <p className="mt-2.5 text-[11.5px] text-white/45">{hint}</p>
+        </div>
+    );
 
     return (
         <main className="min-h-screen bg-[var(--surface-0)]">
 
-            {/* ── hero — the treatment every other page on this site opens with ── */}
-            <section className="relative overflow-hidden border-b border-white/[0.07] bg-[var(--surface-0)]">
+            {/* ══ hero ══
+                The artwork is the headline now. The old treatment laid
+                rgba(5,7,10,0.82) across the middle of the picture, which is the
+                right thing to do to a backdrop and the wrong thing to do to a
+                banner somebody designed — it flattened the art into texture.
+                The darkness is a bottom gradient only, sized to carry the
+                controls that sit in it. */}
+            <section
+                className="relative overflow-hidden border-b border-white/[0.07] bg-[var(--surface-0)] flex flex-col justify-end"
+                style={{ minHeight: "clamp(340px, 40vw, 600px)" }}
+            >
                 {heroBgImage ? (
                     <Image src={heroBgImage} alt="" aria-hidden fill priority sizes="100vw" className="object-cover object-center" />
                 ) : (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={HOUSE_BACKDROP} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-center" />
                 )}
-                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
-                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
+                <span
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{
+                        background:
+                            "linear-gradient(to top, var(--surface-0) 0%, rgba(5,7,10,0.86) 18%, rgba(5,7,10,0.45) 48%, rgba(5,7,10,0.05) 78%, transparent 100%)",
+                    }}
+                />
 
-                <div className="relative z-10 container-page py-9 md:py-12">
+                {/* Status and share ride at the top so they never push the art
+                    down; the picture keeps its full height at every width. */}
+                <div className="absolute top-4 inset-x-0 z-20 container-page flex items-center justify-between gap-4">
+                    {giveaway.winner ? (
+                        <span className={HERO_GLASS}>
+                            <Trophy className="w-3.5 h-3.5 text-[var(--accent)]" />
+                            <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">Winner drawn</span>
+                        </span>
+                    ) : giveaway.timing.has_ended ? (
+                        <span className={HERO_GLASS}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/35" />
+                            <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/60">Closed</span>
+                        </span>
+                    ) : (
+                        <span className={HERO_GLASS}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                            <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">Live now</span>
+                        </span>
+                    )}
 
-                    {/* status + share */}
-                    <div className="flex items-center justify-between gap-4">
-                        {giveaway.winner ? (
-                            <span className={STAT_PILL}>
-                                <Trophy className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">Winner drawn</span>
-                            </span>
-                        ) : giveaway.timing.has_ended ? (
-                            <span className={STAT_PILL}>
-                                <span className="w-1.5 h-1.5 rounded-full bg-white/35" />
-                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/60">Closed</span>
-                            </span>
-                        ) : (
-                            <span className={STAT_PILL}>
-                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">Live now</span>
-                            </span>
-                        )}
+                    <button
+                        onClick={() => {
+                            if (typeof navigator !== "undefined" && navigator.share) {
+                                navigator.share({ title: giveaway.title, url: window.location.href }).catch(() => {});
+                            } else {
+                                navigator.clipboard.writeText(window.location.href);
+                                toast.success("Link copied.");
+                            }
+                        }}
+                        className={`${HERO_GLASS} text-white/60 hover:text-white transition-colors duration-200`}
+                    >
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em]">Share</span>
+                    </button>
+                </div>
 
-                        <button
-                            onClick={() => {
-                                if (typeof navigator !== "undefined" && navigator.share) {
-                                    navigator.share({ title: giveaway.title, url: window.location.href });
-                                } else {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    toast.success("Link copied.");
-                                }
-                            }}
-                            className={`${STAT_PILL} text-white/55 hover:text-white transition-colors duration-200`}
-                        >
-                            <Share2 className="w-3.5 h-3.5" />
-                            <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em]">Share</span>
-                        </button>
-                    </div>
+                <div className="relative z-10 container-page pt-24 pb-8 flex flex-col items-center text-center">
+                    <h1
+                        className={
+                            titleIsInArt
+                                ? "sr-only"
+                                : "font-display font-black uppercase tracking-tight leading-[0.95] text-white text-[30px] sm:text-[40px] md:text-[54px] max-w-4xl text-balance mb-5"
+                        }
+                    >
+                        {giveaway.title}
+                    </h1>
 
-                    <div className="mt-7 flex flex-col items-center text-center tp-fade-up">
-                        {prizeImage && (
-                            <span className="relative block w-24 h-24 md:w-28 md:h-28 mb-5 rounded-[var(--radius-panel)] border border-white/[0.1] bg-black/45 backdrop-blur-sm overflow-hidden">
-                                <Image src={prizeImage} alt={giveaway.prize.name} fill sizes="112px" className="object-contain p-3" />
-                            </span>
-                        )}
-
-                        <h1 className="font-display font-black uppercase tracking-tight leading-[0.95] text-white text-[30px] sm:text-[38px] md:text-[52px] max-w-3xl text-balance">
-                            {giveaway.title}
-                        </h1>
-
-                        {(giveaway.prize.name || giveaway.prize.value) && (
-                            <span className={`${STAT_PILL} mt-4`}>
-                                <Award className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                <span className="font-display text-[11.5px] font-bold text-white">{giveaway.prize.name}</span>
-                                {giveaway.prize.value && (
-                                    <>
-                                        <span aria-hidden className="w-px h-3.5 bg-white/15" />
-                                        <span className="font-display text-[11.5px] font-black tabular-nums text-[var(--accent-ink)]">
-                                            &euro;{giveaway.prize.value.toLocaleString()}
-                                        </span>
-                                    </>
-                                )}
-                            </span>
-                        )}
-
-                        {/* countdown — the hub's cells, at hero size */}
-                        {!giveaway.timing.has_ended && timeRemaining > 0 && (
-                            <div className="mt-7 flex items-center justify-center gap-2 sm:gap-2.5">
-                                {[
-                                    { label: "Days", value: time.days },
-                                    { label: "Hrs",  value: time.hours },
-                                    { label: "Mins", value: time.mins },
-                                    { label: "Secs", value: time.secs },
-                                ].map((cell) => (
-                                    <span
-                                        key={cell.label}
-                                        className="flex flex-col items-center justify-center min-w-[64px] sm:min-w-[78px] px-3 py-3 rounded-[var(--radius-card)] bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
-                                    >
-                                        <span className="font-display text-[26px] sm:text-[32px] font-black tabular-nums text-white leading-none">
-                                            {String(cell.value).padStart(2, "0")}
-                                        </span>
-                                        <span className="mt-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/50">
-                                            {cell.label}
-                                        </span>
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-                            <span className={STAT_PILL}>
-                                <Users className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">
-                                    {giveaway.stats.total_entries.toLocaleString()}
+                    {(giveaway.prize.value || giveaway.prize.name) && (
+                        <span className="inline-flex items-center gap-2.5 h-10 px-5 rounded-full bg-black/55 border border-white/[0.12] backdrop-blur-sm">
+                            <Tag className="w-4 h-4 text-[var(--accent)]" />
+                            {giveaway.prize.value ? (
+                                <span className="font-display text-[15px] font-black tabular-nums text-white">
+                                    &euro;{giveaway.prize.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
-                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50">Taking part</span>
+                            ) : (
+                                <span className="font-display text-[13px] font-bold text-white">{giveaway.prize.name}</span>
+                            )}
+                        </span>
+                    )}
+
+                    {!giveaway.timing.has_ended && timeRemaining > 0 && (
+                        <div className="mt-5 flex items-center justify-center gap-2 sm:gap-2.5">
+                            {[
+                                { label: "Days", value: time.days },
+                                { label: "Hrs",  value: time.hours },
+                                { label: "Mins", value: time.mins },
+                                { label: "Secs", value: time.secs },
+                            ].map((cell) => (
+                                <span
+                                    key={cell.label}
+                                    className="flex flex-col items-center justify-center min-w-[66px] sm:min-w-[82px] px-3 py-2.5 rounded-[var(--radius-card)] bg-black/55 border border-white/[0.12] backdrop-blur-sm"
+                                >
+                                    <span className="font-display text-[24px] sm:text-[30px] font-black tabular-nums text-white leading-none">
+                                        {String(cell.value).padStart(2, "0")}
+                                    </span>
+                                    <span className="mt-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/55">
+                                        {cell.label}
+                                    </span>
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Both figures in one rail, split by a hairline — the shape
+                        the mockup uses, and it reads as one statement. */}
+                    <div className="mt-5 inline-flex flex-wrap items-center justify-center rounded-full bg-black/55 border border-white/[0.12] backdrop-blur-sm overflow-hidden">
+                        <span className="inline-flex items-center gap-2 h-10 px-5">
+                            <Users className="w-4 h-4 text-[var(--accent)]" />
+                            <span className="font-display text-[13px] font-black tabular-nums text-white leading-none">
+                                {giveaway.stats.total_entries.toLocaleString()}
                             </span>
-                            {giveaway.timing.ends_at && (
-                                <span className={STAT_PILL}>
-                                    <CalendarDays className="w-3.5 h-3.5 text-[var(--accent)]" />
-                                    <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">
+                            <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">Taking part</span>
+                        </span>
+                        {giveaway.timing.ends_at && (
+                            <>
+                                <span aria-hidden className="w-px self-stretch bg-white/[0.12]" />
+                                <span className="inline-flex items-center gap-2 h-10 px-5">
+                                    <CalendarDays className="w-4 h-4 text-[var(--accent)]" />
+                                    <span className="font-display text-[13px] font-black tabular-nums text-white leading-none">
                                         {new Date(giveaway.timing.ends_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                                     </span>
-                                    <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50">
+                                    <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/55">
                                         {giveaway.timing.has_ended ? "Ended" : "Closes"}
                                     </span>
                                 </span>
-                            )}
-                        </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </section>
 
-            <div className="container-page max-w-3xl py-6 space-y-4">
+            <div className="container-page py-6 space-y-4">
 
-                {/* ── winner ── */}
+                {/* ══ winner ══ */}
                 {giveaway.winner && (
-                    <Panel material="lit" crown title="We have a winner">
+                    <Panel material="lit" crown>
                         <div className="flex items-center gap-4">
                             <span className="w-12 h-12 shrink-0 rounded-full overflow-hidden bg-[var(--fill-2)] flex items-center justify-center">
                                 {giveaway.winner.avatar ? (
@@ -698,145 +813,97 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </Panel>
                 )}
 
-                {/* ── your entry — the panel that went missing with the leaderboard ──
-                    Removed on 2 March 2026 as collateral in "remove leaderboard,
-                    center layout to single column": the rail went, and with it the
-                    only place that showed a member their points, their odds, their
-                    streak, their referral link and the daily bonus button. The
-                    endpoints stayed live the whole time, so for six months the
-                    daily bonus was a feature nobody could reach. ── */}
+                {/* ══ your progress ══
+                    The panel the March rail took with it, rebuilt to the
+                    mockup: a sentence instead of a label, four instruments
+                    instead of four bare numbers, and the bonus as the one thing
+                    you cannot miss. */}
                 {entry && (
-                    <Panel material="lit" title="Your entry" meta={
-                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
-                            {user?.username ? `@${user.username}` : "Entered"}
-                        </span>
-                    }>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            <Readout label="Points" value={entry.total_points} icon={<Zap className="w-3 h-3 text-[var(--accent)]" />} animate />
-                            <Readout label="Win chance" value={entry.win_chance.toFixed(1)} unit="%" icon={<Target className="w-3 h-3 text-[var(--accent)]" />} />
-                            <Readout label="Referrals" value={entry.referral_count} icon={<Users className="w-3 h-3 text-[var(--accent)]" />} />
-                            <Readout label="Streak" value={entry.streak_days} unit="d" icon={<Flame className="w-3 h-3 text-[var(--accent)]" />} />
-                        </div>
+                    <Panel material="lit" crown>
+                        <SectionHead
+                            eyebrow="Your progress"
+                            icon={<Target className="w-3.5 h-3.5" />}
+                            title="Get closer to victory."
+                            sub={`Complete tasks, earn points and boost your chances to win ${giveaway.prize.name || giveaway.title}.`}
+                            right={
+                                <div className="flex flex-col items-end gap-2">
+                                    <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)]">
+                                        <Crown className="w-3 h-3 text-[var(--accent-ink)]" />
+                                        <span className="font-display text-[9px] font-black uppercase tracking-[0.12em] text-[var(--accent-ink)]">
+                                            Your entries matter
+                                        </span>
+                                    </span>
+                                    <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/45">
+                                        {streakTarget} days running = +{STREAK_MILESTONES[streakTarget]} pts
+                                    </span>
+                                </div>
+                            }
+                        />
 
-                        {nextMilestone && (
-                            <Meter
-                                className="mt-5"
-                                value={entry.streak_days}
-                                max={nextMilestone}
-                                showCount
-                                label={`${nextMilestone} days running = +${STREAK_MILESTONES[nextMilestone]} pts`}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                            <StatTile
+                                icon={<Star className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                label="Points"
+                                value={entry.total_points}
+                                hint={pointsEarned >= pointsOnOffer && pointsOnOffer > 0 ? "Every task claimed." : "Keep earning!"}
                             />
-                        )}
-
-                        {entry.can_claim_daily_bonus && giveaway.timing.is_active && (
-                            <button
-                                onClick={handleClaimDailyBonus}
-                                disabled={claimingBonus}
-                                className="btn-command mt-5 w-full h-11 inline-flex items-center justify-center gap-2 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-40"
-                            >
-                                {claimingBonus
-                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Claiming</>
-                                    : <><Flame className="w-4 h-4" /> Claim today&apos;s bonus</>}
-                            </button>
-                        )}
-
-                    </Panel>
-                )}
-
-                {/* ── invite ──
-                    Its own panel, not a footnote under the entry figures.
-                    Asking somebody to recommend you is the largest thing this
-                    page asks of a reader, and it was three lines of grey text
-                    under a truncated URL: no statement of what it pays, no
-                    tally of what it had already paid, and one Copy button as
-                    the only way to send it. The rate comes first now, because
-                    "+50 pts per friend" is the entire argument. ── */}
-                {entry && (
-                    <Panel material="lit" crown title="Invite friends">
-                        <div className="flex items-baseline gap-2.5 flex-wrap">
-                            {referralTask ? (
-                                <>
-                                    <span className="font-display text-[34px] font-black tabular-nums leading-none text-[var(--accent-ink)]">
-                                        +{referralTask.points}
-                                    </span>
-                                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
-                                        points per friend who enters
-                                    </span>
-                                </>
-                            ) : (
-                                <span className="text-[12.5px] text-white/55 leading-relaxed">
-                                    Share this with someone who would want it — every extra person
-                                    makes the next giveaway bigger.
-                                </span>
-                            )}
+                            <StatTile
+                                icon={<Trophy className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                label="Win chance"
+                                value={entry.win_chance.toFixed(1)}
+                                unit="%"
+                                hint="The more points, the higher your chance."
+                            />
+                            <StatTile
+                                icon={<Users className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                label="Referrals"
+                                value={entry.referral_count}
+                                hint={referralTask ? `+${referralTask.points} pts each. Invite friends!` : "Invite friends!"}
+                            />
+                            <StatTile
+                                icon={<Flame className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                label="Daily streak"
+                                value={entry.streak_days}
+                                unit={entry.streak_days === 1 ? "day" : "days"}
+                                hint="Check in daily!"
+                            />
                         </div>
 
-                        {/* What it has paid so far. A number that is going up is
-                            a better argument than any wording. */}
-                        {referralTask && (
-                            <p className="mt-2 text-[12px] text-white/50">
-                                {entry.referral_count > 0 ? (
-                                    <>
-                                        <span className="font-bold text-white tabular-nums">{entry.referral_count}</span>
-                                        {entry.referral_count === 1 ? " friend has" : " friends have"} joined through you —
-                                        that is{" "}
-                                        <span className="font-bold text-[var(--accent-ink)] tabular-nums">
-                                            +{entry.referral_count * referralTask.points}
-                                        </span>{" "}
-                                        points already.
-                                    </>
-                                ) : (
-                                    <>Nobody has used your link yet. The first one is worth as much as the last.</>
-                                )}
-                            </p>
-                        )}
+                        <Meter
+                            className="mt-4"
+                            value={entry.streak_days}
+                            max={streakTarget}
+                            showCount
+                        />
 
-                        {/* Send it. The share sheet first where the device has
-                            one, then the places a link actually travels here. */}
-                        <div className="mt-4 flex flex-wrap gap-2">
-                            {canNativeShare && (
+                        {giveaway.timing.is_active && (
+                            entry.can_claim_daily_bonus ? (
                                 <button
-                                    onClick={handleNativeShare}
-                                    className="btn-command h-9 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                                    onClick={handleClaimDailyBonus}
+                                    disabled={claimingBonus}
+                                    className="btn-command mt-4 w-full h-12 inline-flex items-center justify-center gap-2 bg-[var(--accent)] text-white font-display text-[12px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-40"
                                 >
-                                    <Share2 className="w-3.5 h-3.5" /> Share
+                                    {claimingBonus
+                                        ? <><Loader2 className="w-4 h-4 animate-spin" /> Claiming</>
+                                        : <><Gift className="w-4 h-4" /> Claim today&apos;s bonus <ArrowRight className="w-4 h-4" /></>}
                                 </button>
-                            )}
-                            {SHARE_TARGETS.map((target) => (
-                                <a
-                                    key={target.label}
-                                    href={target.href(entry.referral_url, shareText)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center h-9 px-3.5 rounded-[var(--radius-inner)] bg-[var(--fill-2)] hover:bg-[var(--fill-3)] border border-[var(--line)] font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/70 hover:text-white transition-colors duration-200"
-                                >
-                                    {target.label}
-                                </a>
-                            ))}
-                        </div>
-
-                        <div className="mt-3 flex items-center gap-2">
-                            <span className="flex-1 min-w-0 h-10 px-3 flex items-center rounded-[var(--radius-inner)] bg-[var(--surface-1)] border border-[var(--line)] text-[11.5px] text-white/55 truncate">
-                                {entry.referral_url}
-                            </span>
-                            <button
-                                onClick={handleCopyReferral}
-                                className="btn-command h-10 shrink-0 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
-                            >
-                                {copied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
-                            </button>
-                        </div>
+                            ) : (
+                                <p className="mt-4 h-12 flex items-center justify-center gap-2 rounded-[var(--radius-inner)] bg-[var(--fill-1)] border border-[var(--line)] font-display text-[10.5px] font-black uppercase tracking-[0.1em] text-white/45">
+                                    <Check className="w-4 h-4" /> Today&apos;s bonus is claimed — come back tomorrow
+                                </p>
+                            )
+                        )}
                     </Panel>
                 )}
 
-                {/* ── the way in ── */}
+                {/* ══ the way in ══ */}
                 {!isAuthenticated ? (
                     <Panel material="instrument">
                         <div className="text-center py-2">
                             <span className="w-12 h-12 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center mx-auto mb-4">
                                 <Gift className="w-5 h-5 text-[var(--accent)]" />
                             </span>
-                            <h2 className="font-display text-[17px] font-black uppercase tracking-tight text-white">Sign in to enter</h2>
+                            <h2 className="font-display text-[20px] font-black tracking-tight text-white">Sign in to enter</h2>
                             <p className="mt-1.5 text-[12.5px] text-white/50 max-w-sm mx-auto leading-relaxed">
                                 Entries are tied to your account, so the draw knows who to hand the prize to.
                             </p>
@@ -844,90 +911,160 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                 href="/login"
                                 className="btn-command mt-5 inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
                             >
-                                <Zap className="w-4 h-4" /> Sign in
+                                <Zap className="w-4 h-4" /> Sign in <ArrowRight className="w-4 h-4" />
                             </Link>
                         </div>
                     </Panel>
                 ) : !isEntered && giveaway.timing.is_active ? (
-                    <Panel material="lit">
+                    <Panel material="lit" crown>
                         <div className="text-center py-2">
                             <span className="w-12 h-12 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center mx-auto mb-4">
                                 <Zap className="w-5 h-5 text-[var(--accent)]" />
                             </span>
-                            <h2 className="font-display text-[17px] font-black uppercase tracking-tight text-white">Join this giveaway</h2>
-                            <p className="mt-1.5 text-[12.5px] text-white/50 max-w-sm mx-auto leading-relaxed">
-                                One click puts you in the draw. The tasks after that are optional, and raise your odds.
+                            <h2 className="font-display text-[22px] font-black tracking-tight text-white">You are one click away.</h2>
+                            <p className="mt-1.5 text-[12.5px] text-white/50 max-w-md mx-auto leading-relaxed">
+                                Entering puts you in the draw straight away. Everything after that is optional and only raises your odds.
                             </p>
                             <button
                                 onClick={handleEnter}
                                 disabled={entering}
-                                className="btn-command mt-5 inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="btn-command mt-5 inline-flex items-center gap-2 h-12 px-7 bg-[var(--accent)] text-white font-display text-[12px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 {entering
                                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Entering</>
-                                    : <><Gift className="w-4 h-4" /> Enter giveaway</>}
+                                    : <><Gift className="w-4 h-4" /> Enter giveaway <ArrowRight className="w-4 h-4" /></>}
                             </button>
                         </div>
                     </Panel>
                 ) : null}
 
-                {/* ── tasks ──
-                    One column, not two. A giveaway usually has a handful of
-                    tasks, and a two-column grid of tall cards left a half-empty
-                    row whenever that number was odd — with a single task it was
-                    a lone card beside an empty half-panel. A list fills the
-                    width at any count and reads the way a to-do list reads. ── */}
-                {doableTasks.length > 0 && (
-                    <Panel
-                        material="instrument"
-                        title="Earn points"
-                        padding="none"
-                        meta={
-                            <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
-                                {entry
-                                    ? <><span className="tabular-nums text-white">{completedTotal}</span> / {doableTasks.length} done</>
-                                    : <>Up to <span className="tabular-nums text-[var(--accent-ink)]">{pointsOnOffer}</span> pts</>}
-                            </span>
-                        }
-                    >
-                        {/* What is still on the table, said once at the top. */}
-                        <div className="px-4 sm:px-5 py-3.5 border-b border-[var(--line)]">
-                            {entry ? (
-                                <Meter
-                                    value={pointsEarned}
-                                    max={pointsOnOffer}
-                                    segmentLimit={0}
-                                    showCount
-                                    label={
-                                        pointsEarned >= pointsOnOffer
-                                            ? "Every point claimed"
-                                            : `${pointsOnOffer - pointsEarned} points still up for grabs`
-                                    }
-                                />
-                            ) : (
-                                <p className="text-[11.5px] text-white/50 leading-relaxed">
-                                    {isAuthenticated
-                                        ? "Enter the giveaway above, then work through these to raise your odds."
-                                        : "Sign in and enter to start collecting these."}
+                {/* ══ refer a friend ══ */}
+                {entry && (
+                    <div id="invite" className="scroll-mt-24">
+                    <Panel material="instrument">
+                        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] gap-5 items-center">
+                            <div className="min-w-0">
+                                <p className="flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent-ink)]">
+                                    <UserPlus className="w-3.5 h-3.5" /> Refer a friend
                                 </p>
-                            )}
-                            {entry && requiredTasks.length > 0 && completedRequired < requiredTasks.length && (
-                                <p className="mt-2 text-[11.5px] text-white/50">
-                                    <span className="text-[var(--accent-ink)] font-bold">
-                                        {requiredTasks.length - completedRequired}
-                                    </span>{" "}
-                                    required {requiredTasks.length - completedRequired === 1 ? "task is" : "tasks are"} still open.
+                                <h2 className="mt-2 font-display text-[22px] sm:text-[26px] font-black tracking-tight text-white leading-none">
+                                    Invite. Earn. Win Together.
+                                </h2>
+                                <p className="mt-1.5 text-[12.5px] text-white/50 leading-relaxed">
+                                    {referralTask
+                                        /* Not "you both earn points" — only the referrer is
+                                           paid, and a promise the backend does not keep is
+                                           worse than no promise. */
+                                        ? <>Share your link. Every friend who enters through it is worth <span className="font-bold text-[var(--accent-ink)]">+{referralTask.points} points</span> to you.</>
+                                        : <>Share your link with friends so more people find this giveaway.</>}
                                 </p>
-                            )}
-                        </div>
 
-                        <ul className="divide-y divide-[var(--line)]">
-                            {orderedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
-                        </ul>
+                                {referralTask && (
+                                    <p className="mt-2 text-[12px] text-white/50">
+                                        {entry.referral_count > 0 ? (
+                                            <>
+                                                <span className="font-bold text-white tabular-nums">{entry.referral_count}</span>
+                                                {entry.referral_count === 1 ? " friend has" : " friends have"} joined through you — that is{" "}
+                                                <span className="font-bold text-[var(--accent-ink)] tabular-nums">
+                                                    +{entry.referral_count * referralTask.points}
+                                                </span>{" "}
+                                                points already.
+                                            </>
+                                        ) : (
+                                            <>Nobody has used your link yet. The first one pays as much as the last.</>
+                                        )}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span className="flex-1 min-w-0 h-11 px-3 flex items-center gap-2 rounded-[var(--radius-inner)] bg-[var(--surface-1)] border border-[var(--line)]">
+                                        <Link2 className="w-4 h-4 shrink-0 text-white/35" />
+                                        <span className="min-w-0 truncate text-[12px] text-white/60">{entry.referral_url}</span>
+                                    </span>
+                                    <button
+                                        onClick={handleCopyReferral}
+                                        className="btn-command h-11 shrink-0 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                                    >
+                                        {copied ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy link</>}
+                                    </button>
+                                </div>
+
+                                {/* Where it actually gets sent. Kept from the
+                                    previous pass: a Copy button alone assumes
+                                    the reader will go and find the app. */}
+                                <div className="mt-2.5 flex flex-wrap gap-2">
+                                    {canNativeShare && (
+                                        <button
+                                            onClick={handleNativeShare}
+                                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-[var(--accent-ink)] hover:brightness-125 transition-[filter] duration-200"
+                                        >
+                                            <Share2 className="w-3.5 h-3.5" /> Share
+                                        </button>
+                                    )}
+                                    {SHARE_TARGETS.map((target) => (
+                                        <a
+                                            key={target.label}
+                                            href={target.href(entry.referral_url, shareText)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center h-8 px-3.5 rounded-full bg-[var(--fill-2)] hover:bg-[var(--fill-3)] border border-[var(--line)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/65 hover:text-white transition-colors duration-200"
+                                        >
+                                            {target.label}
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </Panel>
+                    </div>
+                )}
+
+                {/* ══ earn points ══ */}
+                {giveaway.tasks.length > 0 && (
+                    <Panel material="instrument">
+                        <SectionHead
+                            eyebrow="Earn points"
+                            icon={<Zap className="w-3.5 h-3.5" />}
+                            title="Complete tasks. Rack up points."
+                            sub="The more you do, the higher your chance to win."
+                            right={
+                                <div className="flex flex-col items-end gap-1">
+                                    <span className="font-display text-[10px] font-black uppercase tracking-[0.12em] text-white/45">
+                                        <span className="tabular-nums text-white">{completedTotal}</span>/{scoredTasks.length} completed
+                                    </span>
+                                    <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.12em] text-white/45">
+                                        {pointsOnOffer - pointsEarned > 0
+                                            ? <>{pointsOnOffer - pointsEarned} {pointsOnOffer - pointsEarned === 1 ? "point" : "points"} still up for grabs</>
+                                            : <>Every point claimed</>}
+                                    </span>
+                                </div>
+                            }
+                        />
+
+                        {entry && requiredTasks.length > 0 && completedRequired < requiredTasks.length && (
+                            <p className="-mt-2 mb-4 text-[12px] text-white/50">
+                                <span className="text-[var(--accent-ink)] font-bold tabular-nums">
+                                    {requiredTasks.length - completedRequired}
+                                </span>{" "}
+                                required {requiredTasks.length - completedRequired === 1 ? "task is" : "tasks are"} still open.
+                            </p>
+                        )}
+
+                        {/* auto-fill, not auto-fit: two tasks should be two
+                            cards of a normal size, not two cards stretched
+                            across the whole panel. */}
+                        <div
+                            className="grid gap-3"
+                            style={{ gridTemplateColumns: "repeat(auto-fill, minmax(232px, 1fr))" }}
+                        >
+                            {orderedTasks.map((task) => <TaskCard key={task.id} task={task} />)}
+                        </div>
                     </Panel>
                 )}
 
-                {/* ── prize tiers ── */}
+                {/* ══ prize tiers ══ */}
                 {giveaway.prize_tiers && giveaway.prize_tiers.length > 0 && (
                     <Panel material="instrument" title="Prize tiers" padding="none">
                         <ul className="divide-y divide-[var(--line)]">
@@ -975,33 +1112,38 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </Panel>
                 )}
 
-                {/* ── about ── */}
-                {giveaway.description && (
-                    <Fold
-                        title="About this giveaway"
-                        icon={<Gift className="w-3.5 h-3.5 text-[var(--accent)]" />}
-                        open={descOpen}
-                        onToggle={() => setDescOpen(!descOpen)}
-                    >
-                        <div
-                            className="prose prose-invert prose-sm max-w-none text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed"
-                            dangerouslySetInnerHTML={{ __html: giveaway.description }}
-                        />
-                    </Fold>
-                )}
+                {/* ══ about and rules, side by side ══ */}
+                {(giveaway.description || giveaway.rules) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                        {giveaway.description && (
+                            <Fold
+                                title="About this giveaway"
+                                sub={`Everything you need to know about ${giveaway.title}.`}
+                                icon={<Gift className="w-4 h-4 text-[var(--accent)]" />}
+                                open={descOpen}
+                                onToggle={() => setDescOpen(!descOpen)}
+                            >
+                                <div
+                                    className="prose prose-invert prose-sm max-w-none text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed"
+                                    dangerouslySetInnerHTML={{ __html: giveaway.description }}
+                                />
+                            </Fold>
+                        )}
 
-                {/* ── rules ── */}
-                {giveaway.rules && (
-                    <Fold
-                        title="Rules & terms"
-                        icon={<Trophy className="w-3.5 h-3.5 text-[var(--accent)]" />}
-                        open={rulesOpen}
-                        onToggle={() => setRulesOpen(!rulesOpen)}
-                    >
-                        <p className="text-[12.5px] text-white/60 whitespace-pre-wrap leading-relaxed">
-                            {giveaway.rules}
-                        </p>
-                    </Fold>
+                        {giveaway.rules && (
+                            <Fold
+                                title="Rules & terms"
+                                sub="Read the rules and terms before entering."
+                                icon={<Trophy className="w-4 h-4 text-[var(--accent)]" />}
+                                open={rulesOpen}
+                                onToggle={() => setRulesOpen(!rulesOpen)}
+                            >
+                                <p className="text-[12.5px] text-white/60 whitespace-pre-wrap leading-relaxed">
+                                    {giveaway.rules}
+                                </p>
+                            </Fold>
+                        )}
+                    </div>
                 )}
 
             </div>
