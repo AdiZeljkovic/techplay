@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
     Gift, Clock, Users, Trophy, Check, Share2, Loader2, Zap,
-    CalendarDays, ChevronDown, Copy, Flame, Target, Star, Link2, UserPlus,
+    CalendarDays, ChevronDown, Copy, Flame, Target, Star, Link2,
     CalendarCheck, MessageCircle, Repeat2, ThumbsUp, Facebook, Instagram,
     Youtube, Twitter, Tag, ArrowRight, Crown, type LucideIcon,
 } from "lucide-react";
@@ -938,84 +938,107 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </Panel>
                 ) : null}
 
-                {/* ══ refer a friend ══ */}
+                {/* ══ refer a friend ══
+                    One band, three parts, the way the design draws it: what it
+                    is on the left, the link and its button through the middle,
+                    and the arrow into MORE FRIENDS / BIGGER CHANCES on the
+                    right. The share targets sit under a hairline below, because
+                    the design has no row for them and a Copy button on its own
+                    assumes the reader will go and find the app themselves. ══ */}
                 {entry && (
                     <div id="invite" className="scroll-mt-24">
                     <Panel material="instrument">
-                        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] gap-5 items-center">
-                            <div className="min-w-0">
-                                <p className="flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent-ink)]">
-                                    <UserPlus className="w-3.5 h-3.5" /> Refer a friend
+                        <div className="flex flex-col xl:flex-row xl:items-center gap-5 xl:gap-8">
+
+                            <div className="min-w-0 xl:flex-1">
+                                <p className="font-display text-[10px] font-black uppercase tracking-[0.22em] text-white/55">
+                                    Refer a friend
                                 </p>
                                 <h2 className="mt-2 font-display text-[22px] sm:text-[26px] font-black tracking-tight text-white leading-none">
                                     Invite. Earn. Win Together.
                                 </h2>
                                 <p className="mt-1.5 text-[12.5px] text-white/50 leading-relaxed">
+                                    Share your unique link with friends.{" "}
                                     {referralTask
-                                        /* Not "you both earn points" — only the referrer is
-                                           paid, and a promise the backend does not keep is
-                                           worse than no promise. */
-                                        ? <>Share your link. Every friend who enters through it is worth <span className="font-bold text-[var(--accent-ink)]">+{referralTask.points} points</span> to you.</>
-                                        : <>Share your link with friends so more people find this giveaway.</>}
+                                        /* The design reads "when they join, you both earn
+                                           points". Only the referrer is paid — the joiner
+                                           gets nothing — and a promise the backend does not
+                                           keep is worse than no promise, so this says what
+                                           actually happens. */
+                                        ? <>Every one who joins is worth <span className="font-bold text-[var(--accent-ink)]">+{referralTask.points} points</span> to you.</>
+                                        : <>The more people enter, the bigger the next one gets.</>}
                                 </p>
 
-                                {referralTask && (
-                                    <p className="mt-2 text-[12px] text-white/50">
-                                        {entry.referral_count > 0 ? (
-                                            <>
-                                                <span className="font-bold text-white tabular-nums">{entry.referral_count}</span>
-                                                {entry.referral_count === 1 ? " friend has" : " friends have"} joined through you — that is{" "}
-                                                <span className="font-bold text-[var(--accent-ink)] tabular-nums">
-                                                    +{entry.referral_count * referralTask.points}
-                                                </span>{" "}
-                                                points already.
-                                            </>
-                                        ) : (
-                                            <>Nobody has used your link yet. The first one pays as much as the last.</>
-                                        )}
+                                {referralTask && entry.referral_count > 0 && (
+                                    <p className="mt-1.5 text-[12px] text-white/50">
+                                        <span className="font-bold text-white tabular-nums">{entry.referral_count}</span>
+                                        {entry.referral_count === 1 ? " friend has" : " friends have"} joined through you — that is{" "}
+                                        <span className="font-bold text-[var(--accent-ink)] tabular-nums">
+                                            +{entry.referral_count * referralTask.points}
+                                        </span>{" "}
+                                        points already.
                                     </p>
                                 )}
                             </div>
 
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="flex-1 min-w-0 h-11 px-3 flex items-center gap-2 rounded-[var(--radius-inner)] bg-[var(--surface-1)] border border-[var(--line)]">
-                                        <Link2 className="w-4 h-4 shrink-0 text-white/35" />
-                                        <span className="min-w-0 truncate text-[12px] text-white/60">{entry.referral_url}</span>
-                                    </span>
-                                    <button
-                                        onClick={handleCopyReferral}
-                                        className="btn-command h-11 shrink-0 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
-                                    >
-                                        {copied ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy link</>}
-                                    </button>
-                                </div>
-
-                                {/* Where it actually gets sent. Kept from the
-                                    previous pass: a Copy button alone assumes
-                                    the reader will go and find the app. */}
-                                <div className="mt-2.5 flex flex-wrap gap-2">
-                                    {canNativeShare && (
-                                        <button
-                                            onClick={handleNativeShare}
-                                            className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-[var(--accent-ink)] hover:brightness-125 transition-[filter] duration-200"
-                                        >
-                                            <Share2 className="w-3.5 h-3.5" /> Share
-                                        </button>
-                                    )}
-                                    {SHARE_TARGETS.map((target) => (
-                                        <a
-                                            key={target.label}
-                                            href={target.href(entry.referral_url, shareText)}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center h-8 px-3.5 rounded-full bg-[var(--fill-2)] hover:bg-[var(--fill-3)] border border-[var(--line)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/65 hover:text-white transition-colors duration-200"
-                                        >
-                                            {target.label}
-                                        </a>
-                                    ))}
-                                </div>
+                            <div className="flex items-center gap-2.5 min-w-0 w-full xl:w-[560px] shrink-0">
+                                <span className="flex-1 min-w-0 h-12 px-3.5 flex items-center gap-2.5 rounded-[var(--radius-card)] bg-[var(--surface-1)] border border-[var(--line-strong)]">
+                                    <Link2 className="w-4 h-4 shrink-0 text-white/35" />
+                                    <span className="min-w-0 truncate text-[12.5px] text-white/65">{entry.referral_url}</span>
+                                </span>
+                                <button
+                                    onClick={handleCopyReferral}
+                                    className="btn-command h-12 shrink-0 inline-flex items-center gap-2 px-5 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                                >
+                                    {copied ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy link</>}
+                                </button>
                             </div>
+
+                            {/* Decorative, and marked as such: it repeats in a
+                                picture what the sentence on the left already
+                                says, so a screen reader should not read it out
+                                a second time. */}
+                            <div aria-hidden className="hidden xl:flex items-center gap-3 shrink-0 text-[var(--accent)]">
+                                <svg width="38" height="34" viewBox="0 0 38 34" fill="none">
+                                    <path
+                                        d="M3 5 C 14 2, 27 9, 31 26"
+                                        stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+                                    />
+                                    <path
+                                        d="M23 21 L 31.5 27 L 33 16"
+                                        stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                                    />
+                                </svg>
+                                <Users className="w-9 h-9" strokeWidth={1.7} />
+                                <span className="font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/45 leading-[1.5]">
+                                    More friends<br />Bigger chances
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 pt-4 border-t border-[var(--line)] flex flex-wrap items-center gap-2">
+                            <span className="font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/40 mr-1">
+                                Send it via
+                            </span>
+                            {canNativeShare && (
+                                <button
+                                    onClick={handleNativeShare}
+                                    className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-full bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-[var(--accent-ink)] hover:brightness-125 transition-[filter] duration-200"
+                                >
+                                    <Share2 className="w-3.5 h-3.5" /> Share
+                                </button>
+                            )}
+                            {SHARE_TARGETS.map((target) => (
+                                <a
+                                    key={target.label}
+                                    href={target.href(entry.referral_url, shareText)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center h-8 px-3.5 rounded-full bg-[var(--fill-2)] hover:bg-[var(--fill-3)] border border-[var(--line)] font-display text-[9.5px] font-black uppercase tracking-[0.1em] text-white/65 hover:text-white transition-colors duration-200"
+                                >
+                                    {target.label}
+                                </a>
+                            ))}
                         </div>
                     </Panel>
                     </div>
