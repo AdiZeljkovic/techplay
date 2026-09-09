@@ -46,6 +46,7 @@ use App\Http\Controllers\Api\V1\Gta6CharactersController;
 use App\Http\Controllers\Api\V1\Gta6Controller;
 use App\Http\Controllers\Api\V1\Gta6VehiclesController;
 use App\Http\Controllers\Api\V1\Gta6WeaponsController;
+use App\Http\Controllers\Api\V1\GoogleAuthController;
 use App\Http\Controllers\Api\V1\GuideController;
 use App\Http\Controllers\Api\V1\HelpController;
 use App\Http\Controllers\Api\V1\HomeController;
@@ -138,6 +139,18 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/discord/link-intent', [SocialAuthController::class, 'linkIntent'])
             ->middleware('auth:sanctum');
         Route::get('/auth/discord/callback', [SocialAuthController::class, 'callback']);
+
+        // Sign in with Google.
+        //
+        // Same shape as Discord above, and the link-intent is authenticated
+        // for the same reason: the callback cannot otherwise tell a stranger
+        // signing in from a member attaching an account, and guessing from the
+        // email address is what once gave a member with 1,895 XP a second,
+        // empty account.
+        Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect']);
+        Route::post('/auth/google/link-intent', [GoogleAuthController::class, 'linkIntent'])
+            ->middleware('auth:sanctum');
+        Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
 
         // Social Auth (Battle.net)
         Route::get('/auth/battlenet/redirect', [BattleNetAuthController::class, 'redirect']);

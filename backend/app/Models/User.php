@@ -76,6 +76,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'subscription_ends_at',
         'last_seen_at',
         'discord_id',
+        'google_id',
+        'google_avatar',
         'discord_avatar',
         'last_daily_claim',
         'daily_streak',

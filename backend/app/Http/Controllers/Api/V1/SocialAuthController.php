@@ -260,7 +260,9 @@ class SocialAuthController extends Controller
             // Only a confirmed address verifies ours. Discord hands out
             // addresses the owner never proved they control.
             if (! $existingUser->email_verified_at && $this->providerEmailIsVerified($discordUser)) {
-                $existingUser->update(['email_verified_at' => now()]);
+                // forceFill, not update: `email_verified_at` is deliberately
+                // not mass assignable, so `update()` drops it without a word.
+                $existingUser->forceFill(['email_verified_at' => now()])->save();
             }
 
             // Try to add user to our Discord server (they might have left)
@@ -327,13 +329,24 @@ class SocialAuthController extends Controller
             'username' => $this->uniqueUsername($discordUser->getNickname() ?? $discordUser->getName()),
             'email' => $discordUser->getEmail(),
             'password' => bcrypt(str()->random(16)), // Random password
-            'email_verified_at' => now(), // Verified via Discord
             'discord_id' => $discordUser->getId(),
             'discord_avatar' => $discordUser->getAvatar(),
             'gamertags' => ['discord' => $discordUser->getNickname() ?? $discordUser->getName()],
             // `role` omitted: the legacy column has no reader left and its
             // default is already 'user'. See the note in AuthController@register.
         ]);
+
+        /*
+         * Verified after the create, not inside it.
+         *
+         * `'email_verified_at' => now()` sat in the array above with a comment
+         * saying "Verified via Discord", and did nothing: the column is not
+         * mass assignable — on purpose, it is the flag that decides whether an
+         * address has been proved — so `create()` dropped it silently. Two of
+         * the six accounts that arrived through Discord are unverified because
+         * of it, and nothing in the code said so.
+         */
+        $newUser->forceFill(['email_verified_at' => now()])->save();
 
         $this->storeTokens($newUser, 'discord', $discordUser->token, $discordUser->refreshToken);
 

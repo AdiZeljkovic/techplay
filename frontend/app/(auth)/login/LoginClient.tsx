@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Shield, Mail, RefreshCw, ChevronsRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import Turnstile from "@/components/ui/Turnstile";
 import axios from "@/lib/axios";
 import BrandPanel from "@/components/auth/BrandPanel";
@@ -323,7 +324,9 @@ export default function LoginClient() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <GoogleSignInButton label="Continue with Google" />
+
+                        <div className="mt-3 grid grid-cols-2 gap-3">
                             <button
                                 type="button"
                                 className="h-[48px] rounded-[var(--radius-card)] border border-[var(--line)] text-[var(--ink-mid)] hover:border-[#5865F2] hover:text-[#5865F2] hover:bg-[#5865F2]/5 font-bold text-[12px] uppercase tracking-wider transition-colors flex items-center justify-center gap-2"

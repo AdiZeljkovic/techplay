@@ -92,12 +92,24 @@ class BattleNetAuthController extends Controller
                     'name' => $battlenetUser->name ?? 'BattleNetUser', // "Garamel"
                     'username' => strtolower($battlenetUser->name ?? 'user').rand(1000, 9999),
                     'email' => $battlenetUser->battletag.'@battlenet.local', // Synthetic email
-                    'email_verified_at' => now(), // Auto-verify
                     'password' => Hash::make(Str::random(32)), // Random password
                     'battlenet_id' => $battlenetUser->id,
                     'battlenet_region' => $region,
                     'battletag' => $battlenetUser->battletag,
                 ]);
+
+                /*
+                 * Verified after the create, not inside it.
+                 *
+                 * `email_verified_at` is not mass assignable — it is the flag
+                 * that says an address has been proved, and no request body
+                 * may set it — so passing it to `create()` did nothing at all.
+                 * The address here is synthetic anyway (`@battlenet.local`);
+                 * what the flag means for these accounts is "there is no
+                 * mailbox to chase", which is still true and still has to be
+                 * written.
+                 */
+                $user->forceFill(['email_verified_at' => now()])->save();
             }
 
             // Secrets go to user_integrations, encrypted — new and returning alike.

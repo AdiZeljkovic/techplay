@@ -100,6 +100,20 @@ return [
             : 'https://api-m.sandbox.paypal.com',
     ],
 
+    /*
+     * Sign in with Google.
+     *
+     * The redirect must be the API callback below and must match, character
+     * for character, the "Authorised redirect URI" in the Google Cloud
+     * console. Google refuses on any difference, including a trailing slash,
+     * and says only redirect_uri_mismatch.
+     */
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', 'https://techplay.gg/api/v1/auth/google/callback'),
+    ],
+
     'discord' => [
         // Where the bot listens for a publish. Localhost — it runs on this
         // machine, so this never crosses the network.

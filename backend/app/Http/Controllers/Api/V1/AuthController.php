@@ -851,6 +851,10 @@ class AuthController extends Controller
             'gamertags',
             'steam_id', 'psn_id', 'xbox_gamertag', 'discord_username',
             'battlenet_id', 'battletag', 'battlenet_region', 'discord_avatar',
+            // Google, dodan 10.09.2026. Test brisanja naloga ga je uhvatio isti
+            // dan kad je kolona nastala — probni podatak je prezivio brisanje,
+            // sto je tacno ono za sta taj test i postoji.
+            'google_id', 'google_avatar',
             // Ostaci veze s Discordom. discord_id se brisao, a ova dva su
             // ostajala — kad je clanstvo uslo i kad je zadnji put provjereno.
             'discord_guild_joined_at', 'discord_guild_checked_at',
