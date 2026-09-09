@@ -796,6 +796,24 @@ mjerljivom, mora biti vidljiv iz HTML-a.**
 Javno ime vraća 403 izazov serverskim zahtjevima. Mjeri na `127.0.0.1:8000` sa
 `Host` zaglavljem.
 
+### Brisanje jednog dijela odnese i sve što je bilo pored njega
+
+Commit `22e628f2` (02.03.2026) zove se *"remove leaderboard, center layout to
+single column"* i skinuo je 183 linije sa `GiveawayClient.tsx`. Ljestvica je
+bila **3** od njih. Ostalih 180 bio je desni stubac oko nje: bodovi učesnika,
+šansa za dobitak, niz dana, referral link i dugme za dnevni bonus.
+
+Ništa nije puklo i ništa nije prijavljeno. `POST /giveaways/{slug}/daily-bonus`
+je nastavio raditi i odgovarati **šest mjeseci**, samo ga ništa na sajtu nije
+zvalo; `handleClaimDailyBonus`, `handleCopyReferral`, `streakProgress` i
+`RING_CIRCUMFERENCE` su cijelo to vrijeme stajali u fajlu, izračunati i
+neiskorišteni. Ko bi ušao u nagradnu igru, ne bi dobio nikakvu potvrdu da jeste.
+
+Vraćeno 09.09.2026. Pouka je opštija od nagradnih igara: **kad se briše jedan
+element, provjeri šta je bilo u kontejneru oko njega** — i ako ostane funkcija
+koju niko ne zove, to nije mrtav kod nego ekran koji je nestao. ESLint na ovom
+projektu ne prijavljuje neiskorištene lokalne funkcije, pa nije ni imao ko reći.
+
 ---
 
 ## 17. Šta nije ono što izgleda
