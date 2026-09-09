@@ -66,24 +66,6 @@
         @endforeach
     </div>
 
-    {{-- What the two numbers mean, said once and plainly. --}}
-    <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200">
-        <p>
-            <strong>Ovo nije isto što i Google Analytics, i ne treba da bude.</strong>
-            GA broji samo čitaoce koji su prihvatili kolačiće — kod nas oko desetina njih.
-            Ova stranica broji <strong>svakoga</strong>, jer ne pohranjuje nijedan identifikator:
-            ni kolačić, ni IP adresu. Posjetilac je heš adrese i pregledača sa solju koja se
-            baca i pravi nanovo svake noći.
-        </p>
-        <p class="mt-2 text-xs opacity-90">
-            Zato „posjetioci" za period duži od dana znači <em>zbir dnevnih posjetilaca</em>, a ne
-            jedinstvene ljude — isti čovjek sutra je drugi heš. To je cijena toga što brojanje ne
-            traži pristanak. Od
-            {{ number_format($totals['visitors']) }} dnevnih posjetilaca njih
-            {{ number_format($totals['consented']) }} je dalo pristanak, i samo bi ti bili u GA.
-        </p>
-    </div>
-
     {{-- Days --}}
     <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
         <p class="mb-3 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
