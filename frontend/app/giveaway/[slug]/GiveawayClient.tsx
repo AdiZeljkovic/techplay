@@ -6,8 +6,10 @@ import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
 import {
-    Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap,
-    Award, CalendarDays, ChevronDown, Copy, Flame, Target,
+    Gift, Clock, Users, Trophy, Check, Share2, Loader2, Zap, Award,
+    CalendarDays, ChevronDown, Copy, Flame, Target, Star, Link2, UserPlus,
+    CalendarCheck, MessageCircle, Repeat2, ThumbsUp, Facebook, Instagram,
+    Youtube, Twitter, type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -105,6 +107,42 @@ const HOUSE_CONFETTI = ["#DC143C", "#FF4D6A", "#FFFFFF"];
 /** The pill the hub uses for its four figures. Same shape, same material. */
 const STAT_PILL =
     "inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm";
+
+/**
+ * What a task actually is.
+ *
+ * `giveaway_tasks.type` is an enum of twelve — like a Facebook page, subscribe
+ * on YouTube, join the Discord, check in daily — and the API has been sending
+ * it all along. The page ignored it completely: every task, whatever it was,
+ * came out as an editor-chosen emoji above the word START. So a reader looking
+ * at the list could not tell a Discord join from an Instagram follow without
+ * reading the title, and if the title was unhelpful they could not tell at all.
+ *
+ * The type is the one part of a task that cannot be typed in wrong, so it is
+ * what the row leads with: the right glyph, the platform named, and a button
+ * that says the verb — Follow, Subscribe, Join — instead of a generic START.
+ *
+ * Deliberately no brand colours. Facebook blue and YouTube red next to each
+ * other is precisely the pile of foreign palettes this page was just dug out
+ * of; the glyph carries the identity and the accent stays the house crimson.
+ */
+const TASK_KINDS: Record<string, { icon: LucideIcon; what: string; verb: string }> = {
+    facebook_like:     { icon: ThumbsUp,      what: "Facebook",  verb: "Like" },
+    facebook_share:    { icon: Facebook,      what: "Facebook",  verb: "Share" },
+    instagram_follow:  { icon: Instagram,     what: "Instagram", verb: "Follow" },
+    youtube_subscribe: { icon: Youtube,       what: "YouTube",   verb: "Subscribe" },
+    twitter_follow:    { icon: Twitter,       what: "X",         verb: "Follow" },
+    twitter_retweet:   { icon: Repeat2,       what: "X",         verb: "Repost" },
+    discord_join:      { icon: MessageCircle, what: "Discord",   verb: "Join" },
+    forum_post:        { icon: MessageCircle, what: "Forum",     verb: "Post" },
+    visit_url:         { icon: Link2,         what: "Link",      verb: "Open" },
+    share_giveaway:    { icon: Share2,        what: "Share",     verb: "Share" },
+    daily_visit:       { icon: CalendarCheck, what: "Every day", verb: "Check in" },
+    referral:          { icon: UserPlus,      what: "Invite",    verb: "Invite" },
+    custom:            { icon: Star,          what: "Bonus",     verb: "Start" },
+};
+
+const FALLBACK_KIND = { icon: Star, what: "Task", verb: "Start" };
 
 /**
  * A fold, drawn on the same matte sheet as Panel.
@@ -329,6 +367,14 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const optionalTasks    = giveaway.tasks.filter(t => !t.is_required);
     const completedTotal   = giveaway.tasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
     const completedRequired = requiredTasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
+    /* Required first, otherwise the editor's order. The old page split them
+       into two headed grids; with the Required chip on the row itself, the
+       headings said a second time what the row already says. */
+    const orderedTasks     = [...requiredTasks, ...optionalTasks];
+    const pointsOnOffer    = giveaway.tasks.reduce((sum, t) => sum + t.points, 0);
+    const pointsEarned     = giveaway.tasks
+        .filter(t => entry?.completed_task_ids.includes(t.id))
+        .reduce((sum, t) => sum + t.points, 0);
     const nextMilestone    = MILESTONE_DAYS.find(m => m > (entry?.streak_days ?? 0));
     const heroBgImage      = giveaway.featured_image || giveaway.prize.image;
     /* The thumbnail only earns its place when it is a different picture from
@@ -339,91 +385,83 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         ? giveaway.prize.image
         : null;
 
-    // ── One task, drawn as the site draws a card ──────────────────────────────
-    const TaskCard = ({ task }: { task: Task }) => {
+    // ── One task, as a row you can read at a glance ───────────────────────────
+    const TaskRow = ({ task }: { task: Task }) => {
+        const kind         = TASK_KINDS[task.type] ?? FALLBACK_KIND;
+        const KindIcon     = kind.icon;
         const isCompleted  = entry?.completed_task_ids.includes(task.id);
         const isCompleting = completingTask === task.id;
 
         return (
-            <div
-                className="relative rounded-[var(--radius-card)] border p-4 flex flex-col gap-3.5 transition-colors duration-200"
-                style={{
-                    background: isCompleted
-                        ? "color-mix(in srgb, var(--success) 5%, var(--surface-1))"
-                        : "var(--surface-1)",
-                    borderColor: isCompleted
-                        ? "color-mix(in srgb, var(--success) 28%, transparent)"
-                        : "var(--line)",
-                }}
+            <li
+                className="flex items-center gap-3.5 px-4 sm:px-5 py-3.5 transition-colors duration-200"
+                style={isCompleted ? { background: "color-mix(in srgb, var(--success) 4%, transparent)" } : undefined}
             >
-                <div className="flex items-start justify-between gap-3">
-                    <span
-                        className="w-11 h-11 shrink-0 rounded-[var(--radius-inner)] flex items-center justify-center text-[19px] leading-none"
-                        style={{
-                            background: isCompleted
-                                ? "color-mix(in srgb, var(--success) 14%, transparent)"
-                                : "var(--fill-2)",
-                        }}
-                    >
-                        {isCompleted
-                            ? <Check className="w-5 h-5" style={{ color: "var(--success)" }} />
-                            : <span aria-hidden>{task.icon}</span>}
-                    </span>
+                <span
+                    className="w-10 h-10 shrink-0 rounded-[var(--radius-inner)] flex items-center justify-center"
+                    style={{
+                        background: isCompleted
+                            ? "color-mix(in srgb, var(--success) 14%, transparent)"
+                            : "var(--accent-soft)",
+                    }}
+                >
+                    {isCompleted
+                        ? <Check className="w-[18px] h-[18px]" style={{ color: "var(--success)" }} />
+                        : <KindIcon className="w-[18px] h-[18px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                </span>
 
-                    <span className="flex gap-1.5 flex-wrap justify-end">
+                <span className="flex-1 min-w-0">
+                    <span className="flex items-center gap-2 min-w-0">
+                        <span className="text-[13px] font-bold text-white truncate">{task.title}</span>
                         {task.is_required && (
-                            <span className="font-display text-[9px] font-black uppercase tracking-[0.12em] px-2 h-5 inline-flex items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)]">
+                            <span className="shrink-0 font-display text-[8.5px] font-black uppercase tracking-[0.12em] px-1.5 h-[17px] inline-flex items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)]">
                                 Required
                             </span>
                         )}
                         {task.is_repeatable && (
-                            <span className="font-display text-[9px] font-black uppercase tracking-[0.12em] px-2 h-5 inline-flex items-center rounded-full bg-[var(--fill-2)] text-white/55">
+                            <span className="shrink-0 font-display text-[8.5px] font-black uppercase tracking-[0.12em] px-1.5 h-[17px] inline-flex items-center rounded-full bg-[var(--fill-2)] text-white/55">
                                 Daily
                             </span>
                         )}
                     </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                    <h3 className="text-[13px] font-bold text-white leading-snug">{task.title}</h3>
-                    {task.description && (
-                        <p className="mt-1 text-[11.5px] text-white/50 leading-relaxed line-clamp-2">{task.description}</p>
-                    )}
-                </div>
-
-                <div className="flex items-center justify-between gap-3">
-                    <span
-                        className="font-display text-[19px] font-black tabular-nums leading-none"
-                        style={{ color: isCompleted ? "var(--success)" : "var(--accent-ink)" }}
-                    >
-                        +{task.points}
+                    {/* The platform is the part that cannot be typed in wrong,
+                        so it leads — the editor's own words follow it. */}
+                    <span className="block mt-0.5 text-[11.5px] text-white/45 truncate">
+                        {kind.what}{task.description ? ` · ${task.description}` : ""}
                     </span>
+                </span>
 
-                    {isCompleted ? (
-                        <span
-                            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-[var(--radius-inner)] font-display text-[10.5px] font-black uppercase tracking-[0.1em]"
-                            style={{
-                                background: "color-mix(in srgb, var(--success) 12%, transparent)",
-                                color: "var(--success)",
-                            }}
-                        >
-                            {task.is_repeatable
-                                ? <><Clock className="w-3.5 h-3.5" /> Tomorrow</>
-                                : <><Check className="w-3.5 h-3.5" /> Done</>}
-                        </span>
-                    ) : (
-                        <button
-                            onClick={() => handleCompleteTask(task.id, task.url)}
-                            disabled={isCompleting || !giveaway.timing.is_active || !isEntered}
-                            className="btn-command h-9 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-                        >
-                            {isCompleting
-                                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                : <><ExternalLink className="w-3.5 h-3.5" /> Start</>}
-                        </button>
-                    )}
-                </div>
-            </div>
+                <span
+                    className="shrink-0 font-display text-[15px] font-black tabular-nums leading-none"
+                    style={{ color: isCompleted ? "var(--success)" : "var(--accent-ink)" }}
+                >
+                    +{task.points}
+                </span>
+
+                {isCompleted ? (
+                    <span
+                        className="shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-[var(--radius-inner)] font-display text-[10px] font-black uppercase tracking-[0.1em]"
+                        style={{
+                            background: "color-mix(in srgb, var(--success) 12%, transparent)",
+                            color: "var(--success)",
+                        }}
+                    >
+                        {task.is_repeatable
+                            ? <><Clock className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Tomorrow</span></>
+                            : <><Check className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Done</span></>}
+                    </span>
+                ) : (
+                    <button
+                        onClick={() => handleCompleteTask(task.id, task.url)}
+                        disabled={isCompleting || !giveaway.timing.is_active || !isEntered}
+                        className="btn-command h-9 shrink-0 inline-flex items-center justify-center gap-1.5 min-w-[86px] px-3.5 bg-[var(--accent)] text-white font-display text-[10px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        {isCompleting
+                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            : kind.verb}
+                    </button>
+                )}
+            </li>
         );
     };
 
@@ -687,48 +725,59 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </Panel>
                 ) : null}
 
-                {/* ── tasks ── */}
+                {/* ── tasks ──
+                    One column, not two. A giveaway usually has a handful of
+                    tasks, and a two-column grid of tall cards left a half-empty
+                    row whenever that number was odd — with a single task it was
+                    a lone card beside an empty half-panel. A list fills the
+                    width at any count and reads the way a to-do list reads. ── */}
                 {giveaway.tasks.length > 0 && (
                     <Panel
                         material="instrument"
                         title="Earn points"
-                        meta={entry ? (
-                            <span className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
-                                <span className="tabular-nums text-white">{completedTotal}</span>
-                                <span>/ {giveaway.tasks.length} done</span>
-                                {requiredTasks.length > 0 && (
-                                    <span className="px-2 h-5 inline-flex items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)] font-black tabular-nums">
-                                        {completedRequired}/{requiredTasks.length} req
-                                    </span>
-                                )}
+                        padding="none"
+                        meta={
+                            <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
+                                {entry
+                                    ? <><span className="tabular-nums text-white">{completedTotal}</span> / {giveaway.tasks.length} done</>
+                                    : <>Up to <span className="tabular-nums text-[var(--accent-ink)]">{pointsOnOffer}</span> pts</>}
                             </span>
-                        ) : undefined}
+                        }
                     >
-                        {requiredTasks.length > 0 && (
-                            <div>
-                                {optionalTasks.length > 0 && (
-                                    <p className="mb-3 font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
-                                        Required
-                                    </p>
-                                )}
-                                <div className="grid sm:grid-cols-2 gap-3">
-                                    {requiredTasks.map((task) => <TaskCard key={task.id} task={task} />)}
-                                </div>
-                            </div>
-                        )}
+                        {/* What is still on the table, said once at the top. */}
+                        <div className="px-4 sm:px-5 py-3.5 border-b border-[var(--line)]">
+                            {entry ? (
+                                <Meter
+                                    value={pointsEarned}
+                                    max={pointsOnOffer}
+                                    segmentLimit={0}
+                                    showCount
+                                    label={
+                                        pointsEarned >= pointsOnOffer
+                                            ? "Every point claimed"
+                                            : `${pointsOnOffer - pointsEarned} points still up for grabs`
+                                    }
+                                />
+                            ) : (
+                                <p className="text-[11.5px] text-white/50 leading-relaxed">
+                                    {isAuthenticated
+                                        ? "Enter the giveaway above, then work through these to raise your odds."
+                                        : "Sign in and enter to start collecting these."}
+                                </p>
+                            )}
+                            {entry && requiredTasks.length > 0 && completedRequired < requiredTasks.length && (
+                                <p className="mt-2 text-[11.5px] text-white/50">
+                                    <span className="text-[var(--accent-ink)] font-bold">
+                                        {requiredTasks.length - completedRequired}
+                                    </span>{" "}
+                                    required {requiredTasks.length - completedRequired === 1 ? "task is" : "tasks are"} still open.
+                                </p>
+                            )}
+                        </div>
 
-                        {optionalTasks.length > 0 && (
-                            <div className={requiredTasks.length > 0 ? "mt-5 pt-5 border-t border-[var(--line)]" : undefined}>
-                                {requiredTasks.length > 0 && (
-                                    <p className="mb-3 font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
-                                        Bonus
-                                    </p>
-                                )}
-                                <div className="grid sm:grid-cols-2 gap-3">
-                                    {optionalTasks.map((task) => <TaskCard key={task.id} task={task} />)}
-                                </div>
-                            </div>
-                        )}
+                        <ul className="divide-y divide-[var(--line)]">
+                            {orderedTasks.map((task) => <TaskRow key={task.id} task={task} />)}
+                        </ul>
                     </Panel>
                 )}
 
