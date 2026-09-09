@@ -263,3 +263,24 @@ Schedule::command('forum:clear-expired-pins')->hourly()->withoutOverlapping(10)-
 // CAMPAIGN: Founder badge for the first 50 full profiles — no-ops once all
 // 50 are awarded, so it can stay scheduled for the whole campaign
 Schedule::command('campaign:founders')->dailyAt('10:00')->onFailure($reportFailure('campaign:founders'));
+
+/*
+ * The site's own reader count.
+ *
+ * Today is rolled up every ten minutes so the admin page is current without
+ * reading raw rows to draw a chart; yesterday is rolled up once more after
+ * midnight, because a hit that arrives at 23:59:58 lands after the last run of
+ * the day it belongs to.
+ *
+ * The rollup rebuilds a day rather than adding to it, so an extra run costs
+ * nothing and a missed one is repaired by the next.
+ */
+Schedule::command('analytics:rollup')
+    ->everyTenMinutes()
+    ->withoutOverlapping(10)
+    ->onFailure($reportFailure('analytics:rollup'));
+
+Schedule::command('analytics:prune')
+    ->dailyAt('03:40')
+    ->withoutOverlapping(60)
+    ->onFailure($reportFailure('analytics:prune'));

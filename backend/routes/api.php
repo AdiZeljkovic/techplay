@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AboutController;
 use App\Http\Controllers\Api\V1\AchievementController;
 use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AdController;
+use App\Http\Controllers\Api\V1\AnalyticsIngestController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\AuthorController;
 use App\Http\Controllers\Api\V1\BacklogAdvisorController;
@@ -91,6 +92,18 @@ use App\Http\Controllers\Api\V1\WowAnalyzerController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+
+    /*
+     * The frontend's GA relay hands us a copy of every hit.
+     *
+     * Public in the routing sense and closed by a shared secret in the
+     * controller, because the caller is our own Next process rather than a
+     * signed-in person. The throttle is high on purpose: this is one call per
+     * page view of the whole site, all of it arriving from one address.
+     */
+    Route::middleware('throttle:6000,1')
+        ->post('/analytics/collect', [AnalyticsIngestController::class, 'collect']);
+
     // System Status (Public)
     Route::get('/system/status', [SystemController::class, 'status']);
     /*

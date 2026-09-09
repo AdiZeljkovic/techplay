@@ -38,6 +38,7 @@ Ostao je `docs/incidenti/` — zapisi incidenata ne zastarijevaju.
 16. [Zamke](#16-zamke)
 17. [Šta nije ono što izgleda](#17-šta-nije-ono-što-izgleda)
 18. [Mobilna aplikacija](#18-mobilna-aplikacija)
+19. [Mjerenje posjete](#19-mjerenje-posjete)
 
 ---
 
@@ -526,6 +527,12 @@ Scheduler je u `routes/console.php`, radi kao `www-data`. Svaki unos ima
 | **Resend / Postmark / SES** | mail | `RESEND_KEY` … |
 | **Slack** | obavijesti | `SLACK_*` |
 
+Jedan ključ nije vanjski servis nego dogovor između naša dva procesa:
+`ANALYTICS_INGEST_TOKEN` mora biti **isti** u `backend/.env` i
+`frontend/.env.local`. Frontendov GA relej njime potpisuje kopiju svakog
+pogotka koju šalje backendu (vidi §19). Ako nije postavljen, prijem je ugašen —
+endpoint vraća 404, a ne otvorena vrata.
+
 `php artisan env:validate` provjerava da je sve što aplikacija stvarno traži
 zaista postavljeno. Izlaz 1 znači „sajt ovako ne može raditi” i prekida deploy;
 nedostajuća integracija je upozorenje i ne prekida ništa.
@@ -815,6 +822,76 @@ tiho raziđu.
 **Ništa se ne može poslati u prodavnice bez developerskih naloga.** Apple 99 $
 godišnje s provjerom identiteta koja traje sedmicama, Google Play 25 $
 jednokratno. Push, Sign in with Apple i provjereni deep linkovi svi čekaju to.
+
+---
+
+## 19. Mjerenje posjete
+
+Postoje **dva brojača i oni se neće složiti**. To nije kvar; svaki broji drugu
+stvar, i razlika je dvocifreni faktor.
+
+### Google Analytics broji one koji su pristali
+
+Od **2. septembra 2026.** banner za kolačiće je konačno spojen s Consent Mode.
+Do tada je `<head>` bezuslovno tvrdio `analytics_storage: 'granted'` bez obzira
+šta je čovjek kliknuo — i uz to `client_storage: 'none'`, pa GA nije smio
+sačuvati identifikator. Posljedica: **svako učitavanje stranice bilo je novi
+„aktivni korisnik"**. Odatle 70.000 korisnika u 90 dana i prosječno vrijeme
+angažmana od pet sekundi.
+
+Sada je tačno, i zato je malo: 8. septembra 2.094 pogotka su nosila `gcs=G100`
+(odbijeno) i 157 `gcs=G111` (odobreno). GA je prijavio **11** aktivnih
+korisnika. Stopa pristanka je 2–7%.
+
+**Ne vraćati staro ponašanje.** Nije stvar u propisu nego u tome da imamo
+zabilježeno „ne" i da smo pratili uprkos njemu — a i brojka je bila netačna.
+
+### Naš brojač broji sve
+
+Sajt već relejira svaki GA pogodak kroz `/proxy/ga` na vlastitom imenu (da
+blokatori ne presijeku mjerenje). Taj relej sada šalje kopiju i nama:
+
+```
+pregledač → /proxy/ga/g/collect  (frontend)
+                ├── Google
+                └── POST /api/v1/analytics/collect  (backend)
+```
+
+Nema druge skripte na stranici i čitalac ne čeka ništa — oba slanja idu kroz
+Next-ov `after()`, nakon što je odgovor već poslan.
+
+**Zašto ne traži pristanak:** ne pohranjuje nijedan identifikator. Nema našeg
+kolačića i **IP adresa se ne upisuje** — posjetilac je `sha256(so + IP +
+agent)`, a so se baca i pravi nanovo svake noći.
+
+**Cijena toga:** isti čovjek sutra je drugi heš. „Jedinstveni posjetioci ovog
+mjeseca" je pitanje na koje ovaj dizajn **ne može** odgovoriti, i stranica to
+piše umjesto da izmišlja. Plausible i slični prave istu zamjenu.
+
+### Botovi se broje i pokazuju
+
+Ne filtriraju se tiho. Svaki pogodak nosi `is_bot` i `bot_reason`, izvještaji
+čitaju `is_bot = false`, a stranica **piše koliko je izuzela**. Broj koji tiho
+izbacuje stvari je broj koji niko ne može provjeriti.
+
+Pravilo koje odvaja: agent koji tvrdi da je Chrome a ne šalje `sec-ch-ua`.
+Svaki pravi Chrome i Edge ga šalje od 2021. **Isto to pravilo je namjerno
+odbijeno za blokiranje na nginxu** — Googlebotov agent također sadrži
+`Chrome/`, a firewall ne smije biti u krivu oko Googlebota. Ovdje biti u pravu
+o Googlebotu je poenta: on nije čitalac.
+
+### Tabele i poslovi
+
+| | |
+|---|---|
+| `analytics_events` | sirovi pogoci, brišu se nakon 90 dana |
+| `analytics_daily` | dnevni zbirovi, čuvaju se zauvijek |
+| `analytics_daily_breakdowns` | stranice, izvori, države, uređaji, pregledači |
+| `analytics:rollup` | svakih 10 minuta; **gradi dan nanovo**, ne dodaje na njega |
+| `analytics:prune` | 03:40, briše sirove redove starije od 90 dana |
+| `ANALYTICS_INGEST_TOKEN` | mora biti isti u `backend/.env` i `frontend/.env.local`; ako nije postavljen, prijem je ugašen a ne otvoren |
+
+Izvještaj je u Filamentu: **System → Analitika**.
 
 ---
 

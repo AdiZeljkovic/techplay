@@ -11,6 +11,17 @@ return [
     | channel. Same chat, so there is one place to look.
     */
 
+    /*
+     * The site's own analytics, fed by the frontend's GA relay.
+     *
+     * The token is what stops anyone else posting readers into our numbers.
+     * It has to match ANALYTICS_INGEST_TOKEN in the frontend's environment;
+     * unset on either side, ingestion is simply off and the endpoint 404s.
+     */
+    'analytics' => [
+        'ingest_token' => env('ANALYTICS_INGEST_TOKEN'),
+    ],
+
     'telegram' => [
         'token' => env('TELEGRAM_ALERT_TOKEN'),
         'chat_id' => env('TELEGRAM_ALERT_CHAT_ID'),

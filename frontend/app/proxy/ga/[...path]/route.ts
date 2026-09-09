@@ -2,6 +2,23 @@ import { after, NextRequest, NextResponse } from "next/server";
 
 const GA_UPSTREAM = "https://www.google-analytics.com";
 
+/**
+ * Our own counter, fed from the same wire.
+ *
+ * Google Analytics counts active users only from readers who granted consent,
+ * which here is 2-7% of them — 11 people on 8 September 2026, against 1,568
+ * clients that had actually run the tag. This relay already sees all of them.
+ * So it hands a copy to our own API, which stores no identifier and therefore
+ * needs no permission to count.
+ *
+ * Both forwards happen after the browser has been answered and neither can
+ * delay it. If the token is unset the copy is simply not sent: a site that
+ * cannot reach its own analytics must still reach Google.
+ */
+const OURS = process.env.ANALYTICS_INGEST_URL
+    || "https://api-beta.techplay.gg/api/v1/analytics/collect";
+const OURS_TOKEN = process.env.ANALYTICS_INGEST_TOKEN || "";
+
 /** GA's collection endpoints. Anything else is not ours to relay. */
 const ALLOWED = new Set(["g/collect", "collect", "j/collect", "mp/collect", "debug/mp/collect"]);
 
@@ -69,6 +86,42 @@ async function proxy(request: NextRequest, path: string[]): Promise<NextResponse
             // upstream errors are not the visitor's problem
         }
     });
+
+    if (OURS_TOKEN) {
+        /*
+         * The address and user agent travel as fields, not as this request's
+         * own: by the time our API sees it, the connection belongs to this
+         * Next process rather than to the reader.
+         *
+         * `sec-ch-ua` travels as a yes or no. Whether it is present is the one
+         * reliable way to tell a real Chrome from something wearing its name —
+         * every Chrome and Edge has sent it since 2021 — and it is a signal
+         * that only exists here, on the browser's own request.
+         */
+        const params: Record<string, string> = {};
+        searchParams.forEach((value, key) => { params[key] = value; });
+
+        after(async () => {
+            try {
+                await fetch(OURS, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Analytics-Token": OURS_TOKEN,
+                    },
+                    body: JSON.stringify({
+                        params,
+                        ip: clientIp || "0.0.0.0",
+                        ua: userAgent,
+                        hints: Boolean(request.headers.get("sec-ch-ua")),
+                    }),
+                });
+            } catch {
+                // Our own counter failing is not the visitor's problem either,
+                // and it must never become Google's.
+            }
+        });
+    }
 
     /*
      * Always 204 so the browser does not retry — and never stored. gtag sends
