@@ -513,6 +513,7 @@ Scheduler je u `routes/console.php`, radi kao `www-data`. Svaki unos ima
 | **PlayStation** | trofeji preko `npsso` | `PSN_ENABLED` |
 | **GOG** | biblioteka preko koda | `GOG_ENABLED` |
 | **Epic** | biblioteka preko koda | `EPIC_ENABLED` |
+| **Google** | prijava „Sign in with Google" | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` |
 | **Discord** | OAuth prijava, bot, objave | `DISCORD_*` |
 | **Battle.net** | OAuth prijava | `BATTLENET_*` |
 | **Blizzard** | podaci o WoW liku | `BLIZZARD_*` |
@@ -689,6 +690,28 @@ Testovi koji čuvaju skupo naučene stvari:
 
 Stvari koje se ne vide iz koda i koje su plaćene greškama. Ovo je najkorisniji
 dio dokumenta.
+
+### `email_verified_at` se ne može postaviti kroz `create()`
+
+Kolona **nije u `$fillable`**, i to namjerno: ona odlučuje je li adresa
+dokazana, pa je nijedno tijelo zahtjeva ne smije postaviti. Posljedica je da
+`User::create(['email_verified_at' => now()])` **ne pukne — tiho je odbaci**.
+
+Tri toka prijave su radila tačno to, jedan od njih s komentarom
+`// Verified via Discord` pored linije koja ništa nije radila. Rezultat: **2 od
+6 naloga** koji su došli kroz Discord nemaju potvrđenu adresu, a iz koda se
+činilo da je imaju. Nađeno 10. 9. 2026. dok se pisala Google prijava.
+
+Piše se **poslije** stvaranja i eksplicitno:
+
+```php
+$user->forceFill(['email_verified_at' => now()])->save();
+```
+
+Isto vrijedi za `update()`. Ako dodaješ kolonu koja nosi lični podatak, vidi i
+`AccountDeletionErasesEverythingTest` — on upiše probni podatak u svaku
+tekstualnu kolonu i traži da nijedan ne preživi brisanje naloga. Uhvatio je
+`google_id` i `google_avatar` isti dan kad su nastali.
 
 ### Octane ubija zahtjev na 30 sekundi
 
