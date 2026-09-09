@@ -55,9 +55,16 @@ class AnalyticsCollector
 
     /**
      * @param  array<string, string>  $params  the hit's query string, parsed
+     * @param  bool  $hasClientHints  whether the browser sent `sec-ch-ua`
+     * @param  ?Carbon  $occurredAt  when it happened, for a backfill from logs
      */
-    public function record(array $params, string $ip, string $userAgent, bool $hasClientHints): ?AnalyticsEvent
-    {
+    public function record(
+        array $params,
+        string $ip,
+        string $userAgent,
+        bool $hasClientHints,
+        ?Carbon $occurredAt = null
+    ): ?AnalyticsEvent {
         $url = $params['dl'] ?? null;
 
         if (! $url) {
@@ -72,10 +79,11 @@ class AnalyticsCollector
             return null;
         }
 
-        [$reason] = [$this->botReason($userAgent, $hasClientHints)];
+        $when = $occurredAt ?? now();
+        $reason = $this->botReason($userAgent, $hasClientHints);
 
         return AnalyticsEvent::create([
-            'visitor' => substr(hash('sha256', $this->salt().$ip.$userAgent), 0, 32),
+            'visitor' => substr(hash('sha256', $this->salt($when).$ip.$userAgent), 0, 32),
             'session' => $params['sid'] ?? null,
             'event' => Str::limit($params['en'] ?? 'page_view', 39, ''),
             'path' => $path,
@@ -93,7 +101,7 @@ class AnalyticsCollector
             'consent' => isset($params['gcs']) ? Str::limit($params['gcs'], 7, '') : null,
             'is_bot' => $reason !== null,
             'bot_reason' => $reason,
-            'occurred_at' => now(),
+            'occurred_at' => $when,
         ]);
     }
 
