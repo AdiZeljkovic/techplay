@@ -5,10 +5,16 @@ import { useAuth } from "@/hooks/useAuth";
 import axios from "@/lib/axios";
 import Link from "next/link";
 import Image from "next/image";
-import { Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap, Award, Star, CalendarDays, ChevronDown } from "lucide-react";
+import {
+    Gift, Clock, Users, Trophy, Check, ExternalLink, Share2, Loader2, Zap,
+    Award, CalendarDays, ChevronDown, Copy, Flame, Target,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import toast from "react-hot-toast";
+import Panel from "@/components/ui/Panel";
+import Readout from "@/components/ui/Readout";
+import Meter from "@/components/ui/Meter";
 
 interface Task {
     id: number;
@@ -82,8 +88,75 @@ interface GiveawayClientProps {
 
 const STREAK_MILESTONES: Record<number, number> = { 3: 5, 7: 10, 14: 20, 30: 50 };
 const MILESTONE_DAYS = [3, 7, 14, 30];
-const RING_RADIUS = 26;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+/**
+ * The house backdrop, and the house palette.
+ *
+ * This page used to carry a gold-and-orange "prize" theme of its own — twenty-one
+ * off-token colours and twelve gradients, none of which appear anywhere else on
+ * the site. A reader arriving from /giveaways, which is crimson on near-black
+ * like everything else, landed somewhere that looked like a different product.
+ * Every colour here now comes from a token, and the greens left are --success
+ * used for state, which is what that token is for.
+ */
+const HOUSE_BACKDROP = "/images/page-hero.webp";
+const HOUSE_CONFETTI = ["#DC143C", "#FF4D6A", "#FFFFFF"];
+
+/** The pill the hub uses for its four figures. Same shape, same material. */
+const STAT_PILL =
+    "inline-flex items-center gap-2 h-8 px-3.5 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm";
+
+/**
+ * A fold, drawn on the same matte sheet as Panel.
+ *
+ * Panel's own header is a title, not a control, so About and Rules build their
+ * header here rather than fighting it — but from the same tokens, so it sits in
+ * the same family as everything around it.
+ */
+function Fold({
+    title, icon, open, onToggle, children,
+}: {
+    title: string;
+    icon: React.ReactNode;
+    open: boolean;
+    onToggle: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <section
+            className="relative rounded-[var(--radius-panel)] border overflow-hidden"
+            style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+        >
+            <button
+                onClick={onToggle}
+                aria-expanded={open}
+                className="w-full flex items-center justify-between gap-4 px-5 py-3.5 text-left hover:bg-white/[0.02] transition-colors duration-200"
+            >
+                <h2 className="flex items-center gap-2.5 font-display text-[11px] font-bold uppercase tracking-[0.15em] text-white/55">
+                    {icon}
+                    {title}
+                </h2>
+                <ChevronDown
+                    className={`w-4 h-4 text-white/30 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+                />
+            </button>
+
+            <AnimatePresence initial={false}>
+                {open && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.28, ease: "easeInOut" }}
+                        style={{ overflow: "hidden" }}
+                    >
+                        <div className="px-5 pb-5 pt-4 border-t border-[var(--line)]">{children}</div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </section>
+    );
+}
 
 export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const { user, isAuthenticated } = useAuth();
@@ -132,13 +205,12 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         if (giveaway?.winner) {
             const duration = 3000;
             const end = Date.now() + duration;
-            const colors = ['#FF4D6A', '#f7931e', '#fdc830', '#37ecba', '#8b5cf6'];
             (function frame() {
-                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
-                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
+                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors: HOUSE_CONFETTI });
+                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors: HOUSE_CONFETTI });
                 if (Date.now() < end) requestAnimationFrame(frame);
             }());
-            setTimeout(() => { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }, 500);
+            setTimeout(() => { confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: HOUSE_CONFETTI }); }, 500);
         }
     }, [giveaway?.winner]);
 
@@ -177,7 +249,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         try {
             const res = await axios.post(`/giveaways/${slug}/tasks/${taskId}/complete`);
             setEntry(res.data.data);
-            confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 }, colors: ['#DC143C', '#f7931e', '#fdc830'] });
+            confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 }, colors: HOUSE_CONFETTI });
         } catch (e: unknown) {
             const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
             toast.error(msg ?? "That did not go through. Please try again.");
@@ -192,7 +264,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         try {
             const res = await axios.post(`/giveaways/${slug}/daily-bonus`);
             setEntry(res.data.data);
-            confetti({ particleCount: 20, spread: 50, origin: { y: 0.6 }, colors: ['#f97316', '#eab308', '#fbbf24'] });
+            confetti({ particleCount: 20, spread: 50, origin: { y: 0.6 }, colors: HOUSE_CONFETTI });
         } catch (e: unknown) {
             const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
             toast.error(msg ?? "That did not go through. Please try again.");
@@ -211,41 +283,43 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     // ── Loading skeleton ──────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="min-h-screen">
-                <div className="relative w-full min-h-[60vh] bg-gradient-to-b from-white/[0.04] to-[var(--surface-0)] animate-pulse" />
-                <div className="max-w-6xl mx-auto px-4 py-10">
-                    <div className="grid lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-4">
-                            {[160, 72, 72, 72].map((h, i) => (
-                                <div key={i} className="rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" style={{ height: h }} />
-                            ))}
-                        </div>
-                        <div className="h-80 rounded-[var(--radius-panel)] bg-white/[0.04] animate-pulse" />
-                    </div>
+            <main className="min-h-screen bg-[var(--surface-0)]">
+                <div className="h-[320px] w-full border-b border-white/[0.07] bg-[var(--surface-1)] animate-pulse" />
+                <div className="container-page max-w-3xl py-6 space-y-4">
+                    {[132, 220, 96, 96].map((h, i) => (
+                        <div
+                            key={i}
+                            className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] animate-pulse"
+                            style={{ height: h }}
+                        />
+                    ))}
                 </div>
-            </div>
+            </main>
         );
     }
 
     // ── Giveaway not found ────────────────────────────────────────────────────
     if (!giveaway) {
         return (
-            <div className="min-h-screen flex items-center justify-center px-4">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-center max-w-sm"
-                >
-                    <div className="w-24 h-24 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mx-auto mb-6">
-                        <Gift className="w-12 h-12 text-white/20" />
-                    </div>
-                    <h1 className="text-2xl font-bold text-white mb-2">Giveaway Not Found</h1>
-                    <p className="text-white/55 text-sm leading-relaxed">This giveaway may have ended or doesn&apos;t exist.</p>
-                    <Link href="/" className="btn-command inline-flex items-center gap-2 mt-6 px-5 py-2.5 bg-[var(--accent)] text-white text-sm font-bold hover:bg-[var(--accent-hover)] transition-colors">
-                        Back to Home
+            <main className="min-h-screen bg-[var(--surface-0)] flex items-center justify-center px-4">
+                <div className="text-center max-w-sm tp-fade-up">
+                    <span className="w-14 h-14 rounded-[var(--radius-panel)] bg-[var(--surface-1)] border border-[var(--line)] flex items-center justify-center mx-auto mb-5">
+                        <Gift className="w-6 h-6 text-white/25" />
+                    </span>
+                    <h1 className="font-display text-[20px] font-black uppercase tracking-tight text-white mb-2">
+                        Giveaway not found
+                    </h1>
+                    <p className="text-[12.5px] text-white/50 leading-relaxed">
+                        This giveaway may have ended, or it never existed.
+                    </p>
+                    <Link
+                        href="/giveaways"
+                        className="btn-command inline-flex items-center gap-2 mt-5 h-10 px-5 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                    >
+                        All giveaways
                     </Link>
-                </motion.div>
-            </div>
+                </div>
+            </main>
         );
     }
 
@@ -256,581 +330,486 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const completedTotal   = giveaway.tasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
     const completedRequired = requiredTasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
     const nextMilestone    = MILESTONE_DAYS.find(m => m > (entry?.streak_days ?? 0));
-    const streakProgress   = nextMilestone ? ((entry?.streak_days ?? 0) / nextMilestone) * 100 : 100;
     const heroBgImage      = giveaway.featured_image || giveaway.prize.image;
+    /* The thumbnail only earns its place when it is a different picture from
+       the backdrop. Most giveaways are set up with one image and no separate
+       prize shot — test giveaway #7 is — and floating a sharp copy of the
+       backdrop on top of its own blur looks like a mistake, because it is. */
+    const prizeImage       = giveaway.prize.image && giveaway.prize.image !== heroBgImage
+        ? giveaway.prize.image
+        : null;
 
-    // ── Reusable task card renderer ───────────────────────────────────────────
-    const TaskCard = ({ task, idx }: { task: Task; idx: number }) => {
+    // ── One task, drawn as the site draws a card ──────────────────────────────
+    const TaskCard = ({ task }: { task: Task }) => {
         const isCompleted  = entry?.completed_task_ids.includes(task.id);
         const isCompleting = completingTask === task.id;
-        return (
-            <motion.div
-                key={task.id}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                whileHover={{ scale: 1.02, transition: { duration: 0.15 } }}
-                whileTap={{ scale: 0.98 }}
-                className={`relative rounded-[var(--radius-panel)] border p-5 flex flex-col gap-4 transition-all duration-300 ${
-                    isCompleted
-                        ? 'border-green-500/25 bg-green-500/[0.03] shadow-[0_0_20px_rgba(16,185,129,0.04)]'
-                        : task.is_required
-                            ? 'border-red-500/15 bg-white/[0.02] hover:border-red-500/25 hover:bg-white/[0.03]'
-                            : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.10] hover:bg-white/[0.03]'
-                }`}
-            >
-                {/* Top accent bar */}
-                <div className={`absolute top-0 inset-x-0 h-[2px] rounded-t-2xl ${
-                    isCompleted
-                        ? 'bg-gradient-to-r from-green-400 to-emerald-500'
-                        : task.is_required
-                            ? 'bg-gradient-to-r from-red-500 to-orange-500'
-                            : 'bg-[var(--accent)]/35'
-                }`} />
 
-                {/* Icon + badges */}
-                <div className="flex items-start justify-between pt-1">
-                    <div className={`w-14 h-14 rounded-[var(--radius-card)] flex items-center justify-center text-2xl flex-shrink-0 ${
-                        isCompleted ? 'bg-green-500/12' : 'bg-[var(--accent)]/8'
-                    }`}>
-                        {isCompleted ? <Check className="w-7 h-7 text-green-400" /> : <span>{task.icon}</span>}
-                    </div>
-                    <div className="flex gap-1.5 flex-wrap justify-end">
+        return (
+            <div
+                className="relative rounded-[var(--radius-card)] border p-4 flex flex-col gap-3.5 transition-colors duration-200"
+                style={{
+                    background: isCompleted
+                        ? "color-mix(in srgb, var(--success) 5%, var(--surface-1))"
+                        : "var(--surface-1)",
+                    borderColor: isCompleted
+                        ? "color-mix(in srgb, var(--success) 28%, transparent)"
+                        : "var(--line)",
+                }}
+            >
+                <div className="flex items-start justify-between gap-3">
+                    <span
+                        className="w-11 h-11 shrink-0 rounded-[var(--radius-inner)] flex items-center justify-center text-[19px] leading-none"
+                        style={{
+                            background: isCompleted
+                                ? "color-mix(in srgb, var(--success) 14%, transparent)"
+                                : "var(--fill-2)",
+                        }}
+                    >
+                        {isCompleted
+                            ? <Check className="w-5 h-5" style={{ color: "var(--success)" }} />
+                            : <span aria-hidden>{task.icon}</span>}
+                    </span>
+
+                    <span className="flex gap-1.5 flex-wrap justify-end">
                         {task.is_required && (
-                            <span className="text-[10px] bg-red-500/12 text-red-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            <span className="font-display text-[9px] font-black uppercase tracking-[0.12em] px-2 h-5 inline-flex items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)]">
                                 Required
                             </span>
                         )}
                         {task.is_repeatable && (
-                            <span className="text-[10px] bg-[var(--accent)]/10 text-[var(--accent)] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                            <span className="font-display text-[9px] font-black uppercase tracking-[0.12em] px-2 h-5 inline-flex items-center rounded-full bg-[var(--fill-2)] text-white/55">
                                 Daily
                             </span>
                         )}
-                    </div>
+                    </span>
                 </div>
 
-                {/* Content */}
-                <div className="flex-1">
-                    <h3 className="font-bold text-white text-sm leading-snug">{task.title}</h3>
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-[13px] font-bold text-white leading-snug">{task.title}</h3>
                     {task.description && (
-                        <p className="text-xs text-white/50 mt-1 leading-relaxed line-clamp-2">{task.description}</p>
+                        <p className="mt-1 text-[11.5px] text-white/50 leading-relaxed line-clamp-2">{task.description}</p>
                     )}
                 </div>
 
-                {/* Footer: points + button */}
-                <div className="flex items-center justify-between">
-                    <span className={`text-2xl font-black ${isCompleted ? 'text-green-400' : 'text-[var(--accent)]'}`}>
+                <div className="flex items-center justify-between gap-3">
+                    <span
+                        className="font-display text-[19px] font-black tabular-nums leading-none"
+                        style={{ color: isCompleted ? "var(--success)" : "var(--accent-ink)" }}
+                    >
                         +{task.points}
                     </span>
-                    <button
-                        onClick={() => handleCompleteTask(task.id, task.url)}
-                        disabled={isCompleted || isCompleting || !giveaway.timing.is_active || !isEntered}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-sm font-bold transition-all duration-200 ${
-                            isCompleted
-                                ? 'bg-green-500/10 text-green-400 cursor-default'
-                                : 'btn-command bg-[var(--accent)] text-white hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed'
-                        }`}
-                    >
-                        {isCompleting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : task.is_repeatable && isCompleted ? (
-                            <><Clock className="w-3.5 h-3.5" /> Tomorrow</>
-                        ) : isCompleted ? (
-                            <><Check className="w-3.5 h-3.5" /> Done</>
-                        ) : (
-                            <><ExternalLink className="w-3.5 h-3.5" /> Start</>
-                        )}
-                    </button>
+
+                    {isCompleted ? (
+                        <span
+                            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-[var(--radius-inner)] font-display text-[10.5px] font-black uppercase tracking-[0.1em]"
+                            style={{
+                                background: "color-mix(in srgb, var(--success) 12%, transparent)",
+                                color: "var(--success)",
+                            }}
+                        >
+                            {task.is_repeatable
+                                ? <><Clock className="w-3.5 h-3.5" /> Tomorrow</>
+                                : <><Check className="w-3.5 h-3.5" /> Done</>}
+                        </span>
+                    ) : (
+                        <button
+                            onClick={() => handleCompleteTask(task.id, task.url)}
+                            disabled={isCompleting || !giveaway.timing.is_active || !isEntered}
+                            className="btn-command h-9 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            {isCompleting
+                                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                : <><ExternalLink className="w-3.5 h-3.5" /> Start</>}
+                        </button>
+                    )}
                 </div>
-            </motion.div>
+            </div>
         );
     };
 
     return (
-        <div className="min-h-screen">
+        <main className="min-h-screen bg-[var(--surface-0)]">
 
-            {/* ══════════════════════════════════════════════════════════════
-                CINEMATIC HERO
-            ══════════════════════════════════════════════════════════════ */}
-            <section className="relative w-full min-h-[65vh] flex flex-col justify-end overflow-hidden">
-
-                {/* Background image — blurred */}
-                {heroBgImage && (
-                    <div className="absolute inset-0">
-                        <Image
-                            src={heroBgImage}
-                            alt=""
-                            fill
-                            priority
-                            className="object-cover"
-                            style={{ transform: 'scale(1.08)' }}
-                        />
-                    </div>
+            {/* ── hero — the treatment every other page on this site opens with ── */}
+            <section className="relative overflow-hidden border-b border-white/[0.07] bg-[var(--surface-0)]">
+                {heroBgImage ? (
+                    <Image src={heroBgImage} alt="" aria-hidden fill priority sizes="100vw" className="object-cover object-center" />
+                ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={HOUSE_BACKDROP} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-center" />
                 )}
+                <span aria-hidden className="absolute inset-0 bg-[radial-gradient(58%_120%_at_50%_45%,rgba(5,7,10,0.82),rgba(5,7,10,0.55)_72%)]" />
+                <span aria-hidden className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--surface-0)] to-transparent" />
 
-                {/* Fallback orbs when no image */}
-                {!heroBgImage && (
-                    <div className="absolute inset-0 overflow-hidden">
-                    </div>
-                )}
+                <div className="relative z-10 container-page py-9 md:py-12">
 
-                {/* Overlay layers */}
-                <div className="absolute inset-0 bg-black/65" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-[var(--surface-0)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_55%,rgba(220,20,60,0.07),transparent)]" />
+                    {/* status + share */}
+                    <div className="flex items-center justify-between gap-4">
+                        {giveaway.winner ? (
+                            <span className={STAT_PILL}>
+                                <Trophy className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">Winner drawn</span>
+                            </span>
+                        ) : giveaway.timing.has_ended ? (
+                            <span className={STAT_PILL}>
+                                <span className="w-1.5 h-1.5 rounded-full bg-white/35" />
+                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white/60">Closed</span>
+                            </span>
+                        ) : (
+                            <span className={STAT_PILL}>
+                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
+                                <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em] text-white">Live now</span>
+                            </span>
+                        )}
 
-                {/* Content */}
-                <div className="relative z-10 w-full max-w-4xl mx-auto px-4 pt-10 pb-14 text-center">
-
-                    {/* Top row: status badge + share */}
-                    <div className="flex items-center justify-between mb-10">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.4 }}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-sm"
-                        >
-                            {giveaway.winner ? (
-                                <><Trophy className="w-3.5 h-3.5 text-yellow-400" /><span className="text-yellow-400 font-semibold">Winner Announced</span></>
-                            ) : giveaway.timing.has_ended ? (
-                                <><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-red-400 font-semibold">Ended</span></>
-                            ) : (
-                                <><div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /><span className="text-green-400 font-semibold">Live Giveaway</span></>
-                            )}
-                        </motion.div>
-
-                        <motion.button
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.4 }}
+                        <button
                             onClick={() => {
-                                if (typeof navigator !== 'undefined' && navigator.share) {
+                                if (typeof navigator !== "undefined" && navigator.share) {
                                     navigator.share({ title: giveaway.title, url: window.location.href });
                                 } else {
                                     navigator.clipboard.writeText(window.location.href);
+                                    toast.success("Link copied.");
                                 }
                             }}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white/60 hover:text-white text-sm transition-colors"
+                            className={`${STAT_PILL} text-white/55 hover:text-white transition-colors duration-200`}
                         >
-                            <Share2 className="w-3.5 h-3.5" /> Share
-                        </motion.button>
+                            <Share2 className="w-3.5 h-3.5" />
+                            <span className="font-display text-[9.5px] font-black uppercase tracking-[0.12em]">Share</span>
+                        </button>
                     </div>
 
-                    {/* Floating prize image */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 24, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="flex justify-center mb-8"
-                    >
-                        <div className="relative">
-                            <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-[var(--radius-panel)] border border-white/10 bg-black/50 backdrop-blur-md overflow-hidden flex items-center justify-center shadow-2xl">
-                                {giveaway.prize.image ? (
-                                    <Image
-                                        src={giveaway.prize.image}
-                                        alt={giveaway.prize.name}
-                                        fill
-                                        className="object-contain p-4 drop-shadow-2xl"
-                                    />
-                                ) : (
-                                    <Gift className="w-16 h-16 text-[var(--accent)]" />
-                                )}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Title */}
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1, duration: 0.5 }}
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-none mb-5 drop-shadow-2xl"
-                    >
-                        {giveaway.title}
-                    </motion.h1>
-
-                    {/* Prize badge */}
-                    {(giveaway.prize.name || giveaway.prize.value) && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2, duration: 0.4 }}
-                            className="flex justify-center mb-8"
-                        >
-                            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10">
-                                <Award className="w-4 h-4 text-[var(--accent)]" />
-                                <span className="text-sm font-bold text-white">{giveaway.prize.name}</span>
-                                {giveaway.prize.value && (
-                                    <>
-                                        <div className="w-px h-4 bg-white/20" />
-                                        <span className="text-sm font-black text-[var(--accent)]">&euro;{giveaway.prize.value.toLocaleString()}</span>
-                                    </>
-                                )}
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* Countdown timer */}
-                    {!giveaway.timing.has_ended && timeRemaining > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3, duration: 0.4 }}
-                            className="mb-8"
-                        >
-                            <div className="text-[9px] uppercase tracking-[0.2em] text-white/50 font-bold mb-3">Time Remaining</div>
-                            <div className="flex justify-center gap-2 sm:gap-3">
-                                {[
-                                    { label: 'Days', value: time.days },
-                                    { label: 'Hrs',  value: time.hours },
-                                    { label: 'Min',  value: time.mins },
-                                    { label: 'Sec',  value: time.secs },
-                                ].map((item) => (
-                                    <div
-                                        key={item.label}
-                                        className="flex flex-col items-center min-w-[72px] sm:min-w-[88px] md:min-w-[100px] px-3 py-4 rounded-[var(--radius-panel)] bg-black/50 backdrop-blur-md border border-white/10"
-                                    >
-                                        <motion.span
-                                            key={item.value}
-                                            initial={{ scale: 1.1, opacity: 0.7 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ duration: 0.15 }}
-                                            className="text-3xl sm:text-4xl md:text-5xl font-black text-white tabular-nums leading-none"
-                                        >
-                                            {String(item.value).padStart(2, '0')}
-                                        </motion.span>
-                                        <span className="text-[9px] uppercase tracking-widest text-white/50 mt-2 font-bold">{item.label}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {/* Stats row */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.4, duration: 0.4 }}
-                        className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/50"
-                    >
-                        <span className="flex items-center gap-1.5">
-                            <Users className="w-4 h-4 text-[var(--accent)]" />
-                            <span className="font-bold text-white">{giveaway.stats.total_entries.toLocaleString()}</span>
-                            <span>participants</span>
-                        </span>
-                        {giveaway.timing.ends_at && (
-                            <span className="flex items-center gap-1.5">
-                                <CalendarDays className="w-4 h-4" />
-                                <span>{giveaway.timing.has_ended ? 'Ended' : 'Ends'}:</span>
-                                <span className={`font-semibold ml-1 ${giveaway.timing.has_ended ? 'text-red-400' : 'text-white'}`}>
-                                    {new Date(giveaway.timing.ends_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                </span>
+                    <div className="mt-7 flex flex-col items-center text-center tp-fade-up">
+                        {prizeImage && (
+                            <span className="relative block w-24 h-24 md:w-28 md:h-28 mb-5 rounded-[var(--radius-panel)] border border-white/[0.1] bg-black/45 backdrop-blur-sm overflow-hidden">
+                                <Image src={prizeImage} alt={giveaway.prize.name} fill sizes="112px" className="object-contain p-3" />
                             </span>
                         )}
-                    </motion.div>
+
+                        <h1 className="font-display font-black uppercase tracking-tight leading-[0.95] text-white text-[30px] sm:text-[38px] md:text-[52px] max-w-3xl text-balance">
+                            {giveaway.title}
+                        </h1>
+
+                        {(giveaway.prize.name || giveaway.prize.value) && (
+                            <span className={`${STAT_PILL} mt-4`}>
+                                <Award className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <span className="font-display text-[11.5px] font-bold text-white">{giveaway.prize.name}</span>
+                                {giveaway.prize.value && (
+                                    <>
+                                        <span aria-hidden className="w-px h-3.5 bg-white/15" />
+                                        <span className="font-display text-[11.5px] font-black tabular-nums text-[var(--accent-ink)]">
+                                            &euro;{giveaway.prize.value.toLocaleString()}
+                                        </span>
+                                    </>
+                                )}
+                            </span>
+                        )}
+
+                        {/* countdown — the hub's cells, at hero size */}
+                        {!giveaway.timing.has_ended && timeRemaining > 0 && (
+                            <div className="mt-7 flex items-center justify-center gap-2 sm:gap-2.5">
+                                {[
+                                    { label: "Days", value: time.days },
+                                    { label: "Hrs",  value: time.hours },
+                                    { label: "Mins", value: time.mins },
+                                    { label: "Secs", value: time.secs },
+                                ].map((cell) => (
+                                    <span
+                                        key={cell.label}
+                                        className="flex flex-col items-center justify-center min-w-[64px] sm:min-w-[78px] px-3 py-3 rounded-[var(--radius-card)] bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm"
+                                    >
+                                        <span className="font-display text-[26px] sm:text-[32px] font-black tabular-nums text-white leading-none">
+                                            {String(cell.value).padStart(2, "0")}
+                                        </span>
+                                        <span className="mt-1.5 font-display text-[8.5px] font-bold uppercase tracking-[0.14em] text-white/50">
+                                            {cell.label}
+                                        </span>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+                            <span className={STAT_PILL}>
+                                <Users className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">
+                                    {giveaway.stats.total_entries.toLocaleString()}
+                                </span>
+                                <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50">Taking part</span>
+                            </span>
+                            {giveaway.timing.ends_at && (
+                                <span className={STAT_PILL}>
+                                    <CalendarDays className="w-3.5 h-3.5 text-[var(--accent)]" />
+                                    <span className="font-display text-[12px] font-black tabular-nums text-white leading-none">
+                                        {new Date(giveaway.timing.ends_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                                    </span>
+                                    <span className="font-display text-[9px] font-bold uppercase tracking-[0.12em] text-white/50">
+                                        {giveaway.timing.has_ended ? "Ended" : "Closes"}
+                                    </span>
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            {/* ══════════════════════════════════════════════════════════════
-                WINNER ANNOUNCEMENT
-            ══════════════════════════════════════════════════════════════ */}
-            <AnimatePresence>
+            <div className="container-page max-w-3xl py-6 space-y-4">
+
+                {/* ── winner ── */}
                 {giveaway.winner && (
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                        className="max-w-2xl mx-auto px-4 pt-8 pb-2"
-                    >
-                        <div className="relative">
-                            <div className="relative rounded-[var(--radius-panel)] bg-[var(--surface-1)] border-2 border-yellow-500/30 p-6 text-center shadow-2xl">
-                                <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-3 drop-shadow-[0_0_20px_rgba(250,204,21,0.4)]" />
-                                <h2 className="text-2xl font-black mb-4 bg-gradient-to-r from-yellow-200 to-orange-200 bg-clip-text text-transparent">
-                                    We Have a Winner!
-                                </h2>
-                                <div className="inline-flex items-center gap-3 bg-white/[0.05] px-6 py-3 rounded-[var(--radius-card)] border border-yellow-500/20">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center text-white font-black text-xl shadow-lg">
+                    <Panel material="lit" crown title="We have a winner">
+                        <div className="flex items-center gap-4">
+                            <span className="w-12 h-12 shrink-0 rounded-full overflow-hidden bg-[var(--fill-2)] flex items-center justify-center">
+                                {giveaway.winner.avatar ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img src={giveaway.winner.avatar} alt="" aria-hidden className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="font-display text-[17px] font-black text-white">
                                         {giveaway.winner.username?.[0]?.toUpperCase() ?? "?"}
-                                    </div>
-                                    <div className="text-left">
-                                        <div className="text-[10px] text-white/55 uppercase tracking-widest">Winner</div>
-                                        <div className="text-xl font-black text-[var(--accent)]">@{giveaway.winner.username}</div>
-                                    </div>
+                                    </span>
+                                )}
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
+                                    Drawn at random
+                                </span>
+                                <span className="block mt-0.5 font-display text-[19px] font-black text-[var(--accent-ink)] truncate">
+                                    @{giveaway.winner.username}
+                                </span>
+                            </span>
+                            <Trophy className="w-6 h-6 ml-auto shrink-0 text-[var(--accent)]" />
+                        </div>
+                    </Panel>
+                )}
+
+                {/* ── your entry — the panel that went missing with the leaderboard ──
+                    Removed on 2 March 2026 as collateral in "remove leaderboard,
+                    center layout to single column": the rail went, and with it the
+                    only place that showed a member their points, their odds, their
+                    streak, their referral link and the daily bonus button. The
+                    endpoints stayed live the whole time, so for six months the
+                    daily bonus was a feature nobody could reach. ── */}
+                {entry && (
+                    <Panel material="lit" title="Your entry" meta={
+                        <span className="font-display text-[10px] font-bold uppercase tracking-[0.14em] text-white/45">
+                            {user?.username ? `@${user.username}` : "Entered"}
+                        </span>
+                    }>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <Readout label="Points" value={entry.total_points} icon={<Zap className="w-3 h-3 text-[var(--accent)]" />} animate />
+                            <Readout label="Win chance" value={entry.win_chance.toFixed(1)} unit="%" icon={<Target className="w-3 h-3 text-[var(--accent)]" />} />
+                            <Readout label="Referrals" value={entry.referral_count} icon={<Users className="w-3 h-3 text-[var(--accent)]" />} />
+                            <Readout label="Streak" value={entry.streak_days} unit="d" icon={<Flame className="w-3 h-3 text-[var(--accent)]" />} />
+                        </div>
+
+                        {nextMilestone && (
+                            <Meter
+                                className="mt-5"
+                                value={entry.streak_days}
+                                max={nextMilestone}
+                                showCount
+                                label={`${nextMilestone} days running = +${STREAK_MILESTONES[nextMilestone]} pts`}
+                            />
+                        )}
+
+                        {entry.can_claim_daily_bonus && giveaway.timing.is_active && (
+                            <button
+                                onClick={handleClaimDailyBonus}
+                                disabled={claimingBonus}
+                                className="btn-command mt-5 w-full h-11 inline-flex items-center justify-center gap-2 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-40"
+                            >
+                                {claimingBonus
+                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Claiming</>
+                                    : <><Flame className="w-4 h-4" /> Claim today&apos;s bonus</>}
+                            </button>
+                        )}
+
+                        <div className="mt-5 pt-5 border-t border-[var(--line)]">
+                            <p className="font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
+                                Your referral link
+                            </p>
+                            <div className="mt-2 flex items-center gap-2">
+                                <span className="flex-1 min-w-0 h-10 px-3 flex items-center rounded-[var(--radius-inner)] bg-[var(--surface-1)] border border-[var(--line)] text-[11.5px] text-white/55 truncate">
+                                    {entry.referral_url}
+                                </span>
+                                <button
+                                    onClick={handleCopyReferral}
+                                    className="btn-command h-10 shrink-0 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                                >
+                                    {copied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                                </button>
+                            </div>
+                            <p className="mt-2 text-[11.5px] text-white/45 leading-relaxed">
+                                Everyone who enters through your link earns you points.
+                            </p>
+                        </div>
+                    </Panel>
+                )}
+
+                {/* ── the way in ── */}
+                {!isAuthenticated ? (
+                    <Panel material="instrument">
+                        <div className="text-center py-2">
+                            <span className="w-12 h-12 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center mx-auto mb-4">
+                                <Gift className="w-5 h-5 text-[var(--accent)]" />
+                            </span>
+                            <h2 className="font-display text-[17px] font-black uppercase tracking-tight text-white">Sign in to enter</h2>
+                            <p className="mt-1.5 text-[12.5px] text-white/50 max-w-sm mx-auto leading-relaxed">
+                                Entries are tied to your account, so the draw knows who to hand the prize to.
+                            </p>
+                            <Link
+                                href="/login"
+                                className="btn-command mt-5 inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                            >
+                                <Zap className="w-4 h-4" /> Sign in
+                            </Link>
+                        </div>
+                    </Panel>
+                ) : !isEntered && giveaway.timing.is_active ? (
+                    <Panel material="lit">
+                        <div className="text-center py-2">
+                            <span className="w-12 h-12 rounded-[var(--radius-panel)] bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] flex items-center justify-center mx-auto mb-4">
+                                <Zap className="w-5 h-5 text-[var(--accent)]" />
+                            </span>
+                            <h2 className="font-display text-[17px] font-black uppercase tracking-tight text-white">Join this giveaway</h2>
+                            <p className="mt-1.5 text-[12.5px] text-white/50 max-w-sm mx-auto leading-relaxed">
+                                One click puts you in the draw. The tasks after that are optional, and raise your odds.
+                            </p>
+                            <button
+                                onClick={handleEnter}
+                                disabled={entering}
+                                className="btn-command mt-5 inline-flex items-center gap-2 h-11 px-6 bg-[var(--accent)] text-white font-display text-[11px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                                {entering
+                                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Entering</>
+                                    : <><Gift className="w-4 h-4" /> Enter giveaway</>}
+                            </button>
+                        </div>
+                    </Panel>
+                ) : null}
+
+                {/* ── tasks ── */}
+                {giveaway.tasks.length > 0 && (
+                    <Panel
+                        material="instrument"
+                        title="Earn points"
+                        meta={entry ? (
+                            <span className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
+                                <span className="tabular-nums text-white">{completedTotal}</span>
+                                <span>/ {giveaway.tasks.length} done</span>
+                                {requiredTasks.length > 0 && (
+                                    <span className="px-2 h-5 inline-flex items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-ink)] font-black tabular-nums">
+                                        {completedRequired}/{requiredTasks.length} req
+                                    </span>
+                                )}
+                            </span>
+                        ) : undefined}
+                    >
+                        {requiredTasks.length > 0 && (
+                            <div>
+                                {optionalTasks.length > 0 && (
+                                    <p className="mb-3 font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
+                                        Required
+                                    </p>
+                                )}
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                    {requiredTasks.map((task) => <TaskCard key={task.id} task={task} />)}
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* ══════════════════════════════════════════════════════════════
-                MAIN CONTENT GRID
-            ══════════════════════════════════════════════════════════════ */}
-            <div className="max-w-3xl mx-auto px-4 pt-8 pb-20">
-                <div className="space-y-6">
-
-                        {/* Entry CTA */}
-                        {(
-                            !isAuthenticated ? (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="relative rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(220,20,60,0.05),transparent_60%)]" />
-                                    <div className="relative">
-                                        <div className="w-16 h-16 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mx-auto mb-5">
-                                            <Gift className="w-8 h-8 text-[var(--accent)]" />
-                                        </div>
-                                        <h2 className="text-2xl font-black text-white mb-2">Ready to win?</h2>
-                                        <p className="text-sm text-white/55 mb-6 max-w-sm mx-auto leading-relaxed">
-                                            Sign in to enter and complete tasks to boost your winning chances!
-                                        </p>
-                                        <Link
-                                            href="/login"
-                                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-[var(--radius-card)] shadow-lg shadow-[var(--accent)]/20 hover:shadow-[var(--accent)]/30 hover:scale-[1.02] transition-all duration-300"
-                                        >
-                                            <Zap className="w-4 h-4" />
-                                            Login to Enter
-                                        </Link>
-                                    </div>
-                                </motion.div>
-                            ) : !isEntered && giveaway.timing.is_active ? (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="relative rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] p-8 text-center overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(220,20,60,0.05),transparent_60%)]" />
-                                    <div className="relative">
-                                        <div className="w-16 h-16 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center mx-auto mb-5">
-                                            <Zap className="w-8 h-8 text-[var(--accent)]" />
-                                        </div>
-                                        <h2 className="text-2xl font-black text-white mb-2">Join the giveaway</h2>
-                                        <p className="text-sm text-white/55 mb-6 max-w-sm mx-auto leading-relaxed">
-                                            Click to enter and start earning points by completing tasks!
-                                        </p>
-                                        <motion.button
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            onClick={handleEnter}
-                                            disabled={entering}
-                                            className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[var(--accent)] to-orange-600 text-white font-bold rounded-[var(--radius-card)] shadow-lg shadow-[var(--accent)]/20 hover:shadow-[var(--accent)]/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {entering ? (
-                                                <><Loader2 className="w-5 h-5 animate-spin" /> Entering...</>
-                                            ) : (
-                                                <><Gift className="w-5 h-5" /> Enter Giveaway</>
-                                            )}
-                                        </motion.button>
-                                    </div>
-                                </motion.div>
-                            ) : null
                         )}
 
-                        {/* Tasks Section */}
-                        {giveaway.tasks.length > 0 && (
-                            <section className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-1 h-6 rounded-full bg-[var(--accent)]" />
-                                        <h2 className="text-lg font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                            <Star className="w-4 h-4 text-[var(--accent)]" />
-                                            Earn Points
-                                        </h2>
-                                    </div>
-                                    {entry && (
-                                        <div className="flex items-center gap-2 text-xs text-white/55">
-                                            <span className="font-bold text-white">{completedTotal}</span>
-                                            <span>/ {giveaway.tasks.length} completed</span>
-                                            {requiredTasks.length > 0 && (
-                                                <span className="bg-red-500/15 text-red-400 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px]">
-                                                    {completedRequired}/{requiredTasks.length} req
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Required tasks grid */}
+                        {optionalTasks.length > 0 && (
+                            <div className={requiredTasks.length > 0 ? "mt-5 pt-5 border-t border-[var(--line)]" : undefined}>
                                 {requiredTasks.length > 0 && (
-                                    <div>
-                                        {optionalTasks.length > 0 && (
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                                <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">Required</span>
-                                            </div>
-                                        )}
-                                        <div className="grid md:grid-cols-2 gap-3">
-                                            {requiredTasks.map((task, idx) => (
-                                                <TaskCard key={task.id} task={task} idx={idx} />
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <p className="mb-3 font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
+                                        Bonus
+                                    </p>
                                 )}
-
-                                {/* Bonus tasks */}
-                                {optionalTasks.length > 0 && (
-                                    <div>
-                                        {requiredTasks.length > 0 && (
-                                            <div className="flex items-center gap-3 my-4">
-                                                <div className="flex-1 h-px bg-white/[0.05]" />
-                                                <span className="text-[10px] text-white/45 uppercase tracking-widest font-bold flex items-center gap-1.5">
-                                                    <Zap className="w-3 h-3 text-[var(--accent)]/60" />
-                                                    Bonus Tasks
-                                                </span>
-                                                <div className="flex-1 h-px bg-white/[0.05]" />
-                                            </div>
-                                        )}
-                                        <div className="grid md:grid-cols-2 gap-3">
-                                            {optionalTasks.map((task, idx) => (
-                                                <TaskCard key={task.id} task={task} idx={requiredTasks.length + idx} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </section>
-                        )}
-
-                        {/* Prize Tiers */}
-                        {giveaway.prize_tiers && giveaway.prize_tiers.length > 0 && (
-                            <section className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-1 h-6 rounded-full bg-yellow-500" />
-                                    <h2 className="text-lg font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                        <Trophy className="w-4 h-4 text-yellow-400" />
-                                        Prize Tiers
-                                    </h2>
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                    {optionalTasks.map((task) => <TaskCard key={task.id} task={task} />)}
                                 </div>
-
-                                {giveaway.prize_tiers.map((tier, idx) => {
-                                    const qualifies = entry && entry.total_points >= tier.min_points;
-                                    const rankStyles = [
-                                        'from-yellow-400 to-amber-500',
-                                        'from-white/60 to-white/35',
-                                        'from-orange-600 to-amber-700',
-                                    ];
-                                    return (
-                                        <motion.div
-                                            key={tier.id}
-                                            initial={{ opacity: 0, y: 8 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: idx * 0.05 }}
-                                            className={`flex items-center gap-4 rounded-[var(--radius-panel)] border p-4 transition-all duration-300 ${
-                                                qualifies
-                                                    ? 'border-green-500/25 bg-green-500/[0.04] shadow-[0_0_20px_rgba(16,185,129,0.04)]'
-                                                    : 'border-white/[0.06] bg-white/[0.02]'
-                                            }`}
-                                        >
-                                            <div className={`w-10 h-10 rounded-[var(--radius-card)] flex items-center justify-center font-black text-sm text-white flex-shrink-0 bg-gradient-to-br ${rankStyles[idx] ?? 'from-white/10 to-white/5'}`}>
-                                                {idx + 1}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-bold text-white text-sm">{tier.tier_name}</h3>
-                                                {tier.prize_description && (
-                                                    <p className="text-xs text-white/55 mt-0.5">{tier.prize_description}</p>
-                                                )}
-                                            </div>
-                                            <div className="text-right flex-shrink-0">
-                                                <div className="text-xs text-white/55">
-                                                    {tier.winner_count} {tier.winner_count === 1 ? 'winner' : 'winners'}
-                                                </div>
-                                                <div className={`text-xs font-bold mt-0.5 ${qualifies ? 'text-green-400' : 'text-white/50'}`}>
-                                                    {tier.min_points > 0 ? `${tier.min_points} pts min` : 'No minimum'}
-                                                </div>
-                                                {qualifies && (
-                                                    <span className="text-[10px] text-green-400 font-black uppercase tracking-wider">✓ Qualified</span>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
-                            </section>
+                            </div>
                         )}
+                    </Panel>
+                )}
 
-                        {/* About — accordion */}
-                        {giveaway.description && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] overflow-hidden"
-                            >
-                                <button
-                                    onClick={() => setDescOpen(!descOpen)}
-                                    className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/[0.02] transition-colors"
-                                >
-                                    <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                        <Gift className="w-4 h-4 text-[var(--accent)]" />
-                                        About This Giveaway
-                                    </h2>
-                                    <motion.div animate={{ rotate: descOpen ? 180 : 0 }} transition={{ duration: 0.25 }}>
-                                        <ChevronDown className="w-5 h-5 text-white/30" />
-                                    </motion.div>
-                                </button>
-                                <AnimatePresence initial={false}>
-                                    {descOpen && (
-                                        <motion.div
-                                            key="desc"
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                            style={{ overflow: 'hidden' }}
+                {/* ── prize tiers ── */}
+                {giveaway.prize_tiers && giveaway.prize_tiers.length > 0 && (
+                    <Panel material="instrument" title="Prize tiers" padding="none">
+                        <ul className="divide-y divide-[var(--line)]">
+                            {giveaway.prize_tiers.map((tier, idx) => {
+                                const qualifies = !!entry && entry.total_points >= tier.min_points;
+
+                                return (
+                                    <li key={tier.id} className="flex items-center gap-4 px-5 py-3.5">
+                                        <span
+                                            className="w-9 h-9 shrink-0 rounded-[var(--radius-inner)] flex items-center justify-center font-display text-[13px] font-black tabular-nums"
+                                            style={{
+                                                background: qualifies
+                                                    ? "color-mix(in srgb, var(--success) 14%, transparent)"
+                                                    : "var(--fill-2)",
+                                                color: qualifies ? "var(--success)" : "rgba(255,255,255,0.6)",
+                                            }}
                                         >
-                                            <div className="px-6 pb-6 border-t border-white/[0.05]">
-                                                <div
-                                                    className="prose prose-invert prose-sm max-w-none text-white/50 prose-headings:text-white prose-a:text-[var(--accent)] prose-strong:text-white prose-p:leading-relaxed pt-4"
-                                                    dangerouslySetInnerHTML={{ __html: giveaway.description }}
-                                                />
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </motion.div>
-                        )}
+                                            {idx + 1}
+                                        </span>
 
-                        {/* Rules — accordion */}
-                        {giveaway.rules && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="rounded-[var(--radius-panel)] border border-white/[0.06] bg-white/[0.02] overflow-hidden"
-                            >
-                                <button
-                                    onClick={() => setRulesOpen(!rulesOpen)}
-                                    className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/[0.02] transition-colors"
-                                >
-                                    <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                                        <Trophy className="w-4 h-4 text-[var(--accent)]" />
-                                        Rules & Terms
-                                    </h2>
-                                    <motion.div animate={{ rotate: rulesOpen ? 180 : 0 }} transition={{ duration: 0.25 }}>
-                                        <ChevronDown className="w-5 h-5 text-white/30" />
-                                    </motion.div>
-                                </button>
-                                <AnimatePresence initial={false}>
-                                    {rulesOpen && (
-                                        <motion.div
-                                            key="rules"
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: 'auto', opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                            style={{ overflow: 'hidden' }}
-                                        >
-                                            <div className="px-6 pb-6 border-t border-white/[0.05]">
-                                                <p className="text-white/50 text-sm whitespace-pre-wrap leading-relaxed pt-4">
-                                                    {giveaway.rules}
-                                                </p>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </motion.div>
-                        )}
+                                        <span className="flex-1 min-w-0">
+                                            <span className="block text-[13px] font-bold text-white truncate">{tier.tier_name}</span>
+                                            {tier.prize_description && (
+                                                <span className="block mt-0.5 text-[11.5px] text-white/50 truncate">{tier.prize_description}</span>
+                                            )}
+                                        </span>
 
-                </div>
+                                        <span className="shrink-0 text-right">
+                                            <span className="block text-[11.5px] text-white/50">
+                                                {tier.winner_count} {tier.winner_count === 1 ? "winner" : "winners"}
+                                            </span>
+                                            <span
+                                                className="block mt-0.5 font-display text-[10px] font-black uppercase tracking-[0.1em]"
+                                                style={{ color: qualifies ? "var(--success)" : "rgba(255,255,255,0.45)" }}
+                                            >
+                                                {qualifies
+                                                    ? "Qualified"
+                                                    : tier.min_points > 0 ? `${tier.min_points} pts min` : "No minimum"}
+                                            </span>
+                                        </span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </Panel>
+                )}
+
+                {/* ── about ── */}
+                {giveaway.description && (
+                    <Fold
+                        title="About this giveaway"
+                        icon={<Gift className="w-3.5 h-3.5 text-[var(--accent)]" />}
+                        open={descOpen}
+                        onToggle={() => setDescOpen(!descOpen)}
+                    >
+                        <div
+                            className="prose prose-invert prose-sm max-w-none text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed"
+                            dangerouslySetInnerHTML={{ __html: giveaway.description }}
+                        />
+                    </Fold>
+                )}
+
+                {/* ── rules ── */}
+                {giveaway.rules && (
+                    <Fold
+                        title="Rules & terms"
+                        icon={<Trophy className="w-3.5 h-3.5 text-[var(--accent)]" />}
+                        open={rulesOpen}
+                        onToggle={() => setRulesOpen(!rulesOpen)}
+                    >
+                        <p className="text-[12.5px] text-white/60 whitespace-pre-wrap leading-relaxed">
+                            {giveaway.rules}
+                        </p>
+                    </Fold>
+                )}
+
             </div>
-        </div>
+        </main>
     );
 }

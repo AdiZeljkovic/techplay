@@ -470,13 +470,18 @@ function Card({ row }: { row: Row }) {
         ? new Date(row.timing.ends_at).getTime() - Date.now() < 86_400_000
         : false;
 
+    /* Four states, four house colours. Amber, violet and emerald were the only
+       three hues on this page that came from nowhere — the site has one accent,
+       and --warning / --success exist precisely so state does not need its own
+       palette. "Members only" goes neutral: the padlock beside it already says
+       the thing, and a second signal in a fourth colour said it twice. */
     const badge = ended
         ? { label: "Ended", cls: "bg-white/[0.1] text-white/50" }
         : closingSoon
-        ? { label: "Ending soon", cls: "bg-amber-500 text-black" }
+        ? { label: "Ending soon", cls: "bg-[var(--warning)] text-black" }
         : row.entry_type === "members"
-        ? { label: "Members only", cls: "bg-violet-500 text-white" }
-        : { label: "Live", cls: "bg-emerald-500 text-black" };
+        ? { label: "Members only", cls: "bg-white/[0.14] text-white" }
+        : { label: "Live", cls: "bg-[var(--accent)] text-white" };
 
     return (
         <Link
@@ -515,7 +520,7 @@ function Card({ row }: { row: Row }) {
                     </span>
                     {ended ? (
                         row.winner ? (
-                            <span className="inline-flex items-center gap-1 font-display text-[9.5px] font-black uppercase tracking-[0.08em] text-emerald-400">
+                            <span className="inline-flex items-center gap-1 font-display text-[9.5px] font-black uppercase tracking-[0.08em] text-[var(--success)]">
                                 <Check className="w-3 h-3" /> Won
                             </span>
                         ) : null
