@@ -1224,8 +1224,10 @@ html[data-consent="dismissed"] #cookie-banner {
   animation: tp-consent-in 260ms var(--ease-hud, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
+/* Was a slide up from the bottom edge, which is what a bar does. A dialog in
+   the middle of the screen arrives by settling, not by travelling. */
 @keyframes tp-consent-in {
-  from { transform: translateY(12px); opacity: 0.35; }
+  from { transform: scale(0.97); opacity: 0; }
   to   { transform: none; opacity: 1; }
 }
 

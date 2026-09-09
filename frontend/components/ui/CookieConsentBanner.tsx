@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Cookie, X, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Cookie, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -51,6 +51,12 @@ export default function CookieConsentBanner() {
 
         // Already waved away in this tab. The head script has hidden it
         // already; this keeps React's idea of the world matching the DOM's.
+        /*
+         * Kept for the readers who dismissed the banner before it became a
+         * dialog. Their tab remembers it was asked, and nothing here should
+         * ask again mid-session just because the shape of the question
+         * changed. New sessions get the dialog.
+         */
         if (!saved && sessionStorage.getItem(CONSENT_DISMISSED_KEY)) {
             setIsVisible(false);
 
@@ -121,31 +127,6 @@ export default function CookieConsentBanner() {
         }
     };
 
-    /*
-     * The × means "not now", and nothing more.
-     *
-     * It used to call handleRejectAll, which wrote `analytics: false` to
-     * localStorage — permanently. A reader who tapped it to clear their screen
-     * was excluded from measurement on that visit and on every visit
-     * afterwards, having never been asked a question they answered. Waving a
-     * banner away is not a decision about cookies.
-     *
-     * Nothing is measured in the meantime: consent stays denied, which is the
-     * default and needs no storing. The only thing kept is that this tab has
-     * already been asked, so the banner does not reappear on the next click.
-     */
-    const handleDismiss = () => {
-        try {
-            sessionStorage.setItem(CONSENT_DISMISSED_KEY, "1");
-        } catch {
-            // Storage blocked. The banner returns on the next page, which is
-            // the safe way to be wrong.
-        }
-
-        document.documentElement.setAttribute(CONSENT_ANSWERED_ATTR, "dismissed");
-        setIsVisible(false);
-    };
-
     const handleAcceptAll = () => {
         savePreferences({ necessary: true, analytics: true, marketing: true });
     };
@@ -157,6 +138,35 @@ export default function CookieConsentBanner() {
     const handleSaveCustom = () => {
         savePreferences(preferences);
     };
+
+    /*
+     * The page does not scroll behind a question that has to be answered.
+     *
+     * Restored from whatever it was rather than set to "auto": the mobile
+     * shell sets its own overflow while the menu is open, and clobbering that
+     * on close would leave a page nobody can scroll for the rest of the visit.
+     */
+    useEffect(() => {
+        if (!isVisible) return;
+
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => { document.body.style.overflow = previous; };
+    }, [isVisible]);
+
+    /*
+     * Focus moves into the dialog, once.
+     *
+     * Without it a keyboard or screen-reader user is left on whatever was
+     * behind, tabbing through a page they cannot see past — and a consent
+     * dialog they cannot reach is a consent dialog they cannot answer.
+     */
+    const dialogRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isVisible) { dialogRef.current?.focus(); }
+    }, [isVisible]);
 
     const togglePreference = (key: keyof CookiePreferences) => {
         if (key === 'necessary') return; // Cannot toggle necessary
@@ -188,31 +198,61 @@ export default function CookieConsentBanner() {
         <div
             id="cookie-banner"
             suppressHydrationWarning
-            className="fixed bottom-0 left-0 right-0 z-[100] p-4 md:p-6 pb-[calc(1rem+var(--tabbar-h)+var(--safe-b))] md:pb-6 flex justify-center pointer-events-none"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cookie-banner-title"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6"
+            ref={dialogRef}
+            tabIndex={-1}
         >
-            <div className="tp-consent-card bg-[var(--surface-2)]/90 backdrop-blur-xl border border-[var(--line)] rounded-[var(--radius-panel)] shadow-2xl w-full max-w-4xl overflow-hidden pointer-events-auto ring-1 ring-white/10">
+            {/*
+              * The scrim is not a way out.
+              *
+              * Clicking it does nothing on purpose: a dismissal that is not a
+              * decision is exactly what the close button used to be, and in a
+              * centred dialog it would be the path of least resistance rather
+              * than an escape hatch. Two buttons, both real answers.
+              */}
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
+
+            <div className="tp-consent-card relative bg-[var(--surface-2)] border border-[var(--line)] rounded-[var(--radius-panel)] shadow-2xl w-full max-w-2xl overflow-hidden ring-1 ring-white/10 max-h-[90dvh] overflow-y-auto">
                 <div className="p-6 md:p-8">
-                    <div className="flex items-start justify-between gap-6 mb-6">
+                    <div className="mb-6">
                         <div className="flex gap-4">
                             <div className="w-12 h-12 bg-[var(--accent)]/10 rounded-[var(--radius-card)] flex items-center justify-center flex-shrink-0 text-[var(--accent)]">
                                 <Cookie className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-white mb-2">We value your privacy</h3>
-                                <p className="text-white/55 text-sm leading-relaxed max-w-2xl">
-                                    We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.
-                                    You can choose to accept all or customize your preferences. Read our <a href={`${SITE_URL}/privacy`} className="text-[var(--accent)] hover:underline">Privacy Policy</a> and <a href={`${SITE_URL}/cookies`} className="text-[var(--accent)] hover:underline">Cookie Policy</a>.
+                                <h3 id="cookie-banner-title" className="text-xl font-bold text-white mb-2">
+                                    Help us keep TechPlay free
+                                </h3>
+                                {/*
+                                  * Both things are named, because both are
+                                  * asked for.
+                                  *
+                                  * Consent Mode v2 has four signals and two of
+                                  * them are advertising: ad_storage and
+                                  * ad_personalization. A banner that mentions
+                                  * only analytics leaves those denied for
+                                  * every reader forever, which means every ad
+                                  * on the site is non-personalised and pays
+                                  * less. Asking for something without naming
+                                  * it is also the part a regulator reads
+                                  * first.
+                                  */}
+                                <p className="text-white/55 text-sm leading-relaxed">
+                                    Essential cookies keep the site working and are always on. With your permission
+                                    we would also like to measure what gets read, so we know what to write more of,
+                                    and to show ads matched to your interests, which is what pays for the writing.
+                                    You can say no to both and nothing on the site changes.
+                                </p>
+                                <p className="mt-2 text-white/40 text-xs">
+                                    <a href={`${SITE_URL}/privacy`} className="text-[var(--accent)] hover:underline">Privacy Policy</a>
+                                    <span className="mx-2">·</span>
+                                    <a href={`${SITE_URL}/cookies`} className="text-[var(--accent)] hover:underline">Cookie Policy</a>
                                 </p>
                             </div>
                         </div>
-                        <button
-                            onClick={handleDismiss}
-                            className="text-white/35 hover:text-white transition-colors"
-                            aria-label="Ask me later"
-                            title="Ask me later"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
                     </div>
 
                     {/* Customization Panel */}
@@ -277,18 +317,27 @@ export default function CookieConsentBanner() {
                             {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
 
-                        <div className="flex items-center gap-3 w-full md:w-auto">
+                        {/*
+                          * Equal weight, deliberately.
+                          *
+                          * Refusing has to be as easy as agreeing — that is
+                          * the letter of the rule and also the reason a
+                          * regulator looks at a banner at all. Same row, same
+                          * size, same prominence; the accent on one of them is
+                          * as far as it goes.
+                          */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:w-auto md:min-w-[340px]">
                             {showDetails ? (
-                                <Button variant="outline" onClick={handleSaveCustom} className="flex-1 md:flex-none">
-                                    Save Preferences
+                                <Button variant="outline" onClick={handleSaveCustom} className="w-full">
+                                    Save my choices
                                 </Button>
                             ) : (
-                                <Button variant="outline" onClick={handleRejectAll} className="flex-1 md:flex-none">
-                                    Reject All
+                                <Button variant="outline" onClick={handleRejectAll} className="w-full">
+                                    Only essential
                                 </Button>
                             )}
-                            <Button onClick={handleAcceptAll} className="flex-1 md:flex-none min-w-[140px]">
-                                Accept All
+                            <Button onClick={handleAcceptAll} className="w-full">
+                                Accept all
                             </Button>
                         </div>
                     </div>
