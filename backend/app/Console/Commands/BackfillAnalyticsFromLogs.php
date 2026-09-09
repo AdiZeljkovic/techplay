@@ -190,11 +190,21 @@ class BackfillAnalyticsFromLogs extends Command
         str_ends_with($file, '.gz') ? gzclose($handle) : fclose($handle);
     }
 
-    /** `08/Sep/2026:14:22:31 +0000` */
+    /**
+     * `08/Sep/2026:14:22:31 +0000`, moved into the timezone everything else
+     * here lives in.
+     *
+     * nginx writes UTC and the application runs on Europe/Sarajevo. Without
+     * the conversion the range is filtered in one zone and the row is stamped
+     * in another, which is not a rounding error: the first trial run asked for
+     * 7 September and wrote 85 rows dated the 6th, because 22:00-24:00 UTC on
+     * the 6th is already the 7th here.
+     */
     private function time(string $stamp): ?Carbon
     {
         try {
-            return Carbon::createFromFormat('d/M/Y:H:i:s O', $stamp);
+            return Carbon::createFromFormat('d/M/Y:H:i:s O', $stamp)
+                ->setTimezone(config('app.timezone'));
         } catch (\Throwable) {
             return null;
         }
