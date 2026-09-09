@@ -37,6 +37,7 @@ class AnalyticsIngestController extends Controller
             'ip' => ['required', 'string', 'max:60'],
             'ua' => ['present', 'string', 'max:1000'],
             'hints' => ['present', 'boolean'],
+            'country' => ['nullable', 'string', 'size:2'],
         ]);
 
         try {
@@ -45,6 +46,8 @@ class AnalyticsIngestController extends Controller
                 $data['ip'],
                 $data['ua'],
                 $data['hints'],
+                null,
+                $data['country'] ?? null,
             );
         } catch (\Throwable $e) {
             /*

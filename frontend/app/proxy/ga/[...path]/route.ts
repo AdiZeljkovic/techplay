@@ -114,6 +114,18 @@ async function proxy(request: NextRequest, path: string[]): Promise<NextResponse
                         ip: clientIp || "0.0.0.0",
                         ua: userAgent,
                         hints: Boolean(request.headers.get("sec-ch-ua")),
+                        /*
+                         * Where they are, from the one place that knows.
+                         *
+                         * GA's payload carries `_tu`, which looks like a
+                         * country code and is not one — it read "BA" on all
+                         * 4,207 hits measured, including the ones arriving
+                         * from Bing and DuckDuckGo. Cloudflare sits in front
+                         * of every request and resolves the address it
+                         * actually received; that is the real answer, and it
+                         * arrives without us keeping the address to get it.
+                         */
+                        country: request.headers.get("cf-ipcountry") || null,
                     }),
                 });
             } catch {

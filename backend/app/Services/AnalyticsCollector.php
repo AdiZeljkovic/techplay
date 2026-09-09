@@ -57,13 +57,15 @@ class AnalyticsCollector
      * @param  array<string, string>  $params  the hit's query string, parsed
      * @param  bool  $hasClientHints  whether the browser sent `sec-ch-ua`
      * @param  ?Carbon  $occurredAt  when it happened, for a backfill from logs
+     * @param  ?string  $country  Cloudflare's `CF-IPCountry`; GA sends none
      */
     public function record(
         array $params,
         string $ip,
         string $userAgent,
         bool $hasClientHints,
-        ?Carbon $occurredAt = null
+        ?Carbon $occurredAt = null,
+        ?string $country = null
     ): ?AnalyticsEvent {
         $url = $params['dl'] ?? null;
 
@@ -89,7 +91,7 @@ class AnalyticsCollector
             'path' => $path,
             'title' => isset($params['dt']) ? Str::limit($this->cleanTitle($params['dt']), 299, '') : null,
             'referrer_host' => $this->referrerHost($params['dr'] ?? null),
-            'country' => $this->country($params['_tu'] ?? null),
+            'country' => $this->country($country),
             'language' => isset($params['ul']) ? Str::limit($params['ul'], 11, '') : null,
             'device' => $this->device($params),
             'platform' => isset($params['uap']) && $params['uap'] !== '' ? Str::limit($params['uap'], 39, '') : null,
@@ -167,8 +169,25 @@ class AnalyticsCollector
         return Str::limit($host, 189, '');
     }
 
+    /**
+     * Cloudflare's answer, or none.
+     *
+     * GA's own payload carries `_tu`, which looks like a country code and is
+     * not one: it read "BA" on all 4,207 hits sampled, including those
+     * arriving from Bing and DuckDuckGo. Reading it as geography produced a
+     * panel that said 100% Bosnia and meant nothing.
+     *
+     * Cloudflare resolves the address it actually received and puts the answer
+     * in `CF-IPCountry`, which is how we get geography without keeping an
+     * address to derive it from. `XX` and `T1` are its own words for "unknown"
+     * and "Tor", and neither is a country.
+     */
     private function country(?string $value): ?string
     {
+        if ($value !== null && in_array(strtoupper($value), ['XX', 'T1'], true)) {
+            return null;
+        }
+
         return $value && preg_match('/^[A-Za-z]{2}$/', $value) ? strtoupper($value) : null;
     }
 

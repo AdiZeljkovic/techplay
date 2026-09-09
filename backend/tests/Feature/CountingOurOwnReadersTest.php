@@ -27,13 +27,15 @@ class CountingOurOwnReadersTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function hit(array $params = [], string $ip = '1.2.3.4', string $ua = self::CHROME, bool $hints = true): ?AnalyticsEvent
+    private function hit(array $params = [], string $ip = '1.2.3.4', string $ua = self::CHROME, bool $hints = true, ?string $country = null): ?AnalyticsEvent
     {
         return app(AnalyticsCollector::class)->record(
             array_merge(['dl' => 'https://techplay.gg/news/a-piece', 'en' => 'page_view'], $params),
             $ip,
             $ua,
-            $hints
+            $hints,
+            null,
+            $country,
         );
     }
 
@@ -126,6 +128,26 @@ class CountingOurOwnReadersTest extends TestCase
         $this->assertSame('google.com', $event->referrer_host);
     }
 
+    public function test_the_country_comes_from_cloudflare_and_not_from_the_payload(): void
+    {
+        // GA sends `_tu`, which looks like a country code and is not one: it
+        // read "BA" on all 4,207 hits sampled, including those arriving from
+        // Bing and DuckDuckGo. Reading it as geography made a panel that said
+        // 100% Bosnia and meant nothing.
+        $fromPayload = $this->hit(['_tu' => 'BA'], '198.51.100.7');
+
+        $this->assertNull($fromPayload->country);
+
+        $fromCloudflare = $this->hit([], '198.51.100.8', country: 'de');
+
+        $this->assertSame('DE', $fromCloudflare->country);
+
+        // Cloudflare's own words for "we do not know" and "Tor exit", neither
+        // of which belongs in a list of countries.
+        $this->assertNull($this->hit([], '198.51.100.9', country: 'XX')->country);
+        $this->assertNull($this->hit([], '198.51.100.10', country: 'T1')->country);
+    }
+
     public function test_a_hit_for_somebody_elses_site_is_refused(): void
     {
         $this->assertNull($this->hit(['dl' => 'https://example.com/mirror-of-us']));
@@ -134,7 +156,7 @@ class CountingOurOwnReadersTest extends TestCase
 
     public function test_the_rollup_rebuilds_a_day_instead_of_adding_to_it(): void
     {
-        $this->hit(['sid' => '1', 'dt' => 'A piece | TechPlay', '_tu' => 'ba'], '203.0.113.9');
+        $this->hit(['sid' => '1', 'dt' => 'A piece | TechPlay'], '203.0.113.9', country: 'ba');
         $this->hit(['sid' => '1', 'dl' => 'https://techplay.gg/news/two'], '203.0.113.9');
         $this->hit(['sid' => '2', 'gcs' => 'G111'], '198.51.100.7');
         $this->hit([], '80.241.1.1', self::CHROME, hints: false);
