@@ -30,7 +30,13 @@
         </div>
 
         <p class="text-xs text-gray-500 dark:text-gray-400">
-            od {{ $from->format('d.m.Y') }}
+            @if ($since)
+                {{-- The range asked for more than we have. Saying so beats
+                     letting two hours read as a month. --}}
+                mjerimo tek od {{ $since->format('d.m.Y') }}
+            @else
+                od {{ $from->format('d.m.Y') }}
+            @endif
         </p>
     </div>
 
@@ -64,7 +70,7 @@
     <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-200">
         <p>
             <strong>Ovo nije isto što i Google Analytics, i ne treba da bude.</strong>
-            GA broji samo čitaoce koji su prihvatili kolačiće — kod nas je to 2 do 7% njih.
+            GA broji samo čitaoce koji su prihvatili kolačiće — kod nas oko desetina njih.
             Ova stranica broji <strong>svakoga</strong>, jer ne pohranjuje nijedan identifikator:
             ni kolačić, ni IP adresu. Posjetilac je heš adrese i pregledača sa solju koja se
             baca i pravi nanovo svake noći.

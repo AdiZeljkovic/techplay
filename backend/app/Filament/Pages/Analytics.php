@@ -74,9 +74,21 @@ class Analytics extends Page
         $engagementMs = $sum($days, 'engagement_ms');
         $sessions = $sum($days, 'sessions');
 
+        /*
+         * When counting actually began.
+         *
+         * The range buttons say 30 days; on the day this shipped they drew two
+         * hours and looked like a catastrophe. A period that starts before the
+         * first row is not a period with no traffic, it is a period we were not
+         * there for, and the page has to say which.
+         */
+        $since = AnalyticsDaily::min('day');
+        $since = $since ? Carbon::parse($since) : null;
+
         return [
             'range' => $this->range,
             'from' => $from,
+            'since' => $since && $since->gt($from) ? $since : null,
             'days' => $days,
             'totals' => [
                 'visitors' => $sum($days, 'visitors'),
