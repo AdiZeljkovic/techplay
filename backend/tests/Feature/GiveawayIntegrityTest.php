@@ -38,6 +38,18 @@ class GiveawayIntegrityTest extends TestCase
         ]);
     }
 
+    /** Somebody entered, which is what makes a draw owed at all. */
+    private function withOneEntry(Giveaway $giveaway): Giveaway
+    {
+        GiveawayEntry::create([
+            'giveaway_id' => $giveaway->id,
+            'user_id' => User::factory()->create()->id,
+            'total_points' => 10,
+        ]);
+
+        return $giveaway;
+    }
+
     public function test_a_one_off_task_counts_once(): void
     {
         $user = User::factory()->create();
@@ -110,11 +122,57 @@ class GiveawayIntegrityTest extends TestCase
     {
         // Drawing is manual and nothing reminded anyone, so a finished giveaway
         // could sit with its prize unawarded indefinitely.
-        $giveaway = $this->giveaway();
+        $giveaway = $this->withOneEntry($this->giveaway());
         $this->assertNull(GiveawayResource::getNavigationBadge());
 
         $giveaway->update(['ends_at' => now()->subDay()]);
 
         $this->assertSame('1', GiveawayResource::getNavigationBadge());
+    }
+
+    /**
+     * The case the badge was built for and could not see.
+     *
+     * Its query said `status != 'ended'`, and an editor who closes a giveaway
+     * without drawing it sets exactly that status. The World of Tanks draw sat
+     * like this for 207 days with 18 people entered and the badge stayed empty
+     * the whole time.
+     */
+    public function test_a_draw_closed_without_a_winner_is_still_visible(): void
+    {
+        $giveaway = $this->withOneEntry($this->giveaway());
+        $giveaway->update(['ends_at' => now()->subDay(), 'status' => 'ended']);
+
+        $this->assertSame('1', GiveawayResource::getNavigationBadge());
+    }
+
+    /**
+     * A tiered draw writes its winners into the tiers and leaves `winner_id`
+     * null, so reading that column would have made every finished multi-prize
+     * giveaway badge for ever.
+     */
+    public function test_a_finished_draw_stops_being_reported(): void
+    {
+        $giveaway = $this->withOneEntry($this->giveaway());
+        $giveaway->update([
+            'ends_at' => now()->subDay(),
+            'status' => 'ended',
+            'winner_announced_at' => now(),
+        ]);
+
+        $this->assertNull(GiveawayResource::getNavigationBadge());
+    }
+
+    /**
+     * Nobody entered, so there is nothing to draw — and a warning that cannot
+     * be cleared is one people learn to ignore, which is how the first one was
+     * missed.
+     */
+    public function test_a_giveaway_nobody_entered_is_not_reported(): void
+    {
+        $giveaway = $this->giveaway();
+        $giveaway->update(['ends_at' => now()->subDay(), 'status' => 'ended']);
+
+        $this->assertNull(GiveawayResource::getNavigationBadge());
     }
 }

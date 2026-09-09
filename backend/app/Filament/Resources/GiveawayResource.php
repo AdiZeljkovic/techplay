@@ -88,15 +88,39 @@ class GiveawayResource extends Resource
      * staff to do it — a giveaway whose end date passed simply sat there, prize
      * unawarded, entrants waiting, and the only way to notice was to go looking.
      */
+    /**
+     * Draws that are over and were never made.
+     *
+     * The first version of this asked for `winner_id IS NULL AND ends_at <
+     * NOW() AND status != 'ended'`, and the last clause excluded exactly the
+     * case it was built to catch: a giveaway an editor had closed without
+     * drawing. The World of Tanks draw sat like that for 207 days with 18
+     * people waiting, and this badge was empty the whole time.
+     *
+     * `winner_announced_at` rather than `winner_id`, because a tiered draw
+     * writes winners into the tiers and leaves `winner_id` null — so the old
+     * column would have made every properly finished multi-prize giveaway
+     * badge forever.
+     *
+     * And `whereHas('entries')`, because a giveaway nobody entered has nothing
+     * to draw. Without it the badge would name a giveaway that can never be
+     * resolved, and a warning that cannot be cleared is one people learn to
+     * ignore — which is how the first one was missed.
+     */
     public static function getNavigationBadge(): ?string
     {
-        $awaiting = Giveaway::query()
-            ->whereNull('winner_id')
-            ->where('ends_at', '<', now())
-            ->where('status', '!=', 'ended')
-            ->count();
+        $awaiting = self::unfinishedDraws()->count();
 
         return $awaiting > 0 ? (string) $awaiting : null;
+    }
+
+    /** Shared with `giveaways:unfinished`, so the badge and the alarm agree. */
+    public static function unfinishedDraws(): Builder
+    {
+        return Giveaway::query()
+            ->whereNull('winner_announced_at')
+            ->where('ends_at', '<', now())
+            ->whereHas('entries');
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -349,6 +373,67 @@ class GiveawayResource extends Resource
                                             ->numeric()
                                             ->default(100)
                                             ->helperText('Prevents abuse'),
+                                    ]),
+
+                                    /*
+                                     * The four the hub filters by.
+                                     *
+                                     * The columns have existed since 5 August
+                                     * 2026 and the public page has offered
+                                     * them as a filter row ever since, with
+                                     * counts beside each option. Nothing in
+                                     * this form could set them, so both
+                                     * existing giveaways carry null in all
+                                     * four and the row has never had anything
+                                     * to show.
+                                     *
+                                     * The values are not free text: the hub
+                                     * maps each one to a label, and a value it
+                                     * does not know renders as its own raw
+                                     * key. Selects, so that cannot happen.
+                                     */
+                                    Grid::make(2)->schema([
+                                        Select::make('platform')
+                                            ->label('Platform')
+                                            ->options([
+                                                'pc' => 'PC',
+                                                'playstation' => 'PlayStation',
+                                                'xbox' => 'Xbox',
+                                                'nintendo' => 'Nintendo',
+                                                'multi' => 'Multi-platform',
+                                            ])
+                                            ->helperText('Filters the giveaway hub. Leave empty if it does not apply.'),
+
+                                        Select::make('prize_type')
+                                            ->label('Prize type')
+                                            ->options([
+                                                'hardware' => 'Hardware',
+                                                'game_key' => 'Game keys',
+                                                'gift_card' => 'Gift cards',
+                                                'subscription' => 'Subscriptions',
+                                                'merch' => 'Merch',
+                                                'bundle' => 'Bundles',
+                                            ]),
+                                    ]),
+
+                                    Grid::make(2)->schema([
+                                        Select::make('region')
+                                            ->label('Region')
+                                            ->options([
+                                                'worldwide' => 'Worldwide',
+                                                'eu' => 'Europe',
+                                                'ba' => 'Bosnia',
+                                                'na' => 'North America',
+                                            ])
+                                            ->helperText('Where the prize can actually be claimed.'),
+
+                                        Select::make('entry_type')
+                                            ->label('Entry type')
+                                            ->options([
+                                                'free' => 'Free entry',
+                                                'members' => 'Members only',
+                                                'tasks' => 'Task based',
+                                            ]),
                                     ]),
 
                                     Toggle::make('is_public')

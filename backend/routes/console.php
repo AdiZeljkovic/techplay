@@ -284,3 +284,15 @@ Schedule::command('analytics:prune')
     ->dailyAt('03:40')
     ->withoutOverlapping(60)
     ->onFailure($reportFailure('analytics:prune'));
+
+/*
+ * A giveaway that ended and nobody drew.
+ *
+ * Daily rather than once: the World of Tanks draw sat undrawn for 207 days
+ * with 18 people entered, and the badge that should have caught it was empty
+ * the whole time — a warning nobody is looking at is not a warning. This one
+ * repeats until somebody draws it.
+ */
+Schedule::command('giveaways:unfinished')
+    ->dailyAt('10:00')
+    ->onFailure($reportFailure('giveaways:unfinished'));
