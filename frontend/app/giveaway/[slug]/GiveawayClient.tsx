@@ -145,6 +145,26 @@ const TASK_KINDS: Record<string, { icon: LucideIcon; what: string; verb: string 
 const FALLBACK_KIND = { icon: Star, what: "Task", verb: "Start" };
 
 /**
+ * Where an invite actually gets sent.
+ *
+ * WhatsApp and Viber first because this is a Bosnian audience and that is
+ * where a link between two people travels; Telegram and Discord carry the
+ * gaming half of it. Discord has no share intent of its own — nobody publishes
+ * one — so Copy is what serves it, which is why Copy is not tucked away.
+ *
+ * Named in text rather than drawn as glyphs on purpose: lucide has no WhatsApp,
+ * Viber or Telegram mark, and standing in with a generic speech bubble for
+ * three different apps tells the reader less than the word does.
+ */
+const SHARE_TARGETS: { label: string; href: (url: string, text: string) => string }[] = [
+    { label: "WhatsApp", href: (u, t) => `https://wa.me/?text=${encodeURIComponent(`${t} ${u}`)}` },
+    { label: "Viber",    href: (u, t) => `viber://forward?text=${encodeURIComponent(`${t} ${u}`)}` },
+    { label: "Telegram", href: (u, t) => `https://t.me/share/url?url=${encodeURIComponent(u)}&text=${encodeURIComponent(t)}` },
+    { label: "Facebook", href: (u)    => `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(u)}` },
+    { label: "X",        href: (u, t) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(t)}&url=${encodeURIComponent(u)}` },
+];
+
+/**
  * A fold, drawn on the same matte sheet as Panel.
  *
  * Panel's own header is a title, not a control, so About and Rules build their
@@ -208,6 +228,14 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const [timeRemaining, setTimeRemaining] = useState<number>(0);
     const [descOpen, setDescOpen]           = useState(true);
     const [rulesOpen, setRulesOpen]         = useState(false);
+    /* Read after mount, never during render: navigator.share does not exist on
+       the server, and a button that appears only on the client has to appear
+       after hydration or React rebuilds the tree around it. */
+    const [canNativeShare, setCanNativeShare] = useState(false);
+
+    useEffect(() => {
+        setCanNativeShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
+    }, []);
 
     const fetchGiveaway = useCallback(async () => {
         try {
@@ -233,6 +261,28 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         }
     }, [slug, isAuthenticated]);
 
+
+    /*
+     * The invite code, caught on the way in.
+     *
+     * getReferralUrl() has always produced …/giveaway/{slug}?ref=CODE, and the
+     * enter endpoint has always accepted a referral_code — but nothing on this
+     * page ever read the parameter or sent it, so no referral has ever been
+     * registered and no referrer has ever been paid. The link was decoration.
+     *
+     * Parked in localStorage rather than held in state because it has to
+     * survive a round trip through sign-in: whoever follows a friend's link is
+     * usually signed out, and after /login they come back without the query
+     * string. Keyed per giveaway so two invites do not overwrite each other.
+     * Reading and writing it is wrapped — a private window throws here.
+     */
+    const refKey = `giveaway-ref:${slug}`;
+
+    useEffect(() => {
+        const code = new URLSearchParams(window.location.search).get("ref");
+        if (!code) return;
+        try { localStorage.setItem(refKey, code); } catch { /* storage refused */ }
+    }, [refKey]);
 
     useEffect(() => { fetchGiveaway(); }, [fetchGiveaway]);
     useEffect(() => {
@@ -270,8 +320,19 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         if (!isAuthenticated) return;
         setEntering(true);
         try {
-            const res = await axios.post(`/giveaways/${slug}/enter`);
+            let referralCode: string | null = null;
+            try { referralCode = localStorage.getItem(refKey); } catch { /* storage refused */ }
+
+            const res = await axios.post(
+                `/giveaways/${slug}/enter`,
+                referralCode ? { referral_code: referralCode } : {},
+            );
             setEntry(res.data.data);
+
+            // Spent. The server refuses a code that is your own, and a second
+            // entry cannot be referred anyway, so keeping it only risks
+            // attaching it to the wrong giveaway later.
+            try { localStorage.removeItem(refKey); } catch { /* storage refused */ }
         } catch (e: unknown) {
             const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
             toast.error(msg ?? "That did not go through. Please try again.");
@@ -363,18 +424,36 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
 
     const time             = formatTime(timeRemaining);
     const isEntered        = !!entry;
-    const requiredTasks    = giveaway.tasks.filter(t => t.is_required);
-    const optionalTasks    = giveaway.tasks.filter(t => !t.is_required);
-    const completedTotal   = giveaway.tasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
+    /* The referral task is not a task you do, it is a rate you are paid at:
+       enter() awards its points once per person who arrives on your link. It
+       is kept out of the clickable list — where every other row is completed by
+       the click alone, so this one was a button that paid out for nothing —
+       and its points become the headline of the invite panel instead. */
+    const referralTask     = giveaway.tasks.find(t => t.type === "referral") ?? null;
+    const doableTasks      = giveaway.tasks.filter(t => t.type !== "referral");
+    const requiredTasks    = doableTasks.filter(t => t.is_required);
+    const optionalTasks    = doableTasks.filter(t => !t.is_required);
+    const completedTotal   = doableTasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
     const completedRequired = requiredTasks.filter(t => entry?.completed_task_ids.includes(t.id)).length;
     /* Required first, otherwise the editor's order. The old page split them
        into two headed grids; with the Required chip on the row itself, the
        headings said a second time what the row already says. */
     const orderedTasks     = [...requiredTasks, ...optionalTasks];
-    const pointsOnOffer    = giveaway.tasks.reduce((sum, t) => sum + t.points, 0);
-    const pointsEarned     = giveaway.tasks
+    const pointsOnOffer    = doableTasks.reduce((sum, t) => sum + t.points, 0);
+    const pointsEarned     = doableTasks
         .filter(t => entry?.completed_task_ids.includes(t.id))
         .reduce((sum, t) => sum + t.points, 0);
+    const shareText        = `I'm in to win ${giveaway.prize.name || giveaway.title} on TechPlay — enter with me:`;
+
+    /* The phone's own share sheet, which reaches every app on the device
+       rather than the five this page can name. Cancelling it rejects, and a
+       cancelled share is not an error worth telling anyone about. */
+    const handleNativeShare = () => {
+        if (!entry) return;
+        navigator
+            .share({ title: giveaway.title, text: shareText, url: entry.referral_url })
+            .catch(() => { /* dismissed */ });
+    };
     const nextMilestone    = MILESTONE_DAYS.find(m => m > (entry?.streak_days ?? 0));
     const heroBgImage      = giveaway.featured_image || giveaway.prize.image;
     /* The thumbnail only earns its place when it is a different picture from
@@ -661,24 +740,91 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             </button>
                         )}
 
-                        <div className="mt-5 pt-5 border-t border-[var(--line)]">
-                            <p className="font-display text-[9px] font-bold uppercase tracking-[0.18em] text-white/50">
-                                Your referral link
-                            </p>
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className="flex-1 min-w-0 h-10 px-3 flex items-center rounded-[var(--radius-inner)] bg-[var(--surface-1)] border border-[var(--line)] text-[11.5px] text-white/55 truncate">
-                                    {entry.referral_url}
+                    </Panel>
+                )}
+
+                {/* ── invite ──
+                    Its own panel, not a footnote under the entry figures.
+                    Asking somebody to recommend you is the largest thing this
+                    page asks of a reader, and it was three lines of grey text
+                    under a truncated URL: no statement of what it pays, no
+                    tally of what it had already paid, and one Copy button as
+                    the only way to send it. The rate comes first now, because
+                    "+50 pts per friend" is the entire argument. ── */}
+                {entry && (
+                    <Panel material="lit" crown title="Invite friends">
+                        <div className="flex items-baseline gap-2.5 flex-wrap">
+                            {referralTask ? (
+                                <>
+                                    <span className="font-display text-[34px] font-black tabular-nums leading-none text-[var(--accent-ink)]">
+                                        +{referralTask.points}
+                                    </span>
+                                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.14em] text-white/55">
+                                        points per friend who enters
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="text-[12.5px] text-white/55 leading-relaxed">
+                                    Share this with someone who would want it — every extra person
+                                    makes the next giveaway bigger.
                                 </span>
-                                <button
-                                    onClick={handleCopyReferral}
-                                    className="btn-command h-10 shrink-0 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
-                                >
-                                    {copied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
-                                </button>
-                            </div>
-                            <p className="mt-2 text-[11.5px] text-white/45 leading-relaxed">
-                                Everyone who enters through your link earns you points.
+                            )}
+                        </div>
+
+                        {/* What it has paid so far. A number that is going up is
+                            a better argument than any wording. */}
+                        {referralTask && (
+                            <p className="mt-2 text-[12px] text-white/50">
+                                {entry.referral_count > 0 ? (
+                                    <>
+                                        <span className="font-bold text-white tabular-nums">{entry.referral_count}</span>
+                                        {entry.referral_count === 1 ? " friend has" : " friends have"} joined through you —
+                                        that is{" "}
+                                        <span className="font-bold text-[var(--accent-ink)] tabular-nums">
+                                            +{entry.referral_count * referralTask.points}
+                                        </span>{" "}
+                                        points already.
+                                    </>
+                                ) : (
+                                    <>Nobody has used your link yet. The first one is worth as much as the last.</>
+                                )}
                             </p>
+                        )}
+
+                        {/* Send it. The share sheet first where the device has
+                            one, then the places a link actually travels here. */}
+                        <div className="mt-4 flex flex-wrap gap-2">
+                            {canNativeShare && (
+                                <button
+                                    onClick={handleNativeShare}
+                                    className="btn-command h-9 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                                >
+                                    <Share2 className="w-3.5 h-3.5" /> Share
+                                </button>
+                            )}
+                            {SHARE_TARGETS.map((target) => (
+                                <a
+                                    key={target.label}
+                                    href={target.href(entry.referral_url, shareText)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center h-9 px-3.5 rounded-[var(--radius-inner)] bg-[var(--fill-2)] hover:bg-[var(--fill-3)] border border-[var(--line)] font-display text-[10px] font-black uppercase tracking-[0.1em] text-white/70 hover:text-white transition-colors duration-200"
+                                >
+                                    {target.label}
+                                </a>
+                            ))}
+                        </div>
+
+                        <div className="mt-3 flex items-center gap-2">
+                            <span className="flex-1 min-w-0 h-10 px-3 flex items-center rounded-[var(--radius-inner)] bg-[var(--surface-1)] border border-[var(--line)] text-[11.5px] text-white/55 truncate">
+                                {entry.referral_url}
+                            </span>
+                            <button
+                                onClick={handleCopyReferral}
+                                className="btn-command h-10 shrink-0 inline-flex items-center gap-1.5 px-4 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200"
+                            >
+                                {copied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                            </button>
                         </div>
                     </Panel>
                 )}
@@ -731,7 +877,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     row whenever that number was odd — with a single task it was
                     a lone card beside an empty half-panel. A list fills the
                     width at any count and reads the way a to-do list reads. ── */}
-                {giveaway.tasks.length > 0 && (
+                {doableTasks.length > 0 && (
                     <Panel
                         material="instrument"
                         title="Earn points"
@@ -739,7 +885,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         meta={
                             <span className="font-display text-[10px] font-bold uppercase tracking-[0.12em] text-white/45">
                                 {entry
-                                    ? <><span className="tabular-nums text-white">{completedTotal}</span> / {giveaway.tasks.length} done</>
+                                    ? <><span className="tabular-nums text-white">{completedTotal}</span> / {doableTasks.length} done</>
                                     : <>Up to <span className="tabular-nums text-[var(--accent-ink)]">{pointsOnOffer}</span> pts</>}
                             </span>
                         }

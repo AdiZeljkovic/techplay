@@ -79,6 +79,68 @@ class GiveawayIntegrityTest extends TestCase
             ->where('task_id', $task->id)->count());
     }
 
+    public function test_a_referral_task_cannot_be_clicked_for_its_points(): void
+    {
+        // The points on a referral task are paid in enter(), once per person
+        // who actually arrives on your link. The task is also a row in the list
+        // like any other, and every other row is self-reported by the click —
+        // so this one handed over its points before a single friend was asked.
+        $user = User::factory()->create();
+        $giveaway = $this->giveaway();
+
+        $task = GiveawayTask::create([
+            'giveaway_id' => $giveaway->id,
+            'type' => 'referral',
+            'title' => 'Invite a friend',
+            'points' => 50,
+        ]);
+
+        $this->actingAs($user)
+            ->postJson("/api/v1/giveaways/{$giveaway->slug}/tasks/{$task->id}/complete")
+            ->assertStatus(422);
+
+        $entry = GiveawayEntry::where('user_id', $user->id)->first();
+
+        $this->assertSame(0, (int) ($entry?->total_points ?? 0));
+        $this->assertSame(0, GiveawayTaskCompletion::where('task_id', $task->id)->count());
+    }
+
+    public function test_a_referral_pays_the_person_who_invited(): void
+    {
+        // The whole mechanism, end to end: the code travels in the link, the
+        // joiner sends it back on entry, and the referrer is paid the referral
+        // task's points. Without a referral task on the giveaway nothing is
+        // paid at all — which is why the page has to say whether one exists.
+        $giveaway = $this->giveaway();
+
+        GiveawayTask::create([
+            'giveaway_id' => $giveaway->id,
+            'type' => 'referral',
+            'title' => 'Invite a friend',
+            'points' => 50,
+        ]);
+
+        $referrer = User::factory()->create();
+        $entry = GiveawayEntry::create([
+            'giveaway_id' => $giveaway->id,
+            'user_id' => $referrer->id,
+            'total_points' => 0,
+        ]);
+
+        $friend = User::factory()->create();
+
+        $this->actingAs($friend)
+            ->postJson("/api/v1/giveaways/{$giveaway->slug}/enter", [
+                'referral_code' => $entry->referral_code,
+            ])
+            ->assertSuccessful();
+
+        $entry->refresh();
+
+        $this->assertSame(1, (int) $entry->referral_count);
+        $this->assertSame(50, (int) $entry->total_points);
+    }
+
     public function test_the_daily_bonus_is_claimed_once_a_day(): void
     {
         $user = User::factory()->create();

@@ -320,6 +320,25 @@ class GiveawayController extends Controller
             ], 422);
         }
 
+        /*
+         * A referral task is not something you can report yourself.
+         *
+         * Its points are paid in enter(), once per person who actually arrives
+         * on your link and joins — that is the whole mechanism. But the task is
+         * also a row in the task list like any other, and every other row is
+         * self-reported by the click alone, so pressing this one handed over its
+         * points for nothing and did it before a single friend was invited.
+         *
+         * The frontend now keeps this row out of the clickable list and gives
+         * the invite its own panel. This is the half that matters, because the
+         * endpoint is reachable without the page.
+         */
+        if ($task->type === 'referral') {
+            return response()->json([
+                'message' => 'This one is earned by inviting people, not by clicking. Share your invite link and the points arrive as they join.',
+            ], 422);
+        }
+
         // "Post in the forum" is actually verified (unlike most task types here,
         // which are self-reported by the click alone) — require a real post
         // made by this user since the giveaway started.
