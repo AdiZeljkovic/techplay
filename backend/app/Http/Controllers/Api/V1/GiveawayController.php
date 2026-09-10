@@ -8,6 +8,7 @@ use App\Models\GiveawayEntry;
 use App\Models\GiveawayTask;
 use App\Models\GiveawayTaskCompletion;
 use App\Models\Post;
+use App\Services\ImageDimensionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -139,6 +140,18 @@ class GiveawayController extends Controller
                     : null,
 
                 /*
+                 * The banner's real pixel size, so the page can give it a box
+                 * of exactly its own shape.
+                 *
+                 * Without it the hero was a fixed height with object-cover,
+                 * which crops — and it crops from the top and bottom, which is
+                 * precisely where a designed banner puts its lettering. The
+                 * live GTA 6 art is 2542x639 and the word GIVEAWAY was being
+                 * cut in half.
+                 */
+                'featured_image_size' => $this->measureBanner($giveaway),
+
+                /*
                  * Platform, prize type, region and entry type — filled in on
                  * every giveaway, offered as filters on the hub, and until now
                  * never once shown on the page the reader actually lands on.
@@ -264,6 +277,30 @@ class GiveawayController extends Controller
             'data' => $this->formatEntry($entry),
             'message' => 'Successfully entered the giveaway!',
         ]);
+    }
+
+    /**
+     * The banner's pixel size, measured once and remembered.
+     *
+     * getimagesize only reads the file header, but this endpoint is hit on
+     * every page load and the answer changes only when an editor uploads a new
+     * banner — so it is cached against the stored path, which changes with it.
+     *
+     * @return array{width:int,height:int}|null
+     */
+    private function measureBanner(Giveaway $giveaway): ?array
+    {
+        if (! $giveaway->featured_image) {
+            return null;
+        }
+
+        $size = Cache::remember(
+            'giveaway.banner-size.'.md5($giveaway->featured_image),
+            now()->addDay(),
+            fn () => app(ImageDimensionService::class)->measure($giveaway->featured_image),
+        );
+
+        return $size ? ['width' => $size[0], 'height' => $size[1]] : null;
     }
 
     /**

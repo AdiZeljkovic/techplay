@@ -45,6 +45,9 @@ interface Giveaway {
     description: string | null;
     rules: string | null;
     featured_image: string | null;
+    /* The banner's real pixel size, so the hero can be exactly its shape
+       instead of a fixed box that crops it. Null when it could not be read. */
+    featured_image_size: { width: number; height: number } | null;
     /* Platform, prize type, region and entry type, already turned into the
        words the hub uses. Only the ones an editor filled in are sent. */
     facts: { key: string; label: string; value: string }[];
@@ -567,6 +570,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const nextMilestone    = MILESTONE_DAYS.find(m => m > (entry?.streak_days ?? 0));
     const streakTarget     = nextMilestone ?? MILESTONE_DAYS[MILESTONE_DAYS.length - 1];
     const heroBgImage      = giveaway.featured_image || giveaway.prize.image;
+    /* Only the banner is measured, so a prize photo standing in for one
+       keeps the fixed box rather than dictating the height of the page. */
+    const bannerSize       = giveaway.featured_image ? giveaway.featured_image_size : null;
 
     /*
      * When the editor has uploaded a designed banner, that banner is the
@@ -711,34 +717,63 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
         <main className="min-h-screen bg-[var(--surface-0)]">
 
             {/* ══ hero ══
-                The artwork is the headline now. The old treatment laid
-                rgba(5,7,10,0.82) across the middle of the picture, which is the
-                right thing to do to a backdrop and the wrong thing to do to a
-                banner somebody designed — it flattened the art into texture.
-                The darkness is a bottom gradient only, sized to carry the
-                controls that sit in it. */}
-            <section
-                className="relative overflow-hidden border-b border-white/[0.07] bg-[var(--surface-0)] flex flex-col justify-end"
-                style={{ minHeight: "clamp(340px, 40vw, 600px)" }}
-            >
-                {heroBgImage ? (
-                    <Image src={heroBgImage} alt="" aria-hidden fill priority sizes="100vw" className="object-cover object-center" />
-                ) : (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={HOUSE_BACKDROP} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-center" />
-                )}
-                <span
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{
-                        background:
-                            "linear-gradient(to top, var(--surface-0) 0%, rgba(5,7,10,0.86) 18%, rgba(5,7,10,0.45) 48%, rgba(5,7,10,0.05) 78%, transparent 100%)",
-                    }}
-                />
+                The banner is shown whole, and it has no bottom edge.
 
-                {/* Status and share ride at the top so they never push the art
-                    down; the picture keeps its full height at every width. */}
-                <div className="absolute top-4 inset-x-0 z-20 container-page flex items-center justify-between gap-4">
+                It used to be a fixed box — clamp(340px, 40vw, 600px) — with
+                object-cover, and cover crops: it takes the middle and throws
+                away the top and the bottom, which is exactly where a designed
+                banner puts its lettering. The live GTA 6 art is 2542x639 and
+                the word GIVEAWAY was being cut through the middle.
+
+                So the art gets a box of its own proportions, measured by the
+                API from the file itself, and is never cropped at any width.
+                Instead of ending on a border it dissolves: the lower part of
+                the picture fades into the page background, and the countdown
+                and figures sit up inside that fade, so there is no line where
+                the image stops. Nothing is pulled up on a phone, where the
+                same banner is only a couple of hundred pixels tall and there
+                is nothing to sit inside.
+
+                Without a measurement — an old giveaway, an unreadable file —
+                it falls back to the fixed box, because a box of unknown
+                proportions is worse than a cropped one. */}
+            <section className="relative border-b border-white/[0.07] bg-[var(--surface-0)]">
+                <div className="relative">
+                    {bannerSize && heroBgImage ? (
+                        <Image
+                            src={heroBgImage}
+                            alt=""
+                            aria-hidden
+                            width={bannerSize.width}
+                            height={bannerSize.height}
+                            priority
+                            sizes="100vw"
+                            className="block w-full h-auto"
+                        />
+                    ) : (
+                        <div className="relative w-full" style={{ minHeight: "clamp(340px, 40vw, 600px)" }}>
+                            {heroBgImage ? (
+                                <Image src={heroBgImage} alt="" aria-hidden fill priority sizes="100vw" className="object-cover object-center" />
+                            ) : (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={HOUSE_BACKDROP} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover object-center" />
+                            )}
+                        </div>
+                    )}
+
+                    {/* The dissolve. Reaches further up than it needs to be
+                        dark, so the transition is never a visible line. */}
+                    <span
+                        aria-hidden
+                        className="absolute inset-x-0 bottom-0 h-[62%] pointer-events-none"
+                        style={{
+                            background:
+                                "linear-gradient(to top, var(--surface-0) 0%, rgba(5,7,10,0.88) 22%, rgba(5,7,10,0.5) 52%, rgba(5,7,10,0.08) 82%, transparent 100%)",
+                        }}
+                    />
+
+                    {/* Status and share ride the top corners of the art. */}
+                    <div className="absolute top-3 sm:top-4 inset-x-0 z-20 container-page flex items-center justify-between gap-4">
                     {giveaway.winner ? (
                         <span className={HERO_GLASS}>
                             <Trophy className="w-3.5 h-3.5 text-[var(--accent)]" />
@@ -772,7 +807,9 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </button>
                 </div>
 
-                <div className="relative z-10 container-page pt-24 pb-8 flex flex-col items-center text-center">
+                </div>
+
+                <div className="relative z-10 container-page pb-8 -mt-2 sm:-mt-10 lg:-mt-20 flex flex-col items-center text-center">
                     <h1
                         className={
                             titleIsInArt
