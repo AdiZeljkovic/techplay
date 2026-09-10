@@ -791,6 +791,24 @@ odradi animaciju — dakle poslije hidracije. Ko ode u prve dvije sekunde, nikad
 ne vidi. Isto je jednom bilo i sa samim GA tagom. **Ako element odlučuje o nečemu
 mjerljivom, mora biti vidljiv iz HTML-a.**
 
+### `$get` u Filament formi se ne smije tipizirati
+
+Filament v5 ubacuje `Filament\Schemas\Components\Utilities\Get`.
+**`Filament\Forms\Get` u ovoj verziji ne postoji** — ime izgleda očigledno tačno
+i očigledno je pogrešno. Tipiziran tako, cijela stranica vraća 500.
+
+Podmuklo je što se otkrije tek kad je neko otvori: greška nastaje pri **gradnji
+forme**, ne pri učitavanju klase, pa `php -l` prolazi i svi testovi logike
+prolaze. Dvanaest testova je bilo zeleno dok se ekran nije mogao otvoriti.
+
+Ostatak koda koristi netipizirani `$get` i to je ispravno — ubacivanje radi koja
+god klasa da se prosljeđuje.
+
+`MailDeskTest::test_the_admin_screens_open` sada otvara oba ekrana i traži 200.
+Provjereno tako što je greška namjerno vraćena: test padne, pa prođe kad se
+ukloni. **Svaki novi Filament ekran vrijedi dodati u tu petlju** — logika koja
+radi iza stranice koja se ne otvara nije funkcija.
+
 ### Novi Filament resurs se ne pojavi dok se keš ne prebuildi
 
 `bootstrap/cache/filament/panels/admin.php` drži spisak svih resursa, stranica i
