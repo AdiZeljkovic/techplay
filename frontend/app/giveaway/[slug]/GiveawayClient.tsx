@@ -692,7 +692,10 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     }: { icon: React.ReactNode; label: string; value: string | number; unit?: string; hint: string }) => (
         <div className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] p-4">
             <div className="flex items-start gap-3">
-                <span className="w-11 h-11 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center bg-[var(--accent-soft)] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)]">
+                {/* Bare, like the header's own marks and the task cards: four
+                    different quantities should not arrive in four identical
+                    tinted squares. The span only holds the alignment. */}
+                <span className="w-9 h-9 shrink-0 flex items-center justify-center">
                     {icon}
                 </span>
                 <div className="min-w-0">
@@ -1028,26 +1031,26 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                             <StatTile
-                                icon={<Star className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                icon={<Star className="w-[26px] h-[26px] text-[var(--accent)]" strokeWidth={1.4} />}
                                 label="Points"
                                 value={entry.total_points}
                                 hint={pointsEarned >= pointsOnOffer && pointsOnOffer > 0 ? "Every task claimed." : "Keep earning!"}
                             />
                             <StatTile
-                                icon={<Trophy className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                icon={<Trophy className="w-[26px] h-[26px] text-[var(--accent)]" strokeWidth={1.4} />}
                                 label="Win chance"
                                 value={entry.win_chance.toFixed(1)}
                                 unit="%"
                                 hint="The more points, the higher your chance."
                             />
                             <StatTile
-                                icon={<Users className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                icon={<Users className="w-[26px] h-[26px] text-[var(--accent)]" strokeWidth={1.4} />}
                                 label="Referrals"
                                 value={entry.referral_count}
                                 hint={referralTask ? `+${referralTask.points} pts each. Invite friends!` : "Invite friends!"}
                             />
                             <StatTile
-                                icon={<Flame className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                                icon={<Flame className="w-[26px] h-[26px] text-[var(--accent)]" strokeWidth={1.4} />}
                                 label="Daily streak"
                                 value={entry.streak_days}
                                 unit={entry.streak_days === 1 ? "day" : "days"}
