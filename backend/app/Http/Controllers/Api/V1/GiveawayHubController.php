@@ -68,12 +68,8 @@ class GiveawayHubController extends Controller
      */
     private function facets(): array
     {
-        $labels = [
-            'platform' => ['pc' => 'PC', 'playstation' => 'PlayStation', 'xbox' => 'Xbox', 'nintendo' => 'Nintendo', 'multi' => 'Multi-platform'],
-            'prize_type' => ['hardware' => 'Hardware', 'game_key' => 'Game keys', 'gift_card' => 'Gift cards', 'subscription' => 'Subscriptions', 'merch' => 'Merch', 'bundle' => 'Bundles'],
-            'region' => ['worldwide' => 'Worldwide', 'eu' => 'Europe', 'ba' => 'Bosnia', 'na' => 'North America'],
-            'entry_type' => ['free' => 'Free entry', 'members' => 'Members only', 'tasks' => 'Task based'],
-        ];
+        // One map, on the model, because the detail page prints the same words.
+        $labels = array_map(fn ($spec) => $spec['values'], Giveaway::FACET_LABELS);
 
         return Cache::remember('giveaways.hub.facets.v1', 900, function () use ($labels) {
             $out = [];

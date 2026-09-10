@@ -11,6 +11,66 @@ use Illuminate\Support\Str;
 
 class Giveaway extends Model
 {
+    /**
+     * How the four describing columns are said out loud.
+     *
+     * It lived privately inside GiveawayHubController, which was fine while the
+     * hub was the only place that named them. The detail page needs the same
+     * words — "Multi-platform", "Game keys", "Worldwide", "Members only" — and a
+     * second copy of a map like this drifts: one side learns a new prize type
+     * and the other keeps printing the raw column value at the reader.
+     *
+     * The order here is the order they read in: what it runs on, what you get,
+     * who can enter from where, and on what terms.
+     */
+    public const FACET_LABELS = [
+        'platform' => [
+            'label' => 'Platform',
+            'values' => ['pc' => 'PC', 'playstation' => 'PlayStation', 'xbox' => 'Xbox', 'nintendo' => 'Nintendo', 'multi' => 'Multi-platform'],
+        ],
+        'prize_type' => [
+            'label' => 'Prize type',
+            'values' => ['hardware' => 'Hardware', 'game_key' => 'Game keys', 'gift_card' => 'Gift cards', 'subscription' => 'Subscriptions', 'merch' => 'Merch', 'bundle' => 'Bundles'],
+        ],
+        'region' => [
+            'label' => 'Open to',
+            'values' => ['worldwide' => 'Worldwide', 'eu' => 'Europe', 'ba' => 'Bosnia', 'na' => 'North America'],
+        ],
+        'entry_type' => [
+            'label' => 'Entry',
+            'values' => ['free' => 'Free entry', 'members' => 'Members only', 'tasks' => 'Task based'],
+        ],
+    ];
+
+    /**
+     * The describing columns an editor actually filled in, ready to print.
+     *
+     * Skips the empty ones rather than printing "Platform —": a giveaway that
+     * does not care which console you own should not have a row saying so.
+     *
+     * @return array<int,array{key:string,label:string,value:string}>
+     */
+    public function describedAs(): array
+    {
+        $out = [];
+
+        foreach (self::FACET_LABELS as $column => $spec) {
+            $raw = $this->{$column};
+
+            if (! $raw) {
+                continue;
+            }
+
+            $out[] = [
+                'key' => $column,
+                'label' => $spec['label'],
+                'value' => $spec['values'][$raw] ?? ucfirst(str_replace('_', ' ', $raw)),
+            ];
+        }
+
+        return $out;
+    }
+
     protected $fillable = [
         'title',
         'slug',

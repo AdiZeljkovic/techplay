@@ -44,6 +44,9 @@ interface Giveaway {
     description: string | null;
     rules: string | null;
     featured_image: string | null;
+    /* Platform, prize type, region and entry type, already turned into the
+       words the hub uses. Only the ones an editor filled in are sent. */
+    facts: { key: string; label: string; value: string }[];
     prize: {
         name: string;
         value: number | null;
@@ -271,8 +274,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const [claimingBonus, setClaimingBonus] = useState(false);
     const [copied, setCopied]               = useState(false);
     const [timeRemaining, setTimeRemaining] = useState<number>(0);
-    /* null = nobody has touched it, so the default below decides. */
-    const [descOpen, setDescOpen]           = useState<boolean | null>(null);
     const [rulesOpen, setRulesOpen]         = useState(false);
     /* Read after mount, never during render: navigator.share does not exist on
        the server, and a button that appears only on the client has to appear
@@ -490,7 +491,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const pointsEarned     = scoredTasks
         .filter(t => entry?.completed_task_ids.includes(t.id))
         .reduce((sum, t) => sum + t.points, 0);
-    const aboutOpen        = descOpen ?? !isEntered;
     const shareText        = `I'm in to win ${giveaway.prize.name || giveaway.title} on TechPlay — enter with me:`;
 
     /* The phone's own share sheet, which reaches every app on the device
@@ -815,49 +815,88 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </Panel>
                 )}
 
-                {/* ══ about and rules ══
-                    Above the way in, not below it. Somebody who has just
-                    landed needs to know what is being given away and on what
-                    terms before being asked to join — and Rules carried the
-                    line "Read the rules and terms before entering" while
-                    sitting underneath the button that entered them.
+                {/* ══ about ══
+                    Above the way in, because somebody who has just landed
+                    needs to know what is being given away before being asked
+                    to join. Rules went back to the bottom on its own — it is
+                    1,500 words of terms, which is reference, not an
+                    introduction.
 
-                    Open by default only for a reader who has not entered yet.
-                    Once they have, the description has done its job and its
-                    full height would push their own progress down the page,
-                    so it starts folded — until they say otherwise, which is
-                    what the null in `descOpen` is holding a place for. ══ */}
-                {(giveaway.description || giveaway.rules) && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                        {giveaway.description && (
-                            <Fold
-                                title="About this giveaway"
-                                sub={`Everything you need to know about ${giveaway.title}.`}
-                                icon={<Gift className="w-4 h-4 text-[var(--accent)]" />}
-                                open={aboutOpen}
-                                onToggle={() => setDescOpen(!aboutOpen)}
-                            >
+                    That left About as half of a two-column pair with nothing
+                    beside it, so it got the other half filled properly: the
+                    prize and the four facts an editor already types into every
+                    giveaway and which this page has never once shown.
+                    "Worldwide" and "Members only" are the two most likely to
+                    decide whether somebody bothers entering at all. ══ */}
+                {(giveaway.description || giveaway.facts?.length > 0) && (
+                    <Panel material="instrument">
+                        <SectionHead
+                            eyebrow="About this giveaway"
+                            icon={<Gift className="w-3.5 h-3.5" />}
+                            title="What you are playing for."
+                        />
+
+                        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-5 lg:gap-7 items-start">
+                            {giveaway.description ? (
                                 <div
-                                    className="prose prose-invert prose-sm max-w-none text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed"
+                                    className="prose prose-invert prose-sm max-w-[68ch] text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed prose-p:my-2"
                                     dangerouslySetInnerHTML={{ __html: giveaway.description }}
                                 />
-                            </Fold>
-                        )}
-
-                        {giveaway.rules && (
-                            <Fold
-                                title="Rules & terms"
-                                sub="Read the rules and terms before entering."
-                                icon={<Trophy className="w-4 h-4 text-[var(--accent)]" />}
-                                open={rulesOpen}
-                                onToggle={() => setRulesOpen(!rulesOpen)}
-                            >
-                                <p className="text-[12.5px] text-white/60 whitespace-pre-wrap leading-relaxed">
-                                    {giveaway.rules}
+                            ) : (
+                                <p className="text-[12.5px] text-white/45 leading-relaxed">
+                                    The details are in the prize card and the rules at the bottom of this page.
                                 </p>
-                            </Fold>
-                        )}
-                    </div>
+                            )}
+
+                            <aside className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden self-start">
+                                <div
+                                    className="px-4 py-3.5 border-b"
+                                    style={{
+                                        background: "var(--accent-soft)",
+                                        borderColor: "color-mix(in srgb, var(--accent) 22%, transparent)",
+                                    }}
+                                >
+                                    <p className="font-display text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--accent-ink)]">
+                                        The prize
+                                    </p>
+                                    {giveaway.prize.name && (
+                                        <p className="mt-1.5 text-[13px] font-bold text-white leading-snug">
+                                            {giveaway.prize.name}
+                                        </p>
+                                    )}
+                                    {giveaway.prize.value && (
+                                        <p className="mt-1 font-display text-[20px] font-black tabular-nums leading-none text-[var(--accent-ink)]">
+                                            &euro;{giveaway.prize.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <dl className="divide-y divide-[var(--line)]">
+                                    {(giveaway.facts ?? []).map((fact) => (
+                                        <div key={fact.key} className="flex items-baseline justify-between gap-3 px-4 py-2.5">
+                                            <dt className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/45">
+                                                {fact.label}
+                                            </dt>
+                                            <dd className="min-w-0 text-[12px] font-bold text-white text-right truncate">
+                                                {fact.value}
+                                            </dd>
+                                        </div>
+                                    ))}
+
+                                    {giveaway.timing.ends_at && (
+                                        <div className="flex items-baseline justify-between gap-3 px-4 py-2.5">
+                                            <dt className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/45">
+                                                {giveaway.timing.has_ended ? "Ended" : "Closes"}
+                                            </dt>
+                                            <dd className="min-w-0 text-[12px] font-bold text-white text-right truncate tabular-nums">
+                                                {new Date(giveaway.timing.ends_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                                            </dd>
+                                        </div>
+                                    )}
+                                </dl>
+                            </aside>
+                        </div>
+                    </Panel>
                 )}
 
                 {/* ══ your progress ══
@@ -1180,6 +1219,24 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             })}
                         </ul>
                     </Panel>
+                )}
+
+
+                {/* ══ rules ══
+                    Last, and folded. Terms are reference: you look them up,
+                    you do not read them on the way in. ══ */}
+                {giveaway.rules && (
+                    <Fold
+                        title="Rules & terms"
+                        sub="The full terms for this giveaway."
+                        icon={<Trophy className="w-4 h-4 text-[var(--accent)]" />}
+                        open={rulesOpen}
+                        onToggle={() => setRulesOpen(!rulesOpen)}
+                    >
+                        <p className="max-w-[80ch] text-[12.5px] text-white/60 whitespace-pre-wrap leading-relaxed">
+                            {giveaway.rules}
+                        </p>
+                    </Fold>
                 )}
 
             </div>

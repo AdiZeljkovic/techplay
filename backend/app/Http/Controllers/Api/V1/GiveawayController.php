@@ -138,6 +138,15 @@ class GiveawayController extends Controller
                     ? asset('storage/'.$giveaway->featured_image)
                     : null,
 
+                /*
+                 * Platform, prize type, region and entry type — filled in on
+                 * every giveaway, offered as filters on the hub, and until now
+                 * never once shown on the page the reader actually lands on.
+                 * "Worldwide" and "Members only" are the two facts most likely
+                 * to decide whether somebody bothers entering at all.
+                 */
+                'facts' => $giveaway->describedAs(),
+
                 'prize' => [
                     'name' => $giveaway->prize_name,
                     'value' => $giveaway->prize_value,
