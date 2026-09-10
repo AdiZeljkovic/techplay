@@ -188,6 +188,35 @@ const SHARE_TARGETS: { label: string; href: (url: string, text: string) => strin
 ];
 
 /**
+ * The first line of the description, promoted to the section's heading.
+ *
+ * An editor already writes an opener — "Get ready for GTA 6 with TechPlay!" —
+ * and it is a better heading than anything this file can invent, because it
+ * knows what the giveaway is and a constant string never can. So it is lifted
+ * out and the body starts at the second paragraph; left in place it would be
+ * printed twice, once large and once small, two lines apart.
+ *
+ * Only when it reads like a heading. Past 110 characters it is a paragraph
+ * that happens to be first, and cutting it out would behead the copy — then
+ * the description is left whole and the giveaway's own title does the job.
+ */
+function splitOpener(html: string): { opener: string | null; body: string } {
+    const first = html.match(/^\s*<p[^>]*>([\s\S]*?)<\/p>/i);
+
+    if (!first) {
+        return { opener: null, body: html };
+    }
+
+    const text = first[1].replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+
+    if (!text || text.length > 110) {
+        return { opener: null, body: html };
+    }
+
+    return { opener: text, body: html.slice(first[0].length) };
+}
+
+/**
  * The head every big section on this page wears.
  *
  * An eyebrow naming the section, a sentence saying what it is for, and a
@@ -196,14 +225,31 @@ const SHARE_TARGETS: { label: string; href: (url: string, text: string) => strin
  * asking the reader to do something.
  */
 function SectionHead({
-    eyebrow, icon, title, sub, right,
+    eyebrow, icon, title, sub, right, centred = false,
 }: {
     eyebrow: string;
     icon: React.ReactNode;
     title: string;
     sub?: string;
     right?: React.ReactNode;
+    /** About is read, not operated, so it sits on the page's centre line. The
+     *  panels that ask for an action stay left, where a scanning eye starts. */
+    centred?: boolean;
 }) {
+    if (centred) {
+        return (
+            <div className="mb-5 flex flex-col items-center text-center">
+                <p className="flex items-center gap-2 font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent-ink)]">
+                    {icon} {eyebrow}
+                </p>
+                <h2 className="mt-2.5 max-w-3xl font-display text-[24px] sm:text-[30px] font-black tracking-tight text-white leading-[1.1] text-balance">
+                    {title}
+                </h2>
+                {sub && <p className="mt-2 max-w-2xl text-[12.5px] text-white/50 leading-relaxed">{sub}</p>}
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3 mb-5">
             <div className="min-w-0">
@@ -505,6 +551,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const pointsEarned     = scoredTasks
         .filter(t => entry?.completed_task_ids.includes(t.id))
         .reduce((sum, t) => sum + t.points, 0);
+    const about            = splitOpener(giveaway.description ?? "");
     const shareText        = `I'm in to win ${giveaway.prize.name || giveaway.title} on TechPlay — enter with me:`;
 
     /* The phone's own share sheet, which reaches every app on the device
@@ -847,22 +894,21 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 {(giveaway.description || (giveaway.facts?.length ?? 0) > 0) && (
                     <Panel material="instrument">
                         <SectionHead
+                            centred
                             eyebrow="About this giveaway"
                             icon={<Gift className="w-3.5 h-3.5" />}
-                            title="What you are playing for."
+                            title={about.opener ?? giveaway.title}
                         />
 
-                        {/* Two columns once there is room for two. A single
-                            measure of text under a wide heading leaves the
-                            right half of the panel empty, which is what made
-                            the first version read as a hole; splitting it fills
-                            the width without stretching a line past the ~70
-                            characters anyone can comfortably read. Paragraphs
-                            are kept whole across the break. */}
-                        {giveaway.description && (
+                        {/* One centred measure. Two columns filled the panel
+                            but split six short paragraphs into two stacks the
+                            eye had to hop between; centring holds the same
+                            width, keeps the reading order in one line, and
+                            leaves the panel balanced rather than left-heavy. */}
+                        {about.body.trim() && (
                             <div
-                                className="max-w-[70ch] xl:max-w-none xl:columns-2 xl:gap-14 text-[14px] leading-[1.72] text-white/70 [&_p]:my-3 [&_p]:break-inside-avoid [&_p:first-child]:mt-0 [&_strong]:text-white [&_strong]:font-bold [&_a]:text-[var(--accent-ink)] [&_h2]:text-white [&_h2]:font-display [&_h2]:font-black [&_h3]:text-white [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_li]:my-1"
-                                dangerouslySetInnerHTML={{ __html: giveaway.description }}
+                                className="mx-auto max-w-[68ch] text-center text-[14px] leading-[1.72] text-white/70 [&_p]:my-3 [&_p:first-child]:mt-0 [&_strong]:text-white [&_strong]:font-bold [&_a]:text-[var(--accent-ink)] [&_h2]:text-white [&_h2]:font-display [&_h2]:font-black [&_h3]:text-white [&_ul]:inline-block [&_ul]:text-left [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_li]:my-1"
+                                dangerouslySetInnerHTML={{ __html: about.body }}
                             />
                         )}
 
