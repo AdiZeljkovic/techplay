@@ -9,7 +9,8 @@ import {
     Gift, Clock, Users, Trophy, Check, Share2, Loader2, Zap,
     CalendarDays, ChevronDown, Copy, Flame, Target, Star, Link2,
     CalendarCheck, MessageCircle, Repeat2, ThumbsUp, Facebook, Instagram,
-    Youtube, Twitter, Tag, ArrowRight, Crown, type LucideIcon,
+    Youtube, Twitter, Tag, ArrowRight, Crown, Gamepad2, Package, Globe,
+    UserCheck, type LucideIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
@@ -152,6 +153,19 @@ const TASK_KINDS: Record<string, { icon: LucideIcon; what: string; cta: string }
 };
 
 const FALLBACK_KIND = { icon: Star, what: "Bonus task", cta: "Start" };
+
+/**
+ * A glyph per describing column.
+ *
+ * Keyed on the column, not the value, because the value is editorial — the
+ * region set can grow to a dozen countries and the globe still means region.
+ */
+const FACT_ICONS: Record<string, LucideIcon> = {
+    platform: Gamepad2,
+    prize_type: Package,
+    region: Globe,
+    entry_type: UserCheck,
+};
 
 /**
  * Where an invite actually gets sent.
@@ -816,19 +830,21 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 )}
 
                 {/* ══ about ══
-                    Above the way in, because somebody who has just landed
-                    needs to know what is being given away before being asked
-                    to join. Rules went back to the bottom on its own — it is
-                    1,500 words of terms, which is reference, not an
-                    introduction.
+                    Above the way in: somebody who has just landed needs to
+                    know what is being given away before being asked to join.
+                    Rules sits at the very bottom on its own — 1,500 words of
+                    terms is reference, not an introduction.
 
-                    That left About as half of a two-column pair with nothing
-                    beside it, so it got the other half filled properly: the
-                    prize and the four facts an editor already types into every
-                    giveaway and which this page has never once shown.
-                    "Worldwide" and "Members only" are the two most likely to
-                    decide whether somebody bothers entering at all. ══ */}
-                {(giveaway.description || giveaway.facts?.length > 0) && (
+                    The first attempt at this put the prose in one grid track
+                    and a prize card in another, and the prose carried a 68ch
+                    measure inside a 1,100px track: half the panel was a hole
+                    with a card stranded on the far right of it. Reading width
+                    is a property of the text, so it cannot also be the thing
+                    that fills the panel. The strip does that — full width,
+                    five equal tiles, the facts an editor types into every
+                    giveaway and which only the hub's filter dropdowns have
+                    ever read. ══ */}
+                {(giveaway.description || (giveaway.facts?.length ?? 0) > 0) && (
                     <Panel material="instrument">
                         <SectionHead
                             eyebrow="About this giveaway"
@@ -836,66 +852,54 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             title="What you are playing for."
                         />
 
-                        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-5 lg:gap-7 items-start">
-                            {giveaway.description ? (
-                                <div
-                                    className="prose prose-invert prose-sm max-w-[68ch] text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed prose-p:my-2"
-                                    dangerouslySetInnerHTML={{ __html: giveaway.description }}
-                                />
-                            ) : (
-                                <p className="text-[12.5px] text-white/45 leading-relaxed">
-                                    The details are in the prize card and the rules at the bottom of this page.
-                                </p>
-                            )}
+                        {/* Two columns once there is room for two. A single
+                            measure of text under a wide heading leaves the
+                            right half of the panel empty, which is what made
+                            the first version read as a hole; splitting it fills
+                            the width without stretching a line past the ~70
+                            characters anyone can comfortably read. Paragraphs
+                            are kept whole across the break. */}
+                        {giveaway.description && (
+                            <div
+                                className="max-w-[70ch] xl:max-w-none xl:columns-2 xl:gap-14 text-[14px] leading-[1.72] text-white/70 [&_p]:my-3 [&_p]:break-inside-avoid [&_p:first-child]:mt-0 [&_strong]:text-white [&_strong]:font-bold [&_a]:text-[var(--accent-ink)] [&_h2]:text-white [&_h2]:font-display [&_h2]:font-black [&_h3]:text-white [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_li]:my-1"
+                                dangerouslySetInnerHTML={{ __html: giveaway.description }}
+                            />
+                        )}
 
-                            <aside className="rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-1)] overflow-hidden self-start">
-                                <div
-                                    className="px-4 py-3.5 border-b"
-                                    style={{
-                                        background: "var(--accent-soft)",
-                                        borderColor: "color-mix(in srgb, var(--accent) 22%, transparent)",
-                                    }}
-                                >
-                                    <p className="font-display text-[9px] font-bold uppercase tracking-[0.18em] text-[var(--accent-ink)]">
-                                        The prize
-                                    </p>
-                                    {giveaway.prize.name && (
-                                        <p className="mt-1.5 text-[13px] font-bold text-white leading-snug">
-                                            {giveaway.prize.name}
-                                        </p>
-                                    )}
-                                    {giveaway.prize.value && (
-                                        <p className="mt-1 font-display text-[20px] font-black tabular-nums leading-none text-[var(--accent-ink)]">
-                                            &euro;{giveaway.prize.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </p>
-                                    )}
-                                </div>
+                        {(giveaway.facts?.length ?? 0) > 0 && (
+                            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                                {giveaway.facts.map((fact) => {
+                                    const FactIcon = FACT_ICONS[fact.key] ?? Tag;
 
-                                <dl className="divide-y divide-[var(--line)]">
-                                    {(giveaway.facts ?? []).map((fact) => (
-                                        <div key={fact.key} className="flex items-baseline justify-between gap-3 px-4 py-2.5">
-                                            <dt className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/45">
-                                                {fact.label}
-                                            </dt>
-                                            <dd className="min-w-0 text-[12px] font-bold text-white text-right truncate">
+                                    return (
+                                        <div
+                                            key={fact.key}
+                                            className="rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-4 py-3.5"
+                                        >
+                                            <p className="flex items-center gap-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/45">
+                                                <FactIcon className="w-3.5 h-3.5 shrink-0 text-[var(--accent)]" strokeWidth={1.9} />
+                                                <span className="truncate">{fact.label}</span>
+                                            </p>
+                                            <p className="mt-2 text-[14px] font-bold text-white leading-none truncate">
                                                 {fact.value}
-                                            </dd>
+                                            </p>
                                         </div>
-                                    ))}
+                                    );
+                                })}
 
-                                    {giveaway.timing.ends_at && (
-                                        <div className="flex items-baseline justify-between gap-3 px-4 py-2.5">
-                                            <dt className="shrink-0 font-display text-[9.5px] font-bold uppercase tracking-[0.14em] text-white/45">
-                                                {giveaway.timing.has_ended ? "Ended" : "Closes"}
-                                            </dt>
-                                            <dd className="min-w-0 text-[12px] font-bold text-white text-right truncate tabular-nums">
-                                                {new Date(giveaway.timing.ends_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                                            </dd>
-                                        </div>
-                                    )}
-                                </dl>
-                            </aside>
-                        </div>
+                                {giveaway.timing.ends_at && (
+                                    <div className="rounded-[var(--radius-card)] border border-[var(--line)] bg-[var(--surface-1)] px-4 py-3.5">
+                                        <p className="flex items-center gap-1.5 font-display text-[9px] font-bold uppercase tracking-[0.16em] text-white/45">
+                                            <CalendarDays className="w-3.5 h-3.5 shrink-0 text-[var(--accent)]" strokeWidth={1.9} />
+                                            <span className="truncate">{giveaway.timing.has_ended ? "Ended" : "Closes"}</span>
+                                        </p>
+                                        <p className="mt-2 text-[14px] font-bold text-white leading-none truncate tabular-nums">
+                                            {new Date(giveaway.timing.ends_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </Panel>
                 )}
 
