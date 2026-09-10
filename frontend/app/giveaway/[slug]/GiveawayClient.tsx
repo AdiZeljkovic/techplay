@@ -761,11 +761,15 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         </div>
                     )}
 
-                    {/* The dissolve. Reaches further up than it needs to be
-                        dark, so the transition is never a visible line. */}
+                    {/* The dissolve.
+                        Capped in pixels, not left as a percentage: the banner
+                        is 1916x821, so a 62% fade would have darkened 500px of
+                        artwork to carry 200px of countdown. It only has to
+                        cover what sits in it. Still half on a phone, where the
+                        whole picture is shorter than the cap. */}
                     <span
                         aria-hidden
-                        className="absolute inset-x-0 bottom-0 h-[62%] pointer-events-none"
+                        className="absolute inset-x-0 bottom-0 h-1/2 max-h-[320px] pointer-events-none"
                         style={{
                             background:
                                 "linear-gradient(to top, var(--surface-0) 0%, rgba(5,7,10,0.88) 22%, rgba(5,7,10,0.5) 52%, rgba(5,7,10,0.08) 82%, transparent 100%)",
