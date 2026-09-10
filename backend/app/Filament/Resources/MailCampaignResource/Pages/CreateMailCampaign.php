@@ -26,4 +26,19 @@ class CreateMailCampaign extends CreateRecord
 
         return $data;
     }
+
+    /**
+     * Straight to the edit screen, not back to the list.
+     *
+     * Preview, Send test and Send all need a saved campaign — there is no
+     * record to render until there is one — so they live on the edit page. The
+     * default redirect drops you on the list instead, where the only way back
+     * to your own draft is to find its row, and the buttons you were looking
+     * for are hidden behind a menu. Writing a newsletter and then looking at it
+     * is one motion; this keeps it that way.
+     */
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('edit', ['record' => $this->getRecord()]);
+    }
 }
