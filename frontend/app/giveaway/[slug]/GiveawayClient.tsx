@@ -613,20 +613,16 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 }}
             >
                 <div className="flex items-start justify-between gap-3">
-                    <span
-                        className="w-11 h-11 shrink-0 rounded-[var(--radius-card)] flex items-center justify-center border"
-                        style={{
-                            background: isCompleted
-                                ? "color-mix(in srgb, var(--success) 14%, transparent)"
-                                : "var(--accent-soft)",
-                            borderColor: isCompleted
-                                ? "color-mix(in srgb, var(--success) 30%, transparent)"
-                                : "color-mix(in srgb, var(--accent) 28%, transparent)",
-                        }}
-                    >
+                    {/* The mark IS the icon — the header dropdown's rule, and
+                        its reasoning applies here word for word: a tinted
+                        square behind every entry makes seven different things
+                        look like seven of the same thing. Same 26px at the
+                        same 1.4 stroke, so a Discord join reads the same on a
+                        task card as it does in the Community menu. */}
+                    <span className="w-9 h-9 shrink-0 flex items-center justify-center">
                         {isCompleted
-                            ? <Check className="w-[19px] h-[19px]" style={{ color: "var(--success)" }} />
-                            : <KindIcon className="w-[19px] h-[19px] text-[var(--accent-ink)]" strokeWidth={1.9} />}
+                            ? <Check className="w-[26px] h-[26px]" strokeWidth={1.6} style={{ color: "var(--success)" }} />
+                            : <KindIcon className="w-[26px] h-[26px] text-[var(--accent)]" strokeWidth={1.4} />}
                     </span>
 
                     <span
