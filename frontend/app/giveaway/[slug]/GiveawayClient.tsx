@@ -762,14 +762,16 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     )}
 
                     {/* The dissolve.
-                        Capped in pixels, not left as a percentage: the banner
-                        is 1916x821, so a 62% fade would have darkened 500px of
-                        artwork to carry 200px of countdown. It only has to
-                        cover what sits in it. Still half on a phone, where the
+                        Capped in pixels rather than left as a share of the
+                        height: the banner is 1916x821, and an unbounded
+                        percentage darkened 500px of artwork to carry 200px of
+                        countdown. The cap is set to what actually sits in it —
+                        the value, the clock and the two figures — and the
+                        fraction only takes over on a narrow screen, where the
                         whole picture is shorter than the cap. */}
                     <span
                         aria-hidden
-                        className="absolute inset-x-0 bottom-0 h-1/2 max-h-[320px] pointer-events-none"
+                        className="absolute inset-x-0 bottom-0 h-2/3 max-h-[340px] pointer-events-none"
                         style={{
                             background:
                                 "linear-gradient(to top, var(--surface-0) 0%, rgba(5,7,10,0.88) 22%, rgba(5,7,10,0.5) 52%, rgba(5,7,10,0.08) 82%, transparent 100%)",
@@ -813,7 +815,18 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
 
                 </div>
 
-                <div className="relative z-10 container-page pb-8 -mt-2 sm:-mt-10 lg:-mt-20 flex flex-col items-center text-center">
+                {/* Pinned to the foot of the artwork, not pulled up by a
+                    margin. A margin is a fixed number of pixels and the banner
+                    is not a fixed number of pixels tall — it is a share of the
+                    viewport width — so one value that sat right at 1920 left
+                    the countdown hanging off the bottom of the picture at
+                    1280. Anchored to the bottom edge it lands in the same
+                    place at every width, and the hero is exactly as tall as
+                    the banner instead of the banner plus a stack underneath.
+
+                    In flow on a phone, where the same picture is a couple of
+                    hundred pixels tall and there is nothing to sit inside. */}
+                <div className="relative md:absolute md:inset-x-0 md:bottom-0 z-10 container-page pt-5 md:pt-0 pb-7 lg:pb-9 flex flex-col items-center text-center">
                     <h1
                         className={
                             titleIsInArt
