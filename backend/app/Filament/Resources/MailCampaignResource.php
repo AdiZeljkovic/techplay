@@ -78,11 +78,18 @@ class MailCampaignResource extends Resource
 
                     RichEditor::make('body')
                         ->label('Body')
-                        ->helperText('Links are counted automatically — paste them as they are. The first line also does the job a preview line used to, so open with something worth reading.')
+                        ->helperText('Links are counted automatically — paste them as they are. Drag a picture in or use the image button; it is uploaded and given a full address, because a relative one arrives broken in an inbox.')
                         ->toolbarButtons([
                             'bold', 'italic', 'link', 'h2', 'h3',
-                            'bulletList', 'orderedList', 'blockquote', 'undo', 'redo',
+                            'bulletList', 'orderedList', 'blockquote',
+                            'attachFiles', 'undo', 'redo',
                         ])
+                        // The public disk, so the picture is reachable from
+                        // somebody's mail client. Its own directory so a
+                        // newsletter image is never confused with an article's.
+                        ->fileAttachmentsDisk('public')
+                        ->fileAttachmentsDirectory('newsletter')
+                        ->fileAttachmentsVisibility('public')
                         ->columnSpanFull(),
 
                     Forms\Components\Textarea::make('body_text')
@@ -92,6 +99,59 @@ class MailCampaignResource extends Resource
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
+
+            /*
+             * The hero, taken from the launch announcement.
+             *
+             * That mail opens with a small capsule, a large headline, a line of
+             * text and one button, and it is the only design here that has been
+             * through real mail clients. Rebuilding it in the rich-text box
+             * would mean writing Outlook-safe tables by hand, which is the work
+             * the template exists to remove — so it is six fields instead.
+             *
+             * All optional together: leave them empty and the message is a
+             * masthead, the writing and the footer, which is the right shape
+             * for a short note.
+             */
+            Section::make('The opening')
+                ->description('The big block at the top, as in the launch email. Leave it all empty for a plain note.')
+                ->schema([
+                    Forms\Components\TextInput::make('hero_eyebrow')
+                        ->label('Small capsule')
+                        ->helperText('Above the headline, drawn in capitals. "New this week", "GTA 6 giveaway".')
+                        ->maxLength(60),
+
+                    Forms\Components\TextInput::make('hero_headline')
+                        ->label('Headline')
+                        ->maxLength(160),
+
+                    Forms\Components\Textarea::make('hero_intro')
+                        ->label('One line under it')
+                        ->rows(2)
+                        ->maxLength(400)
+                        ->columnSpanFull(),
+
+                    Forms\Components\TextInput::make('hero_cta_label')
+                        ->label('Button text')
+                        ->helperText('Needs the address beside it — a label on its own draws nothing.')
+                        ->maxLength(60),
+
+                    Forms\Components\TextInput::make('hero_cta_url')
+                        ->label('Button address')
+                        ->url()
+                        ->maxLength(500),
+
+                    Forms\Components\FileUpload::make('hero_image')
+                        ->label('Picture across the top')
+                        ->image()
+                        ->disk('public')
+                        ->directory('newsletter')
+                        ->visibility('public')
+                        ->helperText('Optional, sits above the headline. Wide works best — around 1200×600.')
+                        ->columnSpanFull(),
+                ])
+                ->columns(2)
+                ->collapsed(fn (?MailCampaign $record) => ! $record?->hero_headline && ! $record?->hero_image),
 
             Section::make('Who gets it')
                 ->schema([
@@ -222,6 +282,7 @@ class MailCampaignResource extends Resource
             ->actions([
                 EditAction::make()
                     ->visible(fn (MailCampaign $r) => $r->isEditable()),
+                self::previewAction(),
                 self::testAction(),
                 self::sendAction(),
                 DeleteAction::make()
@@ -238,6 +299,24 @@ class MailCampaignResource extends Resource
      * the log and, worse, occupy the (campaign, email) slot so the real send
      * would skip that person as already written to.
      */
+    /**
+     * The mail as it will actually arrive.
+     *
+     * Rendered from the mailable's own Blade file, in a new tab with nothing
+     * around it. A preview drawn any other way is a picture of an email rather
+     * than the email, and the part worth checking before a send is exactly the
+     * part where the two would differ.
+     */
+    public static function previewAction(): Action
+    {
+        return Action::make('preview')
+            ->label('Preview')
+            ->icon('heroicon-o-eye')
+            ->color('gray')
+            ->url(fn (MailCampaign $record) => route('admin.mail-campaign.preview', $record))
+            ->openUrlInNewTab();
+    }
+
     public static function testAction(): Action
     {
         return Action::make('test')

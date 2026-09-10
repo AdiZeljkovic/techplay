@@ -16,6 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 /**
@@ -60,7 +61,7 @@ class MailDeskTest extends TestCase
         // The panel gates on a permission, deliberately — the `role` column
         // used to be a second way in and was taken out. Granting it directly
         // keeps this test about the screens rather than about Spatie.
-        \Spatie\Permission\Models\Permission::findOrCreate('view admin panel', 'web');
+        Permission::findOrCreate('view admin panel', 'web');
         $admin->givePermissionTo('view admin panel');
 
         foreach ([
@@ -70,6 +71,69 @@ class MailDeskTest extends TestCase
         ] as $url) {
             $this->actingAs($admin)->get($url)->assertOk();
         }
+    }
+
+    public function test_a_picture_gets_an_address_a_mail_client_can_reach(): void
+    {
+        /*
+         * The editor stores an upload and writes src="/storage/…", which is
+         * correct on the site and meaningless in an inbox: there is nothing for
+         * a relative path to be relative to, so every picture arrives broken.
+         * Nothing warns about it either, because the admin and the preview are
+         * both on a domain where the path happens to resolve.
+         */
+        $html = '<p><img src="/storage/newsletter/hero.jpg"></p>'
+            .'<img src="https://cdn.example.com/kept.jpg">';
+
+        $out = app(CampaignBody::class)->absoluteImages($html);
+
+        $this->assertStringContainsString(
+            rtrim((string) config('app.url'), '/').'/storage/newsletter/hero.jpg',
+            $out
+        );
+        $this->assertStringContainsString('https://cdn.example.com/kept.jpg', $out, 'an address that already works is left alone');
+    }
+
+    public function test_the_preview_renders_and_records_nothing(): void
+    {
+        /*
+         * A preview that wrote would be worse than none: loading it ten times
+         * while writing would record ten opens against a campaign that has not
+         * been sent, and the first number anybody looks at afterwards would
+         * already be wrong. It must also not leave a recipient row, which would
+         * occupy the (campaign, email) slot and make the real send skip the
+         * editor as already written to.
+         */
+        $admin = User::factory()->create(['email_verified_at' => now()]);
+        Permission::findOrCreate('view admin panel', 'web');
+        $admin->givePermissionTo('view admin panel');
+
+        $campaign = $this->campaign();
+        $campaign->forceFill([
+            'hero_eyebrow' => 'New this week',
+            'hero_headline' => 'Something to look at',
+            'hero_cta_label' => 'Read it',
+            'hero_cta_url' => 'https://techplay.gg/news',
+        ])->save();
+
+        $response = $this->actingAs($admin)->get(route('admin.mail-campaign.preview', $campaign));
+
+        $response->assertOk();
+        $response->assertSee('Something to look at', false);
+        $response->assertSee('NEW THIS WEEK', false);
+
+        $this->assertSame(0, MailCampaignRecipient::where('campaign_id', $campaign->id)->count());
+        $this->assertSame(0, (int) $campaign->fresh()->opened_count);
+    }
+
+    public function test_the_preview_needs_the_same_permission_the_panel_does(): void
+    {
+        // The URL is guessable and a draft is unpublished writing.
+        $nobody = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->actingAs($nobody)
+            ->get(route('admin.mail-campaign.preview', $this->campaign()))
+            ->assertForbidden();
     }
 
     public function test_a_campaign_cannot_be_sent_twice(): void

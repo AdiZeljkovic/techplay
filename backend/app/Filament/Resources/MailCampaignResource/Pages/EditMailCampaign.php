@@ -12,6 +12,7 @@ class EditMailCampaign extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            MailCampaignResource::previewAction(),
             MailCampaignResource::testAction(),
             MailCampaignResource::sendAction(),
         ];

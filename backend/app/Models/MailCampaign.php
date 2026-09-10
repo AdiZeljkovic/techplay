@@ -35,6 +35,7 @@ class MailCampaign extends Model
 
     protected $fillable = [
         'name', 'subject', 'body', 'body_text', 'audience',
+        'hero_eyebrow', 'hero_headline', 'hero_intro', 'hero_cta_label', 'hero_cta_url', 'hero_image',
         'status', 'scheduled_for', 'batch_size', 'pause_seconds', 'created_by',
     ];
 
@@ -53,6 +54,24 @@ class MailCampaign extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * The hero picture, as an address a mail client can fetch.
+     *
+     * A separate method rather than an accessor on the column: an accessor
+     * would hand the form a URL where it expects the stored path, and the
+     * upload field would lose track of its own file on every save.
+     */
+    public function heroImageUrl(): ?string
+    {
+        if (! $this->hero_image) {
+            return null;
+        }
+
+        return str_starts_with($this->hero_image, 'http')
+            ? $this->hero_image
+            : rtrim((string) config('app.url'), '/').'/storage/'.ltrim($this->hero_image, '/');
     }
 
     /** Still editable, and still stoppable. */

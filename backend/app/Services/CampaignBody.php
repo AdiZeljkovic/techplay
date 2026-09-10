@@ -35,6 +35,26 @@ class CampaignBody
     }
 
     /**
+     * Turn the editor's image paths into addresses a mail client can reach.
+     *
+     * The rich editor stores an upload and writes `src="/storage/…"`, which is
+     * correct on the site and meaningless in an inbox: there is no page for a
+     * relative path to be relative to, so every picture arrives broken. Nothing
+     * warns about it, because the preview and the admin are both on a domain
+     * where the path happens to resolve.
+     */
+    public function absoluteImages(string $html): string
+    {
+        $base = rtrim((string) config('app.url'), '/');
+
+        return (string) preg_replace_callback(
+            '/(<img\s[^>]*?src=)(["\'])(\/[^"\']*)\2/i',
+            fn (array $m) => $m[1].$m[2].$base.$m[3].$m[2],
+            $html
+        );
+    }
+
+    /**
      * Point every outbound link through the click counter.
      */
     public function trackLinks(string $html, MailCampaignRecipient $recipient): string

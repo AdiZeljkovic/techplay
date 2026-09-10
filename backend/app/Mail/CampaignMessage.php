@@ -52,8 +52,15 @@ class CampaignMessage extends Mailable
             with: [
                 'appUrl' => rtrim((string) config('app.site_url'), '/'),
                 'subject' => $campaign->subject,
-                'bodyHtml' => $body->trackLinks((string) $campaign->body, $this->recipient),
+                'campaign' => $campaign,
+                'bodyHtml' => $body->trackLinks($body->absoluteImages((string) $campaign->body), $this->recipient),
                 'bodyText' => (string) ($campaign->body_text ?: strip_tags((string) $campaign->body)),
+                // The hero button is the most-clicked thing in a newsletter and
+                // is not part of the body, so it would otherwise be the one link
+                // nobody counted.
+                'heroCtaUrl' => $campaign->hero_cta_url
+                    ? $this->recipient->clickUrl($campaign->hero_cta_url)
+                    : null,
                 'pixelUrl' => $this->recipient->openUrl(),
                 'unsubscribeUrl' => $this->recipient->unsubscribeUrl(),
                 'recipient' => $this->recipient,

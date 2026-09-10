@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CampaignPreviewController;
 use App\Http\Controllers\RssController;
 use App\Http\Controllers\SitemapController;
 use App\Models\SiteSetting;
@@ -137,3 +138,16 @@ Route::get('/{key}.txt', function ($key) {
     }
     abort(404);
 })->where('key', '[a-zA-Z0-9]+');
+
+/*
+ * The campaign preview, rendered from the mailable's own Blade file.
+ *
+ * A web route rather than something inside the panel because the point is to
+ * see the mail on its own — full width, no admin chrome around it, the way it
+ * will actually arrive. Guarded twice: session auth, then the same permission
+ * the panel gates on, because the URL is guessable and a draft is unpublished
+ * writing.
+ */
+Route::middleware(['web', 'auth'])
+    ->get('/admin-preview/mail-campaign/{campaign}', [CampaignPreviewController::class, 'show'])
+    ->name('admin.mail-campaign.preview');
