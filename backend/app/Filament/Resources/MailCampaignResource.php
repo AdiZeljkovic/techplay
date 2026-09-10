@@ -95,6 +95,17 @@ class MailCampaignResource extends Resource
 
             Section::make('Who gets it')
                 ->schema([
+                    /*
+                     * $get is left untyped, and that is not a style choice.
+                     *
+                     * Filament v5 hands in Filament\Schemas\Components\Utilities\Get.
+                     * Filament\Forms\Get does not exist in this version at all,
+                     * and type-hinting it turned this entire page into a 500 —
+                     * the class name reads as obviously right and is obviously
+                     * wrong. Untyped, the injection works whatever the version
+                     * in use happens to pass, which is also what the rest of
+                     * this codebase does.
+                     */
                     Forms\Components\Select::make('audience.segment')
                         ->label('Audience')
                         ->options(CampaignAudience::SEGMENTS)
@@ -106,7 +117,7 @@ class MailCampaignResource extends Resource
                         ->label('Which giveaway')
                         ->options(fn () => Giveaway::query()->orderByDesc('id')->pluck('title', 'id'))
                         ->helperText('Leave empty for anybody who has entered any giveaway.')
-                        ->visible(fn (Forms\Get $get) => $get('audience.segment') === 'giveaway')
+                        ->visible(fn ($get) => $get('audience.segment') === 'giveaway')
                         ->live(),
 
                     Forms\Components\TextInput::make('audience.min_xp')
@@ -114,7 +125,7 @@ class MailCampaignResource extends Resource
                         ->numeric()
                         ->minValue(0)
                         ->helperText('Leave empty for no minimum.')
-                        ->visible(fn (Forms\Get $get) => in_array($get('audience.segment'), ['everyone', 'members'], true))
+                        ->visible(fn ($get) => in_array($get('audience.segment'), ['everyone', 'members'], true))
                         ->live(onBlur: true),
 
                     Forms\Components\TextInput::make('audience.seen_within_days')
@@ -122,12 +133,12 @@ class MailCampaignResource extends Resource
                         ->numeric()
                         ->minValue(1)
                         ->helperText('Only narrows to people we have positively seen. Somebody we have no record of is never excluded by this.')
-                        ->visible(fn (Forms\Get $get) => in_array($get('audience.segment'), ['everyone', 'members'], true))
+                        ->visible(fn ($get) => in_array($get('audience.segment'), ['everyone', 'members'], true))
                         ->live(onBlur: true),
 
                     Forms\Components\Placeholder::make('reach')
                         ->label('Reaches')
-                        ->content(function (Forms\Get $get) {
+                        ->content(function ($get) {
                             $rule = array_filter((array) $get('audience'), fn ($v) => $v !== null && $v !== '');
                             $count = app(CampaignAudience::class)->count($rule);
 

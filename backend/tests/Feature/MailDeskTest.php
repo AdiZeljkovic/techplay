@@ -43,6 +43,35 @@ class MailDeskTest extends TestCase
         ]);
     }
 
+    /**
+     * The two screens actually render.
+     *
+     * Everything else in this file tests logic that runs without a browser, and
+     * all of it passed while the compose screen answered 500 to every request:
+     * a closure was type-hinted `Filament\Forms\Get`, which does not exist in
+     * this version of Filament, and nothing finds that until the form is built.
+     * A page that cannot be opened is not a feature, however correct the code
+     * behind it is.
+     */
+    public function test_the_admin_screens_open(): void
+    {
+        $admin = User::factory()->create(['email_verified_at' => now()]);
+
+        // The panel gates on a permission, deliberately — the `role` column
+        // used to be a second way in and was taken out. Granting it directly
+        // keeps this test about the screens rather than about Spatie.
+        \Spatie\Permission\Models\Permission::findOrCreate('view admin panel', 'web');
+        $admin->givePermissionTo('view admin panel');
+
+        foreach ([
+            '/admin/mail-campaigns',
+            '/admin/mail-campaigns/create',
+            '/admin/mail-templates',
+        ] as $url) {
+            $this->actingAs($admin)->get($url)->assertOk();
+        }
+    }
+
     public function test_a_campaign_cannot_be_sent_twice(): void
     {
         // The failure this prevents is two newsletters in every inbox, from one
