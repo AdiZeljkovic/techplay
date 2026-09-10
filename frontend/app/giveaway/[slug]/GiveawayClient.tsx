@@ -271,7 +271,8 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const [claimingBonus, setClaimingBonus] = useState(false);
     const [copied, setCopied]               = useState(false);
     const [timeRemaining, setTimeRemaining] = useState<number>(0);
-    const [descOpen, setDescOpen]           = useState(true);
+    /* null = nobody has touched it, so the default below decides. */
+    const [descOpen, setDescOpen]           = useState<boolean | null>(null);
     const [rulesOpen, setRulesOpen]         = useState(false);
     /* Read after mount, never during render: navigator.share does not exist on
        the server, and a button that appears only on the client has to appear
@@ -489,6 +490,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const pointsEarned     = scoredTasks
         .filter(t => entry?.completed_task_ids.includes(t.id))
         .reduce((sum, t) => sum + t.points, 0);
+    const aboutOpen        = descOpen ?? !isEntered;
     const shareText        = `I'm in to win ${giveaway.prize.name || giveaway.title} on TechPlay — enter with me:`;
 
     /* The phone's own share sheet, which reaches every app on the device
@@ -813,6 +815,51 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                     </Panel>
                 )}
 
+                {/* ══ about and rules ══
+                    Above the way in, not below it. Somebody who has just
+                    landed needs to know what is being given away and on what
+                    terms before being asked to join — and Rules carried the
+                    line "Read the rules and terms before entering" while
+                    sitting underneath the button that entered them.
+
+                    Open by default only for a reader who has not entered yet.
+                    Once they have, the description has done its job and its
+                    full height would push their own progress down the page,
+                    so it starts folded — until they say otherwise, which is
+                    what the null in `descOpen` is holding a place for. ══ */}
+                {(giveaway.description || giveaway.rules) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                        {giveaway.description && (
+                            <Fold
+                                title="About this giveaway"
+                                sub={`Everything you need to know about ${giveaway.title}.`}
+                                icon={<Gift className="w-4 h-4 text-[var(--accent)]" />}
+                                open={aboutOpen}
+                                onToggle={() => setDescOpen(!aboutOpen)}
+                            >
+                                <div
+                                    className="prose prose-invert prose-sm max-w-none text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed"
+                                    dangerouslySetInnerHTML={{ __html: giveaway.description }}
+                                />
+                            </Fold>
+                        )}
+
+                        {giveaway.rules && (
+                            <Fold
+                                title="Rules & terms"
+                                sub="Read the rules and terms before entering."
+                                icon={<Trophy className="w-4 h-4 text-[var(--accent)]" />}
+                                open={rulesOpen}
+                                onToggle={() => setRulesOpen(!rulesOpen)}
+                            >
+                                <p className="text-[12.5px] text-white/60 whitespace-pre-wrap leading-relaxed">
+                                    {giveaway.rules}
+                                </p>
+                            </Fold>
+                        )}
+                    </div>
+                )}
+
                 {/* ══ your progress ══
                     The panel the March rail took with it, rebuilt to the
                     mockup: a sentence instead of a label, four instruments
@@ -1133,40 +1180,6 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                             })}
                         </ul>
                     </Panel>
-                )}
-
-                {/* ══ about and rules, side by side ══ */}
-                {(giveaway.description || giveaway.rules) && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                        {giveaway.description && (
-                            <Fold
-                                title="About this giveaway"
-                                sub={`Everything you need to know about ${giveaway.title}.`}
-                                icon={<Gift className="w-4 h-4 text-[var(--accent)]" />}
-                                open={descOpen}
-                                onToggle={() => setDescOpen(!descOpen)}
-                            >
-                                <div
-                                    className="prose prose-invert prose-sm max-w-none text-white/60 prose-headings:text-white prose-a:text-[var(--accent-ink)] prose-strong:text-white prose-p:leading-relaxed"
-                                    dangerouslySetInnerHTML={{ __html: giveaway.description }}
-                                />
-                            </Fold>
-                        )}
-
-                        {giveaway.rules && (
-                            <Fold
-                                title="Rules & terms"
-                                sub="Read the rules and terms before entering."
-                                icon={<Trophy className="w-4 h-4 text-[var(--accent)]" />}
-                                open={rulesOpen}
-                                onToggle={() => setRulesOpen(!rulesOpen)}
-                            >
-                                <p className="text-[12.5px] text-white/60 whitespace-pre-wrap leading-relaxed">
-                                    {giveaway.rules}
-                                </p>
-                            </Fold>
-                        )}
-                    </div>
                 )}
 
             </div>
