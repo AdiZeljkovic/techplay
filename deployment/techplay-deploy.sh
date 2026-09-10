@@ -79,6 +79,21 @@ if [[ "$TARGET" == "all" || "$TARGET" == "backend" ]]; then
     php artisan route:cache >/dev/null
     php artisan view:cache >/dev/null
 
+    # Filament keeps its own cache, and nothing here was refreshing it.
+    #
+    # bootstrap/cache/filament/panels/admin.php lists every resource, page and
+    # widget the panel knows about. It is built once and then believed, so a new
+    # resource does not appear in the admin no matter how many times you deploy
+    # — the files are on the server, the class autoloads, `Filament::getPanel()`
+    # finds it from the console, and the menu still does not have it. Found on
+    # 11 Sep 2026 with two new screens that were live and invisible; the cached
+    # file was dated 9 Sep.
+    #
+    # Rebuilt rather than deleted: deleting it would leave the panel discovering
+    # its components on every request, which is the slow path this cache exists
+    # to avoid.
+    php artisan filament:cache-components >/dev/null
+
     # Poslije kesiranja, namjerno: od tog trenutka .env vise niko ne cita, pa je
     # jedina istina ono sto je zavrsilo u kesu. Komanda cita config(), ne env(),
     # bas zato — ranija verzija je odbijala da radi nad kesiranom konfiguracijom

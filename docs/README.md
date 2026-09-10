@@ -791,6 +791,22 @@ odradi animaciju — dakle poslije hidracije. Ko ode u prve dvije sekunde, nikad
 ne vidi. Isto je jednom bilo i sa samim GA tagom. **Ako element odlučuje o nečemu
 mjerljivom, mora biti vidljiv iz HTML-a.**
 
+### Novi Filament resurs se ne pojavi dok se keš ne prebuildi
+
+`bootstrap/cache/filament/panels/admin.php` drži spisak svih resursa, stranica i
+widgeta koje panel poznaje. Napravi se jednom i onda mu se vjeruje — pa novi
+resurs **ne postoji u meniju** ma koliko puta deployao. Fajlovi jesu na serveru,
+klasa se učitava, `Filament::getPanel()->getResources()` je vidi iz konzole, a
+menija nema.
+
+Otkriveno 11.09.2026. s dva nova ekrana koja su bila živa i nevidljiva; keširani
+fajl je bio od 09.09.
+
+`techplay-deploy.sh` sada radi `php artisan filament:cache-components` uz
+`config:cache` i ostale. Ako se ikad opet desi, to je prva komanda za pokrenuti —
+i poslije nje `supervisorctl restart techplay-octane:*`, jer Octane drži stari
+panel u memoriji.
+
 ### Mjerenje sa servera ne prolazi kroz Cloudflare
 
 Javno ime vraća 403 izazov serverskim zahtjevima. Mjeri na `127.0.0.1:8000` sa
