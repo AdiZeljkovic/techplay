@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\MailCampaign;
+use App\Models\MailCampaignRecipient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -185,6 +187,50 @@ class AccountDeletionErasesEverythingTest extends TestCase
         $this->assertNotNull($signature, 'The signature itself should survive — it counts toward a public tally.');
         $this->assertNotSame('stvarna@adresa.test', $signature->email);
         $this->assertNull($signature->name);
+    }
+
+    /**
+     * The newsletter log keeps its own copy too.
+     *
+     * Same shape as the signature above, and found the same way — by the export
+     * test refusing to let a new table holding an address go unclassified.
+     * `mail_campaign_recipients` stores the address the message actually went
+     * to, because that is what a send needs, and its `user_id` is
+     * `nullOnDelete`, which never fires here. So the real address would have
+     * stayed in the log beside a record of what they opened and clicked.
+     */
+    public function test_the_newsletter_log_stops_naming_the_person(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'citalac@adresa.test',
+            'password' => bcrypt('tajna-lozinka'),
+        ]);
+
+        $campaign = MailCampaign::create([
+            'name' => 'A campaign',
+            'subject' => 'Hello',
+            'status' => MailCampaign::SENT,
+        ]);
+
+        $recipient = MailCampaignRecipient::create([
+            'campaign_id' => $campaign->id,
+            'user_id' => $user->id,
+            'email' => 'citalac@adresa.test',
+            'source' => 'account',
+            'status' => MailCampaignRecipient::SENT,
+            'sent_at' => now(),
+        ]);
+
+        $this->actingAs($user->fresh())
+            ->deleteJson('/api/v1/user/account', ['current_password' => 'tajna-lozinka'])
+            ->assertOk();
+
+        $recipient->refresh();
+
+        // The row survives: it is the evidence of how many people a campaign
+        // reached, and removing it would quietly change a reported number.
+        $this->assertNotSame('citalac@adresa.test', $recipient->email);
+        $this->assertStringContainsString('@deleted.techplay.gg', $recipient->email);
     }
 
     public function test_deletion_refuses_without_the_current_password(): void

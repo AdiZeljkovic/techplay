@@ -55,6 +55,7 @@ use App\Http\Controllers\Api\V1\LastDiscController;
 use App\Http\Controllers\Api\V1\LeaderboardController;
 use App\Http\Controllers\Api\V1\NavigationController;
 use App\Http\Controllers\Api\V1\NewsController;
+use App\Http\Controllers\Api\V1\MailTrackingController;
 use App\Http\Controllers\Api\V1\NewsletterController;
 use App\Http\Controllers\Api\V1\NewsroomController;
 use App\Http\Controllers\Api\V1\NotificationController;
@@ -467,6 +468,25 @@ Route::prefix('v1')->group(function () {
         Route::middleware('throttle:30,1')->group(function () {
             Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe']);
             Route::post('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe']);
+        });
+
+        /*
+         * What a campaign email talks back through.
+         *
+         * Open on purpose and named, because signed URLs need names. Neither
+         * route trusts its caller: the pixel writes nothing an unknown token
+         * could reach, and the click route refuses to redirect anywhere its
+         * signature does not cover — without that check it is an open redirect
+         * carrying our domain's reputation, which is the exact shape of a
+         * phishing link.
+         *
+         * Throttled loosely. A mail client that prefetches every link in a
+         * message would trip a tight limit and cost us the click, and there is
+         * nothing here worth protecting from volume.
+         */
+        Route::middleware('throttle:120,1')->group(function () {
+            Route::get('/mail/o/{token}', [MailTrackingController::class, 'open'])->name('mail.open');
+            Route::get('/mail/c/{token}', [MailTrackingController::class, 'click'])->name('mail.click');
         });
 
         // The Last Disc — open letter and poll. Reads are open; writing is

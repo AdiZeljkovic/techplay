@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\MailTemplate;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 
@@ -26,8 +27,19 @@ class ResetPasswordNotification extends ResetPassword
 
     protected function buildMailMessage($url): MailMessage
     {
+        $minutes = config('auth.passwords.users.expire', 60);
+        $vars = ['name' => $this->notifiable?->username ?: '', 'minutes' => $minutes];
+
+        /*
+         * Editable words, untouchable link.
+         *
+         * $url is the signed, single-use, expiring URL the framework built. No
+         * template sees it. Somebody rewriting this mail in the admin cannot
+         * remove the one thing a locked-out member needs from it — and if they
+         * empty every field, the fallbacks below are what goes out.
+         */
         return (new MailMessage)
-            ->subject('Set a new password — TechPlay')
+            ->subject(MailTemplate::value('reset-password', 'subject', 'Set a new password — TechPlay', $vars))
             // Both halves. A mail carrying only HTML reads as a mailing to a
             // filter — ours scored MIME_HTML_ONLY for it — and the text part is
             // also what reaches somebody with images off.
@@ -35,7 +47,15 @@ class ResetPasswordNotification extends ResetPassword
                 'url' => $url,
                 'username' => $this->notifiable?->username ?: null,
                 'appUrl' => rtrim(config('app.frontend_url'), '/'),
-                'expiresInMinutes' => config('auth.passwords.users.expire', 60),
+                'expiresInMinutes' => $minutes,
+                'heading' => MailTemplate::value('reset-password', 'heading', 'Set a new password', $vars),
+                'bodyCopy' => MailTemplate::value(
+                    'reset-password',
+                    'body',
+                    'Somebody asked to reset the password on this account. If that was you, the button below takes you straight to a new one.',
+                    $vars
+                ),
+                'ctaLabel' => MailTemplate::value('reset-password', 'cta_label', 'SET NEW PASSWORD', $vars),
             ]);
     }
 }

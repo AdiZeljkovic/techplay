@@ -10,7 +10,7 @@
 --}}
 @if ($username){{ $username }}, one more step.@else One more step.@endif
 
-Confirm this address and your TechPlay account is live — library, XP, ranks and everything on the profile.
+{!! trim((string) ($bodyCopyText ?? 'Confirm this address and your TechPlay account is live — library, XP, ranks and everything on the profile.')) !!}
 
 Open this link:
 {{ $url }}

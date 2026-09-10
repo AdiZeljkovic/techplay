@@ -936,6 +936,106 @@ Izvještaj je u Filamentu: **System → Analitika**.
 
 ---
 
+## 20. Mail — šta šaljemo i odakle
+
+Napravljeno 11.09.2026. Prije toga kampanja je bila **klasa**: `newsletter:launch`
+je komanda u PHP-u, tekst u Blade fajlu, a drugo slanje s drugim riječima je
+tražilo deploy. Publika je bila sve-ili-ništa i ništa nije bilježilo kome je
+poslano.
+
+### Koliko mailova sajt uopšte šalje
+
+**Pet.** Ne 22.
+
+| Mail | Klasa | Uređiv |
+|---|---|---|
+| Potvrda adrese | `VerifyEmailNotification` | da |
+| Reset lozinke | `ResetPasswordNotification` | da |
+| Potvrda newsletter prijave | `NewsletterVerification` | da |
+| Kontakt forma (nama) | `ContactFormMessage` | ne |
+| Kampanja | `CampaignMessage` | piše se u adminu |
+
+Od 22 klase u `app/Notifications/`, **20 nikad ne izlaze iz sajta** — kanal im je
+`['database']`, dakle stoje samo u zvoncu. To uključuje i `WeeklyDigestNotification`,
+pa "sedmični pregled" niko ne dobija mailom. Ako se to ikad poželi, treba mu dodati
+`mail` kanal — nije kvar, ali je lako pomisliti da radi.
+
+### Tabele
+
+| Tabela | Šta drži |
+|---|---|
+| `mail_templates` | riječi mailova koje sajt šalje sam |
+| `mail_campaigns` | newsletter koji neko napiše i pošalje |
+| `mail_campaign_recipients` | jedan red po osobi po kampanji — evidencija |
+| `mail_campaign_clicks` | koji link, ko, kada |
+
+### Granica koju ne treba pomjerati
+
+Šabloni **nisu HTML**. Urednik iz admina mijenja naslov, naslovnu liniju, pasuse
+i tekst na dugmetu. Link i token na dugmetu crta kod i nijedan šablon ih ne
+dodiruje.
+
+Razlog je konkretan: dva od tri mail-a nose jedini put u nalog. Šablon koji bi
+mogao obrisati dugme je šablon koji zaključa svakog novog člana van sajta —
+**tiho**, bez greške u logu, dok se neko ne javi da mail ne radi.
+
+Prazan ili ugašen red nije greška. Klasa nosi svoju kopiju i koristi je, pa sajt
+šalje ispravan mail i kad je tabela prazna. To čuva `MailDeskTest`.
+
+### Ko smije dobiti mail
+
+Jedan odgovor, na jednom mjestu: `CampaignAudience::resolve()` završava sa
+`MailSuppression::filter()`, ma koji segment bio izabran. Novi segment ne može
+doći do nekoga tako što zaboravi pitati.
+
+- **Nepotvrđeni nalozi nikad nisu u publici.** Nemamo dokaz da adresa nekoga
+  stiže, a slanje na adrese koje se odbijaju je kako pošiljalac bez reputacije
+  gubi ono malo što ima.
+- Publika se pretvara u listu **na početku slanja**, ne pri pisanju. Ko se odjavi
+  između to dvoje, ne dobija poruku.
+- Pita se **još jednom, po primaocu**, u trenutku slanja — jer dugo slanje traje
+  minutama.
+
+### Praćenje
+
+Piksel za otvaranje i preusmjeravanje za klik, oba pod `/api/v1/mail/`.
+
+**Otvaranja su donja granica, ne mjerenje.** Apple Mail Privacy Protection povuče
+piksel bez obzira je li čovjek pogledao, a Gmail ga povlači kroz posrednika.
+Klikovi su broj kojem se vjeruje. Klik se broji i kao otvaranje, jer ko ima
+isključene slike nikad ne okine piksel.
+
+**Ruta za klik mora ostati potpisana.** Bez potpisa je to otvoreno preusmjeravanje
+s imenom našeg domena — svako bi mogao dijeliti `api-beta.techplay.gg/...` link
+koji vodi bilo gdje i nositi našu reputaciju. To je tačno oblik phishing linka.
+Test to čuva.
+
+**Link za odjavu se namjerno ne prati.** Mora raditi kad sve drugo padne: ko se ne
+može odjaviti, prijavi kao spam, a spam prijava je ono što mali pošiljalac ne
+može platiti.
+
+### Tempo
+
+`batch_size` i `pause_seconds` po kampanji, po zadanom 10 poruka svake 3 sekunde.
+Šaljemo s vlastitog servera koji kod Gmaila stiže bez ikakve reputacije; sto
+poruka u sekundi je oblik spam kampanje i biti pročitan tako košta mnogo više od
+minute koju pauza uzme.
+
+### Zamke iz izrade
+
+- `MailTemplate::substitute()` se **ne smije** zvati `fill()` — Eloquent već ima
+  nestatičku `fill()`, a statička na njoj je fatalna greška pri učitavanju klase
+  i cijela aplikacija prestane da se diže.
+- Adrese se porede **malim slovima**. Provjera odjave je prvo tražila adresu
+  onako kako je unesena, a redovi pretplatnika su spremljeni malim slovima — pa
+  je promašivala i slala poruku onome ko se odjavio. Tiho, i u korist slanja.
+- `MailSuppression::filter()` vraća **niz**, ne kolekciju.
+- Preheader linija se ne vraća ni u jedan mail. Naš vlastiti filter ju je bodovao
+  `ZERO_FONT 0.50` i `MANY_INVISIBLE_PARTS 0.80` jer je skriveni tekst s ključnim
+  riječima način na koji spam radi. Prva vidljiva linija tijela radi taj posao.
+
+---
+
 ## Gdje su stari dokumenti
 
 ```bash

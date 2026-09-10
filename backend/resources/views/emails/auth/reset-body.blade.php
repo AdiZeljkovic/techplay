@@ -17,23 +17,25 @@
 
     <tr>
         <td class="h1" style="font-family:'Instrument Sans',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:30px; line-height:36px; font-weight:700; color:#FFFFFF; padding:0 0 18px 0;">
-            Set a new password
+            {{ $heading ?? 'Set a new password' }}
         </td>
     </tr>
 
     <tr>
         <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#B0B0BA; padding:0 0 32px 0;">
+            {{-- The name stays in the template, not in the editable copy: a
+                 member without one would otherwise be addressed as " — " and no
+                 wording in the admin can prevent that. --}}
             @if($username)
                 <span style="color:#FFFFFF; font-weight:600;">{{ $username }}</span> —
             @endif
-            somebody asked to reset the password on this account. If that was you,
-            the button below takes you straight to a new one.
+            {!! nl2br(e(trim((string) ($bodyCopy ?? 'Somebody asked to reset the password on this account. If that was you, the button below takes you straight to a new one.')))) !!}
         </td>
     </tr>
 
     <tr>
         <td align="center" style="padding:0 0 4px 0;">
-            @include('emails.auth.button', ['url' => $url, 'label' => 'SET NEW PASSWORD'])
+            @include('emails.auth.button', ['url' => $url, 'label' => $ctaLabel ?? 'SET NEW PASSWORD'])
         </td>
     </tr>
 

@@ -10,31 +10,39 @@
 
     <tr>
         <td class="h1" style="font-family:'Instrument Sans',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:30px; line-height:36px; font-weight:700; color:#FFFFFF; padding:0 0 18px 0;">
-            Confirm your email
+            {{ $heading ?? 'Confirm your email' }}
         </td>
     </tr>
 
     <tr>
         <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#B0B0BA; padding:0 0 8px 0;">
+            {{-- The greeting stays here rather than moving into the editable
+                 copy: a member with no username would otherwise be greeted as
+                 "Welcome, ." and no amount of careful writing in the admin can
+                 prevent that. --}}
             @if($username)
                 Welcome, <span style="color:#FFFFFF; font-weight:600;">{{ $username }}</span>.
             @else
                 Welcome.
             @endif
-            Confirm this address and your account is ready.
         </td>
     </tr>
 
-    <tr>
-        <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#B0B0BA; padding:0 0 32px 0;">
-            Until you do, you can look around but not post, rate or collect —
-            we confirm addresses so that nobody can sign up as you.
-        </td>
-    </tr>
+    {{-- The editable part. A blank line starts a new paragraph, which is how
+         anybody writing in a plain box expects it to behave, and the last one
+         carries the gap down to the button. --}}
+    @php($paragraphs = array_filter(array_map('trim', preg_split('/\R{2,}/', trim((string) ($bodyCopy ?? ''))) ?: [])))
+    @foreach($paragraphs as $paragraph)
+        <tr>
+            <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#B0B0BA; padding:0 0 {{ $loop->last ? '32px' : '8px' }} 0;">
+                {!! nl2br(e($paragraph)) !!}
+            </td>
+        </tr>
+    @endforeach
 
     <tr>
         <td align="center" style="padding:0 0 4px 0;">
-            @include('emails.auth.button', ['url' => $url, 'label' => 'CONFIRM EMAIL'])
+            @include('emails.auth.button', ['url' => $url, 'label' => $ctaLabel ?? 'CONFIRM EMAIL'])
         </td>
     </tr>
 

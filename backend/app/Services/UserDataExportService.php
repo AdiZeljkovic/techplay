@@ -51,6 +51,9 @@ class UserDataExportService
         'steam_achievements' => ['column' => 'user_id', 'as' => 'steam_achievements'],
         'user_wow_characters' => ['column' => 'user_id', 'as' => 'wow_characters'],
 
+        // What we sent them, and what they did with it
+        'mail_campaign_recipients' => ['column' => 'user_id', 'as' => 'newsletters_received'],
+
         // What they marked
         'article_bookmarks' => ['column' => 'user_id', 'as' => 'article_bookmarks'],
         'thread_bookmarks' => ['column' => 'user_id', 'as' => 'thread_bookmarks'],

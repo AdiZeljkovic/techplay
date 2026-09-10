@@ -132,9 +132,24 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:12px; line-height:20px; color:#6E6E78;">
-                                    Sent by TechPlay because someone used this address on
-                                    <a href="{{ $appUrl }}" style="color:#8A8A94; text-decoration:underline;">techplay.gg</a>.
-                                    This address does not accept replies.
+                                    {{-- Two optional slots, both defaulting to what account
+                                         mail has always said. A campaign has to explain a
+                                         different basis for writing and must carry a way out;
+                                         a password reset must do neither, and marking it as
+                                         bulk would be a lie told to the filter. --}}
+                                    @if (!empty($footerNote))
+                                        {!! $footerNote !!}
+                                    @else
+                                        Sent by TechPlay because someone used this address on
+                                        <a href="{{ $appUrl }}" style="color:#8A8A94; text-decoration:underline;">techplay.gg</a>.
+                                        This address does not accept replies.
+                                    @endif
+
+                                    @if (!empty($footerExtra))
+                                        <br /><br />
+                                        {!! $footerExtra !!}
+                                    @endif
+
                                     <br /><br />
                                     &copy; {{ date('Y') }} TechPlay
                                 </td>

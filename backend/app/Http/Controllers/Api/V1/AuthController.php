@@ -906,6 +906,29 @@ class AuthController extends Controller
             ]);
 
         /*
+         * The newsletter log carries its own copy of the address too.
+         *
+         * Exactly the same shape as the signature above: mail_campaign_recipients
+         * stores the address the message actually went to, because that is what
+         * the send needs and a foreign key would not survive an address change
+         * mid-campaign. Its `user_id` is `nullOnDelete`, which does nothing here
+         * — the account is anonymised in place, not deleted — so the real
+         * address would have stayed in the log beside a record of what they
+         * opened and clicked.
+         *
+         * Anonymised rather than removed, for the same reason: the rows are the
+         * evidence of how many people a campaign reached, and deleting them
+         * would quietly change a number that has already been reported.
+         *
+         * Nothing here re-enables mail. Getting written to again is prevented
+         * by the suppression list, which is a separate table and is not touched
+         * by this.
+         */
+        DB::table('mail_campaign_recipients')
+            ->where('user_id', $id)
+            ->update(['email' => "deleted_{$id}@deleted.techplay.gg"]);
+
+        /*
          * The address and the browser string a giveaway entry recorded.
          *
          * Both were collected to catch somebody entering twice, and both are
