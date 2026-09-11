@@ -512,20 +512,46 @@ class GiveawayResource extends Resource
                     ]),
             ])
             ->actions([
+                /*
+                 * Both of these build the public address through the model.
+                 *
+                 * "View on site" used to assemble its own — config('app.site_url')
+                 * . '/giveaways/' . slug — with the listing's plural, and
+                 * /giveaways/{slug} is not a route: every use of this button
+                 * opened a 404. It showed up in our own analytics as four hits
+                 * on a path that does not exist, which read like somebody had
+                 * posted a bad link somewhere. It was this button.
+                 *
+                 * getPublicUrl() is the one place that knows the shape, and it
+                 * is also what the referral links are built from — so a URL
+                 * written out by hand beside it is a second answer to a question
+                 * that should only have one.
+                 */
                 Action::make('onSite')
                     ->label('View on site')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->color('gray')
-                    ->url(fn ($record): string => config('app.site_url').'/giveaways/'.$record->slug, shouldOpenInNewTab: true)
+                    ->url(fn (Giveaway $record): string => $record->getPublicUrl(), shouldOpenInNewTab: true)
                     ->visible(fn ($record): bool => filled($record->slug)),
+
                 Action::make('copyLink')
                     ->label('Copy Link')
                     ->icon('heroicon-o-link')
-                    ->action(function (Giveaway $record) {
-                        // JS will handle clipboard
-                    })
+                    // The same confirmation the edit screen uses, which works.
+                    // This one called $tooltip(), an Alpine magic that is not
+                    // there — the click threw, so the clipboard write never ran
+                    // and the button looked like it had copied the wrong thing
+                    // when it had copied nothing at all.
+                    ->action(fn (Giveaway $record) => Notification::make()
+                        ->title('Link copied')
+                        ->body($record->getPublicUrl())
+                        ->success()
+                        ->send())
                     ->extraAttributes(fn (Giveaway $record) => [
-                        'x-on:click' => "navigator.clipboard.writeText('".$record->getPublicUrl()."'); \$tooltip('Copied!')",
+                        // json_encode, not quotes glued together: a slug is
+                        // editor input and one apostrophe in it would break the
+                        // attribute and take the row's buttons with it.
+                        'x-on:click' => 'navigator.clipboard.writeText('.json_encode($record->getPublicUrl()).')',
                     ]),
 
                 Action::make('viewParticipants')

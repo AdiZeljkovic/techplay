@@ -79,6 +79,32 @@ class GiveawayIntegrityTest extends TestCase
             ->where('task_id', $task->id)->count());
     }
 
+    public function test_the_public_address_has_one_shape_and_one_source(): void
+    {
+        /*
+         * The listing lives at /giveaways and a single draw at /giveaway/{slug}
+         * — plural for the list, singular for the thing. An admin button built
+         * its own URL with the listing's plural and opened a 404 every time it
+         * was used; it surfaced in our own analytics as hits on a path that is
+         * not a route, which read like a bad link posted somewhere public.
+         *
+         * Everything that hands out this address goes through getPublicUrl(),
+         * including the referral links people share. This is that agreement,
+         * written down.
+         */
+        $giveaway = $this->giveaway();
+
+        $this->assertStringContainsString('/giveaway/'.$giveaway->slug, $giveaway->getPublicUrl());
+        $this->assertStringNotContainsString('/giveaways/', $giveaway->getPublicUrl());
+
+        $entry = GiveawayEntry::create([
+            'giveaway_id' => $giveaway->id,
+            'user_id' => User::factory()->create()->id,
+        ]);
+
+        $this->assertStringStartsWith($giveaway->getPublicUrl().'?ref=', $entry->getReferralUrl());
+    }
+
     public function test_a_referral_task_cannot_be_clicked_for_its_points(): void
     {
         // The points on a referral task are paid in enter(), once per person
