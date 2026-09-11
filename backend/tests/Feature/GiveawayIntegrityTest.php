@@ -79,6 +79,45 @@ class GiveawayIntegrityTest extends TestCase
             ->where('task_id', $task->id)->count());
     }
 
+    public function test_an_in_app_browser_can_enter(): void
+    {
+        /*
+         * The real string that could not. Instagram's Android browser appends
+         * the device, the screen, the locale and a build number to an already
+         * long Chrome string, and the column it was written to was
+         * varchar(255) — so the INSERT failed and the reader got a server
+         * error at the one button an ad was paying to get them to press.
+         *
+         * Only them: a desktop browser's string is half the length, which is
+         * why it worked for everybody testing it from a laptop.
+         *
+         * Worth knowing what this test does and does not prove. It runs on
+         * SQLite, which ignores varchar lengths entirely — so it would have
+         * passed on the day the bug was live. What it holds is the route, the
+         * model's cap and the fact that a long string survives the round trip.
+         * The column type itself is only checkable against Postgres, and was
+         * checked there by hand after the migration ran.
+         */
+        $instagramOnAndroid = 'Mozilla/5.0 (Linux; Android 13; M2101K6G Build/TKQ1.221013.002; wv) '
+            .'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/152.0.7977.69 '
+            .'Mobile Safari/537.36 Instagram 445.0.0.45.83 Android (33/13; 440dpi; '
+            .'1080x2400; Xiaomi/Redmi; M2101K6G; sweet; qcom; bs_BA; 1055488490; IABMV/1)';
+
+        $this->assertGreaterThan(255, strlen($instagramOnAndroid), 'the string has to be long enough to have failed');
+
+        $user = User::factory()->create();
+        $giveaway = $this->giveaway();
+
+        $this->actingAs($user)
+            ->withHeaders(['User-Agent' => $instagramOnAndroid])
+            ->postJson("/api/v1/giveaways/{$giveaway->slug}/enter")
+            ->assertSuccessful();
+
+        $entry = GiveawayEntry::where('user_id', $user->id)->firstOrFail();
+
+        $this->assertStringStartsWith('Mozilla/5.0 (Linux; Android 13;', (string) $entry->user_agent);
+    }
+
     public function test_the_public_address_has_one_shape_and_one_source(): void
     {
         /*

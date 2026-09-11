@@ -28,6 +28,26 @@ class GiveawayEntry extends Model
         'last_visit_date' => 'date',
     ];
 
+    /**
+     * A browser string, capped.
+     *
+     * The column is `text` now, so nothing here is load-bearing against a
+     * crash — this is about not storing whatever a client feels like sending.
+     * A user agent is unbounded input: the one that exposed the old varchar(255)
+     * was an Instagram in-app browser at just over 300 characters, and there is
+     * no rule saying the next one cannot be four kilobytes.
+     *
+     * On the model rather than at the three places in GiveawayController that
+     * write it, because three copies of a limit is how two of them end up
+     * being different numbers.
+     */
+    public function setUserAgentAttribute(?string $value): void
+    {
+        $this->attributes['user_agent'] = $value === null
+            ? null
+            : mb_substr($value, 0, 512);
+    }
+
     protected static function boot()
     {
         parent::boot();
