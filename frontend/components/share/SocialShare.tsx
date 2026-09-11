@@ -10,6 +10,15 @@ interface SocialShareProps {
     description?: string;
     className?: string;
     vertical?: boolean;
+    /**
+     * Called once the reader has actually shared — picked a network, used the
+     * phone's own sheet, or copied the link.
+     *
+     * Additive and optional, so the four screens already using this component
+     * are untouched. It exists because a giveaway has a "share this" task, and
+     * the only honest moment to credit it is when somebody does the thing.
+     */
+    onShared?: (how: string) => void;
 }
 
 export default function SocialShare({
@@ -18,6 +27,7 @@ export default function SocialShare({
     description = "",
     className = "",
     vertical = true,
+    onShared,
 }: SocialShareProps) {
     const [copied, setCopied] = useState(false);
     const fullUrl = url.startsWith("http") ? url : `https://techplay.gg${url}`;
@@ -38,6 +48,7 @@ export default function SocialShare({
         const link = shareLinks[platform as keyof typeof shareLinks];
         if (link) {
             window.open(link, "_blank", "width=600,height=400");
+            onShared?.(platform);
         }
     };
 
@@ -50,6 +61,7 @@ export default function SocialShare({
                     url: fullUrl,
                 });
                 toast.success("Shared successfully!");
+                onShared?.("native");
             } catch (error: any) {
                 if (error.name !== "AbortError") {
                     console.error("Share failed:", error);
@@ -65,6 +77,7 @@ export default function SocialShare({
             await navigator.clipboard.writeText(fullUrl);
             setCopied(true);
             toast.success("Link copied to clipboard!");
+            onShared?.("copy");
             setTimeout(() => setCopied(false), 2000);
         } catch (error) {
             toast.error("Failed to copy link");

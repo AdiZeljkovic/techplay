@@ -17,6 +17,7 @@ import confetti from "canvas-confetti";
 import toast from "react-hot-toast";
 import Panel from "@/components/ui/Panel";
 import Meter from "@/components/ui/Meter";
+import SocialShare from "@/components/share/SocialShare";
 
 interface Task {
     id: number;
@@ -156,6 +157,16 @@ const TASK_KINDS: Record<string, { icon: LucideIcon; what: string; cta: string }
 };
 
 const FALLBACK_KIND = { icon: Star, what: "Bonus task", cta: "Start" };
+
+/**
+ * The tasks that mean "pass this on", not "go here".
+ *
+ * They were being treated as a visit: the button opened the task's URL in a
+ * new tab, and because the URL of a share-the-giveaway task is the giveaway,
+ * the reader was handed a second copy of the page they were already on and no
+ * way to share anything. What they need is the sheet the articles have.
+ */
+const SHARE_KINDS = ['share_giveaway', 'facebook_share', 'twitter_retweet'];
 
 /**
  * A glyph per describing column.
@@ -336,6 +347,7 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
     const [completingTask, setCompletingTask] = useState<number | null>(null);
     const [claimingBonus, setClaimingBonus] = useState(false);
     const [copied, setCopied]               = useState(false);
+    const [sharingTask, setSharingTask]     = useState<Task | null>(null);
     const [timeRemaining, setTimeRemaining] = useState<number>(0);
     const [rulesOpen, setRulesOpen]         = useState(false);
     /* Read after mount, never during render: navigator.share does not exist on
@@ -672,7 +684,12 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                         </span>
                     ) : (
                         <button
-                            onClick={() => (isReferral ? scrollToInvite() : handleCompleteTask(task.id, task.url))}
+                            onClick={() => {
+                                if (isReferral) return scrollToInvite();
+                                if (SHARE_KINDS.includes(task.type)) return setSharingTask(task);
+
+                                return handleCompleteTask(task.id, task.url);
+                            }}
                             disabled={isCompleting || !giveaway.timing.is_active || (!isReferral && !isEntered)}
                             className="btn-command w-full h-10 inline-flex items-center justify-center gap-1.5 bg-[var(--accent)] text-white font-display text-[10.5px] font-black uppercase tracking-[0.1em] hover:bg-[var(--accent-hover)] transition-colors duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
                         >
@@ -1343,6 +1360,69 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                 )}
 
             </div>
+
+            {/* ══ the share sheet ══
+                A share task used to open its own URL in a new tab, and that URL
+                is this page — so pressing "Share now" handed the reader a second
+                copy of what they were already looking at and nothing to share
+                with. This is the sheet the articles use, pointed at the
+                giveaway, and the task is credited when somebody actually picks
+                a network rather than merely for opening the sheet. ══ */}
+            <AnimatePresence>
+                {sharingTask && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[90] flex items-center justify-center p-4"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Share this giveaway"
+                    >
+                        <button
+                            aria-label="Close"
+                            onClick={() => setSharingTask(null)}
+                            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                        />
+
+                        <div className="relative w-full max-w-sm rounded-[var(--radius-panel)] border border-[var(--line)] bg-[var(--surface-2)] p-6 shadow-2xl">
+                            <p className="font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent-ink)]">
+                                {sharingTask.points > 0 ? `+${sharingTask.points} ${sharingTask.points === 1 ? 'point' : 'points'}` : 'Share'}
+                            </p>
+                            <h2 className="mt-2 font-display text-[20px] font-black tracking-tight text-white leading-tight">
+                                {sharingTask.title}
+                            </h2>
+                            <p className="mt-1.5 text-[12.5px] text-white/50 leading-relaxed">
+                                Pick where it goes. The point lands as soon as you do.
+                            </p>
+
+                            <div className="mt-5">
+                                <SocialShare
+                                    url={typeof window !== "undefined" ? window.location.href : `/giveaway/${slug}`}
+                                    title={`${giveaway.title} — win ${giveaway.prize.name || 'on TechPlay'}`}
+                                    description={giveaway.prize.name || ''}
+                                    vertical={false}
+                                    onShared={() => {
+                                        const task = sharingTask;
+                                        setSharingTask(null);
+                                        // No URL: the sheet has already sent them
+                                        // somewhere, and a second tab on top of it
+                                        // is what this whole change is undoing.
+                                        if (task) handleCompleteTask(task.id, null);
+                                    }}
+                                />
+                            </div>
+
+                            <button
+                                onClick={() => setSharingTask(null)}
+                                className="mt-5 w-full h-10 rounded-[var(--radius-inner)] bg-[var(--fill-2)] hover:bg-[var(--fill-3)] font-display text-[10.5px] font-black uppercase tracking-[0.1em] text-white/60 hover:text-white transition-colors duration-200"
+                            >
+                                Not now
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </main>
     );
 }

@@ -47,6 +47,33 @@ export default function RewardFeed() {
     const [moment, setMoment] = useState<RewardPayload | null>(null);
 
     /*
+     * The moment cannot be acted on the instant it appears.
+     *
+     * It is a full-screen panel with a full-width button, and it arrives in
+     * response to a tap — so it lands exactly where the finger already is. A
+     * reader who pressed a giveaway task and pressed again, or whose phone
+     * fired a second touch, went straight to their profile and reported it as
+     * "the button threw me somewhere". They were not wrong: nothing on the
+     * giveaway page navigates there, and this is the only thing that does.
+     *
+     * Half a second is long enough that a tap already in flight cannot land on
+     * it, and short enough that nobody waiting to press it notices.
+     */
+    const [armed, setArmed] = useState(false);
+
+    useEffect(() => {
+        if (!moment) {
+            setArmed(false);
+
+            return;
+        }
+
+        const id = setTimeout(() => setArmed(true), 500);
+
+        return () => clearTimeout(id);
+    }, [moment]);
+
+    /*
      * A moment belongs to the page that earned it.
      *
      * This lives in the root layout, so it survives navigation — and the moment
@@ -165,8 +192,24 @@ export default function RewardFeed() {
 
                         <Link
                             href="/profile/me?tab=achievements"
-                            onClick={() => setMoment(null)}
-                            className="btn-command mt-6 inline-flex items-center justify-center w-full h-11 bg-[var(--accent)] hover:brightness-110 font-display text-[11px] font-black uppercase tracking-[0.14em] text-white transition-[filter]"
+                            onClick={(e) => {
+                                // Belt as well as braces: pointer-events is a
+                                // style and a style can be overridden, lost to
+                                // a stale stylesheet, or simply not applied
+                                // yet on the frame the tap lands.
+                                if (!armed) {
+                                    e.preventDefault();
+
+                                    return;
+                                }
+
+                                setMoment(null);
+                            }}
+                            aria-disabled={!armed}
+                            tabIndex={armed ? undefined : -1}
+                            className={`btn-command mt-6 inline-flex items-center justify-center w-full h-11 bg-[var(--accent)] font-display text-[11px] font-black uppercase tracking-[0.14em] text-white transition-[filter,opacity] ${
+                                armed ? "hover:brightness-110" : "pointer-events-none opacity-60"
+                            }`}
                         >
                             See it
                         </Link>
