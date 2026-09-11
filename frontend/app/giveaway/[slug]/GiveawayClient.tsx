@@ -1164,15 +1164,15 @@ export default function GiveawayClient({ slug }: GiveawayClientProps) {
                                     Invite. Earn. Win Together.
                                 </h2>
                                 <p className="mt-1.5 text-[12.5px] text-white/50 leading-relaxed">
-                                    Share your unique link with friends.{" "}
+                                    Share this giveaway with your friends.{" "}
                                     {referralTask
                                         /* The design reads "when they join, you both earn
                                            points". Only the referrer is paid — the joiner
                                            gets nothing — and a promise the backend does not
                                            keep is worse than no promise, so this says what
                                            actually happens. */
-                                        ? <>Every one who joins is worth <span className="font-bold text-[var(--accent-ink)]">+{referralTask.points} points</span> to you.</>
-                                        : <>The more people enter, the bigger the next one gets.</>}
+                                        ? <>Every one who joins on your link is worth <span className="font-bold text-[var(--accent-ink)]">+{referralTask.points} points</span> to you.</>
+                                        : <>The link below is yours, so we can see who they came from.</>}
                                 </p>
 
                                 {referralTask && entry.referral_count > 0 && (
