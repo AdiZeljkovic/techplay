@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Jobs\Concerns\ReleasesTheSyncLock;
 use App\Models\ConnectedAccount;
-use App\Models\SteamAchievement;
 use App\Models\UserGame;
 use App\Services\GameMatchingService;
 use App\Services\SessionSuggestionService;
@@ -191,75 +190,30 @@ class SyncSteamLibrary implements ShouldQueue
             }
 
             /*
-             * Achievements, for everything actually played.
+             * Achievements, handed to a job that can take as long as it needs.
              *
-             * This used to take the ten most-played games, which on a library
-             * of 195 meant six of them ended up with achievements — the
-             * profile's achievement panel described a fraction of a shelf and
-             * gave no clue that the rest existed. A game with no minutes on it
-             * has nothing to report, so playtime is the line: it costs one API
-             * call per played game, 92 rather than 195 in that same library,
-             * and Steam's daily allowance is orders of magnitude above it.
+             * Steam has no "all achievements for this player" endpoint — it is
+             * one call per game — and this used to make every one of them right
+             * here. That is fine for a small shelf and impossible for a large
+             * one: a member with 1,335 played games needs 1,335 sequential HTTP
+             * calls, and this job is allowed 120 seconds. It failed on all
+             * three tries, every time, and spent six minutes of the default
+             * queue doing it.
+             *
+             * The shelf itself is already saved by this point, which is the
+             * part somebody is waiting for. Achievements are a top-up, so they
+             * go to SyncSteamAchievements, which works to a clock and hands
+             * itself the remainder until the list runs out.
              */
             $playedGames = collect($ownedGames)
                 ->filter(fn ($g) => (int) ($g['playtime_forever'] ?? 0) > 0)
                 ->sortByDesc('playtime_forever')
+                ->map(fn ($g) => ['appid' => (int) $g['appid'], 'name' => (string) ($g['name'] ?? '')])
+                ->values()
                 ->all();
 
-            $completed = 0;
-
-            foreach ($playedGames as $steamGame) {
-                $appId = (int) $steamGame['appid'];
-                $game = $matcher->matchSteamGame($appId, $steamGame['name'] ?? '');
-
-                try {
-                    $achievements = $steam->getPlayerAchievements($steamId, $appId);
-
-                    if ($achievements === []) {
-                        continue;
-                    }
-
-                    foreach ($achievements as $ach) {
-                        SteamAchievement::updateOrCreate(
-                            ['user_id' => $account->user_id, 'steam_appid' => $appId, 'api_name' => $ach['apiname'] ?? $ach['name'] ?? ''],
-                            [
-                                'game_id' => $game?->id,
-                                'display_name' => $ach['name'] ?? null,
-                                'description' => $ach['description'] ?? null,
-                                'icon_url' => $ach['icon'] ?? null,
-                                'achieved' => (bool) ($ach['achieved'] ?? false),
-                                'achieved_at' => ! empty($ach['unlocktime']) && $ach['unlocktime'] > 0
-                                    ? Carbon::createFromTimestamp($ach['unlocktime'])
-                                    : null,
-                            ]
-                        );
-                    }
-
-                    /*
-                     * Every achievement earned is the closest thing Steam has
-                     * to "I finished this" — the same reading the PlayStation
-                     * import already takes from a full trophy list. Nothing
-                     * filled the Completed shelf for Steam before, so it sat
-                     * empty however much somebody had finished.
-                     *
-                     * It only promotes a status this import set itself. A
-                     * reader who filed the game as dropped, wishlisted, or
-                     * already completed keeps their own answer.
-                     */
-                    $total = count($achievements);
-                    $earned = collect($achievements)->filter(fn ($a) => (bool) ($a['achieved'] ?? false))->count();
-
-                    if ($game && $total > 0 && $earned === $total) {
-                        $promoted = UserGame::where('user_id', $account->user_id)
-                            ->where('game_id', $game->id)
-                            ->whereIn('status', ['playing', 'played', 'backlog'])
-                            ->update(['status' => 'completed', 'progress' => 100]);
-
-                        $completed += $promoted;
-                    }
-                } catch (\Throwable $e) {
-                    Log::debug("Steam achievements skipped for appid={$appId}: {$e->getMessage()}");
-                }
+            if ($playedGames !== []) {
+                SyncSteamAchievements::dispatch($account->id, $playedGames);
             }
 
             $account->update([
@@ -268,7 +222,13 @@ class SyncSteamLibrary implements ShouldQueue
                 'sync_error' => null,
             ]);
 
-            Log::info("Steam sync done for user {$account->user_id}: matched={$matched}, skipped={$skipped}, completed={$completed}");
+            Log::info(sprintf(
+                'Steam library synced for user %d: matched=%d, skipped=%d, achievements queued for %d game(s)',
+                $account->user_id,
+                $matched,
+                $skipped,
+                count($playedGames),
+            ));
         } catch (\Throwable $e) {
             $account->update([
                 'sync_status' => 'error',
