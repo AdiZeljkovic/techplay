@@ -33,8 +33,21 @@ const nextConfig: NextConfig = {
             value: 'nosniff'
           },
           {
+            /*
+             * strict-origin-when-cross-origin, which is one of the two values
+             * Google names for its consent message to be eligible to show:
+             * "Messages may not be eligible to show on web if the
+             * referrer-policy isn't configured to share the 'Referrer' header
+             * on cross-origin requests."
+             *
+             * origin-when-cross-origin did share it, so this may well have been
+             * fine already — the only difference is that this one withholds the
+             * referrer on an HTTPS-to-HTTP downgrade, which is a thing we never
+             * want to leak anyway. Strictly more private, and it removes a
+             * documented reason for the consent message not to appear.
+             */
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
+            value: 'strict-origin-when-cross-origin'
           },
           {
             key: 'Permissions-Policy',
