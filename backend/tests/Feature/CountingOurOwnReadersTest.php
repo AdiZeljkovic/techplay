@@ -87,6 +87,40 @@ class CountingOurOwnReadersTest extends TestCase
         $this->assertSame(0, AnalyticsEvent::readers()->count());
     }
 
+    public function test_the_adsense_crawler_is_not_a_reader(): void
+    {
+        /*
+         * Mediapartners-Google is the one that got through.
+         *
+         * It carries none of the words a crawler usually puts in its name —
+         * no 'bot', no 'crawl' — so it was counted as a person, and there are
+         * a lot of it: 4,929 of the 6,282 uncategorised hits in the two days
+         * to 20 Sep 2026, which is why the United States read 66.5 pages per
+         * person and Brazil read one.
+         *
+         * Set aside, not blocked. This is the crawler AdSense sends to decide
+         * which advertisement suits the article, so keeping it out of the
+         * reader count is the only thing that should ever happen to it.
+         */
+        $adsense = $this->hit([], '66.249.64.1', 'Mediapartners-Google');
+
+        $this->assertTrue($adsense->is_bot);
+        $this->assertSame('declared', $adsense->bot_reason);
+        $this->assertSame(0, AnalyticsEvent::readers()->count());
+    }
+
+    public function test_googles_other_crawlers_are_not_readers_either(): void
+    {
+        foreach (['GoogleOther', 'Google-Read-Aloud', 'Google-InspectionTool',
+            'Google-Safety', 'Google-Extended'] as $i => $agent) {
+            $event = $this->hit([], '66.249.64.'.(10 + $i), $agent);
+
+            $this->assertTrue($event->is_bot, $agent.' was counted as a reader');
+        }
+
+        $this->assertSame(0, AnalyticsEvent::readers()->count());
+    }
+
     public function test_a_client_claiming_chrome_without_client_hints_is_a_bot(): void
     {
         // Measured on 8 Sep 2026: every real Chrome and Edge has sent

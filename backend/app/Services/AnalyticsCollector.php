@@ -36,6 +36,26 @@ class AnalyticsCollector
         'bot', 'crawl', 'spider', 'slurp', 'headless', 'preview', 'monitor',
         'uptime', 'python', 'curl', 'wget', 'scrapy', 'facebookexternalhit',
         'lighthouse', 'pagespeed', 'gtmetrix', 'chrome-lighthouse',
+
+        /*
+         * Google's crawlers that are not called Googlebot.
+         *
+         * Every needle above matches a word a crawler puts in its own name,
+         * and these carry none of them — no 'bot', no 'crawl'. So they were
+         * counted as readers, and one of them is not a rounding error:
+         * Mediapartners-Google, the crawler AdSense sends to read a page
+         * before deciding which advertisement belongs on it, filed 4,929 of
+         * the 6,282 uncategorised hits in the two days to 20 Sep 2026. It is
+         * why the United States appeared to read 66.5 pages per person while
+         * Brazil read 1.0.
+         *
+         * Marked, never blocked. Mediapartners-Google is the difference
+         * between adverts that match the article and adverts that do not, so
+         * a firewall rule here would cost real money; the whole point is that
+         * this list only decides what counts as a reader.
+         */
+        'mediapartners-google', 'googleother', 'google-read-aloud',
+        'google-inspectiontool', 'google-safety', 'google-extended',
     ];
 
     /**
