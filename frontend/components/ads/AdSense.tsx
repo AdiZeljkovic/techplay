@@ -47,44 +47,6 @@ declare global {
     }
 }
 
-/**
- * Whether this reader agreed to marketing cookies.
- *
- * Not a gate on whether ads appear — a blank page earns nothing and the
- * banner is ignored by most people. It decides whether the ads are
- * personalised: without consent AdSense is asked for non-personalised ones,
- * which is Google's own documented answer for exactly this case and the only
- * one that is honest about what the reader agreed to.
- */
-function useMarketingConsent(): boolean {
-    const [granted, setGranted] = useState(false);
-
-    useEffect(() => {
-        const read = () => {
-            try {
-                const raw = localStorage.getItem("cookie_preferences");
-                setGranted(raw ? !!JSON.parse(raw)?.marketing : false);
-            } catch {
-                setGranted(false);
-            }
-        };
-
-        read();
-        // The banner writes localStorage in this same tab, which fires no
-        // storage event — it dispatches its own so the ads on screen can
-        // change their mind the moment somebody accepts.
-        window.addEventListener("techplay:consent", read);
-        window.addEventListener("storage", read);
-
-        return () => {
-            window.removeEventListener("techplay:consent", read);
-            window.removeEventListener("storage", read);
-        };
-    }, []);
-
-    return granted;
-}
-
 interface SlotProps {
     /** Reserved height while the slot is empty, so nothing below it jumps. */
     minHeight?: number;
@@ -103,7 +65,6 @@ function AdSlot({
     const pathname = usePathname();
     const host = useRef<HTMLDivElement>(null);
     const pushed = useRef(false);
-    const consent = useMarketingConsent();
     const [filled, setFilled] = useState(false);
 
     /*
@@ -149,7 +110,20 @@ function AdSlot({
 
             try {
                 window.adsbygoogle = window.adsbygoogle || [];
-                if (!consent) window.adsbygoogle.requestNonPersonalizedAds = 1;
+                /*
+                 * No requestNonPersonalizedAds here any more.
+                 *
+                 * It used to read our own banner's answer and, without one, ask
+                 * for non-personalised ads. That was right while we gathered
+                 * consent ourselves; with Google's certified CMP doing it, this
+                 * flag would have been stuck on for ever — the banner is gone,
+                 * so nothing would ever have set it back — and every reader on
+                 * earth would have been served the cheaper ads regardless of
+                 * where they live.
+                 *
+                 * Consent Mode decides now: the defaults in lib/consent.ts, then
+                 * whatever the CMP's message updates them to.
+                 */
                 window.adsbygoogle.push({});
             } catch {
                 // A failed fill must never take the page with it.
@@ -178,7 +152,7 @@ function AdSlot({
         return () => { io.disconnect(); mo?.disconnect(); };
         // `mounted` belongs here: the <ins> does not exist on the first pass,
         // so without it the observers would be wired to an empty host.
-    }, [pathname, consent, mounted, blocked]);
+    }, [pathname, mounted, blocked]);
 
     // A new route means a new element and an undecided slot.
     useEffect(() => { setFilled(false); }, [pathname]);

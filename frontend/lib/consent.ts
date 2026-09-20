@@ -1,135 +1,77 @@
 /**
- * What the reader chose, translated into the only vocabulary Google reads.
+ * What Google is told before anybody asks anything.
  *
- * The banner has collected a choice since long before this file existed, saved
- * it, synced it to the account, and told the ad slots about it — and never once
- * told Google Analytics. So the site asked for consent it then ignored: with
- * `client_storage: 'none'` set unconditionally, GA could not use a cookie for
- * anyone, including the readers who had just said yes.
+ * Until 20 September 2026 this file also carried a whole consent system: a
+ * shape for the reader's preferences, three storage keys, a mapping from those
+ * preferences to Consent Mode signals, and a head script that read the stored
+ * answer back. All of it existed to serve a banner we wrote ourselves.
  *
- * That is why every visit counted as a new person and why the reports showed a
- * five-second average engagement. Nothing was measuring returning readers,
- * because nothing could tell one from a stranger.
+ * That banner is gone. Google requires publishers serving personalised ads in
+ * the EEA, the UK and Switzerland to use a CMP it has certified against the
+ * IAB TCF — a hand-written dialog calling gtag('consent','update') does not
+ * qualify however correct it is, and AdSense had limited ad serving on the
+ * whole site because of it. Google's own certified CMP now asks, through the
+ * AdSense tag that was already on every page.
  *
- * The mapping lives here alone. The head needs it as raw JavaScript before any
- * module has loaded, and the banner needs it as a function afterwards — two
- * shapes, one set of rules, because a consent mapping that disagrees with
- * itself is the kind of bug nobody finds by looking.
+ * What is left here is the one thing a CMP does not do: the default, which is
+ * what applies before a message is shown and to every reader who is never
+ * shown one.
  */
 
-export interface CookiePreferences {
-    necessary: boolean;
-    analytics: boolean;
-    marketing: boolean;
-}
-
-/** Where the choice is kept. The account copy is a mirror of this. */
-export const CONSENT_STORAGE_KEY = "cookie_preferences";
-
 /**
- * Where "not now" is kept, and why it is not the same place.
+ * Where a reader has to be asked before anything is stored.
  *
- * Closing the banner with the × used to store a rejection, so a reader who
- * only wanted it off their screen was excluded from measurement for good — on
- * that visit and every visit after it, having never said no. That is not an
- * answer, it is a refusal to answer, and the two should not look alike.
+ * ISO 3166-1 for countries; Google also accepts ISO 3166-2 for subdivisions,
+ * which is how the US state rules would be expressed if we ever add them.
  *
- * sessionStorage, so it lasts exactly as long as the tab. The question comes
- * back next time.
+ * The list is the EEA (the EU plus Iceland, Liechtenstein and Norway), the UK
+ * and Switzerland — the three jurisdictions Google's European regulations
+ * message covers, so that the default and the message agree about who is being
+ * protected.
  */
-export const CONSENT_DISMISSED_KEY = "cookie_banner_dismissed";
+const ASK_FIRST = [
+    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR',
+    'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL',
+    'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE',
+    'IS', 'LI', 'NO',
+    'GB', 'CH',
+];
 
 /**
- * What the head stamps on <html> so CSS can hide the banner before paint.
+ * The Consent Mode defaults, as raw JavaScript for the document head.
  *
- * The banner has to be visible in the HTML itself — see the note in
- * CookieConsentBanner — which means a reader who already answered would see it
- * flash on every page load unless something hides it before the first paint.
- * Only the head script can know: the answer is in localStorage, and no server
- * can read that.
- */
-export const CONSENT_ANSWERED_ATTR = "data-consent";
-
-/** Nothing but what the site cannot run without, until somebody says otherwise. */
-export const DEFAULT_PREFERENCES: CookiePreferences = {
-    necessary: true,
-    analytics: false,
-    marketing: false,
-};
-
-type Signal = "granted" | "denied";
-
-/** Consent Mode v2, from one set of preferences. */
-export function consentSignals(prefs: CookiePreferences): Record<string, Signal> {
-    const analytics: Signal = prefs.analytics ? "granted" : "denied";
-    const ads: Signal = prefs.marketing ? "granted" : "denied";
-
-    return {
-        analytics_storage: analytics,
-        ad_storage: ads,
-        ad_user_data: ads,
-        ad_personalization: ads,
-    };
-}
-
-/**
- * Tell Google what just changed.
+ * It has to run before gtag.js executes: a default that arrives after the
+ * library has already sent its first hit is not a default, it is a correction
+ * nobody sees.
  *
- * Safe to call before gtag.js has landed: the stub in the head queues into
- * dataLayer and the library reads the queue when it arrives.
- */
-export function applyConsent(prefs: CookiePreferences): void {
-    if (typeof window === "undefined") return;
-
-    const gtag = (window as unknown as { gtag?: (...args: unknown[]) => void }).gtag;
-    if (typeof gtag !== "function") return;
-
-    gtag("consent", "update", consentSignals(prefs));
-}
-
-/**
- * The same rules as raw JavaScript, for the document head.
+ * Two blocks, and the order is not arbitrary. Google applies the most specific
+ * matching default, so the permissive one is stated first and the regional one
+ * narrows it. Written the other way round the regional block would be the one
+ * overridden, and every European reader would be measured before being asked —
+ * which is the exact thing this file exists to prevent.
  *
- * It has to run before gtag.js executes, and it has to read the stored choice
- * synchronously. A returning reader who consented last week would otherwise
- * have their first page view of every visit recorded without them — the one
- * hit that decides which landing page gets the credit.
- *
- * Denied by default, always. Consent Mode still sends a cookieless ping in that
- * state, so a reader who declines is counted without being identified, and
- * nothing has to be guessed about whether they are in the EU.
+ * Granted outside those regions rather than denied everywhere, which is what
+ * this used to do. Denied-by-default worldwide sounds cautious and is not: with
+ * no banner left to grant it, every reader on earth would have been served
+ * non-personalised ads for ever — including the ones no privacy law in their
+ * country asks us to treat that way. The cost of that is real and falls
+ * entirely on us.
  */
 export function consentBootstrapScript(): string {
     return `
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('consent', 'default', {
+  analytics_storage: 'granted',
+  ad_storage: 'granted',
+  ad_user_data: 'granted',
+  ad_personalization: 'granted'
+});
+gtag('consent', 'default', {
   analytics_storage: 'denied',
   ad_storage: 'denied',
   ad_user_data: 'denied',
-  ad_personalization: 'denied'
-});
-try {
-  var raw = localStorage.getItem(${JSON.stringify(CONSENT_STORAGE_KEY)});
-  if (raw) {
-    var p = JSON.parse(raw);
-    if (p && typeof p === 'object') {
-      gtag('consent', 'update', {
-        analytics_storage: p.analytics ? 'granted' : 'denied',
-        ad_storage: p.marketing ? 'granted' : 'denied',
-        ad_user_data: p.marketing ? 'granted' : 'denied',
-        ad_personalization: p.marketing ? 'granted' : 'denied'
-      });
-    }
-    document.documentElement.setAttribute(${JSON.stringify(CONSENT_ANSWERED_ATTR)}, 'answered');
-  } else if (sessionStorage.getItem(${JSON.stringify(CONSENT_DISMISSED_KEY)})) {
-    /* Asked and waved away this session. Not an answer — the banner comes
-       back next visit, and until then nothing is measured. */
-    document.documentElement.setAttribute(${JSON.stringify(CONSENT_ANSWERED_ATTR)}, 'dismissed');
-  }
-} catch (e) {
-  /* A reader with storage blocked stays denied, which is already the default,
-     and sees the banner — which is the right way round: better to ask twice
-     than to assume an answer nobody gave. */
-}`.trim();
+  ad_personalization: 'denied',
+  region: ${JSON.stringify(ASK_FIRST)}
+});`.trim();
 }
