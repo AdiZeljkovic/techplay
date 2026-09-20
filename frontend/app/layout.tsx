@@ -260,18 +260,31 @@ export default async function RootLayout({
         */}
         <script dangerouslySetInnerHTML={{ __html: `(function(){var d=document.documentElement,t;addEventListener('popstate',function(){d.style.scrollBehavior='auto';clearTimeout(t);t=setTimeout(function(){d.style.scrollBehavior='';},400);});})();` }} />
 
-        {/* dataLayer, Consent Mode defaults, and the reader's saved answer.
-
-            This said `analytics_storage: 'granted'` while the config below said
-            `client_storage: 'none'` — so it claimed consent it then made
-            impossible to act on. The banner had been collecting a real choice
-            the whole time and telling only the ad slots about it.
-
-            Denied by default now, and the stored answer applied in the same
-            breath, before gtag.js runs. A reader who consented last week would
-            otherwise lose the first page view of every visit — the one that
-            decides which landing page gets the credit. */}
+        {/* The queue and gtag itself, so the config below cannot throw even if
+            the request on the next line fails. See lib/consent.ts. */}
         <script dangerouslySetInnerHTML={{ __html: consentBootstrapScript() }} />
+
+        {/* The Consent Mode default, fetched rather than written.
+
+            This page is the same bytes for every reader; the default is not,
+            because it depends on which country the reader is in. Writing it
+            here with gtag's own `region:` option is what we tried first, and it
+            denied consent to the entire world — gtag looks the region up over
+            the network, and the page_view below fires long before the answer
+            lands. lib/consent.ts has the measurements.
+
+            nginx knows the country from Cloudflare before it sends a byte, so
+            it answers /consent.js with a plain granted or denied and there is
+            nothing to wait for. The list of protected countries lives in
+            conf.d/zz-techplay-consent.conf, not in this repository — a country
+            joining the EEA is a config reload, not a deploy.
+
+            Deliberately not `async` or `defer`: this has to run before the
+            config below it, and those attributes are exactly what would let it
+            run after. React hoists async scripts to the top of the head, which
+            is how the library below ended up executing before its own
+            configuration. */}
+        <script src="/consent.js" />
 
         {/* GA4 itself, in the head rather than after hydration.
 
