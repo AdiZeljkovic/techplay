@@ -33,7 +33,7 @@
  *
  * Cloudflare has already told our own server the reader's country by the time
  * nginx answers, so the answer is stated rather than waited for.
- * `/etc/nginx/snippets/techplay-consent-js.conf` serves `/consent.js`, whose
+ * `/etc/nginx/snippets/techplay-consent-js.conf` serves `/consent`, whose
  * granted-or-denied comes from `CF-IPCountry` through the map in
  * `conf.d/zz-techplay-consent.conf` — and that map, not this file, is where the
  * list of protected countries now lives.
@@ -45,7 +45,7 @@
  * `/consent.js` defines both as well, so this is not what normally sets them.
  * It is here because the config call below it in the document is inline and
  * will run whether or not that request succeeded: without this, a failed
- * /consent.js would take the whole of Analytics down with a `gtag is not
+ * /consent would take the whole of Analytics down with a `gtag is not
  * defined`, which is a far worse failure than a missing default.
  */
 export function consentBootstrapScript(): string {

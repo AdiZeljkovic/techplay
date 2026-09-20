@@ -274,17 +274,21 @@ export default async function RootLayout({
             lands. lib/consent.ts has the measurements.
 
             nginx knows the country from Cloudflare before it sends a byte, so
-            it answers /consent.js with a plain granted or denied and there is
+            it answers /consent with a plain granted or denied and there is
             nothing to wait for. The list of protected countries lives in
             conf.d/zz-techplay-consent.conf, not in this repository — a country
             joining the EEA is a config reload, not a deploy.
+
+            No .js on the end: Cloudflare's standard cache level keys off the
+            extension, and one cached copy of this would serve one country's
+            answer to the whole world.
 
             Deliberately not `async` or `defer`: this has to run before the
             config below it, and those attributes are exactly what would let it
             run after. React hoists async scripts to the top of the head, which
             is how the library below ended up executing before its own
             configuration. */}
-        <script src="/consent.js" />
+        <script src="/consent" />
 
         {/* GA4 itself, in the head rather than after hydration.
 
