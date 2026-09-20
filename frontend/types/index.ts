@@ -51,11 +51,6 @@ export interface User {
     /** May the site shelve a game because it saw you playing it? Own setting only. */
     auto_add_played_games?: boolean;
     discord_linked?: boolean;
-    cookie_preferences?: {
-        necessary: boolean;
-        analytics: boolean;
-        marketing: boolean;
-    };
     [key: string]: any;
 }
 

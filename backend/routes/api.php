@@ -208,7 +208,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/auth/refresh', [AuthController::class, 'refresh']);
         Route::get('/auth/me', [AuthController::class, 'user']);
         Route::put('/user/profile', [AuthController::class, 'updateProfile']);
-        Route::put('/user/preferences', [AuthController::class, 'updatePreferences']);
         Route::put('/user/password', [AuthController::class, 'changePassword']);
         // Throttle jer izvoz vise nije cetiri polja nego cijela kolekcija:
         // rijetka radnja, skupa da se sastavi, bez razloga da se ponavlja.

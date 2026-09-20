@@ -696,27 +696,6 @@ class AuthController extends Controller
         ]);
     }
 
-    public function updatePreferences(Request $request)
-    {
-        $user = $request->user();
-
-        $validated = $request->validate([
-            'cookie_preferences' => 'required|array',
-            'cookie_preferences.necessary' => 'required|boolean',
-            'cookie_preferences.analytics' => 'required|boolean',
-            'cookie_preferences.marketing' => 'required|boolean',
-        ]);
-
-        $user->update([
-            'cookie_preferences' => $validated['cookie_preferences'],
-        ]);
-
-        return response()->json([
-            'message' => 'Preferences updated successfully',
-            'cookie_preferences' => $user->cookie_preferences,
-        ]);
-    }
-
     public function changePassword(Request $request)
     {
         $user = $request->user();

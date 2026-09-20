@@ -70,7 +70,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         // unaffected; Laravel creates models unguarded.
         'gamertags',
         'pc_specs',
-        'cookie_preferences',
         'paypal_subscription_id',
         'paypal_customer_id',
         'subscription_ends_at',
@@ -115,7 +114,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'is_banned',                // Internal moderation
         'ban_reason',               // Internal moderation
         'banned_until',             // Internal moderation
-        'cookie_preferences',       // Private
         'settings',                 // Private
         'updated_at',               // Not needed publicly
     ];
@@ -137,7 +135,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'pc_specs' => 'array',
             'playstyle_tags' => 'array',
             'settings' => 'array',
-            'cookie_preferences' => 'array',
             'author_social_links' => 'array',
             'subscription_ends_at' => 'datetime',
             'last_seen_at' => 'datetime',
