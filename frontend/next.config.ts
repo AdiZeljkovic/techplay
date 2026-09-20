@@ -69,7 +69,16 @@ const nextConfig: NextConfig = {
               // ability to build code out of strings. Verified against a real
               // production build — pages, ads and the Turnstile widget included
               // — before it was taken away.
-              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.facebook.com https://accounts.google.com https://wow.zamimg.com https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://challenges.cloudflare.com https://*.adtrafficquality.google https://static.cloudflareinsights.com`,
+              //
+              // fundingchoicesmessages.google.com is Google's own CMP — the
+              // consent message itself, which adsbygoogle.js fetches from a
+              // different host than it was loaded from. It is listed in all
+              // three of script-src, connect-src and frame-src below because a
+              // CSP failure here is silent in exactly the wrong way: the tag
+              // loads, no message is ever drawn, every European reader keeps
+              // the denied default, and AdSense goes on reporting that we have
+              // no CMP while we believe we have one.
+              `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.facebook.com https://accounts.google.com https://wow.zamimg.com https://pagead2.googlesyndication.com https://tpc.googlesyndication.com https://adservice.google.com https://fundingchoicesmessages.google.com https://challenges.cloudflare.com https://*.adtrafficquality.google https://static.cloudflareinsights.com`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://wow.zamimg.com",
               "font-src 'self' https://fonts.gstatic.com data:",
               // Permissive img-src to allow all CDNs (avatars, banners, game covers, ads)
@@ -79,9 +88,9 @@ const nextConfig: NextConfig = {
               // 443. Both were widening connect-src for destinations that cannot be
               // reached. The loopback and backend.test entries are the dev origins and
               // are gated the same way 'unsafe-eval' is above.
-              `connect-src 'self' https://api-beta.techplay.gg wss://api-beta.techplay.gg${isDev ? " http://backend.test https://backend.test http://127.0.0.1:8001 http://127.0.0.1:8000" : ""} https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://wow.zamimg.com https://accounts.google.com https://*.adtrafficquality.google https://www.google.com https://pagead2.googlesyndication.com https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com https://glitchtip.techplay.gg`,
+              `connect-src 'self' https://api-beta.techplay.gg wss://api-beta.techplay.gg${isDev ? " http://backend.test https://backend.test http://127.0.0.1:8001 http://127.0.0.1:8000" : ""} https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://stats.g.doubleclick.net https://www.facebook.com https://connect.facebook.net https://wow.zamimg.com https://accounts.google.com https://*.adtrafficquality.google https://www.google.com https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://38wzs9wt1a.execute-api.eu-central-1.amazonaws.com https://glitchtip.techplay.gg`,
               // iframes: YouTube, Twitter/X, Instagram, Facebook, Google Ads, Google Sign-In
-              "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://twitter.com https://x.com https://platform.twitter.com https://www.instagram.com https://www.facebook.com https://accounts.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://www.google.com https://*.adtrafficquality.google https://challenges.cloudflare.com",
+              "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://twitter.com https://x.com https://platform.twitter.com https://www.instagram.com https://www.facebook.com https://accounts.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://pagead2.googlesyndication.com https://fundingchoicesmessages.google.com https://www.google.com https://*.adtrafficquality.google https://challenges.cloudflare.com",
               "media-src 'self' blob: https://api-beta.techplay.gg",
               "object-src 'none'",
               /*
