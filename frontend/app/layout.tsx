@@ -322,7 +322,36 @@ export default async function RootLayout({
           });
         `}}
         />
-        <script async src={`/proxy/gtag?id=${process.env.NEXT_PUBLIC_GA_ID || 'G-0J974Y0X23'}`} />
+        {/* The library, injected by script rather than written as a tag.
+
+            As a `<script async src>` React 19 treats it as a hoistable
+            resource and emits it near the top of the head — measured at byte
+            3608 of the served HTML, while the consent defaults above sat at
+            7749. Source order said the opposite.
+
+            That ordering is not cosmetic. `gtag('consent', 'default', …)` is
+            only honoured before the library initialises; arriving after, it is
+            discarded. So the defaults had never applied, and every reader was
+            measured as denied. The old banner hid it for months: it sent
+            `consent update`, which is accepted at any time, so the few who
+            clicked Accept turned into the 1-2% of hits carrying `gcs=G111`
+            while everyone else stayed at G100 and looked like a normal refusal
+            rate. Deleting the banner removed the updates and the real state
+            showed: 203 hits after the deploy, not one of them granted.
+
+            An inline script is never hoisted, so appending the tag from here
+            pins the order — defaults, config, then the library, in the order
+            this file reads. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = '/proxy/gtag?id=${process.env.NEXT_PUBLIC_GA_ID || 'G-0J974Y0X23'}';
+            document.head.appendChild(s);
+          })();
+        `}}
+        />
 
         {/* AdSense script moved to body via Script component (afterInteractive) */}
       </head>
