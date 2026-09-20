@@ -156,7 +156,29 @@ class AppServiceProvider extends ServiceProvider
                 return Limit::none();
             }
 
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            /*
+             * 300, not 60.
+             *
+             * 60 a minute sounds generous until it is measured against what one
+             * page of this site actually asks for. A single reader browsing
+             * normally on 20 Sep 2026 filed 101 requests in one minute and was
+             * locked out: the feed went empty, notifications stopped, and
+             * /auth/me failed so the header showed them as logged out.
+             *
+             * Nothing was wrong with their behaviour. Every page fires
+             * /navigation/tree, /ads/sidebar, /user/notifications/counts and
+             * /auth/me before it fires anything the page is about, so three or
+             * four pages in a minute reaches the ceiling — and a reader clicking
+             * through game after game is the most engaged one we have.
+             *
+             * This is a backstop, not the defence. Cloudflare and nginx meter
+             * the edge, and everything genuinely worth protecting says so at
+             * the route: throttle:5,10 on the data export, 10,1 on creating a
+             * thread, 5,10 on password reset. Those numbers are the policy.
+             * This one only has to be high enough that reading the site does
+             * not trip it.
+             */
+            return Limit::perMinute(300)->by($request->user()?->id ?: $request->ip());
         });
     }
 
