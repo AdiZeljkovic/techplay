@@ -44,11 +44,15 @@ const ASK_FIRST = [
  * library has already sent its first hit is not a default, it is a correction
  * nobody sees.
  *
- * Two blocks, and the order is not arbitrary. Google applies the most specific
- * matching default, so the permissive one is stated first and the regional one
- * narrows it. Written the other way round the regional block would be the one
- * overridden, and every European reader would be measured before being asked —
- * which is the exact thing this file exists to prevent.
+ * Two blocks, regional first and global second, which is the order Google's own
+ * documented example uses.
+ *
+ * It was written the other way round on 20 September, on the reasoning that the
+ * most specific default wins regardless of order. Measured, it did not: after
+ * that deploy every hit carried `gcs=G100`, denied, including one from a
+ * verified Bosnian address that matches no region in the list below. The
+ * permissive block was not being applied to anybody. Whatever gtag does
+ * internally, the documented order is the one to write.
  *
  * Granted outside those regions rather than denied everywhere, which is what
  * this used to do. Denied-by-default worldwide sounds cautious and is not: with
@@ -62,16 +66,16 @@ export function consentBootstrapScript(): string {
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('consent', 'default', {
-  analytics_storage: 'granted',
-  ad_storage: 'granted',
-  ad_user_data: 'granted',
-  ad_personalization: 'granted'
-});
-gtag('consent', 'default', {
   analytics_storage: 'denied',
   ad_storage: 'denied',
   ad_user_data: 'denied',
   ad_personalization: 'denied',
   region: ${JSON.stringify(ASK_FIRST)}
+});
+gtag('consent', 'default', {
+  analytics_storage: 'granted',
+  ad_storage: 'granted',
+  ad_user_data: 'granted',
+  ad_personalization: 'granted'
 });`.trim();
 }
