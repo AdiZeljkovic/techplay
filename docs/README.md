@@ -934,17 +934,51 @@ certificiran. Obrisan je, zajedno s `CookieConsentBanner.tsx`, njegovim CSS-om i
 cijelim sistemom preferencija u `lib/consent.ts`. Pita sada Googleov CMP, kroz
 AdSense skriptu koja je ionako na svakoj stranici.
 
-Ostalo je samo zadano stanje, u `consentBootstrapScript()`, i ono ima **dva
-bloka i redoslijed nije slučajan**:
+Ostalo je samo zadano stanje — i **ono se ne piše u kodu nego ga servira
+nginx**, na `/consent`.
+
+Prvo je bilo napisano Googleovom `region:` opcijom, s listom od 32 zemlje u
+`lib/consent.ts`. **To ne radi i pada nečujno.** gtag zemlju saznaje tek
+asinhronim pozivom na `https://www.google.com/ccm/geo`; dok odgovor ne stigne
+ne zna gdje je čitalac i ponaša se najstrože. A `page_view` puca odmah, iz
+`<head>`-a. Rezultat: svaki pogodak sa sajta nosio je `gcs=G100` — odbijeno —
+jednako za Bosnu i Ameriku kao za Njemačku. Izmjereno: 203 pogotka poslije
+deploya, nijedan odobren, uključujući provjereno bosanski IP.
+
+Stari baner je to skrivao koliko god je postojao, jer je slao `consent update`,
+koji Google prihvata bilo kad. Onih 1–2% `G111` bili su ljudi koji su kliknuli
+„prihvatam". Zadano stanje ispod njih **nikad nije važilo ni za koga**.
+
+Cloudflare nam zemlju kaže prije nego nginx pošalje ijedan bajt, pa se odgovor
+tvrdi umjesto da se čeka:
 
 ```
-blok 1  svi           granted
-blok 2  32 zemlje     denied     ← EEA + IS/LI/NO + GB + CH
+map $http_cf_ipcountry $tp_consent_state   conf.d/zz-techplay-consent.conf
+location = /consent                        snippets/techplay-consent-js.conf
 ```
 
-Google primjenjuje najspecifičniji blok koji odgovara čitaocu, pa permisivni
-ide prvi a regionalni ga sužava. Napisano obrnuto, regionalni bi bio taj koji
-se pregazi i svaki Europljanin bi bio izmjeren prije nego što je pitan.
+**Lista zaštićenih zemalja živi u nginxu, ne u repozitoriju** — dodavanje
+zemlje je `nginx -s reload`, ne deploy. `XX` i `T1` (Cloudflareovo „ne znam" i
+Tor) idu u odbijeno; prazna vrijednost znači da zahtjev nije ni prošao kroz
+Cloudflare — naši health checkovi — i ostaje odobreno.
+
+Dvije zamke u toj konfiguraciji, obje plaćene:
+
+- **Ime `zz-…` nije stil nego nužnost.** `conf.d/*.conf` se učitava abecedno, a
+  nginx fiksira veličinu heša na prvom `map` bloku — poslije čega
+  `map_hash_max_size` u generisanom `techplay-gone-games.conf` puca kao
+  duplikat i **cijela konfiguracija ne prolazi test**.
+- **Putanja je `/consent`, bez `.js`.** Cloudflare po zadanom keširа po
+  ekstenziji, a jedna keširana kopija servirala bi odgovor jedne zemlje cijelom
+  svijetu — tj. tačno ovaj kvar, samo nevidljiv.
+
+Provjera da radi (poslije svake izmjene liste):
+
+```bash
+for c in BA US DE GB; do printf "%-3s " $c; \
+  curl -sk --resolve techplay.gg:443:127.0.0.1 https://techplay.gg/consent \
+    -H "CF-IPCountry: $c" | grep -o 'analytics_storage:"[a-z]*"'; done
+```
 
 **Zašto `granted` van Europe, a ne `denied` svugdje.** Zato što više nemamo
 banner koji bi to odobrio. Zadano `denied` na cijelom svijetu zvuči opreznije i
