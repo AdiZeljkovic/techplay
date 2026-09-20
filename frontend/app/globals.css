@@ -1185,9 +1185,3 @@ body.tp-navigating .tp-page {
 @media (prefers-reduced-motion: reduce) {
   .tp-404-scan::after { animation: none; opacity: 0; }
 }
-
-
-
-
-
-}
