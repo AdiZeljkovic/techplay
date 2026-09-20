@@ -1362,6 +1362,26 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         )}
                     </Panel>
 
+                    {/* Directly under the description, which is where the
+                        reader finishes the thing they came for.
+
+                        It was at the very bottom of this file, below the forum
+                        threads, and that is a slot which technically exists.
+                        The unit fills from an IntersectionObserver, so it is
+                        only ever requested once somebody scrolls past every
+                        panel on a page that runs to a trailer, a gallery,
+                        related shelves, a language table, system requirements
+                        and a thread list. Most readers stop long before that,
+                        and an ad nobody reaches earns exactly as much as no ad
+                        at all.
+
+                        This is the same single unit moved, not a second one.
+                        Density is what put this account under an ad serving
+                        limit on 21 Aug 2026, and `adWorthy` above is still the
+                        gate: a game with under 200 characters of description
+                        carries no advertising at all. */}
+                    {adWorthy && <DisplayAd minHeight={110} className="my-6" />}
+
                     {/* `?? []` throughout, not out of habit: /games/* is also
                         cached by nginx, which Laravel's cache version cannot
                         reach, so a payload from before these fields existed can
@@ -1722,12 +1742,12 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                     </section>
                 )}
 
-                {/* Below the game itself and its two recommendation rows,
-                    above the forum threads: past everything the reader came
-                    for, still on the page rather than under its footer — and
-                    only where the page carries enough of its own to justify
-                    one. See `adWorthy` above. */}
-                {adWorthy && <DisplayAd minHeight={110} />}
+                {/* The slot that used to be here now sits under the About
+                    panel. It was placed down here on the reasoning that it
+                    should come after everything the reader came for — which is
+                    sound as etiquette and useless in practice, because the
+                    unit only requests an ad once it is scrolled into view and
+                    almost nobody scrolls this far. Moved, not duplicated. */}
 
                 <GameForumThreads gameSlug={slug} threadsCount={game.threads_count ?? 0} />
 
