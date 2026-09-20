@@ -307,10 +307,19 @@ export default async function RootLayout({
             off the parser's critical path, and the queue above means the
             page_view is already waiting for the library the moment it lands.
 
-            `client_storage: 'none'` stays. It is why no consent banner is
-            needed, and it is also why GA cannot tell a returning reader from a
-            new one — the "5s average engagement" is that, not real behaviour.
-            Changing it is a separate decision with a GDPR bill attached.
+            This used to say that `client_storage: 'none'` stays, that it was
+            why no consent banner was needed, and that changing it was a
+            separate decision with a GDPR bill attached. The setting is not in
+            the config below and has not been for some time; the comment
+            outlived it and described a config that was not there — which is
+            the worst kind, because it answers a question nobody then checks.
+
+            Storage is permitted, and the permission is real rather than
+            assumed: /consent above states granted or denied per country, and
+            Google's certified CMP asks wherever the answer is denied. So GA
+            keeps a client id and can tell a returning reader from a new one.
+            The five-second average engagement this file used to explain away
+            was the absence of that id, and should not survive it.
 
             `transport_url` is the other half of the same problem. The library
             was already served from our own domain, which is why it loads — but
