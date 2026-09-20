@@ -921,6 +921,59 @@ korisnika. Stopa pristanka je 2–7%.
 **Ne vraćati staro ponašanje.** Nije stvar u propisu nego u tome da imamo
 zabilježeno „ne" i da smo pratili uprkos njemu — a i brojka je bila netačna.
 
+### 20. septembra 2026: naš banner je zamijenjen Googleovim CMP-om
+
+Onih 2–7% gore **više ne važi i brojka će naglo skočiti.** To nije kvar i nije
+povratak na staro ponašanje; promijenilo se ko se uopšte pita.
+
+AdSense je ograničio prikazivanje reklama na cijelom sajtu uz razlog „No CMP":
+Google traži da izdavač koji prikazuje personalizovane reklame u EEA, UK i
+Švicarskoj koristi platformu koju je **on certificirao po IAB TCF-u**. Naš
+vlastiti dijalog, ma koliko ispravno radio, tome ne udovoljava jer nije
+certificiran. Obrisan je, zajedno s `CookieConsentBanner.tsx`, njegovim CSS-om i
+cijelim sistemom preferencija u `lib/consent.ts`. Pita sada Googleov CMP, kroz
+AdSense skriptu koja je ionako na svakoj stranici.
+
+Ostalo je samo zadano stanje, u `consentBootstrapScript()`, i ono ima **dva
+bloka i redoslijed nije slučajan**:
+
+```
+blok 1  svi           granted
+blok 2  32 zemlje     denied     ← EEA + IS/LI/NO + GB + CH
+```
+
+Google primjenjuje najspecifičniji blok koji odgovara čitaocu, pa permisivni
+ide prvi a regionalni ga sužava. Napisano obrnuto, regionalni bi bio taj koji
+se pregazi i svaki Europljanin bi bio izmjeren prije nego što je pitan.
+
+**Zašto `granted` van Europe, a ne `denied` svugdje.** Zato što više nemamo
+banner koji bi to odobrio. Zadano `denied` na cijelom svijetu zvuči opreznije i
+nije: svi bi zauvijek gledali jeftinije nepersonalizovane reklame, uključujući
+one koje nijedan propis u njihovoj zemlji ne traži da tako tretiramo. Amerika
+nam je 35% prometa i najskuplje tržište.
+
+**Zato GA sada mjeri gotovo sve.** Ranije je zadano bilo odbijeno dok neko ne
+klikne, pa je 93–98% prometa bilo nevidljivo. Sada je nevidljiv samo europski
+dio koji odbije. Kad brojke skoče desetostruko — to je ovo, a ne kvar.
+
+**CSP je dio ovoga i lako se previdi.** `adsbygoogle.js` poruku dovlači s
+`fundingchoicesmessages.google.com`, drugog domena nego s kojeg se sam učitao.
+Taj domen je u `script-src`, `connect-src` i `frame-src` u `next.config.ts`.
+Ako ispadne odatle, kvar je nevidljiv na najgori način: tag se učita, poruka se
+nikad ne nacrta, svaki Europljanin ostane na `denied`, a AdSense i dalje
+prijavljuje „No CMP" dok mi mislimo da je riješeno.
+
+**Američka poruka je uključena** (20.09.2026). Američki režim je opt-out, ne
+opt-in: personalizovano je zadano, a poruka nudi „Do Not Sell or Share" onima
+koji je traže. Nije bila obavezna — nijedan prag američkih zakona nije blizu —
+ali ne košta ništa u kodu i pokriva treći kalifornijski prag (50% prihoda od
+„dijeljenja"), koji je za sajt koji živi od AdSensea jedini koji nije čist.
+
+`users.cookie_preferences` je istog dana obrisan iz koda. **Kolona nikad nije
+postojala u bazi** i nijedna migracija je ne pravi, pa je `PUT
+/user/preferences` mogao samo pasti — što niko nije otkrio jer ga niko nije ni
+zvao.
+
 ### Naš brojač broji sve
 
 Sajt već relejira svaki GA pogodak kroz `/proxy/ga` na vlastitom imenu (da
