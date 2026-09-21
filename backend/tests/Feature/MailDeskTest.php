@@ -431,6 +431,30 @@ class MailDeskTest extends TestCase
         );
     }
 
+    public function test_a_new_campaign_leaves_at_one_message_a_minute(): void
+    {
+        /*
+         * Paid for on 21 Sep 2026. At ten messages every three seconds a
+         * newsletter to 105 members delivered 97 and was then refused by our
+         * own Postfix — "you are sending too many emails too fast" — and
+         * refused again on both retries, a minute and five minutes later.
+         * Eight people never received it.
+         *
+         * The fields stay editable; this only fixes where a campaign starts,
+         * so the next one does not begin at the pace that failed.
+         */
+        $campaign = MailCampaign::create([
+            'name' => 'Unpaced',
+            'subject' => 'Something worth reading',
+            'body' => '<p>Hello.</p>',
+            'audience' => ['segment' => 'everyone'],
+            'status' => MailCampaign::DRAFT,
+        ])->fresh();
+
+        $this->assertSame(1, (int) $campaign->batch_size);
+        $this->assertSame(60, (int) $campaign->pause_seconds);
+    }
+
     public function test_a_campaign_that_has_gone_out_can_no_longer_be_edited(): void
     {
         // Offering an edit button afterwards would suggest the copy in ninety

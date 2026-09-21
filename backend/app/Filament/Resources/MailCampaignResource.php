@@ -213,15 +213,19 @@ class MailCampaignResource extends Resource
                 ->columns(2),
 
             Section::make('Pacing')
-                ->description('We send from our own mail server, which arrives at Gmail with no reputation of its own. A hundred messages in one second is the shape of a spam run, and being read as one costs far more than the minute this saves.')
+                ->description('One a minute, because that is what our own mail server takes. On 21 September a newsletter to 105 members sent 97 and was then refused — "you are sending too many emails too fast" — at ten every three seconds. Retrying a minute later and five minutes later was refused too, so it is a quota over a window, not a speed limit. Eight people never got it. Raise this only after the limit on the server has been raised.')
                 ->schema([
                     Forms\Components\TextInput::make('batch_size')
                         ->label('Messages per batch')
-                        ->numeric()->minValue(1)->maxValue(100)->default(10)->required(),
+                        ->numeric()->minValue(1)->maxValue(100)->default(1)->required(),
 
                     Forms\Components\TextInput::make('pause_seconds')
                         ->label('Seconds between batches')
-                        ->numeric()->minValue(0)->maxValue(120)->default(3)->required(),
+                        ->numeric()->minValue(0)->maxValue(600)->default(60)->required()
+                        // The send confirmation turns these two into "about N
+                        // minutes", which is the number worth reading: a
+                        // thousand people at this pace is most of a day.
+                        ->helperText('At one a minute, a list of 1,000 takes about 17 hours.'),
                 ])
                 ->columns(2)
                 ->collapsed(),
