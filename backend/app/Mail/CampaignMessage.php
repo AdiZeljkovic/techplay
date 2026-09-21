@@ -53,7 +53,12 @@ class CampaignMessage extends Mailable
                 'appUrl' => rtrim((string) config('app.site_url'), '/'),
                 'subject' => $campaign->subject,
                 'campaign' => $campaign,
-                'bodyHtml' => $body->trackLinks($body->absoluteImages((string) $campaign->body), $this->recipient),
+                // inlineStyles last, so the tags trackLinks rewrites are styled
+                // too. The stylesheet in the template cannot be relied on — see
+                // CampaignBody::inlineStyles.
+                'bodyHtml' => $body->inlineStyles(
+                    $body->trackLinks($body->absoluteImages((string) $campaign->body), $this->recipient)
+                ),
                 'bodyText' => (string) ($campaign->body_text ?: strip_tags((string) $campaign->body)),
                 // The hero button is the most-clicked thing in a newsletter and
                 // is not part of the body, so it would otherwise be the one link

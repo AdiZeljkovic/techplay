@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Jobs\SendCampaign;
 use App\Jobs\SendCampaignMessage;
+use App\Mail\CampaignMessage;
 use App\Models\MailCampaign;
 use App\Models\MailCampaignRecipient;
 use App\Models\MailSuppression;
@@ -361,6 +362,73 @@ class MailDeskTest extends TestCase
         $this->assertStringContainsString('/mail/c/'.$recipient->token, $rendered);
         $this->assertStringContainsString('href="'.$unsubscribe.'"', $rendered);
         $this->assertStringContainsString('mailto:hi@techplay.gg', $rendered);
+    }
+
+    public function test_the_body_carries_its_own_colour_and_does_not_trust_the_stylesheet(): void
+    {
+        /*
+         * Sent to a real inbox on 21 Sep 2026: the masthead rendered perfectly
+         * and not one word of the body was legible. The masthead carries its
+         * styling on every tag; the body was leaving it to a `<style>` block in
+         * the head, and that client strips one. With the rule gone the text
+         * inherited the client's own default colour — dark, on our near-black
+         * ground.
+         *
+         * So the assertion is on the tag, not on the template: a stylesheet
+         * that may never arrive cannot be the only place the colour is stated.
+         */
+        $body = app(CampaignBody::class);
+
+        $rendered = $body->inlineStyles(
+            '<p>Plain.</p>'
+            .'<ul><li>One</li></ul>'
+            .'<p style="text-align:center">Centred by hand.</p>'
+        );
+
+        $this->assertStringContainsString('<p style="margin:0 0 16px 0;', $rendered);
+        $this->assertStringContainsString('color:#A9A9B4;', $rendered);
+        $this->assertStringContainsString('<li style=', $rendered);
+        $this->assertStringContainsString('<ul style=', $rendered);
+
+        // The editor's own declaration survives, and wins, because it is
+        // written after ours.
+        $this->assertStringContainsString('text-align:center', $rendered);
+        $this->assertMatchesRegularExpression(
+            '/<p style="[^"]*color:#A9A9B4;[^"]*text-align:center/',
+            $rendered
+        );
+
+        /*
+         * And the same through the message that actually goes out. The method
+         * above can be perfect and still reach nobody: what makes it count is
+         * one call in CampaignMessage, which is the part easiest to leave out
+         * and impossible to notice missing until an inbox shows black on black.
+         */
+        $campaign = $this->campaign();
+        $recipient = MailCampaignRecipient::create([
+            'campaign_id' => $campaign->id,
+            'email' => 'reader@example.com',
+            'source' => 'form',
+        ]);
+
+        $sent = (new CampaignMessage($recipient))->render();
+
+        /*
+         * On the tag, not merely somewhere in the document. The template's own
+         * `<style>` block names these same colours, so a looser assertion
+         * passes whether or not the inlining runs — which it duly did, the
+         * first time this was written.
+         */
+        $this->assertMatchesRegularExpression(
+            '/<p style="[^"]*color:#A9A9B4;/',
+            $sent,
+            'the body paragraphs went out with no colour of their own'
+        );
+        $this->assertMatchesRegularExpression(
+            '/<a [^>]*style="[^"]*color:#FF4D6A/',
+            $sent,
+            'the body links went out with no colour of their own'
+        );
     }
 
     public function test_a_campaign_that_has_gone_out_can_no_longer_be_edited(): void

@@ -88,6 +88,71 @@ class CampaignBody
     }
 
     /**
+     * What the stylesheet says, written onto the tags themselves.
+     *
+     * The template styles the written body through a `<style>` block and the
+     * `.cbody` classes. That is the right way to write CSS and the wrong way
+     * to write mail: plenty of clients strip a stylesheet out of the head
+     * before they render, and a rule that never arrives is a rule that never
+     * applied. The body then inherits the client's own default colour, which
+     * on our near-black ground is dark text on dark — the whole message
+     * invisible, while the masthead above it looks perfect because every part
+     * of it carries its style inline.
+     *
+     * Seen on 21 Sep 2026 in a real inbox: hero flawless, not one word of the
+     * body legible.
+     *
+     * The classes stay. A client that does read the stylesheet gets the same
+     * answer twice, and an inline style wins over a class in any case, so
+     * this can only add.
+     *
+     * Colours are the template's own, copied rather than invented, so the two
+     * cannot drift into disagreeing about what grey the body is.
+     */
+    private const INLINE = [
+        'p' => "margin:0 0 16px 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#A9A9B4;",
+        'ul' => "margin:0 0 16px 0; padding-left:20px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#A9A9B4;",
+        'ol' => "margin:0 0 16px 0; padding-left:20px; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#A9A9B4;",
+        'li' => 'margin:0 0 8px 0; color:#A9A9B4;',
+        'a' => 'color:#FF4D6A; text-decoration:underline;',
+        'strong' => 'color:#FFFFFF;',
+        'b' => 'color:#FFFFFF;',
+        'em' => 'color:#A9A9B4;',
+        'h1' => "margin:26px 0 12px 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-weight:700; color:#FFFFFF; letter-spacing:-0.4px; font-size:26px; line-height:32px;",
+        'h2' => "margin:26px 0 12px 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-weight:700; color:#FFFFFF; letter-spacing:-0.4px; font-size:21px; line-height:27px;",
+        'h3' => "margin:26px 0 12px 0; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-weight:700; color:#FFFFFF; letter-spacing:-0.4px; font-size:17px; line-height:23px;",
+        'blockquote' => "margin:0 0 16px 0; padding:2px 0 2px 16px; border-left:3px solid #DC143C; font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:15px; line-height:25px; color:#8E8E99;",
+    ];
+
+    public function inlineStyles(string $html): string
+    {
+        foreach (self::INLINE as $tag => $css) {
+            $html = (string) preg_replace_callback(
+                '/<'.$tag.'(?=[\s>])[^>]*>/i',
+                function (array $m) use ($css): string {
+                    $tagText = $m[0];
+
+                    /*
+                     * An editor who styled one paragraph by hand meant it, so
+                     * theirs is written after ours and wins the properties it
+                     * names. Ours still supplies everything they left out —
+                     * which, for a paragraph they only recoloured, is the font
+                     * and the line height.
+                     */
+                    if (preg_match('/\sstyle=(["\'])(.*?)\1/i', $tagText, $s)) {
+                        return str_replace($s[0], ' style="'.$css.' '.$s[2].'"', $tagText);
+                    }
+
+                    return substr($tagText, 0, -1).' style="'.$css.'">';
+                },
+                $html
+            );
+        }
+
+        return $html;
+    }
+
+    /**
      * The 1x1 that reports the message was opened.
      *
      * Worth being honest about in the admin, and the reason the number gets a
