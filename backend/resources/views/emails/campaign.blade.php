@@ -69,6 +69,18 @@
          hiding it is a zero-size element, which is what our filter scored. */
       .mast-logo { display:block !important; width:100% !important; }
       .mast-line { display:block !important; width:100% !important; text-align:left !important; padding:9px 0 0 !important; }
+
+      /* Two columns that become one, for a body built out of table cells.
+         A 600px layout is not narrowed by a phone, it is zoomed out to fit —
+         which puts 15px text at about 8px and makes the whole message a
+         picture of an email rather than one. Nothing here is required: a
+         client that drops the stylesheet shows the desktop arrangement,
+         which is legible, just smaller. */
+      .st      { display:block !important; width:100% !important; max-width:100% !important; }
+      .st-img  { width:100% !important; height:auto !important; max-width:100% !important; }
+      .st-gap  { display:block !important; height:14px !important; line-height:14px !important; }
+      .st-pad  { padding:18px 20px !important; }
+      .st-big  { font-size:52px !important; line-height:54px !important; }
     }
   </style>
 </head>
