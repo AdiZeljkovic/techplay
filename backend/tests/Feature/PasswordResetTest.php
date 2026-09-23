@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Notifications\ResetPasswordNotification as ResetPassword;
+use App\Notifications\VerifyEmailNotification;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -44,6 +46,56 @@ class PasswordResetTest extends TestCase
             ->assertOk();
 
         Notification::assertSentTo($user, ResetPassword::class);
+    }
+
+    public function test_a_refusal_from_the_mail_server_does_not_lock_the_member_out(): void
+    {
+        /*
+         * What happened on 21 September 2026.
+         *
+         * The mail was sent inside the request. Our own Postfix was still
+         * refusing — a newsletter two hours earlier had used up its quota —
+         * and the exception came back out of the controller as a 500. The
+         * token was written, no mail went, and nothing ever tried again: a
+         * member who had forgotten their password was locked out by a campaign
+         * they had nothing to do with.
+         *
+         * Queued, the request no longer carries the send at all, so a refusal
+         * is the queue's problem and it retries. The assertion is on the
+         * contract that makes that true.
+         */
+        $this->assertInstanceOf(
+            ShouldQueue::class,
+            new ResetPassword('token'),
+            'the reset mail is sent inside the request again, so one refusal loses it for good'
+        );
+
+        $notification = new ResetPassword('token');
+
+        // Every attempt has to land while the token is still valid. Delivering
+        // a mail whose link has already expired is worse than not delivering.
+        $window = (int) config('auth.passwords.users.expire', 60) * 60;
+        $this->assertLessThan(
+            $window,
+            array_sum($notification->backoff),
+            'the last retry arrives after the reset link has expired'
+        );
+
+        Notification::fake();
+
+        $user = User::factory()->create(['email' => 'locked@example.com']);
+
+        $this->postJson('/api/v1/auth/forgot-password', ['email' => 'locked@example.com'])
+            ->assertOk();
+
+        Notification::assertSentTo($user, ResetPassword::class);
+    }
+
+    public function test_the_confirmation_mail_is_queued_too(): void
+    {
+        // The other mail whose loss locks somebody out of their own account:
+        // without it a registration cannot be completed at all.
+        $this->assertInstanceOf(ShouldQueue::class, new VerifyEmailNotification);
     }
 
     public function test_an_unknown_address_gets_the_same_answer_as_a_known_one(): void

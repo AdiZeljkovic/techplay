@@ -4,6 +4,8 @@ namespace App\Notifications;
 
 use App\Models\MailTemplate;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
@@ -13,9 +15,30 @@ use Illuminate\Notifications\Messages\MailMessage;
  * are the framework's, and the URL is still built by the closure registered in
  * AppServiceProvider so the link keeps pointing at the frontend rather than at
  * the API.
+ *
+ * Queued, which it was not until 23 September 2026.
+ *
+ * Sent inside the request, one refusal from the mail server was the end of it:
+ * the exception came back out of the controller as a 500, the token stayed in
+ * the table, and nothing ever tried again. It happened on 21 September at
+ * 15:05 — two hours after a newsletter had used up our own Postfix quota, so
+ * a member who had forgotten their password was locked out by a campaign they
+ * had nothing to do with. See [[project-techplay-mail-kvota]].
+ *
+ * The retries are deliberately short of the token's own hour: attempts land at
+ * 0, 1, 6 and 21 minutes, so the last one still carries a link that works. A
+ * longer backoff would deliver a mail whose button is already dead, which is
+ * worse than not delivering it.
  */
-class ResetPasswordNotification extends ResetPassword
+class ResetPasswordNotification extends ResetPassword implements ShouldQueue
 {
+    use Queueable;
+
+    public int $tries = 4;
+
+    /** @var array<int, int> */
+    public array $backoff = [60, 300, 900];
+
     public $notifiable = null;
 
     public function toMail($notifiable)

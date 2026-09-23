@@ -4,6 +4,8 @@ namespace App\Notifications;
 
 use App\Models\MailTemplate;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
@@ -16,9 +18,24 @@ use Illuminate\Notifications\Messages\MailMessage;
  *
  * The signed URL, its expiry window and the hash of the address all still come
  * from VerifyEmail::verificationUrl().
+ *
+ * Queued, for the same reason the reset mail is — see
+ * ResetPasswordNotification. Sent inside the request, one refusal from the
+ * mail server turned a registration into a 500 with no confirmation mail ever
+ * following, and these two are the only mails on the site whose loss locks
+ * somebody out of their own account.
+ *
+ * Retries stop well inside the link's hour: 0, 1, 6 and 21 minutes.
  */
-class VerifyEmailNotification extends VerifyEmail
+class VerifyEmailNotification extends VerifyEmail implements ShouldQueue
 {
+    use Queueable;
+
+    public int $tries = 4;
+
+    /** @var array<int, int> */
+    public array $backoff = [60, 300, 900];
+
     protected function buildMailMessage($url): MailMessage
     {
         $minutes = config('auth.verification.expire', 60);
