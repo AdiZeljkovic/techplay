@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Library, Trophy, Gamepad2, ArrowRight } from "lucide-react";
+import useSWR from "swr";
+import { Library, Trophy, Gamepad2, ArrowRight, Gift, Users, CalendarClock } from "lucide-react";
+import axios from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
 
 /**
@@ -34,13 +36,76 @@ const OFFER = [
     { icon: Gamepad2, text: "A record of what you finished, and what you thought of it" },
 ];
 
+interface ActiveGiveaway {
+    title: string;
+    slug: string;
+    featured_image: string | null;
+    prize?: { name?: string | null } | null;
+    timing?: { ends_at?: string | null; is_active?: boolean; has_ended?: boolean } | null;
+    stats?: { total_entries?: number | null } | null;
+}
+
+const fetcher = (url: string) => axios.get(url).then((r) => r.data);
+
+/**
+ * The giveaway that is running, if one is.
+ *
+ * Asked for only when there is a stranger to show it to: the key is null while
+ * auth is still being restored and for anybody already signed in, so a member
+ * reading an article costs no request at all. They are also the readers who
+ * make every other call on the page — /auth/me, notifications, the rest — and
+ * the API's limit is counted per person.
+ *
+ * A failure is silence, not an error. If this request never answers, the panel
+ * below is what a reader sees, which is the thing it would have seen anyway.
+ */
+function useActiveGiveaway(enabled: boolean) {
+    const { data } = useSWR<{ data?: ActiveGiveaway[] }>(
+        enabled ? "/giveaways?status=active" : null,
+        fetcher,
+        { revalidateOnFocus: false, dedupingInterval: 300_000, shouldRetryOnError: false }
+    );
+
+    const first = data?.data?.[0];
+
+    // The server is asked for active ones, and it is also asked again here.
+    // `status=active` is a filter we send, not a promise we were given, and a
+    // finished giveaway advertised on every article is the failure this whole
+    // component is arranged to make impossible.
+    if (!first || first.timing?.has_ended || first.timing?.is_active === false) return null;
+
+    return first;
+}
+
 export default function JoinPrompt({ variant = "panel" }: { variant?: "panel" | "inline" }) {
     const { isAuthenticated, isLoading } = useAuth();
+    const giveaway = useActiveGiveaway(!isLoading && !isAuthenticated);
 
     // Auth is restored from localStorage after mount, so for one frame a signed-
     // in reader looks signed out. Rendering through that frame would flash an
     // invitation to join at somebody who joined months ago.
     if (isLoading || isAuthenticated) return null;
+
+    /*
+     * A giveaway takes the slot while one is running, and hands it back when it
+     * is not.
+     *
+     * Replacing this panel outright was the obvious way to do it and the wrong
+     * one: the GTA 6 draw closes on 20 October, and a swap made by hand is a
+     * swap somebody has to remember to undo. On 21 October every article on the
+     * site would have been inviting readers into a giveaway that had finished.
+     *
+     * Nothing is lost by making it conditional, either. Entering requires an
+     * account — the enter endpoint is behind auth — so the giveaway asks a
+     * stranger for exactly what the panel below asks for, and asks it with a
+     * prize attached rather than a feature list.
+     */
+    const g = giveaway;
+    const ends = g?.timing?.ends_at ? new Date(g.timing.ends_at) : null;
+    const endsLabel = ends
+        ? ends.toLocaleDateString("en-GB", { day: "numeric", month: "long" })
+        : null;
+    const entries = g?.stats?.total_entries ?? 0;
 
     /* The slim one, between paragraphs.
      *
@@ -49,6 +114,27 @@ export default function JoinPrompt({ variant = "panel" }: { variant?: "panel" | 
      * exactly why it has to stay a single quiet line — an interruption that
      * earns its place by being small. */
     if (variant === "inline") {
+        if (g) {
+            return (
+                <Link
+                    href={`/giveaway/${g.slug}?from=article`}
+                    className="group not-prose my-8 flex items-center gap-3 rounded-[14px] border border-[color-mix(in_srgb,var(--accent)_28%,transparent)] bg-[color-mix(in_srgb,var(--accent)_7%,var(--surface-1))] px-4 py-3.5 transition-colors duration-300 hover:border-[color-mix(in_srgb,var(--accent)_55%,transparent)]"
+                >
+                    <span className="min-w-0 flex-1">
+                        <span className="block font-display text-[9.5px] font-black uppercase tracking-[0.16em] text-[var(--accent)]">
+                            Giveaway{endsLabel ? ` · ends ${endsLabel}` : ""}
+                        </span>
+                        <span className="mt-1 block text-[14px] font-semibold leading-snug text-white">
+                            {g.title}
+                        </span>
+                    </span>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white transition-transform duration-300 group-hover:translate-x-0.5">
+                        <ArrowRight className="h-4 w-4" />
+                    </span>
+                </Link>
+            );
+        }
+
         return (
             <Link
                 href="/register?from=article"
@@ -66,6 +152,94 @@ export default function JoinPrompt({ variant = "panel" }: { variant?: "panel" | 
                     <ArrowRight className="h-4 w-4" />
                 </span>
             </Link>
+        );
+    }
+
+    if (g) {
+        /* The same panel, with the prize where the feature list was.
+           Its own art rather than Buffy, taken from the giveaway itself, so the
+           next one needs no code — only a giveaway in the admin. */
+        const facts = [
+            endsLabel && { icon: CalendarClock, text: `Closes ${endsLabel}` },
+            entries > 0 && { icon: Users, text: `${entries} entered so far` },
+            g.prize?.name && { icon: Gift, text: g.prize.name },
+        ].filter(Boolean) as { icon: typeof Gift; text: string }[];
+
+        return (
+            <section className="not-prose relative my-10 overflow-hidden rounded-[var(--radius-panel)] border border-[color-mix(in_srgb,var(--accent)_22%,transparent)] bg-[var(--surface-1)]">
+                <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{ background: "radial-gradient(90% 120% at 8% 0%, color-mix(in srgb, var(--accent) 13%, transparent) 0%, transparent 62%)" }}
+                />
+
+                {g.featured_image && (
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-y-0 right-0 hidden sm:block w-[168px] md:w-[210px] lg:w-[258px]"
+                        style={{
+                            WebkitMaskImage: "linear-gradient(to right, transparent 0%, #000 42%)",
+                            maskImage: "linear-gradient(to right, transparent 0%, #000 42%)",
+                        }}
+                    >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                            src={g.featured_image}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover object-center select-none"
+                        />
+                    </div>
+                )}
+
+                <div className="relative p-5 sm:p-7 sm:max-w-[calc(100%-150px)] md:max-w-[calc(100%-190px)] lg:max-w-[calc(100%-236px)]">
+                    <p className="font-display text-[10px] font-black uppercase tracking-[0.18em] text-[var(--accent)]">
+                        Giveaway{endsLabel ? ` · closes ${endsLabel}` : ""}
+                    </p>
+
+                    <h2 className="mt-2.5 font-display text-[22px] sm:text-[27px] font-black leading-[1.12] tracking-[-0.5px] text-white text-balance">
+                        {g.title}
+                    </h2>
+
+                    <p className="mt-2.5 max-w-[54ch] text-[14px] leading-relaxed text-[var(--ink-low)]">
+                        Free to enter with a TechPlay account &mdash; and the account is what
+                        keeps your library, your XP and your finished games in one place.
+                    </p>
+
+                    {facts.length > 0 && (
+                        <ul className="mt-5 flex flex-col gap-3">
+                            {facts.map(({ icon: Icon, text }) => (
+                                <li key={text} className="flex items-start gap-3">
+                                    <span className="mt-px flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-[8px] border border-[color-mix(in_srgb,var(--accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)]">
+                                        <Icon className="h-[13px] w-[13px] text-[var(--accent)]" />
+                                    </span>
+                                    <span className="text-[13.5px] leading-snug text-[var(--ink-mid)]">{text}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
+                    <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2.5">
+                        <Link
+                            href={`/giveaway/${g.slug}?from=article`}
+                            className="inline-flex h-11 items-center justify-center gap-2 rounded-[10px] bg-[var(--accent)] px-6 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-white transition-[filter] duration-300 hover:brightness-110"
+                        >
+                            Enter the giveaway <ArrowRight className="h-4 w-4" />
+                        </Link>
+                        <Link
+                            href="/login?from=article"
+                            className="inline-flex h-11 items-center justify-center rounded-[10px] border border-white/[0.14] px-5 font-display text-[12px] font-bold uppercase tracking-[0.08em] text-white/85 transition-colors duration-300 hover:bg-white/[0.06] hover:text-white"
+                        >
+                            I already have an account
+                        </Link>
+                    </div>
+
+                    <p className="mt-3.5 text-[11.5px] text-[var(--ink-faint)]">
+                        Free to enter. The account takes a minute.
+                    </p>
+                </div>
+            </section>
         );
     }
 
