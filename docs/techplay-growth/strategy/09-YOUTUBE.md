@@ -79,7 +79,7 @@ Rules that apply to every method:
 
 ### 4.2 Show specs
 
-**L1 Release Radar.** One month of dates in release order, grouped by week, with platform chips and a confidence label (confirmed by publisher / reported / rumour) taken straight from the calendar research format [R05 §1]. Rumours are either cut or shown with a RUMOUR stamp; nothing low-authority is presented as a date. Visuals: calendar screen capture for transitions, one card per game with official key art, and a "still TBA" card for window-only items. VO: EIC. Length target 8–10 min (under 15 min, see check C-06). Published on the last working day before the month starts.
+**L1 Release Radar.** One month of dates in release order, grouped by week, with platform chips and a confidence label (confirmed by publisher / reported / rumour) taken straight from the calendar research format [R05 §1]. Rumours are either cut or shown with a RUMOUR stamp; nothing low-authority is presented as a date. Visuals: calendar screen capture for transitions, one card per game with official key art, and a "still TBA" card for window-only items. VO: EIC. Length target 8–10 min (under 15 min, see check C-06). Published in the last week before the month starts.
 
 **L2 In Order.** The order games were released in, the order their stories happen in, where each one can be played today (from each game's TechPlay page on recording day), and the two a newcomer should actually play. Built from the series page (C63) so the video and the page agree. The GTA pilot (§9) sets the pattern; Final Fantasy VII before Revelation (8 Apr 2027) is the Q1 candidate [R05 §3; R18].
 
@@ -265,7 +265,7 @@ Not used on countdown cards: the 30 fps report, GTA Online in 2027, Switch 2, sa
 |---|---|---|---|---|---|---|---|---|
 | 1 | Release Radar: November 2026 — GTA VI and the rest of the month | Long | 8–10 min | `/calendar`, R05 §1 | "game release dates november 2026" [R09 EA-103]; S1 | Fri 30 Oct | Reminders on `/calendar` | Grid |
 | 2 | Every GTA Game in Order Before GTA VI | Long | 12–15 min | Series page, GTA 6 hub | "gta games in order" [R09 EB-020]; S4 | Thu 12 Nov | Series page; remind me on `/games/grand-theft-auto-vi` | Grid |
-| 3 | Release Radar: December 2026 — The Game Awards and 10 dates | Long | 8–10 min | `/calendar` | S1 | Fri 27 Nov (gated) | `/calendar` | Grid |
+| 3 | Release Radar: December 2026 — The Game Awards and the rest of the month | Long | 8–10 min | `/calendar` | S1 | Fri 27 Nov (gated) | `/calendar` | Grid |
 | 4 | Release Radar: January 2027 | Long | 8–10 min | `/calendar`, Q1 list [R05 §2] | S1 | Mon 28 Dec (gated) | `/calendar` | Grid |
 | 5 | Every Final Fantasy VII Game in Order Before Revelation | Long | 12–15 min | Series page | "final fantasy games in order" [R09 EB-003]; 8 Apr 2027 | Q1 2027 candidate | Series page | Q1 |
 | 6 | Out this week: Gears of War: E-Day, Dragon's Dogma 2: Dark Arisen (5–11 Oct) | Short | 35 s | Calendar | S1 | Mon 5 Oct | `/calendar` | Grid |

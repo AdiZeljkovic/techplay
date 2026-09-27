@@ -311,6 +311,40 @@ If Search Console shows no Discover report yet, record "no Discover data" as the
 
 ---
 
+## 13. Q4 Discover-intended slate
+
+The pieces EIC marks "Discover" each week, drawn from file 13's grid and the spine's campaign dates. Each goes through the §10.1 checklist. Titles are working H1s; pillar in brackets.
+
+| Week | Dates | Discover-intended pieces |
+|---|---|---|
+| 40 | 28 Sep–4 Oct | Steam Autumn Sale: finding the wishlist games that are discounted (P1, 1 Oct); Xbox's September cuts, studio by studio (P5, 2 Oct); GTA 6 confirmed-or-rumour ledger, first edition (P4, 1 Oct); Will my PS5 discs still work? (P1) |
+| 41 | 5–11 Oct | WoW patch 12.1.5, predicted for early October (P3, 5 Oct); Release Congestion Index 2026 (P5, 7 Oct); Gears of War: E-Day Verdict (8 Oct); Secure Boot and TPM 2.0 for anti-cheat games (P2, 9 Oct) |
+| 42 | 12–18 Oct | Modern Warfare 4 launch guide (P1, 12 Oct); Game studios closed in 2026 tracker (P5, 14 Oct); GTA 6 release time by region (P4, 14 Oct); Shader compilation stutter fixes (P2, 16 Oct) |
+| 43 | 19–25 Oct | Steam Next Fest demo tracker (P1, 19 Oct); GTA 6 cars and their real-world models (P4, 21 Oct); Modern Warfare 4 on Switch 2 (P1, 23 Oct); Windows 11 gaming settings checklist (P2, 23 Oct) |
+| 44 | 26 Oct–1 Nov | Minecraft on Switch 2: do you pay again? (P1, 27 Oct); World Atlas of Game Studios and the Balkan census (P5, 28 Oct); WoW: Forever, Classic or Midnight? (P3, 28 Oct); Phantom Blade Zero Verdict (29 Oct) |
+| 45 | 2–8 Nov | Why GTA 6 took 13 years (P5, 4 Nov); WoW: Forever launch-day notes (P3, 4 Nov, reported date); GTA 6 editions compared (P4) |
+| 46 | 9–15 Nov | The $80 Tracker (P5, 11 Nov); `/mmo` hub launch piece: the best MMOs to play in 2026 (P3, 10 Nov); Pikmin 4 Switch 2 Edition: worth the upgrade? (P1, 12 Nov); GTA 6 frame rate and resolution, what's confirmed (P4) |
+| 47 | 16–22 Nov | GTA 6 launch week (C10): release time live, launch-night live URL, "what to do first" guide, map progress tracker (P4); Game Awards prediction league opens (18 Nov) |
+| 48 | 23–29 Nov | Best value games of 2026, cost per hour (P5, 23 Nov); What a real Black Friday games deal looks like in 2026 (P1); GTA 6 Verdict (EIC) |
+| 49 | 30 Nov–6 Dec | Cyber Monday deals checked against price history (P1, 30 Nov); Dawn of War IV Verdict (3 Dec); Monster Hunter Wilds on Switch 2 (P1, 4 Dec) |
+| 50 | 7–13 Dec | Achievement difficulty by genre, 500 Steam games (P5, 8 Dec); The Game Awards 2026 live (10 Dec); Path of Exile 2 1.0: what changes (11 Dec, reported) |
+| 51 | 14–20 Dec | Your 2026 in Games launch piece (C28, 14 Dec); Steam Winter Sale picks from your wishlist (P1, 17 Dec); FFXIV: Evercold, what we know (P3) |
+| 52 | 21–27 Dec | Most anticipated games of 2027, with confirmed dates (21 Dec); Just got a Switch 2? (P1, 22 Dec); The best games of 2026: our picks and your votes |
+| 53 | 28–31 Dec | Final Fantasy VII Remake trilogy in order, before Revelation (series page); Persona games in order, before Persona 4 Revival (series page) |
+
+## 14. First ten days
+
+| Date | Action | Owner | Hours |
+|---|---|---|---|
+| Mon 28 Sep | Mark the week-40 slate; start using the §10.1 checklist; schedule the first 08:30 and 14:30 pieces | EIC, W1 | 1 |
+| Tue 29 Sep | Check Search Console for a Discover report and a News search type; record the baseline (or "no data") | EIC | 1 |
+| Wed 30 Sep | Confirm every staff account has an `author_slug`; list real profiles for `sameAs`; draft both bios (§7.3) | EIC, W1 | 1.5 |
+| Fri 2 Oct | Preferred-source line in the first Save File (C40); pinned message in Discord `#announcements` | SC | 0.5 |
+| by Fri 2 Oct | Breadcrumbs (D-002) shipped | DEV | (C02) |
+| Mon 5 Oct | First weekly Google News RSS check logged (§11) | W1 | 0.5 |
+| by Fri 9 Oct | D-022 robots and meta; D-030 author redirects; D-003 RSS; OG image compression; Publisher Center check; `/about/ownership` (C54) | DEV, EIC | ~8 DEV, 2 EIC |
+| by Fri 9 Oct | Three DS image frames delivered | DS | 6 |
+
 ## Dependencies and open questions
 
 **Dependencies**

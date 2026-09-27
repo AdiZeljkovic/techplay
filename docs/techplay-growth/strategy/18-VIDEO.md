@@ -235,7 +235,7 @@ The `video-log` sheet has one row per output: date, franchise, platform, URL, UT
 |---|---|---|
 | w40 (28 Sep–4 Oct) | Setup: DS builds templates (~8 h across w40–w41); SC cleans channels, opens TikTok, answers policy checks, makes one unlisted test Short | No Shorts published |
 | w43 (19–25 Oct) | Next Fest Diary: three extra Shorts (Wed 21, Fri 23, Sun 25) at 45 min each; Wednesday rotation dropped; Reddit angle for OTW limited to Next Fest threads | +1.5 h |
-| w44 (26 Oct–1 Nov), w46 (9–15 Nov) | Long-form pilot edits (6 h and 8 h, see 09 §10.4); Wednesday rotation dropped; Reddit time halved | +5 h and +7 h; covered by dropping the rotation and half of C47 that week |
+| w44 (26 Oct–1 Nov), w46 (9–15 Nov) | Long-form pilot edit and upload (6.5 h and 8.5 h gross, see 09 §10.4); Wednesday rotation dropped (about 1.3 h saved); Reddit time halved | Net about +5 h and +7 h, paid for from C47 and X engagement hours that week |
 | w47 (16–22 Nov) | GTA VI launch: countdown ends; launch Shorts need the team's own play; Fix It Friday may switch to a console settings piece | Carousel for OTW replaced by a single image |
 | w52 (21–27 Dec) | Holiday week: OTW and one rotation Short only | −4 h |
 
