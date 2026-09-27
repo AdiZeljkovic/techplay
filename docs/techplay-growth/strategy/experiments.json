@@ -61,7 +61,7 @@
         "D-007"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "concurrent comparison by sign-up method",
       "status": "backlog"
     },
     {
@@ -103,7 +103,7 @@
         "D-007"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -164,7 +164,7 @@
         "D-007"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -184,7 +184,7 @@
         "D-007"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -204,7 +204,7 @@
         "D-007"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -263,7 +263,7 @@
         "D-007"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -323,7 +323,7 @@
         "D-013"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -343,7 +343,7 @@
         "D-007"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -363,7 +363,7 @@
         "D-007"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -384,7 +384,7 @@
         "D-007"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -526,7 +526,7 @@
         "C35"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -567,7 +567,7 @@
         "D-004"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "concurrent comparison (two invite codes)",
       "status": "backlog"
     },
     {
@@ -606,7 +606,7 @@
         "C37"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "pre/post (weeks 1–4 vs 5–8)",
       "status": "backlog"
     },
     {
@@ -626,7 +626,7 @@
         "C36"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -665,7 +665,7 @@
         "C35"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -743,7 +743,7 @@
         "C60"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "concurrent comparison (guides vs news, same weeks)",
       "status": "backlog"
     },
     {
@@ -762,7 +762,7 @@
         "C63"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -844,7 +844,7 @@
         "C22"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -863,7 +863,7 @@
         "D-003"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -978,7 +978,7 @@
         "C20"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "concurrent comparison (data-framed vs rewrites)",
       "status": "backlog"
     },
     {
@@ -1056,7 +1056,7 @@
         "D-009"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1075,7 +1075,7 @@
         "D-009"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1113,7 +1113,7 @@
         "C22"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1133,7 +1133,7 @@
         "D-024"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1153,7 +1153,7 @@
         "C52"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1191,7 +1191,7 @@
         "C49"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "concurrent keep-or-kill across platforms",
       "status": "backlog"
     },
     {
@@ -1211,7 +1211,7 @@
         "C49"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1249,7 +1249,7 @@
         "C50"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "concurrent comparison (long-form vs Shorts)",
       "status": "backlog"
     },
     {
@@ -1269,7 +1269,7 @@
         "D-040"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1289,7 +1289,7 @@
         "D-013"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1309,7 +1309,7 @@
         "D-028"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "concurrent comparison (same members, two emails)",
       "status": "backlog"
     },
     {
@@ -1406,7 +1406,7 @@
         "C09"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "pre/post between consecutive giveaways",
       "status": "backlog"
     },
     {
@@ -1426,7 +1426,7 @@
         "D-014"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "pre/post between consecutive giveaways",
       "status": "backlog"
     },
     {
@@ -1446,7 +1446,7 @@
         "D-007"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1465,7 +1465,7 @@
         "C09"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "pre/post between consecutive giveaways",
       "status": "backlog"
     },
     {
@@ -1484,7 +1484,7 @@
         "D-039"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1505,7 +1505,7 @@
         "D-009"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1527,7 +1527,7 @@
         "D-008"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1548,7 +1548,7 @@
         "D-031"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1569,7 +1569,7 @@
         "D-020"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1589,7 +1589,7 @@
         "D-040"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1609,7 +1609,7 @@
         "D-037"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1628,7 +1628,7 @@
         "C56"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1648,7 +1648,7 @@
         "D-008"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1669,7 +1669,7 @@
         "D-031"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1689,7 +1689,7 @@
         "C57"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1709,7 +1709,7 @@
         "C36"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1729,7 +1729,7 @@
         "C51"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1749,7 +1749,7 @@
         "D-031"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1769,7 +1769,7 @@
         "D-019"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1788,7 +1788,7 @@
         "C13"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "sequential read with R16 stop-loss",
       "status": "backlog"
     },
     {
@@ -1809,7 +1809,7 @@
         "D-016"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1828,7 +1828,7 @@
         "D-036"
       ],
       "priority": "P3",
-      "design": "pre/post",
+      "design": "matched comparison (exporters vs non-exporters)",
       "status": "backlog"
     },
     {
@@ -1849,7 +1849,7 @@
         "D-020"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1869,7 +1869,7 @@
         "D-026"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1890,7 +1890,7 @@
         "C28"
       ],
       "priority": "P1",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     },
     {
@@ -1909,7 +1909,7 @@
         "D-024"
       ],
       "priority": "P2",
-      "design": "pre/post",
+      "design": "absolute threshold, no control (volume too small)",
       "status": "backlog"
     }
   ]

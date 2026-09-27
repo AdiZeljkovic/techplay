@@ -19,7 +19,7 @@ Status: Phase 2 plan — 27 Sep 2026
 - **Owners** are role codes: EIC (40 h), ED (40 h), SC (25 h), DS (10 h), DEV (20 h).
 - **UTM** follows spine §9. Pattern: `?utm_source=<platform>&utm_medium=organic-social|community|email|push|referral|pr|creator|partner&utm_campaign=<cid>-<slug>&utm_content=<franchise>-<variant>`. Until the campaign URL helper ships (D-009), SC builds links in the shared UTM sheet.
 - **Discord links** use `https://discord.gg/wPQG9gUMXH` only. `discord.gg/techplaygg` and `discord.gg/techplay` are dead [R13]. After D-011, SC issues one invite code per campaign and logs it.
-- **Deeper plans.** Per-network files expected in the strategy set: Facebook 06, Instagram 07, TikTok 08, YouTube 09, Reddit 11, Discord 12; email/newsletter, push, PR, creators and partnerships among 17, 18 and 22–24. The number-to-topic mapping is inferred from the brief's channel order (see open questions). File 05 is the social operating system and file 10 covers X, Threads and Bluesky.
+- **Deeper plans.** `06-FACEBOOK.md`, `07-INSTAGRAM.md`, `08-TIKTOK.md`, `09-YOUTUBE.md`, `11-REDDIT.md`, `12-DISCORD.md`, `13-SEO-CONTENT.md`, `14-DISCOVER-NEWS.md`, `17-NEWSLETTER-EMAIL.md`, `18-VIDEO.md`, `19-GTA6.md`, `22-DIGITAL-PR.md`, `23-CREATORS.md`, `24-PARTNERSHIPS.md`, `25-GIVEAWAYS.md`, `26-PAID-MEDIA.md`, `30-ANALYTICS.md`. File 05 is the social operating system and file 10 covers X, Threads and Bluesky. Where a per-network file sets a different cadence, the hours in §2 must be re-checked, because SC has 15 minutes of slack.
 - **Evidence limits.** Platform ranking documentation for YouTube, TikTok, Instagram, Facebook and Threads was not fetched in Phase 1 [R07, R19]. Image sizes and link handling on those platforms are standard specs to verify before templates are locked; they are not research findings.
 
 ## 1. Channel map
@@ -97,7 +97,7 @@ Per-channel hours (non-zero only): Search 3.5 · Discover 1.5 · News 0.5 · Bin
 
 ## 3. Channel sections
 
-### 3.1 Search and aggregators
+### 3.1 Search and aggregators (detail: 13-SEO-CONTENT.md, 14-DISCOVER-NEWS.md)
 
 #### 1. Google Search — PRIMARY
 
@@ -159,7 +159,7 @@ Per-channel hours (non-zero only): Search 3.5 · Discover 1.5 · News 0.5 · Bin
 | Work | None this quarter. EIC re-checks the route once in Q1 2027 and records apply / do not apply. |
 | Do not | Spend time before the route is documented. |
 
-### 3.2 Meta: Facebook
+### 3.2 Meta: Facebook (detail: 06-FACEBOOK.md)
 
 The Facebook Page and Instagram account exist behind login walls; follower counts are UNVERIFIED [R02]. Facebook link reach is widely reported as weak but was not re-checked [R07]. The spine ranks the Page EXPERIMENTAL (R07 said LOW PRIORITY; see §5).
 
@@ -212,7 +212,7 @@ The Facebook Page and Instagram account exist behind login walls; follower count
 | Metric / Workflow | Views and link taps / cross-post toggle in MBS (15 min a week of checks) |
 | Do not | Make Facebook-only Stories. |
 
-### 3.3 Meta: Instagram
+### 3.3 Meta: Instagram (detail: 07-INSTAGRAM.md)
 
 #### 10. Instagram Feed (single images) — SECONDARY
 
@@ -273,7 +273,7 @@ The Facebook Page and Instagram account exist behind login walls; follower count
 | Trigger | Revisit at the 9 Nov review if carousel saves hold for six weeks. |
 | Do not | Open a channel that will go silent (the YouTube lesson [R07]). |
 
-### 3.4 Short video and YouTube
+### 3.4 Short video and YouTube (detail: 08-TIKTOK.md, 09-YOUTUBE.md, 18-VIDEO.md)
 
 TechPlay has a YouTube channel with 20 subscribers and no videos, and no TikTok [R02, R19]. R19 recommends one weekly format on one short-form platform first; the spine makes vertical video one production placed on four platforms (C49 from 5 Oct). The test answers which placement earns the most per file.
 
@@ -331,7 +331,7 @@ TechPlay has a YouTube channel with 20 subscribers and no videos, and no TikTok 
 | Why not | No presenters, no schedule [R07]. Live events run as Discord watch parties and X live threads (F20). |
 | Do not | Restream The Game Awards or publisher streams. |
 
-### 3.5 Text networks (detail in file 10)
+### 3.5 Text networks (detail: 10-X-THREADS-BLUESKY.md)
 
 #### 20. X — SECONDARY
 
@@ -373,7 +373,7 @@ TechPlay has a YouTube channel with 20 subscribers and no videos, and no TikTok 
 | Workflow | SC 45 min a week; EIC 15 min on replies. Domain handle via DNS needs approval (README §14), so DEV serves the web-file method if chosen. |
 | Do not | Post memes first or auto-crosspost from X. |
 
-### 3.6 Communities
+### 3.6 Communities (detail: 11-REDDIT.md, 12-DISCORD.md)
 
 #### 23. Reddit — SECONDARY (contribution)
 
@@ -452,7 +452,7 @@ Monitoring only; rules pages were blocked in research [R13]. No brand posting. C
 
 #### 28. Snapchat — NOT NOW. No realistic publisher route [R07].
 
-### 3.8 Owned channels
+### 3.8 Owned channels (detail: 17-NEWSLETTER-EMAIL.md, 16-ACTIVATION-RETENTION.md)
 
 #### 32. Email (lifecycle and alerts) — PRIMARY
 
@@ -520,7 +520,7 @@ Never ask for notification permission on page load. None of 15 publishers checke
 | Workflow | DEV per backlog; SC owns alert copy (15 min a week). |
 | Do not | Send guilt-trip notifications [R13]. |
 
-### 3.9 Earned channels
+### 3.9 Earned channels (detail: 22-DIGITAL-PR.md, 23-CREATORS.md, 24-PARTNERSHIPS.md)
 
 #### 37. Digital PR — SECONDARY
 
@@ -609,6 +609,6 @@ No budget line and no measurement until C03 is done. Paid tests are gated to Met
 - **/newsletter (D-012)** must be live by Fri 2 Oct; otherwise the first issue's capture CTA points to the /news sidebar form.
 - **D-011 invite attribution** decides whether discord_join can be read by campaign; until then use discord_click.
 - **D-020 map provenance:** no channel presents the 1,058-location map as TechPlay's own dataset until gtadb.org attribution is settled.
-- **Strategy file numbering:** the per-network file numbers in §0 are inferred from the brief's channel order. Confirm against the strategy index before cross-links are published.
+- **Consistency with per-network files:** 06–09, 11, 12, 17, 18 and 22–24 were written in parallel. Their posting frequencies must sum to no more than SC's 25 h and DS's 10 h; any excess is resolved in favour of the PRIMARY channels.
 - **Platform specs** (image sizes, link handling in captions, Community tab eligibility, TikTok scheduling) were not researched [R07, R19]; SC verifies each in platform help during week 1.
 - **Time zones:** Sarajevo moves from CEST to CET on 25 Oct and the US leaves daylight time on 1 Nov, so the ET offset is 5 hours from 25 Oct to 31 Oct and 6 hours otherwise. Scheduled US-slot posts must be checked that week.

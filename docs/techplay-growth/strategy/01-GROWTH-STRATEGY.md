@@ -87,7 +87,7 @@ Each bet has a reason from the research, the campaigns that carry it, and how we
 - **Proof by 31 Dec:** organic clicks back to 30–60 a day (TARGET; 100 a day is the stretch) with at least half going to pages that did not exist or were rebuilt after 28 Sep.
 
 ### Bet 4 — Earn links with data only TechPlay holds
-- **Why:** the sites that earn links without buying them own a dataset others need to cite [R14]. TechPlay holds release dates with precision flags, 57,630 studios with country and ownership, 61,034 tombstones, series tables and critic scores [R14].
+- **Why:** the sites that earn links without buying them own a dataset others need to cite [R14]. TechPlay holds release dates with precision flags, 57,630 studios with country and ownership, series tables and critic scores [R14]. The 61,034 game tombstones record TechPlay's own clean-ups, not store delistings, so they are not a PR dataset (22).
 - **Carried by:** C20, C21, C22, C23, C24, C25, C26, C27 and C48 (Reddit data posts).
 - **Proof by 31 Dec:** at least 10 referring domains from editorial sources across the campaigns (TARGET); every campaign published with a method note and CSV; zero corrections needed on numbers.
 

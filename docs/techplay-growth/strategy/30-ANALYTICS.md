@@ -399,6 +399,7 @@ FROM analytics_events WHERE is_bot = false AND occurred_at >= now() - interval '
 **Q-10 D7 / D30 retention of A2 members.** For each A2 member, any action in Q-01's union on days 6–8 (D7) or 28–32 (D30) after `users.created_at`. Report `n` and `%`.
 
 **Q-11 Comments.** `SELECT date_trunc('week', created_at), count(*) FILTER (WHERE status = 'approved'), count(DISTINCT user_id) FILTER (WHERE status = 'approved') FROM comments GROUP BY 1;`
+
 **Q-11b Moderation queue.** Median and max of `updated_at - created_at` for comments that are no longer `pending` and were created as pending (needs `approved_at`, added under D-007; until then `updated_at` is the proxy).
 
 **Q-12 Giveaway-only share.** Accounts whose first `giveaway_entries.created_at` is within 1 hour of `users.created_at` (until `signup_from` exists), with no row in Q-01's union in the 14 days after creation, ÷ all such accounts.

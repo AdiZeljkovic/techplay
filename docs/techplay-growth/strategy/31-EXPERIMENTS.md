@@ -38,6 +38,8 @@ To detect a lift from 2% to 3% that is 7.84 × (0.0196 + 0.0291) ÷ 0.0001 ≈ *
 | **Matched page groups** (difference in differences) | SEO and Discover, where the unit is a page (X-036, X-039, X-040, X-047) | Uneven groups: match on impressions and page type before treating |
 | **Sequential reading with a stop rule** | Paid tests, with the R16 stop-losses | Peeking: only stop-losses end a test early; success waits for the full window |
 | **Keep-or-kill** | Channels (X-054, X-060) | Sunk cost: the threshold is written before the first post |
+| **Concurrent comparison** | Two things live at the same time, read with one yardstick (X-003 sign-up methods, X-028 invite placements, X-066 two emails) | Different audiences per arm: report who each arm reached |
+| **Absolute threshold, no control** | New surfaces with no prior to compare against (X-005, X-019, X-091) | Crediting the change for background growth: set the threshold high and check site-wide traffic in the same weeks |
 
 Three habits follow:
 
@@ -76,7 +78,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Non-inferiority: post-window completion rate ≥ 0.8× the pre-window rate. A lower result is recorded, not reverted.
 - **Expected learning:** Shows that removing false social proof costs nothing measurable; the change ships regardless because it is a correctness fix. **Dependencies:** D-001, C01.
 
-**X-003 · Steam as a sign-in method** · P1 · Effort M · 28 days · Design: pre/post
+**X-003 · Steam as a sign-in method** · P1 · Effort M · 28 days · Design: concurrent comparison by sign-up method
 - **Hypothesis:** A 'Sign in through Steam' button produces A2 Shelved members at ≥ 2× the rate of email sign-ups, because the library imports on the first click [R11 §5]. **Audience:** /register visitors and the onboarding wizard; S2 Multi-platform Collectors, S3 PC Tinkerers.
 - **Change:** D-015 Steam OpenID login creating the account from the SteamID64 and starting the import job; email asked for later (X-016). **Metric:** registration_complete (method=steam); library_connected within 7 days by method.
 - **Success threshold:** ≥ 10 Steam sign-ups in 28 days AND their 7-day A2 rate ≥ 2× the email-method A2 rate in the same window.
@@ -88,7 +90,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** ≥ 40% of redirected registrants act within 60 minutes (pre-period share from a users/comments/user_games timestamp query), minimum 10 registrants.
 - **Expected learning:** How much intent is lost at the registration hop today. **Dependencies:** D-014, D-016, D-007.
 
-**X-005 · Guest 'Remind me' on game and calendar pages** · P1 · Effort M · 28 days · Design: pre/post
+**X-005 · Guest 'Remind me' on game and calendar pages** · P1 · Effort M · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Game pages are the largest sign-up surface (56,355 URLs indexed [R03]); a guest 'Remind me' that opens a sign-up modal and returns to the game converts better than today's login link. **Audience:** Guests on unreleased game pages, /calendar and /calendar/[slug].
 - **Change:** D-016 modal ('Tell me when {game} is out. Free account, one click with Google or Discord.'), C45. **Metric:** registration_complete (from=game|calendar); reminder_set in the first session.
 - **Success threshold:** ≥ 20 registrations with from=game or from=calendar in 28 days AND ≥ 70% of them have reminder_set in the same session.
@@ -106,19 +108,19 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** ≥ 90% verify within 72 h (last reading: 50 of 55 confirmed, undated window [R12]) AND prune count does not rise.
 - **Expected learning:** Whether the inbox gate loses people through confusion or through a missing mail. **Dependencies:** D-014, D-007.
 
-**X-008 · Newsletter verify page offers an account** · P2 · Effort S · 42 days · Design: pre/post
+**X-008 · Newsletter verify page offers an account** · P2 · Effort S · 42 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** The moment after double opt-in is warm; a pre-filled 'make it an account' with Google one-tap converts ≥ 10% of new verified subscribers. **Audience:** People landing on /newsletter/verify after clicking the confirmation link.
 - **Change:** Panel on app/newsletter/verify/page.tsx: 'You're on the list. Want your games in one place too?' with Google/Discord buttons and email pre-filled. **Metric:** registration_complete (from=newsletter-verify) ÷ newsletter_verified.
 - **Success threshold:** ≥ 10% of newly verified subscribers register within 10 minutes, measured over ≥ 50 verifications.
 - **Expected learning:** Whether newsletter and account are one audience or two. **Dependencies:** D-012, D-007.
 
-**X-009 · Leaderboard empty state becomes an invitation** · P3 · Effort S · 28 days · Design: pre/post
+**X-009 · Leaderboard empty state becomes an invitation** · P3 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Replacing 'Nobody has moved yet this week' with 'Be the first this week: connect Steam and your completions count' turns an empty page into a sign-up path. **Audience:** Guests on /leaderboard.
 - **Change:** Copy and CTA on the empty state (D-029 hides zero-value modules elsewhere). **Metric:** cta_click (cta_id=leaderboard-empty-connect); registration_complete (from=leaderboard).
 - **Success threshold:** ≥ 5 registrations with from=leaderboard in 28 days (pre-period assumed 0; nothing measured it).
 - **Expected learning:** Whether competitive framing works at a population of 60. **Dependencies:** D-029, D-007.
 
-**X-010 · Buffy replies with a one-click account link** · P1 · Effort S · 28 days · Design: pre/post
+**X-010 · Buffy replies with a one-click account link** · P1 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Unlinked Discord members who use /daily, /profile or /library register at ≥ 20% when the bot answers with a Discord OAuth link that lands on the shelf [R11 row 20]. **Audience:** Discord members with no linked TechPlay account who run a member command.
 - **Change:** Bot reply footer: 'This works better with your library behind it. Link in one click:' → Discord OAuth → /profile shelf. **Metric:** registration_complete (method=discord, from=discord) ÷ distinct unlinked command users.
 - **Success threshold:** ≥ 20% of unlinked members who trigger a command register within 14 days, minimum 10 distinct members.
@@ -138,7 +140,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** 7-day A2 rate ≥ 1.5× the 21-day pre-window AND ≥ 25 badges awarded by 31 Oct. The count shown must be live; no placeholder.
 - **Expected learning:** Whether scarcity that is true moves activation without inflating anything. **Dependencies:** C68, D-007.
 
-**X-013 · Library-worth card straight after import** · P2 · Effort M · 28 days · Design: pre/post
+**X-013 · Library-worth card straight after import** · P2 · Effort M · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Showing 'Your Steam library: N games, $X at today's prices' right after import increases sharing and 7-day return. **Audience:** Members completing a Steam import (US Steam prices only [R01]).
 - **Change:** Card on the import-complete screen with Save/Share (D-024 share card route). **Metric:** share_card_generated (type=library-worth) ÷ library_connected (platform=steam); A3 within 7 days.
 - **Success threshold:** ≥ 15% of Steam importers generate a card AND ≥ 3 registrations arrive through card links (from=share-card) in 28 days.
@@ -156,19 +158,19 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Share completing all three ≥ 2× the share who did the same three things in the 28-day pre-window.
 - **Expected learning:** Whether choice overload is part of the activation gap (3 of 55 added a game [R12]). **Dependencies:** D-007.
 
-**X-016 · Ask Steam-only accounts for email at the reminder** · P2 · Effort S · 28 days · Design: pre/post
+**X-016 · Ask Steam-only accounts for email at the reminder** · P2 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Asking 'Where should we send the release reminder?' at the moment of reminder_set gets an email from ≥ 50% of Steam-only accounts [R11 §5]. **Audience:** Accounts created through Steam sign-in with no email.
 - **Change:** Inline email field in the reminder confirmation; email verified by link. **Metric:** Email attached ÷ Steam-only accounts that set a reminder.
 - **Success threshold:** ≥ 50% attach and verify an email, minimum 10 Steam-only reminder setters.
 - **Expected learning:** Whether Steam sign-in accounts can become reachable without a gate. **Dependencies:** D-015, D-013.
 
-**X-017 · Gamer DNA card at ten shelf items** · P2 · Effort S · 28 days · Design: pre/post
+**X-017 · Gamer DNA card at ten shelf items** · P2 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Prompting the Gamer DNA share card once a member reaches ten shelf items produces shares that bring registrations. **Audience:** Members crossing ten user_games rows.
 - **Change:** One-time prompt with the D-024 card and Save/Share. **Metric:** share_card_generated (type=gamer-dna); registration_complete (from=share-card).
 - **Success threshold:** ≥ 20% of eligible members generate a card AND ≥ 5 registrations via card links in 28 days.
 - **Expected learning:** Whether identity cards travel for TechPlay the way recaps do elsewhere [R11 §2.5]. **Dependencies:** D-024, D-007.
 
-**X-018 · Backlog Advisor guest mode** · P2 · Effort M · 28 days · Design: pre/post
+**X-018 · Backlog Advisor guest mode** · P2 · Effort M · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Letting guests type five games and get a pick, then offering 'import your backlog instead of typing it', converts better than the sign-in wall. **Audience:** Guests on /backlog-advisor (today a SignInWall).
 - **Change:** D-037 guest mode; result screen ends with Steam/Google sign-up that imports. **Metric:** tool_run (tool=backlog, guest); registration_complete (from=advisor).
 - **Success threshold:** ≥ 100 guest runs AND ≥ 5% of runs followed by registration within the session.
@@ -176,7 +178,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 
 ### 4.3 Newsletter
 
-**X-019 · Homepage newsletter block** · P1 · Effort S · 28 days · Design: pre/post
+**X-019 · Homepage newsletter block** · P1 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A homepage capture block for The Save File converts at least 3 per 1,000 homepage sessions; today there is no homepage capture [R20]. **Audience:** Homepage visitors, signed out and signed in.
 - **Change:** D-012 block under the hero: 'The Save File. Fridays. The week's releases, one fix, one number. No spam, one-click unsubscribe.' **Metric:** newsletter_signup (placement=home) per 1,000 homepage sessions; newsletter_verified ÷ newsletter_signup.
 - **Success threshold:** ≥ 3 signups per 1,000 homepage sessions AND ≥ 70% verify within 72 h.
@@ -218,7 +220,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Email-only capture ≥ 2× the account variant per 1,000 game sessions AND ≥ 20% of email-only signups register within 30 days.
 - **Expected learning:** Whether asking for less (an address) beats asking for an account at the release moment. **Dependencies:** D-016, D-013, D-012.
 
-**X-026 · Newsletter line in Buffy's welcome** · P3 · Effort S · 28 days · Design: pre/post
+**X-026 · Newsletter line in Buffy's welcome** · P3 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** One line with the /newsletter link in the Discord welcome embed converts ≥ 5% of new joiners to subscribers. **Audience:** New Discord members.
 - **Change:** BuffyService welcome embed adds: 'Fridays: The Save File, the week in one email.' with utm_source=discord&utm_medium=community&utm_campaign=c35-discord-rebuild. **Metric:** newsletter_signup with utm_source=discord ÷ discord_join.
 - **Success threshold:** ≥ 5% of joiners subscribe within 28 days, minimum 40 joins.
@@ -232,7 +234,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Rate ≥ 1.5× the 21-day pre-window with ≥ 30 joiners in the post window.
 - **Expected learning:** Whether the first minute in the server decides whether people stay. **Dependencies:** C35, D-011.
 
-**X-028 · End-of-article Discord line vs sidebar widget** · P1 · Effort S · 28 days · Design: pre/post
+**X-028 · End-of-article Discord line vs sidebar widget** · P1 · Effort S · 28 days · Design: concurrent comparison (two invite codes)
 - **Hypothesis:** An end-of-article Discord line gets more clicks per 1,000 article sessions than the desktop-only sidebar widget, because the phone layout is the real one [R11]. **Audience:** Article readers.
 - **Change:** D-010 end block gains a Discord line with its own invite code; the sidebar widget gets a second code. **Metric:** discord_click (placement=article-end vs article-sidebar); discord_join by invite code.
 - **Success threshold:** Article-end ≥ 2× sidebar clicks per 1,000 sessions AND joins by code point the same way.
@@ -244,13 +246,13 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Event copy ≥ 1.5× joins per 100 clicks with ≥ 20 joins in total.
 - **Expected learning:** Whether events are the reason to join [R13]. **Dependencies:** C38, D-011.
 
-**X-030 · 'What Are You Playing?' on site and Discord together** · P2 · Effort S · 56 days · Design: pre/post
+**X-030 · 'What Are You Playing?' on site and Discord together** · P2 · Effort S · 56 days · Design: pre/post (weeks 1–4 vs 5–8)
 - **Hypothesis:** Running F11 as one prompt on Discord and the forum, cross-linked, lifts distinct participants compared with Discord alone. **Audience:** Discord members, forum readers, social followers.
 - **Change:** C37 weekly thread posted Monday in Discord and /forum with links both ways; first four weeks Discord-only, next four both. **Metric:** Distinct participants per week (Discord authors + forum repliers); comment_created on the forum thread.
 - **Success threshold:** Distinct participants in weeks 5–8 ≥ 1.3× weeks 1–4 AND the forum thread averages ≥ 5 replies.
 - **Expected learning:** Whether the forum can borrow Discord's activity instead of competing with it. **Dependencies:** C37.
 
-**X-031 · Recruiter role for member invites** · P2 · Effort M · 42 days · Design: pre/post
+**X-031 · Recruiter role for member invites** · P2 · Effort M · 42 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A 'Recruiter' role for members who bring three joiners through their own invite codes produces ≥ 15% of joins. **Audience:** Existing Discord members (160 on 27 Sep [R13]).
 - **Change:** C36: members create personal invites; the bot credits joins by code (D-011); role at 3 joins. **Metric:** Share of discord_join attributed to member-created codes.
 - **Success threshold:** ≥ 15% of joins from member codes AND zero raid or spam incidents linked to the scheme.
@@ -262,7 +264,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Distinct daily posters +25% vs the 14-day pre-window, with no rise in moderation actions.
 - **Expected learning:** Whether automated prompts start conversations or become wallpaper. **Dependencies:** C65, D-011.
 
-**X-033 · Link-your-account line in the welcome** · P2 · Effort S · 28 days · Design: pre/post
+**X-033 · Link-your-account line in the welcome** · P2 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A welcome message asking members to link their TechPlay account (XP carries over) raises linked members. **Audience:** New Discord joiners.
 - **Change:** Welcome embed line with the /link command and the site link. **Metric:** Joiners with a linked account within 14 days (users.discord_id with discord_guild_member = true).
 - **Success threshold:** ≥ 15% of joiners link within 14 days.
@@ -288,13 +290,13 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Treated CTR change ≥ 30% relative above the control group's change, with ≥ 500 impressions per group.
 - **Expected learning:** Whether title quality is part of the invisibility of reviews. **Dependencies:** C52.
 
-**X-037 · PC fix guides vs news for search clicks** · P1 · Effort M · 56 days · Design: pre/post
+**X-037 · PC fix guides vs news for search clicks** · P1 · Effort M · 56 days · Design: concurrent comparison (guides vs news, same weeks)
 - **Hypothesis:** P2 fix guides earn search clicks faster than news because page one has no gaming outlet for them [R09]. **Audience:** S3 PC Tinkerers searching fixes.
 - **Change:** C60 PC Fix Hub: one F07 guide a week from 12 Oct. **Metric:** GSC clicks per page at day 28, fix guides vs news published the same weeks.
 - **Success threshold:** Median fix guide ≥ 3× median news article clicks at day 28, with ≥ 4 guides.
 - **Expected learning:** Where ED hours earn the most durable traffic. **Dependencies:** C60.
 
-**X-038 · Series order pages** · P2 · Effort M · 42 days · Design: pre/post
+**X-038 · Series order pages** · P2 · Effort M · 42 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** F09 'In Order' pages reach page one for '[series] games in order' within six weeks. **Audience:** Searchers preparing for 2027 launches.
 - **Change:** C63: one series page each Saturday from 3 Oct. **Metric:** GSC average position and clicks for each page's main query.
 - **Success threshold:** ≥ 3 of the first 6 pages at average position ≤ 10 for their main query by day 42.
@@ -318,13 +320,13 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Impressions ×3 vs the 28-day pre-window AND at least one page at average position ≤ 20 for a 'gta 6 …' query by 19 Nov.
 - **Expected learning:** Whether the hub can compete at all before launch week. **Dependencies:** D-005, D-017, C08.
 
-**X-042 · Google News clean-up plus original pieces** · P1 · Effort S · 63 days · Design: pre/post
+**X-042 · Google News clean-up plus original pieces** · P1 · Effort S · 63 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Stopping game pages from appearing as news and publishing original data pieces gets TechPlay articles into Google News [R03 §6]. **Audience:** Google News readers.
 - **Change:** D-022 (datePublished on game pages); C20 and C22 as original reporting. **Metric:** Monthly probe of 16 own-topic Google News RSS searches (R03 method); GSC News tab if shown.
 - **Success threshold:** By 31 Oct: zero game pages in the site: News feed. By 30 Nov: ≥ 2 of 16 probes return a TechPlay article.
 - **Expected learning:** Whether Google News is reachable this quarter. **Dependencies:** D-022, C20, C22.
 
-**X-043 · RSS repair feeding Flipboard and Mastodon** · P3 · Effort S · 42 days · Design: pre/post
+**X-043 · RSS repair feeding Flipboard and Mastodon** · P3 · Effort S · 42 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Fixing RSS and piping it to Flipboard and Mastodon produces referral sessions for under an hour a week. **Audience:** RSS readers.
 - **Change:** D-003; SC connects the feed once. **Metric:** Sessions by referrer_host (flipboard.com, Mastodon instance hosts).
 - **Success threshold:** ≥ 20 sessions/week by week 6 at ≤ 1 h/week effort; otherwise stop maintaining.
@@ -362,7 +364,7 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** US-slot median ≥ 1.3× morning-slot median with ≥ 12 stories per slot.
 - **Expected learning:** Whether the Sarajevo schedule costs US reach. **Dependencies:** C04.
 
-**X-049 · Stories framed on TechPlay's own data** · P2 · Effort S · 42 days · Design: pre/post
+**X-049 · Stories framed on TechPlay's own data** · P2 · Effort S · 42 days · Design: concurrent comparison (data-framed vs rewrites)
 - **Hypothesis:** News framed around a figure from TechPlay's calendar or database gets more Discover clicks than a rewrite of the same news. **Audience:** Discover users; S8 Industry Watchers.
 - **Change:** ED adds one database figure (with source line) as the news hook, F04 style. **Metric:** Discover clicks per article, data-framed vs rewrite.
 - **Success threshold:** Data-framed median ≥ 2× rewrites with ≥ 8 data-framed pieces.
@@ -388,13 +390,13 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Winner ≥ 1.5× sessions per post.
 - **Expected learning:** The cheapest X format that still sends readers. **Dependencies:** C04, D-009.
 
-**X-053 · Reddit: answer first, link second** · P1 · Effort S · 56 days · Design: pre/post
+**X-053 · Reddit: answer first, link second** · P1 · Effort S · 56 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Answers that solve the question in the thread and link only when a TechPlay page adds data or a tool keep standing positive and still send readers [R13]. **Audience:** Subreddits on the C47 list.
 - **Change:** C47 rules: 9 of 10 contributions without a link; links carry utm_medium=community and utm_term=<subreddit>. **Metric:** Removals and bans; median comment score; sessions with utm_source=reddit.
 - **Success threshold:** Zero removals or bans, median score ≥ 2, and ≥ 30 sessions/week by week 8.
 - **Expected learning:** Whether Reddit can be a steady source without burning the account. **Dependencies:** C47, D-009.
 
-**X-054 · Threads and Bluesky cross-posts of The Number** · P3 · Effort S · 42 days · Design: pre/post
+**X-054 · Threads and Bluesky cross-posts of The Number** · P3 · Effort S · 42 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Cross-posting F04 to Threads and Bluesky costs under an hour a week and returns ≥ 10 sessions a week on each. **Audience:** Threads and Bluesky users.
 - **Change:** SC cross-posts F04 three times a week. **Metric:** Sessions with utm_source=threads / bluesky; SC minutes logged.
 - **Success threshold:** Each platform ≥ 10 sessions/week in weeks 4–6 at ≤ 1 h/week; otherwise stop that platform.
@@ -406,19 +408,19 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Group weeks ≥ 3× Page-only weeks in sessions, with zero removals.
 - **Expected learning:** Whether Facebook's reach lives in Groups for TechPlay. **Dependencies:** C64.
 
-**X-056 · LinkedIn Studio Watch** · P3 · Effort S · 84 days · Design: pre/post
+**X-056 · LinkedIn Studio Watch** · P3 · Effort S · 84 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** One F17 post a week on LinkedIn brings industry readers and press contacts. **Audience:** S8 Industry Watchers, developers, press.
 - **Change:** EIC posts F17 each Thursday with the /data/studios-closed-2026 tracker. **Metric:** Sessions with utm_source=linkedin; inbound industry contacts logged.
 - **Success threshold:** Median ≥ 15 sessions per post AND ≥ 2 inbound industry contacts by 31 Dec.
 - **Expected learning:** Whether LinkedIn earns its slot for PR. **Dependencies:** C22.
 
-**X-057 · Library Card member spotlight** · P3 · Effort S · 42 days · Design: pre/post
+**X-057 · Library Card member spotlight** · P3 · Effort S · 42 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** An opt-in member spotlight (F19) makes other readers start their own library. **Audience:** Followers on Instagram, X, Discord.
 - **Change:** SC posts one consenting member's Gamer DNA card each Friday. **Metric:** registration_start and registration_complete with utm_content f19-*.
 - **Success threshold:** Median ≥ 3 registrations per spotlight over 6 spotlights, with written consent logged for every member featured.
 - **Expected learning:** Whether members' own artefacts sell accounts better than our copy. **Dependencies:** C68, D-024.
 
-**X-058 · Steam Curator page referrals** · P3 · Effort S · 70 days · Design: pre/post
+**X-058 · Steam Curator page referrals** · P3 · Effort S · 70 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A Steam Curator page with short verdicts linking to TechPlay reviews brings followers and referral sessions. **Audience:** Steam users following curators.
 - **Change:** C69 launch with 20 recommendations, 2 new per week. **Metric:** Curator followers; sessions with utm_source=steam.
 - **Success threshold:** ≥ 50 curator followers and ≥ 10 sessions/week by 31 Dec.
@@ -432,13 +434,13 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Winning hook ≥ 1.2× average percentage viewed across 4 videos each.
 - **Expected learning:** The hook template for the whole C49 system. **Dependencies:** C49.
 
-**X-060 · One production, four platforms** · P1 · Effort S · 42 days · Design: pre/post
+**X-060 · One production, four platforms** · P1 · Effort S · 42 days · Design: concurrent keep-or-kill across platforms
 - **Hypothesis:** Posting the same vertical file to TikTok, YouTube Shorts, Instagram Reels and Facebook Reels shows which one or two platforms deserve the time. **Audience:** Short-form viewers on four platforms.
 - **Change:** C49 posts identical files; SC records views, follows and link sessions per platform. **Metric:** Views at 7 days, follows per 1,000 views, utm sessions per 1,000 views, per platform.
 - **Success threshold:** Keep platforms at ≥ 2× the median of the others on follows per 1,000 views; drop any platform below one quarter of the best after 6 weeks.
 - **Expected learning:** Where video attention should go in Q1 2027. **Dependencies:** C49.
 
-**X-061 · Fix It Friday shorts with a guide link** · P2 · Effort S · 42 days · Design: pre/post
+**X-061 · Fix It Friday shorts with a guide link** · P2 · Effort S · 42 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** F07 shorts send readers to the full guide through the description or pinned-comment link. **Audience:** S3 PC Tinkerers on YouTube and TikTok.
 - **Change:** Every F07 short links /guides/pc-fixes/<guide> with utm_content f07-short-<slug>. **Metric:** Sessions per 1,000 views with utm_content f07-*.
 - **Success threshold:** Median ≥ 2 sessions per 1,000 views.
@@ -450,13 +452,13 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 - **Success threshold:** Short version completion ≥ 1.3× with views not lower than 0.8× the long version.
 - **Expected learning:** The default length for the weekly anchor. **Dependencies:** C49.
 
-**X-063 · YouTube long-form pilot** · P2 · Effort L · 28 days · Design: pre/post
+**X-063 · YouTube long-form pilot** · P2 · Effort L · 28 days · Design: concurrent comparison (long-form vs Shorts)
 - **Hypothesis:** One long video ('Every GTA game in order before VI', 12 Nov) earns more subscribers per production hour than Shorts. **Audience:** YouTube viewers searching GTA order before launch.
 - **Change:** C50 pilot; EIC scripts, SC edits. **Metric:** Subscribers gained per production hour at day 28; views at day 28; utm sessions.
 - **Success threshold:** Subscribers per production hour ≥ 2× the Shorts figure over the same 28 days.
 - **Expected learning:** Whether long-form belongs in Q1 2027 plans. **Dependencies:** C50.
 
-**X-064 · WoW Analyzer 15-second demo** · P2 · Effort S · 14 days · Design: pre/post
+**X-064 · WoW Analyzer 15-second demo** · P2 · Effort S · 14 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A screen recording of an Analyzer result drives tool runs from YouTube and TikTok. **Audience:** S5 MMO/WoW players.
 - **Change:** One organic demo per month (F15), linked with utm_campaign=c13-wow-readiness. **Metric:** tool_run (tool=wow) with utm_campaign c13-*.
 - **Success threshold:** ≥ 30 tool runs from video links in 14 days.
@@ -464,13 +466,13 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 
 ### 4.9 Email
 
-**X-065 · Welcome email 1 asks which platforms you play** · P2 · Effort S · 28 days · Design: pre/post
+**X-065 · Welcome email 1 asks which platforms you play** · P2 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** One-click platform links in welcome email 1 tag ≥ 40% of new members and feed segments [R20 §4]. **Audience:** New members.
 - **Change:** C42 email 1: 'Where do you play? Click all that apply' (PC, PS5, Xbox, Switch 2, handheld). **Metric:** Unique clicks on platform links ÷ delivered.
 - **Success threshold:** ≥ 40% of delivered click at least one platform link.
 - **Expected learning:** Whether members will self-segment by email. **Dependencies:** C42, D-013.
 
-**X-066 · Personalised releases email vs generic list** · P1 · Effort M · 28 days · Design: pre/post
+**X-066 · Personalised releases email vs generic list** · P1 · Effort M · 28 days · Design: concurrent comparison (same members, two emails)
 - **Hypothesis:** 'Your releases this week' (C41) gets ≥ 2× the click rate of the generic release section in The Save File for the same members. **Audience:** Members with wishlists or reminders who also subscribe.
 - **Change:** Send C41 Mondays from 26 Oct; compare with clicks on the release section of Friday's issue. **Metric:** Unique clicks ÷ delivered (alert_clicked for C41).
 - **Success threshold:** C41 click rate ≥ 2× the generic section's, with ≥ 100 delivered on each.
@@ -502,31 +504,31 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 
 ### 4.10 Giveaways
 
-**X-071 · Remove share and retweet tasks** · P1 · Effort S · 21 days · Design: pre/post
+**X-071 · Remove share and retweet tasks** · P1 · Effort S · 21 days · Design: pre/post between consecutive giveaways
 - **Hypothesis:** Removing share_giveaway and twitter_retweet tasks (Meta Promotions policy [R16 §2.15]) does not reduce entries by more than 20%. **Audience:** Giveaway visitors.
 - **Change:** Next giveaway runs without those tasks; compare with the previous one. **Metric:** giveaway_entered per 1,000 giveaway-page sessions.
 - **Success threshold:** Non-inferiority: entry rate ≥ 0.8× the previous giveaway's rate.
 - **Expected learning:** Whether compliance costs anything; it is required before any paid giveaway promotion. **Dependencies:** C09.
 
-**X-072 · One-click entry with Google or Discord** · P2 · Effort S · 21 days · Design: pre/post
+**X-072 · One-click entry with Google or Discord** · P2 · Effort S · 21 days · Design: pre/post between consecutive giveaways
 - **Hypothesis:** Making social sign-in the entry step raises entry completion for guests. **Audience:** Guests on /giveaway/{slug}.
 - **Change:** Entry button opens social sign-in and enters on return (D-014 redirect). **Metric:** giveaway_entered ÷ guest sessions on the giveaway page.
 - **Success threshold:** Entry rate ≥ 1.5× the previous giveaway's guest entry rate.
 - **Expected learning:** How much of the giveaway drop is registration friction. **Dependencies:** C09, D-014.
 
-**X-073 · Import prompt after entry** · P1 · Effort S · 28 days · Design: pre/post
+**X-073 · Import prompt after entry** · P1 · Effort S · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** After entry, 'Connect Steam and your library is ready when the draw closes' (no extra entries offered) raises entrants' A2. **Audience:** New giveaway entrants.
 - **Change:** Post-entry panel with Steam/Xbox connect buttons (25-GIVEAWAYS SHELVE stage). **Metric:** library_connected within 7 days ÷ giveaway_entered (first entries); giveaway-only share.
 - **Success threshold:** Entrant→A2 ≥ 25% AND giveaway-only share at close ≤ 60% (guardrail in 25-GIVEAWAYS).
 - **Expected learning:** Whether giveaway accounts can become real members. **Dependencies:** C09, D-007.
 
-**X-074 · Daily check-in with a weekly freeze** · P3 · Effort M · 21 days · Design: pre/post
+**X-074 · Daily check-in with a weekly freeze** · P3 · Effort M · 21 days · Design: pre/post between consecutive giveaways
 - **Hypothesis:** Adding one freeze per week to the giveaway check-in streak keeps entrants returning without punishing a missed day [R12]. **Audience:** Giveaway entrants.
 - **Change:** Streak freeze on the daily bonus in the next giveaway. **Metric:** Distinct return days per entrant; share of streak-breakers who never return.
 - **Success threshold:** Median return days ≥ 1.3× the previous giveaway AND the never-return share among streak-breakers falls.
 - **Expected learning:** Whether a humane streak retains as well as a strict one. **Dependencies:** C09.
 
-**X-075 · Giveaway hub indexable while live** · P2 · Effort S · 21 days · Design: pre/post
+**X-075 · Giveaway hub indexable while live** · P2 · Effort S · 21 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Making /giveaways indexable while a draw is open brings organic entrants [R01]. **Audience:** Searchers for game giveaways.
 - **Change:** D-039 index while live, canonical on giveaway pages. **Metric:** Organic sessions to /giveaways and /giveaway/* during the live window.
 - **Success threshold:** ≥ 20 organic sessions/week by week 3 of a live giveaway.
@@ -534,91 +536,91 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 
 ### 4.11 Paid (R16 T1–T15)
 
-**X-076 · T1 Google branded exact match** · P1 · Effort S · 28 days · Design: pre/post
+**X-076 · T1 Google branded exact match** · P1 · Effort S · 28 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** A branded exact-match campaign costs almost nothing and shows whether anyone bids on 'techplay' [R16 T1]. **Audience:** Searchers typing techplay, techplay gg, techplay wow analyzer, techplay backlog advisor.
 - **Change:** C56 from 19 Oct: 2 RSAs, sitelinks to /games, /wow-analyzer, /backlog-advisor; $60–90/month. **Metric:** Impression share, CPC, sessions with utm_medium=cpc.
 - **Success threshold:** Keep if CPC ≤ $1.00 and ≥ 10 impressions/week after 14 days; otherwise pause (R16 stop-loss).
 - **Expected learning:** The real branded CPC and whether the brand has any search demand. **Dependencies:** C56, C03, D-009.
 
-**X-077 · T2 Meta library-import demo** · P1 · Effort M · 21 days · Design: pre/post
+**X-077 · T2 Meta library-import demo** · P1 · Effort M · 21 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** A 6–15 s screen recording of the Steam/Xbox/PSN import converts US adults to verified accounts more cheaply than a content ad [R16 T2]. **Audience:** US 18+, broad, Advantage+ placements.
 - **Change:** C57 (2–22 Nov): Leads/registration objective, on-site event via CAPI, three creatives. **Metric:** Cost per email_verified; cost per A2.
 - **Success threshold:** Continue if ≤ $10 per verified registration; stop at $150 spent with < 5 verified accounts.
 - **Expected learning:** A first readable cost per verified registration. **Dependencies:** C57, D-031, D-007, D-008.
 
-**X-078 · T3 GTA 6 hub carousel vs generic creative** · P2 · Effort M · 14 days · Design: pre/post
+**X-078 · T3 GTA 6 hub carousel vs generic creative** · P2 · Effort M · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Cards for the map, vehicles and characters out-click a generic 'gaming news' creative [R16 T3]. **Audience:** Same as X-077.
 - **Change:** Carousel creative in C57, each card deep-linked with its own utm_content. **Metric:** CTR; cost per registration_complete.
 - **Success threshold:** Keep if CTR ≥ 1% at 5,000 impressions; stop below 1%.
 - **Expected learning:** Whether the GTA 6 hub is TechPlay's best paid hook before 19 Nov. **Dependencies:** C57, D-017, D-031.
 
-**X-079 · T4 Reddit Conversation Placement to Discord** · P1 · Effort M · 17 days · Design: pre/post
+**X-079 · T4 Reddit Conversation Placement to Discord** · P1 · Effort M · 17 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Ads in GTA 6 threads drive Discord joins at under $3 each [R16 T4]. **Audience:** 3–5 GTA 6 and gaming subreddits, 18+.
 - **Change:** C58 (9–25 Nov): post-style ad ('1,058 GTA 6 locations on one free map, and a Discord for launch week.'); map wording cleared under D-020, own invite code. **Metric:** Cost per discord_click; discord_join by invite code.
 - **Success threshold:** Continue if cost per attributed join ≤ $3; stop at $100 with < 20 Discord clicks.
 - **Expected learning:** Paid cost of a community member. **Dependencies:** C58, D-011, D-020.
 
-**X-080 · T5 WoW Analyzer tool ad on Reddit** · P2 · Effort M · 17 days · Design: pre/post
+**X-080 · T5 WoW Analyzer tool ad on Reddit** · P2 · Effort M · 17 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** A tool ad in WoW subreddits beats any article ad on tool runs per dollar [R16 T5]. **Audience:** r/wow and similar communities, 18+.
 - **Change:** C58 ad set: screenshot of an analysis result, 'Paste your character'. **Metric:** tool_run (tool=wow) per $; registration_complete.
 - **Success threshold:** Continue if ≥ 30 analyses per $100; stop at $100 with < 30 analyses or if Groq cost exceeds ad cost.
 - **Expected learning:** Whether a niche tool can be bought cheaply. **Dependencies:** C58, D-040.
 
-**X-081 · T6 Backlog Advisor on Reddit** · P3 · Effort M · 14 days · Design: pre/post
+**X-081 · T6 Backlog Advisor on Reddit** · P3 · Effort M · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Backlog Advisor resonates with 'too many games' communities [R16 T6]. **Audience:** r/patientgamers-type communities, 18+.
 - **Change:** Screen tour of the advisor output; lands on guest mode (D-037). **Metric:** tool_run (tool=backlog) → library_connected.
 - **Success threshold:** Stop if CTR < 0.2%; continue if ≥ 10% of tool runs import a library.
 - **Expected learning:** Whether the backlog problem is a paid acquisition hook. **Dependencies:** C58, D-037.
 
-**X-082 · T7 Tool exact-match search** · P3 · Effort S · 14 days · Design: pre/post
+**X-082 · T7 Tool exact-match search** · P3 · Effort S · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Exact-match tool queries ('wow raid readiness', 'what should I play next', 'backlog tool') have real volume [R16 T7]. **Audience:** Google searchers.
 - **Change:** Second ad group in C56 once T1 is stable. **Metric:** Impressions/week, CPC, tool_run.
 - **Success threshold:** Stop if < 20 impressions/week after 14 days.
 - **Expected learning:** Search demand for TechPlay's tools, which no research could size [R03]. **Dependencies:** C56.
 
-**X-083 · T8 TikTok Spark boost** · P3 · Effort M · 7 days · Design: pre/post
+**X-083 · T8 TikTok Spark boost** · P3 · Effort M · 7 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Boosting an organic GTA 6 map video that already performs reaches under $6 CPM [R16 T8]. **Audience:** US 18+ broad.
 - **Change:** Only at the AGGRESSIVE budget and only if an organic video beat the median by 3×. **Metric:** CPM; utm sessions in the first-party counter; registration_complete.
 - **Success threshold:** Stop at $350 if CPM > $10 or 0 registrations.
 - **Expected learning:** Whether paid video amplification is worth the $50/day floor. **Dependencies:** C49, D-008.
 
-**X-084 · T9 Meta newsletter double opt-in** · P2 · Effort M · 14 days · Design: pre/post
+**X-084 · T9 Meta newsletter double opt-in** · P2 · Effort M · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Newsletter double opt-in from ads costs less than $8 per verified subscriber [R16 T9]. **Audience:** US plus consented UK/DE adults.
 - **Change:** C57 second ad set to /newsletter with the 'weekly releases, one fix, one number' promise. **Metric:** Cost per newsletter_verified.
 - **Success threshold:** Continue if ≤ $8 per verified subscriber; stop at $100 with 0 verified.
 - **Expected learning:** Whether email is cheaper to buy than accounts. **Dependencies:** C57, D-012, D-031.
 
-**X-085 · T10 Meta retargeting of registration starters** · P3 · Effort M · 14 days · Design: pre/post
+**X-085 · T10 Meta retargeting of registration starters** · P3 · Effort M · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Retargeting people who started registration recovers 10% of them [R16 T10]. **Audience:** Pixel audience: visited /register or the wizard in 7 days, no registration.
 - **Change:** Only if the pool reaches 500 within 30 days. **Metric:** Cost per registration_complete; recovered share.
 - **Success threshold:** Skip if pool < 500 after 30 days; continue if ≥ 10% of the pool recovers at ≤ $10 each.
 - **Expected learning:** Whether a small-site retargeting pool is usable at all. **Dependencies:** D-031, C57.
 
-**X-086 · T11 Free Discord listings** · P2 · Effort S · 28 days · Design: pre/post
+**X-086 · T11 Free Discord listings** · P2 · Effort S · 28 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Disboard and Discadia listings deliver measurable joins at no cost [R16 T11]. **Audience:** Discord users browsing tags (gta6, wow, pc).
 - **Change:** SC lists the server with one invite code per listing. **Metric:** discord_join per week by invite code; 7-day posting rate of those joiners.
 - **Success threshold:** Keep if ≥ 5 joins/week sustained over 4 weeks and ≥ 30% post within 7 days; drop if 0 joins in 4 weeks.
 - **Expected learning:** A zero-cost baseline for Discord acquisition. **Dependencies:** D-011, C36.
 
-**X-087 · T12 Paid newsletter swap** · P3 · Effort S · 14 days · Design: pre/post
+**X-087 · T12 Paid newsletter swap** · P3 · Effort S · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** A paid swap with one gaming newsletter beats Meta on cost per verified subscriber [R16 T12]. **Audience:** A partner newsletter's list.
 - **Change:** One dedicated blurb with UTM; only once TechPlay's own list size is known and can be stated honestly. **Metric:** Cost per newsletter_verified.
 - **Success threshold:** Run only after the list size is known; succeed if cost per verified < the X-084 result.
 - **Expected learning:** Whether newsletter-to-newsletter is a viable channel for a self-hosted list. **Dependencies:** C40, C51.
 
-**X-088 · T13 Giveaway ads** · P3 · Effort M · 14 days · Design: pre/post
+**X-088 · T13 Giveaway ads** · P3 · Effort M · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Giveaway ads pull entrants who also connect a library [R16 T13]. **Audience:** US 18+.
 - **Change:** Only after X-071 (no share tasks) and legal review of no-purchase-necessary and AMOE [R16 §2.15]. **Metric:** Entrants with library_connected within 7 days; giveaway-only share.
 - **Success threshold:** Stop if > 70% of paid entrants have zero other activity (R16 T13 hard stop).
 - **Expected learning:** Whether paid giveaway traffic creates members or only entries. **Dependencies:** C09, D-031.
 
-**X-089 · T14 Web push opt-in on GTA 6 reminders** · P2 · Effort M · 14 days · Design: pre/post
+**X-089 · T14 Web push opt-in on GTA 6 reminders** · P2 · Effort M · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Push opt-in offered only after 'Notify me' on GTA 6 pages builds a re-engagement list for free [R16 T14; spine C59]. **Audience:** GTA 6 hub and release-time tool users.
 - **Change:** C59 prompt only after the user clicks 'Notify me'; never on page load (Chrome demotes low-acceptance sites [R07]). **Metric:** notification_enabled ÷ /gta6* sessions; click rate on the first push.
 - **Success threshold:** Keep if opt-in ≥ 1% of hub sessions after 2 weeks and first-push click rate ≥ 5%; stop below 1%.
 - **Expected learning:** Whether push is worth keeping after launch week. **Dependencies:** C59, D-019.
 
-**X-090 · T15 YouTube Shorts ad for the WoW demo** · P3 · Effort S · 14 days · Design: pre/post
+**X-090 · T15 YouTube Shorts ad for the WoW demo** · P3 · Effort S · 14 days · Design: sequential read with R16 stop-loss
 - **Hypothesis:** Shorts CPM is cheap enough for a 15-second Analyzer demo [R16 T15]. **Audience:** US 18–34.
 - **Change:** Parked for Q4: the spine excludes Demand Gen (§12). Revisit in Q1 2027 as a video-views buy only if X-064 succeeds. **Metric:** CPM, view rate, tool_run.
 - **Success threshold:** Stop if CPM > $8 or 0 tool runs after $150.
@@ -626,37 +628,37 @@ Each entry: hypothesis, audience, change, metric (event names from 30 §6.2), ef
 
 ### 4.12 Tools
 
-**X-091 · GTA 6 release-time tool with reminder** · P1 · Effort M · 36 days · Design: pre/post
+**X-091 · GTA 6 release-time tool with reminder** · P1 · Effort M · 36 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A tool that shows the unlock time in the visitor's time zone and offers 'remind me at pre-load and unlock' gets reminder_set from ≥ 10% of users [R17]. **Audience:** S4 GTA 6 Waiters.
 - **Change:** D-018 /gta6/release-time (new), C08; reminder through D-016. **Metric:** reminder_set ÷ tool_run (tool=release-time).
 - **Success threshold:** ≥ 10% of tool users set a reminder AND ≥ 200 reminders by 18 Nov.
 - **Expected learning:** Whether a utility tool converts better than content before a launch. **Dependencies:** D-018, C08, D-016.
 
-**X-092 · Calendar export (ICS) and return visits** · P3 · Effort S · 42 days · Design: pre/post
+**X-092 · Calendar export (ICS) and return visits** · P3 · Effort S · 42 days · Design: matched comparison (exporters vs non-exporters)
 - **Hypothesis:** Members who export their wishlist calendar return more, because each calendar entry links back with from=ics. **Audience:** Members with wishlists.
 - **Change:** D-036 ICS export; event descriptions link to the game page with from=ics (internal marker, no UTM). **Metric:** Sessions with from=ics; D30 retention of exporters vs matched non-exporters.
 - **Success threshold:** Exporters' D30 retention ≥ 1.5× matched non-exporters, with ≥ 20 exporters.
 - **Expected learning:** Whether a calendar entry is a retention channel. **Dependencies:** D-036.
 
-**X-093 · GTA 6 map tracker: save progress with an account** · P1 · Effort M · 21 days · Design: pre/post
+**X-093 · GTA 6 map tracker: save progress with an account** · P1 · Effort M · 21 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** Letting guests tick locations and asking for an account only to save progress converts ≥ 5% of tracker users. **Audience:** GTA 6 players from 19 Nov.
 - **Change:** C11 tracker in guest mode; 'Save your progress' opens the D-016 modal. **Metric:** registration_complete (from=gta6) ÷ guest tool users.
 - **Success threshold:** ≥ 5% of guest users register, with ≥ 200 guest users in launch week.
 - **Expected learning:** Whether launch-week utility is the best registration moment of the quarter. **Dependencies:** C11, D-016, D-020.
 
-**X-094 · Game Awards prediction league** · P2 · Effort M · 23 days · Design: pre/post
+**X-094 · Game Awards prediction league** · P2 · Effort M · 23 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A free prediction league for 10 Dec brings new registrations and a reason to return on the night. **Audience:** S10 Community Regulars, S8, awards followers.
 - **Change:** C29 / D-026 league with a public leaderboard; entry needs an account. **Metric:** registration_complete (from=predictions); entries; returns on 10–11 Dec.
 - **Success threshold:** ≥ 100 entries AND ≥ 25 new registrations from the league AND ≥ 50% of entrants return on 10–11 Dec.
 - **Expected learning:** Whether event-driven games create accounts that stay. **Dependencies:** C29, D-026.
 
-**X-095 · Your 2026 in Games** · P1 · Effort L · 18 days · Design: pre/post
+**X-095 · Your 2026 in Games** · P1 · Effort L · 18 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A cross-platform year in review produces shares that bring registrations. **Audience:** Members with shelves; their followers.
 - **Change:** C28 / D-025 live 14–31 Dec with a share card (D-024). **Metric:** share_card_generated (type=yir) ÷ members viewing; registration_complete with utm_campaign=c28-your-2026.
 - **Success threshold:** ≥ 25% of eligible members generate a card AND ≥ 1 registration per 10 shares.
 - **Expected learning:** Whether the library can market itself once a year. **Dependencies:** D-025, D-024, C28.
 
-**X-096 · Taste Match invite link** · P2 · Effort M · 28 days · Design: pre/post
+**X-096 · Taste Match invite link** · P2 · Effort M · 28 days · Design: absolute threshold, no control (volume too small)
 - **Hypothesis:** A 'compare your taste with me' link brings verified accounts and makes the unreachable 'Squad Goals' achievement reachable [R11 §3]. **Audience:** Members and the people they invite.
 - **Change:** Invite link on the profile and Gamer DNA card; landing shows a blurred match until sign-up. **Metric:** registration_complete (from=profile) ÷ invite-link visitors.
 - **Success threshold:** ≥ 10% of invite visitors register AND ≥ 10 registrations in 28 days.

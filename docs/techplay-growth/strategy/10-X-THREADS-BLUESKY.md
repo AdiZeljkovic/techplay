@@ -58,7 +58,7 @@ Times are Sarajevo. UTM on every link: `utm_source=x&utm_medium=organic-social&u
 > GTA VI claims, sorted by source. Confirmed, reported, rumour, and what nobody has announced. We'll update this every Thursday until launch. 1/5
 
 **X5 — Release-day news (P1). Tue 6 Oct, 17:30**
-> Gears of War: E-Day is out today on Xbox Series X|S and PC, in Game Pass Ultimate and PC Game Pass from day one. It's a prequel set on Emergence Day itself.
+> Gears of War: E-Day is out today on Xbox Series X|S and PC, in Game Pass Ultimate and PC Game Pass from day one.
 > Platforms and editions: techplay.gg/games/gears-of-war-e-day
 
 **X6 — PR data launch (C20). Wed 7 Oct, 15:30**
@@ -89,7 +89,7 @@ Times are Sarajevo. UTM on every link: `utm_source=x&utm_medium=organic-social&u
 > techplay.gg/gta6/everything-we-know
 
 **X13 — Prediction league close (C29). Thu 10 Dec, 20:00**
-> The Game Awards are tonight at the Peacock Theater. Prediction League entries close when the show starts. Game of the Year pick, three categories, one tiebreaker.
+> The Game Awards are tonight at the Peacock Theater. Prediction League picks close when the show starts.
 > techplay.gg/awards/2026
 
 **X14 — Developer interaction (C71/F23). Tue 20 Oct, reply to a developer whose demo we covered**
