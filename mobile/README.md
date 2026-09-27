@@ -176,10 +176,24 @@ vremena (`OfflineError`) od prekida koji je ekran sam napravio
 
 ---
 
-## Šta je sljedeće
+**Prijava je bila potpuno pokvarena, i to se vidjelo tek kad se neko prijavio.**
+`sign-in.tsx` nije crtao Turnstile ni slao token, a `/auth/login` odbija svaki
+zahtjev bez njega dok je `TURNSTILE_ENABLED` uključen — što jeste. Svaki
+pokušaj je vraćao *„Security check missing. Please refresh the page."* na
+formi koja nema šta osvježiti. Registracija je imala `TurnstileGate` od
+početka; prijava ga nikad nije dobila, a ekran je bio isporučen i u ovom
+dokumentu opisan kao „Prijava i registracija (Turnstile)" na osnovu polovine
+koja radi.
 
-- **profil prijavljenog korisnika nije vizuelno provjeren** — treba nalog za
-  testiranje; nijedan nije na raspolaganju u razvoju
+**Pouka:** ekran koji se ne može proći do kraja bez naloga treba proći **s**
+nalogom prije nego se proglasi gotovim.
+
+**Profil prijavljenog korisnika je provjeren** (27. 9.) — avatar, rang u
+svojoj boji, level, XP, broj igara, sati i dostignuća. Nema vizuelnih grešaka.
+
+---
+
+## Šta je sljedeće
 - `cookie banner` se pojavljuje unutar `web.tsx` WebView-a. Namjerno nije
   sakriven — sakrivanje mehanizma za pristanak nije stilska odluka. Aplikacija
   će prije prodavnice trebati vlastiti pristanak.
