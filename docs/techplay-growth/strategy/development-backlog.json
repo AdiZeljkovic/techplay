@@ -1,0 +1,2664 @@
+{
+  "items": [
+    {
+      "id": "D-001",
+      "title": "Remove false claims (register, login, WoW, GTA 6, stale catalogue figures)",
+      "problem": "FACT: /register and /login print \"15K+ MEMBERS · 50K+ GAMES\" (60 users, 333,198 games) and promise \"XP for every comment and article you read\" (reads award nothing since 11 Aug 2026); the GTA 6 block says \"Join thousands of fans\"; the WoW Analyzer says \"50K+ players analyzed · 4.9/5\"; page_seo rows and the lib/seo.ts fallback still say 140,000+/141,000 games; the homepage says 3 platforms while 5 import [R02 §6.1, §11; R11 §1.4; R23 A3].",
+      "acceptance_criteria": [
+        "grep over frontend/app, frontend/components and frontend/lib for \"15K+\", \"50K+\", \"thousands of fans\", \"4.9/5\", \"article you read\" and \"141,000\" returns no user-facing hit (code comments excepted)",
+        "Register/login strip reads a live catalogue figure from the API (rounded down to the thousand) or shows no number; member counts are never shown",
+        "XP perk line reads: \"Earn XP for comments, ratings and the games you finish\" in RegisterClient and BrandPanel",
+        "Homepage hero stat reads \"5 · Platforms that import\" (Steam, PlayStation, Xbox, GOG, Epic)",
+        "seo:fix-game-counts gains a pattern for 1[34][0-9],?000\\+? and is run with --dry-run first, then for real; EIC signs off the dry-run list",
+        "Leaderboard 'How to earn more XP' row no longer lists reading articles",
+        "Feature test or snapshot proves the register page renders without the removed strings; docs/README.md notes the removed claims under Zamke if any rule changes"
+      ],
+      "files": [
+        "frontend/app/(auth)/register/RegisterClient.tsx:33,202-204",
+        "frontend/app/(auth)/login/LoginClient.tsx:23-25",
+        "frontend/components/auth/BrandPanel.tsx:21",
+        "frontend/components/gta6/Gta6NewsletterCTA.tsx:51-56",
+        "frontend/components/wow/WowAnalyzerClient.tsx:186,196",
+        "frontend/lib/seo.ts:187",
+        "frontend/components/home/HomeHero.tsx:43",
+        "frontend/app/leaderboard/LeaderboardClient.tsx:645",
+        "backend/app/Console/Commands/FixSeoGameCounts.php (patterns)"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Trust precondition for every campaign; removes a claim any journalist, partner or advertiser can falsify in ten seconds. Guardrail for registration conversion (registration_complete / registration_start).",
+      "unlocks": [
+        "C01",
+        "C44",
+        "C09",
+        "C06",
+        "C13",
+        "C54"
+      ],
+      "dependencies": [
+        "EIC approves replacement copy (supplied in 33-QUICK-WINS)"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-002",
+      "title": "Fix breadcrumb category hrefs on every article",
+      "problem": "FACT: every article breadcrumb links /news/news-industry, /news/news-gaming or /news/tech-tech-news, all 404; ArticleDetailView builds `/news/${category.slug}` from the DB slug, while lib/categories.ts maps the id news-industry to the slug industry and tech articles live under /hardware [R02 §11.1; R23 A5].",
+      "acceptance_criteria": [
+        "Breadcrumb href is built from one helper that maps category type to segment (tech → /hardware) and DB slug to route slug via lib/categories.ts",
+        "A check over 20 live articles (news, reviews, hardware) returns 200 for every breadcrumb link",
+        "The helper lives beside articleHref() so the mapping exists in one place"
+      ],
+      "files": [
+        "frontend/components/news/ArticleDetailView.tsx:143-148",
+        "frontend/lib/articleHref.ts",
+        "frontend/lib/categories.ts"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 2,
+      "growth_impact": "Removes a site-wide 404 that every article sends to crawlers and readers; internal-link equity to category hubs (organic clicks).",
+      "unlocks": [
+        "C02"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-003",
+      "title": "Fix RSS item paths and regenerate the feed on publish",
+      "problem": "FACT: RssController maps category type 'tech' to /tech/<slug> (404; the page is /hardware/<slug>) and has no case for 'reviews', which falls to the /news default; the feed ran about 24 h behind sitemap-news on 27 Sep [R02 §11.2-3; backend/app/Http/Controllers/RssController.php:114-121].",
+      "acceptance_criteria": [
+        "getArticleTypePath() maps news→news, reviews→reviews, tech→hardware and a feature test asserts one item of each type",
+        "frontend/app/rss/route.ts and feed/route.ts fetch with a cache tag ('rss'); RevalidationService::revalidateArticle() purges that tag on publish, update and delete",
+        "A newly published article appears in /rss within 15 minutes (checked on two publishes)",
+        "No new observer registration outside AppServiceProvider"
+      ],
+      "files": [
+        "backend/app/Http/Controllers/RssController.php:36,114-121",
+        "backend/app/Services/RevalidationService.php",
+        "frontend/app/rss/route.ts:16-40",
+        "frontend/app/feed/route.ts",
+        "frontend/app/api/revalidate/route.ts"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "Feed readers, Discord bots and the planned Flipboard/Mastodon RSS automation stop receiving dead links (referral sessions).",
+      "unlocks": [
+        "C02"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W42 (12–18 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-004",
+      "title": "Replace dead Discord invites with discord.gg/wPQG9gUMXH",
+      "problem": "FACT: discord.gg/techplaygg (GTA 6 newsletter block, roadmap CTA) and discord.gg/techplay (seeder default for discord_url) return Unknown Invite; only wPQG9gUMXH works [R13 §1; Gta6NewsletterCTA.tsx:7; RoadmapCTA.tsx:17; SiteSettingSeeder.php:23].",
+      "acceptance_criteria": [
+        "Both components read settings.discord_url with https://discord.gg/wPQG9gUMXH as the fallback, the same way Footer.tsx does; no invite is hard-coded elsewhere",
+        "SiteSettingSeeder default changed to wPQG9gUMXH; the live admin value is confirmed to be wPQG9gUMXH",
+        "RoadmapCTA social row: YouTube points to @techplay_gg (the real handle) and the unverified Twitch link is removed",
+        "grep for 'techplaygg' Discord invites returns 0; /gta6 and /roadmap Discord buttons open the server"
+      ],
+      "files": [
+        "frontend/components/gta6/Gta6NewsletterCTA.tsx:7,85",
+        "frontend/components/roadmap/RoadmapCTA.tsx:14-17",
+        "backend/database/seeders/SiteSettingSeeder.php:23",
+        "frontend/components/layout/Footer.tsx:50 (reference pattern)"
+      ],
+      "priority": "P0",
+      "effort": "XS",
+      "hours_estimate": 1,
+      "growth_impact": "Every Discord click from the GTA 6 hub (the Q4 landing page) currently fails; restores discord_join from the hub.",
+      "unlocks": [
+        "C02",
+        "C06",
+        "C35",
+        "C36"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-005",
+      "title": "Re-point GTA 6 news to /games/grand-theft-auto-vi and neutralise the parody entry",
+      "problem": "FACT: TechPlay's GTA 6 stories are linked to /games/gta-6, a 2019 stickman parody, not /games/grand-theft-auto-vi, and the hub links to neither [R02 §11.4; R17 §1; R21 FIX-05].",
+      "acceptance_criteria": [
+        "Every article whose game_id is the parody entry is re-linked to Grand Theft Auto VI through the model ($article->update()), not a query-builder update, so observers revalidate",
+        "PublishHappensOnceTest still passes and no Discord announcement or author payout fires for the re-link (updates are not publishes)",
+        "The parody game's link_name is changed so ContentGameLinker cannot match 'GTA 6' or 'GTA VI' to it; a unit test covers the match",
+        "/games/grand-theft-auto-vi lists the GTA 6 articles; /games/gta-6 lists none"
+      ],
+      "files": [
+        "backend/app/Services/ContentGameLinker.php",
+        "backend/app/Observers/ArticleObserver.php (read, no change expected)",
+        "backend/app/Console/Commands/LinkContentToGames.php (reuse for the backfill)",
+        "backend/tests/Feature/PublishHappensOnceTest.php"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Concentrates GTA 6 relevance on the real game page before 19 Nov; organic clicks and internal links for the P4 pillar.",
+      "unlocks": [
+        "C02",
+        "C06",
+        "C07",
+        "C10"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W41 (5–11 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-006",
+      "title": "Remove the WebSite SearchAction (build /search later)",
+      "problem": "FACT: the root layout's WebSite.potentialAction points to /search?q=, which does not exist and is disallowed in robots.txt [R01 A.4.2; R03; frontend/app/layout.tsx:205-209].",
+      "acceptance_criteria": [
+        "potentialAction removed from the WebSite JSON-LD; Rich Results Test shows valid Organization and WebSite blocks",
+        "A /search results page is logged as a Q1 2027 candidate, not built now"
+      ],
+      "files": [
+        "frontend/app/layout.tsx:205-209"
+      ],
+      "priority": "P0",
+      "effort": "XS",
+      "hours_estimate": 1,
+      "growth_impact": "Removes a structured-data defect Google can see on every page.",
+      "unlocks": [
+        "C02"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W51 (14–20 Dec)",
+      "status": "todo"
+    },
+    {
+      "id": "D-007",
+      "title": "GA4 key events per the canonical event list",
+      "problem": "FACT: GA4 receives only page_view plus eight onboarding events from lib/track.ts; there is no sign-up, newsletter, Discord, giveaway or library event, so no campaign has a conversion to count [R16 §0, §4; R01 A.2.7 F42].",
+      "acceptance_criteria": [
+        "lib/track.ts FunnelEvent union extended with the spine §10 names (single registry; no inline gtag calls)",
+        "Phase A (S4): registration_start, registration_complete{method,from}, email_verified, newsletter_signup, newsletter_verified (server truth from NewsletterController::verify), library_connected{platform}, reminder_set, discord_click{campaign}, cta_click{cta_id}",
+        "Phase B (2027-W04): shelf_add, game_followed, comment_created, rating_created, list_created, giveaway_entered (first entry only, server-side), social_share, tool_run, share_card_generated, search_performed",
+        "Guest events go to GA4 only (the /track/event endpoint stays auth-only); events respect Consent Mode",
+        "EIC marks registration_complete, newsletter_verified and library_connected as key events in GA4 admin"
+      ],
+      "files": [
+        "frontend/lib/track.ts",
+        "frontend/app/(auth)/register/RegisterClient.tsx",
+        "frontend/app/auth/callback/page.tsx",
+        "frontend/app/(auth)/verify-email/",
+        "frontend/components/editorial/SectionHub.tsx:180-186",
+        "frontend/components/gta6/Gta6NewsletterCTA.tsx:23-27",
+        "frontend/app/newsletter/verify/page.tsx",
+        "frontend/hooks/useReleaseReminder.ts",
+        "frontend/components/layout/Footer.tsx",
+        "backend/app/Http/Controllers/Api/V1/NewsletterController.php",
+        "backend/app/Http/Controllers/Api/V1/ConnectedAccountController.php",
+        "backend/app/Http/Controllers/Api/V1/TrackingController.php"
+      ],
+      "priority": "P0",
+      "effort": "M",
+      "hours_estimate": 12,
+      "growth_impact": "Makes registrations, verified subscribers and activated members countable per campaign; gate for any paid spend (C56–C58).",
+      "unlocks": [
+        "C03",
+        "C44",
+        "C56",
+        "C57",
+        "C58"
+      ],
+      "dependencies": [
+        "D-012 (newsletter form component)"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W43 (phase A, 6 h); 2027-W04 (phase B, 6 h)",
+      "status": "todo"
+    },
+    {
+      "id": "D-007b",
+      "title": "member_actions table (the data under Weekly Returning Members)",
+      "problem": "FACT: meaningful actions are spread over many tables and several (reminder set, Analyzer run, Discord XP) leave no timestamped row, so WRM cannot be computed [16-ACTIVATION-RETENTION; R12 §4; R11 §6].",
+      "acceptance_criteria": [
+        "member_actions (user_id, action, subject_type, subject_id, created_at) written at the points where QuestService::progress() already fires, plus the calendar reminder toggle, signed-in Analyzer runs (needs user_id on wow_analyses, D-040a) and at most one Discord XP row per user per day",
+        "Logins, page views, streak claims and giveaway daily visits excluded on purpose",
+        "Pruning policy and README §8 entry in the same commit"
+      ],
+      "files": [
+        "backend/app/Services/QuestService.php",
+        "backend/app/Http/Controllers/Api/V1/CalendarController.php:242-266",
+        "backend/app/Http/Controllers/Api/V1/DiscordXpController.php",
+        "backend/database/migrations/ (new)",
+        "docs/README.md §8"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Makes the North Star (WRM) and D1/D7/D30 on actions computable from 9 Nov.",
+      "unlocks": [
+        "C03"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W45 (2–8 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-008",
+      "title": "First-party collector: UTM columns and a campaign breakdown",
+      "problem": "FACT: AnalyticsCollector keeps the path only and drops the query string, including utm_* and gclid, and keeps only the referrer host, so the one counter that sees consent-denied EEA traffic cannot tell a campaign from organic [R16 §0, §4.5, §4.1; backend/app/Services/AnalyticsCollector.php:131-157].",
+      "acceptance_criteria": [
+        "Migration adds utm_source, utm_medium, utm_campaign, utm_content (nullable, lower-cased, length-capped) to analytics_events; docs/README.md §8 Baza updated in the same commit",
+        "Collector parses those four keys before the query string is dropped; nothing else from the query is stored",
+        "RollUpAnalytics gains a campaign dimension; the Filament Analytics page shows sessions by utm_campaign with is_bot = false",
+        "Test: a hit with ?utm_source=reddit&utm_campaign=c47-reddit-rep is stored and rolled up; a hit with other params stores none of them"
+      ],
+      "files": [
+        "backend/app/Services/AnalyticsCollector.php:77-157",
+        "backend/app/Console/Commands/RollUpAnalytics.php",
+        "backend/app/Models/AnalyticsEvent.php",
+        "backend/app/Models/AnalyticsBreakdown.php",
+        "backend/database/migrations/ (new)",
+        "backend/app/Filament/Pages/ (Analytics page)",
+        "docs/README.md §8, §19"
+      ],
+      "priority": "P0",
+      "effort": "M",
+      "hours_estimate": 10,
+      "growth_impact": "Campaign-level sessions for every UTM in the spine taxonomy, including EEA visitors GA cannot see; input to keep/kill decisions on 1 Jan 2027.",
+      "unlocks": [
+        "C03",
+        "C36",
+        "C47",
+        "C56",
+        "C57",
+        "C58"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W44 (26 Oct–1 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-009",
+      "title": "Campaign URL helper (one spelling for every UTM)",
+      "problem": "FACT: nothing builds campaign links; the research warns that hand-written UTMs drift the way hand-written cache keys did [R16 §4.1, §5.11].",
+      "acceptance_criteria": [
+        "Backend CampaignUrl::build(url, source, medium, campaign, content, term) enforces the spine §9 vocabulary (lower-case, hyphens, known sources/mediums)",
+        "Filament action 'Copy campaign link' on articles, giveaways and mail campaigns; campaign mail links are tagged utm_source=newsletter automatically",
+        "Unit test rejects an unknown medium and upper-case values"
+      ],
+      "files": [
+        "backend/app/Support/CampaignUrl.php (new)",
+        "backend/app/Filament/Resources/NewsResource.php",
+        "backend/app/Filament/Resources/GiveawayResource.php",
+        "backend/app/Filament/Resources/MailCampaignResource.php",
+        "backend/app/Services/CampaignBody.php"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Clean campaign data in D-008 without relying on a spreadsheet; lowers SC time per post.",
+      "unlocks": [
+        "C03"
+      ],
+      "dependencies": [
+        "D-008"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W12 (22–28 Mar)",
+      "status": "todo"
+    },
+    {
+      "id": "D-010",
+      "title": "Article-end CTA block, related module and contextual links",
+      "problem": "FACT: 0 contextual body links in six sampled articles; the end of an article offers Google preferred source, author box and 'Follow Us' but no newsletter and no game action; on phones three ad units sit between the body and the comments [R02 §4.2, §13.5-6; R01 A.6].",
+      "acceptance_criteria": [
+        "One ArticleEndCta component under every article body, ordered: game action ('Add {game} to your shelf' when game_id is set) → newsletter one-liner → Discord (live API count or none)",
+        "Related module (4 items) by game_id first, then category; server-rendered",
+        "Editors get InternalLinkService suggestions in the editor (exists for staff) and the style guide asks for 3–5 contextual links",
+        "Ad-unit order on mobile is an EIC decision recorded in the PR; no ad unit is removed without it"
+      ],
+      "files": [
+        "frontend/components/news/ArticleDetailView.tsx:333-378",
+        "frontend/components/news/JoinPrompt.tsx",
+        "frontend/components/news/RecommendedNews.tsx",
+        "backend/app/Services/InternalLinkService.php",
+        "backend/app/Http/Controllers/Api/V1/FeedController.php"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 14,
+      "growth_impact": "Newsletter capture per 1,000 article views; shelf adds from articles; pages per session.",
+      "unlocks": [
+        "C46",
+        "C40",
+        "C44"
+      ],
+      "dependencies": [
+        "D-012"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W05–W06 (1–14 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-011",
+      "title": "Bot: invite-code join attribution",
+      "problem": "FACT: the bot has no invite tracking; spine §9 asks for one invite code per campaign, and joins are only visible to the bot [R01 B.8.3; R16 §4.1; discord/src/index.ts:23-27 has no GuildInvites intent].",
+      "acceptance_criteria": [
+        "GuildInvites intent added; invite uses cached on ready and on inviteCreate/inviteDelete; on GuildMemberAdd the code whose uses rose is posted to a new /discord/joins endpoint (discord.bot token)",
+        "discord_joins table (code, discord_user_id hash, joined_at); README §8 updated; Filament table of joins by code per week",
+        "Bot role has Manage Server (required to read invites); documented in docs/README.md"
+      ],
+      "files": [
+        "discord/src/index.ts:21-28",
+        "discord/src/handlers/events.ts:76-106",
+        "discord/src/services/ApiService.ts",
+        "backend/routes/api.php (discord group, ~L169-204)",
+        "backend/app/Http/Controllers/Api/V1/ (new DiscordJoinController)",
+        "backend/database/migrations/ (new)"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 10,
+      "growth_impact": "discord_join per campaign; the only way to rank campaigns by Discord growth. Until built, SC reads invite uses by hand in Server Settings → Invites.",
+      "unlocks": [
+        "C36",
+        "C03"
+      ],
+      "dependencies": [
+        "SC creates campaign invite codes"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W07 (15–21 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-011a",
+      "title": "Bot: welcome channel by ID and Buffy voice rewrite",
+      "problem": "FACT: the welcome handler finds the channel by the exact name 'new-people', so a rename silently stops welcomes; Buffy's lines ('centuries of wisdom', 'young one') break the voice sheet; the hard-coded avatar URL 404ed [R13 §7; discord/src/handlers/events.ts:76-90; BuffyService.ts:21-116; 12-DISCORD §8.2].",
+      "acceptance_criteria": [
+        "WELCOME_CHANNEL_ID env setting with the name as fallback; documented in discord/.env.example",
+        "Welcome, rank-up, daily, tip, DM and event lines replaced with the 12-DISCORD §8.2 copy; catalogue constant removed or made live (covers D-011l)",
+        "Avatar served from a working URL"
+      ],
+      "files": [
+        "discord/src/handlers/events.ts:75-90",
+        "discord/src/services/BuffyService.ts:21-247",
+        "discord/src/config.ts",
+        "discord/.env.example"
+      ],
+      "priority": "P1",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "Onboarding in the only community channel reads like the brand (Discord new-member activation).",
+      "unlocks": [
+        "C35",
+        "C01"
+      ],
+      "dependencies": [
+        "SC supplies final lines from 12-DISCORD"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W51 (14–20 Dec)",
+      "status": "todo"
+    },
+    {
+      "id": "D-011b",
+      "title": "Inviter role at 3 retained invitees; weekly #invite-log report",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C36"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog, after D-011",
+      "status": "todo"
+    },
+    {
+      "id": "D-011c",
+      "title": "Activity counters: weekly unique posters, joiners who post within 7 days, command usage",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C36"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-011f",
+      "title": "Weekly Wrap upgrade: next week's releases, new-member count, poll result, UTMs",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C37"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog (SC adds these by hand until then)",
+      "status": "todo"
+    },
+    {
+      "id": "D-011g",
+      "title": "Sync Founder (C68) and Season Champion (C67) badges to Discord roles on /sync",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C68",
+        "C67"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog (manual roles until then)",
+      "status": "todo"
+    },
+    {
+      "id": "D-011i",
+      "title": "/guess cover quiz from /games/random",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P3",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C36"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "decide 1 Jan 2027",
+      "status": "todo"
+    },
+    {
+      "id": "D-011j",
+      "title": "Configurable word/invite filter; exempt TechPlay invite codes; no double action with AutoMod",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C35"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-011k",
+      "title": "Verify whether the /admin event multiplier is applied anywhere; wire it through XpService or remove it",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P3",
+      "effort": "XS",
+      "hours_estimate": 1,
+      "growth_impact": "See D-011.",
+      "unlocks": [],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 (ops time)",
+      "status": "todo"
+    },
+    {
+      "id": "D-011m",
+      "title": "Optional auto-thread per article in #latest-news",
+      "problem": "Registered as a sub-item of D-011 in 12-DISCORD; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 12-DISCORD; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P3",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C35"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "decide 1 Jan 2027",
+      "status": "todo"
+    },
+    {
+      "id": "D-011n",
+      "title": "Bot replies to unlinked members with a Discord OAuth sign-up link (renamed to avoid the D-011a collision)",
+      "problem": "Registered as a sub-item of D-011 in 15-REGISTRATION (listed there as D-011a); scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 15-REGISTRATION; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C44",
+        "C36"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-011o",
+      "title": "Buffy DM on /link or Discord sign-up (renamed to avoid the D-011b collision)",
+      "problem": "Registered as a sub-item of D-011 in 16-ACTIVATION-RETENTION (listed there as D-011b); scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 16-ACTIVATION-RETENTION; reviewed against D-011's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "See D-011.",
+      "unlocks": [
+        "C42"
+      ],
+      "dependencies": [
+        "D-011"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-012",
+      "title": "Newsletter landing /newsletter, homepage block and article capture",
+      "problem": "FACT: /newsletter returns 404; capture exists only in section-hub sidebars, the GTA 6 hub and Frontiers; the homepage has none although the unsubscribe page links to /#newsletter, an anchor that does not exist; subscribe posts carry no source [R01 A.3.2, A.7; R20 §3].",
+      "acceptance_criteria": [
+        "New /newsletter page: what The Save File is, the send day (Friday), a sample of the last issue (link to web archive when C40 has one), form, privacy line; indexable; added to sitemap-pages",
+        "Shared NewsletterForm component used on /newsletter, homepage (section id=\"newsletter\"), article end and existing sidebars",
+        "POST /newsletter/subscribe accepts an optional signup_source (validated slug, e.g. home, article, gta6, hub-switch-2, newsletter-page); migration adds the column; CampaignAudience can filter by it so a GTA briefing can go to gta6 sign-ups only (placement half of D-012a); README §8 and §20 updated",
+        "No subscriber count is displayed anywhere",
+        "Double opt-in unchanged; no DNS or SMTP change"
+      ],
+      "files": [
+        "frontend/app/newsletter/page.tsx (new)",
+        "frontend/components/newsletter/NewsletterForm.tsx (new)",
+        "frontend/app/HomeClient.tsx",
+        "frontend/components/editorial/SectionHub.tsx:620-640",
+        "frontend/app/newsletter/unsubscribed/page.tsx:46",
+        "backend/app/Http/Controllers/Api/V1/NewsletterController.php:16-40",
+        "backend/app/Models/NewsletterSubscriber.php",
+        "backend/app/Http/Controllers/SitemapController.php:142-232",
+        "docs/README.md §8, §20"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 7,
+      "growth_impact": "Verified newsletter subscribers (input metric) with a source per sign-up; needed for the first Save File on Fri 2 Oct.",
+      "unlocks": [
+        "C40",
+        "C42",
+        "C46"
+      ],
+      "dependencies": [
+        "EIC/SC copy for the landing page"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W40 (landing + homepage, 4 h) and 2026-W41 (shared form + signup_source, 3 h)",
+      "status": "todo"
+    },
+    {
+      "id": "D-012a",
+      "title": "Interest tags on subscribe (placement is covered by D-012 signup_source)",
+      "problem": "Registered as a sub-item of D-012 in 17-NEWSLETTER-EMAIL, 19-GTA6, 20-GAME-HUBS; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 17-NEWSLETTER-EMAIL; reviewed against D-012's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "See D-012.",
+      "unlocks": [
+        "C40"
+      ],
+      "dependencies": [
+        "D-012"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-012b",
+      "title": "Web archive /newsletter/archive/{n}, noindex until issues carry original writing",
+      "problem": "Registered as a sub-item of D-012 in 17-NEWSLETTER-EMAIL; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 17-NEWSLETTER-EMAIL; reviewed against D-012's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "See D-012.",
+      "unlocks": [
+        "C40"
+      ],
+      "dependencies": [
+        "D-012"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-013",
+      "title": "Welcome sequence and mail channel for reminders and the digest",
+      "problem": "FACT: 20 of 22 notification classes are database-only, including release reminders, wishlist notices and the Friday digest; there is no welcome mail; two reminder paths can notify the same person twice on release day [R01 B.2.10-2.12, B.12 #11; R12 §1; README §20].",
+      "acceptance_criteria": [
+        "Welcome sequence: 3 mails to newsletter_verified subscribers (day 0 welcome + what to expect, day 3 'tell us your platforms', day 7 'link your library'), words editable as MailTemplate rows, suppression via MailSuppression::filter(), paced like campaigns",
+        "Release-day reminder and wishlist 'out today / in 3 days' notices gain a mail channel only for verified members who opt in (settings.notifications), deduplicated across SendReleaseReminders and wishlist:check-releases",
+        "WeeklyDigestNotification gains an opt-in mail channel (default off); unsubscribe in every mail; no preheader hidden text",
+        "Tests: MailDeskTest-style coverage for suppression, dedupe and opt-out; README §20 table of mails updated from five to the new count",
+        "EIC approval recorded before first send because volume from our own server rises; no DNS/SMTP/SPF/DKIM change"
+      ],
+      "files": [
+        "backend/app/Notifications/GameReleaseNotification.php",
+        "backend/app/Notifications/WishlistGameReleasingNotification.php",
+        "backend/app/Notifications/WishlistGameReleasingSoonNotification.php",
+        "backend/app/Notifications/WeeklyDigestNotification.php:38-41",
+        "backend/app/Jobs/SendReleaseReminders.php",
+        "backend/app/Console/Commands/CheckWishlistReleases.php",
+        "backend/app/Console/Commands/SendWeeklyDigest.php",
+        "backend/app/Models/MailTemplate.php",
+        "backend/database/seeders/MailTemplateSeeder.php",
+        "frontend/app/settings/SettingsClient.tsx:657-716",
+        "docs/README.md §20"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 16,
+      "growth_impact": "Turns built loops into returns: alert→visit rate, reminder_delivered, WRM. Welcome mail lifts A2 activation (link a library).",
+      "unlocks": [
+        "C42",
+        "C43",
+        "C41"
+      ],
+      "dependencies": [
+        "D-012",
+        "D-054 (complaint visibility before volume grows)",
+        "EIC deliverability sign-off"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W45 (2–8 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-013b",
+      "title": "Mail channel for comment and forum replies (max 1 per thread per 24 h)",
+      "problem": "Registered as a sub-item of D-013 in 16-ACTIVATION-RETENTION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 16-ACTIVATION-RETENTION; reviewed against D-013's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 6,
+      "growth_impact": "See D-013.",
+      "unlocks": [
+        "C42"
+      ],
+      "dependencies": [
+        "D-013"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-013d",
+      "title": "Member time zone for quiet hours (D-013 ships with UTC quiet hours)",
+      "problem": "Registered as a sub-item of D-013 in 16-ACTIVATION-RETENTION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 16-ACTIVATION-RETENTION; reviewed against D-013's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "See D-013.",
+      "unlocks": [
+        "C43"
+      ],
+      "dependencies": [
+        "D-013"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-013e",
+      "title": "'inactive' suppression for non-clickers after re-engagement",
+      "problem": "Registered as a sub-item of D-013 in 17-NEWSLETTER-EMAIL; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 17-NEWSLETTER-EMAIL; reviewed against D-013's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "See D-013.",
+      "unlocks": [
+        "C40"
+      ],
+      "dependencies": [
+        "D-013"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog (saved SQL until then)",
+      "status": "todo"
+    },
+    {
+      "id": "D-014",
+      "title": "Register page rewrite: social-first, true copy, honour redirect",
+      "problem": "FACT: the register pitch sells XP/forum/giveaways and not the library; Google/Discord/Battle.net sit below a four-field form with Turnstile and five password rules; ?redirect=back from comments is ignored [R11 §1.2-1.3, §4 rows 1-2, 18, 25].",
+      "acceptance_criteria": [
+        "Left panel reuses the homepage mechanisms (one library, hours counted, taste, match) with no numbers except the API catalogue figure",
+        "Google, Discord and Battle.net buttons above the form; form under 'or with email'",
+        "/register reads ?from= (ignored today) and ?redirect=; both survive email registration, verify-email and the OAuth round trip (state); from is stored on the new user row (signup_source column, README §8) and sent with registration_complete; comment sign-ups return to the comment box",
+        "/verify-email explains what works before verification and what verification unlocks; page is noindex",
+        "registration_start/registration_complete fire with method and from (D-007)"
+      ],
+      "files": [
+        "frontend/app/(auth)/register/RegisterClient.tsx:186-495",
+        "frontend/app/(auth)/login/LoginClient.tsx",
+        "frontend/app/(auth)/verify-email/",
+        "frontend/components/auth/SignInWall.tsx",
+        "frontend/components/comments/CommentsSection.tsx:267-279",
+        "backend/app/Http/Controllers/Api/V1/SocialAuthController.php"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 7,
+      "growth_impact": "Registration completion rate and share of social sign-ups (fewer inbox-dependent accounts).",
+      "unlocks": [
+        "C44"
+      ],
+      "dependencies": [
+        "D-001",
+        "D-007"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W43 (19–25 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-014a",
+      "title": "Security decision: a scoped token before email verification (library, shelf, wishlist only)",
+      "problem": "Registered as a sub-item of D-014 in 15-REGISTRATION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 15-REGISTRATION; reviewed against D-014's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P1",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "See D-014.",
+      "unlocks": [
+        "C44"
+      ],
+      "dependencies": [
+        "D-014"
+      ],
+      "owner": "DEV",
+      "target_week": "decision by 26 Oct 2026 (EIC with DEV, ops time); build only if approved, 2027 Q1",
+      "status": "todo"
+    },
+    {
+      "id": "D-015",
+      "title": "Steam OpenID sign-in",
+      "problem": "FACT: Steam is a connect method only; Valve's OpenID docs allow the SteamID as login; 2 of 55 members had linked a platform [R11 §5; R01 exec 2].",
+      "acceptance_criteria": [
+        "/auth/steam/redirect and /callback create or log in an account from the SteamID64 (reusing the connect flow's OpenID validation) and queue SyncSteamLibrary",
+        "Steam-only accounts are 'activated but unreachable': full shelf use; email requested when a reminder or newsletter action needs it; comments, giveaways and redemptions still need a verified email",
+        "Official 'Sign in through Steam' button per Valve's guidelines on /register and /login",
+        "Security review of the state/nonce handling; feature tests for new user, returning user, link-intent"
+      ],
+      "files": [
+        "backend/app/Http/Controllers/Api/V1/SocialAuthController.php",
+        "backend/app/Http/Controllers/Api/V1/ConnectedAccountController.php (Steam OpenID)",
+        "backend/app/Services/SteamService.php",
+        "backend/routes/api.php:121-162",
+        "frontend/app/(auth)/register/RegisterClient.tsx",
+        "frontend/app/(auth)/login/LoginClient.tsx",
+        "frontend/app/auth/callback/page.tsx"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 14,
+      "growth_impact": "A2 activation (library linked) at sign-up; the headline promise 'one library' becomes one click.",
+      "unlocks": [
+        "C44",
+        "C68"
+      ],
+      "dependencies": [
+        "D-014"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W01 (4–10 Jan)",
+      "status": "todo"
+    },
+    {
+      "id": "D-016",
+      "title": "Guest 'Remind me' and 'Track' open a sign-up modal that returns to the page",
+      "problem": "FACT: guest clicks on Track, Rate, 'Remind me on release day' and calendar wishlist send people to /login or show 'Sign in to track releases.'; nothing brings them back to the game they were on [R01 A.3.1; R11 §4 rows 3, 5, 6].",
+      "acceptance_criteria": [
+        "AuthModal (Google, Discord, email; Steam once D-015 ships) opens from TrackGameButton, ReleaseClient, CalendarClient and GameRating for guests",
+        "The pending action (game slug + action) is stored and replayed after sign-up or login, then the user lands back on the same URL",
+        "Lite version (S12): modal + replay for 'Remind me' and 'Track'; full version (2027-W03): rating and list actions",
+        "reminder_set and registration_complete{from=game|calendar|gta6} fire"
+      ],
+      "files": [
+        "frontend/components/games/TrackGameButton.tsx:101-129",
+        "frontend/app/calendar/[slug]/ReleaseClient.tsx:97-123",
+        "frontend/app/calendar/CalendarClient.tsx:140,349,626",
+        "frontend/components/games/GameRating.tsx:300-381",
+        "frontend/hooks/useReleaseReminder.ts",
+        "frontend/components/auth/AuthModal.tsx (new)",
+        "frontend/context/AuthContext.tsx"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 12,
+      "growth_impact": "Registrations from game, calendar and GTA 6 pages; reminders set per session.",
+      "unlocks": [
+        "C45",
+        "C08",
+        "C44"
+      ],
+      "dependencies": [
+        "D-014"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W51 (lite, 8 h); 2027-W03 (rest, 4 h)",
+      "status": "todo"
+    },
+    {
+      "id": "D-016b",
+      "title": "Guest '+ Shelf' row action in the search dropdown",
+      "problem": "Registered as a sub-item of D-016 in 15-REGISTRATION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 15-REGISTRATION; reviewed against D-016's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "See D-016.",
+      "unlocks": [
+        "C44"
+      ],
+      "dependencies": [
+        "D-016"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-017",
+      "title": "GTA 6 hub: server-rendered counters and H1, cross-links, PC status, OG ≤300 KB",
+      "problem": "FACT: the hub serves 296 words of crawlable text, an empty H1 and hero counters that read 0 until JavaScript runs; it links neither /games/grand-theft-auto-vi nor the calendar; the pre-order block says 'PC — Coming Soon' while Everything We Know says PC is not confirmed; six OG PNGs weigh 1.9–2.1 MB [R17 §1; R02 §4.4, §13.13, §13.15; public/gta6/og-*.png].",
+      "acceptance_criteria": [
+        "Server HTML of /gta6 contains a non-empty H1, the real location/character/vehicle counts and days-to-launch computed at render time (client animation may run after)",
+        "Hub links to /games/grand-theft-auto-vi, /calendar (November 2026), /gta6/everything-we-know and /gta6/release-time (when D-018 ships); the game page links back to /gta6",
+        "Gta6PreOrder PC row reads 'Not announced' and carries no link; a disclosure line sits under the retailer buttons",
+        "og-*.png replaced by 1200×630 JPG/WebP ≤300 KB (DS supplies) and metadata updated; homepage server HTML links /gta6"
+      ],
+      "files": [
+        "frontend/app/gta6/page.tsx:14-118",
+        "frontend/components/gta6/Gta6HubHero.tsx:46-55",
+        "frontend/components/gta6/Gta6HypeBar.tsx:18-60",
+        "frontend/components/gta6/Gta6PreOrder.tsx:4-8,45-49",
+        "frontend/public/gta6/og-*.png",
+        "frontend/app/games/[slug]/page.tsx",
+        "frontend/app/HomeClient.tsx"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 6,
+      "growth_impact": "The Q4 landing page stops showing zeros to crawlers and visitors; organic clicks and newsletter_signup from /gta6 during C06–C10.",
+      "unlocks": [
+        "C06",
+        "C07",
+        "C10",
+        "C02"
+      ],
+      "dependencies": [
+        "DS OG images"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W41 (page, 4 h) and 2026-W42 (OG images, 2 h)",
+      "status": "todo"
+    },
+    {
+      "id": "D-018",
+      "title": "/gta6/release-time tool with reminder",
+      "problem": "FACT: none of the observed GTA 6 countdown sites pairs the timer with an account reminder; 'gta 6 release time', 'pre load time' and 'file size' are High-priority queries with no incumbent observed [R17 §3 rows 2, 25-26, §7.1; R10 idea 12-13].",
+      "acceptance_criteria": [
+        "New /gta6/release-time page: unlock time by time zone computed from one admin-editable UTC value; while Rockstar has not announced it, the page says so and shows only the date (19 Nov 2026, PS5 and Xbox Series X|S)",
+        "Pre-load date and file size fields shown only when set by an editor, each with a source link",
+        "'Remind me' sets the GTA VI release reminder (guests go to login until D-016 lite ships)",
+        "Server-rendered text, FAQPage JSON-LD for the confirmed facts only, OG ≤300 KB, in sitemap-pages",
+        "tool_run{tool=release-time} and reminder_set fire"
+      ],
+      "files": [
+        "frontend/app/gta6/release-time/page.tsx (new)",
+        "frontend/components/gta6/Gta6Countdown.tsx",
+        "backend/app/Filament/Pages/Settings.php (gta6_unlock_utc, gta6_preload_at, gta6_file_size settings)",
+        "backend/app/Http/Controllers/SitemapController.php:142-232",
+        "frontend/hooks/useReleaseReminder.ts"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 10,
+      "growth_impact": "reminder_set on GTA VI (the launch-week return loop) and organic clicks on launch-time queries.",
+      "unlocks": [
+        "C08",
+        "C10"
+      ],
+      "dependencies": [
+        "D-017"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W42 (12–18 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-018a",
+      "title": "Release-time share card ('GTA VI unlocks at {time} in {city}')",
+      "problem": "Registered as a sub-item of D-018 in 19-GTA6; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 19-GTA6; reviewed against D-018's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "See D-018.",
+      "unlocks": [
+        "C08"
+      ],
+      "dependencies": [
+        "D-018"
+      ],
+      "owner": "DEV",
+      "target_week": "only if D-018 finishes under estimate in 2026-W42; otherwise dropped",
+      "status": "todo"
+    },
+    {
+      "id": "D-019",
+      "title": "Web push for reminders (opt-in at 'Remind me')",
+      "problem": "FACT: no service worker, no PushManager, no permission prompt; the manifest exists; Chrome quietens prompts on sites with low acceptance and iOS allows push only for Home Screen apps [R01 A.7; R07 via RESEARCH-COMPLETE #25].",
+      "acceptance_criteria": [
+        "Service worker + VAPID keys (new env secrets, not DNS); push_subscriptions table; README §8 and §11 updated",
+        "Permission is asked only after a user sets a reminder, never on page load",
+        "Release-day reminder delivered by push with a per-game opt-out; notification_enabled and reminder_delivered{channel=push} fire"
+      ],
+      "files": [
+        "frontend/public/sw.js (new)",
+        "frontend/public/manifest.json",
+        "frontend/hooks/useReleaseReminder.ts",
+        "backend/app/Notifications/GameReleaseNotification.php",
+        "backend/composer.json (web-push channel package)",
+        "backend/database/migrations/ (new)"
+      ],
+      "priority": "P2",
+      "effort": "M",
+      "hours_estimate": 16,
+      "growth_impact": "A third delivery channel for reminders; value depends on acceptance rate, which is unknown.",
+      "unlocks": [
+        "C59"
+      ],
+      "dependencies": [
+        "D-013",
+        "D-016"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W12–W13 (only if the 1 Jan 2027 decision is go)",
+      "status": "todo"
+    },
+    {
+      "id": "D-020",
+      "title": "GTA 6 map data provenance check (gtadb)",
+      "problem": "FACT: GtaLocation rows carry gtadb_key ids, apparently from map.gtadb.org; 211 of 1,058 are flagged unconfirmed; the map cannot be presented as TechPlay's dataset without permission or attribution [spine §0; R17 §6; R01 B.6].",
+      "acceptance_criteria": [
+        "DEV exports a provenance summary: source of backend/database/data/gta6_landmarks.json (read by Gta6LocationsSeeder), count with gtadb_key, count unconfirmed",
+        "EIC sends the permission/attribution request (text in 33-QUICK-WINS) and records the answer",
+        "Outcome decides D-056: yes/attribution → build tracker with visible credit; no answer by 16 Oct → tracker is built on confirmed locations only with credit line; refusal → D-056 is replaced by D-021 + D-023 in S7"
+      ],
+      "files": [
+        "backend/database/seeders/Gta6LocationsSeeder.php",
+        "backend/database/data/gta6_landmarks.json",
+        "backend/app/Models/GtaLocation.php",
+        "frontend/app/gta6/map/"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 1,
+      "growth_impact": "Legal precondition for C11 and for any PR that presents the map as a dataset.",
+      "unlocks": [
+        "C11",
+        "C10",
+        "C48"
+      ],
+      "dependencies": [
+        "EIC outreach"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-021",
+      "title": "Tighten Game::indexable() and noindex the long tail",
+      "problem": "FACT: 99.8% of indexable URLs are database pages; 1,967 of 295,024 game pages carry anything TechPlay wrote; Googlebot fetches about 77 game pages a day; the rule today is only 'description longer than 50 characters' [R03 §9; R01 B.5; R23 B9].",
+      "acceptance_criteria": [
+        "EIC decision recorded (option 1+2+4 of R03 §9 recommended): indexable only with an original signal — linked TechPlay article, reader rating, shelf count ≥ N, or editor-written block",
+        "Game::indexable(), the partial index and the frontend noindex rule change together; sitemap:generate emits only indexable games; noindexed pages stay live and crawlable (follow)",
+        "Before/after counts written to docs/README.md §12 in the same commit; rollout staged (1 night) and watched in Search Console for 14 days",
+        "No public route is removed (CLAUDE.md: do not break public routes)"
+      ],
+      "files": [
+        "backend/app/Models/Game.php:139-171",
+        "backend/database/migrations/ (partial index)",
+        "backend/app/Console/Commands/GenerateSitemap.php",
+        "frontend/app/games/[slug]/page.tsx (robots)",
+        "docs/README.md §12"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 12,
+      "growth_impact": "Crawl budget moves to pages that can rank; the structural precondition for organic recovery (organic clicks).",
+      "unlocks": [
+        "C60",
+        "C61",
+        "C62",
+        "C63"
+      ],
+      "dependencies": [
+        "EIC decision by 18 Dec 2026",
+        "Search Console access"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W02 (11–17 Jan)",
+      "status": "todo"
+    },
+    {
+      "id": "D-021e",
+      "title": "Template fields on games: unlock time, file size per platform, crossplay, subscriptions, sources (13-SEO plans 12–23 Oct)",
+      "problem": "Registered as a sub-item of D-021 in 13-SEO-CONTENT; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 13-SEO-CONTENT; reviewed against D-021's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 10,
+      "growth_impact": "See D-021.",
+      "unlocks": [
+        "C60",
+        "C61",
+        "C62"
+      ],
+      "dependencies": [
+        "D-021"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W05 or later (not in 2026 DEV capacity)",
+      "status": "todo"
+    },
+    {
+      "id": "D-022",
+      "title": "Stop game pages appearing as Google News items",
+      "problem": "FACT: Google News returned 99 game-database pages and 1 article for site:techplay.gg, dated by the game's release year; the game page JSON-LD emits VideoGame.datePublished = released [R02 §8.3; R03; frontend/app/games/[slug]/page.tsx:1113].",
+      "acceptance_criteria": [
+        "datePublished removed from the VideoGame JSON-LD on game and calendar pages (release date stays visible on the page)",
+        "EIC adds 'User-agent: Googlebot-News / Disallow: /games/' through the robots.txt setting in Filament Settings",
+        "sitemap-news.xml contains articles only (verified)"
+      ],
+      "files": [
+        "frontend/app/games/[slug]/page.tsx:1105-1120",
+        "frontend/app/calendar/[slug]/page.tsx",
+        "backend/app/Filament/Pages/Settings.php (robots.txt field)",
+        "backend/app/Observers/ArticleObserver.php (regenerateNewsSitemap, read only)"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "Google News surface shows TechPlay's journalism instead of catalogue rows (News clicks).",
+      "unlocks": [
+        "C02"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W51 (14–20 Dec)",
+      "status": "todo"
+    },
+    {
+      "id": "D-022a",
+      "title": "'Material update' checkbox drives dateModified and the 'Updated' line (14-DISCOVER plans 23 Oct)",
+      "problem": "Registered as a sub-item of D-022 in 14-DISCOVER-NEWS; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 14-DISCOVER-NEWS; reviewed against D-022's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "See D-022.",
+      "unlocks": [
+        "C52"
+      ],
+      "dependencies": [
+        "D-022"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog (not in 2026 DEV capacity)",
+      "status": "todo"
+    },
+    {
+      "id": "D-023",
+      "title": "Game pages link their genres, platforms and tags to facet hubs",
+      "problem": "FACT: the Tags panel renders up to 24 plain spans and genre/platform names are unlinked, so 332k game pages pass nothing to the indexable /games/tag, /games/genre and /games/platform hubs [R01 A.4.8, A.4.9 #13; frontend/app/games/[slug]/page.tsx:1656-1666].",
+      "acceptance_criteria": [
+        "Genres and platforms link to their hubs; tags link only when the tag hub is indexable (lib/gameFacets.ts allow-list), otherwise stay text",
+        "No link to a noindexed facet; server-rendered"
+      ],
+      "files": [
+        "frontend/app/games/[slug]/page.tsx:1656-1666",
+        "frontend/lib/gameFacets.ts:50-60"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Internal links into the hub pages that sitemap-hub asks Google to rank (organic clicks on facets).",
+      "unlocks": [
+        "C61",
+        "C62",
+        "C63"
+      ],
+      "dependencies": [
+        "D-021 (ship together)"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W02 (11–17 Jan)",
+      "status": "todo"
+    },
+    {
+      "id": "D-024",
+      "title": "Gamer DNA share card (OG image)",
+      "problem": "FACT: Gamer DNA is computed for every profile but has no share image; the only card is the generic /og/profile [R10 §1, idea 2; R01 B.10].",
+      "acceptance_criteria": [
+        "/og/dna?username= edge route (same pattern as /og/profile), 1200×630, public profiles only, 404 for private",
+        "ShareCard offers the DNA card; share_card_generated{type=dna} fires"
+      ],
+      "files": [
+        "frontend/app/og/dna/route.tsx (new)",
+        "frontend/app/og/profile/route.tsx (pattern)",
+        "frontend/components/profile/ShareCard.tsx",
+        "frontend/lib/ogCovers.ts"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 6,
+      "growth_impact": "Share-driven sign-ups from profiles; reuses the D-025 card work.",
+      "unlocks": [
+        "C28",
+        "C68"
+      ],
+      "dependencies": [
+        "D-025"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W12 (22–28 Mar)",
+      "status": "todo"
+    },
+    {
+      "id": "D-024a",
+      "title": "Guest Taste Match preview (weights shown, % blurred)",
+      "problem": "Registered as a sub-item of D-024 in 15-REGISTRATION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 15-REGISTRATION; reviewed against D-024's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "See D-024.",
+      "unlocks": [
+        "C44"
+      ],
+      "dependencies": [
+        "D-024"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-025",
+      "title": "Your 2026 in Games (cross-platform year in review)",
+      "problem": "FACT: Steam, Xbox and PlayStation each publish a single-platform year in review; a cross-platform one is unclaimed; TechPlay holds five-platform libraries; menu-wrapped.webp art exists but no route [R10 idea 1; R12 §2; R01 A.8].",
+      "acceptance_criteria": [
+        "/year-in-review (members) and /year-in-review/{username} (public profiles only) built from existing tables: games added, finished, dropped and rated in 2026; top genres; platforms linked; achievements unlocked in 2026 where dated; top games by lifetime hours clearly labelled 'lifetime' (2026-only hours do not exist before D-059)",
+        "Share card /og/year?username= 1200×630; social_share and share_card_generated fire",
+        "Empty or thin libraries get an honest short version plus 'link a platform' CTA",
+        "Load-tested on the largest library; cached per user via CacheService keys, never hand-written",
+        "Live 14 Dec, linked from profile, newsletter and Discord; README §6 documents the route"
+      ],
+      "files": [
+        "backend/app/Services/YearInReviewService.php (new)",
+        "backend/app/Http/Controllers/Api/V1/ (new YearInReviewController, ApiResponse trait)",
+        "backend/routes/api.php (public profile group ~L613-627)",
+        "backend/app/Services/CacheService.php",
+        "frontend/app/year-in-review/page.tsx (new)",
+        "frontend/app/year-in-review/[username]/page.tsx (new)",
+        "frontend/app/og/year/route.tsx (new)",
+        "frontend/public/images/menu/menu-wrapped.webp"
+      ],
+      "priority": "P1",
+      "effort": "L",
+      "hours_estimate": 32,
+      "growth_impact": "December share loop into registrations (from=year-in-review) and WRM; the one viral artefact only a five-platform library can make.",
+      "unlocks": [
+        "C28"
+      ],
+      "dependencies": [
+        "D-007 (share events)"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W49–W50 (30 Nov–13 Dec)",
+      "status": "todo"
+    },
+    {
+      "id": "D-026",
+      "title": "Prediction league and awards polls",
+      "problem": "FACT: no scoring for predictions exists; forum polls exist (one per thread) and Discord has native polls; The Game Awards is 10 Dec [R13 ritual 6-7; R10 idea 38; backend/app/Models/Poll.php].",
+      "acceptance_criteria": [
+        "Categories and nominees entered by staff; one pick per category per member; picks lock at a set time; scoring after the show; leaderboard page",
+        "2026 fallback without this item: C29 runs on one forum poll per category + Discord polls, scored by SC in a sheet"
+      ],
+      "files": [
+        "backend/app/Models/Poll.php",
+        "backend/app/Http/Controllers/Api/V1/PollController.php",
+        "backend/database/migrations/ (new predictions tables)",
+        "frontend/app/awards/2026/page.tsx (new)"
+      ],
+      "priority": "P2",
+      "effort": "M",
+      "hours_estimate": 14,
+      "growth_impact": "Community participation and registrations around TGA; low evidence of acquisition value at 160 Discord members.",
+      "unlocks": [
+        "C29",
+        "C30"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "decide 1 Jan 2027 (TGA 2027)",
+      "status": "todo"
+    },
+    {
+      "id": "D-027",
+      "title": "Wishlist price-drop alerts",
+      "problem": "FACT: RefreshShelfPrices prices only games members own (Steam US, 1,017 games); wishlisted games are not priced, no price history is kept, and nothing alerts on a drop [R01 B.2.15; R12 §3; R10 idea 6].",
+      "acceptance_criteria": [
+        "Nightly job also prices wishlisted games that have a Steam appid; a minimal price history table keeps the previous final price (README §8)",
+        "A drop of ≥ the member's threshold (default 20%) or to a historical low creates a notification: bell always, mail if opted in (D-013 channel)",
+        "No affiliate link without a visible disclosure line; US prices labelled as US",
+        "Test for threshold, dedupe (one alert per game per sale) and suppression"
+      ],
+      "files": [
+        "backend/app/Jobs/RefreshShelfPrices.php",
+        "backend/app/Services/SteamPriceService.php:9-28",
+        "backend/app/Models/GamePrice.php",
+        "backend/app/Notifications/ (new PriceDropNotification)",
+        "backend/routes/console.php:171-182",
+        "docs/README.md §8, §10"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 12,
+      "growth_impact": "Alert→visit rate during Black Friday and the Steam Winter Sale; a reason to keep a wishlist on TechPlay (retention, WRM).",
+      "unlocks": [
+        "C31",
+        "C32",
+        "C34"
+      ],
+      "dependencies": [
+        "D-013"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W48 (23–29 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-028",
+      "title": "'Your releases this week' personalised email",
+      "problem": "FACT: SendWeeklyDigest already assembles each member's wishlist releases and shelf news every Friday, but only for the bell; no newsletter can send 'your releases' except one built on shelves [R01 B.2.11; R20 §2].",
+      "acceptance_criteria": [
+        "Monday job sends to opted-in verified members with ≥1 wishlisted or reminded game releasing Mon–Sun; skips empty mails",
+        "Content: game, platforms, date, pre-load if known, link to the game page with utm_source=email&utm_campaign=c41-your-releases-<yyyyww>",
+        "Paced sending, suppression filter, unsubscribe link untracked; open rate never reported without click rate"
+      ],
+      "files": [
+        "backend/app/Console/Commands/SendWeeklyDigest.php:34-93",
+        "backend/app/Services/NewsletterAudience.php",
+        "backend/app/Services/CampaignAudience.php",
+        "backend/app/Models/MailTemplate.php",
+        "backend/routes/console.php:258"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 10,
+      "growth_impact": "Monday return visits from members (WRM), reminder_delivered{channel=email}.",
+      "unlocks": [
+        "C41"
+      ],
+      "dependencies": [
+        "D-013",
+        "D-054"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W47 (16–22 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-029",
+      "title": "Hide zero-value modules for guests",
+      "problem": "FACT: anonymous visitors see '0 Online 0 Threads 0 Members', 'Nobody has moved yet this week', 'No draws have been settled yet', 'Most wishlisted — No wishlists yet', '0 votes so far' and empty Hidden Gems/On This Day rails [R02 §6.1, §11.14, §13.7].",
+      "acceptance_criteria": [
+        "Each listed module renders nothing (or a useful alternative) when its live value is zero or unhydrated in server HTML",
+        "No placeholder dash or zero is visible to a signed-out visitor on /, /forum, /leaderboard, /giveaways, /last-disc",
+        "GTA 6 counters handled in D-017"
+      ],
+      "files": [
+        "frontend/components/forum/ForumSidebar.tsx",
+        "frontend/app/leaderboard/LeaderboardClient.tsx",
+        "frontend/app/giveaways/GiveawayHub.tsx",
+        "frontend/app/last-disc/LastDiscClient.tsx",
+        "frontend/app/HomeClient.tsx"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "First impression for every new visitor from campaigns; removes signals of an empty site (registration rate).",
+      "unlocks": [
+        "C01"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W42 (12–18 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-029a",
+      "title": "Weekly shelf-add counter on the homepage, hidden below 50",
+      "problem": "Registered as a sub-item of D-029 in 15-REGISTRATION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 15-REGISTRATION; reviewed against D-029's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "See D-029.",
+      "unlocks": [
+        "C44"
+      ],
+      "dependencies": [
+        "D-029"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-030",
+      "title": "Unify author URLs and fix the doubled brand in author titles",
+      "problem": "FACT: two author URL schemes (/author/adi and /author/adi-zeljkovic) split the Person entity in JSON-LD; author titles read 'Articles by X - TechPlay | TechPlay' [R02 §11.6; R01 A.4.1, A.4.9 #10].",
+      "acceptance_criteria": [
+        "One canonical author URL per person; old URLs 301 via the admin redirect map (compiled on next deploy)",
+        "Review and guide JSON-LD use the canonical author URL",
+        "Author <title> has the brand once"
+      ],
+      "files": [
+        "frontend/app/author/[slug]/page.tsx:39",
+        "frontend/app/reviews/[slug]/page.tsx",
+        "frontend/app/guides/[slug]/page.tsx",
+        "backend/app/Filament/Resources/Redirects/"
+      ],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "Author authority for reviews (Verdict restart, OpenCritic application).",
+      "unlocks": [
+        "C01",
+        "C52",
+        "C53"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W06 (8–14 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-031",
+      "title": "Meta Pixel + Conversions API behind consent",
+      "problem": "FACT: no ad pixel is installed (grep fbq: 0); CSP already allows connect.facebook.net; EEA/UK/CH consent is denied by default until the Google CMP grants it [R16 §0, §4.3; R01 A.8].",
+      "acceptance_criteria": [
+        "Pixel initialises only after consent in denied regions (fbq('consent','revoke') before init) and never fires for 'denied'",
+        "CAPI job sends registration_complete and newsletter_verified with hashed email and a shared event_id for dedupe",
+        "Cookie policy already names Meta Pixel; EIC confirms wording; access token stored as env secret"
+      ],
+      "files": [
+        "frontend/app/layout.tsx",
+        "frontend/components/analytics/ConsentAwareAnalytics.tsx",
+        "frontend/next.config.ts (CSP)",
+        "backend/app/Jobs/ (new SendMetaConversion)",
+        "backend/config/services.php"
+      ],
+      "priority": "P2",
+      "effort": "M",
+      "hours_estimate": 14,
+      "growth_impact": "Required before any Meta registration test; without it C57 cannot optimise or report.",
+      "unlocks": [
+        "C57"
+      ],
+      "dependencies": [
+        "D-007",
+        "EIC paid decision 1 Jan 2027"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W10 (only if paid scale is approved on 1 Jan 2027); November 2026 retargeting dropped",
+      "status": "todo"
+    },
+    {
+      "id": "D-032",
+      "title": "Platform hub template: /switch-2, /steam, /mmo (and /guides/pc-fixes)",
+      "problem": "FACT: platform hubs score with GTA VI on the raw total (Switch 2 38, Steam/PC 38) and the WoW/MMO hub ranks first when tools and competition are weighted; no hub route exists except /gta6 [R18 ranked table, adjusted ranking, blueprints 1, 3, 4].",
+      "acceptance_criteria": [
+        "One server-rendered hub template fed by existing APIs (platform facet, calendar filtered by platform, articles by tag/game, tools) plus an editor-written intro and FAQ",
+        "Four configs: /switch-2, /steam (sales, Next Fest, movers), /mmo (WoW Analyzer, patch calendar, FFXIV, GW2), /guides/pc-fixes",
+        "Each hub links to its /games/platform/* facet and back; in sitemap-pages; OG image per hub",
+        "Interim until shipped: each hub launches as an ED pillar article that the hub later absorbs (canonical moves by 301)"
+      ],
+      "files": [
+        "frontend/app/switch-2/page.tsx (new)",
+        "frontend/app/steam/page.tsx (new)",
+        "frontend/app/mmo/page.tsx (new)",
+        "frontend/app/guides/pc-fixes/page.tsx (new)",
+        "frontend/components/hubs/PlatformHub.tsx (new)",
+        "backend/app/Http/Controllers/Api/V1/GameHubController.php",
+        "backend/app/Http/Controllers/SitemapController.php:142-232"
+      ],
+      "priority": "P2",
+      "effort": "M",
+      "hours_estimate": 18,
+      "growth_impact": "SEO scale on durable platform queries; the 2027 Q1 launches (Metroid 28 Jan, Next Fest 22 Feb) land on these hubs.",
+      "unlocks": [
+        "C61",
+        "C62",
+        "C15",
+        "C60"
+      ],
+      "dependencies": [
+        "D-057 (editor intro field)"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W03–W04 (18–31 Jan)",
+      "status": "todo"
+    },
+    {
+      "id": "D-032a",
+      "title": "'Part of the {Hub} hub' link on game pages",
+      "problem": "Registered as a sub-item of D-032 in 20-GAME-HUBS; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 20-GAME-HUBS; reviewed against D-032's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "See D-032.",
+      "unlocks": [
+        "C61",
+        "C62",
+        "C15"
+      ],
+      "dependencies": [
+        "D-032"
+      ],
+      "owner": "DEV",
+      "target_week": "with D-032, 2027-W03–W04",
+      "status": "todo"
+    },
+    {
+      "id": "D-033",
+      "title": "Release-date change log (game_release_changes)",
+      "problem": "FACT: releases:sync rewrites a game's date in place (StoreSync forceFill()->save()) and keeps no history, so slip statistics are impossible until a log exists; R14 lists 'Slip Rate' and 'GTA 6 Shadow' as needing this log [R14 §3 #3, §4 point 4; backend/app/Services/Releases/StoreSync.php:180-197].",
+      "acceptance_criteria": [
+        "Migration: game_release_changes (game_id, old_released, new_released, old_precision, new_precision, source store, detected_at); README §8 Baza updated in the same commit",
+        "Written in StoreSync where the date changes (knows the store) and in GameObserver::updated for admin edits (source='admin'); merges log source='merge'",
+        "No backfill claimed: the log starts on the deploy date and every publication states that start date",
+        "Test: a sync that moves a date writes one row; an unchanged sync writes none"
+      ],
+      "files": [
+        "backend/app/Services/Releases/StoreSync.php:180-197",
+        "backend/app/Services/Releases/GameMerger.php:227-248",
+        "backend/app/Observers/GameObserver.php",
+        "backend/database/migrations/ (new)",
+        "docs/README.md §8"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Starts the only dataset that cannot be recreated later; by 12 Jan 2027 it gives a Q4 n for State of the Catalogue and by late 2027 a full-year Slip Rate PR (backlinks).",
+      "unlocks": [
+        "C23",
+        "C27"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W43 (19–25 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-034",
+      "title": "Tombstone reason column",
+      "problem": "FACT: 61,034 game_tombstones mix merged duplicates from the 08/2026 rebuild with purges and delistings, so 'games that vanished' would be a false number without a reason field [R14 §3 #12, §4 point 3].",
+      "acceptance_criteria": [
+        "Migration adds reason (merged|purged-adult|purged-clutter|delisted|other); GameObserver::deleted and the purge commands pass it; README §8 updated",
+        "Backfill only where the source is certain; the rest stays 'unknown' and is excluded from PR numbers"
+      ],
+      "files": [
+        "backend/app/Observers/GameObserver.php",
+        "backend/app/Console/Commands/PurgeAdultGames.php",
+        "backend/app/Console/Commands/PurgeClutterGames.php",
+        "backend/app/Services/Releases/GameMerger.php",
+        "backend/database/migrations/ (new)"
+      ],
+      "priority": "P3",
+      "effort": "S",
+      "hours_estimate": 3,
+      "growth_impact": "Makes 'The Vanished Catalogue' data story publishable (backlinks) in 2027.",
+      "unlocks": [
+        "C27"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W08 (22–28 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-035",
+      "title": "Route Discord /daily through XpService and the streak",
+      "problem": "FACT: DiscordDailyController pays 50 + min(streak×5, 50) XP straight into users.xp, bypassing the daily cap, season multiplier, Bounty and ledger, and consumes the site's daily claim [R01 B.2.7; DiscordDailyController.php:60-76].",
+      "acceptance_criteria": [
+        "EIC decides the reward size; /daily awards through XpService::awardXp and StreakService so caps, ledger and season rules apply",
+        "Bot reply text updated; test covers cap and shared streak"
+      ],
+      "files": [
+        "backend/app/Http/Controllers/Api/V1/DiscordDailyController.php:60-76",
+        "backend/app/Services/XpService.php",
+        "backend/app/Services/StreakService.php",
+        "discord/src/handlers/commands.ts"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Fair leaderboards for Season 2 and Discord referral roles (community trust).",
+      "unlocks": [
+        "C67",
+        "C36"
+      ],
+      "dependencies": [
+        "EIC reward decision"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W12 (22–28 Mar)",
+      "status": "todo"
+    },
+    {
+      "id": "D-035a",
+      "title": "Streak freeze (1 earned per 7-day streak, 2 banked)",
+      "problem": "Registered as a sub-item of D-035 in 16-ACTIVATION-RETENTION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 16-ACTIVATION-RETENTION; reviewed against D-035's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "See D-035.",
+      "unlocks": [
+        "C67"
+      ],
+      "dependencies": [
+        "D-035"
+      ],
+      "owner": "DEV",
+      "target_week": "with D-035, 2027-W12",
+      "status": "todo"
+    },
+    {
+      "id": "D-036",
+      "title": "ICS calendar export (public feed + private wishlist feed)",
+      "problem": "FACT: the calendar has no export; reminders stay on the site [R10 idea 8; R01 exec map].",
+      "acceptance_criteria": [
+        "/calendar.ics?platform= for notable releases; per-user tokenised feed of wishlist and reminders (token column, revocable in settings; README §8)",
+        "Links from /calendar and the release pages"
+      ],
+      "files": [
+        "backend/app/Http/Controllers/Api/V1/CalendarController.php",
+        "backend/routes/api.php (calendar group ~L676-706)",
+        "frontend/app/calendar/CalendarClient.tsx"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Sticky return path for S1 Release Planners; low build cost.",
+      "unlocks": [
+        "C33",
+        "C04"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W08 (22–28 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-037",
+      "title": "Public Backlog Advisor / Steam library calculator (guest mode)",
+      "problem": "FACT: Backlog Advisor is behind a sign-in wall and nothing is indexable for guests; HowLongToBeat's public Steam calculator is the proven pattern [R10 §3, idea 4, 19].",
+      "acceptance_criteria": [
+        "Guest enters a public Steam profile; the server reads owned games once (Steam Web API), shows backlog stats and three picks via GameRecommendationService without storing the library",
+        "Rate-limited; 'Import it for real' CTA leads to Steam sign-in (D-015); tool_run{tool=backlog} fires"
+      ],
+      "files": [
+        "frontend/app/backlog-advisor/AdvisorClient.tsx:258,465",
+        "backend/app/Http/Controllers/Api/V1/BacklogAdvisorController.php",
+        "backend/app/Services/GameRecommendationService.php",
+        "backend/app/Services/SteamService.php"
+      ],
+      "priority": "P2",
+      "effort": "M",
+      "hours_estimate": 16,
+      "growth_impact": "Indexable tool for 'what game should I play next' and a registration path (tool_run → registration_complete).",
+      "unlocks": [
+        "C44"
+      ],
+      "dependencies": [
+        "D-015"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W11 (15–21 Mar)",
+      "status": "todo"
+    },
+    {
+      "id": "D-038",
+      "title": "/about/ownership and /press pages",
+      "problem": "FACT: ownership sits only in the Impressum (Luminor Solutions, Sarajevo); there is no press page and no AI-use statement; SEO meta on About contradicts its own copy [R02 §6.2; RESEARCH-COMPLETE opp. 22; R21 PART-03].",
+      "acceptance_criteria": [
+        "/about/ownership: owner, funding (ads, no investors unless stated by EIC), editorial independence, AI-use policy — text by EIC",
+        "/press: what TechPlay is, live numbers from the API only (games, studios, published pieces), contact, logo files, dataset links",
+        "Both in sitemap-pages with Organization JSON-LD; interim from 9 Oct: EIC publishes the ownership text as an article linked from /about"
+      ],
+      "files": [
+        "frontend/app/about/ownership/page.tsx (new)",
+        "frontend/app/press/page.tsx (new)",
+        "frontend/app/about/page.tsx",
+        "backend/app/Http/Controllers/SitemapController.php:142-232"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Trust for PR pitches, partners and OpenCritic; press-page links from data stories.",
+      "unlocks": [
+        "C54",
+        "C53",
+        "C20"
+      ],
+      "dependencies": [
+        "EIC copy"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W51 (14–20 Dec)",
+      "status": "todo"
+    },
+    {
+      "id": "D-039",
+      "title": "Giveaway hub indexable while a giveaway is live; canonical on giveaway pages",
+      "problem": "FACT: /giveaways is noindex,nofollow even when a giveaway runs; /giveaway/[slug] emits no canonical [R01 A.1.4, A.4.4; frontend/app/giveaways/page.tsx:10].",
+      "acceptance_criteria": [
+        "Hub robots = index,follow only while ≥1 public giveaway is active (server fetch of hub stats), otherwise noindex",
+        "Every /giveaway/{slug} emits a self canonical",
+        "Only built if EIC confirms on 28 Sep that the GTA 6 giveaway is live; otherwise moves to the next live giveaway"
+      ],
+      "files": [
+        "frontend/app/giveaways/page.tsx:5-11",
+        "frontend/app/giveaway/[slug]/page.tsx:71-127",
+        "backend/app/Http/Controllers/Api/V1/GiveawayHubController.php"
+      ],
+      "priority": "P1",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "Organic discovery of a live giveaway (giveaway_entered from search).",
+      "unlocks": [
+        "C09"
+      ],
+      "dependencies": [
+        "EIC verifies giveaway status 28 Sep"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W41 (only if the GTA 6 giveaway is live on 28 Sep)",
+      "status": "todo"
+    },
+    {
+      "id": "D-039a",
+      "title": "Giveaway: base points on entry so every entrant can win",
+      "problem": "FACT: Giveaway::pickWinner() draws only from entries with total_points > 0, and entering alone gives 0 points, so an entrant who does no task can never win although the copy says 'free to enter' [backend/app/Models/Giveaway.php:225-229; 25-GIVEAWAYS].",
+      "acceptance_criteria": [
+        "Entering awards base points (10, per 25-GIVEAWAYS) via the entry creation path; existing entries of the live draw get the same base points once (idempotent command)",
+        "pickWinner() and pickWinnersByTiers() tests cover a no-task entrant being eligible",
+        "Ships before C09 is promoted or drawn"
+      ],
+      "files": [
+        "backend/app/Models/Giveaway.php:212-260",
+        "backend/app/Models/GiveawayEntry.php",
+        "backend/app/Http/Controllers/Api/V1/GiveawayController.php:218-272",
+        "backend/app/Observers/GiveawayEntryObserver.php (registered in AppServiceProvider only)"
+      ],
+      "priority": "P0",
+      "effort": "XS",
+      "hours_estimate": 1,
+      "growth_impact": "Makes the 'free to enter' promise true (trust, giveaway_entered → registration_complete).",
+      "unlocks": [
+        "C09"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-039b",
+      "title": "Giveaway: enforce the per-IP entry limit on every entry path",
+      "problem": "FACT: the 5-entries-per-IP limit is checked only in enter(); completeTask() and claimDailyBonus() also create entries with firstOrCreate and bypass it [GiveawayController.php:230-238, 346-352, 488-494].",
+      "acceptance_criteria": [
+        "One guard method used by enter(), completeTask() and claimDailyBonus() before an entry can be created",
+        "Feature test: the sixth account from one IP is refused on all three paths"
+      ],
+      "files": [
+        "backend/app/Http/Controllers/Api/V1/GiveawayController.php:218-500",
+        "backend/config/giveaway.php"
+      ],
+      "priority": "P0",
+      "effort": "S",
+      "hours_estimate": 2,
+      "growth_impact": "Protects draw integrity before promotion (guardrail: giveaway-only accounts share).",
+      "unlocks": [
+        "C09"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-039c",
+      "title": "Giveaway: verified task types instead of credit-on-click",
+      "problem": "FACT: most giveaway tasks (share, visit, follow) are credited when clicked, without verification; Meta's promotions rules also forbid requiring shares [R16 §0, §2.15; GiveawayTask.php:31-45; 25-GIVEAWAYS].",
+      "acceptance_criteria": [
+        "New server-verified task types: library_connected (a connected_accounts row exists), shelf_3 (≥3 shelf items), reminder_set, discord_join (verified through the bot's guild-membership sync)",
+        "Click-only tasks stay available but are labelled 'honour system' in the admin and capped in points",
+        "giveaway_task_done fires with the task type"
+      ],
+      "files": [
+        "backend/app/Models/GiveawayTask.php:31-45",
+        "backend/app/Http/Controllers/Api/V1/GiveawayController.php:334-470",
+        "backend/app/Http/Controllers/Api/V1/DiscordMembershipController.php",
+        "backend/app/Filament/Resources/GiveawayResource.php"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Turns giveaway entries into activation (A2) instead of clicks; the precondition for any paid giveaway traffic.",
+      "unlocks": [
+        "C09",
+        "C36"
+      ],
+      "dependencies": [
+        "D-039a"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W04 (25–31 Jan)",
+      "status": "todo"
+    },
+    {
+      "id": "D-039d",
+      "title": "Referral credit only when the referee reaches A2; cap 5; same-IP excluded",
+      "problem": "Registered as a sub-item of D-039 in 25-GIVEAWAYS; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 25-GIVEAWAYS; reviewed against D-039's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "See D-039.",
+      "unlocks": [
+        "C36"
+      ],
+      "dependencies": [
+        "D-039"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-039e",
+      "title": "Fraud score column and filter in viewParticipants; draw excludes score ≥70",
+      "problem": "Registered as a sub-item of D-039 in 25-GIVEAWAYS; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 25-GIVEAWAYS; reviewed against D-039's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "See D-039.",
+      "unlocks": [
+        "C09"
+      ],
+      "dependencies": [
+        "D-039"
+      ],
+      "owner": "DEV",
+      "target_week": "not in 2026 DEV capacity; SC reviews entrants by hand before each 2026 draw",
+      "status": "todo"
+    },
+    {
+      "id": "D-039f",
+      "title": "Winner and result mails, public winner block, closing reminder by mail",
+      "problem": "Registered as a sub-item of D-039 in 25-GIVEAWAYS; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 25-GIVEAWAYS; reviewed against D-039's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "See D-039.",
+      "unlocks": [
+        "C09"
+      ],
+      "dependencies": [
+        "D-039"
+      ],
+      "owner": "DEV",
+      "target_week": "not in 2026 DEV capacity; EIC contacts winners by hand; mail after D-013 in 2027 Q1",
+      "status": "todo"
+    },
+    {
+      "id": "D-040",
+      "title": "WoW Analyzer: remove stale and unverifiable copy, replace the 2.5 MB OG image",
+      "problem": "FACT: the Analyzer says 'Midnight launches March 2, 2026', '50K+ players analyzed' and '4.9/5 rating', spells 'Profesor Buffy', carries ~100 keywords entries, and uses '/WoW Analyzer.png' (2.5 MB, space in the name) as OG [R02 §11.10; R10 §3; frontend/app/wow-analyzer/page.tsx:6-251; WowAnalyzerClient.tsx:186,196,565].",
+      "acceptance_criteria": [
+        "Title/description re-aimed at the live game: 'WoW Character Analyzer — free readiness check for your main' with no expansion date",
+        "Stats row and rating removed; 'Professor Buffy' spelled right; tips labelled as AI-generated",
+        "keywords array removed; FAQ answers rewritten without 'Midnight readiness'",
+        "OG replaced by /og/wow-analyzer.jpg 1200×630 ≤300 KB"
+      ],
+      "files": [
+        "frontend/app/wow-analyzer/page.tsx:6-270",
+        "frontend/components/wow/WowAnalyzerClient.tsx:186-196,565",
+        "frontend/public/WoW Analyzer.png"
+      ],
+      "priority": "P0",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "The only unique tool among media sites stops advertising a past date (tool_run{tool=wow}, organic clicks).",
+      "unlocks": [
+        "C13",
+        "C14",
+        "C01"
+      ],
+      "dependencies": [
+        "DS OG image"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-040a",
+      "title": "Store user_id on wow_analyses when signed in (WRM counts Analyzer runs only after this)",
+      "problem": "Registered as a sub-item of D-040 in 15-REGISTRATION, 16-ACTIVATION-RETENTION; scope and rationale are in that file.",
+      "acceptance_criteria": [
+        "As specified in 15-REGISTRATION; reviewed against D-040's acceptance criteria before build"
+      ],
+      "files": [],
+      "priority": "P1",
+      "effort": "XS",
+      "hours_estimate": 1,
+      "growth_impact": "See D-040.",
+      "unlocks": [
+        "C13",
+        "C03"
+      ],
+      "dependencies": [
+        "D-040"
+      ],
+      "owner": "DEV",
+      "target_week": "2027 Q1 backlog",
+      "status": "todo"
+    },
+    {
+      "id": "D-041",
+      "title": "Bot giveaway links 404 (/giveaways/{slug} → /giveaway/{slug})",
+      "problem": "FACT: the bot's /giveaways command and the giveaway DM subscription build https://techplay.gg/giveaways/{slug}; the only route is frontend/app/giveaway/[slug] and next.config.ts has no redirect, so every giveaway link from Discord 404s [discord/src/handlers/commands.ts:537; discord/src/services/SubscriptionService.ts:192; 12-DISCORD].",
+      "acceptance_criteria": [
+        "Both URLs built as https://techplay.gg/giveaway/{slug} from one helper in the bot, with utm_source=discord&utm_medium=community&utm_campaign=c09-gta6-giveaway",
+        "Optional belt-and-braces: a permanent redirect /giveaways/:slug → /giveaway/:slug in next.config.ts",
+        "Bot rebuilt and restarted as the techplay user under pm2 via techplay-deploy.sh; /giveaways in Discord opens a live page"
+      ],
+      "files": [
+        "discord/src/handlers/commands.ts:537",
+        "discord/src/services/SubscriptionService.ts:192",
+        "frontend/next.config.ts (redirects)"
+      ],
+      "priority": "P0",
+      "effort": "XS",
+      "hours_estimate": 1,
+      "growth_impact": "Every giveaway click from the most active owned channel currently fails; gate for C09 promotion (giveaway_entered from Discord).",
+      "unlocks": [
+        "C09",
+        "C36"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W40 (28 Sep–4 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-042",
+      "title": "Launch-price snapshots for notable releases",
+      "problem": "FACT: GamePrice holds only current Steam US prices for games members own; the $80 Tracker and cost-per-hour stories need the base price at launch, captured at the time [R14 §3 #17, #42, §4 point 7; R01 B.2.15].",
+      "acceptance_criteria": [
+        "Daily job records, for games with Notability above the calendar threshold releasing within ±3 days, the store price found in store payloads (Steam first; PlayStation/Xbox only where the payload carries a price — UNVERIFIED which do)",
+        "game_launch_prices (game_id, store, currency, base_price, edition label if known, captured_at); README §8 updated",
+        "Weekly export for ED; gaps are listed, not guessed; capture starts on the deploy date (about 26 Oct), so MW4 (23 Oct) and earlier launch prices are recorded by ED by hand from public store pages"
+      ],
+      "files": [
+        "backend/app/Services/Releases/Notability.php",
+        "backend/app/Services/Releases/SteamCatalog.php",
+        "backend/app/Services/Releases/PlaystationCatalog.php",
+        "backend/app/Services/Releases/XboxCatalog.php",
+        "backend/app/Services/SteamPriceService.php",
+        "backend/database/migrations/ (new)",
+        "backend/routes/console.php"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Primary data for C24 (11 Nov) and C25 (23 Nov) and a price series that compounds into 2027 (backlinks, Discover).",
+      "unlocks": [
+        "C24",
+        "C25",
+        "C31",
+        "C27"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W44 (26 Oct–1 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-043",
+      "title": "Steam Next Fest participant capture",
+      "problem": "FACT: a Next Fest demo tracker is a 'Need' data item; Next Fest runs 19–26 Oct 2026 and again from 22 Feb 2027 [R10 idea 48; R05 §1-2].",
+      "acceptance_criteria": [
+        "2026 (no DEV): ED curates the demos as a public TechPlay list (lists support tiers, likes, comments and OG cards)",
+        "Command next-fest:capture {list} stores appid, name, developer studio, studio country and demo date from that list into a table, so February 2027 can report how many October demos have since released"
+      ],
+      "files": [
+        "backend/app/Console/Commands/ (new CaptureNextFest)",
+        "backend/app/Models/GameList.php",
+        "backend/database/migrations/ (new)"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "A repeatable Next Fest dataset (F23, Feb 2027 Next Fest) and indie outreach material (C71).",
+      "unlocks": [
+        "C18",
+        "C71"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W05 (1–7 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-044",
+      "title": "Dataset export pack for data PR",
+      "problem": "FACT: the datasets for C20–C27 exist in the database (release_date × precision × platform, studios × country × founded, game_series first/last year) but no export or methodology tooling exists [R14 §1, §3 #1, #7, #8, #24].",
+      "acceptance_criteria": [
+        "data:release-congestion (per ISO week, precision=day only, 'notable' flag = critic score or ≥2 store links) — S2, for C20 on 7 Oct",
+        "data:studio-atlas (studios by country incl. null-country count, per-million using a population file EIC supplies) — S5, for C21 on 28 Oct",
+        "data:sequel-gap (years between entries per series; top 50 series flagged for hand check) — ops time before C23 on 4 Nov",
+        "data:state-of-catalogue bundle (all of the above + D-033 and D-042 counts with their start dates) — S13, for C27",
+        "Every CSV carries a header comment with query date, filters and known gaps",
+        "2027-W09 extension (about 4 h): data:achievement-difficulty from Steam's public global achievement percentages for 500 games, with the 'ending achievement' mapping file published (C26 moved to Q1 2027)"
+      ],
+      "files": [
+        "backend/app/Console/Commands/ (new Data* commands)",
+        "backend/app/Models/Game.php",
+        "backend/app/Models/Studio.php",
+        "backend/app/Models/GameSeries.php",
+        "backend/config/countries.php"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 12,
+      "growth_impact": "Referring domains from data stories (PR pillar P5); the Reddit data posts in C48.",
+      "unlocks": [
+        "C20",
+        "C21",
+        "C22",
+        "C23",
+        "C27",
+        "C48"
+      ],
+      "dependencies": [
+        "EIC methodology sign-off per dataset"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W41 (congestion, 3 h), W44 (atlas, 2 h), W52 (State of the Catalogue, 3 h); 2027-W09 (achievements, 4 h)",
+      "status": "todo"
+    },
+    {
+      "id": "D-045",
+      "title": "/data/* dataset pages",
+      "problem": "FACT: data stories earn links when the number has a stable URL with a table, method and download (TwoAverageGamers, SteamDB, HLTB patterns); TechPlay has no such page type [R14 exec, §2].",
+      "acceptance_criteria": [
+        "/data/release-congestion-2026 live by Tue 6 Oct: server-rendered table, methodology, CSV download, DS chart image, Dataset JSON-LD, 'last updated' line",
+        "/data/studio-atlas by Tue 27 Oct from the same component; /data/studios-closed-2026 when ED's list is ready",
+        "In sitemap-pages; OG ≤300 KB per page"
+      ],
+      "files": [
+        "frontend/app/data/release-congestion-2026/page.tsx (new)",
+        "frontend/app/data/studio-atlas/page.tsx (new)",
+        "frontend/components/data/DatasetPage.tsx (new)",
+        "frontend/public/data/*.csv (new)",
+        "backend/app/Http/Controllers/SitemapController.php:142-232"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 7,
+      "growth_impact": "Link-worthy URLs for C20/C21/C22 (backlinks, referral sessions from press and Reddit).",
+      "unlocks": [
+        "C20",
+        "C21",
+        "C22",
+        "C48"
+      ],
+      "dependencies": [
+        "D-044",
+        "DS chart images"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W41 (congestion page, 5 h) and W44 (atlas page, 2 h)",
+      "status": "todo"
+    },
+    {
+      "id": "D-046",
+      "title": "WoW Analyzer re-aim per patch + share card",
+      "problem": "FACT: GroqService's prompt is built around Midnight (MIDNIGHT_LAUNCH 2026-03-02) and 'Midnight collection' tips; WoW 12.1.5 is predicted ~6 Oct, WoW: Forever lands 4 Nov and The Last Titan late 2027 [backend/app/Services/GroqService.php:34-170; R05; R18 blueprint 1].",
+      "acceptance_criteria": [
+        "Target content (patch/expansion name, date, focus areas) read from one config/setting, used by the prompt and the page copy",
+        "/og/wow share card for an analysis (character, class, score) and share_card_generated fires"
+      ],
+      "files": [
+        "backend/app/Services/GroqService.php:34-170",
+        "backend/app/Http/Controllers/Api/V1/WowAnalyzerController.php:42-177",
+        "frontend/app/wow-analyzer/page.tsx",
+        "frontend/app/og/wow/route.tsx (new)"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 6,
+      "growth_impact": "Keeps the unique tool current per patch (F15 Readiness Check, tool_run).",
+      "unlocks": [
+        "C13",
+        "C14",
+        "C15"
+      ],
+      "dependencies": [
+        "D-040"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W09 (1–7 Mar)",
+      "status": "todo"
+    },
+    {
+      "id": "D-047",
+      "title": "Discord DM release alerts for linked members",
+      "problem": "FACT: the bot already DMs news and giveaway subscriptions every 5 minutes, but not releases; reminders stay in the bell [R01 B.8.2, B.8.3; R12 §3].",
+      "acceptance_criteria": [
+        "/subscribe releases for linked accounts; daily DM at 09:00 UTC listing the member's reminded/wishlisted games out today",
+        "Backend endpoint returns releases per linked Discord id (discord.bot token); reminder_delivered{channel=discord}"
+      ],
+      "files": [
+        "discord/src/services/SubscriptionService.ts:13-62",
+        "discord/src/commands/definitions.ts",
+        "backend/routes/api.php (discord group)",
+        "backend/app/Http/Controllers/Api/V1/ (Discord subscriptions controller)"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 6,
+      "growth_impact": "Second off-site delivery channel for reminders where the community already is (WRM).",
+      "unlocks": [
+        "C43",
+        "C36"
+      ],
+      "dependencies": [
+        "D-013"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W06 (8–14 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-048",
+      "title": "Steam most-played weekly snapshot",
+      "problem": "FACT: F13 Steam Movers and the Steam hub need weekly most-played ranks; no Steam charts call exists in the codebase (grep) [R10 idea 27; R18 blueprint 3].",
+      "acceptance_criteria": [
+        "Weekly command stores rank and peak per appid from Steam's public charts API (endpoint confirmed at build time)",
+        "Export or API for 'biggest movers this week'; feeds the /steam hub module"
+      ],
+      "files": [
+        "backend/app/Console/Commands/ (new SnapshotSteamCharts)",
+        "backend/app/Services/SteamService.php",
+        "backend/routes/console.php",
+        "backend/database/migrations/ (new)"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Weekly F13 content without manual lookup; a time series that compounds.",
+      "unlocks": [
+        "C62"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W05 (1–7 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-049",
+      "title": "Buffy ritual scheduler (On This Day, What Are You Playing?, poll)",
+      "problem": "FACT: the bot has no scheduled content beyond the Sunday recap and article pushes; /games/on-this-day and the calendar endpoints exist [R01 B.8.3; R13 §3].",
+      "acceptance_criteria": [
+        "RitualService posts: daily On This Day (from /games/on-this-day), Monday 'What are you playing?' thread, Wednesday native poll from a text SC queues in admin",
+        "Times configurable; posts link with utm_source=discord&utm_medium=community"
+      ],
+      "files": [
+        "discord/src/services/RitualService.ts (new)",
+        "discord/src/index.ts:53-105",
+        "discord/src/services/ApiService.ts",
+        "backend/app/Http/Controllers/Api/V1/GameController.php (onThisDay)"
+      ],
+      "priority": "P2",
+      "effort": "M",
+      "hours_estimate": 8,
+      "growth_impact": "Saves SC about an hour a week and keeps rituals on schedule (Discord weekly active members).",
+      "unlocks": [
+        "C65",
+        "C37",
+        "C39"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W09 (1–7 Mar)",
+      "status": "todo"
+    },
+    {
+      "id": "D-050",
+      "title": "Founding 100: extend the Founder badge campaign",
+      "problem": "FACT: campaign:founders runs daily at 10:00 with --limit=50 (first 50 full profiles); the spine's C68 extends it to 100 [backend/routes/console.php:265; CampaignFounders --limit option].",
+      "acceptance_criteria": [
+        "Schedule passes --limit=100; FounderBadgeNotification copy names the Founding 100",
+        "SC can read remaining slots from the command output; no public count of members is shown"
+      ],
+      "files": [
+        "backend/routes/console.php:263-265",
+        "backend/app/Console/Commands/ (campaign:founders)",
+        "backend/app/Notifications/FounderBadgeNotification.php"
+      ],
+      "priority": "P1",
+      "effort": "XS",
+      "hours_estimate": 1,
+      "growth_impact": "Activation incentive (A2) for October sign-ups.",
+      "unlocks": [
+        "C68",
+        "C67"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W44 (26 Oct–1 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-051",
+      "title": "'Out This Week' draft generator",
+      "problem": "FACT: F01 runs every Monday from the calendar, which already scores notability per month; ED builds it by hand [R02 §13.20; R01 B.5 (Notability, CalendarVisibility)].",
+      "acceptance_criteria": [
+        "Filament action creates a draft Article (status draft, via the model) listing the week's notable releases with platforms, date and game links",
+        "ED edits and publishes; nothing publishes automatically"
+      ],
+      "files": [
+        "backend/app/Services/Releases/Notability.php",
+        "backend/app/Services/Releases/CalendarVisibility.php",
+        "backend/app/Filament/Resources/NewsResource.php"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Cuts ED time on F01 (ESTIMATE 1–2 h/week) and adds game links to every Monday post.",
+      "unlocks": [
+        "C04"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W07 (15–21 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-052",
+      "title": "North Star report: Weekly Returning Members and activation funnel",
+      "problem": "FACT: no definition or report of activation exists; FunnelAnalytics counters have a writer and no reader; the spine's North Star (WRM) is not computed anywhere [R11 §6; R12 §4; R01 B.12 #17].",
+      "acceptance_criteria": [
+        "Artisan command + Filament widget: WRM per ISO week (accounts with ≥1 meaningful action: shelf change, rating, comment, list edit, reminder set, analyzer run by a signed-in user, Discord linked-XP event)",
+        "Activation A0–A3 per registration week and per from=/provider; D1/D7/D30 on actions",
+        "Reads member_actions (D-007b) and the Redis funnel counters (the D-007a widget in 15-REGISTRATION is folded into this item)",
+        "Interim until it ships: DEV runs the WRM SQL weekly from member_actions and pastes the number into the KPI sheet (ops time)"
+      ],
+      "files": [
+        "backend/app/Console/Commands/FunnelReport.php",
+        "backend/app/Services/FunnelAnalytics.php:9-30",
+        "backend/app/Filament/Widgets/ (new NorthStarWidget)"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Makes the North Star and activation measurable; basis for every 1 Jan 2027 decision.",
+      "unlocks": [
+        "C03"
+      ],
+      "dependencies": [
+        "D-007",
+        "D-007b"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W52 (21–27 Dec)",
+      "status": "todo"
+    },
+    {
+      "id": "D-053",
+      "title": "Noindex login-walled and utility pages",
+      "problem": "FACT: /social, /verify-email, /newsletter/verify, /support/checkout, /shop/checkout and /auth/callback inherit index,follow [R01 A.4.7].",
+      "acceptance_criteria": [
+        "Each route returns robots noindex (follow where useful); verified in server HTML"
+      ],
+      "files": [
+        "frontend/app/social/page.tsx",
+        "frontend/app/(auth)/verify-email/",
+        "frontend/app/newsletter/verify/page.tsx",
+        "frontend/app/support/checkout/",
+        "frontend/app/shop/checkout/",
+        "frontend/app/auth/callback/page.tsx"
+      ],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "Index hygiene; small crawl-budget saving.",
+      "unlocks": [
+        "C02"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W08 (22–28 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-054",
+      "title": "Mail bounce/complaint ingestion and per-send guardrails (same item as D-013c in 17-NEWSLETTER-EMAIL)",
+      "problem": "FACT: MailSuppression supports bounced and complained, but only unsubscribe writes to it; no provider feedback is ingested; the spine guardrails (complaint <0.1%, unsubscribe <0.5% per send) cannot be read [R01 B.3, B.12 #13; R20 §4].",
+      "acceptance_criteria": [
+        "Provider webhook or feedback source identified with EIC (README §11); endpoint writes MailSuppression::suppress(bounced|complained); no DNS, SPF, DKIM, DMARC or SMTP change",
+        "MailCampaignResource shows per send: delivered, clicks, unsubscribes, complaints, bounces, with the guardrail thresholds highlighted"
+      ],
+      "files": [
+        "backend/app/Models/MailSuppression.php:32-76",
+        "backend/app/Http/Controllers/ (new MailFeedbackController)",
+        "backend/app/Filament/Resources/MailCampaignResource.php",
+        "docs/README.md §11, §20"
+      ],
+      "priority": "P1",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Protects deliverability as automated mail starts (guardrail metrics).",
+      "unlocks": [
+        "C40",
+        "C41",
+        "C42"
+      ],
+      "dependencies": [
+        "EIC confirms mail provider and approves any provider-side setting"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W48 (23–29 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-055",
+      "title": "Review JSON-LD dedupe and 'Verdict' format support",
+      "problem": "FACT: review pages emit Product JSON-LD twice (server and client); reviews stopped on 8 Jul and arrive 16–21 days after launch; the spine restarts them as F24 Verdict [R01 A.4.9 #1; R08; R02 §6.2].",
+      "acceptance_criteria": [
+        "Client duplicate removed from ReviewDetailView",
+        "review_data gains verdict_type (launch-verdict | full) and an 'Updated on' line when a verdict grows into a full review"
+      ],
+      "files": [
+        "frontend/components/reviews/ReviewDetailView.tsx:82-113",
+        "frontend/app/reviews/[slug]/page.tsx:186-231",
+        "backend/app/Filament/Resources/ReviewResource.php"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 4,
+      "growth_impact": "Clean review markup for the Verdict restart and the OpenCritic application.",
+      "unlocks": [
+        "C52",
+        "C53"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2027-W06 (8–14 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-056",
+      "title": "GTA 6 map progress tracker (saved to accounts)",
+      "problem": "FACT: the map holds 1,058 locations (211 unconfirmed); MapGenie-style progress saving is the proven hook; 'gta 6 collectibles map' is a High-priority post-launch query [R17 §3 row 34, §7.6; R10 idea 14].",
+      "acceptance_criteria": [
+        "Members mark a location found/visited; progress per category; stored in user_gta_locations (README §8); guests see a sign-up prompt (D-016 when shipped)",
+        "Attribution line per D-020 outcome; unconfirmed locations visibly labelled",
+        "Live by 18 Nov, switched on in the UI on 19 Nov; 2 h launch-week support reserved"
+      ],
+      "files": [
+        "frontend/components/gta6/Gta6MapClient.tsx",
+        "frontend/components/gta6/Gta6LeafletMap.tsx",
+        "backend/app/Models/GtaLocation.php",
+        "backend/app/Http/Controllers/Api/V1/ (Gta6 locations controller)",
+        "backend/routes/api.php:640-655",
+        "backend/database/migrations/ (new)"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 18,
+      "growth_impact": "Launch-week registrations and returns from GTA 6 players (registration_complete{from=gta6}, WRM).",
+      "unlocks": [
+        "C11",
+        "C10"
+      ],
+      "dependencies": [
+        "D-020"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W46–W47 (9–22 Nov)",
+      "status": "todo"
+    },
+    {
+      "id": "D-057",
+      "title": "Editorial intros on series and facet hubs",
+      "problem": "FACT: series pages and facet hubs carry no editorial copy and there is no Filament resource for series; In Order pages and the 2027 pre-release hubs (FF7 Revelation, Fable, Persona 4 Revival, Metroid, God of War, Metro) need an editor-written intro on the series page, which R18 names the canonical 'in order' URL [R18 'Connecting hubs'; R01 B.10; backend/app/Models/GameSeries.php:19-27].",
+      "acceptance_criteria": [
+        "Migration adds intro (sanitised HTML via SanitizationService) and intro_updated_at to game_series; hub_intros table keyed by facet path; README §8",
+        "GameSeriesResource and a HubIntro resource in Filament; saving revalidates the page by tag",
+        "Rendered server-side above the grid on /games/series/[slug] and facet hubs"
+      ],
+      "files": [
+        "backend/app/Models/GameSeries.php",
+        "backend/app/Filament/Resources/ (new GameSeriesResource, HubIntroResource)",
+        "frontend/app/games/series/[slug]/page.tsx",
+        "frontend/app/games/genre/[genre]/page.tsx",
+        "backend/database/migrations/ (new)",
+        "docs/README.md §8"
+      ],
+      "priority": "P1",
+      "effort": "M",
+      "hours_estimate": 10,
+      "growth_impact": "Turns the series index into the F09 In Order landing pages for Q1 2027 launches (organic clicks).",
+      "unlocks": [
+        "C63",
+        "C70"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W53 (5 h); 2027-W01 (5 h)",
+      "status": "todo"
+    },
+    {
+      "id": "D-058",
+      "title": "Stale surfaces: roadmap data and the expired Frontiers countdown",
+      "problem": "FACT: /roadmap shows shipped features as 'Planned' and paused ones as upcoming; Frontiers counts down to 13 Sep 2026 with no backend [R01 A.8; R02 §11.11; R11 §1.4].",
+      "acceptance_criteria": [
+        "lib/roadmapData.ts updated to what shipped (text from EIC)",
+        "Frontiers countdown hidden; keeping or removing the page is an EIC decision (CLAUDE.md: no feature removal without instruction)"
+      ],
+      "files": [
+        "frontend/lib/roadmapData.ts:16-160",
+        "frontend/app/frontiers/FrontiersClient.tsx:15"
+      ],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "Trust for anyone evaluating the product (partners, press).",
+      "unlocks": [
+        "C01"
+      ],
+      "dependencies": [
+        "EIC copy and Frontiers decision"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W07 (15–21 Feb)",
+      "status": "todo"
+    },
+    {
+      "id": "D-059",
+      "title": "Lifetime-hours baseline snapshot on 31 Dec 2026",
+      "problem": "FACT: user_games.hours_played is lifetime; no snapshot exists, so 'hours played in 2026' cannot be computed and the 2027 year in review would have the same gap [R01 B.2.15; D-025 note].",
+      "acceptance_criteria": [
+        "Command snapshots (user_id, game_id, hours_played, platform, captured_at) for all connected accounts at 23:00 UTC on 31 Dec 2026; README §8",
+        "Runs again every 1 Jan; retention policy documented; excluded from public exports"
+      ],
+      "files": [
+        "backend/app/Console/Commands/ (new SnapshotHours)",
+        "backend/routes/console.php",
+        "backend/database/migrations/ (new)"
+      ],
+      "priority": "P1",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "Makes 'Your 2027 in Games' report real hours played in 2027.",
+      "unlocks": [
+        "C28"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "2026-W52 (build); runs 31 Dec 2026 23:00 UTC",
+      "status": "todo"
+    },
+    {
+      "id": "D-060",
+      "title": "Studio status editing and a closures feed",
+      "problem": "FACT: studios carry status and changed_at history fields, but there is no Filament resource for studios, so ED cannot record a closure; C22 tracks studio closures weekly [R01 B.5; Filament resource list].",
+      "acceptance_criteria": [
+        "StudioResource (edit status, changed_at, source URL) with an observer registered in AppServiceProvider that revalidates the studio page",
+        "/data/studios-closed-2026 reads studios with status closed and changed_at in 2026"
+      ],
+      "files": [
+        "backend/app/Models/Studio.php:23-27",
+        "backend/app/Filament/Resources/ (new StudioResource)",
+        "backend/app/Providers/AppServiceProvider.php",
+        "frontend/app/data/studios-closed-2026/page.tsx (new)"
+      ],
+      "priority": "P2",
+      "effort": "S",
+      "hours_estimate": 5,
+      "growth_impact": "Turns F17 Studio Watch from an article into a maintained dataset linked from studio pages (backlinks).",
+      "unlocks": [
+        "C22"
+      ],
+      "dependencies": [
+        "D-045"
+      ],
+      "owner": "DEV",
+      "target_week": "2027-W10 (if D-031 is not approved) else 2027-W12",
+      "status": "todo"
+    },
+    {
+      "id": "D-061",
+      "title": "GTA 6 vehicles: show real-world equivalents",
+      "problem": "FACT: Gta6Vehicle has real_equivalent and vehicle_class fields editable in Filament, but the frontend renders only the class; 'gta 6 cars real life' is a High-priority query [R17 §3 row 14; Gta6VehicleResource.php:84,128; grep of frontend: 0 uses of real_equivalent].",
+      "acceptance_criteria": [
+        "Vehicle cards and detail pages show 'Based on (reported): …' only where ED filled the field with a source; filter by class",
+        "No equivalent is shown without a source note"
+      ],
+      "files": [
+        "frontend/components/gta6/Gta6EntityGrid.tsx:19",
+        "frontend/components/gta6/Gta6EntityDetail.tsx",
+        "frontend/components/gta6/Gta6EntityCard.tsx"
+      ],
+      "priority": "P2",
+      "effort": "XS",
+      "hours_estimate": 2,
+      "growth_impact": "Shareable vehicle content for C12 (organic clicks, social_share).",
+      "unlocks": [
+        "C12"
+      ],
+      "dependencies": [
+        "ED data entry"
+      ],
+      "owner": "DEV",
+      "target_week": "2026-W43 (19–25 Oct)",
+      "status": "todo"
+    },
+    {
+      "id": "D-062",
+      "title": "GTA 6 'Confirmed or Rumour?' ledger editable without a deploy",
+      "problem": "FACT: /gta6/everything-we-know holds its facts and FAQ as constant arrays in page.tsx, so every weekly ledger update (F03, Thursdays) needs a code change and deploy [frontend/app/gta6/everything-we-know/page.tsx:37-90; R17 §2].",
+      "acceptance_criteria": [
+        "Interim (S1–S8): ED sends the week's ledger rows by Wednesday; DEV applies them to the arrays and deploys Thursday morning (≤1 h, counted in the weekly ops reserve)",
+        "Full item (only if the ledger continues into 2027 as a GTA Online/PC status tracker): Gta6LedgerEntry model + Filament resource + observer registered in AppServiceProvider that revalidates the page by tag; each row has claim, status (confirmed/reported/rumour/denied), source URL, date"
+      ],
+      "files": [
+        "frontend/app/gta6/everything-we-know/page.tsx:37-90",
+        "backend/app/Filament/Resources/Gta6CharacterResource.php (pattern)",
+        "backend/app/Providers/AppServiceProvider.php"
+      ],
+      "priority": "P3",
+      "effort": "S",
+      "hours_estimate": 6,
+      "growth_impact": "Keeps the weekly ledger (trust signal for Discover and News) cheap to update.",
+      "unlocks": [
+        "C07"
+      ],
+      "dependencies": [],
+      "owner": "DEV",
+      "target_week": "interim: weekly text update in ops, W40–W47; full build decided 1 Jan 2027",
+      "status": "todo"
+    }
+  ]
+}

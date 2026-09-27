@@ -32,7 +32,7 @@ These are the facts the plan is built on. Each is from Phase 1; none is estimate
 | Community | Discord 160 members / 24 online; only working invite is discord.gg/wPQG9gUMXH | R13 |
 | Social | YouTube 20 subscribers, no videos; X account not linked from the site; no TikTok, Bluesky or LinkedIn | R02, R07 |
 | Editorial | ~3.3–3.5 news items a day, published 17:30–21:30 CET; reviews stopped 8 Jul (38 total); 4 guides, 3 of them Genshin | R02, R08 |
-| Product | Library import from Steam, PlayStation, Xbox, GOG, Epic; Gamer DNA, Taste Match, Backlog Advisor, WoW Analyzer; GTA 6 hub with 12 characters, 36 weapons, 121 vehicles, 1,058 locations; quests, 67 achievements, 20 ranks | R01, R10, R17 |
+| Product | Library import from Steam, PlayStation, Xbox, GOG, Epic; Gamer DNA, Taste Match, Backlog Advisor, WoW Analyzer; GTA 6 hub with 12 characters, 36 weapon and 121 vehicle names (best-effort, generated from image filenames per the seeder), 1,058 map pins (171 tagged '2022', 211 unconfirmed, 780 unnamed); quests, 67 achievements, 20 ranks | R01, R10, R17 |
 
 **What this means.** TechPlay has more product than most publications its size and almost none of the plumbing that makes product produce members. The plan spends the first three weeks on that plumbing, because every campaign after it depends on it.
 
@@ -41,7 +41,7 @@ These are the facts the plan is built on. Each is from Phase 1; none is estimate
 - **One line:** TechPlay is the gaming publication that knows what you play.
 - **Tagline (kept):** Gaming, on the record.
 - **Value proposition:** News you can act on, a database of 333,000 games, and a free library that fills itself from Steam, PlayStation, Xbox, GOG and Epic — then tells you what's releasing, what's on sale and what to play next.
-- **Proof we can state:** 333,000+ games catalogued; five platforms import free; release calendar with reminders; GTA 6 hub (1,058 mapped locations, attribution pending D-020); WoW character analyzer; independent, based in Sarajevo.
+- **Proof we can state:** 333,000+ games catalogued; five platforms import free; release calendar with reminders; GTA 6 hub with confirmed characters and a map of pins (describe as 'pins', not 'mapped locations'; attribution pending D-020); WoW character analyzer; independent, based in Sarajevo.
 - **Never state:** member counts, "thousands", "biggest", "#1", ratings we did not collect, benchmarks we did not run.
 
 **Why this position and not "gaming news".** Page one for news queries belongs to IGN, GameSpot, Eurogamer, PC Gamer, VGC, Dexerto and a crowd of fan sites [R04]. TechPlay cannot outpublish them with two writers. It can do something they do not: connect a news item to the reader's own library and act on it (remind, alert, add, compare). Every CTA in this plan is an action on the library, not a "subscribe" for its own sake.

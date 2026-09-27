@@ -129,7 +129,7 @@ Removed: "Create a game list" (moves to week 2, L-M4) and "Join a forum discussi
 | Within 5 min of A1 (social: of sign-up) | Email | Member welcome M1 (17 §12, E-01): subject "Your TechPlay library is ready for games"; or, if A2 already reached, "{n} games are on your shelf" | D-013, C42 |
 | On `/link` or Discord sign-up | Discord DM from Professor Buffy | See copy below | D-011o (DM on link) |
 | First achievement unlocks ("Verified Gamer", "Game Hunter") | Bell and toast (existing) | unchanged; no email | exists |
-| +24 h, no A2 | Bell | "Your shelf is empty. Steam and Xbox take one click, or pick five games by hand. [Bring your games in]" | copy |
+| +24 h, no A2 | Bell | "Your shelf is empty. Steam and Xbox take one click, or add three games by hand. [Bring your games in]" | copy |
 | First return visit (24–48 h) | Dashboard card | If Steam linked and `SessionSuggestionService` has a proposal: "Steam says you played {game} for {h} h since yesterday. Log it as a session?" [Log it] [Not a session]. Otherwise: "Out this week: {3 releases from the calendar}" | exists (suggestions), `d1_return` counter |
 
 **First Buffy DM (Discord-linked members only).** Plain first lines, character only in the sign-off [R13 §7]:
@@ -148,16 +148,29 @@ Removed: "Create a game list" (moves to week 2, L-M4) and "Join a forum discussi
 | Day | Site | Email (17 §12) | Discord |
 |---|---|---|---|
 | D0 | Wizard, checklist | M1 welcome | Buffy DM if linked |
-| D1 | Session suggestion or "Out this week" card | — | — |
-| D1 | (see above) | M2: A2 members "Your shelf, one day in" (03-FUNNEL); others "What do you play on?" | — |
+| D1 | Session suggestion or "Out this week" card | M2: A2 members "Your shelf, one day in" (03-FUNNEL); others "What do you play on?" | — |
 | D2 | — | — | — |
 | D3 | Bell nudge if no A2 | E-03 profile incomplete, only if no A2 | — |
-| D4 | Hidden Gem Thursday on homepage rail (if Thursday) | — | #hidden-gems post |
+| D4 | Hidden Gem Thursday on homepage rail (if Thursday) | — | F05 post (channel per 12-DISCORD) |
 | D5 | Bell weekly digest (existing, Friday 16:00) | The Save File, only if opted in | Poll result, Game Club reminder |
 | D6 | — | M3: variant A (no A2) "Your library in one click"; variant B (A2) "How close is your taste to ours?" | — |
 | D7 | Monday thread (C37) | C41 "Your releases this week", only if a reminder or wishlist game releases in the next 7 days (from 26 Oct) | Buffy posts the Monday thread |
 
 If the member unsubscribes from lifecycle mail, the site-side steps continue unchanged.
+
+### 3.6 Measuring the first week
+
+| Step | Formula | Source | TARGET |
+|---|---|---|---|
+| Wizard reach | `wizard_shown ÷ registration_complete` (non-redirect sign-ups) | Redis `FunnelAnalytics` (existing), D-007a widget | ↑ toward all non-redirect sign-ups |
+| Wizard choice | `wizard_steam_click`, `wizard_xbox_submitted`, `wizard_pick_started`, `wizard_skipped` each ÷ `wizard_shown` | same | skip share ↓ |
+| Import success | `library_connected` ÷ (`wizard_steam_click` + `wizard_xbox_submitted`) | `connected_accounts` sync status `done` vs `private`/`error` | ↑; every `private` result is shown the fix copy in §3.1 |
+| Time to A2 | median minutes from `users.created_at` to the A2 moment | §1 query with timestamps | ↓ |
+| First reminder | members with `reminder_set` within 24 h ÷ A2 members | `growth_events` | ↑ |
+| D1 return | A3's first half: action on day 1 (§5.2) | `member_actions` | ↑ (03-FUNNEL: A3 ≥ 35% of A2) |
+| First-week email clicks | unique clickers on M1–M3 ÷ delivered | campaign tracking | ↑ |
+
+SC reads this block in the Monday report (§5.4) for the cohort that signed up 7–14 days earlier.
 
 ---
 
@@ -186,7 +199,7 @@ Each loop: trigger → action → reward → investment (what the member puts in
 | L-W3 | Readiness Check (Tue, WoW reset) | Tuesday post in #wow (F15) → re-run Analyzer on the saved character → score change since last week → saved character, gear goals | ED, SC | D-040, D-040a | 1 per week | Label AI-generated tips as such; fix "Profesor" spelling [R13 §7] |
 | L-W4 | Poll of the Week (Wed) | Discord native poll + forum poll (F12, C39) → vote → see the result Friday in the Save File → next poll | SC | C39 | 1 per week | No prize for voting |
 | L-W5 | Hidden Gem Thursday | Rail + Discord post (F05, C64) → wishlist or add → a find others missed → wishlist grows (feeds L-D1, L-D2) | ED, SC | C64 | 1 per week | Games chosen by rating and low play, stated on the post |
-| L-W6 | The Save File (Fri) | Friday 14:00 UTC newsletter (F21, C40) → clicks to stories and tools → knows the week → shelf and reminder actions from links | SC assembles, EIC edits | C40 | 1 per week | One-click unsubscribe; clicks, not opens, are the metric |
+| L-W6 | The Save File (Fri) | Friday 15:00 Sarajevo time newsletter (F21, C40) → clicks to stories and tools → knows the week → shelf and reminder actions from links | SC assembles, EIC edits | C40 | 1 per week | One-click unsubscribe; clicks, not opens, are the metric |
 | L-W7 | Weekly digest (bell) and Buffy's Weekly Wrap (Sun) | Existing Friday bell digest; Sunday 20:00 recap upgraded (F14) with member of the week and next week's releases → visit → recognition → profile | SC | exists; F14 copy | 1 bell item, 1 Discord post | Member of the week only with opt-in (F19 rule) |
 | L-W8 | Rising this week | Monday Discord post: top 3 by XP gain since last Monday (existing "rising" computation) → visit leaderboard → recognition → more activity | SC | exists | 1 per week | Private profiles already excluded; friends-only board as default view for members (avoids the empty-room effect [R12 §3]) |
 | L-W9 | Weekly quests | Rate a Game, Finish One, Five Sessions, Make a Friend [R01 B.2.5] → bell and quest board → Bounty and XP → shelf and ratings | SC | exists; remove streak-only quests (§4.6) | 3 shown per week (existing shortlist) | Only quests that do something useful for the member |
@@ -392,7 +405,7 @@ Import rows: a Steam or Wednesday re-sync (`platforms:resync`) writes `user_game
 | `game_followed` | server, C45 endpoint | Follow = wishlist or shelf + news on |
 | `reminder_set` | server, `CalendarController` reminder toggle | writes `member_actions` (no timestamp exists today) |
 | `reminder_delivered` (channel) | server, alert sender (C43) | one per game per channel |
-| `alert_clicked` | server, signed click redirect (`/api/v1/mail/…`) and DM/push deep links with `utm_medium=email|push` | clicks are trusted, opens are not [R20 §4] |
+| `alert_clicked` | server, signed click redirect (`/api/v1/mail/…`) and DM/push deep links with `utm_medium=email` or `push` | clicks are trusted, opens are not [R20 §4] |
 | `rating_created`, `comment_created`, `comment_approved`, `list_created` | server observers | `comment_approved` is the A4 moment for comments |
 | `tool_run` (tool) | server for WoW (D-040a), client for release-time and backlog | — |
 | `notification_enabled` (push) | client, after permission granted | — |
@@ -439,6 +452,6 @@ Totals (ESTIMATE): DEV ≈ 65 h over 13 weeks (overlapping the C41/C43 hours als
 2. A2 threshold: spine and [R11] say ≥3 shelf items; [R12] says ≥5; `campaign:founders` uses ≥5. This file uses ≥3; the Founder badge rule must match whatever EIC confirms.
 3. Import rows versus member actions: confirm that `user_games.sources` or another field distinguishes sync-created rows, so D-007b can exclude them from WRM.
 4. Is the "Thirty Days Running" quest editable in admin, or does Fix 1 need a migration?
-5. Discord DM delivery for release alerts: the bot's DM subscriptions poll every 5 minutes for news and giveaways only [R01 B.8.2]; C43 needs a new subscription type or a push from the backend. DEV to choose by 9 Oct.
+5. Discord DM delivery for release alerts: the bot's DM subscriptions poll every 5 minutes for news and giveaways only [R01 B.8.2]. 12-DISCORD proposes D-011h (`/remind` plus a release-day DM through the C43 path); DEV confirms that path by 9 Oct so L-D1 has one Discord implementation, not two.
 6. Quiet hours need a time zone per member; none is stored today. Until D-013d, sends go at fixed UTC times chosen for EU mornings and US mornings (17 §2).
 7. WRM TARGETs differ between 03-FUNNEL (60–120 averaged 7–20 Dec) and 30-ANALYTICS K00 (45–70 in the last week of December). This file adopts neither; EIC to choose one number on 2 Nov.

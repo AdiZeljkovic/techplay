@@ -37,9 +37,9 @@ Scope: Part 19 (newsletter products, capture, welcome, reactivation, subject lin
 
 | ID | Product | Audience | Cadence and send time | Owner | Hours / week (ESTIMATE) | Starts |
 |---|---|---|---|---|---|---|
-| N1 | **The Save File** (F21, C40) | verified newsletter subscribers (form and account opt-in) | Fridays 14:00 UTC (16:00 Sarajevo until 25 Oct, 15:00 after; 10:00 New York) | SC assembles, EIC edits and signs | SC 3, EIC 1 | Fri 2 Oct |
+| N1 | **The Save File** (F21, C40) | verified newsletter subscribers (form and account opt-in) | Fridays 15:00 Sarajevo time (CEST to 25 Oct, CET after; 09:00–10:00 New York), as in 01-GROWTH-STRATEGY's weekly rhythm | SC assembles, EIC edits and signs | SC 3, EIC 1 | Fri 2 Oct |
 | N2 | **Your releases this week** (C41, D-028) | members with ≥1 reminder or wishlist game releasing in the next 7 days, mail preference on | Mondays 08:00 UTC; nothing sent if the list is empty | DEV builds, SC spot-checks | SC 0.5 | Mon 26 Oct |
-| N3 | **GTA VI briefing** (C10) | opt-in tag `gta6` only | Thursdays 15 Oct–12 Nov, then Wed 18, Thu 19 and Sun 22 Nov; stops after 22 Nov | ED writes, SC sends | ED 1, SC 0.5 | Thu 15 Oct |
+| N3 | **GTA VI briefing** (C10; schedule and subjects owned by 19-GTA6 §9.6) | opt-in tag `gta6` only (D-012a) | Thursdays 8 Oct–12 Nov; daily Mon 16–Sun 22 Nov; Thursdays 26 Nov–17 Dec, when it ends with a re-permission ask for The Save File | ED writes, SC sends | ED 1 (3 in launch week), SC 0.5 | Thu 8 Oct |
 | N4 | **Specials** | see §5 | Black Friday (Fri 27 Nov, replaces N1), The Game Awards (Fri 11 Dec, replaces N1; Thu 10 Dec reminder to league entrants), Steam Winter Sale (Thu 17 Dec, wishlist members) | EIC, SC | 2 per special | 27 Nov |
 | — | Alerts (release day, price drop, replies) | members who set them | event-driven; lifecycle, not newsletter (§12) | DEV | — | 19 Oct |
 
@@ -59,7 +59,7 @@ N2 and the member block in N1 use only data the member created: shelf, wishlist,
 2. **Deliverability.** Five sends a week instead of one multiplies complaint and bounce exposure from a sender with no reputation and no bounce ingestion yet (§1).
 3. **No differentiator.** The daily gaming digests we found are generic ("An everyday digest of the latest technology news", "Daily insight, inspiration and deals") [R20 §1]. TechPlay's advantage is personal and dated, which is weekly or event-driven.
 4. **Daily already exists elsewhere.** Discord #latest-news posts every article the moment it publishes, RSS carries the last 40 items, and On This Day runs daily in Discord [R01 B.8.2].
-5. **The one justified exception** is GTA VI launch week for people who opt in to the briefing: three sends in five days (18, 19, 22 Nov), after which it stops. Revisit a daily only if N1 click rates hold for eight issues and SC capacity grows.
+5. **The one justified exception** is GTA VI launch week for people who opted in to the briefing: one email a day from Mon 16 to Sun 22 Nov (19-GTA6 §8.1), then back to weekly. On Fri 20 Nov briefing recipients who also get The Save File receive only the briefing. Revisit a general daily only if N1 click rates hold for eight issues and SC capacity grows.
 
 ---
 
@@ -139,10 +139,11 @@ Rules: sent only when section 2 has at least one game; at most 10 games listed, 
 
 | Special | Date(s) | Audience | Structure | Primary CTA |
 |---|---|---|---|---|
-| GTA VI weekly briefing | Thu 15, 22, 29 Oct; 5, 12 Nov | tag `gta6` | days left; ledger changes this week (confirmed, reported, rumour, each with source); one TechPlay tool; Discord #gta6 | "Set a launch-day reminder" |
+| GTA VI weekly briefing | Thu 8, 15, 22, 29 Oct; 5, 12 Nov (subjects in 19-GTA6 §9.6) | tag `gta6` | days left; ledger changes this week (confirmed, reported, rumour, each with source); one TechPlay tool; Discord #gta6 | "Set a launch-day reminder" |
 | GTA VI eve | Wed 18 Nov | tag `gta6` | unlock time by region (as confirmed); pre-load and size (as listed by the stores); editions and price | "Open the release-time page" |
 | GTA VI launch edition | Thu 19 Nov | tag `gta6` + members with GTA VI reminder | full copy §11 | "Start here" (map tracker) |
-| GTA VI first weekend | Sun 22 Nov | tag `gta6` | what to do first, early money, cars, the map tracker; "This is the last briefing; tick the box to keep getting GTA VI guides" | "Keep GTA VI guides" (signed link sets tag `gta6-guides`) |
+| GTA VI launch week, other days | Mon 16, Tue 17, Fri 20, Sat 21, Sun 22 Nov | tag `gta6` | one topic a day as listed in 19-GTA6 §8.1 (checklist, pre-load, first hour, map tracker, week one) | the day's tool or guide |
+| GTA VI after launch | Thu 26 Nov, 3, 10, 17 Dec | tag `gta6` | "GTA VI after launch: {topic}"; the 17 Dec issue ends the briefing and asks, without transferring anyone, whether they want The Save File | "Get The Save File instead" |
 | Black Friday (Save File #9) | Fri 27 Nov | N1 audience | members: discounted games from their wishlist at the top (D-027); everyone: editor picks with prices checked that morning, affiliate links labelled | "See your wishlist deals" |
 | Cyber Monday (inside N2) | Mon 30 Nov | N2 audience | wishlist games still discounted, checked that morning | — |
 | TGA league reminder | Thu 10 Dec, morning | C29 entrants | picks lock at show start; link to picks and live table | "Check your picks" |
@@ -170,7 +171,7 @@ All forms post to `/newsletter/subscribe` with `placement` and optional interest
 > [email] **[Subscribe]**
 >
 > Also send me (optional):
-> ☐ The GTA VI briefing: weekly until launch, three emails in launch week, then it stops.
+> ☐ The GTA VI briefing: Thursdays until launch, daily in launch week, weekly after launch until 17 December, when it ends.
 > ☐ Sale alerts during Steam sales and Black Friday.
 >
 > We send one confirmation email first. Nothing else arrives until you click it. Every email has a one-click unsubscribe.
@@ -199,12 +200,13 @@ Success state: "Check your inbox. Click the link in the email from TechPlay and 
 
 > Or get next week's releases every Friday in The Save File. [Subscribe]
 
-### P-06 GTA 6 hub (replaces "Don't miss a single GTA 6 drop — Join thousands of fans…"; W40)
+### P-06 GTA 6 hub (replaces "Don't miss a single GTA 6 drop — Join thousands of fans…"; W40; copy as agreed in 19-GTA6 §9.6)
 
-> # GTA VI, only when something is confirmed.
-> A short email each Thursday until 19 November: what's confirmed, what's still rumour, and the sources. In launch week, the unlock time for your time zone. After launch it stops, unless you ask for guides.
-> [email] **[Get the GTA VI briefing]**
-> One confirmation email first. Or talk it through on Discord: [discord.gg/wPQG9gUMXH](https://discord.gg/wPQG9gUMXH)
+> **The GTA VI briefing**
+> One email on Thursdays until launch, one a day in launch week: what's confirmed, what changed, and the unlock time for your region when Rockstar publishes it. No leaks, no rumours passed off as news.
+> [email] **[Send me the briefing]**
+> Double opt-in. Unsubscribe in one click.
+> [Or join us on Discord](https://discord.gg/wPQG9gUMXH)
 
 Tags: `gta6`, placement `gta6-hub`. The dead `discord.gg/techplaygg` link is replaced in the same change (D-004).
 
@@ -247,7 +249,7 @@ Trigger: `newsletter_verified`. Exit: unsubscribe; N-W3 is skipped if the subscr
 
 **N-W1 — immediately after confirmation**
 - Subject: "You're in: here's what arrives on Fridays"
-- First line: "The Save File arrives on Fridays at about 14:00 UTC. Here's what's in it, and how to make it more useful."
+- First line: "The Save File arrives on Friday afternoons, European time. Here's what's in it, and how to make it more useful."
 - Body:
   "Each issue has the week's stories that change what you play (three at most), the releases coming next week with platforms and prices, one number with its source, and what the community argued about.
   Two things you can do now:
@@ -295,27 +297,28 @@ Dates are from the spine calendar (§11) and [R05]; "reported" items are phrased
 | # | Send date | Product | Subject | Preview line (first visible line) |
 |---|---|---|---|---|
 | 1 | Fri 2 Oct | N1 #1 | The Save File #1: Autumn Sale, Ace Combat 8, 48 days to GTA VI | Steam's Autumn Sale runs until Thursday 8 October, Ace Combat 8 is out today, and Gears of War: E-Day arrives Tuesday. |
+| 2a | Thu 8 Oct | N3 | GTA VI briefing 1: what's confirmed, what isn't | 42 days to go. Five facts are confirmed by Rockstar or the platform stores; everything else in the ledger is reported or rumour, with sources. |
 | 2 | Fri 9 Oct | N1 #2 | The Save File #2: Gears of War: E-Day, and when GTA VI unlocks for you | Gears of War: E-Day has been out since Tuesday on PC and Xbox. Next week: Planet Zoo 2 on Tuesday and our GTA VI release-time page. |
-| 3 | Thu 15 Oct | N3 | GTA VI briefing: 35 days, and when it unlocks where you live | 35 days to go. The release-time page is live: it shows the unlock time for your time zone as soon as it's confirmed. |
+| 3 | Thu 15 Oct | N3 | GTA VI briefing 2: the release-time page is live | 35 days to go. The release-time page shows the unlock time for your time zone as soon as it's confirmed, and can remind you an hour before. |
 | 4 | Fri 16 Oct | N1 #3 | The Save File #3: MW4 early access, Next Fest starts Monday | Modern Warfare 4's campaign early access opens today. Steam Next Fest runs 19–26 October, and we're trying three demos a day. |
-| 5 | Thu 22 Oct | N3 | GTA VI briefing: 28 days, and the cars we could source | 28 days to go. Our vehicle guide now lists real-world equivalents, with a source for each one we could confirm. |
+| 5 | Thu 22 Oct | N3 | GTA VI briefing 3: the vehicle guide, with sources | 28 days to go. Our vehicle guide now lists real-world equivalents, with a source for each one we could confirm. |
 | 6 | Fri 23 Oct | N1 #4 | The Save File #4: Modern Warfare 4 is out, Next Fest halfway | Call of Duty: Modern Warfare 4 launched today on PS5, Xbox, PC and Switch 2. The best Next Fest demos so far are below. |
 | 7 | Mon 26 Oct | N2 (first) | This week: Phantom Blade Zero and {k} more on your list | Phantom Blade Zero is out Thursday on PS5 and PC. Minecraft Bedrock reaches Switch 2 on Tuesday. |
-| 8 | Thu 29 Oct | N3 | GTA VI briefing: 21 days, the two editions compared | 21 days to go. Standard is $79.99 and Ultimate $99.99; here's what the extra $20 buys, from Rockstar's own listing. |
+| 8 | Thu 29 Oct | N3 | GTA VI briefing 4: three weeks out, still unconfirmed | 21 days to go. Confirmed: $79.99, or $99.99 for the Ultimate Edition. Still unconfirmed: unlock times, download size and a PC date. |
 | 9 | Fri 30 Oct | N1 #5 | The Save File #5: Phantom Blade Zero, Scream Fest picks, Season 2 | Phantom Blade Zero came out yesterday. Steam's Scream Fest runs until 2 November, and these horror games are worth the discount. |
 | 10 | Mon 2 Nov | N2 | This week: WoW: Forever on Wednesday | World of Warcraft: Forever launches Wednesday 4 November. Stellar Blade Complete Edition follows on Thursday. |
-| 11 | Thu 5 Nov | N3 | GTA VI briefing: 14 days, what's actually known about performance | 14 days to go. Reports say 30 fps on consoles at launch; Rockstar hasn't confirmed a frame rate. The ledger has the sources. |
+| 11 | Thu 5 Nov | N3 | GTA VI briefing 5: why it took 13 years | 14 days to go. Our data piece on sequel gaps (C23), and a ledger note: reports say 30 fps on consoles; Rockstar hasn't confirmed a frame rate. |
 | 12 | Fri 6 Nov | N1 #6 | The Save File #6: WoW: Forever is live, 13 days to GTA VI | World of Warcraft: Forever launched on Wednesday. GTA VI is 13 days away; here's what is confirmed and what isn't. |
 | 13 | Mon 9 Nov | N2 | This week: Pikmin 4 and Metaphor on Switch 2 | Pikmin 4's Switch 2 Edition and Metaphor: ReFantazio for Switch 2 both arrive Thursday 12 November. |
-| 14 | Thu 12 Nov | N3 | GTA VI in one week: editions, pre-load, unlock time | GTA VI is out next Thursday on PS5 and Xbox Series X\|S at $79.99, or $99.99 for the Ultimate Edition. |
+| 14 | Thu 12 Nov | N3 | GTA VI briefing 6: one week, and every GTA in order | GTA VI is out next Thursday on PS5 and Xbox Series X\|S. Before then: every GTA game in order (C50), and what's still unconfirmed. |
 | 15 | Fri 13 Nov | N1 #7 | The Save File #7: GTA VI week starts Monday | GTA VI is out Thursday 19 November. Set a reminder and we'll email you the unlock time for your time zone once it's confirmed. |
 | 16 | Mon 16 Nov | N2 | This week: GTA VI, Thursday | GTA VI is out Thursday on PS5 and Xbox Series X\|S. It's on your list, so you'll get one email on the day. |
-| 17 | Wed 18 Nov | N3 | GTA VI unlocks tomorrow. Here's when, where you are | The release-time page lists the unlock time for each region, updated as Rockstar and the stores confirm it. |
-| 18 | Wed 18 Nov | N4 (all opted-in members) | The Game Awards prediction league is open | Pick the winners before 10 December. Picks lock when the show starts, and the table updates live. |
-| 19 | Thu 19 Nov | N3 launch edition | GTA VI is out. Start here. | GTA VI is out today on PS5 and Xbox Series X\|S. It's single-player at launch, and there's no PC version yet. |
+| 17 | Wed 18 Nov | N3 | Tomorrow: when GTA VI unlocks where you are | The release-time page lists the unlock time for each region, updated as Rockstar and the stores confirm it. |
+| 19 | Thu 19 Nov | N3 launch edition | GTA VI is out: start here | GTA VI is out today on PS5 and Xbox Series X\|S. It's single-player at launch, and there's no PC version yet. |
 | 20 | Fri 20 Nov | N1 #8 | The Save File #8: GTA VI's first day, and what's next | GTA VI has been out since yesterday. What to do first, the map tracker, and what we know about a PC version. |
-| 21 | Sun 22 Nov | N3 (last) | GTA VI, first weekend: the map tracker and what to do first | Our map tracker lets you tick off locations as you find them, and it saves to your account. This is the last briefing. |
+| 21 | Sun 22 Nov | N3 | Week one: what we've verified | GTA VI's first weekend: what we've checked ourselves, what's still reported, and the map tracker that saves to your account. |
 | 22 | Mon 23 Nov | N2 | This week: {n} of your wishlist games are on sale | Black Friday is Friday 27 November, but {Game} is already {discount}% off on Steam. |
+| 18 | Tue 24 Nov | N4 (opted-in members; moved out of GTA VI week so nobody gets two emails on 18 Nov) | The Game Awards prediction league is open | Pick the winners before 10 December. Picks lock when the show starts, and the table updates live. |
 | 23 | Fri 27 Nov | N1 #9 Black Friday | The Save File #9: Black Friday, sorted by your wishlist | Members: the discounted games from your wishlist are at the top. Everyone: our picks, with prices checked this morning. |
 | 24 | Mon 30 Nov | N2 Cyber Monday | Cyber Monday: what's still discounted on your wishlist | Steam prices for the games you wishlisted, checked at 06:00 UTC today. |
 | 25 | Tue 1 Dec | N4 (opted-in members) | Nominate your games of 2026 | The TechPlay Community Awards are open until 20 December. Six categories; members nominate, then everyone votes. |
@@ -323,12 +326,12 @@ Dates are from the spine calendar (§11) and [R05]; "reported" items are phrased
 | 27 | Mon 7 Dec | N2 | This week: Professor Layton, and your November | Professor Layton and the New World of Steam is out Thursday 10 December, the same night as The Game Awards. |
 | 28 | Thu 10 Dec | N4 (league entrants) | Tonight: The Game Awards, and your picks lock at showtime | The show starts tonight. You can change your picks until it does; after that the table updates with each award. |
 | 29 | Fri 11 Dec | N1 #11 TGA | The Save File #11: every Game Awards winner, and the reveals worth a reminder | The Game Awards were last night. The winners, the reveals worth your time, and how the prediction league finished. |
-| 30 | Mon 14 Dec | N4 (A2 members) | Your 2026 in games is ready | {h} hours across {p} platforms, and your most played game was {game}. See the rest, and share it if you like. |
+| 30 | Tue 15 Dec | N4 (A2 members; the day after N2 so they don't land together) | Your 2026 in games is ready | {h} hours across {p} platforms, and your most played game was {game}. See the rest, and share it if you like. |
 | 31 | Thu 17 Dec | N4 Winter Sale | Winter Sale: {n} games on your wishlist are discounted | Steam's Winter Sale started today and runs to 4 January. {Game} is {discount}% off. |
 | 32 | Fri 18 Dec | N1 #12 | The Save File #12: the Winter Sale, and the Community Awards results | Steam's Winter Sale runs until 4 January; here's what's worth it. Voting in the Community Awards closes Sunday. |
 | 33 | Mon 21 Dec | N2 | This week: {n} wishlist games still discounted, and nothing out on Christmas Day | {Game} is still {discount}% off in the Winter Sale. Nothing on your list releases this week. |
 | 34 | Thu 31 Dec | N1 #13 | The Save File #13: 2026 in games, and what's coming in 2027 | The year in releases and studio closures, and the 2027 dates already fixed: Fable on 23 February, FF7 Revelation on 8 April. |
-| 35 | on confirm | N-W1 | You're in: here's what arrives on Fridays | The Save File arrives on Fridays at about 14:00 UTC. Here's what's in it, and how to make it more useful. |
+| 35 | on confirm | N-W1 | You're in: here's what arrives on Fridays | The Save File arrives on Friday afternoons, European time. Here's what's in it, and how to make it more useful. |
 | 36 | reactivation | R-1 | Still want The Save File? | You haven't clicked anything in The Save File for three months, which is fine. We'd rather ask than keep sending. |
 
 Check before each send (SC): every date and platform against the game page; every "reported" item labelled; Braces filled; no line claims a count we cannot show.
@@ -393,9 +396,9 @@ Word count ≈ 560. Links: 11. Checks by EIC before 13:00 UTC: the studio items 
 
 ## 11. Full copy: GTA VI launch edition, Thursday 19 November 2026
 
-Audience: tag `gta6` plus members with a GTA VI reminder (members also receive the release-day alert; this edition replaces it for them, so they get one email, not two). Sent at 08:00 UTC. UTM campaign `c10-gta6-launch`.
+Audience: tag `gta6` plus members with a GTA VI reminder (members also receive the release-day alert; this edition replaces it for them, so they get one email, not two). Sent at 09:00 CET (08:00 UTC), as in 19-GTA6's launch-day hour plan. UTM campaign `c10-gta6-launch`.
 
-**Subject:** GTA VI is out. Start here.
+**Subject:** GTA VI is out: start here
 
 > GTA VI is out today on PS5 and Xbox Series X|S. It's single-player at launch, and there's no PC version yet.
 >
@@ -418,7 +421,7 @@ Audience: tag `gta6` plus members with a GTA VI reminder (members also receive t
 > What to do in your first hours, early money that doesn't need a grind, the cars worth finding first, and the console settings worth changing. Each guide goes up as soon as it's tested, not before.
 >
 > **Game Club: November is GTA VI**
-> The launch thread is open in Discord in #gta6. Story spoilers go in the spoiler thread only; the first week is spoiler-free in the main channel. [Join the thread](https://discord.gg/wPQG9gUMXH)
+> The launch thread is open in Discord in #gta6. Story spoilers go in #gta6-spoilers only; #gta6 stays spoiler-free for the first week. [Join the thread](https://discord.gg/wPQG9gUMXH)
 >
 > **On your shelf**
 > *Members:* [Mark GTA VI as Playing] (one click). If you've linked Xbox or PlayStation, it will also appear after the next library sync. Console playtime doesn't reach us automatically, so log sessions in your journal if you want them in your 2026 recap in December.
@@ -426,7 +429,7 @@ Audience: tag `gta6` plus members with a GTA VI reminder (members also receive t
 >
 > **[Open the map tracker]** *(primary button)*
 >
-> One more briefing on Sunday with the first weekend's guides; then the GTA VI briefing stops. If you'd like GTA VI guides after that, the Sunday email has a one-click option.
+> The briefing comes daily until Sunday, then on Thursdays until 17 December, when it ends. Unsubscribe from it below at any time.
 > — The TechPlay editors
 >
 > You're getting this because you asked for the GTA VI briefing at techplay.gg. [Unsubscribe from the briefing] · [Unsubscribe from everything] · TechPlay is published by Luminor Solutions, 71000 Sarajevo, Bosnia and Herzegovina.
@@ -442,7 +445,7 @@ All sequences go to accounts with a confirmed address, pass `MailSuppression::fi
 
 | ID | Sequence | Trigger (event / job) | Delay | Frequency cap | Exit conditions | Requirement | Live |
 |---|---|---|---|---|---|---|---|
-| E-01 | Member welcome (M1–M3) | `email_verified` or social `registration_complete` | 0 min, +2 d, +6 d | once per account | account deleted; lifecycle switch off; M3 variant switches on A2 | D-013, C42 | 12 Oct |
+| E-01 | Member welcome (M1–M3) | `email_verified` or social `registration_complete` | 0 min, +1 d, +6 d | once per account | account deleted; lifecycle switch off; M3 variant switches on A2 | D-013, C42 | 12 Oct |
 | E-02 | Registration incomplete (unverified) | `registration_complete` (method=email) with no `email_verified` | +48 h, then day 27 | 2 reminders, plus resends the user asks for | verified; account pruned (day 30) | D-013 (reuses `VerifyEmailNotification`) | 12 Oct |
 | E-03 | Profile incomplete | A1 reached, no A2 by day 3 | day 3, day 10 | 2 per account, ever | A2 reached; switch off | D-013 | 19 Oct |
 | E-04 | First comment approved | first comment moves `pending → approved` | 0 min | once ever | — | D-013, `comment_approved` | 19 Oct |
@@ -460,7 +463,7 @@ All sequences go to accounts with a confirmed address, pass `MailSuppression::fi
 **M1 — immediately after confirmation (or social sign-up)**
 - Subject: "Your TechPlay library is ready for games" · *if A2 already reached:* "{n} games are on your shelf"
 - First line: "Your account is confirmed. The next step takes one click: bring your games in." · *A2 variant:* "{n} games and {h} hours are on your shelf. Here's what the account does with them."
-- Body (no-A2 variant): "Connect Steam or Xbox and your library arrives with the hours you've played. PlayStation, GOG and Epic take a code you paste once. No console to connect? Pick five games by hand; that's enough for Gamer DNA to start.
+- Body (no-A2 variant): "Connect Steam or Xbox and your library arrives with the hours you've played. PlayStation, GOG and Epic take a code you paste once. No console to connect? Add three games by hand; that's enough for Gamer DNA to start.
   Once games are on your shelf, you can:
   · get one email on release day for anything you're waiting for,
   · see what to play tonight from what you already own (Backlog Advisor),
@@ -468,12 +471,9 @@ All sequences go to accounts with a confirmed address, pass `MailSuppression::fi
   Want the Friday newsletter too? It's separate: [The Save File]."
 - CTA: "Bring your games in"
 
-**M2 — day 2**
-- Subject: "What do you play on?"
-- First line: "One click tells us which releases to put first in your emails. Pick as many as you like."
-- Body: "[PC] [PlayStation 5] [Xbox Series X|S] [Switch 2] [Handheld PC]
-  That's all this email wants. Change it later in Settings → Notifications, where every kind of email we send has its own switch."
-- CTA: the five signed links (tags the account's platforms)
+**M2 — day 1, variant by state** (the A2 variant uses the subject and line agreed in 03-FUNNEL §4)
+- *A2* — Subject: "Your shelf, one day in" · First line: "Here is what we found in your library, and what's coming out from it this month." · Body: "{n} games, {h} hours on record. Most played: {game}. Coming out this month from your wishlist: {up to 3 games with dates}, or, if none: 'Nothing on your wishlist releases this month; the calendar has everything that does.' Which platforms do you play on? One click orders your release emails: [PC] [PlayStation 5] [Xbox Series X|S] [Switch 2] [Handheld PC]" · CTA "Open your shelf"
+- *No A2* — Subject: "What do you play on?" · First line: "One click tells us which releases to put first in your emails. Pick as many as you like." · Body: "[PC] [PlayStation 5] [Xbox Series X|S] [Switch 2] [Handheld PC] That's all this email wants. Change it later in Settings → Notifications, where every kind of email we send has its own switch." · CTA: the five signed links (tags the account's platforms)
 
 **M3 — day 6, variant by state**
 - *No A2* — Subject: "Your library in one click" · First line: "Your shelf is still empty. Steam and Xbox fill it in one click; nothing is posted anywhere." · Body: "It's the part of TechPlay that works without you: hours refresh on their own, release days come to you, and the recap in December is built from it. If Steam says your game details are private, the connect screen shows the one setting to change." · CTA "Connect Steam"
@@ -501,7 +501,7 @@ Exit: `email_verified`, prune. Cap: two reminders only, because unverified addre
 
 **P-1 — day 3**
 - Subject: "Your shelf is empty"
-- First line: "Steam and Xbox fill it in one click, or pick five games by hand."
+- First line: "Steam and Xbox fill it in one click, or add three games by hand."
 - Body: "Everything useful in your account starts with games on the shelf: release-day emails, what to play tonight, your taste in numbers. Connecting Steam imports your library and the hours you've played; it refreshes on its own every 30 minutes."
 - CTA: "Bring your games in"
 
@@ -610,7 +610,7 @@ Priority order and caps are defined once in 16 §4.5. The mail scheduler applies
 4. Lifecycle (E-01, E-03, E-04, E-09, E-10, E-11).
 5. Newsletter (N1, N3, N4) and N2.
 
-If a lower-priority email would break the 1-per-day non-alert cap or the 6-per-7-days ceiling, it is deferred to the next day (lifecycle) or dropped for that week (newsletter extras), never stacked. In the first week of membership the ceiling is four emails plus alerts (16 §3.5).
+On Thursdays a member tagged `gta6` who is also in a Thursday N4 audience (10 Dec league reminder) gets the N4 email and the briefing's content moves to the next Thursday issue; on Fri 20 Nov briefing recipients do not also get The Save File (19-GTA6). If a lower-priority email would break the 1-per-day non-alert cap or the 6-per-7-days ceiling, it is deferred to the next day (lifecycle) or dropped for that week (newsletter extras), never stacked. In the first week of membership the ceiling is four emails plus alerts (16 §3.5).
 
 ---
 
@@ -631,7 +631,7 @@ If a lower-priority email would break the 1-per-day non-alert cap or the 6-per-7
 | 9 | Reply-To points to a monitored editorial inbox (application-level header; confirm with EIC) and replies are answered | Replies are a positive signal and a correction channel |
 | 10 | Before each campaign: "send test" to TechPlay-owned Gmail, Outlook and Apple Mail inboxes; note inbox, promotions or spam placement in the send log | The only placement check available |
 | 11 | Stop rule: complaint rate ≥ 0.1% or hard-bounce rate ≥ 2% on any send pauses all non-security mail until EIC reviews (spine §3 guardrails) | Protects the transactional mail that carries the only way into accounts |
-| 12 | Send times: N1 Fri 14:00 UTC, N2 Mon 08:00 UTC, alerts 09:00–10:00 server time, nothing between 22:00 and 08:00 member time once D-013d exists | Predictable volume, no night sends |
+| 12 | Send times: N1 Fri 15:00 Sarajevo time, N2 Mon 08:00 UTC, alerts 09:00–10:00 server time, nothing between 22:00 and 08:00 member time once D-013d exists | Predictable volume, no night sends |
 
 ---
 
@@ -644,7 +644,7 @@ If a lower-priority email would break the 1-per-day non-alert cap or the 6-per-7
 | Confirmation rate | `newsletter_verified ÷ newsletter_signup` per placement, 72 h | TARGET ↑ |
 | Click rate | unique clickers ÷ delivered, per send and per section (`utm_content`) | TARGET ↑; opens reported only as a floor |
 | Downstream action | members with a `member_actions` row within 24 h of a send ÷ delivered members | TARGET ↑ |
-| Subscriber → member | `registration_complete (from=newsletter | newsletter-verify)` per issue | TARGET ↑ |
+| Subscriber → member | `registration_complete` (from=newsletter or newsletter-verify) per issue | TARGET ↑ |
 | Alert → visit | `alert_clicked ÷ reminder_delivered` per channel (16 §5.3) | TARGET ↑ |
 | Unsubscribe rate | unsubscribes ÷ delivered, per send | guardrail < 0.5% |
 | Complaint rate | complaints ÷ delivered, per send (needs D-013c) | guardrail < 0.1% |
@@ -659,17 +659,17 @@ Weekly (SC, Mondays, inside the retention report): last N1 click rate, top three
 | Week | Dates | Ships | Owner | Hours (ESTIMATE) |
 |---|---|---|---|---|
 | W40 | 28 Sep–4 Oct | Read subscriber count and campaign history in admin; replace GTA 6 hub copy (P-06) and dead invite; rewrite the double opt-in template; fix P-10 anchor; **Save File #1 on Fri 2 Oct** (existing campaign desk, audience "everyone" limited to verified subscribers) | SC, EIC, DEV | SC 4, EIC 2, DEV 2 |
-| W41 | 5–11 Oct | D-012 `/newsletter` landing, D-012a tags and placement, P-02, P-08 copy; #2 | DEV, SC | DEV 6, SC 3.5 |
-| W42 | 12–18 Oct | C42 welcome N-W1–3 and E-01 M1–M3, E-02; D-013 mail channel; D-013a preferences; P-03, P-07, P-11; first N3 briefing Thu 15 Oct | DEV, SC, ED | DEV 12, SC 4.5, ED 1 |
+| W41 | 5–11 Oct | D-012 `/newsletter` landing, D-012a tags and placement (GTA tag by 7 Oct per 19-GTA6), P-02, P-08 copy; N3 briefing 1 Thu 8 Oct; #2 | DEV, SC | DEV 6, SC 3.5 |
+| W42 | 12–18 Oct | C42 welcome N-W1–3 and E-01 M1–M3, E-02; D-013 mail channel; D-013a preferences; P-03, P-07, P-11; N3 briefing 2 Thu 15 Oct | DEV, SC, ED | DEV 12, SC 4.5, ED 1 |
 | W43 | 19–25 Oct | C43: E-07 release day (email and DM), E-04, E-05 (D-013b), E-03 | DEV | DEV 10 |
 | W44 | 26 Oct–1 Nov | C41 N2 first send Mon 26 Oct (D-028), E-06, E-11 | DEV, SC | DEV 10 |
 | W45 | 2–8 Nov | D-027 price alerts and E-12; D-007b-based E-09; D-013c bounce and complaint ingestion (after approval) | DEV | DEV 10 |
 | W46 | 9–15 Nov | P-04, P-05 on game pages; D-012b web archive; N3 12 Nov | DEV, ED | DEV 5 |
-| W47 | 16–22 Nov | GTA VI launch sends (18, 19, 22 Nov); prediction league mail; no new automation | ED, SC | ED 3, SC 3 |
-| W48 | 23–29 Nov | Black Friday Save File #9; N2 Cyber Monday preparation | EIC, SC | EIC 2, SC 4 |
+| W47 | 16–22 Nov | GTA VI launch week: daily briefing 16–22 Nov; no other bulk mail; no new automation | ED, SC | ED 3, SC 3 |
+| W48 | 23–29 Nov | Prediction league email (Tue 24 Nov); Black Friday Save File #9; N2 Cyber Monday preparation | EIC, SC | EIC 2, SC 4 |
 | W49 | 30 Nov–6 Dec | Community Awards nomination mail (1 Dec); D-013e inactive suppression | SC, DEV | DEV 2 |
 | W50 | 7–13 Dec | TGA reminder (10 Dec) and TGA Save File #11 | SC, EIC | SC 4, EIC 2 |
-| W51 | 14–20 Dec | Year in Review email (14 Dec); Winter Sale special (17 Dec); first reactivation run (R-1) | DEV, SC | SC 4 |
+| W51 | 14–20 Dec | Year in Review email (Tue 15 Dec); Winter Sale special (17 Dec); first reactivation run (R-1) | DEV, SC | SC 4 |
 | W52–W53 | 21–31 Dec | N2 21 and 28 Dec; no issue 25 Dec; Save File #13 Thu 31 Dec; Q1 review | SC, EIC | SC 3, EIC 2 |
 
 Totals (ESTIMATE): DEV ≈ 75 h over the quarter (≈ 5.8 h/week of the 20 h budget; C41, C43, D-027 and D-013 are shared with 16 and must not be double-counted in the master capacity plan), SC ≈ 3.5–4.5 h/week, EIC ≈ 1–2 h/week, ED ≈ 1 h/week until 22 Nov.

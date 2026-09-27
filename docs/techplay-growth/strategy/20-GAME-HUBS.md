@@ -175,7 +175,7 @@ Owner: ED (hub editor), DEV (D-040, template instance), SC (Discord, Reddit). Ho
 | 10 | Steam Machine: specs, price and what it runs | /guides/steam-machine-faq | EA-064 | Thu 5 Nov | ED 3 |
 | 11 | Is the Steam Deck worth it in 2026? | /guides/is-steam-deck-worth-it-2026 | EA-109; F10 | Wed 11 Nov | ED 3 |
 | 12 | Steam Deck Verified explained: Verified, Playable, Unsupported | /guides/steam-deck-verified-explained | EA-058 | Wed 25 Nov | ED 2 |
-| 13 | Steam Winter Sale 2026: our picks, filtered by what you already own | /news/steam-winter-sale-2026-picks + staff list | C34 | Thu 17 Dec 19:00 CET | ED 4 |
+| 13 | Steam Winter Sale 2026: our picks, filtered by what you already own | /news/steam-winter-sale-2026-picks + staff list | C34 | Thu 17 Dec, when the sale opens | ED 4 |
 | 14 | Steam Winter Sale: the second-week list | /news/steam-winter-sale-2026-week-two | C34 | Wed 23 Dec | ED 2 |
 
 The "Steam sale" start time in titles is only stated if Valve publishes it; otherwise "when the sale opens".
