@@ -1,4 +1,4 @@
-import { ShieldHalf, Compass, ListOrdered, MapPinned, Disc3, type LucideIcon } from "lucide-react";
+import { ShieldHalf, Compass, ListOrdered, MapPinned, Disc3, Wand2, type LucideIcon } from "lucide-react";
 
 /**
  * The tools, in one place.
@@ -28,6 +28,13 @@ export const TOOLS: Tool[] = [
         icon: ShieldHalf,
         description: "Character readiness check",
         blurb: "Reads a World of Warcraft character and scores how ready it is for Midnight — gear, Mythic+ rating and raid progress, with the gaps named rather than implied.",
+    },
+    {
+        name: "GW2 Advisor",
+        href: "/gw2",
+        icon: Wand2,
+        description: "What to do next in Guild Wars 2",
+        blurb: "Reads your own Guild Wars 2 account and names the next step: unspent mastery points by region, the gear slots still short of ascended, how much Agony Resistance Tier 4 wants, and the achievements you are one step from finishing.",
     },
     {
         name: "Backlog Advisor",

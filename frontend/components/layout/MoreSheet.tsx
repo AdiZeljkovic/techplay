@@ -4,7 +4,7 @@ import Link from "next/link";
 import {
     BookOpen, Building2, Compass, Cpu, Disc3, Gamepad2, Gift, House, Layers, LifeBuoy, LogOut,
     MapPinned, MessageSquare, Newspaper, Settings, ShieldHalf, ShoppingCart,
-    Sparkles, Swords, Trophy, Users,
+    Sparkles, Swords, Trophy, Users, Wand2,
 } from "lucide-react";
 import Sheet from "@/components/ui/Sheet";
 import type { User } from "@/types";
@@ -53,6 +53,7 @@ const COMMUNITY: Row[] = [
 
 const TOOLS: Row[] = [
     { name: "WoW Analyzer", href: "/wow-analyzer", icon: ShieldHalf, description: "Character readiness check" },
+    { name: "GW2 Advisor", href: "/gw2", icon: Wand2, description: "What to do next in Guild Wars 2" },
     { name: "Backlog Advisor", href: "/backlog-advisor", icon: Compass, description: "What should you play next?" },
     { name: "GTA 6 Hub", href: "/gta6", icon: MapPinned, description: "Map, characters, vehicles, weapons" },
     { name: "The Last Disc", href: "/last-disc", icon: Disc3, description: "Open letter: keep physical games" },

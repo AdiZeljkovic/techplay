@@ -1,0 +1,282 @@
+import axiosInstance from "@/lib/axios";
+
+/**
+ * The Guild Wars 2 advisor, from the browser's side.
+ *
+ * Everything here is a client-side call through `lib/axios`, which attaches the
+ * Bearer token. That is deliberate and not a shortcut: the dashboard is per
+ * account, the token lives in `localStorage`, and there is no server-side session
+ * to render it from — the same constraint every signed-in page on this site has.
+ *
+ * What the backend guarantees, and what these types therefore rely on: **no
+ * request from this file reaches ArenaNet.** The game's rate limit is counted per
+ * IP and every request the site makes leaves from one server, so a page that
+ * fetched from the game on render would spend the whole site's budget on whoever
+ * happened to open it. The dashboard reads tables a queued job filled hours ago.
+ */
+
+/** Certainty a recommendation carries. `hidden` never reaches the browser. */
+export type Confidence = "confirmed" | "high" | "medium" | "needs_confirmation";
+
+/** What the player is being asked to spend. `null` means the rule does not say. */
+export type Effort = "quick" | "session" | "long" | null;
+
+export interface Recommendation {
+    key: string;
+    domain: string;
+    title: string;
+    body: string;
+    subject: string;
+    confidence: Confidence;
+    effort: Effort;
+    /**
+     * What stands in the way, in the order it must be cleared.
+     *
+     * Not an error and not a reason to hide the card. "This needs ascended gear
+     * first" is often the most useful sentence on the page — it just ranks below
+     * something the player can go and do right now.
+     */
+    blockers: string[];
+    score: number;
+}
+
+export interface MasteryRegion {
+    region: string;
+    earned: number;
+    spent: number;
+    unspent: number;
+}
+
+export interface VaultObjective {
+    id: number;
+    title: string;
+    period: "daily" | "weekly";
+    track: string;
+    acclaim: number;
+    current: number;
+    target: number;
+}
+
+export interface NearlyDone {
+    id: number;
+    name: string | null;
+    requirement: string | null;
+    current: number;
+    max: number;
+    remaining: number;
+    /** Whether a person has checked this row. Some achievements are seasonal or retired. */
+    reviewed: boolean;
+    effort: string | null;
+}
+
+export interface Gw2Dashboard {
+    account: {
+        name: string;
+        fractal_level: number | null;
+        daily_ap: number | null;
+        wvw_rank: number | null;
+        characters: number;
+        expansions: string[];
+        observed_at: string | null;
+        last_full_sync_at: string | null;
+        featured_character: {
+            name: string;
+            profession: string | null;
+            race: string | null;
+            level: number;
+        } | null;
+    };
+    cards: {
+        masteries: {
+            unspent_total: number;
+            regions: MasteryRegion[];
+            tracks_trained: number;
+            tracks_unlocked: number;
+        };
+        /** `null` when no character has been read yet. */
+        gear: {
+            character: string;
+            ascended_core: number;
+            core_slots: number;
+            below_ascended: string[];
+            empty: string[];
+            ascended_weapons: number;
+            weapon_slots: number;
+            slots: Record<string, string>;
+            crafting: string[];
+        } | null;
+        fractals: {
+            personal_level: number | null;
+            agony_resistance: number;
+            tier_4_target: number;
+            shortfall: number;
+            /**
+             * Always false, and the flag exists to say so out loud: the per-scale
+             * Agony Resistance requirements are not in the game's API and are not
+             * in our catalogue, so only the Tier 4 target is modelled. A tier
+             * verdict drawn from a guessed table would be the first invented
+             * number in this tool.
+             */
+            tiers_modelled: boolean;
+        } | null;
+        achievements: {
+            nearly_done: number;
+            one_step_away: number;
+            daily_ap: number | null;
+            closest: NearlyDone[];
+        };
+        /**
+         * `null` means the key has no `progression` permission, which is not the
+         * same as an empty vault. The UI must be able to tell those apart, or a
+         * player with a narrow key is shown a vault with nothing in it.
+         */
+        vault: {
+            daily: { progress: number; target: number; claimed: boolean };
+            weekly: { progress: number; target: number; claimed: boolean };
+            unclaimed_acclaim: number;
+            open: VaultObjective[];
+        } | null;
+    };
+    advice: {
+        headline: Recommendation[];
+        alternatives: Recommendation[];
+        /** How many candidates the engine weighed. Distinguishes "nothing matched" from "the cut was harsh". */
+        considered: number;
+    };
+    since_last_sync: {
+        events: { type: string; id: number | null; name: string | null; occurred_at: string }[];
+        /**
+         * When we started watching.
+         *
+         * It bounds the history above, and it has to be shown: the game's API has
+         * no lifetime view of raid clears or world bosses, so nothing before this
+         * date exists anywhere and never will.
+         */
+        tracked_since: string | null;
+    };
+    connection: Gw2Connection;
+}
+
+export interface Gw2Connection {
+    connected: true;
+    account_name: string | null;
+    key_name: string | null;
+    permissions: string[];
+    /** Permission name → the feature that goes dark without it. */
+    missing_features: Record<string, string>;
+    sync_status: string | null;
+    sync_error: string | null;
+    last_synced_at: string | null;
+    last_full_sync_at: string | null;
+    world: number | null;
+    fractal_level: number | null;
+    access: string[];
+    characters: number;
+}
+
+/** What the player asked for. Every field optional; the empty case is normal. */
+export interface Gw2Intent {
+    minutes?: number | null;
+    goal?: string | null;
+    avoid?: string[];
+}
+
+interface Envelope<T> {
+    success: boolean;
+    data: T;
+    message?: string;
+}
+
+/**
+ * The connection, or `null` when there is none.
+ *
+ * A missing connection is the expected first answer, not a failure, so it does
+ * not throw — the page draws the connect form instead.
+ */
+export async function getConnection(): Promise<Gw2Connection | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Connection | null>>("/gw2/connection");
+
+    return data.data ?? null;
+}
+
+/**
+ * The dashboard.
+ *
+ * Returns `null` while a freshly connected account is still being read — the
+ * backend answers with the connection alone for the half minute the queued sync
+ * takes, and the page says so rather than drawing an empty dashboard that looks
+ * broken.
+ */
+export async function getDashboard(intent?: Gw2Intent): Promise<Gw2Dashboard | null> {
+    const params = new URLSearchParams();
+
+    if (intent?.minutes) params.set("minutes", String(intent.minutes));
+    if (intent?.goal) params.set("goal", intent.goal);
+    // Laravel reads repeated `avoid[]` keys as an array; a comma-joined string
+    // would arrive as one domain named "vault,gear".
+    for (const domain of intent?.avoid ?? []) params.append("avoid[]", domain);
+
+    const query = params.toString();
+    const { data } = await axiosInstance.get<Envelope<Gw2Dashboard | { connection: Gw2Connection }>>(
+        `/gw2/dashboard${query ? `?${query}` : ""}`
+    );
+
+    return "cards" in data.data ? (data.data as Gw2Dashboard) : null;
+}
+
+export async function connectKey(apiKey: string): Promise<Gw2Connection> {
+    // In the body, never the query string: a URL ends up in access logs, in
+    // referrers and in error reports, and a read-only key is still somebody's
+    // account.
+    const { data } = await axiosInstance.post<Envelope<Gw2Connection>>("/gw2/connect", {
+        api_key: apiKey.trim(),
+    });
+
+    return data.data;
+}
+
+export async function requestSync(full = false): Promise<Gw2Connection> {
+    const { data } = await axiosInstance.post<Envelope<Gw2Connection>>(
+        `/gw2/sync${full ? "?full=1" : ""}`
+    );
+
+    return data.data;
+}
+
+export async function disconnect(): Promise<void> {
+    await axiosInstance.delete("/gw2/connection");
+}
+
+/** Slot names come back as the game spells them: `Ring1`, `WeaponA1`, `Backpack`. */
+export function slotLabel(slot: string): string {
+    const named: Record<string, string> = {
+        Ring1: "Ring 1",
+        Ring2: "Ring 2",
+        Accessory1: "Accessory 1",
+        Accessory2: "Accessory 2",
+        Backpack: "Back item",
+        Coat: "Chest",
+    };
+
+    return named[slot] ?? slot;
+}
+
+/**
+ * How sure we are, in words a reader can act on.
+ *
+ * The labels matter more than they look. `needs_confirmation` is not weak advice,
+ * it is a question — and a card worded as a statement when we are guessing is the
+ * failure mode this whole scale exists to prevent.
+ */
+export const CONFIDENCE_LABEL: Record<Confidence, string> = {
+    confirmed: "Confirmed",
+    high: "Very likely",
+    medium: "Worth doing",
+    needs_confirmation: "Worth a look",
+};
+
+export const EFFORT_LABEL: Record<string, string> = {
+    quick: "A few minutes",
+    session: "An evening",
+    long: "A longer project",
+};
