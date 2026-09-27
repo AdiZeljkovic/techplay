@@ -687,6 +687,7 @@ Testovi koji čuvaju skupo naučene stvari:
 | `CollectionCountsPayloadTest` | svaki izračunat broj stvarno stigne do klijenta |
 | `AboutPageTellsTheTruthTest` | brojke na /about se broje, ne pamte |
 | `Gw2ConnectionTest` | GW2 ključ ne izađe u odgovoru; brzi prolaz ne prebriše puni |
+| `Gw2AdvisorTest` | `access` nije istina o ekspanzijama; alati za branje nisu ascended slotovi |
 
 ---
 
@@ -1285,6 +1286,7 @@ Tabele:
 | `gw2_account_state` | **jedan red po nalogu, prepisuje se** |
 | `gw2_item_ledger` | sve što nalog ima, gdje god stoji |
 | `gw2_progress_events` | **razlika između dva čitanja** |
+| `gw2_rules` | šta savjetnik smije reći i kad — uredničko, ne kod |
 
 ### Zašto raspored, a ne dugme
 
@@ -1327,13 +1329,133 @@ tih kvar: ključ u odgovoru, brzi prolaz koji prebriše ono što čita samo puni
 izmišljena historija na prvom čitanju, i disconnect koji ostavi izvedene
 podatke.
 
+### Savjetnik — normalizacija, pravila, bodovanje
+
+Radi od 28. 9. 2026. Tri sloja, i granica između njih je namjerna:
+**mehanika je kod, politika su podaci.**
+
+#### 1. Normalizacija — `Advisor\SnapshotReader` → `Snapshot`
+
+Nijedno pravilo i nijedna kartica ne čita sirov oblik API-ja. Ovdje se jednom
+odlučuje ono što bi se inače odlučivalo na petnaest mjesta:
+
+| Šta | Kako |
+|---|---|
+| **Agony Resistance** | suma modifikatora infuzija iz **nošenog** seta, čitano iz `gw2_items.details.infix_upgrade` — ne iz imena predmeta |
+| **Ascended slotovi** | **12**, ne 23: šest oklopa i šest nakita. Alati za branje, podvodna oprema i štap za ribolov su u istom nizu i ne ulaze |
+| **Oružja** | odvojeno, jer build može imati jedno dvoručno ili četiri jednoručna — nema fiksnog imenioca |
+| **Ekspanzije** | `access` je **pod**, a ne istina (vidi ispod) |
+| **Nearly done** | postignuća iznad 80%, imenovana iz kataloga |
+| **Owned** | suma po `item_id` kroz sve lokacije — knjiga drži red po mjestu, ovo odgovara na „imam li dovoljno" |
+
+#### Polje `access` je riješeno
+
+Testni nalog vraća `PathOfFire` a **ne** `HeartOfThorns` — a u istom odgovoru
+ima **40 zarađenih Heart of Thorns mastery tačaka**. Tačke se ne mogu zaraditi u
+sadržaju u koji nalog ne može ući, pa `access` imenuje **kupljeni proizvod**, ne
+otključani sadržaj. (ArenaNet je te dvije ekspanzije spojio u jedan proizvod.)
+
+Ne kodiramo ArenaNetova pravila o proizvodima, jer su njihova i mijenjaju se.
+Umjesto toga `access` je pod, a dodaje se svaka regija u kojoj nalog **dokazano
+igra** (`earned > 0`). Dokaz bije polje, i ne treba popravljati sljedeći put kad
+se dvije ekspanzije spoje.
+
+#### 2. Pravila — tabela `gw2_rules`, ne `match`
+
+Ovo su **uredničke odluke, ne logika**: prag koji se pokaže pogrešnim, rečenica
+koja loše zvuči, preporuka koja treba prestati da se pojavljuje. Svako od toga je
+red koji se izmijeni u admin panelu, sa datumom, bez deploya.
+
+| Kolona | Čemu |
+|---|---|
+| `producer` | koji generator gradi signal — imenovan, ne pogađan iz ključa, pa dva pravila dijele jednu mehaniku sa različitim pragovima |
+| `requires` | `{path, op, value}` protiv **ravne mape činjenica** — namjerno bez jezika izraza |
+| `weights` | množioci po činjenici; ovdje živi „16 nepotrošenih je važnije od 1" |
+| `confidence` | `confirmed` → `high` → `medium` → `needs_confirmation` → `hidden` |
+| `needs_expansion` | provjerava se protiv **razrješene** liste, ne sirovog `access`-a |
+
+`Advisor\Facts` je jedini rječnik na koji `requires` smije gledati, i dodavanje
+činjenice je namjerno izmjena koda — to je kapija koja čuva da tabela pravila
+tiho ne zavisi od nekog ugniježđenog API oblika.
+
+**Nepoznato nije nula.** Ključ bez `progression` dozvole nikad nije pročitao
+trezor; `vault.open_objectives` je tada `null` i pada na svakom uporedjivanju.
+Da je nula, nalog bi dobio savjet o nečemu što nikad nije izmjereno.
+
+**`hidden` nije nivo nego penzija.** Pravilo koje se pokazalo pogrešnim prestaje
+da se crta ali zadržava red, pa razlog zašto je postojalo ostaje zapisan.
+
+#### 3. Mehanizam — `Advisor\Advisor`
+
+```
+pravila → filtriraj (namjera, vrijeme, ekspanzija, requires)
+        → proizvedi signale
+        → bodovanje (ograničeno na 0–200)
+        → dedupliciraj (po subjektu, po identitetu, najviše 2 po cilju)
+        → rangiraj (round-robin po domenu)
+        → 3 glavne + 3 alternative
+```
+
+Dvije stvari su nađene tek gledajući stvarni izlaz, ne čitajući kod:
+
+**Isto postignuće dvaput.** Dva pravila dijele proizvođača postignuća na
+različitim pragovima, pa je ista stvar izlazila kao „Finish Auric Basin Explorer
+— 1 step left" i „Close on Auric Basin Explorer". Dedupe ide i po subjektu, ne
+samo po identitetu.
+
+**Jedan domen pojede sve.** Trezor i mastery regije legitimno pobjeđuju po
+bodovima — i na testnom nalogu su napunili i naslov i sve tri alternative, pa
+**osam postignuća na jedan korak od kraja nije bilo nigdje**. Rangiranje je
+round-robin po domenu preko svih šest mjesta, ne samo prve tri.
+
+#### Šta savjetnik namjerno NE radi
+
+- **Nema zbirnog skora.** Mockup crta „Weekly Completion Score 72/100"; jedan
+  broj preko pet nevezanih domena morao bi izmisliti i težine i imenilac.
+- **Nema tabele AR pragova po skali.** Modelovan je **samo 150 za T4**, i to kao
+  cilj a ne kao kapija. Ostali pragovi nisu u API-ju, nisu u katalogu, i tabela
+  napisana po sjećanju bila bi prvi izmišljeni broj u alatu.
+- **Ne imenuje izvor predmeta.** Odakle dolazi koji ascended nakit je stvarno
+  znanje, ali nije u API-ju ni u katalogu — ide u kurirano tijelo pravila ili
+  nigdje.
+- **LLM ne odlučuje.** Može prepisati objašnjenje u ljudskiju rečenicu, nikad ne
+  bira preporuku.
+
+#### API i alati
+
+| | |
+|---|---|
+| `GET /api/v1/gw2/dashboard` | kartice + savjeti + istorija; `?minutes=`, `?goal=`, `?avoid[]=` |
+| `php artisan gw2:snapshot` | ispiše normalizovano stanje |
+| `php artisan gw2:advise --minutes=30 --avoid=vault` | ispiše savjete |
+
+Keš je na sat, a ključ nosi `observed_at` — nova sinhronizacija ga poništava tako
+što upiše drugi ključ, ne tako što se neko sjeti da ga obriše. Filtrirani upiti
+se **ne** keširaju: namjera je pitanje koje je igrač tek postavio.
+
+Deset pravila je zasijano (`Gw2RuleSeeder`, idempotentno po `key`, pa re-seed ne
+gazi uredničke izmjene). Na testnom nalogu 22 kandidata → 6 prikazanih kroz pet
+domena.
+
+#### Testovi
+
+`tests/Feature/Gw2AdvisorTest.php` — deset testova, fiksture prepisane sa živog
+naloga. Dva od njih su prvo bila napisana **pogrešno**: prolazila su i kad se
+popravka ukloni, jer ih je štitila nepovezana granica (kapa od 2 po cilju,
+odnosno fixture sa manje kandidata nego mjesta). Prepisani su i onda dokazani
+lomljenjem popravke.
+
 ### Otvoreno
 
-- **`access` se čuva sirov i ne interpretira.** Testni nalog je 27. 9. odgovorio
-  `GuildWars2, PlayForFree, PathOfFire, EndOfDragons, SecretsOfTheObscure,
-  JanthirWilds` — **bez `HeartOfThorns`**, a Path of Fire posjeduje. Dok se to
-  pravilo ne razumije, običan `in_array` bi sakrio Heart of Thorns sadržaj
-  igraču koji do njega može doći.
+- ~~**Polje `access`**~~ **riješeno 28. 9.** — `access` imenuje kupljeni
+  proizvod, ne otključani sadržaj; dokaz je 40 zarađenih HoT tačaka na nalogu
+  kojem `access` HoT ne navodi. Rješenje je u `SnapshotReader::expansions()`:
+  `access` je pod, regije sa `earned > 0` se dodaju.
+- **Kuracija postignuća nije počela.** `advisor_eligible` je `false` na svih
+  8.339 redova i `reviewed_at` je prazan, pa svaki savjet o postignuću nosi
+  blokadu „nismo provjerili". To je tačno, ali obara postignuća na dno ranga —
+  a na testnom nalogu su osam njih na jedan korak od kraja najkorisnija stvar
+  koja postoji. Prvih stotinu redova treba pregledati.
 - `characters?ids=all` je mjereno na nalogu sa **jednim** likom. Veličina i
   vrijeme na 15–20 likova nisu poznati.
 - Dva broja sa mockupa su izmišljena — Weekly Completion Score 72/100 i

@@ -17,9 +17,12 @@ use App\Models\Gta6Character;
 use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
 use App\Models\Guide;
+use App\Models\Gw2Rule;
 use App\Models\HelpArticle;
 use App\Models\HelpCategory;
+use App\Models\MailCampaign;
 use App\Models\MailSuppression;
+use App\Models\MailTemplate;
 use App\Models\Media;
 use App\Models\NewsletterSubscriber;
 use App\Models\Order;
@@ -78,6 +81,16 @@ class AuthServiceProvider extends ServiceProvider
         Gta6Vehicle::class => ContentPolicy::class,
         Gta6Weapon::class => ContentPolicy::class,
         Guide::class => ContentPolicy::class,
+        // Editorial in the strictest sense: these rows decide what the Guild
+        // Wars 2 advisor tells a reader, so an open door here writes advice.
+        Gw2Rule::class => ContentPolicy::class,
+        // The mail desk. These two went in on 21 September without a policy and
+        // were an open door for three weeks — anyone who could open the panel
+        // could edit a campaign or rewrite the wording of every transactional
+        // mail the site sends. Found by the check in PanelToolingTest, which
+        // nobody had run.
+        MailCampaign::class => ContentPolicy::class,
+        MailTemplate::class => ContentPolicy::class,
         HelpArticle::class => ContentPolicy::class,
         HelpCategory::class => ContentPolicy::class,
         Media::class => ContentPolicy::class,
