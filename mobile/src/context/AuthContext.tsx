@@ -36,7 +36,11 @@ interface AuthValue {
     user: User | null;
     /** True until the stored session has been checked — screens wait on this. */
     loading: boolean;
-    signIn: (email: string, password: string) => Promise<{ requiresVerification: boolean }>;
+    signIn: (
+        email: string,
+        password: string,
+        recaptchaToken?: string | null
+    ) => Promise<{ requiresVerification: boolean }>;
     signOut: () => Promise<void>;
     refresh: () => Promise<void>;
 }
@@ -110,11 +114,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return () => { cancelled = true; };
     }, [refresh]);
 
-    const signIn = useCallback(async (email: string, password: string) => {
+    /**
+     * `recaptchaToken` is not optional in practice, only in the signature.
+     *
+     * `/auth/login` refuses a request without one — "Security check missing" —
+     * whenever TURNSTILE_ENABLED is on, which it is. This call omitted it
+     * entirely until 27 September 2026, so **nobody could sign in from the
+     * app at all**; the register screen had the gate and the sign-in screen
+     * had never been given one. Found by signing in on the emulator, which is
+     * the first time anybody had tried.
+     *
+     * Typed as nullable rather than required because the caller decides what
+     * to do about a challenge that has not finished, and a null here produces
+     * the API's own message rather than a different one invented locally.
+     */
+    const signIn = useCallback(async (email: string, password: string, recaptchaToken?: string | null) => {
         const result = await api<LoginResult>('/auth/login', {
             method: 'POST',
             auth: false,
-            body: { email, password },
+            body: { email, password, recaptcha_token: recaptchaToken ?? undefined },
         });
 
         /*

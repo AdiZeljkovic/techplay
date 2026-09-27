@@ -12,6 +12,7 @@ import {
 
 import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
+import { TurnstileGate } from '@/components/TurnstileGate';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError, OfflineError } from '@/lib/api';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
@@ -24,6 +25,7 @@ export default function SignIn() {
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [notice, setNotice] = useState<string | null>(null);
+    const [token, setToken] = useState<string | null>(null);
 
     async function submit() {
         setError(null);
@@ -48,10 +50,20 @@ export default function SignIn() {
             return;
         }
 
+        /* Same rule the register screen states: the gate below has to have
+           finished before there is anything to send. Without this the API
+           answers "Security check missing", which is true and tells somebody
+           staring at a completed form nothing about what to do. */
+        if (!token) {
+            setError('The security check has not finished. Give it a moment and try again.');
+
+            return;
+        }
+
         setBusy(true);
 
         try {
-            const { requiresVerification } = await signIn(email.trim(), password);
+            const { requiresVerification } = await signIn(email.trim(), password, token);
 
             if (requiresVerification) {
                 // The account exists and the password was right — it is the
@@ -76,6 +88,14 @@ export default function SignIn() {
             } else {
                 setError('Something went wrong. Try again in a moment.');
             }
+
+            /*
+             * A spent token cannot be sent twice. Clearing it makes the gate
+             * below issue a fresh challenge rather than letting the next
+             * attempt fail on a captcha that was already used — the same
+             * reason the register screen does it.
+             */
+            setToken(null);
         } finally {
             setBusy(false);
         }
@@ -138,6 +158,8 @@ export default function SignIn() {
                             onSubmitEditing={submit}
                         />
                     </View>
+
+                    <TurnstileGate onToken={setToken} onFailed={() => setToken(null)} />
 
                     <CommandButton label="Sign in" onPress={submit} busy={busy} style={{ marginTop: space.sm }} />
 
