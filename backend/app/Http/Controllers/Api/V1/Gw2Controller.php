@@ -7,6 +7,7 @@ use App\Jobs\SyncGw2Account;
 use App\Models\ConnectedAccount;
 use App\Services\Gw2\Gw2Connection;
 use App\Traits\ApiResponse;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -155,7 +156,16 @@ class Gw2Controller extends Controller
             'sync_status' => $connection->sync_status,
             'sync_error' => $connection->sync_error,
             'last_synced_at' => $connection->last_synced_at,
-            'last_full_sync_at' => $account->last_full_sync_at ?? null,
+            /*
+             * Parsed rather than passed through. `last_synced_at` comes off an
+             * Eloquent cast and serialises as UTC ISO-8601; this one comes off
+             * a raw query builder row as the string PostgreSQL stored. Handing
+             * a client two formats for the same kind of moment in one payload
+             * is how a "synced 2 hours ago" label ends up two hours out.
+             */
+            'last_full_sync_at' => isset($account->last_full_sync_at)
+                ? Carbon::parse($account->last_full_sync_at)
+                : null,
             'world' => $account->world ?? null,
             'fractal_level' => $account->fractal_level ?? null,
             'access' => $account && $account->access ? json_decode($account->access, true) : [],

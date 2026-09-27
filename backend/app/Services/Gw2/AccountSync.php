@@ -231,6 +231,10 @@ class AccountSync
     {
         $seen = [];
 
+        $known = DB::table('gw2_characters')
+            ->where('gw2_account_id', $accountId)
+            ->pluck('id', 'name');
+
         foreach ($characters as $character) {
             if (! isset($character['name'])) {
                 continue;
@@ -238,26 +242,43 @@ class AccountSync
 
             $seen[] = $character['name'];
 
-            DB::table('gw2_characters')->updateOrInsert(
-                ['gw2_account_id' => $accountId, 'name' => $character['name']],
-                [
-                    'profession' => $character['profession'] ?? null,
-                    'race' => $character['race'] ?? null,
-                    'level' => (int) ($character['level'] ?? 0),
-                    'age' => $character['age'] ?? null,
-                    'deaths' => $character['deaths'] ?? null,
-                    'character_created_at' => isset($character['created'])
-                        ? date('Y-m-d H:i:s', strtotime($character['created']))
-                        : null,
-                    'equipment' => json_encode($character['equipment'] ?? [], JSON_UNESCAPED_UNICODE),
-                    'specializations' => json_encode($character['specializations'] ?? [], JSON_UNESCAPED_UNICODE),
-                    'skills' => json_encode($character['skills'] ?? [], JSON_UNESCAPED_UNICODE),
-                    'crafting' => json_encode($character['crafting'] ?? [], JSON_UNESCAPED_UNICODE),
-                    'observed_at' => now(),
+            $row = [
+                'profession' => $character['profession'] ?? null,
+                'race' => $character['race'] ?? null,
+                'level' => (int) ($character['level'] ?? 0),
+                'age' => $character['age'] ?? null,
+                'deaths' => $character['deaths'] ?? null,
+                'character_created_at' => isset($character['created'])
+                    ? date('Y-m-d H:i:s', strtotime($character['created']))
+                    : null,
+                'equipment' => json_encode($character['equipment'] ?? [], JSON_UNESCAPED_UNICODE),
+                /*
+                 * Objects, not lists. Verified against a live character on 28
+                 * September 2026: `specializations` and `skills` come back
+                 * keyed by game mode — pve, pvp, wvw — each holding its own
+                 * set, while `equipment` and `crafting` really are arrays.
+                 * Anything reading a build has to pick a mode; treating either
+                 * as a flat list reads the wrong one, or nothing at all.
+                 */
+                'specializations' => json_encode($character['specializations'] ?? [], JSON_UNESCAPED_UNICODE),
+                'skills' => json_encode($character['skills'] ?? [], JSON_UNESCAPED_UNICODE),
+                'crafting' => json_encode($character['crafting'] ?? [], JSON_UNESCAPED_UNICODE),
+                'observed_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            // Same reason as gw2_accounts: updateOrInsert would rewrite
+            // created_at on every sync, and this row's age is how long the
+            // character has been watched.
+            if (isset($known[$character['name']])) {
+                DB::table('gw2_characters')->where('id', $known[$character['name']])->update($row);
+            } else {
+                DB::table('gw2_characters')->insert($row + [
+                    'gw2_account_id' => $accountId,
+                    'name' => $character['name'],
                     'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
+                ]);
+            }
         }
 
         // A character the player deleted should stop being advised about.

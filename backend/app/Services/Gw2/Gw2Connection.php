@@ -120,23 +120,38 @@ class Gw2Connection
                 ]
             );
 
-            DB::table('gw2_accounts')->updateOrInsert(
-                ['connected_account_id' => $connection->id],
-                [
-                    'user_id' => $user->id,
-                    'arena_account_id' => $account['id'],
-                    'name' => $account['name'] ?? null,
-                    'world' => $account['world'] ?? null,
-                    'fractal_level' => $account['fractal_level'] ?? null,
-                    'daily_ap' => $account['daily_ap'] ?? null,
-                    'monthly_ap' => $account['monthly_ap'] ?? null,
-                    'wvw_rank' => $account['wvw_rank'] ?? null,
-                    'game_account_created_at' => isset($account['created']) ? date('Y-m-d H:i:s', strtotime($account['created'])) : null,
-                    'access' => json_encode($account['access'] ?? [], JSON_UNESCAPED_UNICODE),
+            $row = [
+                'user_id' => $user->id,
+                'arena_account_id' => $account['id'],
+                'name' => $account['name'] ?? null,
+                'world' => $account['world'] ?? null,
+                'fractal_level' => $account['fractal_level'] ?? null,
+                'daily_ap' => $account['daily_ap'] ?? null,
+                'monthly_ap' => $account['monthly_ap'] ?? null,
+                'wvw_rank' => $account['wvw_rank'] ?? null,
+                'game_account_created_at' => isset($account['created']) ? date('Y-m-d H:i:s', strtotime($account['created'])) : null,
+                'access' => json_encode($account['access'] ?? [], JSON_UNESCAPED_UNICODE),
+                'updated_at' => now(),
+            ];
+
+            /*
+             * Not updateOrInsert: it applies the same values on both paths, so
+             * `created_at` would be rewritten every time somebody reconnects a
+             * key. "Tracked since" is the one date here that has to survive
+             * that, because it bounds how far the progress history can reach.
+             */
+            $existing = DB::table('gw2_accounts')
+                ->where('connected_account_id', $connection->id)
+                ->first('id');
+
+            if ($existing) {
+                DB::table('gw2_accounts')->where('id', $existing->id)->update($row);
+            } else {
+                DB::table('gw2_accounts')->insert($row + [
+                    'connected_account_id' => $connection->id,
                     'created_at' => now(),
-                    'updated_at' => now(),
-                ]
-            );
+                ]);
+            }
 
             return $connection;
         });
