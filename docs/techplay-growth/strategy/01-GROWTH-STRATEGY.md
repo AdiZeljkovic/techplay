@@ -11,7 +11,7 @@ Scope: the strategy every other file in this folder executes. Covers Part 1 (gro
 - **Three phases.** Fix and measure (28 Sep–18 Oct). Build the loops and ride the October launches (19 Oct–15 Nov). Convert the two biggest moments of the year, GTA VI on 19 Nov and the Black Friday / TGA / Winter Sale run, into members (16 Nov–31 Dec).
 - **Five pillars decide what gets written:** release and platform intelligence, PC performance and fixes, MMO/WoW, GTA 6 launch utility, industry data. General tech and phones stop [R08, R21].
 - **Primary channels:** Google Search, Discover, Discord, email, and the site's own reminder loops. Everything else is secondary or an experiment with a keep/kill date [R07, R16].
-- **No paid spend before 19 Oct**, and none at all unless the measurement gate (C03) passes. The paid tests are small, 18+ only, and exist to learn, not to buy growth [R16].
+- **No paid spend before 2 Nov**, and none at all unless measurement (D-007, D-008) is live. Meta is out for 2026 by default (D-031 Option A; EIC decides 5 Oct). The paid tests are small, 18+ only, and exist to learn, not to buy growth [R16].
 - **Targets are ranges, set against the few baselines that exist.** Headline TARGETS for 31 Dec 2026: 170–300 new verified registrations (28 Sep–31 Dec), at least 40% of them reaching A2 within 7 days, 100 A2 members, WRM of 45–70 in the last week of December, Discord at 400–500 members, organic search back to 30–60 clicks a day (100, the pre-17 Aug level, is the stretch). All are TARGETS, not forecasts. kpis.json holds the canonical monthly values.
 
 ---
@@ -74,11 +74,11 @@ Each bet has a reason from the research, the campaigns that carry it, and how we
 ### Bet 1 — Fix trust and plumbing before promotion
 - **Why:** false numbers on the register page and dead links in the most-visited hub undermine every campaign that points at them [R02, R13]. Search collapsed after a technical block, not an editorial one [R03].
 - **Carried by:** C01 Trust Reset, C02 Plumbing Sprint, C03 Measurement Foundation, C54 Ownership and press pages.
-- **Proof by 16 Oct:** zero invented numbers live; breadcrumb, RSS, SearchAction and GTA page relation fixed; GA4 key events and UTM capture working. If C03 is not done, paid does not start.
+- **Proof by 18 Oct:** zero invented numbers live; breadcrumbs, dead invites, GTA page relation, RSS and SearchAction fixed (D-003 and D-006 by 18 Oct per 32). **By 1 Nov:** GA4 key events (D-007, W43) and UTM capture (D-008, W44) working. Until then, paid does not start.
 
 ### Bet 2 — Turn every visit into a library action
 - **Why:** the library is the differentiator, but only 2 of 55 accounts linked a platform [R11]. Registration asks for trust before offering anything, and nothing reminds a guest to come back [R11, R12].
-- **Carried by:** C44 registration rebuild, C45 guest "Remind me / Follow", C46 article-end CTA and related module, C42 welcome sequence, C43 off-site alerts, C41 personalised releases email, C68 Founding 100.
+- **Carried by:** C44 registration rebuild, C42 welcome sequence (~6 Nov), C43 off-site alerts (~6 Nov), C41 personalised releases email (23 Nov), C45 guest "Remind me" (lite, 18 Dec), C68 Founding 100. The C46 article-end block moves to February 2027; articles carry the newsletter form and hand-placed links until then.
 - **Proof by 31 Dec:** A2 rate among new verified members at least 40% within 7 days (TARGET); reminders set per week rising month over month.
 
 ### Bet 3 — Own narrow, useful things instead of broad head terms
@@ -139,9 +139,9 @@ Detail, hours and the weekly grid are in 13-SEO-CONTENT. The shape:
 
 ### Phase A — Fix and measure: 28 Sep to 18 Oct
 
-**October objective 1: stop the leaks.** All false claims gone by 2 Oct (C01). Breadcrumbs, RSS, dead invites, SearchAction and the GTA page relation fixed by 9 Oct (C02). Measurement working by 16 Oct (C03).
+**October objective 1: stop the leaks.** All false claims gone by 2 Oct (C01). Breadcrumbs, dead invites and the GTA page relation fixed by 9 Oct; RSS and SearchAction by 18 Oct (C02). Measurement working by 1 Nov (C03: D-007 in W43, D-008 in W44).
 **October objective 2: start the rhythm.** Every franchise live by 12 Oct: F01 from 28 Sep, F02 from 28 Sep, F03 from 1 Oct, F05 from 1 Oct, F07 from 2 Oct, F09 from 3 Oct, F24 from 8 Oct (restart announced 6 Oct). The Save File sends every Friday from 2 Oct.
-**October objective 3: build the return loops.** Welcome sequence (12 Oct), off-site alerts and guest "Remind me" (19 Oct), registration rebuild (26 Oct), first personalised releases email (26 Oct).
+**October objective 3: build the return loops, in the order DEV can ship them (32).** Newsletter landing and article form (W40–W41), release-time tool (14 Oct), register rewrite honouring `?from=` (W43). Welcome and release-day email follow about 6 Nov, the personalised releases email 23 Nov, price alerts 25 Nov, guest "Remind me" (lite) 18 Dec. Until then SC runs the manual interims listed in 32.
 **October objective 4: first two data stories.** Release Congestion Index (7 Oct), Studios Closed tracker (14 Oct), Balkan Game Dev Census (28 Oct).
 
 | October TARGET (by 31 Oct) | Range |
@@ -156,15 +156,15 @@ Detail, hours and the weekly grid are in 13-SEO-CONTENT. The shape:
 
 ### Phase B — Loops and launches: 19 Oct to 15 Nov
 
-**November objective 1: catch the October–November launches with utility pages.** MW4 hub (12 Oct), Next Fest Diary (19–26 Oct), Switch 2 hub (26 Oct), Steam hub (2 Nov), MMO hub (10 Nov).
+**November objective 1: catch the October–November launches with utility pages.** MW4 launch guide (12 Oct), Next Fest Diary (19–26 Oct), and pillar articles for PC fixes (12 Oct), Switch 2 (26 Oct), Steam (2 Nov) and MMOs (10 Nov). The hub routes (D-032) arrive in January 2027 and absorb these articles by 301.
 **November objective 2: GTA VI launch readiness.** Release-time tool (14 Oct), vehicle guide (21 Oct), YouTube pilot (12 Nov), map progress tracker built and tested before 18 Nov.
-**November objective 3: test paid once, cheaply.** Branded search from 19 Oct; Meta registration test 2–22 Nov and Reddit test 9–25 Nov only if gated (26-PAID-MEDIA).
+**November objective 3: test paid once, cheaply.** Branded and tool search from 2 Nov and the Reddit test 9–25 Nov, both only once D-007 and D-008 are live. Meta waits for 2027 unless EIC picks Option B on 5 Oct (26-PAID-MEDIA, 32).
 
 ### Phase C — Convert the season: 16 Nov to 31 Dec
 
 **November objective 4: GTA VI launch week as the registration peak.** Map tracker live at unlock; launch-night Discord event; special newsletter; review in progress within 24 h.
 **December objective 1: turn deal season into activation.** Black Friday wishlist price alerts (20 Nov–1 Dec), gift guide from wishlists (1–20 Dec), Winter Sale picks (17 Dec–4 Jan). Every deal piece asks for a wishlist or follow, not just a click.
-**December objective 2: give members something to share.** Your 2026 in Games (14 Dec), TGA prediction league (18 Nov–10 Dec), Community Awards (1–20 Dec).
+**December objective 2: give members something to share.** Your 2026 in Games (14 Dec), TGA prediction league on forum and Discord polls (18 Nov–10 Dec), Community Awards (1–20 Dec).
 **December objective 3: set up 2027.** OpenCritic application (14 Dec), State of the Catalogue drafted, 2027 Most Anticipated from member follows (21 Dec), keep/kill decisions on every experimental channel (31 Dec).
 
 | TARGET by 30 Nov | Range | TARGET by 31 Dec | Range |
@@ -249,8 +249,8 @@ Assumed hours per week (ESTIMATE; some roles may be one person): EIC 40, ED 40, 
 | The GTA 6 giveaway is not live, or rules are unclear | Admin check 28 Sep | No promotion; C09 creative not made; a Black Friday or TGA giveaway replaces it (25-GIVEAWAYS) |
 | gtadb.org does not grant attribution for the map data | D-020 by 9 Oct | Map locations are not used in countdown or PR; tracker ships with TechPlay-verified locations only, or not at all |
 | Search does not recover after plumbing | Search Console, 2 Nov review | Escalate D-021 (indexable set) and check crawl logs; do not add more pages |
-| Measurement not ready by 16 Oct | C03 gate | Paid does not start; decisions use Search Console and database queries only |
-| Team hours overrun | Monday review | Cut in the order in §9 |
+| Measurement not ready by 2 Nov | D-007 (W43) and D-008 (W44) | Paid does not start; decisions use Search Console and database queries only |
+| Team hours overrun | Monday review | Cut in the order in §9. DEV is the binding constraint: the campaign dates asked for about 257 DEV hours in October against about 100; 32 re-sequences them, and ~10 extra DEV hours a week from 12 Oct to 22 Nov would bring back Steam sign-in, the full guest modal, the article-end block, invite attribution and the pixel |
 | Rockstar takes down fan content or footage | DMCA notice | Official assets only, credited; no leaked footage ever [R17] |
 | An email complaint spike on the self-hosted sender | complaint rate > 0.1% | Pause sends, check list source; no DNS or SMTP changes without the owner's approval [R20] |
 

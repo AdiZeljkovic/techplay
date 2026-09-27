@@ -5,7 +5,7 @@ Status: Phase 2 plan — 27 Sep 2026
 - **The spine's D-001…D-040 are kept with their IDs.** D-041 is the verified bot-giveaway-link bug. D-042…D-062 are new items this plan needed. D-007b, D-011a and D-039a–c are sub-items from other Phase 2 plans that are scheduled here. The other sub-IDs those plans registered are listed as children at the end of this file.
 - **Demand is about twice what DEV can build.** The 67 items total 460 h ESTIMATE, and the 28 children add 105 h. DEV has 256 h from 28 Sep to 31 Dec (20 h a week, less over the holidays). The sprint plan schedules 225 h and keeps 31 h for deploys, incidents and README updates.
 - **The order follows R23:** fix what is false or broken, make growth measurable, deliver the loops that already exist (email, alerts), build on the data (tools, datasets, year in review), then promote. GTA VI on 19 Nov is the hard deadline for the hub work.
-- **All 16 P0 items land in October.** Giveaway integrity (D-039a/b, D-041) ships in week 1, so C09 can be promoted from Tue 29 Sep.
+- **All 16 P0 items land by 1 Nov.** Only D-007's phase B events wait for Q1. Giveaway integrity (D-039a/b, D-041) ships in week 1, so C09 can be promoted from Tue 29 Sep.
 - **What fits in 2026:** trust and plumbing fixes, GA4 key events (phase A), UTM capture, the newsletter landing page, the welcome and reminder mail, "Your releases this week", price alerts, the GTA 6 release-time tool and map tracker, two dataset pages, three logs that start the 2027 datasets (D-033, D-042, D-059), and Your 2026 in Games.
 - **What slips to Q1 2027:** Steam sign-in (D-015), the indexable-set change (D-021/D-023), platform hubs (D-032), the article-end block (D-010), bot invite attribution (D-011), web push (D-019), the Meta Pixel (D-031) and the prediction league (D-026). Each slip has a no-DEV interim in the "What slips" table.
 - **Decision needed by 5 Oct:** the Meta Pixel cannot ship by 19 Oct without displacing P0 and dataset work. The default drops November retargeting and C57 for 2026 (see "D-031: the 19 Oct question").
@@ -107,7 +107,7 @@ By area: trust and plumbing (D-001–D-006, D-022, D-029, D-030, D-040, D-041, D
 - **Growth impact:** Concentrates GTA 6 relevance on the real game page before 19 Nov; organic clicks and internal links for the P4 pillar. **Dependencies:** none.
 
 ### D-006 — Remove the WebSite SearchAction (build /search later)
-**P0 · XS (1 h ESTIMATE) · Owner DEV · Target 2026-W51 (14–20 Dec) · Unlocks C02**
+**P0 · XS (1 h ESTIMATE) · Owner DEV · Target 2026-W42 (12–18 Oct) · Unlocks C02**
 - **Problem.** FACT: the root layout's WebSite.potentialAction points to /search?q=, which does not exist and is disallowed in robots.txt [R01 A.4.2; R03; frontend/app/layout.tsx:205-209].
 - **Requirement / acceptance criteria:**
   - potentialAction removed from the WebSite JSON-LD; Rich Results Test shows valid Organization and WebSite blocks
@@ -203,7 +203,7 @@ By area: trust and plumbing (D-001–D-006, D-022, D-029, D-030, D-040, D-041, D
 
 ### D-013 — Welcome sequence and mail channel for reminders and the digest
 **P1 · M (16 h ESTIMATE) · Owner DEV · Target 2026-W45 (2–8 Nov) · Unlocks C42, C43, C41**
-- **Problem.** FACT: 20 of 22 notification classes are database-only, including release reminders, wishlist notices and the Friday digest; there is no welcome mail; two reminder paths can notify the same person twice on release day [R01 B.2.10-2.12, B.12 #11; R12 §1; README §20].
+- **Problem.** FACT: 20 of 22 notification classes are database-only, including release reminders, wishlist notices and the Friday digest; there is no welcome mail; two reminder paths can notify the same person twice on release day (OBSERVATION) [R01 B.2.10-2.12, B.12 #11; R12 §1; README §20].
 - **Requirement / acceptance criteria:**
   - Welcome sequence: 3 mails to newsletter_verified subscribers (day 0 welcome + what to expect, day 3 'tell us your platforms', day 7 'link your library'), words editable as MailTemplate rows, suppression via MailSuppression::filter(), paced like campaigns
   - Release-day reminder and wishlist 'out today / in 3 days' notices gain a mail channel only for verified members who opt in (settings.notifications), deduplicated across SendReleaseReminders and wishlist:check-releases
@@ -734,7 +734,7 @@ Capacity is 240 h over W40–W51, plus 10 h in W52 and 6 h in W53, for 256 h in 
 |---|---|---|---|---|---|---|
 | W40 | 28 Sep–4 Oct | C01 to 2 Oct; C09 verify 28 Sep; C07 1 Oct; C40 issue 1 on 2 Oct | D-004 1 · D-041 1 · D-039a 1 · D-039b 2 · D-001 4 · D-040 2 · D-002 2 · D-020 1 · D-012 landing + homepage 4 | 18 | 2 | Giveaway fixes go first, so C09 can be promoted from Tue 29 Sep. Ledger text for C07 goes live Wed 30 Sep |
 | W41 | 5–11 Oct | C20 7 Oct; C13 5–12 Oct; C02 ends 9 Oct; C54 9 Oct | D-044 congestion 3 · D-045 page 5 (both Mon–Tue) · D-005 4 · D-017 page 4 · D-012 form + source 3 | 19 | 1 | If the giveaway is live, D-039 (2 h) replaces D-012 part B, which moves into W42 ops. C54: EIC publishes the ownership text as an article; the pages follow in W51 |
-| W42 | 12–18 Oct | C08 14 Oct; C22 14 Oct; C42 12 Oct; C46 16 Oct; C03 ends 16 Oct | D-018 10 (Mon–Wed) · D-017 OG 2 · D-003 3 · D-029 4 | 19 | 1 | C42 moves to W45. C46: the article gets the D-012 newsletter form only |
+| W42 | 12–18 Oct | C08 14 Oct; C22 14 Oct; C42 12 Oct; C46 16 Oct; C03 ends 16 Oct | D-018 10 (Mon–Wed) · D-017 OG 2 · D-003 3 · D-029 4 · D-006 1 | 20 | 0 | C42 moves to W45. C46: the article gets the D-012 newsletter form only |
 | W43 | 19–25 Oct | C12 21 Oct; C43 and C45 19 Oct; C56 from 19 Oct; Next Fest 19–26 Oct | D-061 2 (Mon) · D-033 4 · D-007 phase A 6 · D-014 7 | 19 | 1 | C43 and C45 slip. C56 waits for D-008 |
 | W44 | 26 Oct–1 Nov | C21 28 Oct; C41 26 Oct; C61 26 Oct; C44 ends 26 Oct; C67 1 Nov | D-044 atlas 2 · D-045 atlas 2 (Mon–Tue) · D-008 10 · D-042 5 · D-050 1 | 20 | 0 | Full week. If anything breaks, D-042 moves first, then D-050 |
 | W45 | 2–8 Nov | C57 2 Nov; C62 2 Nov; C23 4 Nov; WoW: Forever 4 Nov | D-013 16 · D-007b 4 | 20 | 0 | Welcome and reminder mail go live about 6 Nov after EIC's deliverability sign-off. C57 does not run (no D-031). C23 uses the sequel-gap query DEV writes with the W41 export (EIC runs it; no extra DEV hours) |
@@ -743,7 +743,7 @@ Capacity is 240 h over W40–W51, plus 10 h in W52 and 6 h in W53, for 256 h in 
 | W48 | 23–29 Nov | C25 23 Nov; C31 from 20 Nov; Black Friday 27 Nov | D-027 12 · D-054 5 | 17 | 3 | Price alerts live Wed 25 Nov. Complaint and bounce data before the December sends |
 | W49 | 30 Nov–6 Dec | C32 30 Nov; C30 from 1 Dec; C33 | D-025 17 | 17 | 3 | — |
 | W50 | 7–13 Dec | TGA 10 Dec; C26 was 8 Dec | D-025 15 | 15 | 5 | Your 2026 in Games code-complete 13 Dec. C26 moves to Q1 |
-| W51 | 14–20 Dec | C28 live 14 Dec; C53 14 Dec; C34 17 Dec | D-016 lite 8 · D-022 3 · D-038 5 · D-011a 2 · D-006 1 | 19 | 1 | — |
+| W51 | 14–20 Dec | C28 live 14 Dec; C53 14 Dec; C34 17 Dec | D-016 lite 8 · D-022 3 · D-038 5 · D-011a 2 | 18 | 2 | — |
 | W52 | 21–27 Dec (10 h) | C70 from 21 Dec; C27 draft | D-044 State of the Catalogue 3 · D-059 2 · D-052 4 | 9 | 1 | — |
 | W53 | 28–31 Dec (6 h) | D-059 snapshot 31 Dec 23:00 UTC | D-057 5 | 5 | 1 | D-057 finishes in 2027-W01 |
 
@@ -755,7 +755,7 @@ Capacity is 240 h over W40–W51, plus 10 h in W52 and 6 h in W53, for 256 h in 
 
 | Campaign | Spine date | DEV dependency | New date | Interim without DEV |
 |---|---|---|---|---|
-| C02 Plumbing Sprint | 28 Sep–9 Oct | D-003, D-006, D-022 | D-003 16 Oct; D-006 and D-022 in W51 | D-002, D-004, D-005 and D-017 land inside the window; titles fixed through page_seo by EIC in Filament |
+| C02 Plumbing Sprint | 28 Sep–9 Oct | D-003, D-006, D-022 | D-003 and D-006 by 18 Oct; D-022 in W51 | D-002, D-004, D-005 and D-017 land inside the window; titles fixed through page_seo by EIC in Filament |
 | C42 Welcome sequence | 12 Oct | D-013 | about 6 Nov | SC sends a short manual welcome campaign on Fridays to that week's verified subscribers (mail desk "signups" segment) |
 | C43 Release-day alerts off-site | 19 Oct | D-013 (email), D-047 (Discord DM) | email about 6 Nov; DM 2027-W06 | SC posts "Out today" in Discord each morning from /calendar |
 | C41 "Your releases this week" | 26 Oct | D-028 | 23 Nov | None; F01 Out This Week covers the general version |

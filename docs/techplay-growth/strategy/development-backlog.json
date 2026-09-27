@@ -180,7 +180,7 @@
       ],
       "dependencies": [],
       "owner": "DEV",
-      "target_week": "2026-W51 (14–20 Dec)",
+      "target_week": "2026-W42 (12–18 Oct)",
       "status": "todo"
     },
     {
@@ -720,7 +720,7 @@
     {
       "id": "D-013",
       "title": "Welcome sequence and mail channel for reminders and the digest",
-      "problem": "FACT: 20 of 22 notification classes are database-only, including release reminders, wishlist notices and the Friday digest; there is no welcome mail; two reminder paths can notify the same person twice on release day [R01 B.2.10-2.12, B.12 #11; R12 §1; README §20].",
+      "problem": "FACT: 20 of 22 notification classes are database-only, including release reminders, wishlist notices and the Friday digest; there is no welcome mail; two reminder paths can notify the same person twice on release day (OBSERVATION) [R01 B.2.10-2.12, B.12 #11; R12 §1; README §20].",
       "acceptance_criteria": [
         "Welcome sequence: 3 mails to newsletter_verified subscribers (day 0 welcome + what to expect, day 3 'tell us your platforms', day 7 'link your library'), words editable as MailTemplate rows, suppression via MailSuppression::filter(), paced like campaigns",
         "Release-day reminder and wishlist 'out today / in 3 days' notices gain a mail channel only for verified members who opt in (settings.notifications), deduplicated across SendReleaseReminders and wishlist:check-releases",

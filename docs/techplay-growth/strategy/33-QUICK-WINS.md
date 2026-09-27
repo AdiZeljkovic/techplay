@@ -52,6 +52,36 @@ Owners: EIC editor-in-chief · ED editor/journalists · SC social and community 
 >
 > Hello, I'm Adi Zeljković, editor of TechPlay (techplay.gg), an independent gaming publication in Sarajevo. Our GTA VI map at techplay.gg/gta6/map uses location records that appear to come from map.gtadb.org. Before we build anything on top of it, we want to get this right. May we keep using the data? If yes, how would you like to be credited (wording and link)? If you would rather we remove it, say so and we will. Thank you, Adi
 
+## Monday 28 Sep, in order
+
+The order matters because later steps depend on earlier ones. Times are Sarajevo time and are an ESTIMATE of a workable sequence, not a fixed schedule.
+
+| Time | Who | Step | Depends on |
+|---|---|---|---|
+| 09:00 | EIC | Baseline snapshot (24h-1) | — |
+| 09:30 | EIC | Giveaway check (24h-2); decision posted | — |
+| 09:30 | DEV | D-004 invites, then D-041 bot links; one deploy of each half with `techplay-deploy.sh` | — |
+| 10:00 | SC | Handles (24h-7), X footer link (24h-8), bios (24h-10) | — |
+| 10:00 | ED | Out This Week #1 (24h-13) | — |
+| 11:00 | SC | Discord invite codes (24h-9), then the C37 thread (24h-14) | — |
+| 11:30 | DEV | D-039a and D-039b with tests; deploy the backend | Giveaway decision (only the order changes) |
+| 12:00 | EIC | gtadb.org email (24h-11); brief ED (24h-12) | — |
+| 14:00 | DEV | D-001 first half (24h-6), using the copy table above | EIC approves the copy table |
+| 15:30 | SC | Countdown day 52 (24h-15), then Out This Week to Discord with `c04-out-this-week` | ED publish |
+| 17:00 | DEV + SC | Live check of everything shipped today (list below); fix or roll back before end of day | All of the above |
+
+## Hours by owner (ESTIMATE)
+
+| Horizon | EIC | ED | SC | DS | DEV | Notes |
+|---|---|---|---|---|---|---|
+| Next 24 h | 2.0 | 1.5 | 2.5 | 0 | 7.0 | DEV's day is the heaviest; the rest fits beside normal output |
+| Next 3 days (incl. 24 h) | 4.5 | 2.5 | 6.0 | 3.0 | 14.0 | The rest of DEV's W40 is D-012 (4 h) and ops |
+| Next 7 days (incl. 3 days) | 7.0 | 9.5 | 11.5 | 7.0 | 20.0 | DEV at capacity (32 W40) |
+| Next 14 days (incl. 7 days) | 16.0 | 17.0 | 17.5 | 9.0 | 40.0 | C20, C52 and C71 are EIC's main load |
+| Next 30 days (incl. 14 days) | 24.0 | 50.0 | 36.0 | 14.0 | 80.0 | ED's figure is mostly Next Fest and In Order, which replace the rewrites on the Stop-Doing list |
+
+These hours sit inside the weekly budget (EIC 40, ED 40, SC 25, DS 10, DEV 20). They are the quick-win share of each person's week, not extra time.
+
 ## NEXT 3 DAYS — to Wednesday 30 Sep
 
 | # | Owner | Time | Exact action | Expected effect | Done when |
@@ -123,6 +153,88 @@ Owners: EIC editor-in-chief · ED editor/journalists · SC social and community 
 | 13 | SC | 30 min/week | C36: every Monday, read "uses" per invite code in Discord and fill the sheet | Discord growth per campaign is known without D-011 | Weekly rows from 12 Oct |
 | 14 | EIC | 1 h | Monthly review on Mon 26 Oct: baseline vs now for registrations, verified subscribers, Discord members, organic clicks, reminders set, Save File clicks | Keep, change or stop decisions based on four weeks of data | Review notes in the sheet |
 
+## Copy for the 3-, 7- and 14-day actions
+
+**C09 promotion, Discord #announcements (SC, only if the giveaway is live):**
+
+> The GTA VI giveaway is open until 20 October. Entering is free with a TechPlay account and counts on its own; linking a library or joining here adds points. Rules and entry: techplay.gg/giveaway/{slug}?utm_source=discord&utm_medium=community&utm_campaign=c09-gta6-giveaway
+> We fixed two things this week: every entrant now gets base points, and the per-device limit applies to every task.
+
+**C09 promotion, X (SC):**
+
+> GTA VI giveaway, open until 20 October. Free to enter with a TechPlay account. Rules and prize details on the page: techplay.gg/giveaway/{slug}
+
+(No "retweet to enter" and no share task in any post. The prize wording is copied from the giveaway record, never retyped.)
+
+**The late draw note, /news and Discord (EIC):**
+
+> **We ran a giveaway draw late. Here is the winner, and what changed.**
+> The World of Tanks draw closed months ago and was never drawn. That was our mistake. We drew it today in the admin panel. The winner is {first name + initial, with consent}, and we have contacted them.
+> Three things changed this week so it does not happen again. Everyone who enters now gets base points, so entering alone counts. The per-device entry limit applies to every task. And the daily check that lists finished-but-undrawn giveaways now goes to the editor, not to a log.
+
+(Before publishing, EIC confirms that the third sentence is true: the `giveaways:unfinished` output must reach a person. If it does not yet, drop that sentence.)
+
+**C07 launch, X and Threads (ED, Thu 1 Oct):**
+
+> Confirmed or rumour? This week's GTA VI ledger.
+> Confirmed: 19 November, PS5 and Xbox Series X|S, $79.99, single-player at launch, no PC version at launch.
+> Rumour: GTA Online for VI in 2027.
+> Every line has a source and a date: techplay.gg/gta6/everything-we-know
+
+**GTA briefing opt-in, issue #1 intro (EIC, 8 Oct):**
+
+> You're getting this once because you signed up to TechPlay's newsletter, some of you from the GTA VI page before we could tell who came from where. From next week the GTA briefing goes only to people who ask for it: one email every Thursday until launch week, then daily for seven days. Keep me on the GTA briefing → {signed link}. If you don't click, you'll only get The Save File on Fridays.
+
+**Ownership article outline (EIC, 9 Oct):** Who owns TechPlay (Luminor Solutions, Sarajevo, as the Impressum states). How it is paid for (ads; any other source named). What advertisers and partners cannot buy. Who writes (named staff and contributors, with the About page link). How AI is and is not used (EIC states the actual practice). How to report an error, and what happens next. Last updated date. No audience numbers.
+
+**Out This Week template (ED, every Monday; D-051 automates the draft in 2027):**
+
+> Title: "Out this week: {Game A}, {Game B} and {event or third game}"
+> First line: the one release most readers will care about, with date and platforms.
+> Then one entry per game: date · platforms · price if the store shows one (label the region) · one sentence on why it matters · game link · "Remind me".
+> Close with the week's sale or event, one line.
+> Rule: every game name links to its `/games/` page; "(reported)" on anything not confirmed by the publisher [R05].
+
+**Fix It Friday #1 outline (ED, 2 Oct):** "Shader compilation stutter: what it is and every fix that works". What stutter is, in two paragraphs. How to tell it from a low frame rate. Fixes in the order to try them (driver shader cache size, letting the first run finish compiling, the game's own pre-compile option, background downloads off). What does not help. When to report it to the developer. Linked from `/guides` and from the Discord #pc-help pin. No benchmark claims: TechPlay has none [R02].
+
+**Steam Autumn Sale picks format (ED, 1 Oct):** Ten games, each with base price, sale price and region (US prices labelled US) and one line on who it suits. Include "wait for the Winter Sale (17 Dec)" where honest. Game links throughout. An affiliate link, if any, carries a visible disclosure line [R20].
+
+**Discord Server Guide to-dos (SC, C35):**
+
+> 1. Say hello in #new-people. One line: what you're playing.
+> 2. Link your TechPlay account with /link, so your shelf and rank show up here.
+> 3. Pick your platforms in Channels & Roles to see the channels for them.
+
+## Live-check list after each first-week deploy (DEV + SC, 20 minutes)
+
+| URL or place | Check |
+|---|---|
+| `/register`, `/login` | No "15K+", "50K+" or "24/7"; perk line reads "Earn XP for comments, ratings and the games you finish" |
+| `/gta6` | Discord button opens the server; the newsletter block has the new copy; no "thousands" |
+| `/roadmap` | Discord and YouTube links work; no Twitch link |
+| `/wow-analyzer` | No "50K+", "4.9/5" or "March 2, 2026"; OG image under 300 KB (Discord preview renders) |
+| Any news article | Breadcrumb category link returns 200 (after D-002) |
+| Discord `/giveaways` | Link opens `/giveaway/{slug}` |
+| Filament → Giveaways → participants | New entries show base points |
+| `/` footer | X icon present; Discord card uses `wPQG9gUMXH` |
+| `/newsletter`, `/#newsletter` | Page loads and is indexable; the anchor scrolls to the form (after D-012 part A) |
+| `robots.txt` | Googlebot-News block present, everything else unchanged (after 7d-7) |
+
+A failed check is fixed the same day or the change is rolled back through `techplay-deploy.sh`. Nothing is promoted on a page that fails its check.
+
+## How we will know the quick wins worked
+
+| Quick win | Metric | Source | First read |
+|---|---|---|---|
+| False claims removed | `/register` loads → registrations (ratio) | nginx logs vs `users.created_at` [R11 §4 row 1] | 26 Oct review |
+| Dead invites fixed | Discord members (invite API) and uses per code | Discord | Every Monday |
+| Giveaway fixes | Entrants with base points; entrants reaching A2 within 7 days | Filament participants; SQL | 21 Oct (after the draw) |
+| Newsletter landing | Verified subscribers by `signup_source` | Filament (after D-012 part B) | 12 Oct |
+| The Save File #1 | Clicks per delivered, unsubscribes, complaints | Mail desk | 5 Oct |
+| Out This Week | Clicks from the article to game pages; reminders set | GA4 (after D-007 phase A) | 26 Oct |
+| Robots and News fix | Share of Google News results for `site:techplay.gg` that are articles | Google News RSS query [R02 §8.3] | 2 Nov |
+| Crawl check | Googlebot 4xx/403 in Crawl stats | Search Console | 4 Oct, then weekly |
+
 ## STOP DOING (Part 48)
 
 Each line says what stops, the evidence, and what the hours go to instead. EIC enforces the list; SC flags breaches in the Monday review.
@@ -181,6 +293,76 @@ Each line says what stops, the evidence, and what the hours go to instead. EIC e
 | Email open rate | Apple MPP and Gmail proxies inflate opens (README §20) | Clicks per delivered email, unsubscribes and complaints per send | SC, from issue #1 |
 | Giveaway entries counted as registrations | Giveaway-only accounts are an anti-metric [R11 §6; R16 §5.8] | Entrants who reach A2 (linked library or 3 shelf items) within 7 days | SC, 21 Oct |
 | Indexed page count as success | 56,355 indexed, 1–2 clicks a day [R03] | Organic clicks, and indexed pages that carry TechPlay content | EIC, monthly |
+
+## What the Stop-Doing list frees (ESTIMATE)
+
+| Stopped | Hours per week freed | Goes to |
+|---|---|---|
+| Commodity rewrites and general tech/phone news (about a third of news output) | ED 8–10 | F01, F07, F09 and one Verdict a week |
+| Genshin and other wiki-territory guides | ED 3 | Fix It Friday and In Order |
+| Posting the same link everywhere; YouTube promotion without videos | SC 3 | Discord rituals and Reddit contribution (C47) |
+| Hand-made one-off graphics | DS 3 | Templates first (spine §1) |
+| Vanity reporting | EIC 1 | The Monday KPI review on the numbers above |
+
+The basis is the output mix in R02 and R08: about 3.3–3.5 news posts a day, two authors writing about 95%. The exact split depends on how long each rewrite takes today, which is UNKNOWN; EIC checks it in the 26 Oct review.
+
+## Tempting quick wins that are wrong now
+
+| Tempting | Why not yet | When it becomes right |
+|---|---|---|
+| Announcing a Discord or member milestone | Only live counts may be shown; a milestone post invites the "15K+" comparison [spine §0] | When the API count itself is the post (for example, at the 500 mark that unlocks Server Insights [R13]) |
+| Boosting the GTA 6 countdown post | No pixel, no UTM capture, and boosts are on the Stop list [R16 §5.4] | Never as a boost; paid tests follow C56/C58 after D-008 |
+| Presenting the GTA 6 map as "our dataset" in a pitch | Permission and attribution are unresolved [D-020] | After gtadb.org answers |
+| Sending The Save File to every verified member | People who never asked would receive it, which puts the self-hosted sender at risk [17-NEWSLETTER-EMAIL] | Only members who tick the box or subscribe |
+| Changing DNS, SPF or DKIM "to improve delivery" | Forbidden without asking (README §14) | Only with EIC's written approval for a specific change |
+| Adding a Meta Pixel "just to collect data" | Consent in EEA/UK/CH must gate it; D-031 is a decision on 5 Oct [R16 §4.3] | After the D-031 decision and consent wiring |
+| Renaming `#new-people` in the Discord rebuild | The welcome stops silently [events.ts:80] | After D-011a (W51) |
+| Posting "leaks" on the GTA 6 channels | Rockstar polices IP; leaked footage is a DMCA risk [R17 §10] | Never; official media only |
+
+## Week-1 checklist by owner
+
+**EIC:**
+- [ ] Baseline snapshot (Mon)
+- [ ] Giveaway decision (Mon)
+- [ ] gtadb.org email (Mon)
+- [ ] Copy table approved for DEV (Mon 14:00)
+- [ ] Late-draw note published (by Wed)
+- [ ] Page SEO titles and the About description fixed (by Wed)
+- [ ] Support tier promises edited (by Wed)
+- [ ] Crawl and Cloudflare check with DEV (by Sun)
+- [ ] robots.txt Googlebot-News block (by Sun)
+- [ ] Season 2 dates confirmed (by Sun)
+
+**ED:**
+- [ ] Out This Week #1 (Mon)
+- [ ] Ledger rows to DEV (Tue)
+- [ ] Hidden Gem Thursday #1 (Thu 1 Oct)
+- [ ] C07 launch post (Thu 1 Oct)
+- [ ] Steam Autumn Sale picks (Thu 1 Oct)
+- [ ] Fix It Friday #1 (Fri 2 Oct)
+
+**SC:**
+- [ ] Handles, footer X link, bios (Mon)
+- [ ] Seven invite codes logged (Mon)
+- [ ] C37 thread (Mon)
+- [ ] Daily countdown and On This Day (Mon–Sun)
+- [ ] C09 posts, if live and fixed (from Tue)
+- [ ] C39 poll (Wed)
+- [ ] Discord Onboarding and Server Guide (by Wed)
+- [ ] The Save File #1 test (Thu) and send (Fri)
+
+**DS:**
+- [ ] Seven OG images (by Wed)
+- [ ] Three templates (by Sun)
+
+**DEV** (32, W40):
+- [ ] D-004, D-041, D-039a, D-039b (Mon)
+- [ ] D-001 in two halves (Mon, Tue)
+- [ ] D-040 and D-002 (Tue–Wed)
+- [ ] D-020 counts (Wed)
+- [ ] Ledger push (Wed)
+- [ ] D-012 part A (Thu)
+- [ ] Live checks after each deploy
 
 ## Dependencies and open questions
 
