@@ -159,22 +159,30 @@ pregledom preko cijelog ekrana, trailer, slične igre i naši članci.
 
 ---
 
+**Forumske teme na stranici igre** (`components/GameThreads.tsx`) — popis se
+traži **samo ako `threads_count > 0`**, jer je katalog 332.455 igara i zahtjev
+po stranici bi skoro uvijek vraćao prazan niz. Tema se otvara na sajtu u
+aplikacijinom WebView-u; aplikacija nema forumske ekrane i graditi ih da se
+prikaže popis koji danas ne postoji ni za jednu igru bio bi pogrešan redoslijed.
+
+⚠️ **Nije viđeno u radu.** Nijedna od 7 tema u bazi nema `game_id`, pa je
+`threads_count` svuda 0. Provjereno je ono što se danas može provjeriti: da se
+upit **ne šalje** (brojač `/threads` u nginx logu se ne mrda dok se stranica
+igre otvara). Kad se prva tema veže za igru, ovo treba pogledati očima.
+
+**Prekinut zahtjev više nije „nema veze"** — `api.ts` sada razlikuje istek
+vremena (`OfflineError`) od prekida koji je ekran sam napravio
+(`CancelledError`). Svih deset ekrana radi istu jednolinijsku provjeru.
+
+---
+
 ## Šta je sljedeće
 
-### 1. Forumske teme na stranici igre
-
-Jedina stavka sa starog spiska koja nije odrađena. `threads_count` je u
-odgovoru; sam popis tema traži još jedan poziv i treba provjeriti ima li ga
-bundle.
-
-### 2. Ostalo, sitnije
-
-- profil prijavljenog korisnika nije vizuelno provjeren
+- **profil prijavljenog korisnika nije vizuelno provjeren** — treba nalog za
+  testiranje; nijedan nije na raspolaganju u razvoju
 - `cookie banner` se pojavljuje unutar `web.tsx` WebView-a. Namjerno nije
   sakriven — sakrivanje mehanizma za pristanak nije stilska odluka. Aplikacija
   će prije prodavnice trebati vlastiti pristanak.
-- provjera prekinutog zahtjeva je sada u katalogu **i u kalendaru**; ostali
-  ekrani je još nemaju
 
 ---
 
