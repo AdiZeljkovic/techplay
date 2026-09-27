@@ -39,6 +39,8 @@ Ostao je `docs/incidenti/` — zapisi incidenata ne zastarijevaju.
 17. [Šta nije ono što izgleda](#17-šta-nije-ono-što-izgleda)
 18. [Mobilna aplikacija](#18-mobilna-aplikacija)
 19. [Mjerenje posjete](#19-mjerenje-posjete)
+20. [Mail — šta šaljemo i odakle](#20-mail--šta-šaljemo-i-odakle)
+21. [Guild Wars 2 — Progression Advisor](#21-guild-wars-2--progression-advisor)
 
 ---
 
@@ -486,8 +488,9 @@ Scheduler je u `routes/console.php`, radi kao `www-data`. Svaki unos ima
 | svakih 6 sati | `SendGiveawayReminders` |
 | 00:20 | `season:conclude` |
 | 02:10–02:40 | čišćenje: `model:prune`, `sanctum:prune-expired`, `queue:prune-failed`, `prune:derived-history` |
+| 03:10 | `gw2:catalogue` |
 | 03:20 | `users:prune-unverified` |
-| 03:30 | `sitemap:generate` (puni) |
+| 03:30 | `sitemap:generate` (puni), `gw2:sync-accounts` |
 | 04:15 | `achievements:sync` |
 | 04:40 | `RefreshShelfPrices` |
 | 04:45 | `chronicle:rebuild --stale` |
@@ -683,6 +686,7 @@ Testovi koji čuvaju skupo naučene stvari:
 | `DeletedGamesAnswerGoneTest` | nadgrobne ploče i nginx mapa |
 | `CollectionCountsPayloadTest` | svaki izračunat broj stvarno stigne do klijenta |
 | `AboutPageTellsTheTruthTest` | brojke na /about se broje, ne pamte |
+| `Gw2ConnectionTest` | GW2 ključ ne izađe u odgovoru; brzi prolaz ne prebriše puni |
 
 ---
 
@@ -849,6 +853,43 @@ koju niko ne zove, to nije mrtav kod nego ekran koji je nestao. ESLint na ovom
 projektu ne prijavljuje neiskorištene lokalne funkcije, pa nije ni imao ko reći.
 
 ---
+
+### `specializations` i `skills` su objekti, `equipment` je lista
+
+Isti odgovor `/v2/characters?ids=all`, različiti oblici. `equipment` i
+`crafting` su liste; `specializations` i `skills` su **objekti po modu igre** —
+`pve`, `pvp`, `wvw`, svaki sa svojim setom.
+
+```sql
+-- provjereno na živom liku 28. 9. 2026.
+select jsonb_typeof(equipment), jsonb_typeof(specializations) from gw2_characters;
+--  array | object
+```
+
+Ko čita build mora izabrati mod. Tretiranje kao ravne liste pročita pogrešan mod
+ili ništa — `jsonb_array_length` na tome baci `cannot get array length of a
+non-array`.
+
+Uz to: Agony Resistance se sabira **isključivo** iz `equipment`, jer je to ono
+što lik trenutno nosi. Sabiranje infuzija iz neaktivnog šablona bi prijavilo
+oklop koji igrač nema na sebi.
+
+### `updateOrInsert` prepiše `created_at` i na update putu
+
+Vrijednosti iz drugog argumenta se primjene na **oba** puta. Zato je
+`created_at` na `gw2_accounts` bio prepisivan svaki put kad bi neko ponovo
+povezao ključ, a na `gw2_characters` **na svakoj sinhronizaciji**.
+
+Taj datum ograničava dokle historija napretka može da dosegne, pa je to jedini
+ovdje koji se ne smije micati. Rješenje je provjeriti postoji li red i onda
+`update` ili `insert` — ne `updateOrInsert`.
+
+### Dva formata za isti trenutak u jednom odgovoru
+
+`last_synced_at` dolazi kroz Eloquent cast i serijalizuje se kao UTC ISO-8601;
+`last_full_sync_at` je dolazio sa sirovog query builder reda, kao string koji je
+PostgreSQL zapisao. Tako natpis „sinhronizovano prije 2 sata" promaši za dva
+sata. Sirovi redovi se moraju `Carbon::parse`-ovati prije nego odu klijentu.
 
 ## 17. Šta nije ono što izgleda
 
@@ -1154,6 +1195,150 @@ minute koju pauza uzme.
 - Preheader linija se ne vraća ni u jedan mail. Naš vlastiti filter ju je bodovao
   `ZERO_FONT 0.50` i `MANY_INVISIBLE_PARTS 0.80` jer je skriveni tekst s ključnim
   riječima način na koji spam radi. Prva vidljiva linija tijela radi taj posao.
+
+---
+
+## 21. Guild Wars 2 — Progression Advisor
+
+Alat za GW2 igrače: šta im je otvoreno, šta im fali i šta se isplati raditi
+sljedeće. Plan i analiza su u `gw2/ANALIZA-I-PLAN.md`; ovdje piše šta je
+**izmjereno i pušteno**, 28. 9. 2026.
+
+Dva dijela koja ne dijele ništa osim budžeta poziva: **katalog** (podaci igre,
+isti za sve) i **nalog** (ono što jedan igrač ima).
+
+### Rate limit je zajednički — i to je cijela arhitektura
+
+Mjereno na živom API-ju 27. 9. 2026., ne prepisano iz dokumentacije:
+
+| Mjerenje | Rezultat |
+|---|---|
+| 400 zahtjeva | prošlo u 7,5 s, nijedan odbijen |
+| 1.000 zahtjeva | 500 prošlo, 500 odbijeno (429) |
+| pauza 30 s, pa 200 | sve prošlo |
+| `x-rate-limit-limit` | `600` |
+
+Wiki tvrdi „5 zahtjeva u sekundi"; API je propuštao pedesetak. Bitno je nešto
+drugo: **limit se broji po IP-u**, a svi naši zahtjevi izlaze sa jednog servera.
+Budžet je dakle **sajtov, ne igračev** — četiri stotine zahtjeva potrošenih na
+itemе su četiri stotine koje čitalac koji čeka nije dobio.
+
+Zato `Gw2Client` drži svoj kanister u Redisu na **400 u minuti** (dvije trećine
+izmjerenog), a **nijedan zahtjev prema ArenaNetu se ne šalje dok neko gleda
+stranicu**. Sve ide kroz red poslova.
+
+`429` nije greška — znači *kasnije*, ne *ne*. Tretirati ga kao grešku značilo bi
+obilježiti ispravan nalog kao pokvaren i baciti sinhronizaciju kojoj je do kraja
+falila jedna pauza.
+
+### Katalog — `gw2:catalogue`, 03:10
+
+Provjera košta **jedan zahtjev**: `/v2/build` vrati jedan cijeli broj. Ako se
+build nije promijenio, run tu i završi. Kad se promijeni, ponovno čitanje svih
+jedanaest endpointa je oko **492 zahtjeva**.
+
+Stanje na build `207318` — 96.293 reda, 49 MB:
+
+| Tabela | Redova |
+|---|---|
+| `gw2_items` | 74.265 |
+| `gw2_recipes` | 13.198 |
+| `gw2_achievements` | 8.339 |
+| `gw2_reference` (currencies, itemstats, professions, quests, specializations, titles, mounts) | 1.451 |
+| `gw2_masteries` | 40 |
+
+`gw2_catalog_meta` pamti build i grešku po endpointu, pa jedan odbijen endpoint
+ne obori ostale — sljedeći run pročita tačno ono što fali.
+
+**`gw2_achievements.advisor_eligible`, `effort_band` i `reviewed_at` su naša
+kuracija i namjerno su izvan osvježavanja.** Refresh ih ne dira; da ih dira,
+svako čitanje kataloga bi obrisalo ručni rad.
+
+### Nalog — `gw2:sync-accounts`, 03:30
+
+ArenaNet je ukinuo OAuth. Igrač sam napravi ključ na account.arena.net, samo za
+čitanje, sa dozvolama koje sam izabere. Ključ ide u `connected_accounts`
+(šesti provider, uz Steam, Xbox, PlayStation, GOG i Epic) — šifrovan kroz
+mutator, skriven iz serijalizacije.
+
+`/v2/tokeninfo` se pita **prije** nego se bilo šta upiše. Ključ bez `account` i
+`progression` se odbija uz objašnjenje, a ne sprema — spremljen mrtav ključ je
+veza u koju igrač vjeruje i sinhronizacija koja pada svaku noć. Dozvole koje
+fale se **imenuju** (`missing_features`), da UI može reći koja funkcija je
+ugašena i zašto.
+
+**Puno čitanje je 18 zahtjeva** — sedamnaest `account/*` endpointa i jedan
+`characters?ids=all`. To zadnje je iznenađenje: u jednom odgovoru vrati nošenu
+opremu, torbe, specijalizacije, vještine, recepte i craft, pa `equipment_tabs` i
+`build_tabs` uopšte ne trebaju dok se ne prikazuju neaktivni šabloni.
+**Brzo čitanje je 6 zahtjeva** — ono što se mijenja unutar dana.
+
+Provjereno na živom nalogu 28. 9.: 18 poziva, 1 lik, 832 reda u knjizi
+predmeta, 6 poziva na brzom prolazu.
+
+Tabele:
+
+| Tabela | Šta je |
+|---|---|
+| `gw2_accounts` | visi o `connected_accounts`, umire s njim |
+| `gw2_characters` | jedan red po liku; `equipment` je **nošeni** set |
+| `gw2_account_state` | **jedan red po nalogu, prepisuje se** |
+| `gw2_item_ledger` | sve što nalog ima, gdje god stoji |
+| `gw2_progress_events` | **razlika između dva čitanja** |
+
+### Zašto raspored, a ne dugme
+
+`/v2/account/raids` vraća **samo ono očišćeno od sedmičnog reseta**, a
+`/v2/account/worldbosses` od dnevnog. **Lifetime pregleda nema nigdje u API-ju.**
+
+Od dana kad se nalog poveže, razlika između dva naša čitanja je **jedini zapis
+te historije koji će ikad postojati**. Propuštena noć je sedmica tuđe historije
+koju ništa poslije ne može rekonstruisati — i za igrača koji stranicu nije
+otvorio. Zato je to noćni prolaz, a ne nešto što se pokrene kad neko dođe.
+
+Poslovi se dispečuju **razmaknuti 5 sekundi**. Pedeset naloga odjednom je 900
+zahtjeva, potrošen budžet, talas 429 i vraćanje kroz backoff od petnaest
+minuta. Prozor je **20 sati, ne 24**, da zadatak koji zakasni par minuta ne
+počne preskakati svaku drugu noć.
+
+Sweep je pola sata **poslije** kataloga, ne pored njega: iz istog budžeta piju.
+
+### API
+
+| Ruta | Šta radi |
+|---|---|
+| `POST /api/v1/gw2/connect` | `throttle:10,1`, ključ ide u **tijelu** |
+| `GET /api/v1/gw2/connection` | stanje, dozvole, šta fali |
+| `POST /api/v1/gw2/sync` | brzo; `?full=1` najviše jednom u sat |
+| `DELETE /api/v1/gw2/connection` | ključ i sve izvedeno |
+
+Ključ nikad ne ide kroz query string — URL završi u access logu, u refereru i u
+izvještaju o grešci, a ključ samo za čitanje je i dalje nečiji nalog.
+
+Odgovor na traženje punog čitanja unutar sata je **vrijeme zadnje
+sinhronizacije, ne greška**: ništa nije pokvareno, podaci su svježi koliko će i
+biti.
+
+### Testovi
+
+`tests/Feature/Gw2ConnectionTest.php` — devet testova protiv stub klijenta, pa
+ništa ne dira mrežu ni zajednički limit. Čuvaju četiri stvari koje bi svaka bila
+tih kvar: ključ u odgovoru, brzi prolaz koji prebriše ono što čita samo puni,
+izmišljena historija na prvom čitanju, i disconnect koji ostavi izvedene
+podatke.
+
+### Otvoreno
+
+- **`access` se čuva sirov i ne interpretira.** Testni nalog je 27. 9. odgovorio
+  `GuildWars2, PlayForFree, PathOfFire, EndOfDragons, SecretsOfTheObscure,
+  JanthirWilds` — **bez `HeartOfThorns`**, a Path of Fire posjeduje. Dok se to
+  pravilo ne razumije, običan `in_array` bi sakrio Heart of Thorns sadržaj
+  igraču koji do njega može doći.
+- `characters?ids=all` je mjereno na nalogu sa **jednim** likom. Veličina i
+  vrijeme na 15–20 likova nisu poznati.
+- Dva broja sa mockupa su izmišljena — Weekly Completion Score 72/100 i
+  „Confidence to complete: High". Ne smiju se iscrtati dok se ne definiše kako
+  se računaju.
 
 ---
 

@@ -303,7 +303,7 @@ Schedule::command('giveaways:unfinished')
  * The catalogue check costs one request: /v2/build answers with a single
  * integer, and on most nights the stored build already matches so the run ends
  * there. When the game does move it re-reads about 492 requests' worth, which
- * is why it sits at 3am and not on demand — the rate limit is counted per IP
+ * is why it sits at 03:10 — after `releases:sync`, which takes Monday's 3am — and not on demand — the rate limit is counted per IP
  * for the whole site, so four hundred requests spent on items is four hundred
  * a waiting player did not get.
  *
@@ -318,7 +318,7 @@ Schedule::command('giveaways:unfinished')
  * nothing can reconstruct afterwards.
  */
 Schedule::command('gw2:catalogue')
-    ->dailyAt('03:00')
+    ->dailyAt('03:10')
     ->withoutOverlapping(120)
     ->onFailure($reportFailure('gw2:catalogue'));
 
