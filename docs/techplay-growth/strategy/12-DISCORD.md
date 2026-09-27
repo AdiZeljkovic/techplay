@@ -382,14 +382,7 @@ Cap: 2 pings a week. Copy: "@Breaking News [one factual sentence]. [Link]". No e
 
 ### 7.9 AMAs
 
-| Date | Guest | Topic | Condition |
-|---|---|---|---|
-| Thu 29 Oct 20:00 | EIC | Balkan Game Dev Census (C21): how it was built, what's missing | Census published 28 Oct |
-| Next Fest week (19–26 Oct) | An indie developer from C71 outreach | Their demo, how Next Fest works for a small team | Only if a developer agrees by 12 Oct |
-| November | A Balkan studio via C55 | Making games in the region | Only if C55 lands a partner by 10 Nov |
-| Thu 12 Nov 20:00 | ED | GTA 6 launch Q&A: editions, unlock time, what's confirmed | Always on |
-
-Format: 45 minutes on Stage. Questions collected in a thread 48 h before. SC moderates the queue. A written summary goes in #announcements next day and, with the guest's approval, on the site.
+Fixed: EIC on the Balkan Game Dev Census (Thu 29 Oct 20:00, after C21 publishes on 28 Oct) and ED's GTA 6 launch Q&A (Thu 12 Nov 20:00). Conditional: an indie developer from C71 outreach during Next Fest (only if one agrees by 12 Oct) and a Balkan studio via C55 in November (only if a partner is confirmed by 10 Nov). Format: 45 minutes on Stage; questions collected in a thread 48 h before; SC runs the queue; a written summary goes in #announcements the next day and, with the guest's approval, on the site.
 
 ### 7.10 Suggestions with visible outcomes
 

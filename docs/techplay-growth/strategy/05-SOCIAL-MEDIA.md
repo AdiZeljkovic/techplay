@@ -220,7 +220,7 @@ Example (X thread, Mon 12 Oct, 17:30):
 Example (X, Mon 12 Oct, 12:00):
 
 > 38 days to Vice City.
-> Pre-order before 19 Nov 23:59:59 and Rockstar adds the Vintage Vice City Pack and one month of GTA+. PS5 and Xbox Series X|S only at launch.
+> Pre-order before 19 Nov 23:59:59 and you get the Vintage Vice City Pack and one month of GTA+. PS5 and Xbox Series X|S only at launch.
 > Reminder for launch day: techplay.gg/games/grand-theft-auto-vi
 
 ### F03 — Confirmed or Rumour? (Thu; C07, from 1 Oct)
@@ -274,7 +274,7 @@ Example (X, Tue 29 Sep, 15:30):
 Example (Facebook, Thu 29 Oct, 18:00; Scream Fest week — the pick each week is whatever /games/hidden-gems returns, checked by ED; this example shows the format):
 
 > Hidden Gem Thursday, Halloween week: Signalis.
-> A survival horror game from rose-engine, a two-person studio, released in 2022 on PC, Switch, PlayStation and Xbox. Think old-school Resident Evil inventory puzzles with a stranger, sadder story.
+> A survival horror game from the small studio rose-engine, released in 2022 on PC, Switch, PlayStation and Xbox. Think old-school Resident Evil inventory puzzles with a stranger, sadder story.
 > Who it's for: people who finished Requiem and want something smaller.
 > Add it to your shelf: techplay.gg/games/signalis
 
@@ -293,14 +293,14 @@ Rule: dates come from the /games/on-this-day endpoint and ED checks each against
 
 Example (X, Wed 11 Nov, 12:00):
 
-> On this day in 2011, The Elder Scrolls V: Skyrim came out. Fifteen years later it is still on sale on more platforms than most games released this year.
-> Its page, with every edition: techplay.gg/games/the-elder-scrolls-v-skyrim
+> On this day in 2011, The Elder Scrolls V: Skyrim came out. Fifteen years on: which version did you play first, the 2011 original, Special Edition or Anniversary Edition?
+> Every edition on one page: techplay.gg/games/the-elder-scrolls-v-skyrim
 
 ### F07 — Fix It Friday (Fri; C60)
 
 | | |
 |---|---|
-| Purpose | Pillar P2; page one for PC-fix queries has no gaming outlet [R09 via R04] (S3) |
+| Purpose | Pillar P2; page one for PC-fix queries has no major gaming outlet [R04, R09] (S3) |
 | Platforms | Site guide on /guides/pc-fixes, TikTok/Shorts/Reels V3, Reddit answers, Discord #pc-help |
 | Format / template | V3 video; T4 step image for X |
 | Hook structure | The error text as players type it, then "here's the 60-second check" |
@@ -328,7 +328,7 @@ Example (TikTok caption and V3 script, Fri 16 Oct):
 
 Example (X, Tue 20 Oct, 15:30):
 
-> Is Call of Duty: Modern Warfare 4 on Game Pass on day one? No. It's the first CoD in a while that isn't.
+> Is Call of Duty: Modern Warfare 4 on Game Pass on day one? No. Call of Duty is no longer a day-one Game Pass release.
 > It launches 23 Oct on PS5, Xbox, PC and Switch 2, the first CoD on a Nintendo platform since Ghosts. Digital pre-orders get campaign early access from 16 Oct.
 > Editions and platforms: techplay.gg/games/call-of-duty-modern-warfare-4
 
@@ -363,7 +363,7 @@ Example (IG carousel caption, Sat 14 Nov):
 Example (X, Wed 28 Oct, 15:30):
 
 > Is GTA V worth playing before GTA VI? Yes, if you've never finished the story.
-> It's still in Steam's top 25 most-played (75,985 peak in the week to 26 Sep), which tells you how many people are doing exactly this.
+> GTA V Enhanced is still in Steam's top 25 most-played (75,985 peak in the week to 26 Sep), eight weeks before VI.
 > What to skip and how long the story takes: techplay.gg/games/grand-theft-auto-v
 
 ### F11 — What Are You Playing? (Mon; C37)
@@ -409,7 +409,7 @@ Example (X poll, Wed 30 Sep, 20:00; ties to C66 The Last Disc):
 | Platforms | Site short, X, Bluesky, Reddit data comment, Discord |
 | Format / template | T7 slope chart: last week's rank → this week's rank |
 | Hook structure | The biggest jump first, with the reason if known |
-| CTA | "The full top 100 and what moved: techplay.gg/steam (new, C62)" |
+| CTA | "The full chart and what moved: techplay.gg/steam" (live from 2 Nov, C62; before that techplay.gg/news) |
 | Repurposing | Chart → X/Bluesky → Reddit comment → monthly data summary |
 
 Example (Bluesky, Tue 29 Sep, 15:30):
@@ -467,7 +467,7 @@ Example (X, Tue 6 Oct, 15:30 = 09:30 ET, before the US reset):
 | CTA | "Wishlist it and we'll email you when it drops: techplay.gg/calendar" (C43 live from 19 Oct) |
 | Repurposing | Carousel → newsletter special → Discord deals thread |
 
-Example (X, Fri 27 Nov, 09:00):
+Example (X, Fri 27 Nov, 12:00):
 
 > Black Friday, the short version: there's no Steam sale this week. Steam's Winter Sale starts 17 Dec.
 > Hardware went up this year, not down: Switch 2 is $499.99 since 1 Sep, Xbox Series X $649.99 since 1 Aug.
@@ -598,7 +598,7 @@ Example (X, Fri 16 Oct, announcing the diary):
 
 > Steam Next Fest runs 19–26 Oct. We'll try three demos every day and write one honest line on each.
 > Scale check: June's Next Fest had 4,358 demos, by GameDiscoverCo's count. Send us the ones we shouldn't miss.
-> The diary and a remind-me for each game: techplay.gg/steam
+> The diary, with a remind-me for each game: techplay.gg/calendar
 
 ### F24 — Verdict (weekly; C52)
 
@@ -615,7 +615,7 @@ Example (X, Tue 6 Oct, announcing Thursday's verdict):
 
 > Gears of War: E-Day is out today on Xbox Series X|S and PC. We're playing the campaign on PC this week.
 > Our short verdict is up Thursday: is the prequel worth it if you've never played a Gears game?
-> Series order if you need a refresher: techplay.gg/reviews
+> Our verdicts so far: techplay.gg/reviews
 
 ## 11. Posting-time grid
 

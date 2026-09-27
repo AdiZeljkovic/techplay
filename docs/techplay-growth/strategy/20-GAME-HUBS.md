@@ -5,10 +5,10 @@ Status: Phase 2 plan — 27 Sep 2026
 - **Three new hubs, one mini-hub, two pre-release series hubs, one watch.** Build `/switch-2` (C61, 26 Oct), `/steam` (C62, 2 Nov) and `/mmo` (C15, 10 Nov). Run Modern Warfare 4 as a three-week mini-hub on its game page (C17, 12 Oct–1 Nov). Prepare Fable (23 Feb 2027) and Final Fantasy VII Revelation (8 Apr 2027) series hubs in December. Keep Deadlock on a monthly watch. GTA VI is covered in 19-GTA6.md.
 - **Why these:** R18 scores Switch 2, Steam/PC and GTA VI equal on raw total (38) with WoW at 37; weighting tools and weak competition double puts the WoW/MMO hub first because the WoW Analyzer is the only on-site character analyzer among the media sites reviewed [R18, R23 #23].
 - **Platform hubs outlast game hubs.** They reuse the database for every game and fit the positioning "the gaming publication that knows what you play" [R18; spine §2]. Game hubs earn their keep only with a tool.
-- **One template (D-032), not three builds.** A hub is: an admin-editable intro, sections fed by staff-owned game lists and calendar queries, a dated FAQ, related articles and a "Last updated" line. DEV builds it once (about 20 h) and each hub instance takes about 4 h.
+- **One template (D-032), not three builds.** A hub is: an intro and FAQ the editor edits in Filament, sections fed by staff-owned game lists and calendar queries, related articles and a "Last updated" line. DEV builds it once (about 8 h, 12–23 Oct) and each hub instance takes about 2 h, because DEV has 20 h a week and October is full of P0 work.
 - **Every hub links down to `/games/[slug]`, across to series pages and the calendar, and every hub game page links back up** ("Part of the Switch 2 hub", D-032a). One URL per intent [R18; R03 §11].
 - **Content is templates and trackers, not volume.** Valnet sites publish 73 guides for one game in three days; the plan does not compete there [RESEARCH-COMPLETE #15]. About 60 titled pieces across all hubs by 31 Dec, most of them short, sourced and reusable.
-- **Capacity:** 12–29 h/week in October and November across all hubs, falling to about 3 h in GTA launch week, then about 19 h/week in December (§9).
+- **Capacity:** 11–28 h/week in October and November across all hubs, about 3 h in GTA launch week, then 16–17 h/week in December (§9). Hub DEV work never exceeds 5 h in a week.
 - **Do not build:** Minecraft, Fortnite, Roblox, EA FC, LoL, Valorant, Path of Exile 2, Elder Scrolls VI, Witcher IV, Wolverine, Crimson Desert. Their search results are owned by wikis and dedicated tools, or they have no date yet [R18].
 
 ---
@@ -32,15 +32,17 @@ Status: Phase 2 plan — 27 Sep 2026
 
 ## 2. The shared hub template (D-032, with D-032a and D-023)
 
-### 2.1 What DEV builds (about 20 h, 12–23 Oct)
+### 2.1 What DEV builds (about 8 h, 12–23 Oct; D-032 "lite")
+
+The cheap version: a `HubPage` component plus one config entry per hub in the repo (slug, section list ids, calendar filters, event strip). The intro and FAQ are a Guide record (`/guides` model, editable by ED in Filament) fetched by slug `hub-{slug}`, so editors change words without a deploy. A Filament `hubs` table can come in 2027 if more hubs follow.
 
 | Block | Source | Server-rendered | Notes |
 |---|---|---|---|
-| H1 + intro (150–250 words) + "Last updated {date}" | New `hubs` row in Filament (slug, title, intro, FAQ JSON, list ids, calendar filters, updated_at) | Yes | Intro is editor-written, dated |
+| H1 + intro (150–250 words) + "Last updated {date}" | Guide record `hub-{slug}` (content) + repo config (title) | Yes | Intro is editor-written, dated from the guide's updated_at |
 | Up to six sections | Each section = a public game list owned by a TechPlay staff account (`/lists/{staff}/{slug}`) or a calendar query (`/calendar?platform=&month=&genre=`) | First 12 items SSR | Reuses lists, their OG cards and ItemList schema [R01 A.2.3 F19] |
 | Related articles | Articles whose `game_id` is in any section list, newest 8 | Yes | No manual curation needed |
-| FAQ (5–8 questions) | Hub row | Yes, FAQPage JSON-LD | Each answer dated and sourced |
-| Event calendar strip | Hub row (date, name, confidence label) | Yes | Confidence labels from R05: confirmed / reported / predicted |
+| FAQ (5–8 questions) | The same guide's `steps` JSON, one step per question | Yes, FAQPage JSON-LD | Each answer dated and sourced |
+| Event calendar strip | Repo config (date, name, confidence label) | Yes | Confidence labels from R05: confirmed / reported / predicted |
 | Follow / remind CTA | Existing reminder and wishlist actions; guest modal after D-016 | Client | "Remind me" on every upcoming game tile |
 | Newsletter capture | `/newsletter/subscribe` with `source=hub-{slug}` (D-012a pattern) | Client | One line of copy per hub (below) |
 
@@ -135,7 +137,7 @@ Not planned: class guides, tier lists, addon roundups. Wowhead, Icy Veins and Ar
 | Discord | Distinct members posting in #wow per week | 10 by 30 Nov |
 | Share | `share_card_generated` (type=wow) | ≥ 1 per 20 runs |
 
-Owner: ED (hub editor), DEV (D-040, template instance), SC (Discord, Reddit). Hours: C13 9 h, C14 8 h, C15 18 h (DEV 4, ED 12, DS 1, SC 1), then 3 h/week.
+Owner: ED (hub editor), DEV (D-040, template instance), SC (Discord, Reddit). Hours: C13 9 h, C14 8 h, C15 16 h (DEV 2, ED 12, DS 1, SC 1), then 3 h/week.
 
 ---
 
@@ -210,7 +212,7 @@ Launch post for `/steam` (2 Nov, X, exact): "New on TechPlay: one page for Steam
 | Hub search presence | Impressions for /steam and items 3, 7, 10–12 | > 0 for all by 15 Dec |
 | Curator followers | Steam Curator page count (Steam-reported) | Record baseline 20 Oct; report monthly |
 
-Owner: ED. Hours: C05 6 h; C18 15 h (ED 13, SC 2); C62 hub 12 h (DEV 4, ED 6, DS 1, SC 1); weekly F13 1 h; C34 8 h.
+Owner: ED. Hours: C05 6 h; C18 15 h (ED 13, SC 2); C62 hub 10 h (DEV 2, ED 6, DS 1, SC 1); weekly F13 1 h; C34 8 h.
 
 ---
 
@@ -248,9 +250,9 @@ Columns: Game (links `/games/[slug]`) · Type (Switch 2 native / Switch 2 Editio
 | 9 | Pikmin 4 and Metaphor on Switch 2: are the upgrades worth it? | /news/pikmin-4-metaphor-switch-2-upgrades | R05 row 12 Nov | Thu 12 Nov | ED 2 |
 | 10 | Monster Hunter Wilds on Switch 2: what to expect on 4 December | /news/monster-hunter-wilds-switch-2-what-to-expect | EB-126 | Tue 1 Dec | ED 2 |
 | 11 | Best Switch 2 games of 2026 | /guides/best-switch-2-games-2026 | EB-123 | Tue 15 Dec | ED 4 |
-| 12 | Just got a Switch 2? Set it up, then import nothing (we'll explain) | /guides/new-switch-2-owner-guide | R05 25 Dec row | Mon 21 Dec | ED 3 |
+| 12 | Just got a Switch 2? The first hour, and how to track your games | /guides/new-switch-2-owner-guide | R05 25 Dec row | Mon 21 Dec | ED 3 |
 
-Note on item 12: TechPlay imports Steam, Xbox, PlayStation, GOG and Epic, not Nintendo [R01]. The guide says so plainly and offers the shelf's manual add instead. Final title: "Just got a Switch 2? The first hour, and how to track your games".
+Note on item 12: TechPlay imports Steam, Xbox, PlayStation, GOG and Epic, not Nintendo [R01]. The guide says so plainly and shows the shelf's manual add instead of implying an import.
 
 ### 5.5 Promotion plan
 
@@ -269,7 +271,7 @@ Note on item 12: TechPlay imports Steam, Xbox, PlayStation, GOG and Epic, not Ni
 - `reminder_set` on Switch 2 games from hub tiles: TARGET 100 by 31 Dec.
 - Search Console impressions for /switch-2 and items 1, 3, 6: > 0 by 30 Nov.
 
-Owner: ED. Hours: build 16 h (DEV 4, ED 10, DS 2), then 3 h/week.
+Owner: ED. Hours: build 14 h (DEV 2, ED 10, DS 2), then 3 h/week.
 
 ---
 
@@ -340,16 +342,16 @@ Both use existing surfaces: the game page (countdown + Remind me), the series pa
 |---|---|---|---|---|---|---|---|
 | 28 Sep–4 Oct | C05 picks; C13 prep; D-040 | 0 | 8 | 2 | 1 | 3 | 14 |
 | 5–11 Oct | C13 launch (5 Oct); C05 last day; Steam release-time guide | 0 | 9 | 2 | 0 | 0 | 11 |
-| 12–18 Oct | C17 MW4 (items 1–5); C18 list; D-032 template | 1 | 16 | 3 | 1 | 10 | 31 |
-| 19–25 Oct | Next Fest Diary; MW4 launch; Switch 2 content; D-032 | 1 | 16 | 4 | 2 | 10 | 33 |
-| 26 Oct–1 Nov | C61 `/switch-2` launch; C14 WoW: Forever; Steam hub prep | 0 | 14 | 3 | 2 | 4 | 23 |
-| 2–8 Nov | C62 `/steam` launch; WoW: Forever launch day | 0 | 11 | 3 | 1 | 4 | 19 |
-| 9–15 Nov | C15 `/mmo` launch; Steam Deck guide; Pikmin/Metaphor | 0 | 10 | 2 | 1 | 4 | 17 |
+| 12–18 Oct | C17 MW4 (items 1–5); C18 list; D-032 lite (part 1) | 1 | 16 | 3 | 1 | 3 | 24 |
+| 19–25 Oct | Next Fest Diary; MW4 launch; Switch 2 content; D-032 lite (part 2) | 1 | 16 | 4 | 2 | 5 | 28 |
+| 26 Oct–1 Nov | C61 `/switch-2` launch; C14 WoW: Forever; Steam hub prep | 0 | 14 | 3 | 2 | 2 | 21 |
+| 2–8 Nov | C62 `/steam` launch; D-032a badge; WoW: Forever launch day | 0 | 11 | 3 | 1 | 4 | 19 |
+| 9–15 Nov | C15 `/mmo` launch; Steam Deck guide; Pikmin/Metaphor | 0 | 10 | 2 | 1 | 2 | 15 |
 | 16–22 Nov | GTA launch week: F13 and trackers only | 0 | 2 | 1 | 0 | 0 | 3 |
 | 23 Nov–13 Dec (per week) | FFXIV items; Switch 2 tracker; Fable and FF7 prep; MH Wilds | 0 | 12 | 3 | 1 | 1 | 17 |
 | 14 Dec–31 Dec (per week) | C34 Winter Sale; best Switch 2 of 2026; new-owner guide | 0 | 11 | 3 | 1 | 1 | 16 |
 
-Combined with GTA (19-GTA6.md §14), the heaviest weeks are 12–25 Oct (GTA 22 + 16 h, hubs 31–33 h) and 16–22 Nov (GTA 60 h, hubs 3 h). Both stay under 70 h of the 135 h budget, leaving the rest for news, franchises, email and community. If ED hours run out, drop in this order: Next Fest Diary (keep day one and the wrap), Steam Frame piece, FFXIV Switch 2 piece, MW4 Secure Boot piece.
+Combined with GTA (19-GTA6.md §14), the heaviest weeks are 12–18 Oct (GTA 22 h + hubs 24 h = 46 h), 19–25 Oct (16 h + 28 h = 44 h) and 16–22 Nov (60 h + 3 h = 63 h). All stay under half of the 135 h budget, leaving the rest for news, franchises, email and community. DEV is the tight role: GTA plus hubs take 13 of DEV's 20 h in the week of 12 Oct and 8 h in the week of 19 Oct. If ED hours run out, drop in this order: Next Fest Diary (keep day one and the wrap), Steam Frame piece, FFXIV Switch 2 piece, MW4 Secure Boot piece.
 
 ---
 
@@ -371,7 +373,7 @@ All targets are goals set without a traffic baseline (none exists [R03]); reset 
 ## Dependencies and open questions
 
 **Dependencies**
-- D-032 hub template (+ `hubs` table in Filament) by 23 Oct; D-032a hub badge on game pages; D-023 facet links.
+- D-032 hub template (lite: component + repo config + guide-record intro) by 23 Oct; D-032a hub badge on game pages; D-023 facet links.
 - D-040 WoW Analyzer copy, prompt date and OG by 5 Oct; REG-27 "Save this character" (Battle.net sign-in exists).
 - D-016 guest Remind-me modal (19 Oct) so hub tiles convert guests; D-012a newsletter `source` tag for hub sign-ups.
 - C35 Discord channels (`#wow`, `#steam-deals`, `#nintendo`, `#fps`, `#rpg`) and Onboarding roles by 12 Oct.
