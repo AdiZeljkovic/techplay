@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\V1\GameHubController;
 use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
 use App\Http\Controllers\Api\V1\GamerDnaController;
+use App\Http\Controllers\Api\V1\Gw2Controller;
 use App\Http\Controllers\Api\V1\GiveawayController;
 use App\Http\Controllers\Api\V1\GiveawayHubController;
 use App\Http\Controllers\Api\V1\Gta6CharactersController;
@@ -227,6 +228,23 @@ Route::prefix('v1')->group(function () {
         Route::get('/user/wow-characters', [UserWowCharactersController::class, 'index']);
         Route::post('/user/wow-characters/{id}/set-main', [UserWowCharactersController::class, 'setMain']);
         Route::delete('/user/wow-characters/{id}', [UserWowCharactersController::class, 'destroy']);
+
+        /*
+         * Guild Wars 2 Progression Advisor.
+         *
+         * Connecting is throttled harder than the rest: each attempt spends a
+         * call on ArenaNet's shared budget to check the key, and somebody
+         * pasting the wrong thing repeatedly should not cost the whole site
+         * its rate limit. Reading the connection is free — it comes from our
+         * own tables — so it sits on the ordinary allowance.
+         */
+        Route::middleware('throttle:10,1')->group(function () {
+            Route::post('/gw2/connect', [Gw2Controller::class, 'connect']);
+            Route::post('/gw2/sync', [Gw2Controller::class, 'sync']);
+        });
+
+        Route::get('/gw2/connection', [Gw2Controller::class, 'connection']);
+        Route::delete('/gw2/connection', [Gw2Controller::class, 'disconnect']);
 
         // Forum activity (own profile)
         Route::get('/user/watched-threads', [ForumController::class, 'myWatchedThreads']);

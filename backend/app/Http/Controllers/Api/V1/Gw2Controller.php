@@ -1,0 +1,167 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use App\Http\Controllers\Controller;
+use App\Jobs\SyncGw2Account;
+use App\Models\ConnectedAccount;
+use App\Services\Gw2\Gw2Connection;
+use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Connecting a Guild Wars 2 account, and reading what we know about it.
+ *
+ * Nothing here calls ArenaNet while a reader waits. Connecting checks the key
+ * once — a player who pasted a dead key should be told immediately, not
+ * tomorrow — and everything after that is a queued job reading into our own
+ * tables. The limit is counted per IP and every request leaves from one
+ * server, so a page that fetched on render would spend the whole site's budget
+ * on whoever happened to load it.
+ */
+class Gw2Controller extends Controller
+{
+    use ApiResponse;
+
+    public function __construct(private readonly Gw2Connection $connections) {}
+
+    /**
+     * POST /gw2/connect
+     *
+     * The key is read from the body and never from the query string: a URL
+     * ends up in access logs, in referrers and in error reports, and a
+     * read-only key is still somebody's account.
+     */
+    public function connect(Request $request): JsonResponse
+    {
+        $request->validate(['api_key' => 'required|string|max:200']);
+
+        $connection = $this->connections->connect($request->user(), $request->string('api_key')->toString());
+
+        // The first read is the whole point of connecting, so it does not wait
+        // for the nightly pass.
+        SyncGw2Account::dispatch($connection->id);
+
+        return $this->success(
+            $this->describe($connection),
+            'Connected. We are reading your account now — this takes a moment.'
+        );
+    }
+
+    /**
+     * GET /gw2/connection
+     *
+     * Sync health, permissions and what is missing because of them.
+     */
+    public function connection(Request $request): JsonResponse
+    {
+        $connection = $this->find($request);
+
+        if (! $connection) {
+            return $this->success(null, 'No Guild Wars 2 account is connected.');
+        }
+
+        return $this->success($this->describe($connection));
+    }
+
+    /**
+     * POST /gw2/sync
+     *
+     * A quick pass by default — the six endpoints that move within a day.
+     * A full read is eighteen requests and is not something a button should
+     * spend on every press.
+     */
+    public function sync(Request $request): JsonResponse
+    {
+        $connection = $this->find($request);
+
+        if (! $connection) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $full = $request->boolean('full');
+
+        /*
+         * A full read is allowed once an hour, and the answer to asking again
+         * is the last sync time rather than an error. Nothing is broken; the
+         * data is simply as fresh as it is going to get.
+         */
+        if ($full) {
+            $last = DB::table('gw2_accounts')
+                ->where('connected_account_id', $connection->id)
+                ->value('last_full_sync_at');
+
+            if ($last && now()->diffInMinutes($last) < 60) {
+                return $this->success(
+                    $this->describe($connection),
+                    'Your account was fully read less than an hour ago.'
+                );
+            }
+        }
+
+        SyncGw2Account::dispatch($connection->id, quick: ! $full);
+
+        $connection->forceFill(['sync_status' => 'pending'])->save();
+
+        return $this->success($this->describe($connection), 'Reading your account.');
+    }
+
+    /**
+     * DELETE /gw2/connection
+     *
+     * The key and everything derived from it. The foreign keys cascade through
+     * characters, state, the ledger and the history, so this really does leave
+     * nothing — which is what the connect screen promises.
+     */
+    public function disconnect(Request $request): JsonResponse
+    {
+        $this->connections->disconnect($request->user());
+
+        return $this->success(null, 'Disconnected. Your key and everything read with it are gone.');
+    }
+
+    private function find(Request $request): ?ConnectedAccount
+    {
+        return ConnectedAccount::query()
+            ->where('user_id', $request->user()->id)
+            ->where('provider', Gw2Connection::PROVIDER)
+            ->first();
+    }
+
+    /**
+     * What the client is allowed to know about the connection.
+     *
+     * The key is never among it, not even masked in a way that could be
+     * reassembled. `key_name` is what the player called it at
+     * account.arena.net, which is what they need to find it again.
+     *
+     * @return array<string, mixed>
+     */
+    private function describe(ConnectedAccount $connection): array
+    {
+        $account = DB::table('gw2_accounts')->where('connected_account_id', $connection->id)->first();
+        $scopes = $connection->scopes ?? [];
+
+        return [
+            'connected' => true,
+            'account_name' => $connection->display_name,
+            'key_name' => $connection->metadata['key_name'] ?? null,
+            'permissions' => $scopes,
+            // Named so the UI can say which feature is dark and why, rather
+            // than drawing an empty panel and letting the player guess.
+            'missing_features' => $this->connections->missingFeatures($scopes),
+            'sync_status' => $connection->sync_status,
+            'sync_error' => $connection->sync_error,
+            'last_synced_at' => $connection->last_synced_at,
+            'last_full_sync_at' => $account->last_full_sync_at ?? null,
+            'world' => $account->world ?? null,
+            'fractal_level' => $account->fractal_level ?? null,
+            'access' => $account && $account->access ? json_decode($account->access, true) : [],
+            'characters' => $account
+                ? DB::table('gw2_characters')->where('gw2_account_id', $account->id)->count()
+                : 0,
+        ];
+    }
+}
