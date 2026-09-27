@@ -296,3 +296,33 @@ Schedule::command('analytics:prune')
 Schedule::command('giveaways:unfinished')
     ->dailyAt('10:00')
     ->onFailure($reportFailure('giveaways:unfinished'));
+
+/*
+ * GUILD WARS 2 — the catalogue, then the players.
+ *
+ * The catalogue check costs one request: /v2/build answers with a single
+ * integer, and on most nights the stored build already matches so the run ends
+ * there. When the game does move it re-reads about 492 requests' worth, which
+ * is why it sits at 3am and not on demand — the rate limit is counted per IP
+ * for the whole site, so four hundred requests spent on items is four hundred
+ * a waiting player did not get.
+ *
+ * The account sweep runs half an hour later, deliberately after the catalogue
+ * rather than beside it: they draw on the same budget, and an account read that
+ * loses its eighteen requests to a catalogue refresh comes back through a
+ * fifteen-minute backoff.
+ *
+ * That sweep is not a cache warmer. /v2/account/raids reports only what has
+ * been cleared since the weekly reset and the API has no lifetime view of it
+ * anywhere, so a night that is missed is a week of somebody's history that
+ * nothing can reconstruct afterwards.
+ */
+Schedule::command('gw2:catalogue')
+    ->dailyAt('03:00')
+    ->withoutOverlapping(120)
+    ->onFailure($reportFailure('gw2:catalogue'));
+
+Schedule::command('gw2:sync-accounts')
+    ->dailyAt('03:30')
+    ->withoutOverlapping(120)
+    ->onFailure($reportFailure('gw2:sync-accounts'));
