@@ -1,0 +1,1091 @@
+[
+  {
+    "id": "ch01-google-search",
+    "name": "Google Search",
+    "parent": "Google",
+    "priority": "PRIMARY",
+    "role": "Compounding evergreen traffic to pages only TechPlay can build from its database and tools (release, where-to-play, PC fixes, series order, WoW).",
+    "audiences": [
+      "S1",
+      "S3",
+      "S5",
+      "S6",
+      "S7"
+    ],
+    "formats": [
+      "evergreen template pages",
+      "living hubs (/gta6, /calendar, /guides/pc-fixes, /switch-2, /steam, /mmo)",
+      "F07 Fix It Friday guides",
+      "F08 Where Can I Play It?",
+      "F09 In Order series pages"
+    ],
+    "frequency_per_week": 4,
+    "owner": "ED",
+    "voice": "Plain answer first, sourced, dated ('Updated on'), no hype in titles.",
+    "primary_cta": "Remind me on release day (reminder_set) / Add to shelf; on fix pages: 'Save this game to your library and get patch alerts'",
+    "success_metric": "Search Console organic clicks to pillar pages (baseline 1-2 clicks/day, formula-based TARGET set after 4 weeks of data)",
+    "kpi_event": "reminder_set",
+    "workflow": "ED publishes 1 F07 (Fri), 1 F09 (Sat), 2 F08 (Tue/Sat) per week from templates; ED checks titles, H1, internal links, 'Updated on' line (45 min/page packaging); EIC reviews Search Console Mon 10:00 (30 min).",
+    "do_not": "No scaled thin pages, no codes/Wordle pages, no 'benchmarks' claims, no new game-page stubs without TechPlay-written text (D-021).",
+    "weekly_hours_estimate": 3.5
+  },
+  {
+    "id": "ch02-google-discover",
+    "name": "Google Discover",
+    "parent": "Google",
+    "priority": "PRIMARY",
+    "role": "Largest free distribution for timely, pillar-aligned stories; rewards topic expertise judged topic by topic (Feb 2026 update).",
+    "audiences": [
+      "S1",
+      "S3",
+      "S4",
+      "S5",
+      "S8"
+    ],
+    "formats": [
+      "pillar news with added value",
+      "data stories (C20-C26)",
+      "F10 Worth It in 2026?",
+      "F24 Verdict",
+      "GTA 6 ledger updates"
+    ],
+    "frequency_per_week": 15,
+    "owner": "ED",
+    "voice": "Specific, non-sensational titles that state the news; no withheld information; one clear image.",
+    "primary_cta": "Follow TechPlay in Google (RSS-driven Follow) + article-end CTA block (D-010)",
+    "success_metric": "Discover clicks per pillar (Search Console), share of clicks from P1-P5 pillars",
+    "kpi_event": "cta_click",
+    "workflow": "ED applies Discover checklist to every pillar piece before publish: 16:9 hero >=1200px wide, max-image-preview:large (already set), title states the fact, byline and date (5 min/article).",
+    "do_not": "No clickbait ('quietly', 'you won't believe'), no general tech/phones, no rewrites of stories with nothing added.",
+    "weekly_hours_estimate": 1.5
+  },
+  {
+    "id": "ch03-google-news",
+    "name": "Google News / Top Stories",
+    "parent": "Google",
+    "priority": "SECONDARY",
+    "role": "Automatic inclusion for news; earns its place only with original reporting and correct news signals.",
+    "audiences": [
+      "S8",
+      "S4",
+      "S1"
+    ],
+    "formats": [
+      "news with added value",
+      "F17 Studio Watch",
+      "F03 Confirmed or Rumour?",
+      "PR data stories"
+    ],
+    "frequency_per_week": 10,
+    "owner": "ED",
+    "voice": "Newsroom: who, what, source link in first paragraph, 'Updated' timestamps on developing stories.",
+    "primary_cta": "Add TechPlay as a preferred source on Google (existing block, moved into the article-end CTA block)",
+    "success_metric": "Articles (not game pages) appearing for site:techplay.gg in Google News; Top Stories impressions in Search Console",
+    "kpi_event": "cta_click",
+    "workflow": "DEV ships D-022 (game pages out of News) in C02; ED links primary sources in every news item and adds timestamped updates (30 min/week audit).",
+    "do_not": "Do not rely on eligibility alone; do not publish game-database pages as news; no unlinked sources.",
+    "weekly_hours_estimate": 0.5
+  },
+  {
+    "id": "ch04-bing",
+    "name": "Bing",
+    "parent": "Microsoft",
+    "priority": "LOW PRIORITY",
+    "role": "Secondary search engine; IndexNow already pings on publish.",
+    "audiences": [
+      "S1",
+      "S3"
+    ],
+    "formats": [
+      "same pages as Google Search"
+    ],
+    "frequency_per_week": 0,
+    "owner": "EIC",
+    "voice": "n/a (same pages)",
+    "primary_cta": "Same on-page CTAs as Google Search",
+    "success_metric": "Bing Webmaster Tools clicks and indexed article count (monthly)",
+    "kpi_event": "cta_click",
+    "workflow": "Automated via IndexNow on publish; EIC checks Bing Webmaster Tools first Monday of the month (15 min, averaged 0.25 h/week).",
+    "do_not": "No Bing-specific content or paid Microsoft Ads.",
+    "weekly_hours_estimate": 0.25
+  },
+  {
+    "id": "ch05-microsoft-start",
+    "name": "Microsoft Start (MSN)",
+    "parent": "Microsoft",
+    "priority": "LOW PRIORITY",
+    "role": "Possible syndication; access route for a small publisher is UNKNOWN (partner pages returned errors).",
+    "audiences": [
+      "S8"
+    ],
+    "formats": [
+      "none until access is known"
+    ],
+    "frequency_per_week": 0,
+    "owner": "EIC",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "Decision recorded: apply / do not apply (by Q1 2027)",
+    "kpi_event": "cta_click",
+    "workflow": "EIC re-checks the MSN partner route once in Q1 2027; no weekly work.",
+    "do_not": "No time spent before the route is documented.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch06-facebook-page",
+    "name": "Facebook Page",
+    "parent": "Meta / Facebook",
+    "priority": "EXPERIMENTAL",
+    "role": "Low-cost test of reach for native images, polls and questions; a destination for older and Balkan-region readers who share via WhatsApp/FB.",
+    "audiences": [
+      "S1",
+      "S7",
+      "S9",
+      "S10"
+    ],
+    "formats": [
+      "F06 On This Day image",
+      "F04 The Number card",
+      "F01 link post",
+      "F11 question",
+      "F12 poll",
+      "F05 card",
+      "F24 Verdict card"
+    ],
+    "frequency_per_week": 15,
+    "owner": "SC",
+    "voice": "Conversational, one question per post, no link-only posts.",
+    "primary_cta": "See every release this week, with a remind-me button: techplay.gg/calendar (UTM facebook/organic-social)",
+    "success_metric": "Comments + link clicks per post; 6-week test read on Mon 9 Nov",
+    "kpi_event": "cta_click",
+    "workflow": "SC batch-schedules the whole week in Meta Business Suite on Monday 12:00-12:30 from DS files; replies to comments in the MBS inbox daily at 18:30 (1 h/week total).",
+    "do_not": "No link-only posts, no 'like and share to win' mechanics (Meta Promotions policy), no boosting posts (C57 runs through Ads Manager only).",
+    "weekly_hours_estimate": 1.0
+  },
+  {
+    "id": "ch07-facebook-groups",
+    "name": "Facebook Groups",
+    "parent": "Meta / Facebook",
+    "priority": "EXPERIMENTAL",
+    "role": "Participation as a named person in 2-3 game or regional groups; answers, not promotion.",
+    "audiences": [
+      "S5",
+      "S9",
+      "S10"
+    ],
+    "formats": [
+      "helpful answers",
+      "occasional tool link where rules allow"
+    ],
+    "frequency_per_week": 3,
+    "owner": "SC",
+    "voice": "First person, signed with name and role at TechPlay.",
+    "primary_cta": "Only when asked: link to the specific tool/page that answers the question (UTM facebook/community)",
+    "success_metric": "Answers accepted/thanked; referral sessions from facebook/community",
+    "kpi_event": "cta_click",
+    "workflow": "SC reads group rules first (not fetched in research), posts 3 answers/week during the 18:30 inbox slot (30 min/week).",
+    "do_not": "No drop-and-run links, no cross-posting articles, no groups whose rules ban publishers.",
+    "weekly_hours_estimate": 0.5
+  },
+  {
+    "id": "ch08-facebook-reels",
+    "name": "Facebook Reels",
+    "parent": "Meta / Facebook",
+    "priority": "SECONDARY",
+    "role": "Extra distribution of the one vertical-video production (C49); zero new production.",
+    "audiences": [
+      "S1",
+      "S3",
+      "S4"
+    ],
+    "formats": [
+      "F01 Out This Week 30-45s",
+      "F02 countdown shorts",
+      "F07 Fix in 60s"
+    ],
+    "frequency_per_week": 5,
+    "owner": "SC",
+    "voice": "Same as TikTok master; captions burned in.",
+    "primary_cta": "Remind me: techplay.gg/calendar (in caption; link handling UNVERIFIED)",
+    "success_metric": "3-second views vs other placements of the same file; profile visits",
+    "kpi_event": "cta_click",
+    "workflow": "SC uploads the TikTok master file via Meta Business Suite with the IG Reel (cross-post), 3 min each.",
+    "do_not": "No separate edit for Facebook; no watermarked TikTok exports.",
+    "weekly_hours_estimate": 0.25
+  },
+  {
+    "id": "ch09-facebook-stories",
+    "name": "Facebook Stories",
+    "parent": "Meta / Facebook",
+    "priority": "EXPERIMENTAL",
+    "role": "Zero-cost mirror of Instagram Stories (countdown, poll).",
+    "audiences": [
+      "S4",
+      "S10"
+    ],
+    "formats": [
+      "F02 countdown card",
+      "F12 poll card"
+    ],
+    "frequency_per_week": 7,
+    "owner": "SC",
+    "voice": "Same as IG Stories.",
+    "primary_cta": "Set a GTA 6 reminder: techplay.gg/games/grand-theft-auto-vi",
+    "success_metric": "Story views and link taps (6-week test)",
+    "kpi_event": "reminder_set",
+    "workflow": "Cross-post from IG Stories via Meta Business Suite toggle (no extra time; 0.25 h/week for checks).",
+    "do_not": "Do not produce Facebook-only Stories.",
+    "weekly_hours_estimate": 0.25
+  },
+  {
+    "id": "ch10-instagram-feed",
+    "name": "Instagram Feed (single images)",
+    "parent": "Meta / Instagram",
+    "priority": "SECONDARY",
+    "role": "Single stat cards and verdict cards that are saved and shared.",
+    "audiences": [
+      "S1",
+      "S4",
+      "S8"
+    ],
+    "formats": [
+      "F04 The Number 1080x1350",
+      "F24 Verdict card"
+    ],
+    "frequency_per_week": 3,
+    "owner": "SC",
+    "voice": "Dry, one fact, source line on the image.",
+    "primary_cta": "Link in bio -> techplay.gg/calendar?utm_source=instagram&utm_medium=organic-social&utm_campaign=c04-out-this-week&utm_content=bio (link handling UNVERIFIED)",
+    "success_metric": "Saves + shares per post",
+    "kpi_event": "social_share",
+    "workflow": "DS fills T2 card from the F04 sheet (10 min each); SC schedules in MBS Monday batch.",
+    "do_not": "No numbers without a source line; no member counts.",
+    "weekly_hours_estimate": 0.75
+  },
+  {
+    "id": "ch11-instagram-carousel",
+    "name": "Instagram Carousel",
+    "parent": "Meta / Instagram",
+    "priority": "SECONDARY",
+    "role": "The main Instagram format: lists and data TechPlay's database produces (releases, series order, hidden gems, GTA ledger).",
+    "audiences": [
+      "S1",
+      "S2",
+      "S4",
+      "S6",
+      "S7"
+    ],
+    "formats": [
+      "F01 Out This Week (8 slides)",
+      "F03 Confirmed or Rumour? (6 slides, to 19 Nov)",
+      "F05 Hidden Gem (5 slides)",
+      "F09 In Order (8-10 slides)"
+    ],
+    "frequency_per_week": 4,
+    "owner": "DS",
+    "voice": "Slide 1 states the payoff; last slide says what to do on the site.",
+    "primary_cta": "Last slide: 'Every date, one tap to remind you: techplay.gg/calendar'",
+    "success_metric": "Saves per carousel; bio-link sessions (utm_content=f01-carousel-a etc.)",
+    "kpi_event": "reminder_set",
+    "workflow": "Mon: ED exports data; Tue-Wed: DS fills T2 carousel template (40 min each); SC writes caption + alt text and schedules (10 min each).",
+    "do_not": "No cover art without credit; no bespoke layouts outside the template library.",
+    "weekly_hours_estimate": 3.75
+  },
+  {
+    "id": "ch12-instagram-reels",
+    "name": "Instagram Reels",
+    "parent": "Meta / Instagram",
+    "priority": "SECONDARY",
+    "role": "Placement for the single vertical-video production (C49).",
+    "audiences": [
+      "S1",
+      "S3",
+      "S4"
+    ],
+    "formats": [
+      "F01, F02, F07 vertical videos"
+    ],
+    "frequency_per_week": 5,
+    "owner": "SC",
+    "voice": "Text-on-screen, no presenter, first 2 seconds state the topic.",
+    "primary_cta": "'Full list and reminders: link in bio'",
+    "success_metric": "Plays, shares, bio-link sessions",
+    "kpi_event": "cta_click",
+    "workflow": "SC uploads the TikTok master (no watermark) via MBS with FB Reels cross-post (3 min each).",
+    "do_not": "No trending-audio dependence we cannot license; no reposted trailers.",
+    "weekly_hours_estimate": 0.25
+  },
+  {
+    "id": "ch13-instagram-stories",
+    "name": "Instagram Stories",
+    "parent": "Meta / Instagram",
+    "priority": "SECONDARY",
+    "role": "Daily habit: GTA 6 countdown and weekly poll; link sticker to reminders.",
+    "audiences": [
+      "S4",
+      "S10",
+      "S1"
+    ],
+    "formats": [
+      "F02 countdown card (daily to 19 Nov)",
+      "F12 poll sticker (Wed)",
+      "F01 teaser (Mon)"
+    ],
+    "frequency_per_week": 9,
+    "owner": "SC",
+    "voice": "One line, one fact, one sticker.",
+    "primary_cta": "Link sticker: 'Remind me on 19 Nov' -> techplay.gg/games/grand-theft-auto-vi",
+    "success_metric": "Sticker taps, poll votes, reminder_set with utm_source=instagram",
+    "kpi_event": "reminder_set",
+    "workflow": "DS pre-builds 52 countdown cards in week 1 (template T3 with day number field); SC schedules 7 per week on Monday (1 h/week incl. poll).",
+    "do_not": "No rumour on a countdown card; no countdown after launch (switch to launch-week 'what to do first').",
+    "weekly_hours_estimate": 1.5
+  },
+  {
+    "id": "ch14-instagram-broadcast",
+    "name": "Instagram Broadcast Channel",
+    "parent": "Meta / Instagram",
+    "priority": "NOT NOW",
+    "role": "Deferred: a one-to-many channel is worth it only once Instagram has an engaged following (count UNVERIFIED).",
+    "audiences": [
+      "S10"
+    ],
+    "formats": [
+      "none"
+    ],
+    "frequency_per_week": 0,
+    "owner": "SC",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "Trigger to revisit: Instagram carousels average steady saves for 6 weeks (reviewed 9 Nov)",
+    "kpi_event": "cta_click",
+    "workflow": "Revisit at the 9 Nov social review.",
+    "do_not": "Do not open a channel that will go silent.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch15-tiktok",
+    "name": "TikTok",
+    "parent": "Short video",
+    "priority": "SECONDARY",
+    "role": "Master platform for the one vertical-video production (C49); account does not exist yet (@techplay.gg and @techplaygg not found).",
+    "audiences": [
+      "S1",
+      "S3",
+      "S4",
+      "S7"
+    ],
+    "formats": [
+      "F01 Out This Week 30-45s",
+      "F02 GTA countdown 15-20s (3/wk to 19 Nov)",
+      "F07 Fix in 60s",
+      "F18 Games Like (after 19 Nov)"
+    ],
+    "frequency_per_week": 5,
+    "owner": "SC",
+    "voice": "No presenter; captions and data visuals; no hype voice-over.",
+    "primary_cta": "'Link in bio: every release this week with a remind-me button'",
+    "success_metric": "Average watch-through proxy and profile visits per video over a 6-week test (C49 from 5 Oct, read 16 Nov)",
+    "kpi_event": "cta_click",
+    "workflow": "Mon: ED exports F01 data; Tue: DS drops data into T3 video template (CapCut/Canva); SC edits and exports masters (30-45 min each [R19]); scheduled natively or via app same day.",
+    "do_not": "No re-uploaded trailers, no leaked footage, no AI voice until disclosure rules are checked (R19 open question).",
+    "weekly_hours_estimate": 5.0
+  },
+  {
+    "id": "ch16-youtube-longform",
+    "name": "YouTube long-form",
+    "parent": "YouTube",
+    "priority": "EXPERIMENTAL",
+    "role": "Two pilots only (C50): 'Every GTA game in order before VI' (12 Nov) and 'Release Radar: January 2027' (28 Dec). Channel has 20 subscribers and no videos.",
+    "audiences": [
+      "S4",
+      "S1"
+    ],
+    "formats": [
+      "8-12 min voice-over + data visuals (no presenter)"
+    ],
+    "frequency_per_week": 0.2,
+    "owner": "EIC",
+    "voice": "Calm narrator, sourced, dated.",
+    "primary_cta": "Description line 1: 'Set a reminder for every GTA VI date: techplay.gg/gta6'",
+    "success_metric": "Pilot read after 28 days: average view duration and subscribers gained per pilot; go/no-go for monthly Release Radar",
+    "kpi_event": "reminder_set",
+    "workflow": "EIC scripts (4 h), DS builds 8 motion slides (4 h), SC assembles and uploads (3 h) per pilot; averaged 2.5 h/week over Oct-Dec.",
+    "do_not": "No weekly long-form before the pilots are read; no official footage beyond short credited excerpts (publisher policies not yet read).",
+    "weekly_hours_estimate": 2.5
+  },
+  {
+    "id": "ch17-youtube-shorts",
+    "name": "YouTube Shorts",
+    "parent": "YouTube",
+    "priority": "SECONDARY",
+    "role": "Second placement of the vertical master; feeds the empty channel before the long-form pilots.",
+    "audiences": [
+      "S1",
+      "S3",
+      "S4"
+    ],
+    "formats": [
+      "F01, F02, F07, F18 vertical videos"
+    ],
+    "frequency_per_week": 5,
+    "owner": "SC",
+    "voice": "Same as TikTok master.",
+    "primary_cta": "Pinned comment: 'Every release this week: techplay.gg/calendar'",
+    "success_metric": "Views, subscribers gained per Short",
+    "kpi_event": "cta_click",
+    "workflow": "SC uploads master in YouTube Studio with title and pinned comment (3 min each).",
+    "do_not": "No clickbait thumbnails or titles that withhold the answer.",
+    "weekly_hours_estimate": 0.25
+  },
+  {
+    "id": "ch18-youtube-community",
+    "name": "YouTube Community tab",
+    "parent": "YouTube",
+    "priority": "LOW PRIORITY",
+    "role": "Poll and link post for subscribers once the channel qualifies (eligibility rules UNVERIFIED).",
+    "audiences": [
+      "S10"
+    ],
+    "formats": [
+      "F12 poll",
+      "F01 link"
+    ],
+    "frequency_per_week": 2,
+    "owner": "SC",
+    "voice": "Same as X poll wording.",
+    "primary_cta": "'This week's releases, with reminders: techplay.gg/calendar'",
+    "success_metric": "Poll votes",
+    "kpi_event": "cta_click",
+    "workflow": "SC reuses the F12 wording (5 min).",
+    "do_not": "Do not treat as a growth channel.",
+    "weekly_hours_estimate": 0.25
+  },
+  {
+    "id": "ch19-youtube-livestreams",
+    "name": "YouTube livestreams",
+    "parent": "YouTube",
+    "priority": "NOT NOW",
+    "role": "Deferred: needs presenters and a schedule TechPlay does not have.",
+    "audiences": [
+      "S10"
+    ],
+    "formats": [
+      "none"
+    ],
+    "frequency_per_week": 0,
+    "owner": "EIC",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "Revisit in Q2 2027 if long-form pilots pass",
+    "kpi_event": "cta_click",
+    "workflow": "Live events run as Discord watch parties + X live threads instead (F20).",
+    "do_not": "No restreaming of TGA or publisher streams.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch20-x",
+    "name": "X",
+    "parent": "Text networks",
+    "priority": "SECONDARY",
+    "role": "Breaking news in our pillars, live events, and the journalist/developer network; account @TechPlayGG exists but is unlinked from the footer.",
+    "audiences": [
+      "S8",
+      "S4",
+      "S1",
+      "S3",
+      "S5"
+    ],
+    "formats": [
+      "F02 countdown",
+      "F06 On This Day",
+      "F04 The Number",
+      "F01 thread",
+      "F13 Steam Movers",
+      "F03 ledger",
+      "F17 Studio Watch",
+      "F12 poll",
+      "F20 live threads"
+    ],
+    "frequency_per_week": 24,
+    "owner": "SC",
+    "voice": "Dry, sourced, first line carries the fact; replies worth reading.",
+    "primary_cta": "Varies by franchise; default 'Every date, with reminders: techplay.gg/calendar' (UTM x/organic-social)",
+    "success_metric": "Replies and profile follows per post; link sessions by utm_campaign",
+    "kpi_event": "cta_click",
+    "workflow": "SC schedules franchise posts Monday; ED posts pillar news within 30 min of publish; EIC 30 min/week on journalist/developer replies; see file 10.",
+    "do_not": "No engagement bait, no rumours as fact, no X Ads, no quote-dunking.",
+    "weekly_hours_estimate": 3.5
+  },
+  {
+    "id": "ch21-threads",
+    "name": "Threads",
+    "parent": "Text networks",
+    "priority": "EXPERIMENTAL",
+    "role": "Conversation-first: questions and opinion prompts tied to the week; existence of @techplay.gg on Threads UNVERIFIED.",
+    "audiences": [
+      "S10",
+      "S1",
+      "S6"
+    ],
+    "formats": [
+      "F11 question",
+      "F12 poll",
+      "F02 question-led countdown",
+      "F04 card"
+    ],
+    "frequency_per_week": 12,
+    "owner": "SC",
+    "voice": "Warm, curious, asks one thing; no link in most posts.",
+    "primary_cta": "In replies only: 'Your shelf does this automatically: techplay.gg/register?from=threads'",
+    "success_metric": "Replies per post; 6-week test read 9 Nov",
+    "kpi_event": "registration_start",
+    "workflow": "SC writes Threads variants during Monday batch (30 min) and replies at 18:30 slot; see file 10.",
+    "do_not": "No clone of the X post; no link in the first post unless it is the point.",
+    "weekly_hours_estimate": 0.75
+  },
+  {
+    "id": "ch22-bluesky",
+    "name": "Bluesky",
+    "parent": "Text networks",
+    "priority": "EXPERIMENTAL",
+    "role": "Industry and data audience (journalists, developers, researchers); Eurogamer, ITAD and Hookshot sites are present; TechPlay has no account.",
+    "audiences": [
+      "S8",
+      "S9",
+      "S3"
+    ],
+    "formats": [
+      "F04 The Number",
+      "F17 Studio Watch",
+      "F13 Steam Movers",
+      "PR data threads",
+      "F06"
+    ],
+    "frequency_per_week": 10,
+    "owner": "SC",
+    "voice": "Analyst tone: method and source in the post; links welcome.",
+    "primary_cta": "Link to the dataset or tracker page with methodology (e.g. /data/studios-closed-2026 (new))",
+    "success_metric": "Reposts by industry accounts; referral sessions bluesky/organic-social",
+    "kpi_event": "cta_click",
+    "workflow": "SC posts data-led variants (45 min/week); EIC 15 min/week on replies to journalists; see file 10.",
+    "do_not": "No meme-first posting; no auto-crossposting from X.",
+    "weekly_hours_estimate": 1.0
+  },
+  {
+    "id": "ch23-reddit",
+    "name": "Reddit",
+    "parent": "Communities",
+    "priority": "SECONDARY",
+    "role": "Contribution, not promotion (C47): real people answer questions with TechPlay data; data posts only for PR campaigns (C48).",
+    "audiences": [
+      "S3",
+      "S4",
+      "S5",
+      "S2",
+      "S8"
+    ],
+    "formats": [
+      "helpful comments",
+      "F13 data comment",
+      "PR data posts with methodology"
+    ],
+    "frequency_per_week": 6,
+    "owner": "SC",
+    "voice": "First person, named account, disclose affiliation when linking.",
+    "primary_cta": "Only when it answers the question: link to the exact fix/tool page, with affiliation line 'I work on TechPlay'",
+    "success_metric": "Comment karma trend on the two staff accounts; referral sessions reddit/community",
+    "kpi_event": "cta_click",
+    "workflow": "SC 30 min/day on weekdays in r/pcgaming, r/patientgamers, r/wow, r/GTA6, r/Steam (read rules first; per-sub rules UNVERIFIED); EIC reviews C48 posts.",
+    "do_not": "No link-drops, no brand account posting links, no vote manipulation, no posting into art/meme threads.",
+    "weekly_hours_estimate": 3.0
+  },
+  {
+    "id": "ch24-discord",
+    "name": "Discord",
+    "parent": "Communities",
+    "priority": "PRIMARY",
+    "role": "Retention core and ritual host (160 members); Professor Buffy connects site XP, articles and events.",
+    "audiences": [
+      "S10",
+      "S5",
+      "S4",
+      "S2"
+    ],
+    "formats": [
+      "F11 thread",
+      "F12 native poll",
+      "F06 by Buffy",
+      "F02 #gta6",
+      "F14 Sunday wrap",
+      "F15 #wow",
+      "F20 watch parties",
+      "F22 Game Club",
+      "F23 Next Fest diary"
+    ],
+    "frequency_per_week": 22,
+    "owner": "SC",
+    "voice": "Buffy as host (dry, one owl line max); humans moderate.",
+    "primary_cta": "Join the server: https://discord.gg/wPQG9gUMXH (one invite code per campaign after D-011)",
+    "success_metric": "Weekly active chatters / members (Discord guide: ~30% communicating is healthy); discord_join by invite code",
+    "kpi_event": "discord_join",
+    "workflow": "SC runs rituals from a weekly checklist (Mon thread, Wed poll, Sun wrap), moderates 30 min/day, one Scheduled Event per week (C35/C36).",
+    "do_not": "No new channels without a ritual; no dead invites; no @everyone except events.",
+    "weekly_hours_estimate": 5.0
+  },
+  {
+    "id": "ch25-twitch",
+    "name": "Twitch",
+    "parent": "Communities",
+    "priority": "NOT NOW",
+    "role": "Deferred: needs presenters and a fixed schedule.",
+    "audiences": [
+      "S10"
+    ],
+    "formats": [
+      "none"
+    ],
+    "frequency_per_week": 0,
+    "owner": "EIC",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "Revisit Q2 2027",
+    "kpi_event": "cta_click",
+    "workflow": "None this quarter.",
+    "do_not": "Do not open a channel.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch26-linkedin",
+    "name": "LinkedIn",
+    "parent": "Professional",
+    "priority": "LOW PRIORITY",
+    "role": "B2B only: PR data, partnerships, press page; one post a week.",
+    "audiences": [
+      "S8",
+      "S9"
+    ],
+    "formats": [
+      "F04 Thursday card",
+      "F17 Studio Watch",
+      "PR data summaries"
+    ],
+    "frequency_per_week": 1,
+    "owner": "EIC",
+    "voice": "Plain business English, method first.",
+    "primary_cta": "'Methodology and data: techplay.gg/press (new)'",
+    "success_metric": "Inbound partnership/press contacts",
+    "kpi_event": "cta_click",
+    "workflow": "EIC posts Thu 09:30 Sarajevo (30 min).",
+    "do_not": "No gamer content, no engagement bait.",
+    "weekly_hours_estimate": 0.5
+  },
+  {
+    "id": "ch27-pinterest",
+    "name": "Pinterest",
+    "parent": "Other",
+    "priority": "NOT NOW",
+    "role": "No gaming-publisher precedent found.",
+    "audiences": [],
+    "formats": [
+      "none"
+    ],
+    "frequency_per_week": 0,
+    "owner": "SC",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "n/a",
+    "kpi_event": "cta_click",
+    "workflow": "None.",
+    "do_not": "Do not open.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch28-snapchat",
+    "name": "Snapchat",
+    "parent": "Other",
+    "priority": "NOT NOW",
+    "role": "No realistic publisher route.",
+    "audiences": [],
+    "formats": [
+      "none"
+    ],
+    "frequency_per_week": 0,
+    "owner": "SC",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "n/a",
+    "kpi_event": "cta_click",
+    "workflow": "None.",
+    "do_not": "Do not open.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch29-steam-curator",
+    "name": "Steam Community / Curator",
+    "parent": "Communities",
+    "priority": "EXPERIMENTAL",
+    "role": "Puts TechPlay recommendations on Steam store pages (C69, 20 Oct); later Curator Connect for review copies.",
+    "audiences": [
+      "S1",
+      "S2",
+      "S3",
+      "S7"
+    ],
+    "formats": [
+      "F05 Hidden Gem recommendation",
+      "F24 Verdict recommendation",
+      "F23 Next Fest picks"
+    ],
+    "frequency_per_week": 3,
+    "owner": "ED",
+    "voice": "Two sentences: who it is for, what to know; link to our page.",
+    "primary_cta": "Recommendation link: 'Full verdict and where else to play it: techplay.gg/games/<slug>'",
+    "success_metric": "Curator followers (from Steam), referral sessions steam/referral",
+    "kpi_event": "shelf_add",
+    "workflow": "ED writes 3 recommendations/week from F05/F24/F23 output (20 min each).",
+    "do_not": "Do not abandon the page; no recommendations for games nobody on staff played.",
+    "weekly_hours_estimate": 1.0
+  },
+  {
+    "id": "ch30-gaming-forums",
+    "name": "Gaming forums (ResetEra and similar)",
+    "parent": "Communities",
+    "priority": "LOW PRIORITY",
+    "role": "Monitoring for questions and data requests; rules pages were blocked in research.",
+    "audiences": [
+      "S8"
+    ],
+    "formats": [
+      "read-only; occasional data answer"
+    ],
+    "frequency_per_week": 0,
+    "owner": "SC",
+    "voice": "Personal account only.",
+    "primary_cta": "n/a",
+    "success_metric": "n/a",
+    "kpi_event": "cta_click",
+    "workflow": "Included in Reddit reading time; no separate hours.",
+    "do_not": "No brand posting.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch31-game-communities",
+    "name": "Game-specific communities (WoW, GTA, Next Fest devs)",
+    "parent": "Communities",
+    "priority": "SECONDARY",
+    "role": "Participation where TechPlay's tools answer a live need: WoW guild recruiting and patch readiness, GTA 6 fact-checking, indie demo feedback.",
+    "audiences": [
+      "S5",
+      "S4",
+      "S9"
+    ],
+    "formats": [
+      "answers",
+      "Analyzer walk-throughs on request",
+      "Next Fest demo feedback"
+    ],
+    "frequency_per_week": 3,
+    "owner": "SC",
+    "voice": "Member of the community first.",
+    "primary_cta": "When relevant: 'Run your character through the Analyzer: techplay.gg/wow-analyzer' (UTM community)",
+    "success_metric": "tool_run with utm_medium=community",
+    "kpi_event": "tool_run",
+    "workflow": "SC 45 min/week in WoW and GTA community spaces (per rules).",
+    "do_not": "No invites dropped into other servers.",
+    "weekly_hours_estimate": 0.75
+  },
+  {
+    "id": "ch32-email",
+    "name": "Email (lifecycle and alerts)",
+    "parent": "Owned",
+    "priority": "PRIMARY",
+    "role": "Automated return channel: welcome sequence (C42, 12 Oct), personalised releases (C41, from 26 Oct), release-day and price alerts (C43, 19 Oct; C31).",
+    "audiences": [
+      "S1",
+      "S2",
+      "S7",
+      "S4"
+    ],
+    "formats": [
+      "3-email welcome",
+      "Monday 'Your releases this week'",
+      "release-day alert",
+      "price-drop alert"
+    ],
+    "frequency_per_week": 1,
+    "owner": "SC",
+    "voice": "Personal, short, first line is the fact ('Your game is out today.'); Buffy sign-off one line.",
+    "primary_cta": "'Open your library' / 'See this week's releases' -> techplay.gg/calendar",
+    "success_metric": "Click rate per delivered; downstream reminder_set/shelf_add within 24 h; complaint <0.1%",
+    "kpi_event": "alert_clicked",
+    "workflow": "DEV builds (D-013, D-027, D-028); SC checks bounce/complaint dashboard Mon and Thu (30 min/week).",
+    "do_not": "No DNS/SPF/DKIM/SMTP change without approval; no sending to unverified addresses; no volume jumps.",
+    "weekly_hours_estimate": 0.5
+  },
+  {
+    "id": "ch33-newsletter",
+    "name": "Newsletter: The Save File",
+    "parent": "Owned",
+    "priority": "PRIMARY",
+    "role": "Weekly Friday issue (F21, C40 from 2 Oct): releases, one data point, one community item, what to play.",
+    "audiences": [
+      "S1",
+      "S2",
+      "S7",
+      "S8",
+      "S10"
+    ],
+    "formats": [
+      "weekly email + web archive"
+    ],
+    "frequency_per_week": 1,
+    "owner": "SC",
+    "voice": "Editor's letter: dry, specific, five to seven items.",
+    "primary_cta": "Sign up: techplay.gg/newsletter (new; D-012)",
+    "success_metric": "Verified subscribers; click rate; unsubscribe <0.5% per send",
+    "kpi_event": "newsletter_verified",
+    "workflow": "SC assembles Thu 14:00-16:30 from the week's posts; EIC edits Thu 17:00 (30 min); send Fri 08:30 Sarajevo.",
+    "do_not": "No 'thousands of readers' claims; no paid list growth before hosting decision.",
+    "weekly_hours_estimate": 3.0
+  },
+  {
+    "id": "ch34-web-push",
+    "name": "Web Push (reminders only)",
+    "parent": "Owned",
+    "priority": "EXPERIMENTAL",
+    "role": "Opt-in at the moment a user taps 'Remind me' (C59, live 9 Nov): release-day and followed-game alerts.",
+    "audiences": [
+      "S1",
+      "S4"
+    ],
+    "formats": [
+      "release-day push",
+      "GTA 6 launch push"
+    ],
+    "frequency_per_week": 0,
+    "owner": "DEV",
+    "voice": "'Grand Theft Auto VI is out on PS5 and Xbox Series X|S.' No marketing copy.",
+    "primary_cta": "Push opens the game page with the store links",
+    "success_metric": "Opt-in rate at remind-me prompt; click rate per push (reminder_delivered -> alert_clicked)",
+    "kpi_event": "notification_enabled",
+    "workflow": "Event-driven and automated (D-019); SC reviews opt-in rate weekly from 16 Nov (0 h budgeted: part of Monday report).",
+    "do_not": "No site-wide prompt; no news pushes; max one push per user per day.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch35-browser-notifications",
+    "name": "Browser notifications (site-wide prompt)",
+    "parent": "Owned",
+    "priority": "NOT NOW",
+    "role": "Rejected: Chrome demotes sites with low acceptance to a quieter prompt; no competitor gains from it.",
+    "audiences": [],
+    "formats": [
+      "none"
+    ],
+    "frequency_per_week": 0,
+    "owner": "DEV",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "n/a",
+    "kpi_event": "notification_enabled",
+    "workflow": "None; only the contextual prompt under Web Push.",
+    "do_not": "Never show a permission prompt on page load.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch36-rss",
+    "name": "RSS (plus Flipboard/Mastodon via RSS)",
+    "parent": "Owned",
+    "priority": "SECONDARY",
+    "role": "Infrastructure: feeds Discover Follow, Feedly/Inoreader, Flipboard and bots; must be fixed first (D-003).",
+    "audiences": [
+      "S8",
+      "S3"
+    ],
+    "formats": [
+      "/rss, /feed full items"
+    ],
+    "frequency_per_week": 0,
+    "owner": "DEV",
+    "voice": "n/a",
+    "primary_cta": "RSS link inside the article-end CTA block (D-010)",
+    "success_metric": "Feed item lag <15 min after publish; 0 broken links",
+    "kpi_event": "cta_click",
+    "workflow": "DEV fixes /tech -> /hardware links and regenerate-on-publish (C02); ED spot-checks feed Fridays (in Search time).",
+    "do_not": "No truncated or ad-stuffed feed.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch37-digital-pr",
+    "name": "Digital PR",
+    "parent": "Earned",
+    "priority": "SECONDARY",
+    "role": "Links and citations from TechPlay datasets: C20 (7 Oct), C22 (14 Oct), C21 (28 Oct), C23 (4 Nov), C24 (11 Nov), C25 (23 Nov), C26 (8 Dec), C27 draft.",
+    "audiences": [
+      "S8",
+      "S9"
+    ],
+    "formats": [
+      "data page with methodology + CSV",
+      "pitch email",
+      "Reddit/Bluesky data post"
+    ],
+    "frequency_per_week": 0.5,
+    "owner": "EIC",
+    "voice": "Method, numbers, caveats; no superlatives.",
+    "primary_cta": "'Methodology and CSV: techplay.gg/data/<slug> (new)'",
+    "success_metric": "Referring domains earned per campaign; journalist replies",
+    "kpi_event": "cta_click",
+    "workflow": "DEV pulls data (1 h avg/week), EIC writes and pitches 20 targeted contacts per campaign (4 h avg/week).",
+    "do_not": "No map-based claims before D-020; no numbers that cannot be reproduced from the site.",
+    "weekly_hours_estimate": 5.0
+  },
+  {
+    "id": "ch38-creators",
+    "name": "Creators",
+    "parent": "Earned",
+    "priority": "EXPERIMENTAL",
+    "role": "Data partnerships (C51 from 20 Oct): a creator gets a data point, embed or Discord audience; TechPlay gets a credited link.",
+    "audiences": [
+      "S4",
+      "S5",
+      "S1"
+    ],
+    "formats": [
+      "data pack for a video",
+      "guest in Discord Stage AMA",
+      "co-branded list"
+    ],
+    "frequency_per_week": 2,
+    "owner": "EIC",
+    "voice": "Peer-to-peer, specific offer in the first line.",
+    "primary_cta": "Credit line requested: 'Data: techplay.gg/<page>'",
+    "success_metric": "Credited mentions; creator/<handle> sessions",
+    "kpi_event": "cta_click",
+    "workflow": "EIC sends 2 tailored offers/week (45 min each) to small/mid creators found via Keymailer/Lurkit or the lists in file 10.",
+    "do_not": "No paid posts, no undisclosed arrangements, no inflated audience figures in pitches.",
+    "weekly_hours_estimate": 1.5
+  },
+  {
+    "id": "ch39-influencers",
+    "name": "Influencers (paid)",
+    "parent": "Earned",
+    "priority": "NOT NOW",
+    "role": "Paid influencer placements are out of scope this quarter (no budget line; measurement not ready).",
+    "audiences": [],
+    "formats": [
+      "none"
+    ],
+    "frequency_per_week": 0,
+    "owner": "EIC",
+    "voice": "n/a",
+    "primary_cta": "n/a",
+    "success_metric": "n/a",
+    "kpi_event": "cta_click",
+    "workflow": "None.",
+    "do_not": "No paid posts before C03 measurement and a budget decision.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch40-partnerships",
+    "name": "Partnerships",
+    "parent": "Earned",
+    "priority": "EXPERIMENTAL",
+    "role": "Studio/indie Next Fest outreach (C71, 5-20 Oct) and Balkan regional partners (C55, Nov).",
+    "audiences": [
+      "S9",
+      "S1"
+    ],
+    "formats": [
+      "demo features",
+      "regional census co-release",
+      "event cross-promotion"
+    ],
+    "frequency_per_week": 0.5,
+    "owner": "EIC",
+    "voice": "Local, direct, no audience claims we cannot show.",
+    "primary_cta": "'Your studio page: techplay.gg/studios/<slug>' / '/studios/country/ba'",
+    "success_metric": "Partner links and joint posts delivered",
+    "kpi_event": "cta_click",
+    "workflow": "EIC 1 h/week average.",
+    "do_not": "No exclusivity deals; no paid placements disguised as editorial.",
+    "weekly_hours_estimate": 1.0
+  },
+  {
+    "id": "ch41-referral",
+    "name": "Referral",
+    "parent": "Earned",
+    "priority": "EXPERIMENTAL",
+    "role": "Invite codes per campaign and referral roles in Discord (C36); Founding 100 badge (C68).",
+    "audiences": [
+      "S10"
+    ],
+    "formats": [
+      "member invite links",
+      "referral role"
+    ],
+    "frequency_per_week": 0,
+    "owner": "SC",
+    "voice": "Recognition, not rewards-for-spam.",
+    "primary_cta": "'Bring one friend who plays what you play: your invite link is in /profile'",
+    "success_metric": "discord_join and registration_complete by referral code",
+    "kpi_event": "discord_join",
+    "workflow": "SC maintains the invite-code log (30 min/week).",
+    "do_not": "No cash or entry rewards for invites; no share-to-enter giveaway tasks on Meta.",
+    "weekly_hours_estimate": 0.5
+  },
+  {
+    "id": "ch42-word-of-mouth",
+    "name": "Word-of-mouth",
+    "parent": "Earned",
+    "priority": "SECONDARY",
+    "role": "Outcome of product loops: share cards (D-024), Year in Review (C28), lists, Game Club; measured, not scheduled.",
+    "audiences": [
+      "S2",
+      "S10"
+    ],
+    "formats": [
+      "Gamer DNA card",
+      "Your 2026 in Games",
+      "lists"
+    ],
+    "frequency_per_week": 0,
+    "owner": "SC",
+    "voice": "n/a",
+    "primary_cta": "'Make yours: techplay.gg/year-in-review (new)'",
+    "success_metric": "share_card_generated and social_share per active member",
+    "kpi_event": "share_card_generated",
+    "workflow": "Tracked in the Monday report; no separate hours.",
+    "do_not": "No fake testimonials or invented member numbers.",
+    "weekly_hours_estimate": 0
+  },
+  {
+    "id": "ch43-site-product-loops",
+    "name": "Site product loops (reminders, alerts, shelves)",
+    "parent": "Owned",
+    "priority": "PRIMARY",
+    "role": "The spine's PRIMARY loop: remind-me, follow, price alerts and shelves turn any visit into a reason to return.",
+    "audiences": [
+      "S1",
+      "S2",
+      "S4",
+      "S7"
+    ],
+    "formats": [
+      "Remind me / Follow (C45)",
+      "release-day alerts (C43)",
+      "price alerts (C31)",
+      "ICS export (D-036)"
+    ],
+    "frequency_per_week": 0,
+    "owner": "DEV",
+    "voice": "Buffy signs alerts in one line; first line is the fact.",
+    "primary_cta": "'Remind me' on every game and calendar row",
+    "success_metric": "reminder_set per 1,000 game-page views; reminder_delivered -> alert_clicked rate",
+    "kpi_event": "reminder_set",
+    "workflow": "DEV builds per backlog; SC owns alert copy (15 min/week).",
+    "do_not": "No guilt-trip notifications (Buffy voice sheet).",
+    "weekly_hours_estimate": 0.25
+  }
+]
