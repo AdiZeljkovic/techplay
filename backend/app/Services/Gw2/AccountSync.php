@@ -319,6 +319,13 @@ class AccountSync
                     'location_ref' => $ref,
                     'stats_id' => isset($slot['stats']['id']) ? (int) $slot['stats']['id'] : null,
                     'upgrades' => isset($slot['upgrades']) ? json_encode($slot['upgrades']) : null,
+                    /*
+                     * Kept apart from upgrades even though both are item ids on
+                     * the same entry. An upgrade is a rune or a sigil; an
+                     * infusion is where Agony Resistance comes from, and that
+                     * one number decides which fractal tier a player can enter.
+                     */
+                    'infusions' => isset($slot['infusions']) ? json_encode($slot['infusions']) : null,
                     'observed_at' => $now,
                 ];
             }
