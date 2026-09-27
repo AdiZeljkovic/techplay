@@ -1,8 +1,12 @@
 # TechPlay — mobilna aplikacija
 
 Expo / React Native klijent za techplay.gg. Ovaj dokument je **stanje na dan
-9. 9. 2026**, kad je rad pauziran — šta radi, šta ne, i šta je sljedeće.
-Pisan je da se za mjesec dana može nastaviti bez čitanja cijelog koda.
+27. 9. 2026** — šta radi, šta ne, i šta je sljedeće. Pisan je da se za mjesec
+dana može nastaviti bez čitanja cijelog koda.
+
+Rad je bio pauziran od 9. 9. do 27. 9. Tog dana su odrađene četiri stavke koje
+su ovdje stajale kao sljedeće: kalendar, jedinstven jezik dugmadi, sadržaj
+ispod članka i stranica igre.
 
 ---
 
@@ -50,10 +54,10 @@ Calendar**, s podignutim portretom u sredini.
 | `(tabs)/index` | Naslovnica: masthead, hero, featured slider, četiri panela, rail-ovi, „Most read" | ✅ prati sajt |
 | `(tabs)/news` | Feed — `/feed/latest`, filter sekcija, „For you" (`/feed/personalized`) | ✅ prati sajt |
 | `(tabs)/catalogue` | Game Database — hub, četiri ulaza, faset filteri, mreža omota | ✅ prati sajt |
-| `(tabs)/calendar` | Kalendar izlazaka, po danima | ⚠️ najveća razlika, vidi dolje |
+| `(tabs)/calendar` | Kalendar — hero, brojač, filteri, wishlist i podsjetnik | ✅ prati sajt |
 | `(tabs)/profile` | Profil / poziv na prijavu | ⚠️ nije provjeren prijavljen |
-| `news/[slug]` | Članak — tijelo u WebView-u, embedovi | ⚠️ nema ničega ispod teksta |
-| `games/[slug]` | Igra — ocjena, opis, vrijeme prelaska, činjenice, polica | ⚠️ nema galerije/trailera |
+| `news/[slug]` | Članak — tijelo u WebView-u, povezani, komentari | ✅ |
+| `games/[slug]` | Igra — key art, galerija, trailer, slični, članci | ✅ |
 | `section/[slug]` | News · Reviews · Tech · Guides, svaka na svom endpointu | ✅ |
 | `search` | Pretraga igara **i** članaka, gura se iz mastheada | ✅ |
 | `library` | Tvoja polica | ✅ |
@@ -106,46 +110,71 @@ promijeni, promijeni i ovu.
 **`StyleSheet.absoluteFillObject` ne postoji** u tipovima koje ovaj projekat
 razrješava. Piši `position: 'absolute'` s četiri nule.
 
+**Kalendar traži KLJUČ platforme, katalog traži NAZIV.** Oba endpointa vraćaju
+isti oblik `{key, label}` i imaju suprotna pravila. `/calendar?platform=Xbox`
+vraća **422**, `platform=xbox` radi. Sort se zove `anticipated`, ne `hype` —
+`hype` je kako ga sajtov UI zove i takođe je 422. Provjereno na živom
+endpointu; pretpostavka po analogiji s katalogom je bila pogrešna.
+
+**Greška pri osvježavanju mora se vidjeti i kad podaci već postoje.** Ako
+poruka stoji samo u `ListEmptyComponent`, neuspio filter ostavi prethodnu
+listu na ekranu i izgleda kao filter koji je sve propustio. Kalendar je crtao
+tačno to.
+
+**Članci iz `/games/{slug}/bundle` nisu istog oblika kao iz feeda** — slika je
+`image`, ne `featured_image_url`. Pogrešno ime ne puca, nego nacrta sive
+pravougaonike koji izgledaju kao slike koje se nisu učitale. Isti bundle nosi
+i `path` (sekcija na webu) — **ne koristiti za navigaciju**: aplikacija ima
+jedan čitač za sve četiri sekcije i do svake dolazi po slugu, kako piše u
+`lib/feed.ts`.
+
+**WebView u skroleru mora javiti visinu, i to više puta.** `readerHtml` šalje
+`{type:'height'}` na load, na svaku sliku i kroz `ResizeObserver`. Jedno
+javljanje nije dovoljno — prvi broj je pogrešan čim slika dođe ili se font
+zamijeni, a članak tada ostane presječen usred rečenice. Uz to `scrollEnabled`
+mora biti isključen, inače se dva skrolera otimaju oko istog prsta.
+
 ---
 
-## Gdje smo stali — šta je sljedeće
+## Urađeno 27. 9. 2026.
 
-Redom po veličini dobitka. Prve dvije su dogovorene, samo nisu započete.
+**Kalendar** (`lib/calendar.ts`, `(tabs)/calendar.tsx`) — hero s najvećim
+izdanjem mjeseca, brojač, filteri po platformi, žanru i redoslijedu, oznake
+platformi uz svaku igru, i **wishlist i podsjetnik kao prave akcije**.
+Odjavljenom otvaraju prijavu. Podaci su cijelo vrijeme bili u odgovoru
+(`wishlisted`, `reminder`), ekran ih je bacao.
 
-### 1. Kalendar — najveća razlika
+**Jedan jezik dugmadi** — svih 25 poziva je `CommandButton`. `Button.tsx` je
+obrisan; nekorištena komponenta koja radi pogrešnu stvar je način na koji se
+podjela vrati.
 
-Sajt (`app/calendar/CalendarClient.tsx`) ima: hero s najvećim izdanjem mjeseca
-kao podlogom, statistiku, „this month" traku, filter (platforma / žanr / sort),
-„most anticipated", i uz **svaku igru oznake platformi, wishlist i podsjetnik**.
+**Članak** (`components/Comments.tsx`, `lib/comments.ts`) — „Read next" i
+komentari s odgovorima, rang-bedževima, oznakom redakcije i glasanjem. Offline
+nema komentara: sačuvana kopija nema `id`, a izmišljen `id` objavi komentar na
+tuđi članak.
 
-Aplikacija ima samo popis po danima. **Wishlist i podsjetnik su prave akcije s
-pravim endpointima** (`POST /calendar/{slug}/reminder`) i aplikacija nema
-nijednu — to je i ono za šta će push notifikacije služiti.
+**Stranica igre** — prebačena na `/games/{slug}/bundle` (jedan upit umjesto
+četiri), key art kao podloga, oznake platformi, ESRB u boji, galerija s
+pregledom preko cijelog ekrana, trailer, slične igre i naši članci.
 
-### 2. Dva jezika dugmadi — najjeftinija popravka
+---
 
-`CommandButton` (zarez na uglu + šrafura, sajtov `.btn-command`) koristi se na
-**3 mjesta**; obični `Button` na **12**. Sajt stavlja `.btn-command` na svaku
-primarnu kontrolu. Zato „SIGN IN" na profilu izgleda kao tuđe dugme.
+## Šta je sljedeće
 
-### 3. Članak — nema ničega ispod teksta
+### 1. Forumske teme na stranici igre
 
-Sajt ispod tijela ima preporučene vijesti, dijeljenje, karticu igre, sekciju
-kalendara, poziv na registraciju, mrvice i traku napretka čitanja.
-**Komentara nema uopšte** — ni prikaza ni pisanja.
+Jedina stavka sa starog spiska koja nije odrađena. `threads_count` je u
+odgovoru; sam popis tema traži još jedan poziv i treba provjeriti ima li ga
+bundle.
 
-### 4. Stranica igre
-
-Nedostaje: podloga od omota, ESRB bedž u boji, ikone platformi, galerija
-screenshotova, trailer, forumske teme, slične igre.
-
-### 5. Ostalo, sitnije
+### 2. Ostalo, sitnije
 
 - profil prijavljenog korisnika nije vizuelno provjeren
 - `cookie banner` se pojavljuje unutar `web.tsx` WebView-a. Namjerno nije
   sakriven — sakrivanje mehanizma za pristanak nije stilska odluka. Aplikacija
   će prije prodavnice trebati vlastiti pristanak.
-- provjera prekinutog zahtjeva (gore) treba i na ostalim ekranima
+- provjera prekinutog zahtjeva je sada u katalogu **i u kalendaru**; ostali
+  ekrani je još nemaju
 
 ---
 
