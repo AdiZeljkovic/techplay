@@ -1,0 +1,12 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+# Generated from docs/techplay-growth by `npm run sync-data`
+data/generated/
+# Local working state (task status, KPI values, notes). Private: never commit.
+data/state/
+.env*
+!.env.example
+test-results/

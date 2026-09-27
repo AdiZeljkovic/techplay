@@ -39,6 +39,8 @@ Ostao je `docs/incidenti/` — zapisi incidenata ne zastarijevaju.
 17. [Šta nije ono što izgleda](#17-šta-nije-ono-što-izgleda)
 18. [Mobilna aplikacija](#18-mobilna-aplikacija)
 19. [Mjerenje posjete](#19-mjerenje-posjete)
+20. [Mail — šta šaljemo i odakle](#20-mail--šta-šaljemo-i-odakle)
+21. [Growth OS (interni alat)](#21-growth-os-interni-alat)
 
 ---
 
@@ -1154,6 +1156,34 @@ minute koju pauza uzme.
 - Preheader linija se ne vraća ni u jedan mail. Naš vlastiti filter ju je bodovao
   `ZERO_FONT 0.50` i `MANY_INVISIBLE_PARTS 0.80` jer je skriveni tekst s ključnim
   riječima način na koji spam radi. Prva vidljiva linija tijela radi taj posao.
+
+---
+
+## 21. Growth OS (interni alat)
+
+`growth-os/` je četvrti dio repozitorija: interna Next.js aplikacija za
+izvršavanje plana rasta (dnevni zadaci, tačan tekst objava, kampanje, KPI).
+**Nije dio sajta i ne deploya se** — `techplay-deploy.sh` je ne dira, nema pm2
+procesa ni nginx rute. Pokreće se lokalno:
+
+```bash
+cd growth-os && npm install && npm run dev     # http://127.0.0.1:3100
+```
+
+- **Podaci** se čitaju iz `docs/techplay-growth/` (plan i istraživanje);
+  `npm run sync-data` ih pretvara u `growth-os/data/generated/` (git-ignored).
+  Kalendar se generiše iz `docs/techplay-growth/strategy/_generator/`; tekst
+  koji ide javno je u kalendaru omeđen sa `«…»`, i dugme COPY kopira samo to.
+- **Stanje** (statusi, bilješke, KPI vrijednosti, potrošnja) je u
+  `growth-os/data/state/state.json` na mašini koja ga pokreće — git-ignored, jer
+  su to radni podaci, ne kod. Izvoz/uvoz u Settings.
+- **Pristup:** `npm run dev` sluša samo na `127.0.0.1`. U produkcijskom modu
+  (`next start`) odgovara samo na localhost dok se ne postave
+  `GROWTH_OS_USER`/`GROWTH_OS_PASSWORD` (Basic auth, `proxy.ts`).
+- Ne zove produkcijski API, bazu ni ijedan vanjski servis. Integracije (GA4,
+  Search Console, Meta…) su samo interfejsi u `lib/integrations/`.
+
+Detalji: `docs/techplay-growth/GROWTH-OS-README.md`.
 
 ---
 

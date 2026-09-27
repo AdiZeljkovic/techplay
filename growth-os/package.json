@@ -1,0 +1,37 @@
+{
+  "name": "techplay-growth-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internal TechPlay growth command center. Not part of the public site; never deployed by techplay-deploy.sh.",
+  "scripts": {
+    "sync-data": "node scripts/sync-data.mjs",
+    "predev": "node scripts/sync-data.mjs",
+    "dev": "next dev -H 127.0.0.1 -p 3100",
+    "prebuild": "node scripts/sync-data.mjs",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 3100",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.562.0",
+    "marked": "^16.3.0",
+    "next": "16.3.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.0",
+    "playwright-core": "^1.63.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
+  }
+}
