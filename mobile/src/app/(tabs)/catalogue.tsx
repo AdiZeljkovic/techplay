@@ -27,6 +27,7 @@ import {
 import { Masthead } from '@/components/Masthead';
 import { CommandButton } from '@/components/CommandButton';
 import { Notice, Screen } from '@/components/Screen';
+import { CancelledError } from '@/lib/api';
 import {
     activeCount,
     getGames,
@@ -150,11 +151,12 @@ export default function Games() {
             setError(null);
         } catch (e) {
             // A request this screen cancelled is not a failure to report. The
-            // client turns every aborted fetch into an OfflineError, so the
-            // signal is the only thing that can tell the two apart.
-            if (!signal?.aborted) {
-                setError(e instanceof Error ? e.message : 'Could not load the catalogue.');
-            }
+            // client used to turn every aborted fetch into an OfflineError and
+            // the signal was the only thing that could tell the two apart;
+            // CancelledError does it now, in one place, for every screen.
+            if (e instanceof CancelledError) return;
+
+            setError(e instanceof Error ? e.message : 'Could not load the catalogue.');
         } finally {
             fetching.current = false;
             setLoading(false);

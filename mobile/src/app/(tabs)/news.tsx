@@ -26,6 +26,7 @@ import {
 } from '@/components/Marks';
 import { Masthead } from '@/components/Masthead';
 import { Notice, Screen } from '@/components/Screen';
+import { CancelledError } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { getFeed, getPersonalFeed, type FeedItem, type FeedPage } from '@/lib/feed';
 import { colors, font, radius, space, TOUCH_TARGET } from '@/theme/tokens';
@@ -106,6 +107,9 @@ export default function Feed() {
             setInterests(result.interests ?? []);
             setError(null);
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             setError(e instanceof Error ? e.message : 'Could not load the feed.');
         } finally {
             fetching.current = false;

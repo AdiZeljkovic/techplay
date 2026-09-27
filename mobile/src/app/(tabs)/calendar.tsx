@@ -18,6 +18,7 @@ import { BellMark, BookmarkMark } from '@/components/Marks';
 import { Masthead } from '@/components/Masthead';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
+import { CancelledError } from '@/lib/api';
 import {
     Calendar,
     CalendarSort,
@@ -80,12 +81,13 @@ export default function CalendarTab() {
                 /*
                  * A cancelled request is not a broken one.
                  *
-                 * api.ts turns every AbortError into an OfflineError, so a
-                 * filter tapped twice in a second leaves "No connection" on a
-                 * screen that is working perfectly. The README records this as
-                 * fixed only in the catalogue; it is fixed here now too.
+                 * A filter tapped twice in a second aborts the first request,
+                 * and this screen used to answer that with "No connection".
+                 * api.ts tells the two apart now — see CancelledError — so
+                 * this is the same check every other screen makes rather than
+                 * a signal test only two of them remembered.
                  */
-                if (signal?.aborted) return;
+                if (e instanceof CancelledError) return;
 
                 setError(e instanceof Error ? e.message : 'Could not load the calendar.');
             } finally {

@@ -17,11 +17,12 @@ import {
 } from 'react-native';
 
 import { CommandButton } from '@/components/CommandButton';
+import { GameThreads } from '@/components/GameThreads';
 import { ClockMark } from '@/components/Marks';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { ShelfPicker } from '@/components/ShelfPicker';
 import { useAuth } from '@/context/AuthContext';
-import { api } from '@/lib/api';
+import { CancelledError, api } from '@/lib/api';
 import { platformMarks } from '@/lib/calendar';
 import { getShelfEntry, SHELF_STATUS, type ShelfStatus } from '@/lib/library';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
@@ -59,6 +60,9 @@ interface Game {
     artworks?: { image: string; thumbnail_image?: string | null }[] | null;
     /** Plain YouTube URLs. */
     videos?: string[] | null;
+    /** How many forum threads are attached, so the list is only fetched when
+        there is one. Today that is none of the 332,455 games. */
+    threads_count?: number | null;
 }
 
 interface Shot {
@@ -149,6 +153,9 @@ export default function GameScreen() {
         try {
             setBundle(await api<Bundle>(`/games/${slug}/bundle`, { auth: false, signal }));
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             /*
              * A purged game answers 410, and that is not the same as a typo.
              * The API's own message says which, and saying "not found" over
@@ -420,6 +427,8 @@ export default function GameScreen() {
                             ))}
                         </View>
                     ) : null}
+
+                    <GameThreads gameSlug={game.slug} count={game.threads_count ?? 0} />
 
                     {/* A screenshot, full width, with the rest swipeable.
 

@@ -17,6 +17,7 @@ import { Masthead } from '@/components/Masthead';
 import { QuickLinks } from '@/components/QuickLinks';
 import { Rail } from '@/components/Rail';
 import { Body, Eyebrow, Notice, Screen } from '@/components/Screen';
+import { CancelledError } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { getHome, type Article, type Home } from '@/lib/content';
 import { colors, font, radius, size, space } from '@/theme/tokens';
@@ -54,6 +55,9 @@ export default function Feed() {
             setHome(await getHome(signal));
             setError(null);
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             setError(e instanceof Error ? e.message : 'Could not load the feed.');
         } finally {
             setLoading(false);

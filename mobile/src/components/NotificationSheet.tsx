@@ -18,6 +18,7 @@ import {
     routeFor,
     type Notification,
 } from '@/lib/notifications';
+import { CancelledError } from '@/lib/api';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
 
 /**
@@ -50,6 +51,9 @@ export function NotificationSheet({
             setItems(page.items);
             setError(null);
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             setError(e instanceof Error ? e.message : 'Could not load your notifications.');
         } finally {
             setLoading(false);

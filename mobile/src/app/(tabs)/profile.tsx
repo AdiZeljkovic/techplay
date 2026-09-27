@@ -7,7 +7,7 @@ import { CommandButton } from '@/components/CommandButton';
 import { Masthead } from '@/components/Masthead';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
-import { api } from '@/lib/api';
+import { CancelledError, api } from '@/lib/api';
 import { colors, font, radius, size, space } from '@/theme/tokens';
 
 interface Profile {
@@ -43,6 +43,9 @@ export default function ProfileTab() {
             setProfile(await api<Profile>(`/users/${user.username}`, { signal }));
             setError(null);
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             setError(e instanceof Error ? e.message : 'Could not load your profile.');
         } finally {
             setLoading(false);

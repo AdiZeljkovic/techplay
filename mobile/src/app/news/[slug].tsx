@@ -8,7 +8,7 @@ import { WebView } from 'react-native-webview';
 import { Comments } from '@/components/Comments';
 import { CommandButton } from '@/components/CommandButton';
 import { Notice, Screen } from '@/components/Screen';
-import { api, OfflineError } from '@/lib/api';
+import { CancelledError, OfflineError, api } from '@/lib/api';
 import { isSaved, read as readSaved, remove as removeSaved, save as saveArticle } from '@/lib/offline';
 import { readerHtml } from '@/lib/readerHtml';
 import { colors, font, size, space, TOUCH_TARGET } from '@/theme/tokens';
@@ -78,6 +78,9 @@ export default function ArticleScreen() {
             setArticle(await api<FullArticle>(`/news/${slug}`, { auth: false, signal }));
             setFromDisk(null);
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             /*
              * The saved copy is a fallback, not the truth.
              *

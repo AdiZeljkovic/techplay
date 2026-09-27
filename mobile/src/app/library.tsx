@@ -14,6 +14,7 @@ import {
 
 import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Notice, Screen } from '@/components/Screen';
+import { CancelledError } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { getShelf, SHELF_FILTERS, SHELF_STATUS, type ShelfEntry, type ShelfStatus } from '@/lib/library';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
@@ -64,6 +65,9 @@ export default function Library() {
             setLastPage(result.lastPage);
             setError(null);
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             setError(e instanceof Error ? e.message : 'Could not load your shelf.');
         } finally {
             fetching.current = false;

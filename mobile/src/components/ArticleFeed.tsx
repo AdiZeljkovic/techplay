@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'r
 import { ArticleCard } from '@/components/ArticleCard';
 import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Notice, Title } from '@/components/Screen';
+import { CancelledError } from '@/lib/api';
 import type { Article } from '@/lib/content';
 import type { Paged } from '@/lib/paging';
 import { colors, space } from '@/theme/tokens';
@@ -75,6 +76,9 @@ export function ArticleFeed({
             setLastPage(result.lastPage);
             setError(null);
         } catch (e) {
+            // The screen moved on. Nothing to report, and nothing to draw.
+            if (e instanceof CancelledError) return;
+
             setError(e instanceof Error ? e.message : errorText);
         } finally {
             fetching.current = false;

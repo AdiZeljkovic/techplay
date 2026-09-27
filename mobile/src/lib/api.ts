@@ -47,6 +47,28 @@ export class OfflineError extends Error {
     }
 }
 
+/**
+ * Raised when the caller cancelled — and not raised for anything else.
+ *
+ * A timeout and a cancellation both arrive as an AbortError, and this used to
+ * turn both into OfflineError. They are not the same event. A timeout is a
+ * failure a reader should be told about; a cancellation is a screen that has
+ * moved on, and telling anybody about it means printing "No connection" over
+ * a screen that is working.
+ *
+ * That is not theoretical — a filter tapped twice in a second aborts the first
+ * request, and the calendar showed exactly that message until 27 Sep 2026.
+ * Two screens had learned to check `signal.aborted` by hand in their catch
+ * block; the other eight had not, and a rule every call site has to remember
+ * is a rule that is followed until somebody writes the ninth.
+ */
+export class CancelledError extends Error {
+    constructor() {
+        super('Cancelled');
+        this.name = 'CancelledError';
+    }
+}
+
 type Options = {
     method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     body?: unknown;
@@ -115,9 +137,14 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
     } catch (error) {
         clearTimeout(timer);
 
-        // AbortError covers both the timeout and a caller cancelling. Neither
-        // is a server fault, and both look the same to somebody holding a
-        // phone: nothing arrived.
+        // The caller's own signal is asked first, because it is the one case
+        // here that is not a failure: the screen unmounted, or the query
+        // changed under it. The timeout is what is left, and that a reader
+        // does want to hear about.
+        if (signal?.aborted) {
+            throw new CancelledError();
+        }
+
         throw new OfflineError();
     } finally {
         clearTimeout(timer);
