@@ -5,7 +5,7 @@ Status: Phase 2 plan — 27 Sep 2026
 - Ten stages from DISCOVERY to ADVOCACY. ACTIVATION is split into four steps as in [R11 §6]: **A1 Reachable** (verified email), **A2 Shelved** (a linked platform or ≥3 shelf items within 7 days), **A3 Returned** (a second active day within 7 days) and **A4 Contributor** (first approved comment, rating, list or forum post).
 - The only funnel numbers we have are small and old. On 31 Aug: 55 registered, 50 confirmed, 21 entered a giveaway, 7 commented, 3 added a game, 2 linked a platform, and 45 had zero XP [R01, R12]. On 1 Sep, 84 paid-ad arrivals produced 0 visits to `/register` [R11]. Search is at 1–2 clicks a day [R03]. Every target below is a TARGET, and where the baseline is missing we give a relative change and the query to run first (§2).
 - **Biggest leaks, in order:** (1) activation: the library is where members stop (3 of 55 added a game); (2) retention: 20 of 22 notification types never leave the on-site bell; (3) discovery: search collapsed after the Cloudflare block; (4) registration: five gates, false claims on the form, and Steam is not a sign-in method [R11, R12, R03].
-- **Headline TARGETS for 31 Dec 2026:** 200–350 new registrations; ≥40% of them reach A2 within 7 days; 100 cumulative A2 members (C68 Founding 100); Weekly Returning Members (WRM) of 60–120 averaged over 7–20 Dec; Discord at 500 members (C36); organic search back to 30–60 clicks a day, with ~100/day (the pre-incident level) as the stretch.
+- **Headline TARGETS for 31 Dec 2026:** 170–300 new registrations; ≥40% of them reach A2 within 7 days; 100 cumulative A2 members (C68 Founding 100); Weekly Returning Members (WRM) of 45–70 in the last week of December; Discord at 400–500 members (C36); organic search back to 30–60 clicks a day, with ~100/day (the pre-incident level) as the stretch.
 - Tracking uses only the spine §10 event names plus GA4's automatic `page_view` and session metrics. Nothing in this funnel can be measured until C03 ships D-007 (GA4 key events), D-008 (UTM columns in the collector), D-009 (campaign URL helper) and D-011 (invite-code attribution).
 - Per-segment variants are in §7 for S1 Release Planners, S2 Multi-platform Collectors, S4 GTA 6 Waiters and S5 MMO/WoW Players.
 - Every CTA line is written to be true on the date it appears. Lines that promise email, Steam sign-in or the release-time tool carry their go-live date.
@@ -172,7 +172,7 @@ Each stage lists the behaviour, the friction we can prove, the message, the exac
 | Marketing channel | On-site; paid tests only from 19 Oct and 18+ (C56–C58). |
 | Tracking events | `registration_start`, `registration_complete` (method, from), `cta_click`. |
 | KPI and formula | Completion = `registration_complete` ÷ `registration_start`. Guest conversion = `registration_complete` ÷ guest sessions × 1,000. Method mix = share by method. |
-| TARGET 31 Dec | Completion ≥60% overall and ≥85% for Steam/Google/Discord/Battle.net. 200–350 new registrations between 28 Sep and 31 Dec. ≥60% of them through a social or Steam method. |
+| TARGET 31 Dec | Completion ≥60% overall and ≥85% for Steam/Google/Discord/Battle.net. 170–300 new registrations between 28 Sep and 31 Dec (K07). ≥60% of them through a social or Steam method. |
 | Baseline first | Q1, Q6. |
 
 **Funnel math (no invented rates).** Sessions needed = target registrations ÷ measured guest conversion rate. With the mid-target of 275 registrations, required guest sessions = 275 ÷ r, where r comes from Q6 plus two weeks of D-007 data. If r turns out so low that the session count is out of reach, the fix is registration friction (this stage), not more traffic.
@@ -200,7 +200,7 @@ Each stage lists the behaviour, the friction we can prove, the message, the exac
 | Marketing channel | Email (PRIMARY), Discord DM, web push (EXPERIMENTAL, reminders only). |
 | Tracking events | `reminder_set`, `reminder_delivered` (channel), `alert_clicked`, `notification_enabled`, `newsletter_verified`, plus every WRM action. |
 | KPI and formula | WRM = accounts with ≥1 meaningful action in a 7-day window [spine §3]. Alert return = `alert_clicked` ÷ `reminder_delivered`, per channel. D30 = A2 members of cohort week w with a meaningful action in days 22–30 ÷ A2 in week w. |
-| TARGET 31 Dec | WRM averaged over 7–20 Dec: 60–120 (basis: 100 A2 members from C68 plus Discord-linked regulars; today ESTIMATE ≤10, since 45 of 55 had zero XP). Alert return: 20–35%, re-based after four weeks of C43. D30 ≥30% of A2. Guardrails per send: complaints <0.1%, unsubscribes <0.5%. |
+| TARGET 31 Dec | WRM in the last week of December: 45–70, per kpis.json K00 (basis: 100 A2 members from C68 plus Discord-linked regulars; today ESTIMATE ≤10, since 45 of 55 had zero XP). Alert return: 20–35%, re-based after four weeks of C43. D30 ≥30% of A2. Guardrails per send: complaints <0.1%, unsubscribes <0.5%. |
 | Baseline first | Q8, Q9. |
 
 ### 3.8 COMMUNITY
@@ -423,4 +423,4 @@ Short and stable, so the weekly review can compare placements. DEV maps them in 
 7. **Share controls on game/calendar pages** (referral for S1/S6) are not in the D-list either; same proposal.
 8. **Search Console access** is assumed for DISCOVERY. The research had none [R03]; EIC to confirm on 28 Sep.
 9. **GTA 6 giveaway (C09).** If it is live, the article panel shows the giveaway to every guest until 20 Oct and registrations from articles will read `from=article` on `/giveaway/*`. Report giveaway registrants as their own cohort.
-10. **WRM target realism.** 60–120 depends on C43 and C41 shipping on time. If C43 slips past 2 Nov, re-set the WRM target at the 2 Nov review rather than pushing rituals harder.
+10. **WRM target realism.** 45–70 depends on C43 and C41 shipping on time. If C43 slips past 2 Nov, re-set the WRM target at the 2 Nov review rather than pushing rituals harder.

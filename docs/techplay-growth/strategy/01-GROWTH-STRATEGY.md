@@ -12,7 +12,7 @@ Scope: the strategy every other file in this folder executes. Covers Part 1 (gro
 - **Five pillars decide what gets written:** release and platform intelligence, PC performance and fixes, MMO/WoW, GTA 6 launch utility, industry data. General tech and phones stop [R08, R21].
 - **Primary channels:** Google Search, Discover, Discord, email, and the site's own reminder loops. Everything else is secondary or an experiment with a keep/kill date [R07, R16].
 - **No paid spend before 19 Oct**, and none at all unless the measurement gate (C03) passes. The paid tests are small, 18+ only, and exist to learn, not to buy growth [R16].
-- **Targets are ranges, set against the few baselines that exist.** Headline TARGETS for 31 Dec 2026: 200–350 new verified registrations, at least 40% of them reaching A2 within 7 days, WRM of 60–120, Discord at 500 members, organic search back to 30–60 clicks a day. All are TARGETS, not forecasts (03, 30).
+- **Targets are ranges, set against the few baselines that exist.** Headline TARGETS for 31 Dec 2026: 170–300 new verified registrations (28 Sep–31 Dec), at least 40% of them reaching A2 within 7 days, 100 A2 members, WRM of 45–70 in the last week of December, Discord at 400–500 members, organic search back to 30–60 clicks a day (100, the pre-17 Aug level, is the stretch). All are TARGETS, not forecasts. kpis.json holds the canonical monthly values.
 
 ---
 
@@ -147,11 +147,11 @@ Detail, hours and the weekly grid are in 13-SEO-CONTENT. The shape:
 | October TARGET (by 31 Oct) | Range |
 |---|---|
 | Invented numbers live on the site | 0 |
-| Verified newsletter subscribers | +40 to +80 on the 7 Sep base (run baseline query Q-NL first) |
-| New verified registrations | 50–90 |
+| Verified newsletter subscribers | +60 to +120 net since 28 Sep (K09) |
+| New verified registrations | 40–60 in October (K07) |
 | A2 rate, members registered after 26 Oct | ≥ 35% within 7 days |
-| Discord members | 250 |
-| Organic clicks per day (7-day average) | 10–20 |
+| Discord members | 210–240 (K10) |
+| Organic clicks per day (7-day average) | 10–20 (K02) |
 | Referring domains from C20/C21/C22 | ≥ 3 |
 
 ### Phase B — Loops and launches: 19 Oct to 15 Nov
@@ -169,10 +169,10 @@ Detail, hours and the weekly grid are in 13-SEO-CONTENT. The shape:
 
 | TARGET by 30 Nov | Range | TARGET by 31 Dec | Range |
 |---|---|---|---|
-| New verified registrations (cumulative since 28 Sep) | 130–230 | New verified registrations | 200–350 |
+| New verified registrations (cumulative since 28 Sep) | 110–180 | New verified registrations (cumulative) | 170–300 |
 | A2 rate within 7 days | ≥ 40% | A2 rate within 7 days | ≥ 40% |
-| WRM (weekly) | 40–80 | WRM | 60–120 |
-| Discord members | 380 | Discord members | 500 |
+| WRM (weekly) | 30–50 | WRM (last week of Dec) | 45–70 |
+| Discord members | 300–380 | Discord members | 400–500 |
 | Organic clicks per day | 20–40 | Organic clicks per day | 30–60 |
 | Verdicts published since 6 Oct | ≥ 8 | OpenCritic application | submitted 14 Dec |
 

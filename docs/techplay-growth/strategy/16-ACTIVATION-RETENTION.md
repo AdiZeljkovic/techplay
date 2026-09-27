@@ -344,7 +344,7 @@ SELECT
 FROM wk JOIN users u ON u.id = wk.user_id;
 ```
 
-**TARGET.** This file sets no separate WRM number. Two strategy files already do and they differ: 30-ANALYTICS K00 sets 15–25 (31 Oct), 30–50 (30 Nov), 45–70 (last week of December); 03-FUNNEL sets 60–120 averaged over 7–20 Dec. EIC to pick one on 2 Nov once the first four readings exist (open question 7). Week-on-week WRM ↑ from W44 is the directional TARGET for the loops in §4.
+**TARGET.** This file sets no separate WRM number. The canonical TARGET is 30-ANALYTICS K00: 15–25 (31 Oct), 30–50 (30 Nov), 45–70 (last week of December); 03-FUNNEL now matches it. EIC re-bases it on 2 Nov once the first four readings exist. Week-on-week WRM ↑ from W44 is the directional TARGET for the loops in §4.
 
 ### 5.2 D1, D7, D30 action retention
 
@@ -454,4 +454,4 @@ Totals (ESTIMATE): DEV ≈ 65 h over 13 weeks (overlapping the C41/C43 hours als
 4. Is the "Thirty Days Running" quest editable in admin, or does Fix 1 need a migration?
 5. Discord DM delivery for release alerts: the bot's DM subscriptions poll every 5 minutes for news and giveaways only [R01 B.8.2]. 12-DISCORD proposes D-011h (`/remind` plus a release-day DM through the C43 path); DEV confirms that path by 9 Oct so L-D1 has one Discord implementation, not two.
 6. Quiet hours need a time zone per member; none is stored today. Until D-013d, sends go at fixed UTC times chosen for EU mornings and US mornings (17 §2).
-7. WRM TARGETs differ between 03-FUNNEL (60–120 averaged 7–20 Dec) and 30-ANALYTICS K00 (45–70 in the last week of December). This file adopts neither; EIC to choose one number on 2 Nov.
+7. WRM TARGET: reconciled on 27 Sep to 30-ANALYTICS K00 (45–70 in the last week of December); EIC re-bases on 2 Nov.

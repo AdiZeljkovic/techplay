@@ -66,9 +66,9 @@
         "note": "About 100 a day before the Cloudflare 403 incident of 17 Aug 2026 [R03, README §12]."
       },
       "targets": {
-        "2026-10-31": "TARGET 15–30/day",
-        "2026-11-30": "TARGET 40–80/day",
-        "2026-12-31": "TARGET 60–120/day"
+        "2026-10-31": "TARGET 10–20/day",
+        "2026-11-30": "TARGET 20–40/day",
+        "2026-12-31": "TARGET 30–60/day (stretch 100/day, pre-17 Aug level)"
       },
       "owner": "ED",
       "cadence": "weekly; monthly deep-dive",

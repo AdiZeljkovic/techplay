@@ -100,7 +100,7 @@ Format for each KPI: definition, formula, source, baseline (dated), TARGET at 31
 - **Formula:** GSC Performance > Search results > clicks / 7, by week; split brand vs non-brand by query filter 'techplay'.
 - **Source:** Google Search Console
 - **Baseline:** 1–2 per day (2026-09-07). About 100 a day before the Cloudflare 403 incident of 17 Aug 2026 [R03, README §12].
-- **31 Oct:** TARGET 15–30/day · **30 Nov:** TARGET 40–80/day · **31 Dec:** TARGET 60–120/day
+- **31 Oct:** TARGET 10–20/day · **30 Nov:** TARGET 20–40/day · **31 Dec:** TARGET 30–60/day (stretch 100/day, the pre-17 Aug level; reconciled with 01 and 03 on 27 Sep)
 
 ### K03 — Google Discover clicks
 *Discover* · Owner **ED** · Cadence: weekly · Events: none (external source)
