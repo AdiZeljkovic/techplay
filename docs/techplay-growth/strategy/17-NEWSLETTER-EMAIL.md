@@ -434,3 +434,261 @@ Audience: tag `gta6` plus members with a GTA VI reminder (members also receive t
 Pre-send checks (ED, 07:00 UTC): release-time page shows confirmed times only; map attribution settled (D-020) or the tracker is presented without claiming the location data as TechPlay's own; vehicle guide live (C12); any performance claim in the email is labelled "reported" with a source, or removed.
 
 ---
+# Part 20 — Email automation
+
+## 12. Lifecycle sequences (E-01 to E-12)
+
+All sequences go to accounts with a confirmed address, pass `MailSuppression::filter()`, respect the per-type switch in Settings → Notifications (D-013a), the channel caps (16 §4.5) and quiet hours. Every email carries "Why you got this" and a one-click off switch for that type. Copy is written for the admin template desk (words only; DEV draws buttons and links).
+
+| ID | Sequence | Trigger (event / job) | Delay | Frequency cap | Exit conditions | Requirement | Live |
+|---|---|---|---|---|---|---|---|
+| E-01 | Member welcome (M1–M3) | `email_verified` or social `registration_complete` | 0 min, +2 d, +6 d | once per account | account deleted; lifecycle switch off; M3 variant switches on A2 | D-013, C42 | 12 Oct |
+| E-02 | Registration incomplete (unverified) | `registration_complete` (method=email) with no `email_verified` | +48 h, then day 27 | 2 reminders, plus resends the user asks for | verified; account pruned (day 30) | D-013 (reuses `VerifyEmailNotification`) | 12 Oct |
+| E-03 | Profile incomplete | A1 reached, no A2 by day 3 | day 3, day 10 | 2 per account, ever | A2 reached; switch off | D-013 | 19 Oct |
+| E-04 | First comment approved | first comment moves `pending → approved` | 0 min | once ever | — | D-013, `comment_approved` | 19 Oct |
+| E-05 | Comment reply | `CommentReplyNotification`, `ForumReplyNotification`, `ThreadWatchNotification` | batched every 30 min | 1 per thread per 24 h; 3 reply emails per day | switch off; thread unwatched | D-013b | 19 Oct |
+| E-06 | Followed game news | `GameNewsNotification` or `WishlistGameReviewedNotification` for a followed or wishlisted game | batched into N2 by default; immediate only for a published TechPlay review | 1 immediate email per game per 14 days; max 2 per week | game unfollowed; switch off | D-013, D-028 | 26 Oct |
+| E-07 | Release approaching / release day | `wishlist:check-releases` (T−3) and `SendReleaseReminders` (T−0), 09:00 | T−3 goes into N2 unless N2 already listed it; T−0 immediate | 1 per game per release; one email per day for several games | reminder removed; game released; switch off | C43, D-013 | 19 Oct |
+| E-08 | Weekly digest (N2) | Monday 08:00 UTC job, reusing `SendWeeklyDigest` data | — | 1 per week | empty list (no send); switch off | C41, D-028 | 26 Oct |
+| E-09 | Inactive member | no `member_actions` row for 30 days and no email click for 30 days | day 30, day 60 | 2 per inactivity period; not again for 180 days | any meaningful action; any click; switch off | D-007b, D-013 | 2 Nov |
+| E-10 | Giveaway entrant | `giveaway_entered` (first entry) | 0 min; T−24 h; after draw | 3 per giveaway | giveaway cancelled; switch off | D-013, C09 | with the next live giveaway |
+| E-11 | Community activation | A4 reached, or Discord linked, or third approved comment | +1 d | once ever | switch off | D-013 | 26 Oct |
+| E-12 | Wishlist price drop | nightly Steam price below the member's threshold | batched 10:00 UTC | 1 per game per 14 days; 1 price email per day | game removed from wishlist; bought (appears in library); switch off | D-027 | 2 Nov |
+
+### E-01 Member welcome
+
+**M1 — immediately after confirmation (or social sign-up)**
+- Subject: "Your TechPlay library is ready for games" · *if A2 already reached:* "{n} games are on your shelf"
+- First line: "Your account is confirmed. The next step takes one click: bring your games in." · *A2 variant:* "{n} games and {h} hours are on your shelf. Here's what the account does with them."
+- Body (no-A2 variant): "Connect Steam or Xbox and your library arrives with the hours you've played. PlayStation, GOG and Epic take a code you paste once. No console to connect? Pick five games by hand; that's enough for Gamer DNA to start.
+  Once games are on your shelf, you can:
+  · get one email on release day for anything you're waiting for,
+  · see what to play tonight from what you already own (Backlog Advisor),
+  · compare your taste with anyone's (Taste Match).
+  Want the Friday newsletter too? It's separate: [The Save File]."
+- CTA: "Bring your games in"
+
+**M2 — day 2**
+- Subject: "What do you play on?"
+- First line: "One click tells us which releases to put first in your emails. Pick as many as you like."
+- Body: "[PC] [PlayStation 5] [Xbox Series X|S] [Switch 2] [Handheld PC]
+  That's all this email wants. Change it later in Settings → Notifications, where every kind of email we send has its own switch."
+- CTA: the five signed links (tags the account's platforms)
+
+**M3 — day 6, variant by state**
+- *No A2* — Subject: "Your library in one click" · First line: "Your shelf is still empty. Steam and Xbox fill it in one click; nothing is posted anywhere." · Body: "It's the part of TechPlay that works without you: hours refresh on their own, release days come to you, and the recap in December is built from it. If Steam says your game details are private, the connect screen shows the one setting to change." · CTA "Connect Steam"
+- *A2* — Subject: "How close is your taste to ours?" · First line: "Taste Match compares genres, shared games and platforms, and shows the working." · Body: "Try it on the editors' profiles, or on a friend's. It needs three games on each shelf, which you have. This month's Game Club is {club game}; if it's on your shelf, the thread is waiting." · CTA "Compare with the editors"
+
+Exit: M3 not sent if the member unsubscribed from lifecycle mail; M2 skipped for members who already set platforms.
+
+### E-02 Registration incomplete (unverified)
+
+**V-1 — +48 h**
+- Subject: "Confirm your email to finish your TechPlay account"
+- First line: "Your account is waiting for one click. The link below confirms it."
+- Body: "You started an account with this address on {date}. Click the button to confirm it. If it wasn't you, ignore this email; unconfirmed accounts are deleted after 30 days."
+- CTA (code-drawn): "Confirm my email"
+
+**V-2 — day 27**
+- Subject: "Your unconfirmed TechPlay account will be deleted on {date}"
+- First line: "We delete accounts that were never confirmed after 30 days. Yours reaches that on {date}."
+- Body: "If you still want it, confirm below. If not, do nothing and the account and this address are removed."
+- CTA: "Keep my account"
+
+Exit: `email_verified`, prune. Cap: two reminders only, because unverified addresses carry bounce risk for a sender without reputation (§14).
+
+### E-03 Profile incomplete
+
+**P-1 — day 3**
+- Subject: "Your shelf is empty"
+- First line: "Steam and Xbox fill it in one click, or pick five games by hand."
+- Body: "Everything useful in your account starts with games on the shelf: release-day emails, what to play tonight, your taste in numbers. Connecting Steam imports your library and the hours you've played; it refreshes on its own every 30 minutes."
+- CTA: "Bring your games in"
+
+**P-2 — day 10**
+- Subject: "Three games is enough to start"
+- First line: "Three games on your shelf is all Gamer DNA and Taste Match need."
+- Body: "Search for the last three games you finished and add them. It takes about a minute, and you can connect a platform later. If the account isn't for you, turn these emails off below; we won't ask again."
+- CTA: "Add three games"
+
+### E-04 First comment approved
+
+- Subject: "Your comment is live"
+- First line: "Your comment on '{article title}' is published. From now on your comments appear straight away."
+- Body: "We read the first three comments from every new member before they go up; you're through that. Replies to your comments land in your notifications, and by email if you keep that switch on. Comments earn 10 XP each, up to the daily cap."
+- CTA: "See your comment"
+
+### E-05 Comment reply
+
+- Subject: "{user} replied to your comment on '{article title}'"
+- First line: "\"{first 120 characters of the reply}\""
+- Body: the full reply (sanitised), then "{n} other replies in this thread since your comment." if n > 0.
+- CTA: "Reply"
+- Footer: "Getting too many? Turn off reply emails, or mute this thread."
+
+### E-06 Followed game news (immediate case: a TechPlay review of a wishlisted game)
+
+- Subject: "We reviewed {Game}, which is on your wishlist"
+- First line: "Our verdict on {Game}: {score}/10. {One-sentence summary from the review}."
+- Body: "{Reviewer} played {hours} hours on {platform}. The review covers {two pillars from the review}. It's on your wishlist, so we thought you'd want to know before you buy."
+- CTA: "Read the review"
+
+Other game news goes into N2 as "News about your games" (at most 3 items).
+
+### E-07 Release day (T−0)
+
+- Subject (one game): "Out today: {Game}" · (several): "Out today: {Game A} and {k} more on your list"
+- First line: "{Game A} is out today on {platforms}. You asked us to tell you."
+- Body: per game: platforms, Steam price if known, unlock time if TechPlay has a release-time entry, "[Game page] · [Mark as Playing] · [Stop reminders for this game]".
+- CTA: "Open {Game A}"
+- Discord DM version (C43): "Out today: {Game} on {platforms}. [Game page] · Turn these off: Settings → Notifications."
+
+### E-08 Weekly digest (N2)
+
+Structure and subject system in §4; subject examples in §9 rows 7, 10, 13, 16, 22, 24, 27, 33. Automation: build from the same query `SendWeeklyDigest` uses (shelf affinities, wishlist releases in 14 days) narrowed to 7 days; the Friday bell digest stays as it is.
+
+### E-09 Inactive member
+
+**I-1 — day 30**, sent only if something on the member's list changed:
+- Subject: "{k} things changed on your shelf"
+- First line: "{Game} came out on {date}, and {Game 2} is {discount}% off on Steam."
+- Body: the changes only (released, discounted, reviewed, reminders that came true), each with a link. No mention of absence.
+- CTA: "See your shelf"
+If nothing changed, I-1 is not sent.
+
+**I-2 — day 60**
+- Subject: "Keep TechPlay emails, or stop them?"
+- First line: "You haven't opened TechPlay for two months. That's fine; we'd rather ask than keep sending."
+- Body: "Your library and reminders stay as they are either way. Choose below. If we don't hear back, we'll stop lifecycle emails; release-day reminders you set will still arrive."
+- Buttons: "Keep the emails" · "Only release-day reminders" · "Stop all emails except security"
+
+### E-10 Giveaway entrant
+
+**G-1 — on first entry**
+- Subject: "You're in the {giveaway} draw"
+- First line: "Your entry for {prize} is in. The draw closes on {date} at {time} UTC."
+- Body: "Extra entries: {list of open tasks}. The daily visit bonus adds an entry each day you come back before the close. Winners are announced on the giveaway page and on their profile. While you're here: your account also keeps a library of everything you play. [Bring your games in]"
+- CTA: "See your entries"
+
+**G-2 — T−24 h** (email version of the existing bell reminder)
+- Subject: "The {giveaway} draw closes tomorrow"
+- First line: "The draw for {prize} closes at {time} UTC on {date}. Your entries: {n}."
+- CTA: "Check your entries"
+
+**G-3 — after the draw**
+- Subject (winner): "You won {prize}" · (others): "The {giveaway} draw is done"
+- First line (winner): "You won {prize} in the {giveaway} draw. Here's how to claim it." · (others): "{winner} won {prize}. Thanks for entering."
+- Body (others): "The next draw will be announced on the giveaways page and in The Save File. Your account keeps everything else: your library, reminders and XP."
+- CTA: winner "Claim your prize" · others "Bring your games in"
+
+No share or repost tasks are promoted in these emails (Meta policy risk noted in [R23 #18]).
+
+### E-11 Community activation
+
+- Subject: "Where TechPlay members talk"
+- First line: "You've started posting. Here's where the weekly conversations happen."
+- Body: "Every Monday: 'What are you playing?' in Discord and on the forum. Every Wednesday: the poll. The first week of each month: Game Club, this month {club game}. Link Discord and your XP and rank follow you there; Buffy posts the weekly wrap on Sunday evenings."
+- CTA: "Join the Discord" (`discord.gg/wPQG9gUMXH`, invite code for this email, D-011)
+
+### E-12 Wishlist price drop
+
+- Subject (one): "Price drop: {Game} is {discount}% off" · (several): "{k} games on your wishlist are discounted"
+- First line: "{Game} is {price} on Steam, {discount}% off. Your alert was set at {threshold}%."
+- Body: per game: price, discount, "Sale ends {date}" only if Steam states it, "[Store page]{ (affiliate link)}" · "[Change the alert] · [Stop alerts for this game]".
+- CTA: "See it on Steam"
+- Note in the body once per email: "Prices are Steam US prices, checked overnight."
+
+---
+
+## 13. When emails collide
+
+Priority order and caps are defined once in 16 §4.5. The mail scheduler applies them per recipient at send time:
+
+1. Security (verify, reset): always sent.
+2. Alerts the member set (E-07, E-12): merged per day into one email.
+3. Replies (E-05).
+4. Lifecycle (E-01, E-03, E-04, E-09, E-10, E-11).
+5. Newsletter (N1, N3, N4) and N2.
+
+If a lower-priority email would break the 1-per-day non-alert cap or the 6-per-7-days ceiling, it is deferred to the next day (lifecycle) or dropped for that week (newsletter extras), never stacked. In the first week of membership the ceiling is four emails plus alerts (16 §3.5).
+
+---
+
+## 14. Deliverability rules for a self-hosted sender
+
+**Do not touch without explicit written approval from EIC (and the person who owns the server):** DNS, SPF, DKIM, DMARC, MX, SMTP host or credentials, sending IP, From domain [R20, docs/README.md §14]. If a problem needs one of these, write it up and ask; do not "just fix" it.
+
+| # | Rule | Why |
+|---|---|---|
+| 1 | Keep the default pacing (10 messages every 3 seconds). Lifecycle mail is sent through the same queue with the same pacing | Bursts from a sender without reputation look like spam [docs/README.md §20] |
+| 2 | Volume ramp: no send larger than twice the largest send of the previous seven days. If a campaign audience is larger, send to the most recently engaged half first and the rest the next day | New volume is where reputation is lost |
+| 3 | Double opt-in for every newsletter address; never import, buy or scrape lists; Frontiers sign-ups are tagged and not moved to The Save File without a new opt-in | Complaints and traps |
+| 4 | Unverified addresses only receive the verify mail and E-02 (two reminders) | Bounce exposure |
+| 5 | D-013c: ingest hard bounces and complaints from the mail provider into `MailSuppression` (`bounced`, `complained`); until it exists, SC checks the provider's bounce report after every campaign and suppresses by hand. The webhook may touch provider config: ask first | No bounce or complaint path exists today [R01 B.3] |
+| 6 | Inactive suppression (§8): no click in 90 days and 8 issues → R-1 → suppress | Unengaged addresses drag inbox placement |
+| 7 | Every email has a plain-text part, real text before any image, no hidden text, no preheader trick, no URL shorteners, no attachments | Content filters; the project's own filter scored hidden text [docs/README.md §20] |
+| 8 | One-click unsubscribe (RFC 8058) on every non-security email; the unsubscribe link stays untracked | Keeps complaints down [docs/README.md §20] |
+| 9 | Reply-To points to a monitored editorial inbox (application-level header; confirm with EIC) and replies are answered | Replies are a positive signal and a correction channel |
+| 10 | Before each campaign: "send test" to TechPlay-owned Gmail, Outlook and Apple Mail inboxes; note inbox, promotions or spam placement in the send log | The only placement check available |
+| 11 | Stop rule: complaint rate ≥ 0.1% or hard-bounce rate ≥ 2% on any send pauses all non-security mail until EIC reviews (spine §3 guardrails) | Protects the transactional mail that carries the only way into accounts |
+| 12 | Send times: N1 Fri 14:00 UTC, N2 Mon 08:00 UTC, alerts 09:00–10:00 server time, nothing between 22:00 and 08:00 member time once D-013d exists | Predictable volume, no night sends |
+
+---
+
+## 15. Measurement
+
+| Metric | Formula | Target |
+|---|---|---|
+| Verified subscribers | `COUNT(*) FROM newsletter_subscribers WHERE is_active AND email_verified_at IS NOT NULL AND unsubscribed_at IS NULL` | TARGET ↑ weekly; never published |
+| Capture rate per placement | `newsletter_verified (placement) ÷ page views of that placement's pages × 1,000` | TARGET ↑; placements below the median after 6 weeks are redesigned or removed |
+| Confirmation rate | `newsletter_verified ÷ newsletter_signup` per placement, 72 h | TARGET ↑ |
+| Click rate | unique clickers ÷ delivered, per send and per section (`utm_content`) | TARGET ↑; opens reported only as a floor |
+| Downstream action | members with a `member_actions` row within 24 h of a send ÷ delivered members | TARGET ↑ |
+| Subscriber → member | `registration_complete (from=newsletter | newsletter-verify)` per issue | TARGET ↑ |
+| Alert → visit | `alert_clicked ÷ reminder_delivered` per channel (16 §5.3) | TARGET ↑ |
+| Unsubscribe rate | unsubscribes ÷ delivered, per send | guardrail < 0.5% |
+| Complaint rate | complaints ÷ delivered, per send (needs D-013c) | guardrail < 0.1% |
+| Hard-bounce rate | hard bounces ÷ attempted | guardrail < 2% |
+
+Weekly (SC, Mondays, inside the retention report): last N1 click rate, top three sections by clicks, unsubscribes and complaints, new verified subscribers by placement, N2 sends and clicks.
+
+---
+
+## 16. Rollout and capacity
+
+| Week | Dates | Ships | Owner | Hours (ESTIMATE) |
+|---|---|---|---|---|
+| W40 | 28 Sep–4 Oct | Read subscriber count and campaign history in admin; replace GTA 6 hub copy (P-06) and dead invite; rewrite the double opt-in template; fix P-10 anchor; **Save File #1 on Fri 2 Oct** (existing campaign desk, audience "everyone" limited to verified subscribers) | SC, EIC, DEV | SC 4, EIC 2, DEV 2 |
+| W41 | 5–11 Oct | D-012 `/newsletter` landing, D-012a tags and placement, P-02, P-08 copy; #2 | DEV, SC | DEV 6, SC 3.5 |
+| W42 | 12–18 Oct | C42 welcome N-W1–3 and E-01 M1–M3, E-02; D-013 mail channel; D-013a preferences; P-03, P-07, P-11; first N3 briefing Thu 15 Oct | DEV, SC, ED | DEV 12, SC 4.5, ED 1 |
+| W43 | 19–25 Oct | C43: E-07 release day (email and DM), E-04, E-05 (D-013b), E-03 | DEV | DEV 10 |
+| W44 | 26 Oct–1 Nov | C41 N2 first send Mon 26 Oct (D-028), E-06, E-11 | DEV, SC | DEV 10 |
+| W45 | 2–8 Nov | D-027 price alerts and E-12; D-007b-based E-09; D-013c bounce and complaint ingestion (after approval) | DEV | DEV 10 |
+| W46 | 9–15 Nov | P-04, P-05 on game pages; D-012b web archive; N3 12 Nov | DEV, ED | DEV 5 |
+| W47 | 16–22 Nov | GTA VI launch sends (18, 19, 22 Nov); prediction league mail; no new automation | ED, SC | ED 3, SC 3 |
+| W48 | 23–29 Nov | Black Friday Save File #9; N2 Cyber Monday preparation | EIC, SC | EIC 2, SC 4 |
+| W49 | 30 Nov–6 Dec | Community Awards nomination mail (1 Dec); D-013e inactive suppression | SC, DEV | DEV 2 |
+| W50 | 7–13 Dec | TGA reminder (10 Dec) and TGA Save File #11 | SC, EIC | SC 4, EIC 2 |
+| W51 | 14–20 Dec | Year in Review email (14 Dec); Winter Sale special (17 Dec); first reactivation run (R-1) | DEV, SC | SC 4 |
+| W52–W53 | 21–31 Dec | N2 21 and 28 Dec; no issue 25 Dec; Save File #13 Thu 31 Dec; Q1 review | SC, EIC | SC 3, EIC 2 |
+
+Totals (ESTIMATE): DEV ≈ 75 h over the quarter (≈ 5.8 h/week of the 20 h budget; C41, C43, D-027 and D-013 are shared with 16 and must not be double-counted in the master capacity plan), SC ≈ 3.5–4.5 h/week, EIC ≈ 1–2 h/week, ED ≈ 1 h/week until 22 Nov.
+
+---
+
+## Dependencies and open questions
+
+**Dependencies**
+- D-012 (landing, verify block, capture points), D-012a (placement and interest tags), D-012b (web archive), D-013 (mail channel for notification classes), D-013a (per-type preferences), D-013b (reply mail), D-013c (bounce and complaint ingestion; ask first), D-013d (member time zone), D-013e (inactive suppression reason), D-027 (price alerts), D-028 (personalised Monday email), D-007b (`member_actions`, for E-09 and downstream-action metrics), D-004 (dead invites), D-020 (map attribution before the launch edition presents the map), D-024/D-025 (Year in Review email), D-026 (prediction league mail).
+- New sub-IDs introduced here: D-012a, D-012b, D-013c, D-013e (D-013a, D-013b and D-013d are defined in 16).
+- Campaigns: C40 (Save File), C41 (Monday email), C42 (welcome), C43 (alerts), C05, C07, C08, C10, C12, C22, C29, C30, C31, C32, C34, C38, C66.
+- 15-REGISTRATION.md for R-28, R-29, R-30; 16-ACTIVATION-RETENTION.md for caps (§4.5), ethics (§4.6) and metrics (§5).
+
+**Open questions**
+1. How many verified subscribers exist, and what did past campaigns get in clicks? Needed before the ramp rule (§14 #2) can be applied to Save File #1. SC reads it in admin on 28 Sep.
+2. Which mail provider sends for TechPlay, and does it offer bounce and complaint webhooks? D-013c depends on the answer, and it may touch provider configuration, which needs approval.
+3. Legal basis for lifecycle mail to members (EU and US readers): this plan treats E-01 to E-12 as account service messages with a per-type off switch and an unsubscribe link in each. EIC to confirm.
+4. The Save File name is the spine's (F21). The existing sidebar box promised "sent when there is something worth sending"; confirm with EIC that past subscribers are told about the new weekly cadence in issue #1 (the editor's line does this).
+5. Should existing Frontiers "Notify me" sign-ups receive The Save File? They signed up for a teaser whose countdown expired on 13 Sep [R01 A.2.5]. This plan excludes them until they opt in again; EIC may choose one re-permission email instead.
+6. GTA VI unlock times and download size are not known today [R17]; the eve and launch editions only state what Rockstar or the stores have confirmed by then.
+7. Affiliate status of store links: if any links in N1 specials, E-12 or the GTA editions become affiliate links, each needs a visible label [R20 §5]; EIC to confirm which programmes, if any, are active.
