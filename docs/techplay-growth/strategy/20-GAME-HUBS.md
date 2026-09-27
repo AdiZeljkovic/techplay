@@ -8,7 +8,7 @@ Status: Phase 2 plan — 27 Sep 2026
 - **One template (D-032), not three builds.** A hub is: an intro and FAQ the editor edits in Filament, sections fed by staff-owned game lists and calendar queries, related articles and a "Last updated" line. DEV builds it once (about 8 h, 12–23 Oct) and each hub instance takes about 2 h, because DEV has 20 h a week and October is full of P0 work.
 - **Every hub links down to `/games/[slug]`, across to series pages and the calendar, and every hub game page links back up** ("Part of the Switch 2 hub", D-032a). One URL per intent [R18; R03 §11].
 - **Content is templates and trackers, not volume.** Valnet sites publish 73 guides for one game in three days; the plan does not compete there [RESEARCH-COMPLETE #15]. About 60 titled pieces across all hubs by 31 Dec, most of them short, sourced and reusable.
-- **Capacity:** 11–28 h/week in October and November across all hubs, about 3 h in GTA launch week, then 16–17 h/week in December (§9). Hub DEV work never exceeds 5 h in a week.
+- **Capacity:** 11–28 h/week in October and November across all hubs, about 3 h in GTA launch week, then 16–17 h/week in December (§11). Hub DEV work never exceeds 5 h in a week.
 - **Do not build:** Minecraft, Fortnite, Roblox, EA FC, LoL, Valorant, Path of Exile 2, Elder Scrolls VI, Witcher IV, Wolverine, Crimson Desert. Their search results are owned by wikis and dedicated tools, or they have no date yet [R18].
 
 ---
@@ -336,7 +336,70 @@ Both use existing surfaces: the game page (countdown + Remind me), the series pa
 
 ---
 
-## 9. Hub calendar and capacity
+## 9. Hub page layouts (exact copy for launch)
+
+### 9.1 `/switch-2` (26 Oct)
+
+| Block | Copy (exact) |
+|---|---|
+| Title tag | Switch 2 Hub: editions, upgrades and release dates \| TechPlay |
+| H1 | Nintendo Switch 2: editions, upgrades and what's coming |
+| Intro, first paragraph | "Switch 2 costs $499.99 in the US since 1 September, and more games now arrive as a Switch 2 Edition or a paid upgrade than as new releases. This page tracks both: what each upgrade costs where Nintendo lists a price, when it lands, and where the information comes from. Updated every Tuesday." |
+| Section 1 | "Upgrades and Switch 2 Editions" (tracker table, §5.3) |
+| Section 2 | "Coming to Switch 2" (calendar query, next 90 days; each tile has Remind me) |
+| Section 3 | "Questions people ask" (FAQ: backward compatibility, 120Hz/VRR, transfer, microSD Express, MW4, Minecraft) |
+| Section 4 | "Guides" (§5.4 items, newest first) |
+| CTA strip | "Track the Switch 2 games you want. We'll remind you on release day." Button "Start your library" → `/register?from=hub-switch-2` |
+| Footer line | "Sources are linked on every row. Spot an error: redakcija@techplay.gg." |
+
+### 9.2 `/steam` (2 Nov)
+
+| Block | Copy (exact) |
+|---|---|
+| Title tag | Steam Hub: sales, Next Fest, weekly movers \| TechPlay |
+| H1 | Steam: what's on sale, what's rising, what's next |
+| Intro, first paragraph | "Steam runs on a public calendar: sales, themed fests and Next Fest twice a year. This page follows it, adds the week's biggest movers from Steam's own charts, and, if you import your Steam library, leaves out what you already own. Updated every Tuesday." |
+| Event strip | Scream V Fest 26 Oct–2 Nov · Auto-Battler RPG Fest 16–23 Nov · Winter Sale 17 Dec–4 Jan · Next Fest from 22 Feb 2027 · Spring Sale 18–25 Mar 2027 (all "confirmed", Steamworks) |
+| Section 1 | "Up this week" (F13 table: game, rank now, rank last week, peak players, source: Steam charts) |
+| Section 2 | "Sale picks" (staff list; hidden outside sale windows) |
+| Section 3 | "Next Fest" (archive list; "Next edition: 22 Feb 2027") |
+| Section 4 | "Valve hardware" (Steam Deck, Steam Machine, Steam Frame guides) |
+| Section 5 | "When PC games break" (link block to `/guides/pc-fixes`) |
+| CTA strip | "Import your Steam library and every list on this page skips what you already own." Button "Sign in with Steam" (after D-015) or "Link Steam" → `/register?from=hub-steam` |
+
+### 9.3 `/mmo` (10 Nov)
+
+| Block | Copy (exact) |
+|---|---|
+| Title tag | MMO Hub: WoW, FFXIV and Guild Wars 2 patch dates \| TechPlay |
+| H1 | MMOs: patch dates, readiness and which one to play |
+| Intro, first paragraph | "Three MMOs, one calendar. World of Warcraft, Final Fantasy XIV and Guild Wars 2 patch and expansion dates, each marked confirmed, reported or predicted, plus a readiness check for your WoW character that reads Blizzard's and Raider.IO's data. Updated on patch days." |
+| Tool block | "Is your character ready? Enter a name and realm." → `/wow-analyzer` (no login) |
+| Section 1 | "Dates" (event strip: WoW patch, WoW: Forever 4 Nov (reported), Evercold January 2027, Guild Wars 3 beta fall 2027, The Last Titan late 2027) |
+| Section 2 | "Which MMO?" (items 4, 6, 7, 8) |
+| Section 3 | "FFXIV" and "Guild Wars" (items 9–12) |
+| CTA strip | "Save your WoW character to a TechPlay profile with one Battle.net sign-in." Button "Sign in with Battle.net" |
+
+---
+
+## 10. Measurement
+
+| Campaign | `utm_campaign` | Key events | Report |
+|---|---|---|---|
+| C05 Steam Autumn Sale | c05-steam-autumn-sale | `shelf_add` (wishlist), `cta_click` (list) | 9 Oct |
+| C13 WoW 12.1.5 push | c13-wow-patch | `tool_run` (wow), `registration_complete` (battlenet) | 13 Oct |
+| C17 MW4 mini-hub | c17-mw4-hub | `reminder_set` (MW4) | 26 Oct |
+| C18 Next Fest | c18-next-fest | `shelf_add` from list | 27 Oct |
+| C61 Switch 2 hub | c61-switch2-hub | `reminder_set`, `newsletter_signup` (source=hub-switch-2) | monthly |
+| C62 Steam hub | c62-steam-hub | `library_connected` (steam), `shelf_add` | monthly |
+| C14 / C15 MMO | c14-wow-forever, c15-mmo-hub | `tool_run` (wow), `share_card_generated` (wow) | monthly |
+| C34 Winter Sale | c34-steam-winter-sale | `shelf_add`, `alert_clicked` (after D-027) | 5 Jan 2027 |
+
+Hub sessions are read from the first-party collector by path (it counts sessions, not unique visitors [R14 §6]); Search Console is read per hub URL every Monday by ED.
+
+---
+
+## 11. Hub calendar and capacity
 
 | Week | Hub work (IDs) | EIC | ED | SC | DS | DEV | Total |
 |---|---|---|---|---|---|---|---|
@@ -355,7 +418,7 @@ Combined with GTA (19-GTA6.md §14), the heaviest weeks are 12–18 Oct (GTA 22 
 
 ---
 
-## 10. KPI summary
+## 12. KPI summary
 
 | Hub | Primary KPI | TARGET | Review |
 |---|---|---|---|

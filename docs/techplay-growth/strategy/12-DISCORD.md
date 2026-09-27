@@ -11,7 +11,7 @@ Owner: SC. Support: EIC (AMAs, decisions), ED (article feedback, breaking pings,
 - The weekly spine is five rituals shared with the site: F01 Out This Week (Mon), F11 What Are You Playing? (Mon), F15 Readiness Check (Tue), F12 Poll of the Week (Wed), F14 Buffy's Weekly Wrap (Sun). F22 Game Club runs monthly. One human-hosted event a week (Squad Night, Thu 20:00 CET) is the reason to be online at a set time.
 - Professor Buffy keeps his job and loses the costume lines: no "centuries of wisdom", "young one", prophecies or wand-waving. He becomes "a senior guild member, not a cartoon teacher" [R13]. "Profesor" gets fixed on the WoW Analyzer (D-040).
 - C36 "Road to 500" (12 Oct–31 Dec) is a TARGET, not a forecast: +340 net members in about 12 weeks, where the historical growth rate is unknown (153 in an undated code comment, 160 today). Every campaign gets its own invite code; joins are attributed by the bot once D-011 ships. 500 unlocks Server Insights; 1,000 makes the server eligible to apply for Discovery [R13].
-- Three things are broken or misleading today and must not be promoted until fixed: the dead invites on the GTA 6 hub and roadmap (D-004); the bot's giveaway links, which point to `/giveaways/{slug}` while the site's route is `/giveaway/{slug}` (new finding, D-039a); and `/daily`, which pays uncapped XP outside `XpService` (D-035) [R01 B.2.7].
+- Three things are broken or misleading today and must not be promoted until fixed: the dead invites on the GTA 6 hub and roadmap (D-004); the bot's giveaway links, which point to `/giveaways/{slug}` while the site's route is `/giveaway/{slug}` (new finding, D-041); and `/daily`, which pays uncapped XP outside `XpService` (D-035) [R01 B.2.7].
 - Capacity: SC about 9.5 h/week on Discord after a 12 h setup spread over C35; EIC 1 h, ED 1.5 h, DS 0.5 h. Bot work is 13 small DEV items, mostly XS–S.
 
 ---
@@ -354,7 +354,7 @@ A weekly themed contest voted by members is the pattern Discord's photography ca
 | Step | Date | Action |
 |---|---|---|
 | Verify | Mon 28 Sep | EIC/SC check in Filament whether the GTA 6 giveaway is real and live (code comment says it closes 20 Oct; the live page showed nothing on 27 Sep) [SPINE §0] |
-| Fix first | by announcement | D-039a: the bot's `/giveaways` and giveaway DMs link to a URL that 404s |
+| Fix first | by announcement | D-041: the bot's `/giveaways` and giveaway DMs link to a URL that 404s |
 | If live: announce | Within 48 h of verification | #giveaways + @Giveaways ping (only that role): prize, end date, "no purchase necessary", rules link, entry link. Its "Join our Discord" task uses the C09 invite code |
 | Reminder | Sun 18 Oct 18:00 | #giveaways, no ping: "Closes Tuesday 20 Oct. Entry: [link]" |
 | Winner | Wed 21 Oct | #giveaways + #announcements, winner named only with consent |
@@ -746,7 +746,7 @@ Existing spine IDs are used where they fit. Bot items with no spine ID are propo
 | D-011m | Optional auto-thread per article in #latest-news | No thread creation today [R01 B.8.3] | C35 | P3 S |
 | D-009 | Campaign URL helper applied to bot links (`utm_source=discord&utm_medium=community&utm_campaign=<campaign>`) in PollingService, RecapService, `/latest`, `/game`, DMs | Discord traffic is not attributable | C03 | P1 S (spine) |
 | D-035 | Route `/daily` through `XpService` (cap, season multiplier, ledger) | Largest uncapped XP source [R01 B.2.7] | — | P2 S (spine) |
-| D-039a | Bot giveaway links: `commands.ts:537` and `SubscriptionService.ts:192` build `techplay.gg/giveaways/{slug}`; the site route is `/giveaway/{slug}` | Every giveaway link from the bot 404s | C09 | P0 XS (before any giveaway promotion) |
+| D-041 | Bot giveaway links: `commands.ts:537` and `SubscriptionService.ts:192` build `techplay.gg/giveaways/{slug}`; the site route is `/giveaway/{slug}` | Every giveaway link from the bot 404s | C09 | P0 XS (before any giveaway promotion) |
 | D-040 | "Profesor" → "Professor" in the WoW Analyzer (`page.tsx` lines 7, 200, 270; `OverviewTab.tsx` lines 52, 67); label AI tips; remove false stats | Spelling and trust [R13, R02] | C13, C14 | P0 XS (spine) |
 
 ---
@@ -757,7 +757,7 @@ Existing spine IDs are used where they fit. Bot items with no spine ID are propo
 |---|---|---|---|
 | Current channel and role list export (not in research) | SC | 28 Sep | Migration map |
 | Is the GTA 6 giveaway live in admin? [SPINE §0] | EIC/SC | 28 Sep | C09 Discord flow |
-| D-004, D-039a, D-040 shipped | DEV | 2 Oct | Any Discord, giveaway or WoW promotion |
+| D-004, D-041, D-040 shipped | DEV | 2 Oct | Any Discord, giveaway or WoW promotion |
 | `RECAP_CHANNEL_ID` / `LATEST_NEWS_CHANNEL_ID` set before renames | DEV/SC | 5 Oct | Recap and news feed |
 | Server time zone of the bot host: the recap cron is `0 20 * * 0` in server local time; confirm it is Europe/Sarajevo, not UTC | DEV | 4 Oct | F14 timing |
 | Season dates in production (two migrations disagree) [R01 B.2.5] | DEV | 25 Oct | Season 2 announcement 1 Nov |

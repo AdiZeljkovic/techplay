@@ -251,7 +251,7 @@ Trigger: `newsletter_verified`. Exit: unsubscribe; N-W3 is skipped if the subscr
 - Body:
   "Each issue has the week's stories that change what you play (three at most), the releases coming next week with platforms and prices, one number with its source, and what the community argued about.
   Two things you can do now:
-  1. Add hello@ … *(DEV: the actual From address)* to your contacts, so the first issue doesn't land in promotions.
+  1. Add {from_address} to your contacts, so the first issue doesn't land in promotions. *(DEV fills the real sending address; it is not changed by this plan.)*
   2. Read last week's issue: [past issues].
   If something in an issue is wrong, reply to it. A person reads the replies, and corrections go in the next issue.
   — {EIC name}, editor, TechPlay"
@@ -286,5 +286,151 @@ Trigger: `newsletter_verified`. Exit: unsubscribe; N-W3 is skipped if the subscr
 | Complaint | any spam complaint | suppressed as `complained` (needs D-013c) |
 
 No guilt copy: "We miss you", "Come back", "Last chance" are banned (16 §4.6).
+
+---
+## 9. Subject lines and preview lines, Q4 2026
+
+Dates are from the spine calendar (§11) and [R05]; "reported" items are phrased as reported. Braces are filled from live data at send time; a line whose data is missing is rewritten, not sent with a blank.
+
+| # | Send date | Product | Subject | Preview line (first visible line) |
+|---|---|---|---|---|
+| 1 | Fri 2 Oct | N1 #1 | The Save File #1: Autumn Sale, Ace Combat 8, 48 days to GTA VI | Steam's Autumn Sale runs until Thursday 8 October, Ace Combat 8 is out today, and Gears of War: E-Day arrives Tuesday. |
+| 2 | Fri 9 Oct | N1 #2 | The Save File #2: Gears of War: E-Day, and when GTA VI unlocks for you | Gears of War: E-Day has been out since Tuesday on PC and Xbox. Next week: Planet Zoo 2 on Tuesday and our GTA VI release-time page. |
+| 3 | Thu 15 Oct | N3 | GTA VI briefing: 35 days, and when it unlocks where you live | 35 days to go. The release-time page is live: it shows the unlock time for your time zone as soon as it's confirmed. |
+| 4 | Fri 16 Oct | N1 #3 | The Save File #3: MW4 early access, Next Fest starts Monday | Modern Warfare 4's campaign early access opens today. Steam Next Fest runs 19–26 October, and we're trying three demos a day. |
+| 5 | Thu 22 Oct | N3 | GTA VI briefing: 28 days, and the cars we could source | 28 days to go. Our vehicle guide now lists real-world equivalents, with a source for each one we could confirm. |
+| 6 | Fri 23 Oct | N1 #4 | The Save File #4: Modern Warfare 4 is out, Next Fest halfway | Call of Duty: Modern Warfare 4 launched today on PS5, Xbox, PC and Switch 2. The best Next Fest demos so far are below. |
+| 7 | Mon 26 Oct | N2 (first) | This week: Phantom Blade Zero and {k} more on your list | Phantom Blade Zero is out Thursday on PS5 and PC. Minecraft Bedrock reaches Switch 2 on Tuesday. |
+| 8 | Thu 29 Oct | N3 | GTA VI briefing: 21 days, the two editions compared | 21 days to go. Standard is $79.99 and Ultimate $99.99; here's what the extra $20 buys, from Rockstar's own listing. |
+| 9 | Fri 30 Oct | N1 #5 | The Save File #5: Phantom Blade Zero, Scream Fest picks, Season 2 | Phantom Blade Zero came out yesterday. Steam's Scream Fest runs until 2 November, and these horror games are worth the discount. |
+| 10 | Mon 2 Nov | N2 | This week: WoW: Forever on Wednesday | World of Warcraft: Forever launches Wednesday 4 November. Stellar Blade Complete Edition follows on Thursday. |
+| 11 | Thu 5 Nov | N3 | GTA VI briefing: 14 days, what's actually known about performance | 14 days to go. Reports say 30 fps on consoles at launch; Rockstar hasn't confirmed a frame rate. The ledger has the sources. |
+| 12 | Fri 6 Nov | N1 #6 | The Save File #6: WoW: Forever is live, 13 days to GTA VI | World of Warcraft: Forever launched on Wednesday. GTA VI is 13 days away; here's what is confirmed and what isn't. |
+| 13 | Mon 9 Nov | N2 | This week: Pikmin 4 and Metaphor on Switch 2 | Pikmin 4's Switch 2 Edition and Metaphor: ReFantazio for Switch 2 both arrive Thursday 12 November. |
+| 14 | Thu 12 Nov | N3 | GTA VI in one week: editions, pre-load, unlock time | GTA VI is out next Thursday on PS5 and Xbox Series X\|S at $79.99, or $99.99 for the Ultimate Edition. |
+| 15 | Fri 13 Nov | N1 #7 | The Save File #7: GTA VI week starts Monday | GTA VI is out Thursday 19 November. Set a reminder and we'll email you the unlock time for your time zone once it's confirmed. |
+| 16 | Mon 16 Nov | N2 | This week: GTA VI, Thursday | GTA VI is out Thursday on PS5 and Xbox Series X\|S. It's on your list, so you'll get one email on the day. |
+| 17 | Wed 18 Nov | N3 | GTA VI unlocks tomorrow. Here's when, where you are | The release-time page lists the unlock time for each region, updated as Rockstar and the stores confirm it. |
+| 18 | Wed 18 Nov | N4 (all opted-in members) | The Game Awards prediction league is open | Pick the winners before 10 December. Picks lock when the show starts, and the table updates live. |
+| 19 | Thu 19 Nov | N3 launch edition | GTA VI is out. Start here. | GTA VI is out today on PS5 and Xbox Series X\|S. It's single-player at launch, and there's no PC version yet. |
+| 20 | Fri 20 Nov | N1 #8 | The Save File #8: GTA VI's first day, and what's next | GTA VI has been out since yesterday. What to do first, the map tracker, and what we know about a PC version. |
+| 21 | Sun 22 Nov | N3 (last) | GTA VI, first weekend: the map tracker and what to do first | Our map tracker lets you tick off locations as you find them, and it saves to your account. This is the last briefing. |
+| 22 | Mon 23 Nov | N2 | This week: {n} of your wishlist games are on sale | Black Friday is Friday 27 November, but {Game} is already {discount}% off on Steam. |
+| 23 | Fri 27 Nov | N1 #9 Black Friday | The Save File #9: Black Friday, sorted by your wishlist | Members: the discounted games from your wishlist are at the top. Everyone: our picks, with prices checked this morning. |
+| 24 | Mon 30 Nov | N2 Cyber Monday | Cyber Monday: what's still discounted on your wishlist | Steam prices for the games you wishlisted, checked at 06:00 UTC today. |
+| 25 | Tue 1 Dec | N4 (opted-in members) | Nominate your games of 2026 | The TechPlay Community Awards are open until 20 December. Six categories; members nominate, then everyone votes. |
+| 26 | Fri 4 Dec | N1 #10 | The Save File #10: Dawn of War IV, Monster Hunter Wilds on Switch 2 | Dawn of War IV came out yesterday, and Monster Hunter Wilds reaches Switch 2 today. The Game Awards are next Thursday. |
+| 27 | Mon 7 Dec | N2 | This week: Professor Layton, and your November | Professor Layton and the New World of Steam is out Thursday 10 December, the same night as The Game Awards. |
+| 28 | Thu 10 Dec | N4 (league entrants) | Tonight: The Game Awards, and your picks lock at showtime | The show starts tonight. You can change your picks until it does; after that the table updates with each award. |
+| 29 | Fri 11 Dec | N1 #11 TGA | The Save File #11: every Game Awards winner, and the reveals worth a reminder | The Game Awards were last night. The winners, the reveals worth your time, and how the prediction league finished. |
+| 30 | Mon 14 Dec | N4 (A2 members) | Your 2026 in games is ready | {h} hours across {p} platforms, and your most played game was {game}. See the rest, and share it if you like. |
+| 31 | Thu 17 Dec | N4 Winter Sale | Winter Sale: {n} games on your wishlist are discounted | Steam's Winter Sale started today and runs to 4 January. {Game} is {discount}% off. |
+| 32 | Fri 18 Dec | N1 #12 | The Save File #12: the Winter Sale, and the Community Awards results | Steam's Winter Sale runs until 4 January; here's what's worth it. Voting in the Community Awards closes Sunday. |
+| 33 | Mon 21 Dec | N2 | This week: {n} wishlist games still discounted, and nothing out on Christmas Day | {Game} is still {discount}% off in the Winter Sale. Nothing on your list releases this week. |
+| 34 | Thu 31 Dec | N1 #13 | The Save File #13: 2026 in games, and what's coming in 2027 | The year in releases and studio closures, and the 2027 dates already fixed: Fable on 23 February, FF7 Revelation on 8 April. |
+| 35 | on confirm | N-W1 | You're in: here's what arrives on Fridays | The Save File arrives on Fridays at about 14:00 UTC. Here's what's in it, and how to make it more useful. |
+| 36 | reactivation | R-1 | Still want The Save File? | You haven't clicked anything in The Save File for three months, which is fine. We'd rather ask than keep sending. |
+
+Check before each send (SC): every date and platform against the game page; every "reported" item labelled; Braces filled; no line claims a count we cannot show.
+
+---
+
+## 10. Full copy: The Save File #1, Friday 2 October 2026
+
+Audience: all verified subscribers. UTM campaign `c40-save-file-2026w40`. Items in square brackets are editor fills from the site on the morning of 2 Oct; nothing in brackets goes out unfilled.
+
+**Subject:** The Save File #1: Autumn Sale, Ace Combat 8, 48 days to GTA VI
+
+> Steam's Autumn Sale runs until Thursday 8 October, Ace Combat 8 is out today, and Gears of War: E-Day arrives Tuesday.
+>
+> This is the first Save File in its new form: one email on Fridays, short enough to finish with a coffee. If something here is wrong, reply and tell us; a person reads every reply, and corrections go in the next issue.
+> — Adi Zeljković, editor
+>
+> **The week**
+>
+> **Xbox had its hardest week in years.** Outlets reported Halo Studios' effective closure, Ninja Theory heading towards closure, Obsidian moving under Bethesda and a split at Double Fine, all within a few days. If you own games from these studios nothing changes in your library, but patches and sequels are another matter. We're building a tracker of every studio closed in 2026, with the games each one made; it goes live on 14 October. [Our coverage](/news/industry)
+>
+> **Sony asked players about ending discs.** Sony's reported plan to stop making PlayStation discs, and the survey it sent players, drew coverage across the press this week. Digital is only bad when it's the only option. [Sign The Last Disc](/last-disc), our open letter asking Sony to keep a physical choice.
+>
+> **Ace Combat 8: Wings of Theve is out today.** [Game page, with where to play it](/games/[slug])
+>
+> **Out next week**
+>
+> | Date | Game | Where |
+> |---|---|---|
+> | Tue 6 Oct | Gears of War: E-Day | PC, Xbox |
+> | Fri 9 Oct | Dragon's Dogma 2: Dark Arisen (reported), with a Switch 2 version | [platforms from the game page] |
+> | Tue 13 Oct | Planet Zoo 2 | [platforms from the game page] |
+>
+> World of Warcraft patch 12.1.5 is expected around 6 October on Blizzard's usual eight-week rhythm; that's our estimate, not a Blizzard date. [Check your character with the WoW Analyzer](/wow-analyzer) before it lands.
+> [Everything releasing this month](/calendar)
+>
+> **The Number: 4**
+> Call of Duty: Modern Warfare 4 launches on 23 October on four platforms: PS5, Xbox, PC and Switch 2. It's the first Call of Duty on a Nintendo platform since Ghosts. *Source: Activision's announcement, via our release calendar.*
+>
+> **GTA VI: 48 days**
+> Confirmed: 19 November, PS5 and Xbox Series X|S, $79.99, or $99.99 for the Ultimate Edition. Single-player at launch, and no PC version at launch. Everything else you read this week is either reported or rumour, and our new ledger says which, with sources. [Confirmed or rumour?](/gta6/everything-we-know)
+>
+> **Worth your time**
+> The Autumn Sale's biggest discounts are on games you've probably already been told to buy. We picked from Steam's most-wishlisted list instead, and checked each price this morning. [Autumn Sale: the wishlist picks] *(C05 article)*
+>
+> **Community**
+> Game Club starts on Monday: in October we're playing Control Resonant. The kick-off thread opens Monday 5 October on the forum and in Discord, with a voice night date in the thread.
+> This week's poll asks whether you'd buy a console with no disc drive at all. It closes tonight; results next Friday. [Vote in Discord](https://discord.gg/wPQG9gUMXH)
+>
+> **[Set a reminder for GTA VI]** *(primary button; signed link to the reminder for members, to the GTA VI game page for subscribers)*
+>
+> *For subscribers without an account:*
+> **You get the newsletter, not the library.** A free account keeps every game you own in one place, from Steam, Xbox, PlayStation, GOG and Epic, and emails you on release day for the games you're waiting for. [Claim your shelf] (uses this address)
+>
+> Buffy, our owl, has read the patch notes so you don't have to. See you next Friday.
+>
+> You're getting The Save File because you subscribed at techplay.gg. [Unsubscribe] (one click) · [Email preferences] · [Read past issues] · TechPlay is published by Luminor Solutions, 71000 Sarajevo, Bosnia and Herzegovina.
+
+Word count ≈ 560. Links: 11. Checks by EIC before 13:00 UTC: the studio items match our own published articles; the Last Disc page loads; the ledger (C07, due 1 Oct) is live, otherwise the GTA link points to `/gta6`.
+
+---
+
+## 11. Full copy: GTA VI launch edition, Thursday 19 November 2026
+
+Audience: tag `gta6` plus members with a GTA VI reminder (members also receive the release-day alert; this edition replaces it for them, so they get one email, not two). Sent at 08:00 UTC. UTM campaign `c10-gta6-launch`.
+
+**Subject:** GTA VI is out. Start here.
+
+> GTA VI is out today on PS5 and Xbox Series X|S. It's single-player at launch, and there's no PC version yet.
+>
+> **The facts that matter today**
+> · Platforms: PS5 and Xbox Series X|S. No PC version at launch; Take-Two has said why, and nothing about a PC date is confirmed.
+> · Price: $79.99, or $99.99 for the Ultimate Edition.
+> · Single-player at launch. Anything you read about Online dates is unconfirmed until Rockstar says otherwise.
+> · Pre-order bonus: the Vintage Vice City Pack.
+> · GTA VI: The Album, with Atlantic Records, is out today too.
+>
+> **When it unlocks where you are**
+> [The release-time page](/gta6/release-time) lists the unlock time for each region as Rockstar and the stores confirmed them. Download size is listed on each store's product page; we've copied it onto the same page.
+>
+> **Start here**
+> · **The map tracker** is live: tick off locations as you find them and it saves to your account. [Open the map](/gta6/map)
+> · **The vehicle guide** lists the cars and bikes Rockstar has shown, with the real-world equivalents we could source. [Vehicles](/gta6/vehicles)
+> · **Confirmed or rumour?** keeps running after launch. Performance reports from the first day will go in with sources, and nothing else. [The ledger](/gta6/everything-we-know)
+>
+> **This weekend on TechPlay**
+> What to do in your first hours, early money that doesn't need a grind, the cars worth finding first, and the console settings worth changing. Each guide goes up as soon as it's tested, not before.
+>
+> **Game Club: November is GTA VI**
+> The launch thread is open in Discord in #gta6. Story spoilers go in the spoiler thread only; the first week is spoiler-free in the main channel. [Join the thread](https://discord.gg/wPQG9gUMXH)
+>
+> **On your shelf**
+> *Members:* [Mark GTA VI as Playing] (one click). If you've linked Xbox or PlayStation, it will also appear after the next library sync. Console playtime doesn't reach us automatically, so log sessions in your journal if you want them in your 2026 recap in December.
+> *Subscribers:* A free account adds GTA VI to a library with everything else you play, and the map tracker saves to it. [Start your library]
+>
+> **[Open the map tracker]** *(primary button)*
+>
+> One more briefing on Sunday with the first weekend's guides; then the GTA VI briefing stops. If you'd like GTA VI guides after that, the Sunday email has a one-click option.
+> — The TechPlay editors
+>
+> You're getting this because you asked for the GTA VI briefing at techplay.gg. [Unsubscribe from the briefing] · [Unsubscribe from everything] · TechPlay is published by Luminor Solutions, 71000 Sarajevo, Bosnia and Herzegovina.
+
+Pre-send checks (ED, 07:00 UTC): release-time page shows confirmed times only; map attribution settled (D-020) or the tracker is presented without claiming the location data as TechPlay's own; vehicle guide live (C12); any performance claim in the email is labelled "reported" with a source, or removed.
 
 ---
