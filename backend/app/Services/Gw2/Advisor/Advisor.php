@@ -194,26 +194,38 @@ class Advisor
     }
 
     /**
-     * One activity often pushes several goals.
+     * One activity often pushes several goals, and one subject often has several
+     * rules with something to say about it.
      *
-     * Two candidates are the same thing when their identity matches. Beyond that,
-     * candidates that push the same goal are thinned to the best two, which is
-     * what stops the answer being "replace your second ring, your first
-     * accessory, and your second accessory" — three cards saying one thing.
+     * Three passes, and each one closed a duplicate that reached a real reader
+     * during development:
+     *
+     * **By subject.** Two rules share the achievements producer at different
+     * thresholds, so "Finish Auric Basin Explorer — 1 step left" and "Close on
+     * Auric Basin Explorer" are the same achievement described twice. Only the
+     * better-scoring one survives.
+     *
+     * **By identity.** The same rule reaching the same subject twice, which a
+     * producer should not do but is cheap to defend against.
+     *
+     * **By goal, capped at two.** What stops the answer being "replace your
+     * second ring, your first accessory, and your second accessory" — three
+     * cards saying one thing.
      *
      * @param  array<int, Signal>  $candidates
      * @return array<int, Signal>
      */
     private function dedupe(array $candidates): array
     {
+        usort($candidates, fn (Signal $a, Signal $b) => $b->score <=> $a->score);
+
+        $bySubject = [];
         $seen = [];
         $perGoal = [];
         $kept = [];
 
-        usort($candidates, fn (Signal $a, Signal $b) => $b->score <=> $a->score);
-
         foreach ($candidates as $signal) {
-            if (isset($seen[$signal->identity()])) {
+            if (isset($bySubject[$signal->subject]) || isset($seen[$signal->identity()])) {
                 continue;
             }
 
@@ -223,6 +235,7 @@ class Advisor
                 continue;
             }
 
+            $bySubject[$signal->subject] = true;
             $seen[$signal->identity()] = true;
             $perGoal[$goal] = ($perGoal[$goal] ?? 0) + 1;
             $kept[] = $signal;
@@ -240,29 +253,42 @@ class Advisor
         usort($signals, fn (Signal $a, Signal $b) => [$b->score, $a->rule->key] <=> [$a->score, $b->rule->key]);
 
         /*
-         * One domain must not own the headline.
+         * Round-robin across domains, not just for the headline.
          *
-         * The vault alone can produce five confident candidates, and they would
-         * legitimately win on score every single time — leaving a dashboard that
-         * says nothing about gear, masteries or achievements ever. Spreading the
-         * top three across domains costs a little ranking accuracy and buys a
-         * page that is about the account rather than about one endpoint.
+         * Spreading only the top three was not enough, and the test account
+         * showed exactly why: the vault and the mastery regions legitimately won
+         * on score, filled the headline and then filled all three alternatives
+         * too, so eight achievements a single step from finishing — the most
+         * actionable thing on the account — never appeared anywhere.
+         *
+         * Taking the best remaining candidate from a different domain each time
+         * costs some ranking accuracy in exchange for six recommendations that
+         * are about the account rather than about two endpoints. Within a domain
+         * the score order is untouched, and once every domain has been drawn from
+         * the cycle starts again, so nothing is dropped — only reordered.
          */
-        $spread = [];
-        $held = [];
-        $domains = [];
+        $byDomain = [];
 
         foreach ($signals as $signal) {
-            if (count($spread) < self::HEADLINE && ! isset($domains[$signal->rule->domain])) {
-                $domains[$signal->rule->domain] = true;
-                $spread[] = $signal;
-
-                continue;
-            }
-
-            $held[] = $signal;
+            $byDomain[$signal->rule->domain][] = $signal;
         }
 
-        return [...$spread, ...$held];
+        $ordered = [];
+
+        while ($byDomain !== []) {
+            // Best-first among the domains still holding something, so the
+            // strongest candidate of the round leads it.
+            uasort($byDomain, fn ($a, $b) => $b[0]->score <=> $a[0]->score);
+
+            foreach (array_keys($byDomain) as $domain) {
+                $ordered[] = array_shift($byDomain[$domain]);
+
+                if ($byDomain[$domain] === []) {
+                    unset($byDomain[$domain]);
+                }
+            }
+        }
+
+        return $ordered;
     }
 }
