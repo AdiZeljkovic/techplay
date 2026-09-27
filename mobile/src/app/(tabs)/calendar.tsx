@@ -13,7 +13,7 @@ import {
     View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { BellMark, BookmarkMark } from '@/components/Marks';
 import { Masthead } from '@/components/Masthead';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
@@ -317,7 +317,7 @@ export default function CalendarTab() {
                         error ? (
                             <View style={{ gap: space.lg }}>
                                 <Notice text={error} />
-                                <Button
+                                <CommandButton
                                     label="Try again"
                                     onPress={() => {
                                         setLoading(true);

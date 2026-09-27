@@ -11,7 +11,7 @@ import {
     View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { FeedCard } from '@/components/FeedCard';
 import {
     BookOpenMark,
@@ -226,7 +226,7 @@ export default function Feed() {
                     ) : error ? (
                         <View style={{ gap: space.lg }}>
                             <Notice text={error} />
-                            <Button label="Try again" onPress={() => { setLoading(true); load(1, 'replace'); }} variant="quiet" />
+                            <CommandButton label="Try again" onPress={() => { setLoading(true); load(1, 'replace'); }} variant="quiet" />
                         </View>
                     ) : (
                         <Text style={styles.empty}>Nothing published here yet.</Text>
@@ -245,7 +245,7 @@ export default function Feed() {
                     ) : error ? (
                         <View style={{ gap: space.md, marginTop: space.sm }}>
                             <Notice text={error} />
-                            <Button label="Load more" onPress={() => { setLoadingMore(true); load(page + 1, 'append'); }} variant="quiet" />
+                            <CommandButton label="Load more" onPress={() => { setLoadingMore(true); load(page + 1, 'append'); }} variant="quiet" />
                         </View>
                     ) : page >= lastPage && meta ? (
                         <Text style={styles.done}>

@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { FeaturedSlider } from '@/components/FeaturedSlider';
 import { HomeHero } from '@/components/HomeHero';
 import { Masthead } from '@/components/Masthead';
@@ -113,7 +113,7 @@ export default function Feed() {
                 {error && (
                     <View style={{ paddingHorizontal: space.lg, gap: space.md }}>
                         <Notice text={error} />
-                        <Button label="Try again" onPress={() => { setLoading(true); load(); }} variant="quiet" />
+                        <CommandButton label="Try again" onPress={() => { setLoading(true); load(); }} variant="quiet" />
                     </View>
                 )}
 

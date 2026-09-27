@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, Share, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Notice, Screen } from '@/components/Screen';
 import { api, OfflineError } from '@/lib/api';
 import { isSaved, read as readSaved, remove as removeSaved, save as saveArticle } from '@/lib/offline';
@@ -154,7 +154,7 @@ export default function ArticleScreen() {
             {error ? (
                 <View style={styles.centre}>
                     <Notice text={error} />
-                    <Button label="Try again" onPress={() => load()} variant="quiet" />
+                    <CommandButton label="Try again" onPress={() => load()} variant="quiet" />
                 </View>
             ) : !article ? (
                 <View style={styles.centre}>

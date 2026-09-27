@@ -25,7 +25,7 @@ import {
     type MarkProps,
 } from '@/components/Marks';
 import { Masthead } from '@/components/Masthead';
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Notice, Screen } from '@/components/Screen';
 import {
     activeCount,
@@ -292,7 +292,7 @@ export default function Games() {
                     ) : error ? (
                         <View style={{ gap: space.lg }}>
                             <Notice text={error} />
-                            <Button label="Try again" onPress={() => { setLoading(true); load(1, 'replace'); }} variant="quiet" />
+                            <CommandButton label="Try again" onPress={() => { setLoading(true); load(1, 'replace'); }} variant="quiet" />
                         </View>
                     ) : (
                         <Text style={styles.empty}>

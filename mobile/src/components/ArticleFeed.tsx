@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { ArticleCard } from '@/components/ArticleCard';
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Notice, Title } from '@/components/Screen';
 import type { Article } from '@/lib/content';
 import type { Paged } from '@/lib/paging';
@@ -130,7 +130,7 @@ export function ArticleFeed({
                     error ? (
                         <View style={{ gap: space.lg }}>
                             <Notice text={error} />
-                            <Button label="Try again" onPress={() => { setLoading(true); load(1, 'replace'); }} variant="quiet" />
+                            <CommandButton label="Try again" onPress={() => { setLoading(true); load(1, 'replace'); }} variant="quiet" />
                         </View>
                     ) : (
                         <Body>{emptyText}</Body>
@@ -151,7 +151,7 @@ export function ArticleFeed({
                         // read — the list stays and the message sits under it.
                         <View style={{ gap: space.md, marginTop: space.sm }}>
                             <Notice text={error} />
-                            <Button label="Load more" onPress={() => { setLoadingMore(true); load(page + 1, 'append'); }} variant="quiet" />
+                            <CommandButton label="Load more" onPress={() => { setLoadingMore(true); load(page + 1, 'append'); }} variant="quiet" />
                         </View>
                     ) : null
                 }

@@ -12,7 +12,7 @@ import {
     View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { ClockMark } from '@/components/Marks';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { ShelfPicker } from '@/components/ShelfPicker';
@@ -137,7 +137,7 @@ export default function GameScreen() {
             {error ? (
                 <View style={styles.centre}>
                     <Notice text={error} />
-                    <Button label="Try again" onPress={() => load()} variant="quiet" />
+                    <CommandButton label="Try again" onPress={() => load()} variant="quiet" />
                 </View>
             ) : !game ? (
                 <View style={styles.centre}>
@@ -204,7 +204,7 @@ export default function GameScreen() {
                     <Facts game={game} />
 
                     {user ? (
-                        <Button
+                        <CommandButton
                             label={shelf ? `On your shelf: ${SHELF_STATUS[shelf].label}` : 'Add to your shelf'}
                             onPress={() => setPicking(true)}
                         />
@@ -214,7 +214,7 @@ export default function GameScreen() {
                         </Body>
                     )}
 
-                    <Button
+                    <CommandButton
                         label="Open on techplay.gg"
                         variant="quiet"
                         onPress={() => Share.share({ message: `${SITE}/games/${game.slug}` })}

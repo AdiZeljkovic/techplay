@@ -2,7 +2,7 @@ import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Screen, Title } from '@/components/Screen';
 import { size, space } from '@/theme/tokens';
 
@@ -32,13 +32,13 @@ export default function TooOld() {
                 </Body>
 
                 {store ? (
-                    <Button
+                    <CommandButton
                         label="Open the store"
                         onPress={() => Linking.openURL(store)}
                         style={{ marginTop: space.lg }}
                     />
                 ) : (
-                    <Button
+                    <CommandButton
                         label="Open techplay.gg"
                         variant="quiet"
                         onPress={() => Linking.openURL('https://techplay.gg')}

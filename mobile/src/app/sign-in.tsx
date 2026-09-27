@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError, OfflineError } from '@/lib/api';
@@ -139,9 +139,9 @@ export default function SignIn() {
                         />
                     </View>
 
-                    <Button label="Sign in" onPress={submit} busy={busy} style={{ marginTop: space.sm }} />
+                    <CommandButton label="Sign in" onPress={submit} busy={busy} style={{ marginTop: space.sm }} />
 
-                    <Button
+                    <CommandButton
                         label="Create an account"
                         variant="quiet"
                         onPress={() => router.push('/register')}

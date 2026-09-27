@@ -10,7 +10,7 @@ import {
     View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { TurnstileGate } from '@/components/TurnstileGate';
 import { api, ApiError, OfflineError } from '@/lib/api';
@@ -132,7 +132,7 @@ export default function Register() {
                     <Body style={styles.footnote}>
                         Nothing arrived? Look in spam first. It is the usual answer.
                     </Body>
-                    <Button label="Back to sign in" onPress={() => router.replace('/sign-in')} style={{ marginTop: space.lg }} />
+                    <CommandButton label="Back to sign in" onPress={() => router.replace('/sign-in')} style={{ marginTop: space.lg }} />
                 </View>
             </Screen>
         );
@@ -233,7 +233,7 @@ export default function Register() {
 
                     <TurnstileGate onToken={setToken} onFailed={() => setToken(null)} />
 
-                    <Button label="Create player" onPress={submit} busy={busy} />
+                    <CommandButton label="Create player" onPress={submit} busy={busy} />
 
                     <Body style={styles.footnote}>
                         By creating an account you agree to our terms and privacy policy on

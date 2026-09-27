@@ -12,7 +12,7 @@ import {
     View,
 } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Body, Eyebrow, Notice, Screen } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
 import { getShelf, SHELF_FILTERS, SHELF_STATUS, type ShelfEntry, type ShelfStatus } from '@/lib/library';
@@ -95,7 +95,7 @@ export default function Library() {
                         Sign in to keep track of what you are playing, what you have finished, and
                         what is still waiting. Connect Steam and it fills itself.
                     </Body>
-                    <Button label="Sign in" onPress={() => router.replace('/sign-in')} style={{ marginTop: space.md }} />
+                    <CommandButton label="Sign in" onPress={() => router.replace('/sign-in')} style={{ marginTop: space.md }} />
                 </View>
             </Screen>
         );
@@ -169,7 +169,7 @@ export default function Library() {
                         error ? (
                             <View style={{ gap: space.lg }}>
                                 <Notice text={error} />
-                                <Button label="Try again" onPress={() => { setLoading(true); load(1, filter, 'replace'); }} variant="quiet" />
+                                <CommandButton label="Try again" onPress={() => { setLoading(true); load(1, filter, 'replace'); }} variant="quiet" />
                             </View>
                         ) : (
                             <Body>

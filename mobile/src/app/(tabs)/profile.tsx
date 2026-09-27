@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { CommandButton } from '@/components/CommandButton';
 import { Masthead } from '@/components/Masthead';
 import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { useAuth } from '@/context/AuthContext';
@@ -79,9 +79,9 @@ export default function ProfileTab() {
                         Sign in for your shelf, your XP and rank, the games you have finished, and
                         everything you are following.
                     </Body>
-                    <Button label="Sign in" onPress={() => router.push('/sign-in')} style={{ marginTop: space.lg }} />
-                    <Button label="Create an account" variant="quiet" onPress={() => router.push('/register')} />
-                    <Button label="Saved for offline" variant="quiet" onPress={() => router.push('/saved')} />
+                    <CommandButton label="Sign in" onPress={() => router.push('/sign-in')} style={{ marginTop: space.lg }} />
+                    <CommandButton label="Create an account" variant="quiet" onPress={() => router.push('/register')} />
+                    <CommandButton label="Saved for offline" variant="quiet" onPress={() => router.push('/saved')} />
                 </View>
             </Screen>
         );
@@ -176,11 +176,11 @@ export default function ProfileTab() {
                             <Tile label="Achievements" value={String(stats.achievements_count)} />
                         </View>
 
-                        <Button label="Open your shelf" variant="quiet" onPress={() => router.push('/library')} />
+                        <CommandButton label="Open your shelf" variant="quiet" onPress={() => router.push('/library')} />
                     </>
                 )}
 
-                <Button label="Saved for offline" variant="quiet" onPress={() => router.push('/saved')} />
+                <CommandButton label="Saved for offline" variant="quiet" onPress={() => router.push('/saved')} />
 
                 <View style={styles.rest}>
                     <Eyebrow>Still on the web</Eyebrow>
@@ -190,7 +190,7 @@ export default function ProfileTab() {
                     </Body>
                 </View>
 
-                <Button
+                <CommandButton
                     label="Sign out"
                     variant="quiet"
                     onPress={async () => { await signOut(); router.replace('/sign-in'); }}
