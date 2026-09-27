@@ -152,7 +152,13 @@ export function readerHtml(a: Reader): string {
     user-select: none;
   }
 
-  .wrap { padding: 0 20px 64px; }
+  /* 16 at the foot, not 64.
+     The 64 was right while this document was the whole screen and its last
+     line would otherwise have sat on the bezel. It is now measured and handed
+     to a native scroller with "Read next" and the comments underneath, so that
+     padding became a gap between the end of the article and the next heading —
+     dead space that reads as content failing to load. */
+  .wrap { padding: 0 20px 16px; }
 
   figure.hero { margin: 0 -20px 20px; }
   figure.hero img { width: 100%; display: block; background: var(--surface-2); }
@@ -290,6 +296,51 @@ export function readerHtml(a: Reader): string {
     t.parentNode.insertBefore(w, t);
     w.appendChild(t);
   });
+
+  /*
+   * How tall this document turned out, told to the app.
+   *
+   * The screen used to be a WebView and nothing else, so it could fill the
+   * window and scroll itself. Anything native underneath — comments, related
+   * articles — needs the article to be exactly as tall as its content, or the
+   * page has two scrollers fighting over one gesture.
+   *
+   * Reported more than once on purpose. The first number is wrong the moment
+   * an image finishes loading or a font swaps in, and an article that reports
+   * its height once ends up clipped mid-sentence with a comment box under it.
+   */
+  (function () {
+    var last = 0;
+
+    function report() {
+      var h = Math.ceil(document.documentElement.scrollHeight);
+
+      // A pixel of jitter on every font metric would post forever.
+      if (Math.abs(h - last) < 2) return;
+
+      last = h;
+      window.ReactNativeWebView && window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: 'height', value: h })
+      );
+    }
+
+    report();
+    window.addEventListener('load', report);
+    document.addEventListener('DOMContentLoaded', report);
+
+    // Images arrive after the text and are most of what changes the height.
+    document.querySelectorAll('img').forEach(function (img) {
+      img.addEventListener('load', report);
+      img.addEventListener('error', report);
+    });
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(report).observe(document.documentElement);
+    } else {
+      // An embed that resizes itself is the case this catches.
+      setInterval(report, 500);
+    }
+  })();
 </script>
 </body>
 </html>`;

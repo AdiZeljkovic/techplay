@@ -1,9 +1,11 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
+import { ActivityIndicator, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+import { Comments } from '@/components/Comments';
 import { CommandButton } from '@/components/CommandButton';
 import { Notice, Screen } from '@/components/Screen';
 import { api, OfflineError } from '@/lib/api';
@@ -11,9 +13,27 @@ import { isSaved, read as readSaved, remove as removeSaved, save as saveArticle 
 import { readerHtml } from '@/lib/readerHtml';
 import { colors, font, size, space, TOUCH_TARGET } from '@/theme/tokens';
 
-interface FullArticle {
+interface Related {
+    id: number;
     title: string;
     slug: string;
+    featured_image_url: string | null;
+}
+
+interface FullArticle {
+    /**
+     * Optional because a copy read off the phone has none.
+     *
+     * `SavedArticle` stores what is needed to render the piece, and an id is
+     * not part of that — so the comment thread, which is keyed on it, is not
+     * offered offline. Making this required instead would mean inventing an id
+     * for a saved article, and an invented id posts a comment onto somebody
+     * else's piece.
+     */
+    id?: number;
+    title: string;
+    slug: string;
+    related_articles?: Related[] | null;
     excerpt: string | null;
     content: string;
     featured_image_url: string | null;
@@ -36,6 +56,20 @@ export default function ArticleScreen() {
 
     /** Set when the copy on screen came off the phone rather than the network. */
     const [fromDisk, setFromDisk] = useState<string | null>(null);
+
+    /*
+     * How tall the article turned out.
+     *
+     * The reader used to be the whole screen and scrolled itself. Comments and
+     * related articles live underneath it now, in one native scroller, so the
+     * WebView has to be exactly as tall as its content — two scrollers in one
+     * gesture is a page that fights the thumb.
+     *
+     * The starting height is a guess that keeps the first paint from being an
+     * empty strip; the document corrects it as soon as it has laid out, and
+     * again whenever an image lands.
+     */
+    const [webHeight, setWebHeight] = useState(900);
 
     const load = useCallback(async (signal?: AbortSignal) => {
         setError(null);
@@ -161,6 +195,10 @@ export default function ArticleScreen() {
                     <ActivityIndicator color={colors.accentInk} />
                 </View>
             ) : (
+                <ScrollView
+                    contentContainerStyle={{ paddingBottom: space.xxl }}
+                    showsVerticalScrollIndicator={false}
+                >
                 <WebView
                     originWhitelist={['*']}
                     source={{
@@ -177,7 +215,25 @@ export default function ArticleScreen() {
                         }),
                         baseUrl: SITE,
                     }}
-                    style={styles.web}
+                    style={[styles.web, { height: webHeight }]}
+                    /* The document scrolls nothing; the ScrollView around it
+                       does. Left on, a drag inside the article would move the
+                       WebView's own viewport and the page under it would sit
+                       still. */
+                    scrollEnabled={false}
+                    nestedScrollEnabled={false}
+                    onMessage={(event) => {
+                        try {
+                            const message = JSON.parse(event.nativeEvent.data);
+
+                            if (message?.type === 'height' && Number.isFinite(message.value)) {
+                                setWebHeight(Math.max(240, Math.ceil(message.value)));
+                            }
+                        } catch {
+                            // The reader posts nothing else. Anything that is not
+                            // ours is not worth a crash.
+                        }
+                    }}
                     /* Without this the WebView paints white for a frame before
                        the document's own background lands, which on a dark app
                        reads as a flash of broken. */
@@ -205,12 +261,76 @@ export default function ArticleScreen() {
                     domStorageEnabled={false}
                     showsVerticalScrollIndicator={false}
                 />
+
+                {/* Everything the article used to end without.
+
+                    Related first, then the conversation: somebody who finished
+                    the piece is more likely to want another one than to want to
+                    argue, and the ones who came to argue will scroll past four
+                    cards without noticing them. */}
+                {(article.related_articles ?? []).length > 0 ? (
+                    <View style={styles.after}>
+                        <Text style={styles.afterHead}>Read next</Text>
+
+                        <View style={{ gap: space.md }}>
+                            {(article.related_articles ?? []).slice(0, 4).map((r) => (
+                                <Pressable
+                                    key={r.id}
+                                    onPress={() => router.push(`/news/${r.slug}`)}
+                                    style={({ pressed }) => [styles.related, pressed ? { opacity: 0.7 } : null]}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={r.title}
+                                >
+                                    {r.featured_image_url ? (
+                                        <Image
+                                            source={{ uri: r.featured_image_url }}
+                                            style={styles.relatedArt}
+                                            contentFit="cover"
+                                            transition={120}
+                                        />
+                                    ) : (
+                                        <View style={[styles.relatedArt, { backgroundColor: colors.surface2 }]} />
+                                    )}
+
+                                    <Text style={styles.relatedTitle} numberOfLines={3}>
+                                        {r.title}
+                                    </Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                    </View>
+                ) : null}
+
+                {/* Offline, the saved copy has no id to hang a thread on — and
+                    a comment box with no network behind it is a promise the
+                    screen cannot keep. */}
+                {!fromDisk && article.id ? (
+                    <Comments type="article" id={article.id} title={article.title} />
+                ) : null}
+                </ScrollView>
             )}
         </Screen>
     );
 }
 
 const styles = StyleSheet.create({
+    after: { gap: space.md, paddingHorizontal: space.lg, paddingTop: space.xl },
+    afterHead: {
+        fontFamily: font.display,
+        fontSize: size.lead,
+        letterSpacing: -0.2,
+        color: colors.inkHi,
+    },
+    related: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
+    relatedArt: { width: 96, height: 60, borderRadius: 8 },
+    relatedTitle: {
+        flex: 1,
+        fontFamily: font.bodyMedium,
+        fontSize: size.small,
+        lineHeight: size.small * 1.32,
+        color: colors.inkHi,
+    },
+
     bar: {
         height: TOUCH_TARGET,
         flexDirection: 'row',
