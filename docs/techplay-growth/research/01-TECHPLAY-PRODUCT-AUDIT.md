@@ -725,7 +725,7 @@ Repository files (all under `/home/user/techplay/`):
 - Config/public: `frontend/next.config.ts`, `frontend/package.json`, `frontend/.env.example`, `frontend/public/{manifest.json,ads.txt,llms.txt}`, `frontend/public/` listing, `frontend/app/globals.css`, `frontend/scripts/mobile-audit.mjs`
 - Docs/backend for cross-checks: `docs/README.md` (§4, §5, §6, §12, §16, §17, §19, §20), `CLAUDE.md`, `backend/routes/web.php`, `backend/app/Http/Controllers/SitemapController.php`, `backend/app/Http/Controllers/RssController.php`, `deployment/nginx-site-techplay.conf`
 
-External URLs fetched: none. Sources CSV written with header only: `scratchpad/sources/repo-frontend.csv`.
+External URLs fetched: none. All sources are repository files.
 
 ---
 
@@ -1602,7 +1602,7 @@ No external web sources were used for this file. All facts are from the reposito
 - `frontend/app/{frontiers,tools,last-disc,backlog-advisor}/*.tsx`, `frontend/lib/tools.ts` (for §7 only)
 - `mobile/README.md` (context)
 
-Sources CSV: `/tmp/claude-0/-home-user-techplay/8329825e-1423-5d2b-8f03-bdbc41a74c77/scratchpad/sources/repo-backend.csv` (header only).
+No external sources; all sources are repository files.
 
 ## B. Gaps / needs more data
 

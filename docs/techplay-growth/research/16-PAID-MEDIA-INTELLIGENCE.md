@@ -227,6 +227,35 @@ Note the spread: "published Meta CPM benchmarks now differ by more than 2× depe
 - Search-snippet-level claims: MGID "more permissive content policy", "30–50% cheaper" than Taboola/Outbrain (Brax; vendor) — consistent with lower quality.
 - RECOMMENDATION: reject as a **buy side** (TechPlay's ads next to "one weird trick" is a brand cost) and as a **sell side** (the widget on TechPlay pages is the same reputational hit that made Slate remove it). Fit 1 everywhere.
 
+### 2.14a Benchmark reconciliation — why the numbers disagree
+
+The fetched panels do not agree, and the document should not pretend they do:
+
+| Metric | Low | High | Why |
+|---|---|---|---|
+| Meta CPM | $6.59–8.17 (Gupta, Oct 2025, "tens of billions of ad impressions", all objectives, global) | $14.19 (Triple Whale, ecommerce DTC panel, via search summary) / $16.08 US ecommerce (Lebesgue, Jul 2026) | Objective mix (reach campaigns pull CPM down), geography (US is the most expensive market — README §19 says the same about AdSense), and vertical (ecommerce panels are Sales-objective heavy) |
+| Meta CPC | $0.34 Arts & Entertainment traffic (LocaliQ 2026) | $1.92 Leads objective (AdAmigo 2025 data) | Objective: traffic buys clickers, leads buys people who fill forms |
+| Meta CPL | $14.59 Arts & Entertainment (LocaliQ) | $27.39–27.66 all-industry (LocaliQ, AdAmigo) | Vertical; entertainment forms are easy asks (a "notify me" is not a mortgage enquiry) |
+| TikTok CPM | $4.67 (Gupta, Oct 2025) | $9.16 in-feed / $11.85 Spark (Digital Applied 2026) | Panel and format; Spark's higher CPM is claimed to be offset by 2.4× CTR |
+| YouTube Shorts CPM | ~$4 (Store Growers citing Strike Social 2024) | $4.85 (Digital Applied Q1 2026) | Close agreement — the one place two independent compilations converge |
+| Reddit CPC | $0.50 (several vendor guides) | $3.50–4.00 | Competition by subreddit; gaming communities are large, so the low end is plausible for awareness and the high end for conversion bids |
+| X CPC | $0.18 median (Hootsuite 2025 via roundup) | $2.00 (WebFX) | Demand collapse makes X cheap; cheap is not the same as good |
+
+RECOMMENDATION: for planning use the *low* end to size impressions and the *high* end to size cost per action, and write both into every test card (§6). Any single "average" quoted to management should carry its panel and date.
+
+### 2.14b EEA / consent implications per platform (what "denied by default" does to each)
+
+| Platform | If EEA visitor has not consented (README §19 default) | Measurement fallback |
+|---|---|---|
+| Meta Pixel / CAPI | Pixel must stay revoked (FACT, Meta GDPR doc); CAPI events without consent should not be sent; Meta's "less personalised ads" regime for EU users (BEUC/EU Perspectives, search results only) means EU delivery is also less targetable | First-party landing counter with `utm_*`; treat EEA Meta results as directional |
+| Google Ads (Search, Display, YouTube, Demand Gen, PMax) | `ad_storage`/`ad_user_data`/`ad_personalization` denied → no remarketing cookies, no audience list membership; conversion modelling only if consent mode is implemented (FACT, Google consent guide) | Consent-mode modelled conversions in Google Ads; first-party counter for ground truth |
+| TikTok Pixel / Events API | Not fetched — UNKNOWN specifics; assume the same gating | First-party counter |
+| Reddit Pixel | Not fetched — UNKNOWN | First-party counter |
+| Newsletter networks (beehiiv/SparkLoop) | Not applicable (platform-hosted) | — |
+| First-party collector | Counts everyone without identifiers (FACT) — the only complete view, once `utm_*` is stored | This is the source of truth for EEA paid tests |
+
+Practical consequence: **US-first testing is not a preference, it is forced by the consent architecture**. It also aligns with the README's note that the US is 35% of traffic and the most valuable AdSense market — which cuts both ways: the audience easiest to measure is also the most expensive to buy (US CPM $16.08 in the Lebesgue ecommerce panel vs $11.81 UK).
+
 ### 2.15 Policy constraints consolidated: giveaways, gambling-like mechanics, minors
 
 **Giveaways / sweepstakes**

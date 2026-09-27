@@ -429,7 +429,7 @@ Article: breadcrumb (category → 404) → H1 → byline/date/read time → "SHA
 
 ## Sources used
 
-All accessed 27 Sep 2026 by direct fetch; full list with the claim each supports is in the agent CSV (`scratchpad/sources/live-site.csv`, 95 rows).
+All accessed 27 Sep 2026 by direct fetch; full list with the claim each supports is in `research-sources.csv` (file 02 rows).
 
 - https://techplay.gg/ · /news · /news/page/2 · /news/page/3 · /reviews · /guides · /hardware · /videos (404) · /latest
 - https://techplay.gg/news/epic-games-faces-eur100m-fortnite-claim-in-the-netherlands · /news/now-you-can-turn-off-gps-aids-in-marvels-wolverine-for-side-content · /news/tim-schafer-on-gaming-layoffs-someone-got-greedy · /news/gta-6-is-getting-a-400-collectors-set-which-does-not-contain-the-game
