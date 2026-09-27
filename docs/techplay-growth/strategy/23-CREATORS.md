@@ -7,7 +7,7 @@ Part 26 of the growth plan. Research inputs: R13, R15 (§2–§5), R14 (data poi
 - **Twelve low-cost formats** from R15 §3, each tied to a dated moment: data points from the PR calendar (22), creator profile pages, co-hosted Discord events, a Game Awards prediction league with creator leagues, Taste Match challenges, WoW "rate my character" with the Analyzer, Game Club hosts, embedded videos in guides, year-in-review cards.
 - **Five tiers:** community leaders (Discord owners, guild leaders), nano (<1k), micro (1k–50k, R15's band), mid (50k–250k, data points only), and creator-owned outlets and podcasts (EIC only, low odds). A regional track runs in parallel.
 - **Found without paid tools:** YouTube and TikTok search on Q4 topics, Twitch categories, video descriptions that credit Keymailer or Lurkit keys, Blizzard forum guild recruitment posts, Podchaser, our own Discord. Every candidate is scored on six criteria before contact.
-- **Nine outreach templates,** each with an email, a DM and two follow-ups, all in plain English with the offer in the first two lines.
+- **Ten outreach templates (T1–T10),** each with an email, a DM and two follow-ups, all in plain English with the offer in the first two lines.
 - **Everything is tracked** with `utm_source=creator-<handle>`, one Discord invite code per creator (C36, D-011), `/register?from=creator-<handle>` (D-014), and the canonical events `discord_join`, `registration_complete`, `tool_run`.
 - **Disclosure is non-negotiable.** Anything of value (keys, prizes) means the creator uses the platform's paid-partnership label; data credits are credits, not sponsorships. TechPlay labels its side too.
 - **TARGET by 20 Dec:** 45 creators and community leaders contacted, 12 active collaborations, 4 co-hosted Discord events, and every collaboration measurable by its own code. Capacity about 7 hours a week (SC 4, EIC 2, DS 1).
@@ -21,7 +21,7 @@ Part 26 of the growth plan. Research inputs: R13, R15 (§2–§5), R14 (data poi
 | A verified number and chart for a video, with method, before anyone else has it (22 §5) | Money, paid sponsorships, audience size, "exposure" |
 | Tools the creator's audience can use for free: WoW Analyzer (works logged out [R10]), release calendar and reminders, five-platform library import, Taste Match, Backlog Advisor | Guaranteed coverage or reviews |
 | A profile on TechPlay that shows their library and links their channel, plus an award-only "Creator" badge | Member counts or reach claims (spine §0) |
-| A Discord Stage or voice event, promoted as a Scheduled Event, with Professor Buffy posting reminders [R13] | Keys from publishers unless the publisher agrees (24 §2) |
+| A Discord Stage or voice event, promoted as a Scheduled Event, with Professor Buffy posting reminders [R13] | Keys from publishers unless the publisher agrees (24 §8, keys ledger) |
 | Credit and a link: in the data page, the newsletter, the Discord announcement, and the game or guide page that embeds their video | Anything that asks the creator to misstate a number |
 
 What creators respond to [R15 §5]: a clear, true number; tools their audience can use; membership mechanics they already use (Discord roles); credit and a link.
@@ -71,7 +71,7 @@ Follower bands are our segmentation for workload; only the 1k–50k micro band c
 | CF-11 | Community competition judged by a creator (#8) | Prize through the giveaways system, only when a real prize exists (C09 status: VERIFY IN ADMIN) | Judges; announces winner | Q1 2027 unless C09 is live | SC 3 h |
 | CF-12 | Guest "30 days later" Verdict (#4, F24) | Editing, publication, byline | A 600–900 word piece | Q1 2027, after C52 has restarted reviews | EIC 3 h |
 
-Not now: affiliate revenue share (#13) has no live affiliate programme to share (24 §5); Steam Curator co-curation (#16) is covered in 24 §4.
+Not now: affiliate revenue share (#13) has no live affiliate programme to share (24 §4.5); Steam Curator co-curation (#16) is covered in 24 §4.2.
 
 ## 5. Finding creators without paid tools
 

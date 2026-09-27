@@ -1,0 +1,1916 @@
+{
+  "version": "2026-09-27",
+  "note": "Designs are pre/post, ABAB, parity holdout or matched page groups; see 31-EXPERIMENTS.md §2.",
+  "experiments": [
+    {
+      "id": "X-001",
+      "name": "Social sign-in above the email form",
+      "area": "registration",
+      "hypothesis": "Putting Google, Discord and Battle.net (and Steam once D-015 ships) above the password form raises completion, because social sign-up skips Turnstile, the five-rule password and the inbox wait [R11 §1.3].",
+      "audience": "All visitors to /register (phone layout first: 1,487 phone vs 184 desktop requests [R11]).",
+      "change": "RegisterClient.tsx: full-width social buttons on top, 'or with email' form below (C44 page rewrite, R-02 in 15-REGISTRATION).",
+      "metric": "registration_complete ÷ /register sessions (first-party), split by method",
+      "effort": "S",
+      "expected_learning": "Whether friction (the gates) or motivation (the offer) is what stops sign-ups.",
+      "duration_days": 28,
+      "success_threshold": "Post-window completion rate ≥ 1.5× the 14-day pre-window AND ≥ 60% of completions via a social method, with ≥ 15 completions in the post window.",
+      "dependencies": [
+        "D-014",
+        "C44",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-002",
+      "name": "Honest register panel (trust fix)",
+      "area": "registration",
+      "hypothesis": "Replacing '15K+ MEMBERS · 50K+ GAMES' and the false read-XP perk with the homepage's four mechanisms and an API-fed game count does not reduce completion.",
+      "audience": "All /register visitors.",
+      "change": "D-001 copy change on /register and /login; no other change in the same fortnight.",
+      "metric": "registration_complete ÷ /register sessions",
+      "effort": "S",
+      "expected_learning": "Shows that removing false social proof costs nothing measurable; the change ships regardless because it is a correctness fix.",
+      "duration_days": 28,
+      "success_threshold": "Non-inferiority: post-window completion rate ≥ 0.8× the pre-window rate. A lower result is recorded, not reverted.",
+      "dependencies": [
+        "D-001",
+        "C01"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-003",
+      "name": "Steam as a sign-in method",
+      "area": "registration",
+      "hypothesis": "A 'Sign in through Steam' button produces A2 Shelved members at ≥ 2× the rate of email sign-ups, because the library imports on the first click [R11 §5].",
+      "audience": "/register visitors and the onboarding wizard; S2 Multi-platform Collectors, S3 PC Tinkerers.",
+      "change": "D-015 Steam OpenID login creating the account from the SteamID64 and starting the import job; email asked for later (X-016).",
+      "metric": "registration_complete (method=steam); library_connected within 7 days by method",
+      "effort": "M",
+      "expected_learning": "Whether 'the library is the sign-up' is TechPlay's best acquisition argument.",
+      "duration_days": 28,
+      "success_threshold": "≥ 10 Steam sign-ups in 28 days AND their 7-day A2 rate ≥ 2× the email-method A2 rate in the same window.",
+      "dependencies": [
+        "D-015",
+        "C44",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-004",
+      "name": "Return new members to where they started",
+      "area": "registration",
+      "hypothesis": "Returning a new member to the page they came from (comment box, game page, giveaway) raises the share who act within the first hour.",
+      "audience": "Registrants arriving from comments, game pages, giveaways (from=comments|game|giveaway).",
+      "change": "D-014 honours ?redirect= for social sign-ups and verified email sign-ups; D-016 resumes the action.",
+      "metric": "Share of registration_complete followed by comment_created, shelf_add or reminder_set within 60 minutes",
+      "effort": "S",
+      "expected_learning": "How much intent is lost at the registration hop today.",
+      "duration_days": 28,
+      "success_threshold": "≥ 40% of redirected registrants act within 60 minutes (pre-period share from a users/comments/user_games timestamp query), minimum 10 registrants.",
+      "dependencies": [
+        "D-014",
+        "D-016",
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-005",
+      "name": "Guest 'Remind me' on game and calendar pages",
+      "area": "registration",
+      "hypothesis": "Game pages are the largest sign-up surface (56,355 URLs indexed [R03]); a guest 'Remind me' that opens a sign-up modal and returns to the game converts better than today's login link.",
+      "audience": "Guests on unreleased game pages, /calendar and /calendar/[slug].",
+      "change": "D-016 modal ('Tell me when {game} is out. Free account, one click with Google or Discord.'), C45.",
+      "metric": "registration_complete (from=game|calendar); reminder_set in the first session",
+      "effort": "M",
+      "expected_learning": "Whether release intent is a stronger sign-up reason than 'start your library'.",
+      "duration_days": 28,
+      "success_threshold": "≥ 20 registrations with from=game or from=calendar in 28 days AND ≥ 70% of them have reminder_set in the same session.",
+      "dependencies": [
+        "D-016",
+        "C45",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-006",
+      "name": "Game-specific article-end prompt",
+      "area": "registration",
+      "hypothesis": "On articles with a game_id, 'Add {game} to your shelf' earns more clicks than the generic account panel.",
+      "audience": "Guests reading articles that carry articles.game_id.",
+      "change": "JoinPrompt variant inside the D-010 article-end block; alternate generic and game variants by ISO week (ABAB).",
+      "metric": "cta_click (cta_id=article-end-join-generic vs article-end-join-game) per 1,000 article sessions; registration_complete from=article-game",
+      "effort": "S",
+      "expected_learning": "Whether specificity beats a general pitch on the surface with the most readers.",
+      "duration_days": 28,
+      "success_threshold": "Game variant click rate ≥ 1.3× generic in both of its weeks, with ≥ 30 clicks in total.",
+      "dependencies": [
+        "D-010",
+        "C46",
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "ABAB weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-007",
+      "name": "Verify-email page that says what already works",
+      "area": "registration",
+      "hypothesis": "Explaining what works before verification (shelf, import) and what verification unlocks (comments, giveaways, digest) raises 72-hour verification.",
+      "audience": "Email-method registrants waiting on /verify-email.",
+      "change": "Copy change on /verify-email (R-05 in 15-REGISTRATION): one list of 'works now', one of 'after you click the link'.",
+      "metric": "email_verified within 72 h ÷ registration_complete (method=email); weekly prune count",
+      "effort": "S",
+      "expected_learning": "Whether the inbox gate loses people through confusion or through a missing mail.",
+      "duration_days": 42,
+      "success_threshold": "≥ 90% verify within 72 h (last reading: 50 of 55 confirmed, undated window [R12]) AND prune count does not rise.",
+      "dependencies": [
+        "D-014",
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-008",
+      "name": "Newsletter verify page offers an account",
+      "area": "registration",
+      "hypothesis": "The moment after double opt-in is warm; a pre-filled 'make it an account' with Google one-tap converts ≥ 10% of new verified subscribers.",
+      "audience": "People landing on /newsletter/verify after clicking the confirmation link.",
+      "change": "Panel on app/newsletter/verify/page.tsx: 'You're on the list. Want your games in one place too?' with Google/Discord buttons and email pre-filled.",
+      "metric": "registration_complete (from=newsletter-verify) ÷ newsletter_verified",
+      "effort": "S",
+      "expected_learning": "Whether newsletter and account are one audience or two.",
+      "duration_days": 42,
+      "success_threshold": "≥ 10% of newly verified subscribers register within 10 minutes, measured over ≥ 50 verifications.",
+      "dependencies": [
+        "D-012",
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-009",
+      "name": "Leaderboard empty state becomes an invitation",
+      "area": "registration",
+      "hypothesis": "Replacing 'Nobody has moved yet this week' with 'Be the first this week: connect Steam and your completions count' turns an empty page into a sign-up path.",
+      "audience": "Guests on /leaderboard.",
+      "change": "Copy and CTA on the empty state (D-029 hides zero-value modules elsewhere).",
+      "metric": "cta_click (cta_id=leaderboard-empty-connect); registration_complete (from=leaderboard)",
+      "effort": "S",
+      "expected_learning": "Whether competitive framing works at a population of 60.",
+      "duration_days": 28,
+      "success_threshold": "≥ 5 registrations with from=leaderboard in 28 days (pre-period assumed 0; nothing measured it).",
+      "dependencies": [
+        "D-029",
+        "D-007"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-010",
+      "name": "Buffy replies with a one-click account link",
+      "area": "registration",
+      "hypothesis": "Unlinked Discord members who use /daily, /profile or /library register at ≥ 20% when the bot answers with a Discord OAuth link that lands on the shelf [R11 row 20].",
+      "audience": "Discord members with no linked TechPlay account who run a member command.",
+      "change": "Bot reply footer: 'This works better with your library behind it. Link in one click:' → Discord OAuth → /profile shelf.",
+      "metric": "registration_complete (method=discord, from=discord) ÷ distinct unlinked command users",
+      "effort": "S",
+      "expected_learning": "Whether the Discord room is the highest-intent acquisition pool TechPlay has.",
+      "duration_days": 28,
+      "success_threshold": "≥ 20% of unlinked members who trigger a command register within 14 days, minimum 10 distinct members.",
+      "dependencies": [
+        "C35",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-011",
+      "name": "Wizard order: connect Steam first vs pick games first",
+      "area": "activation",
+      "hypothesis": "Opening the onboarding wizard on 'connect Steam' produces more A2 members than opening on 'pick games', because import fills the shelf in one step.",
+      "audience": "New members who see WelcomeOnboarding.tsx.",
+      "change": "Alternate the first wizard step by ISO week (ABAB).",
+      "metric": "wizard_shown → library_connected or wizard_pick_done; A2 within 7 days",
+      "effort": "S",
+      "expected_learning": "Which first step carries more members over the A2 line.",
+      "duration_days": 28,
+      "success_threshold": "Winning order's 7-day A2 rate ≥ 1.3× the other across both of its weeks, with ≥ 15 wizard_shown per arm; otherwise extend by 2 weeks and call it inconclusive.",
+      "dependencies": [
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "ABAB weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-012",
+      "name": "Founding 100 framing",
+      "area": "activation",
+      "hypothesis": "Telling registrants that the first 100 members who connect a platform or shelve three games get the Founder badge raises the A2 rate.",
+      "audience": "All new members from launch of C68.",
+      "change": "Extend campaign:founders from 50 (≥5 games) to 100 with the A2 rule; show a live 'N of 100 claimed' count from the API on /register and in the wizard.",
+      "metric": "A2 within 7 days of registration_complete; badges awarded",
+      "effort": "S",
+      "expected_learning": "Whether scarcity that is true moves activation without inflating anything.",
+      "duration_days": 42,
+      "success_threshold": "7-day A2 rate ≥ 1.5× the 21-day pre-window AND ≥ 25 badges awarded by 31 Oct. The count shown must be live; no placeholder.",
+      "dependencies": [
+        "C68",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-013",
+      "name": "Library-worth card straight after import",
+      "area": "activation",
+      "hypothesis": "Showing 'Your Steam library: N games, $X at today's prices' right after import increases sharing and 7-day return.",
+      "audience": "Members completing a Steam import (US Steam prices only [R01]).",
+      "change": "Card on the import-complete screen with Save/Share (D-024 share card route).",
+      "metric": "share_card_generated (type=library-worth) ÷ library_connected (platform=steam); A3 within 7 days",
+      "effort": "M",
+      "expected_learning": "Whether a number about their own library is the share trigger TOOL-03 scored it as [R21].",
+      "duration_days": 28,
+      "success_threshold": "≥ 15% of Steam importers generate a card AND ≥ 3 registrations arrive through card links (from=share-card) in 28 days.",
+      "dependencies": [
+        "D-024",
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-014",
+      "name": "Welcome email 2: link your library",
+      "area": "activation",
+      "hypothesis": "A day-2 email ('Your shelf is empty. Steam takes 30 seconds.') raises A2 among members who have not activated.",
+      "audience": "Non-activated new members; alternate by user id parity (treated vs holdout).",
+      "change": "Email 2 of the C42 welcome sequence; holdout receives nothing on day 2.",
+      "metric": "library_connected within 7 days, treated vs holdout",
+      "effort": "M",
+      "expected_learning": "Whether email can do activation work the bell cannot.",
+      "duration_days": 42,
+      "success_threshold": "Treated A2 rate ≥ holdout + 10 percentage points with ≥ 30 members per arm; below 30 per arm the result is read as directional only.",
+      "dependencies": [
+        "C42",
+        "D-013",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "holdout (user id parity)",
+      "status": "backlog"
+    },
+    {
+      "id": "X-015",
+      "name": "Three-item checklist instead of seven",
+      "area": "activation",
+      "hypothesis": "Cutting ProfileChecklist from seven items to three (connect a platform, add three games, set one reminder) raises completion of those three.",
+      "audience": "New members on their dashboard.",
+      "change": "ProfileChecklist.tsx shows three items; the other four move to a 'later' list.",
+      "metric": "Share of new members with library_connected or 3× shelf_add AND reminder_set within 7 days",
+      "effort": "S",
+      "expected_learning": "Whether choice overload is part of the activation gap (3 of 55 added a game [R12]).",
+      "duration_days": 56,
+      "success_threshold": "Share completing all three ≥ 2× the share who did the same three things in the 28-day pre-window.",
+      "dependencies": [
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-016",
+      "name": "Ask Steam-only accounts for email at the reminder",
+      "area": "activation",
+      "hypothesis": "Asking 'Where should we send the release reminder?' at the moment of reminder_set gets an email from ≥ 50% of Steam-only accounts [R11 §5].",
+      "audience": "Accounts created through Steam sign-in with no email.",
+      "change": "Inline email field in the reminder confirmation; email verified by link.",
+      "metric": "Email attached ÷ Steam-only accounts that set a reminder",
+      "effort": "S",
+      "expected_learning": "Whether Steam sign-in accounts can become reachable without a gate.",
+      "duration_days": 28,
+      "success_threshold": "≥ 50% attach and verify an email, minimum 10 Steam-only reminder setters.",
+      "dependencies": [
+        "D-015",
+        "D-013"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-017",
+      "name": "Gamer DNA card at ten shelf items",
+      "area": "activation",
+      "hypothesis": "Prompting the Gamer DNA share card once a member reaches ten shelf items produces shares that bring registrations.",
+      "audience": "Members crossing ten user_games rows.",
+      "change": "One-time prompt with the D-024 card and Save/Share.",
+      "metric": "share_card_generated (type=gamer-dna); registration_complete (from=share-card)",
+      "effort": "S",
+      "expected_learning": "Whether identity cards travel for TechPlay the way recaps do elsewhere [R11 §2.5].",
+      "duration_days": 28,
+      "success_threshold": "≥ 20% of eligible members generate a card AND ≥ 5 registrations via card links in 28 days.",
+      "dependencies": [
+        "D-024",
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-018",
+      "name": "Backlog Advisor guest mode",
+      "area": "activation",
+      "hypothesis": "Letting guests type five games and get a pick, then offering 'import your backlog instead of typing it', converts better than the sign-in wall.",
+      "audience": "Guests on /backlog-advisor (today a SignInWall).",
+      "change": "D-037 guest mode; result screen ends with Steam/Google sign-up that imports.",
+      "metric": "tool_run (tool=backlog, guest); registration_complete (from=advisor)",
+      "effort": "M",
+      "expected_learning": "Whether a useful answer before sign-up beats a promise of one.",
+      "duration_days": 28,
+      "success_threshold": "≥ 100 guest runs AND ≥ 5% of runs followed by registration within the session.",
+      "dependencies": [
+        "D-037",
+        "D-007"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-019",
+      "name": "Homepage newsletter block",
+      "area": "newsletter",
+      "hypothesis": "A homepage capture block for The Save File converts at least 3 per 1,000 homepage sessions; today there is no homepage capture [R20].",
+      "audience": "Homepage visitors, signed out and signed in.",
+      "change": "D-012 block under the hero: 'The Save File. Fridays. The week's releases, one fix, one number. No spam, one-click unsubscribe.'",
+      "metric": "newsletter_signup (placement=home) per 1,000 homepage sessions; newsletter_verified ÷ newsletter_signup",
+      "effort": "S",
+      "expected_learning": "The capture rate of the most-seen page, to size every other placement against.",
+      "duration_days": 28,
+      "success_threshold": "≥ 3 signups per 1,000 homepage sessions AND ≥ 70% verify within 72 h.",
+      "dependencies": [
+        "D-012",
+        "C40",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-020",
+      "name": "Article end: newsletter first vs account first",
+      "area": "newsletter",
+      "hypothesis": "One ordering of the D-010 end block (newsletter field above the account prompt, or the reverse) produces more total owned-audience actions.",
+      "audience": "All article readers.",
+      "change": "Alternate order by ISO week (ABAB); copy identical.",
+      "metric": "(newsletter_signup + registration_complete) per 1,000 article sessions",
+      "effort": "S",
+      "expected_learning": "Which ask a reader at the end of a news story will accept.",
+      "duration_days": 28,
+      "success_threshold": "Winning order ≥ 1.25× the combined rate in both of its weeks, with ≥ 40 combined actions in total.",
+      "dependencies": [
+        "D-010",
+        "D-012",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "ABAB weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-021",
+      "name": "/newsletter landing with a real sample issue",
+      "area": "newsletter",
+      "hypothesis": "Showing the latest issue (web archive of F21) on /newsletter raises conversion of that page.",
+      "audience": "Visitors to /newsletter (new) from social, Discord and the footer.",
+      "change": "Embed the most recent issue under the form from the first issue onward; before that, the promise only.",
+      "metric": "newsletter_signup ÷ /newsletter sessions",
+      "effort": "S",
+      "expected_learning": "Whether proof of the product beats a description of it.",
+      "duration_days": 28,
+      "success_threshold": "Post-window rate ≥ 1.3× pre-window with ≥ 200 landing sessions across both windows.",
+      "dependencies": [
+        "D-012",
+        "C40"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-022",
+      "name": "Specific subject lines vs numbered ones",
+      "area": "newsletter",
+      "hypothesis": "Subject lines naming the week's concrete items ('GTA VI pre-load date, 6 releases, 1 fix') get more clicks than numbered ones ('The Save File #3').",
+      "audience": "All verified subscribers.",
+      "change": "Alternate style by issue over eight issues.",
+      "metric": "Unique clicks ÷ delivered per issue (opens are a floor only [R20])",
+      "effort": "S",
+      "expected_learning": "Which subject style drives the click, the only trusted email metric.",
+      "duration_days": 56,
+      "success_threshold": "Specific style click rate ≥ 1.2× numbered across 4 issues each, with unsubscribe ≤ 0.5% on every send.",
+      "dependencies": [
+        "C40"
+      ],
+      "priority": "P2",
+      "design": "alternating issues",
+      "status": "backlog"
+    },
+    {
+      "id": "X-023",
+      "name": "Send time: Friday 08:00 vs 16:00 CET",
+      "area": "newsletter",
+      "hypothesis": "The Save File sent Friday 08:00 CET gets more 48-hour clicks than Friday 16:00 CET (the digest's current slot).",
+      "audience": "All verified subscribers.",
+      "change": "Alternate send time by week for eight weeks.",
+      "metric": "Unique clicks within 48 h ÷ delivered",
+      "effort": "S",
+      "expected_learning": "Whether the US-heavy audience (about 35% of traffic [R16]) changes the best slot.",
+      "duration_days": 56,
+      "success_threshold": "One slot wins by ≥ 20% relative in at least 3 of 4 weekly pairs; otherwise keep 16:00.",
+      "dependencies": [
+        "C40"
+      ],
+      "priority": "P3",
+      "design": "alternating weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-024",
+      "name": "GTA 6 briefing with a dated promise",
+      "area": "newsletter",
+      "hypothesis": "Replacing 'Join thousands of fans' with a dated promise ('One email a week until 19 Nov, daily in launch week. Confirmed facts, sources linked.') raises capture on /gta6.",
+      "audience": "GTA 6 hub visitors (S4).",
+      "change": "Gta6NewsletterCTA.tsx copy (D-001) and a gta6 tag on the subscriber row (D-012).",
+      "metric": "newsletter_signup (placement=gta6) per 1,000 /gta6 sessions",
+      "effort": "S",
+      "expected_learning": "Whether a specific, time-bound promise outperforms vague social proof.",
+      "duration_days": 28,
+      "success_threshold": "Post-window rate ≥ 1.5× the pre-window with ≥ 30 signups in the post window.",
+      "dependencies": [
+        "D-001",
+        "D-012",
+        "C07"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-025",
+      "name": "Email-only release alert for guests",
+      "area": "newsletter",
+      "hypothesis": "An email-only 'tell me when it's out' on unreleased game pages captures more guests than the account-only reminder, and ≥ 20% of those later register.",
+      "audience": "Guests on unreleased game pages.",
+      "change": "Alternate weeks: account modal (X-005) vs email-only alert field; run after X-005 has 28 days of data.",
+      "metric": "newsletter_signup (placement=game-page) + reminder by email per 1,000 game sessions; registration_complete within 30 days",
+      "effort": "M",
+      "expected_learning": "Whether asking for less (an address) beats asking for an account at the release moment.",
+      "duration_days": 28,
+      "success_threshold": "Email-only capture ≥ 2× the account variant per 1,000 game sessions AND ≥ 20% of email-only signups register within 30 days.",
+      "dependencies": [
+        "D-016",
+        "D-013",
+        "D-012"
+      ],
+      "priority": "P2",
+      "design": "ABAB weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-026",
+      "name": "Newsletter line in Buffy's welcome",
+      "area": "newsletter",
+      "hypothesis": "One line with the /newsletter link in the Discord welcome embed converts ≥ 5% of new joiners to subscribers.",
+      "audience": "New Discord members.",
+      "change": "BuffyService welcome embed adds: 'Fridays: The Save File, the week in one email.' with utm_source=discord&utm_medium=community&utm_campaign=c35-discord-rebuild.",
+      "metric": "newsletter_signup with utm_source=discord ÷ discord_join",
+      "effort": "S",
+      "expected_learning": "Whether Discord and email audiences overlap or feed each other.",
+      "duration_days": 28,
+      "success_threshold": "≥ 5% of joiners subscribe within 28 days, minimum 40 joins.",
+      "dependencies": [
+        "D-011",
+        "D-012",
+        "C35"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-027",
+      "name": "Discord Onboarding questions",
+      "area": "discord",
+      "hypothesis": "Three Onboarding questions (platforms, games followed, which pings) raise the share of joiners who post within seven days.",
+      "audience": "New Discord joiners.",
+      "change": "C35 rebuild: Onboarding with three questions assigning roles and channels.",
+      "metric": "Joiners with ≥ 1 message within 7 days ÷ joiners (bot count)",
+      "effort": "S",
+      "expected_learning": "Whether the first minute in the server decides whether people stay.",
+      "duration_days": 42,
+      "success_threshold": "Rate ≥ 1.5× the 21-day pre-window with ≥ 30 joiners in the post window.",
+      "dependencies": [
+        "C35",
+        "D-011"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-028",
+      "name": "End-of-article Discord line vs sidebar widget",
+      "area": "discord",
+      "hypothesis": "An end-of-article Discord line gets more clicks per 1,000 article sessions than the desktop-only sidebar widget, because the phone layout is the real one [R11].",
+      "audience": "Article readers.",
+      "change": "D-010 end block gains a Discord line with its own invite code; the sidebar widget gets a second code.",
+      "metric": "discord_click (placement=article-end vs article-sidebar); discord_join by invite code",
+      "effort": "S",
+      "expected_learning": "Where Discord asks work on a phone-first site.",
+      "duration_days": 28,
+      "success_threshold": "Article-end ≥ 2× sidebar clicks per 1,000 sessions AND joins by code point the same way.",
+      "dependencies": [
+        "D-010",
+        "D-011",
+        "D-004"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-029",
+      "name": "Invite copy that names a dated event",
+      "area": "discord",
+      "hypothesis": "Invites naming a dated event ('Game Club night this Thursday, 20:00 CET: Control Resonant') convert better than 'Join our Discord'.",
+      "audience": "Social followers and newsletter readers.",
+      "change": "Two invite codes, two copies, alternated across posts for four weeks.",
+      "metric": "discord_join per 100 discord_click, per invite code",
+      "effort": "S",
+      "expected_learning": "Whether events are the reason to join [R13].",
+      "duration_days": 28,
+      "success_threshold": "Event copy ≥ 1.5× joins per 100 clicks with ≥ 20 joins in total.",
+      "dependencies": [
+        "C38",
+        "D-011"
+      ],
+      "priority": "P2",
+      "design": "alternating posts",
+      "status": "backlog"
+    },
+    {
+      "id": "X-030",
+      "name": "'What Are You Playing?' on site and Discord together",
+      "area": "discord",
+      "hypothesis": "Running F11 as one prompt on Discord and the forum, cross-linked, lifts distinct participants compared with Discord alone.",
+      "audience": "Discord members, forum readers, social followers.",
+      "change": "C37 weekly thread posted Monday in Discord and /forum with links both ways; first four weeks Discord-only, next four both.",
+      "metric": "Distinct participants per week (Discord authors + forum repliers); comment_created on the forum thread",
+      "effort": "S",
+      "expected_learning": "Whether the forum can borrow Discord's activity instead of competing with it.",
+      "duration_days": 56,
+      "success_threshold": "Distinct participants in weeks 5–8 ≥ 1.3× weeks 1–4 AND the forum thread averages ≥ 5 replies.",
+      "dependencies": [
+        "C37"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-031",
+      "name": "Recruiter role for member invites",
+      "area": "discord",
+      "hypothesis": "A 'Recruiter' role for members who bring three joiners through their own invite codes produces ≥ 15% of joins.",
+      "audience": "Existing Discord members (160 on 27 Sep [R13]).",
+      "change": "C36: members create personal invites; the bot credits joins by code (D-011); role at 3 joins.",
+      "metric": "Share of discord_join attributed to member-created codes",
+      "effort": "M",
+      "expected_learning": "Whether the community can grow itself at this size.",
+      "duration_days": 42,
+      "success_threshold": "≥ 15% of joins from member codes AND zero raid or spam incidents linked to the scheme.",
+      "dependencies": [
+        "D-011",
+        "C36"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-032",
+      "name": "Buffy's daily On This Day post",
+      "area": "discord",
+      "hypothesis": "A daily automated anniversary post (F06) raises distinct daily posters in #general.",
+      "audience": "Discord members.",
+      "change": "C65: Buffy posts one anniversary from /games/on-this-day at a fixed time.",
+      "metric": "Distinct authors per day in #general (bot count; Server Insights needs 500+ members [R13])",
+      "effort": "S",
+      "expected_learning": "Whether automated prompts start conversations or become wallpaper.",
+      "duration_days": 28,
+      "success_threshold": "Distinct daily posters +25% vs the 14-day pre-window, with no rise in moderation actions.",
+      "dependencies": [
+        "C65",
+        "D-011"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-033",
+      "name": "Link-your-account line in the welcome",
+      "area": "discord",
+      "hypothesis": "A welcome message asking members to link their TechPlay account (XP carries over) raises linked members.",
+      "audience": "New Discord joiners.",
+      "change": "Welcome embed line with the /link command and the site link.",
+      "metric": "Joiners with a linked account within 14 days (users.discord_id with discord_guild_member = true)",
+      "effort": "S",
+      "expected_learning": "How much of the Discord audience will cross to the site.",
+      "duration_days": 28,
+      "success_threshold": "≥ 15% of joiners link within 14 days.",
+      "dependencies": [
+        "C35"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-034",
+      "name": "Shrink the indexable game set",
+      "area": "content-seo",
+      "hypothesis": "Noindexing game pages without an original signal shifts Googlebot's ~290 daily fetches toward articles and hubs and speeds article indexing [R03 §9].",
+      "audience": "Googlebot; all organic searchers.",
+      "change": "D-021: Game::indexable() requires an original signal; the long tail stays crawlable and linked but noindex.",
+      "metric": "GSC crawl stats (requests by page type), indexed articles, organic clicks",
+      "effort": "L",
+      "expected_learning": "Whether index quality, not access, is what holds search back.",
+      "duration_days": 42,
+      "success_threshold": "Articles+hubs share of Googlebot requests ≥ 2× the pre-window AND ≥ 90% of articles published after the change indexed within 7 days, with organic clicks not falling below the pre-window.",
+      "dependencies": [
+        "D-021",
+        "C02"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-035",
+      "name": "Contextual links in every article",
+      "area": "content-seo",
+      "hypothesis": "Three to five contextual links per article (game page, calendar, tool) raise pages per session from article landings.",
+      "audience": "Article readers.",
+      "change": "D-010 contextual links and related module; ED adds links at publish.",
+      "metric": "Pages per session for sessions landing on an article (first-party, sessions with sid); cta_click",
+      "effort": "M",
+      "expected_learning": "Whether articles can feed the database and tools.",
+      "duration_days": 56,
+      "success_threshold": "Pages per session from article landings +15% vs the 28-day pre-window.",
+      "dependencies": [
+        "D-010",
+        "C46"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-036",
+      "name": "Review titles that carry a verdict",
+      "area": "content-seo",
+      "hypothesis": "'Crimson Desert review: [verdict in five words] (PS5, PC)' gets a higher Search CTR than 'Crimson Desert - review' [R03 §10].",
+      "audience": "Searchers seeing TechPlay reviews.",
+      "change": "Retitle the 10 reviews with most impressions; 10 comparable reviews untouched as control.",
+      "metric": "GSC CTR, treated vs control, 28 days before and after (difference-in-differences)",
+      "effort": "S",
+      "expected_learning": "Whether title quality is part of the invisibility of reviews.",
+      "duration_days": 56,
+      "success_threshold": "Treated CTR change ≥ 30% relative above the control group's change, with ≥ 500 impressions per group.",
+      "dependencies": [
+        "C52"
+      ],
+      "priority": "P2",
+      "design": "matched page groups",
+      "status": "backlog"
+    },
+    {
+      "id": "X-037",
+      "name": "PC fix guides vs news for search clicks",
+      "area": "content-seo",
+      "hypothesis": "P2 fix guides earn search clicks faster than news because page one has no gaming outlet for them [R09].",
+      "audience": "S3 PC Tinkerers searching fixes.",
+      "change": "C60 PC Fix Hub: one F07 guide a week from 12 Oct.",
+      "metric": "GSC clicks per page at day 28, fix guides vs news published the same weeks",
+      "effort": "M",
+      "expected_learning": "Where ED hours earn the most durable traffic.",
+      "duration_days": 56,
+      "success_threshold": "Median fix guide ≥ 3× median news article clicks at day 28, with ≥ 4 guides.",
+      "dependencies": [
+        "C60"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-038",
+      "name": "Series order pages",
+      "area": "content-seo",
+      "hypothesis": "F09 'In Order' pages reach page one for '[series] games in order' within six weeks.",
+      "audience": "Searchers preparing for 2027 launches.",
+      "change": "C63: one series page each Saturday from 3 Oct.",
+      "metric": "GSC average position and clicks for each page's main query",
+      "effort": "M",
+      "expected_learning": "Whether evergreen order guides are winnable for a small site.",
+      "duration_days": 42,
+      "success_threshold": "≥ 3 of the first 6 pages at average position ≤ 10 for their main query by day 42.",
+      "dependencies": [
+        "C63"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-039",
+      "name": "'Where can I play it' blocks on 200 game pages",
+      "area": "content-seo",
+      "hypothesis": "A verified 'where to play' block (platforms, subscriptions, Switch 2 edition) on 200 high-demand game pages lifts impressions against 200 matched pages without it [R09 EA-085].",
+      "audience": "Searchers asking 'is [game] on PC/PS5/Switch 2'.",
+      "change": "F08 template filled by ED on 200 pages; 200 matched pages as control.",
+      "metric": "GSC impressions and clicks per page group",
+      "effort": "L",
+      "expected_learning": "Whether original structured answers make database pages worth indexing.",
+      "duration_days": 56,
+      "success_threshold": "Treated group impressions +50% relative to the control group's change over the same window.",
+      "dependencies": [
+        "D-023",
+        "C63"
+      ],
+      "priority": "P2",
+      "design": "matched page groups",
+      "status": "backlog"
+    },
+    {
+      "id": "X-040",
+      "name": "A paragraph of our own on game pages",
+      "area": "content-seo",
+      "hypothesis": "Two sentences of TechPlay context plus linked news or review turns boilerplate game pages into indexable ones [R02 fix 12].",
+      "audience": "Game pages with any TechPlay signal (1,967 of 295,024 [R03]).",
+      "change": "150 treated pages get the paragraph; 150 matched pages do not.",
+      "metric": "Indexed status (URL Inspection sample) and impressions per group",
+      "effort": "L",
+      "expected_learning": "The editorial cost of making a game page 'ours'.",
+      "duration_days": 42,
+      "success_threshold": "≥ 25% more treated pages indexed than control pages at day 42.",
+      "dependencies": [
+        "D-021",
+        "D-023"
+      ],
+      "priority": "P2",
+      "design": "matched page groups",
+      "status": "backlog"
+    },
+    {
+      "id": "X-041",
+      "name": "One home for GTA 6 in search",
+      "area": "content-seo",
+      "hypothesis": "Re-pointing GTA 6 news to /games/grand-theft-auto-vi and linking hub, game page and calendar makes one URL rank for GTA queries [R17].",
+      "audience": "S4 GTA 6 Waiters searching.",
+      "change": "D-005 relation fix, D-017 server-rendered hub counters and H1, internal links.",
+      "metric": "GSC impressions for queries containing 'gta 6' or 'gta vi' on /gta6* and the game page",
+      "effort": "S",
+      "expected_learning": "Whether the hub can compete at all before launch week.",
+      "duration_days": 56,
+      "success_threshold": "Impressions ×3 vs the 28-day pre-window AND at least one page at average position ≤ 20 for a 'gta 6 …' query by 19 Nov.",
+      "dependencies": [
+        "D-005",
+        "D-017",
+        "C08"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-042",
+      "name": "Google News clean-up plus original pieces",
+      "area": "content-seo",
+      "hypothesis": "Stopping game pages from appearing as news and publishing original data pieces gets TechPlay articles into Google News [R03 §6].",
+      "audience": "Google News readers.",
+      "change": "D-022 (datePublished on game pages); C20 and C22 as original reporting.",
+      "metric": "Monthly probe of 16 own-topic Google News RSS searches (R03 method); GSC News tab if shown",
+      "effort": "S",
+      "expected_learning": "Whether Google News is reachable this quarter.",
+      "duration_days": 63,
+      "success_threshold": "By 31 Oct: zero game pages in the site: News feed. By 30 Nov: ≥ 2 of 16 probes return a TechPlay article.",
+      "dependencies": [
+        "D-022",
+        "C20",
+        "C22"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-043",
+      "name": "RSS repair feeding Flipboard and Mastodon",
+      "area": "content-seo",
+      "hypothesis": "Fixing RSS and piping it to Flipboard and Mastodon produces referral sessions for under an hour a week.",
+      "audience": "RSS readers.",
+      "change": "D-003; SC connects the feed once.",
+      "metric": "Sessions by referrer_host (flipboard.com, Mastodon instance hosts)",
+      "effort": "S",
+      "expected_learning": "Whether low-priority channels pay for their setup.",
+      "duration_days": 42,
+      "success_threshold": "≥ 20 sessions/week by week 6 at ≤ 1 h/week effort; otherwise stop maintaining.",
+      "dependencies": [
+        "D-003"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-044",
+      "name": "Concrete headlines vs question headlines",
+      "area": "discover",
+      "hypothesis": "Headlines that put the answer in the title ('Gears of War: E-Day release time in every time zone') earn more Discover clicks than question headlines.",
+      "audience": "Discover users following P1–P3 topics.",
+      "change": "Alternate style by publishing day for four weeks on pillar news.",
+      "metric": "Discover clicks per article in the first 72 h (GSC Discover report)",
+      "effort": "S",
+      "expected_learning": "Which headline style Discover rewards for TechPlay after the Feb 2026 update [R07].",
+      "duration_days": 28,
+      "success_threshold": "Concrete style median ≥ 1.5× question style with ≥ 20 articles per style. Void if the Discover report shows no data.",
+      "dependencies": [
+        "C04"
+      ],
+      "priority": "P2",
+      "design": "alternating days",
+      "status": "backlog"
+    },
+    {
+      "id": "X-045",
+      "name": "Original 1200px images vs store key art",
+      "area": "discover",
+      "hypothesis": "Original large images (annotated screenshots, data cards) get a higher Discover CTR than publisher key art.",
+      "audience": "Discover users.",
+      "change": "DS templates; alternate by article; all images ≥ 1200px wide and ≤ 300 KB.",
+      "metric": "Discover CTR per article",
+      "effort": "S",
+      "expected_learning": "Whether image originality is worth DS hours.",
+      "duration_days": 28,
+      "success_threshold": "Original-image CTR ≥ 1.25× key-art CTR with ≥ 15 articles per arm.",
+      "dependencies": [
+        "D-017"
+      ],
+      "priority": "P2",
+      "design": "alternating articles",
+      "status": "backlog"
+    },
+    {
+      "id": "X-046",
+      "name": "Pillar concentration",
+      "area": "discover",
+      "hypothesis": "Putting ≥ 70% of news into pillars P1–P3 for six weeks (and dropping general tech and phones) raises Discover impressions through topic expertise [R07, R08].",
+      "audience": "Discover and Search users.",
+      "change": "EIC editorial rule for six weeks; ED tags each article with its pillar.",
+      "metric": "Discover impressions per week; total Google clicks",
+      "effort": "S",
+      "expected_learning": "Whether focus beats volume for a two-author newsroom.",
+      "duration_days": 84,
+      "success_threshold": "Weekly Discover impressions in weeks 4–6 ≥ 2× the pre-window mean, with total Google clicks not lower.",
+      "dependencies": [
+        "C04",
+        "C60"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-047",
+      "name": "Author expertise boxes on guides",
+      "area": "discover",
+      "hypothesis": "A short author box (what they play, test hardware, how it was tested) on P2 and P3 guides improves Discover and Search performance.",
+      "audience": "Readers of guides.",
+      "change": "Box on 8 guides; 8 comparable guides later.",
+      "metric": "Clicks per guide over 42 days, treated vs control",
+      "effort": "S",
+      "expected_learning": "Whether visible expertise signals move a small site.",
+      "duration_days": 42,
+      "success_threshold": "Treated guides ≥ 1.2× control clicks.",
+      "dependencies": [
+        "C60"
+      ],
+      "priority": "P3",
+      "design": "matched page groups",
+      "status": "backlog"
+    },
+    {
+      "id": "X-048",
+      "name": "Publishing time for US stories",
+      "area": "discover",
+      "hypothesis": "US-relevant stories published 13:00–15:00 CET (US morning) earn more Discover clicks in 48 h than those published at 08:00 CET.",
+      "audience": "US Discover users (about 35% of traffic [R16]).",
+      "change": "Alternate publish slot by day for four weeks.",
+      "metric": "Discover clicks in the first 48 h",
+      "effort": "S",
+      "expected_learning": "Whether the Sarajevo schedule costs US reach.",
+      "duration_days": 28,
+      "success_threshold": "US-slot median ≥ 1.3× morning-slot median with ≥ 12 stories per slot.",
+      "dependencies": [
+        "C04"
+      ],
+      "priority": "P3",
+      "design": "alternating days",
+      "status": "backlog"
+    },
+    {
+      "id": "X-049",
+      "name": "Stories framed on TechPlay's own data",
+      "area": "discover",
+      "hypothesis": "News framed around a figure from TechPlay's calendar or database gets more Discover clicks than a rewrite of the same news.",
+      "audience": "Discover users; S8 Industry Watchers.",
+      "change": "ED adds one database figure (with source line) as the news hook, F04 style.",
+      "metric": "Discover clicks per article, data-framed vs rewrite",
+      "effort": "S",
+      "expected_learning": "Whether owned data is the originality Discover wants.",
+      "duration_days": 42,
+      "success_threshold": "Data-framed median ≥ 2× rewrites with ≥ 8 data-framed pieces.",
+      "dependencies": [
+        "C20"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-050",
+      "name": "Out This Week: carousel vs single image on Instagram",
+      "area": "social",
+      "hypothesis": "An F01 carousel earns more saves per 1,000 reach than a single image of the same list.",
+      "audience": "Instagram followers and explore.",
+      "change": "Alternate format by week for six weeks; same DS template family.",
+      "metric": "Saves + shares per 1,000 reach (platform analytics); link-sticker sessions with utm_content f01-*",
+      "effort": "S",
+      "expected_learning": "Which format justifies DS time on the weekly anchor.",
+      "duration_days": 42,
+      "success_threshold": "Carousel ≥ 1.5× saves per 1,000 reach across 3 weeks each.",
+      "dependencies": [
+        "C04"
+      ],
+      "priority": "P2",
+      "design": "alternating weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-051",
+      "name": "GTA countdown Stories: fact card vs poll sticker",
+      "area": "social",
+      "hypothesis": "An F02 Story with a poll sticker gets more interactions per viewer than a fact card alone.",
+      "audience": "Instagram and Facebook Story viewers.",
+      "change": "Alternate by day for 14 days.",
+      "metric": "Replies + sticker taps per 100 viewers; link taps with utm_content f02-dayNN-story",
+      "effort": "S",
+      "expected_learning": "Which Story mechanic to use for the remaining countdown.",
+      "duration_days": 14,
+      "success_threshold": "Winner ≥ 1.3× interactions per 100 viewers; adopt it for the rest of C06.",
+      "dependencies": [
+        "C06"
+      ],
+      "priority": "P2",
+      "design": "alternating days",
+      "status": "backlog"
+    },
+    {
+      "id": "X-052",
+      "name": "X: thread vs single post for Out This Week",
+      "area": "social",
+      "hypothesis": "A single post with the carousel image and one link sends more sessions than a thread.",
+      "audience": "X followers.",
+      "change": "Alternate by week for four weeks.",
+      "metric": "Sessions with utm_source=x and utm_content f01-*",
+      "effort": "S",
+      "expected_learning": "The cheapest X format that still sends readers.",
+      "duration_days": 28,
+      "success_threshold": "Winner ≥ 1.5× sessions per post.",
+      "dependencies": [
+        "C04",
+        "D-009"
+      ],
+      "priority": "P3",
+      "design": "alternating weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-053",
+      "name": "Reddit: answer first, link second",
+      "area": "social",
+      "hypothesis": "Answers that solve the question in the thread and link only when a TechPlay page adds data or a tool keep standing positive and still send readers [R13].",
+      "audience": "Subreddits on the C47 list.",
+      "change": "C47 rules: 9 of 10 contributions without a link; links carry utm_medium=community and utm_term=<subreddit>.",
+      "metric": "Removals and bans; median comment score; sessions with utm_source=reddit",
+      "effort": "S",
+      "expected_learning": "Whether Reddit can be a steady source without burning the account.",
+      "duration_days": 56,
+      "success_threshold": "Zero removals or bans, median score ≥ 2, and ≥ 30 sessions/week by week 8.",
+      "dependencies": [
+        "C47",
+        "D-009"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-054",
+      "name": "Threads and Bluesky cross-posts of The Number",
+      "area": "social",
+      "hypothesis": "Cross-posting F04 to Threads and Bluesky costs under an hour a week and returns ≥ 10 sessions a week on each.",
+      "audience": "Threads and Bluesky users.",
+      "change": "SC cross-posts F04 three times a week.",
+      "metric": "Sessions with utm_source=threads / bluesky; SC minutes logged",
+      "effort": "S",
+      "expected_learning": "Keep-or-kill for two experimental channels.",
+      "duration_days": 42,
+      "success_threshold": "Each platform ≥ 10 sessions/week in weeks 4–6 at ≤ 1 h/week; otherwise stop that platform.",
+      "dependencies": [
+        "D-009"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-055",
+      "name": "Facebook: Page vs relevant Groups for Hidden Gem",
+      "area": "social",
+      "hypothesis": "F05 shared in relevant Facebook Groups (with admin permission) sends more readers than the Page alone.",
+      "audience": "Facebook users in genre groups.",
+      "change": "Alternate Page-only and Group shares by week for six weeks.",
+      "metric": "Sessions with utm_source=facebook, utm_content f05-*",
+      "effort": "S",
+      "expected_learning": "Whether Facebook's reach lives in Groups for TechPlay.",
+      "duration_days": 42,
+      "success_threshold": "Group weeks ≥ 3× Page-only weeks in sessions, with zero removals.",
+      "dependencies": [
+        "C64"
+      ],
+      "priority": "P3",
+      "design": "alternating weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-056",
+      "name": "LinkedIn Studio Watch",
+      "area": "social",
+      "hypothesis": "One F17 post a week on LinkedIn brings industry readers and press contacts.",
+      "audience": "S8 Industry Watchers, developers, press.",
+      "change": "EIC posts F17 each Thursday with the /data/studios-closed-2026 tracker.",
+      "metric": "Sessions with utm_source=linkedin; inbound industry contacts logged",
+      "effort": "S",
+      "expected_learning": "Whether LinkedIn earns its slot for PR.",
+      "duration_days": 84,
+      "success_threshold": "Median ≥ 15 sessions per post AND ≥ 2 inbound industry contacts by 31 Dec.",
+      "dependencies": [
+        "C22"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-057",
+      "name": "Library Card member spotlight",
+      "area": "social",
+      "hypothesis": "An opt-in member spotlight (F19) makes other readers start their own library.",
+      "audience": "Followers on Instagram, X, Discord.",
+      "change": "SC posts one consenting member's Gamer DNA card each Friday.",
+      "metric": "registration_start and registration_complete with utm_content f19-*",
+      "effort": "S",
+      "expected_learning": "Whether members' own artefacts sell accounts better than our copy.",
+      "duration_days": 42,
+      "success_threshold": "Median ≥ 3 registrations per spotlight over 6 spotlights, with written consent logged for every member featured.",
+      "dependencies": [
+        "C68",
+        "D-024"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-058",
+      "name": "Steam Curator page referrals",
+      "area": "social",
+      "hypothesis": "A Steam Curator page with short verdicts linking to TechPlay reviews brings followers and referral sessions.",
+      "audience": "Steam users following curators.",
+      "change": "C69 launch with 20 recommendations, 2 new per week.",
+      "metric": "Curator followers; sessions with utm_source=steam",
+      "effort": "S",
+      "expected_learning": "Whether Steam is a distribution channel for Verdict.",
+      "duration_days": 70,
+      "success_threshold": "≥ 50 curator followers and ≥ 10 sessions/week by 31 Dec.",
+      "dependencies": [
+        "C69",
+        "C52"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-059",
+      "name": "Hook: number on screen vs talking-head intro",
+      "area": "video",
+      "hypothesis": "F01 videos that open on an on-screen date or number hold viewers longer than those opening on a presenter line.",
+      "audience": "Short-form viewers.",
+      "change": "Alternate hook style across 8 F01 videos.",
+      "metric": "Average percentage viewed; 3-second hold (platform analytics)",
+      "effort": "S",
+      "expected_learning": "The hook template for the whole C49 system.",
+      "duration_days": 56,
+      "success_threshold": "Winning hook ≥ 1.2× average percentage viewed across 4 videos each.",
+      "dependencies": [
+        "C49"
+      ],
+      "priority": "P2",
+      "design": "alternating videos",
+      "status": "backlog"
+    },
+    {
+      "id": "X-060",
+      "name": "One production, four platforms",
+      "area": "video",
+      "hypothesis": "Posting the same vertical file to TikTok, YouTube Shorts, Instagram Reels and Facebook Reels shows which one or two platforms deserve the time.",
+      "audience": "Short-form viewers on four platforms.",
+      "change": "C49 posts identical files; SC records views, follows and link sessions per platform.",
+      "metric": "Views at 7 days, follows per 1,000 views, utm sessions per 1,000 views, per platform",
+      "effort": "S",
+      "expected_learning": "Where video attention should go in Q1 2027.",
+      "duration_days": 42,
+      "success_threshold": "Keep platforms at ≥ 2× the median of the others on follows per 1,000 views; drop any platform below one quarter of the best after 6 weeks.",
+      "dependencies": [
+        "C49"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-061",
+      "name": "Fix It Friday shorts with a guide link",
+      "area": "video",
+      "hypothesis": "F07 shorts send readers to the full guide through the description or pinned-comment link.",
+      "audience": "S3 PC Tinkerers on YouTube and TikTok.",
+      "change": "Every F07 short links /guides/pc-fixes/<guide> with utm_content f07-short-<slug>.",
+      "metric": "Sessions per 1,000 views with utm_content f07-*",
+      "effort": "S",
+      "expected_learning": "Whether video can feed the pillar that search rewards.",
+      "duration_days": 42,
+      "success_threshold": "Median ≥ 2 sessions per 1,000 views.",
+      "dependencies": [
+        "C60",
+        "C49"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-062",
+      "name": "Out This Week length: 20–30 s vs 45–60 s",
+      "area": "video",
+      "hypothesis": "Shorter F01 videos have higher completion without losing views.",
+      "audience": "Short-form viewers.",
+      "change": "Alternate length by week for six weeks.",
+      "metric": "Completion rate and views at 7 days",
+      "effort": "S",
+      "expected_learning": "The default length for the weekly anchor.",
+      "duration_days": 42,
+      "success_threshold": "Short version completion ≥ 1.3× with views not lower than 0.8× the long version.",
+      "dependencies": [
+        "C49"
+      ],
+      "priority": "P3",
+      "design": "alternating weeks",
+      "status": "backlog"
+    },
+    {
+      "id": "X-063",
+      "name": "YouTube long-form pilot",
+      "area": "video",
+      "hypothesis": "One long video ('Every GTA game in order before VI', 12 Nov) earns more subscribers per production hour than Shorts.",
+      "audience": "YouTube viewers searching GTA order before launch.",
+      "change": "C50 pilot; EIC scripts, SC edits.",
+      "metric": "Subscribers gained per production hour at day 28; views at day 28; utm sessions",
+      "effort": "L",
+      "expected_learning": "Whether long-form belongs in Q1 2027 plans.",
+      "duration_days": 28,
+      "success_threshold": "Subscribers per production hour ≥ 2× the Shorts figure over the same 28 days.",
+      "dependencies": [
+        "C50"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-064",
+      "name": "WoW Analyzer 15-second demo",
+      "area": "video",
+      "hypothesis": "A screen recording of an Analyzer result drives tool runs from YouTube and TikTok.",
+      "audience": "S5 MMO/WoW players.",
+      "change": "One organic demo per month (F15), linked with utm_campaign=c13-wow-readiness.",
+      "metric": "tool_run (tool=wow) with utm_campaign c13-*",
+      "effort": "S",
+      "expected_learning": "Whether the demo is strong enough to justify paid T15 later.",
+      "duration_days": 14,
+      "success_threshold": "≥ 30 tool runs from video links in 14 days.",
+      "dependencies": [
+        "C13",
+        "D-040"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-065",
+      "name": "Welcome email 1 asks which platforms you play",
+      "area": "email",
+      "hypothesis": "One-click platform links in welcome email 1 tag ≥ 40% of new members and feed segments [R20 §4].",
+      "audience": "New members.",
+      "change": "C42 email 1: 'Where do you play? Click all that apply' (PC, PS5, Xbox, Switch 2, handheld).",
+      "metric": "Unique clicks on platform links ÷ delivered",
+      "effort": "S",
+      "expected_learning": "Whether members will self-segment by email.",
+      "duration_days": 28,
+      "success_threshold": "≥ 40% of delivered click at least one platform link.",
+      "dependencies": [
+        "C42",
+        "D-013"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-066",
+      "name": "Personalised releases email vs generic list",
+      "area": "email",
+      "hypothesis": "'Your releases this week' (C41) gets ≥ 2× the click rate of the generic release section in The Save File for the same members.",
+      "audience": "Members with wishlists or reminders who also subscribe.",
+      "change": "Send C41 Mondays from 26 Oct; compare with clicks on the release section of Friday's issue.",
+      "metric": "Unique clicks ÷ delivered (alert_clicked for C41)",
+      "effort": "M",
+      "expected_learning": "Whether personalisation is TechPlay's newsletter advantage [R20].",
+      "duration_days": 28,
+      "success_threshold": "C41 click rate ≥ 2× the generic section's, with ≥ 100 delivered on each.",
+      "dependencies": [
+        "C41",
+        "D-028"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-067",
+      "name": "Release-day alert: email vs Discord DM",
+      "area": "email",
+      "hypothesis": "For members reachable on both, a Discord DM release alert produces more visits within 24 h than email.",
+      "audience": "Members with email and linked Discord who set reminders.",
+      "change": "Channel assigned by user id parity for alerts sent from 19 Oct.",
+      "metric": "alert_clicked ÷ reminder_delivered, per channel",
+      "effort": "M",
+      "expected_learning": "Which default channel to set for reminders.",
+      "duration_days": 42,
+      "success_threshold": "One channel ≥ 1.3× the other after ≥ 60 deliveries per channel; adopt it as the default.",
+      "dependencies": [
+        "C43",
+        "D-013"
+      ],
+      "priority": "P2",
+      "design": "holdout (user id parity)",
+      "status": "backlog"
+    },
+    {
+      "id": "X-068",
+      "name": "Price-drop threshold: member-set vs fixed",
+      "area": "email",
+      "hypothesis": "Letting members set their own discount threshold raises clicks per alert and lowers unsubscribes.",
+      "audience": "Members with wishlisted Steam games.",
+      "change": "D-027 with a threshold field vs a fixed 30% default; parity split.",
+      "metric": "Clicks per alert; unsubscribes per alert",
+      "effort": "M",
+      "expected_learning": "How to keep deal alerts useful through Black Friday (C31).",
+      "duration_days": 28,
+      "success_threshold": "Member-set arm ≥ 1.2× clicks per alert with unsubscribes not higher than the fixed arm.",
+      "dependencies": [
+        "D-027",
+        "C31"
+      ],
+      "priority": "P3",
+      "design": "holdout (user id parity)",
+      "status": "backlog"
+    },
+    {
+      "id": "X-069",
+      "name": "Suppress non-clickers after eight sends",
+      "area": "email",
+      "hypothesis": "Suppressing subscribers with no click in eight consecutive sends keeps complaints under 0.1% without losing clicks.",
+      "audience": "Newsletter subscribers.",
+      "change": "Suppression rule in the campaign desk from issue 9.",
+      "metric": "Complaint rate per send; total unique clicks per send",
+      "effort": "S",
+      "expected_learning": "The list-hygiene rule for a self-hosted sender [R20 §4].",
+      "duration_days": 56,
+      "success_threshold": "Complaint rate < 0.1% on every send AND total clicks per send down less than 5%.",
+      "dependencies": [
+        "C40"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-070",
+      "name": "Plain-text style vs designed template",
+      "area": "email",
+      "hypothesis": "A plain, letter-style issue gets more clicks than the designed template.",
+      "audience": "Newsletter subscribers.",
+      "change": "Alternate template by issue for six issues.",
+      "metric": "Unique clicks ÷ delivered",
+      "effort": "S",
+      "expected_learning": "Whether design effort helps deliverability or clicks.",
+      "duration_days": 42,
+      "success_threshold": "Winner ≥ 1.2× click rate across 3 issues each.",
+      "dependencies": [
+        "C40"
+      ],
+      "priority": "P3",
+      "design": "alternating issues",
+      "status": "backlog"
+    },
+    {
+      "id": "X-071",
+      "name": "Remove share and retweet tasks",
+      "area": "giveaways",
+      "hypothesis": "Removing share_giveaway and twitter_retweet tasks (Meta Promotions policy [R16 §2.15]) does not reduce entries by more than 20%.",
+      "audience": "Giveaway visitors.",
+      "change": "Next giveaway runs without those tasks; compare with the previous one.",
+      "metric": "giveaway_entered per 1,000 giveaway-page sessions",
+      "effort": "S",
+      "expected_learning": "Whether compliance costs anything; it is required before any paid giveaway promotion.",
+      "duration_days": 21,
+      "success_threshold": "Non-inferiority: entry rate ≥ 0.8× the previous giveaway's rate.",
+      "dependencies": [
+        "C09"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-072",
+      "name": "One-click entry with Google or Discord",
+      "area": "giveaways",
+      "hypothesis": "Making social sign-in the entry step raises entry completion for guests.",
+      "audience": "Guests on /giveaway/{slug}.",
+      "change": "Entry button opens social sign-in and enters on return (D-014 redirect).",
+      "metric": "giveaway_entered ÷ guest sessions on the giveaway page",
+      "effort": "S",
+      "expected_learning": "How much of the giveaway drop is registration friction.",
+      "duration_days": 21,
+      "success_threshold": "Entry rate ≥ 1.5× the previous giveaway's guest entry rate.",
+      "dependencies": [
+        "C09",
+        "D-014"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-073",
+      "name": "Import prompt after entry",
+      "area": "giveaways",
+      "hypothesis": "After entry, 'Connect Steam and your library is ready when the draw closes' (no extra entries offered) raises entrants' A2.",
+      "audience": "New giveaway entrants.",
+      "change": "Post-entry panel with Steam/Xbox connect buttons (25-GIVEAWAYS SHELVE stage).",
+      "metric": "library_connected within 7 days ÷ giveaway_entered (first entries); giveaway-only share",
+      "effort": "S",
+      "expected_learning": "Whether giveaway accounts can become real members.",
+      "duration_days": 28,
+      "success_threshold": "Entrant→A2 ≥ 25% AND giveaway-only share at close ≤ 60% (guardrail in 25-GIVEAWAYS).",
+      "dependencies": [
+        "C09",
+        "D-007"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-074",
+      "name": "Daily check-in with a weekly freeze",
+      "area": "giveaways",
+      "hypothesis": "Adding one freeze per week to the giveaway check-in streak keeps entrants returning without punishing a missed day [R12].",
+      "audience": "Giveaway entrants.",
+      "change": "Streak freeze on the daily bonus in the next giveaway.",
+      "metric": "Distinct return days per entrant; share of streak-breakers who never return",
+      "effort": "M",
+      "expected_learning": "Whether a humane streak retains as well as a strict one.",
+      "duration_days": 21,
+      "success_threshold": "Median return days ≥ 1.3× the previous giveaway AND the never-return share among streak-breakers falls.",
+      "dependencies": [
+        "C09"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-075",
+      "name": "Giveaway hub indexable while live",
+      "area": "giveaways",
+      "hypothesis": "Making /giveaways indexable while a draw is open brings organic entrants [R01].",
+      "audience": "Searchers for game giveaways.",
+      "change": "D-039 index while live, canonical on giveaway pages.",
+      "metric": "Organic sessions to /giveaways and /giveaway/* during the live window",
+      "effort": "S",
+      "expected_learning": "Whether giveaways can be found without paid or social push.",
+      "duration_days": 21,
+      "success_threshold": "≥ 20 organic sessions/week by week 3 of a live giveaway.",
+      "dependencies": [
+        "D-039"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-076",
+      "name": "T1 Google branded exact match",
+      "area": "paid",
+      "hypothesis": "A branded exact-match campaign costs almost nothing and shows whether anyone bids on 'techplay' [R16 T1].",
+      "audience": "Searchers typing techplay, techplay gg, techplay wow analyzer, techplay backlog advisor.",
+      "change": "C56 from 19 Oct: 2 RSAs, sitelinks to /games, /wow-analyzer, /backlog-advisor; $60–90/month.",
+      "metric": "Impression share, CPC, sessions with utm_medium=cpc",
+      "effort": "S",
+      "expected_learning": "The real branded CPC and whether the brand has any search demand.",
+      "duration_days": 28,
+      "success_threshold": "Keep if CPC ≤ $1.00 and ≥ 10 impressions/week after 14 days; otherwise pause (R16 stop-loss).",
+      "dependencies": [
+        "C56",
+        "C03",
+        "D-009"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-077",
+      "name": "T2 Meta library-import demo",
+      "area": "paid",
+      "hypothesis": "A 6–15 s screen recording of the Steam/Xbox/PSN import converts US adults to verified accounts more cheaply than a content ad [R16 T2].",
+      "audience": "US 18+, broad, Advantage+ placements.",
+      "change": "C57 (2–22 Nov): Leads/registration objective, on-site event via CAPI, three creatives.",
+      "metric": "Cost per email_verified; cost per A2",
+      "effort": "M",
+      "expected_learning": "A first readable cost per verified registration.",
+      "duration_days": 21,
+      "success_threshold": "Continue if ≤ $10 per verified registration; stop at $150 spent with < 5 verified accounts.",
+      "dependencies": [
+        "C57",
+        "D-031",
+        "D-007",
+        "D-008"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-078",
+      "name": "T3 GTA 6 hub carousel vs generic creative",
+      "area": "paid",
+      "hypothesis": "Cards for the map, vehicles and characters out-click a generic 'gaming news' creative [R16 T3].",
+      "audience": "Same as X-077.",
+      "change": "Carousel creative in C57, each card deep-linked with its own utm_content.",
+      "metric": "CTR; cost per registration_complete",
+      "effort": "M",
+      "expected_learning": "Whether the GTA 6 hub is TechPlay's best paid hook before 19 Nov.",
+      "duration_days": 14,
+      "success_threshold": "Keep if CTR ≥ 1% at 5,000 impressions; stop below 1%.",
+      "dependencies": [
+        "C57",
+        "D-017",
+        "D-031"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-079",
+      "name": "T4 Reddit Conversation Placement to Discord",
+      "area": "paid",
+      "hypothesis": "Ads in GTA 6 threads drive Discord joins at under $3 each [R16 T4].",
+      "audience": "3–5 GTA 6 and gaming subreddits, 18+.",
+      "change": "C58 (9–25 Nov): post-style ad ('1,058 GTA 6 locations on one free map, and a Discord for launch week.'); map wording cleared under D-020, own invite code.",
+      "metric": "Cost per discord_click; discord_join by invite code",
+      "effort": "M",
+      "expected_learning": "Paid cost of a community member.",
+      "duration_days": 17,
+      "success_threshold": "Continue if cost per attributed join ≤ $3; stop at $100 with < 20 Discord clicks.",
+      "dependencies": [
+        "C58",
+        "D-011",
+        "D-020"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-080",
+      "name": "T5 WoW Analyzer tool ad on Reddit",
+      "area": "paid",
+      "hypothesis": "A tool ad in WoW subreddits beats any article ad on tool runs per dollar [R16 T5].",
+      "audience": "r/wow and similar communities, 18+.",
+      "change": "C58 ad set: screenshot of an analysis result, 'Paste your character'.",
+      "metric": "tool_run (tool=wow) per $; registration_complete",
+      "effort": "M",
+      "expected_learning": "Whether a niche tool can be bought cheaply.",
+      "duration_days": 17,
+      "success_threshold": "Continue if ≥ 30 analyses per $100; stop at $100 with < 30 analyses or if Groq cost exceeds ad cost.",
+      "dependencies": [
+        "C58",
+        "D-040"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-081",
+      "name": "T6 Backlog Advisor on Reddit",
+      "area": "paid",
+      "hypothesis": "Backlog Advisor resonates with 'too many games' communities [R16 T6].",
+      "audience": "r/patientgamers-type communities, 18+.",
+      "change": "Screen tour of the advisor output; lands on guest mode (D-037).",
+      "metric": "tool_run (tool=backlog) → library_connected",
+      "effort": "M",
+      "expected_learning": "Whether the backlog problem is a paid acquisition hook.",
+      "duration_days": 14,
+      "success_threshold": "Stop if CTR < 0.2%; continue if ≥ 10% of tool runs import a library.",
+      "dependencies": [
+        "C58",
+        "D-037"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-082",
+      "name": "T7 Tool exact-match search",
+      "area": "paid",
+      "hypothesis": "Exact-match tool queries ('wow raid readiness', 'what should I play next', 'backlog tool') have real volume [R16 T7].",
+      "audience": "Google searchers.",
+      "change": "Second ad group in C56 once T1 is stable.",
+      "metric": "Impressions/week, CPC, tool_run",
+      "effort": "S",
+      "expected_learning": "Search demand for TechPlay's tools, which no research could size [R03].",
+      "duration_days": 14,
+      "success_threshold": "Stop if < 20 impressions/week after 14 days.",
+      "dependencies": [
+        "C56"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-083",
+      "name": "T8 TikTok Spark boost",
+      "area": "paid",
+      "hypothesis": "Boosting an organic GTA 6 map video that already performs reaches under $6 CPM [R16 T8].",
+      "audience": "US 18+ broad.",
+      "change": "Only at the AGGRESSIVE budget and only if an organic video beat the median by 3×.",
+      "metric": "CPM; utm sessions in the first-party counter; registration_complete",
+      "effort": "M",
+      "expected_learning": "Whether paid video amplification is worth the $50/day floor.",
+      "duration_days": 7,
+      "success_threshold": "Stop at $350 if CPM > $10 or 0 registrations.",
+      "dependencies": [
+        "C49",
+        "D-008"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-084",
+      "name": "T9 Meta newsletter double opt-in",
+      "area": "paid",
+      "hypothesis": "Newsletter double opt-in from ads costs less than $8 per verified subscriber [R16 T9].",
+      "audience": "US plus consented UK/DE adults.",
+      "change": "C57 second ad set to /newsletter with the 'weekly releases, one fix, one number' promise.",
+      "metric": "Cost per newsletter_verified",
+      "effort": "M",
+      "expected_learning": "Whether email is cheaper to buy than accounts.",
+      "duration_days": 14,
+      "success_threshold": "Continue if ≤ $8 per verified subscriber; stop at $100 with 0 verified.",
+      "dependencies": [
+        "C57",
+        "D-012",
+        "D-031"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-085",
+      "name": "T10 Meta retargeting of registration starters",
+      "area": "paid",
+      "hypothesis": "Retargeting people who started registration recovers 10% of them [R16 T10].",
+      "audience": "Pixel audience: visited /register or the wizard in 7 days, no registration.",
+      "change": "Only if the pool reaches 500 within 30 days.",
+      "metric": "Cost per registration_complete; recovered share",
+      "effort": "M",
+      "expected_learning": "Whether a small-site retargeting pool is usable at all.",
+      "duration_days": 14,
+      "success_threshold": "Skip if pool < 500 after 30 days; continue if ≥ 10% of the pool recovers at ≤ $10 each.",
+      "dependencies": [
+        "D-031",
+        "C57"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-086",
+      "name": "T11 Free Discord listings",
+      "area": "paid",
+      "hypothesis": "Disboard and Discadia listings deliver measurable joins at no cost [R16 T11].",
+      "audience": "Discord users browsing tags (gta6, wow, pc).",
+      "change": "SC lists the server with one invite code per listing.",
+      "metric": "discord_join per week by invite code; 7-day posting rate of those joiners",
+      "effort": "S",
+      "expected_learning": "A zero-cost baseline for Discord acquisition.",
+      "duration_days": 28,
+      "success_threshold": "Keep if ≥ 5 joins/week sustained over 4 weeks and ≥ 30% post within 7 days; drop if 0 joins in 4 weeks.",
+      "dependencies": [
+        "D-011",
+        "C36"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-087",
+      "name": "T12 Paid newsletter swap",
+      "area": "paid",
+      "hypothesis": "A paid swap with one gaming newsletter beats Meta on cost per verified subscriber [R16 T12].",
+      "audience": "A partner newsletter's list.",
+      "change": "One dedicated blurb with UTM; only once TechPlay's own list size is known and can be stated honestly.",
+      "metric": "Cost per newsletter_verified",
+      "effort": "S",
+      "expected_learning": "Whether newsletter-to-newsletter is a viable channel for a self-hosted list.",
+      "duration_days": 14,
+      "success_threshold": "Run only after the list size is known; succeed if cost per verified < the X-084 result.",
+      "dependencies": [
+        "C40",
+        "C51"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-088",
+      "name": "T13 Giveaway ads",
+      "area": "paid",
+      "hypothesis": "Giveaway ads pull entrants who also connect a library [R16 T13].",
+      "audience": "US 18+.",
+      "change": "Only after X-071 (no share tasks) and legal review of no-purchase-necessary and AMOE [R16 §2.15].",
+      "metric": "Entrants with library_connected within 7 days; giveaway-only share",
+      "effort": "M",
+      "expected_learning": "Whether paid giveaway traffic creates members or only entries.",
+      "duration_days": 14,
+      "success_threshold": "Stop if > 70% of paid entrants have zero other activity (R16 T13 hard stop).",
+      "dependencies": [
+        "C09",
+        "D-031"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-089",
+      "name": "T14 Web push opt-in on GTA 6 reminders",
+      "area": "paid",
+      "hypothesis": "Push opt-in offered only after 'Notify me' on GTA 6 pages builds a re-engagement list for free [R16 T14; spine C59].",
+      "audience": "GTA 6 hub and release-time tool users.",
+      "change": "C59 prompt only after the user clicks 'Notify me'; never on page load (Chrome demotes low-acceptance sites [R07]).",
+      "metric": "notification_enabled ÷ /gta6* sessions; click rate on the first push",
+      "effort": "M",
+      "expected_learning": "Whether push is worth keeping after launch week.",
+      "duration_days": 14,
+      "success_threshold": "Keep if opt-in ≥ 1% of hub sessions after 2 weeks and first-push click rate ≥ 5%; stop below 1%.",
+      "dependencies": [
+        "C59",
+        "D-019"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-090",
+      "name": "T15 YouTube Shorts ad for the WoW demo",
+      "area": "paid",
+      "hypothesis": "Shorts CPM is cheap enough for a 15-second Analyzer demo [R16 T15].",
+      "audience": "US 18–34.",
+      "change": "Parked for Q4: the spine excludes Demand Gen (§12). Revisit in Q1 2027 as a video-views buy only if X-064 succeeds.",
+      "metric": "CPM, view rate, tool_run",
+      "effort": "S",
+      "expected_learning": "Whether paid Shorts can feed a niche tool.",
+      "duration_days": 14,
+      "success_threshold": "Stop if CPM > $8 or 0 tool runs after $150.",
+      "dependencies": [
+        "C13"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-091",
+      "name": "GTA 6 release-time tool with reminder",
+      "area": "tools",
+      "hypothesis": "A tool that shows the unlock time in the visitor's time zone and offers 'remind me at pre-load and unlock' gets reminder_set from ≥ 10% of users [R17].",
+      "audience": "S4 GTA 6 Waiters.",
+      "change": "D-018 /gta6/release-time (new), C08; reminder through D-016.",
+      "metric": "reminder_set ÷ tool_run (tool=release-time)",
+      "effort": "M",
+      "expected_learning": "Whether a utility tool converts better than content before a launch.",
+      "duration_days": 36,
+      "success_threshold": "≥ 10% of tool users set a reminder AND ≥ 200 reminders by 18 Nov.",
+      "dependencies": [
+        "D-018",
+        "C08",
+        "D-016"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-092",
+      "name": "Calendar export (ICS) and return visits",
+      "area": "tools",
+      "hypothesis": "Members who export their wishlist calendar return more, because each calendar entry links back with from=ics.",
+      "audience": "Members with wishlists.",
+      "change": "D-036 ICS export; event descriptions link to the game page with from=ics (internal marker, no UTM).",
+      "metric": "Sessions with from=ics; D30 retention of exporters vs matched non-exporters",
+      "effort": "S",
+      "expected_learning": "Whether a calendar entry is a retention channel.",
+      "duration_days": 42,
+      "success_threshold": "Exporters' D30 retention ≥ 1.5× matched non-exporters, with ≥ 20 exporters.",
+      "dependencies": [
+        "D-036"
+      ],
+      "priority": "P3",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-093",
+      "name": "GTA 6 map tracker: save progress with an account",
+      "area": "tools",
+      "hypothesis": "Letting guests tick locations and asking for an account only to save progress converts ≥ 5% of tracker users.",
+      "audience": "GTA 6 players from 19 Nov.",
+      "change": "C11 tracker in guest mode; 'Save your progress' opens the D-016 modal.",
+      "metric": "registration_complete (from=gta6) ÷ guest tool users",
+      "effort": "M",
+      "expected_learning": "Whether launch-week utility is the best registration moment of the quarter.",
+      "duration_days": 21,
+      "success_threshold": "≥ 5% of guest users register, with ≥ 200 guest users in launch week.",
+      "dependencies": [
+        "C11",
+        "D-016",
+        "D-020"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-094",
+      "name": "Game Awards prediction league",
+      "area": "tools",
+      "hypothesis": "A free prediction league for 10 Dec brings new registrations and a reason to return on the night.",
+      "audience": "S10 Community Regulars, S8, awards followers.",
+      "change": "C29 / D-026 league with a public leaderboard; entry needs an account.",
+      "metric": "registration_complete (from=predictions); entries; returns on 10–11 Dec",
+      "effort": "M",
+      "expected_learning": "Whether event-driven games create accounts that stay.",
+      "duration_days": 23,
+      "success_threshold": "≥ 100 entries AND ≥ 25 new registrations from the league AND ≥ 50% of entrants return on 10–11 Dec.",
+      "dependencies": [
+        "C29",
+        "D-026"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-095",
+      "name": "Your 2026 in Games",
+      "area": "tools",
+      "hypothesis": "A cross-platform year in review produces shares that bring registrations.",
+      "audience": "Members with shelves; their followers.",
+      "change": "C28 / D-025 live 14–31 Dec with a share card (D-024).",
+      "metric": "share_card_generated (type=yir) ÷ members viewing; registration_complete with utm_campaign=c28-your-2026",
+      "effort": "L",
+      "expected_learning": "Whether the library can market itself once a year.",
+      "duration_days": 18,
+      "success_threshold": "≥ 25% of eligible members generate a card AND ≥ 1 registration per 10 shares.",
+      "dependencies": [
+        "D-025",
+        "D-024",
+        "C28"
+      ],
+      "priority": "P1",
+      "design": "pre/post",
+      "status": "backlog"
+    },
+    {
+      "id": "X-096",
+      "name": "Taste Match invite link",
+      "area": "tools",
+      "hypothesis": "A 'compare your taste with me' link brings verified accounts and makes the unreachable 'Squad Goals' achievement reachable [R11 §3].",
+      "audience": "Members and the people they invite.",
+      "change": "Invite link on the profile and Gamer DNA card; landing shows a blurred match until sign-up.",
+      "metric": "registration_complete (from=profile) ÷ invite-link visitors",
+      "effort": "M",
+      "expected_learning": "Whether member-to-member invites work at TechPlay's size.",
+      "duration_days": 28,
+      "success_threshold": "≥ 10% of invite visitors register AND ≥ 10 registrations in 28 days.",
+      "dependencies": [
+        "D-024"
+      ],
+      "priority": "P2",
+      "design": "pre/post",
+      "status": "backlog"
+    }
+  ]
+}

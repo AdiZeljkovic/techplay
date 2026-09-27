@@ -1,0 +1,639 @@
+{
+  "version": "2026-09-27",
+  "note": "Targets are TARGETs set by the plan, not forecasts. Relative targets refer to the dated baseline. Absolute targets are re-set on 2026-11-02.",
+  "kpis": [
+    {
+      "id": "K00",
+      "name": "Weekly Returning Members (WRM) — North Star",
+      "category": "north-star",
+      "definition": "Accounts with at least one meaningful action in a rolling 7-day window: shelf change, rating, comment, list edit, reminder set, Analyzer run tied to an account, Discord linked-XP event.",
+      "formula": "COUNT(DISTINCT user_id) over the union of user_games.updated_at, game_ratings, comments, game_lists/game_list_items, reminder changes (user_games.notify_on_release), user_wow_characters activity and Discord XP rows in the reward ledger, for the 7 days ending Sunday 23:59 CET (query Q-01).",
+      "source": "Production DB (read replica or read-only query)",
+      "baseline": {
+        "value": "UNKNOWN — run Q-01",
+        "date": "2026-09-27",
+        "note": "Proxy: of 55 members, 45 had zero XP (code comment, before 31 Aug 2026) [R01]. Anonymous WoW analyses (wow_analyses has no user_id) cannot count."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 15–25",
+        "2026-11-30": "TARGET 30–50",
+        "2026-12-31": "TARGET 45–70"
+      },
+      "owner": "EIC",
+      "cadence": "weekly (Monday review)",
+      "events": [
+        "shelf_add",
+        "rating_created",
+        "comment_created",
+        "list_created",
+        "reminder_set",
+        "tool_run"
+      ]
+    },
+    {
+      "id": "K01",
+      "name": "Traffic — human sessions per week",
+      "category": "traffic",
+      "definition": "Sessions (distinct GA session ids) from non-bot hits in the first-party collector, per ISO week.",
+      "formula": "SUM(analytics_daily.sessions) for the ISO week (Q-02). Visitor counts are per-day hashes; never add them up as 'unique visitors'.",
+      "source": "First-party collector (analytics_daily)",
+      "baseline": {
+        "value": "UNKNOWN — run Q-02 for W39 (21–27 Sep)",
+        "date": "2026-09-27",
+        "note": "First full week after the Google CMP change of 20 Sep; earlier weeks are not comparable [README §19]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET +25–50% vs W39",
+        "2026-11-30": "TARGET +100–200% vs W39 (GTA VI week)",
+        "2026-12-31": "TARGET +75–150% vs W39"
+      },
+      "owner": "EIC",
+      "cadence": "weekly",
+      "events": [
+        "page_view"
+      ]
+    },
+    {
+      "id": "K02",
+      "name": "Organic search clicks",
+      "category": "organic",
+      "definition": "Google Search clicks (web search type) per day, 7-day average.",
+      "formula": "GSC Performance > Search results > clicks / 7, by week; split brand vs non-brand by query filter 'techplay'.",
+      "source": "Google Search Console",
+      "baseline": {
+        "value": "1–2 per day",
+        "date": "2026-09-07",
+        "note": "About 100 a day before the Cloudflare 403 incident of 17 Aug 2026 [R03, README §12]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 15–30/day",
+        "2026-11-30": "TARGET 40–80/day",
+        "2026-12-31": "TARGET 60–120/day"
+      },
+      "owner": "ED",
+      "cadence": "weekly; monthly deep-dive",
+      "events": []
+    },
+    {
+      "id": "K03",
+      "name": "Google Discover clicks",
+      "category": "discover",
+      "definition": "Clicks from Google Discover per week.",
+      "formula": "GSC Performance > Discover > clicks, weekly. If the report shows no data, record 'below reporting threshold'.",
+      "source": "Google Search Console (Discover report)",
+      "baseline": {
+        "value": "UNKNOWN — no GSC access in research",
+        "date": "2026-09-27",
+        "note": "Discover readiness partly met (max-image-preview:large present; some OG images multi-MB) [R03 §12]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET Discover report shows data (any clicks)",
+        "2026-11-30": "TARGET ≥ 3 articles with ≥ 100 Discover clicks each in November",
+        "2026-12-31": "TARGET Discover ≥ 20% of all Google clicks in December"
+      },
+      "owner": "ED",
+      "cadence": "weekly",
+      "events": []
+    },
+    {
+      "id": "K04",
+      "name": "Google News visibility",
+      "category": "news",
+      "definition": "Whether TechPlay articles appear in Google News for topics it covered, plus News clicks where GSC reports them.",
+      "formula": "Monthly probe: 16 own-topic Google News RSS searches (R03 method) → count of probes returning a TechPlay article; GSC 'News' search type clicks if available.",
+      "source": "Google News RSS probe (manual, ED); GSC",
+      "baseline": {
+        "value": "0 of 16 topics; 0 of 751 results",
+        "date": "2026-09-27",
+        "note": "site:techplay.gg News feed returned 99 game-database pages and 1 article [R02, R03]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 0 game pages in the site: News feed (D-022)",
+        "2026-11-30": "TARGET ≥ 2 of 16 probes return a TechPlay article",
+        "2026-12-31": "TARGET ≥ 4 of 16"
+      },
+      "owner": "ED",
+      "cadence": "monthly (first Monday)",
+      "events": []
+    },
+    {
+      "id": "K05",
+      "name": "Direct sessions",
+      "category": "direct",
+      "definition": "Sessions whose landing hit has no referrer and no UTM.",
+      "formula": "COUNT(DISTINCT session) from analytics_events where the session's first hit has referrer_host IS NULL and (after D-008) utm_source IS NULL, is_bot = false (Q-03, raw table, 90-day window).",
+      "source": "First-party collector (raw analytics_events)",
+      "baseline": {
+        "value": "UNKNOWN — run Q-03",
+        "date": "2026-09-27",
+        "note": "Direct is not in analytics_daily_breakdowns (the referrer breakdown skips empty values); it must be read from raw rows."
+      },
+      "targets": {
+        "2026-10-31": "TARGET +20% vs W39",
+        "2026-11-30": "TARGET +50% vs W39",
+        "2026-12-31": "TARGET +50% vs W39"
+      },
+      "owner": "EIC",
+      "cadence": "weekly",
+      "events": [
+        "page_view"
+      ]
+    },
+    {
+      "id": "K06",
+      "name": "Social referral sessions",
+      "category": "social",
+      "definition": "Sessions arriving from social platforms: referrer_host in the social host list, or utm_medium in (organic-social, paid-social, community) after D-008.",
+      "formula": "COUNT(DISTINCT session) per week, by platform (Q-04). Paid-social reported separately.",
+      "source": "First-party collector; GA4 (consented) for engagement",
+      "baseline": {
+        "value": "UNKNOWN — run Q-04",
+        "date": "2026-09-27",
+        "note": "Social accounts: Discord 160, YouTube 20 subscribers, X/Facebook/Instagram counts unverified [R02]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET ×2 vs W39",
+        "2026-11-30": "TARGET ×4 vs W39",
+        "2026-12-31": "TARGET ×3 vs W39"
+      },
+      "owner": "SC",
+      "cadence": "weekly",
+      "events": [
+        "page_view",
+        "cta_click"
+      ]
+    },
+    {
+      "id": "K07",
+      "name": "Verified registrations",
+      "category": "registration",
+      "definition": "New accounts that reached A1 Reachable (email verified or social sign-up) in the period.",
+      "formula": "COUNT(users) WHERE created_at in period AND email_verified_at IS NOT NULL (Q-05), split by signup method and from= (after D-008).",
+      "source": "Production DB (users); GA4 registration_complete for consented attribution",
+      "baseline": {
+        "value": "60 users total",
+        "date": "2026-09-07",
+        "note": "50 of 55 confirmed email (code comment, before 31 Aug) [R01, R12]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 40–60 new in October",
+        "2026-11-30": "TARGET 70–120 new in November",
+        "2026-12-31": "TARGET 60–120 new in December"
+      },
+      "owner": "EIC",
+      "cadence": "weekly",
+      "events": [
+        "registration_start",
+        "registration_complete",
+        "email_verified"
+      ]
+    },
+    {
+      "id": "K08",
+      "name": "Activation (A2 Shelved)",
+      "category": "activation",
+      "definition": "Share of a registration cohort that links a platform OR has ≥ 3 shelf items within 7 days of sign-up (spine §3, R11 §6); plus the cumulative count of A2 members.",
+      "formula": "A2 ÷ A0 for each weekly cohort, read 7 days after the cohort closes (Q-06); cumulative A2 members.",
+      "source": "Production DB (connected_accounts, user_games)",
+      "baseline": {
+        "value": "13 connected accounts of 60 users (21.7%)",
+        "date": "2026-09-07",
+        "note": "Stricter reading: 3 of 55 added a game and 2 linked a platform (before 31 Aug) [R12]. A2 itself: UNKNOWN until Q-06 runs."
+      },
+      "targets": {
+        "2026-10-31": "TARGET cohort A2 ≥ 30%; 35–50 A2 members",
+        "2026-11-30": "TARGET cohort A2 ≥ 35%; 60–80 A2 members",
+        "2026-12-31": "TARGET cohort A2 ≥ 40%; 100 A2 members (Founding 100, C68)"
+      },
+      "owner": "DEV",
+      "cadence": "weekly (cohorts one week late)",
+      "events": [
+        "library_connected",
+        "shelf_add",
+        "wizard_pick_done"
+      ]
+    },
+    {
+      "id": "K09",
+      "name": "Newsletter verified subscribers",
+      "category": "newsletter",
+      "definition": "Double-opt-in subscribers who asked (source = form), verified, active, not suppressed.",
+      "formula": "COUNT(newsletter_subscribers) WHERE source = 'form' AND email_verified_at IS NOT NULL AND is_active (Q-07); net new = this week minus last week.",
+      "source": "Production DB (newsletter_subscribers, mail suppression)",
+      "baseline": {
+        "value": "UNKNOWN — run Q-07",
+        "date": "2026-09-27",
+        "note": "Count was never published; 'thousands of fans' copy is unverified [R11, R20]. Rows with source = 'account' are not subscribers."
+      },
+      "targets": {
+        "2026-10-31": "TARGET +60–120 net verified since 28 Sep",
+        "2026-11-30": "TARGET +200–400 net since 28 Sep",
+        "2026-12-31": "TARGET +330–650 net since 28 Sep"
+      },
+      "owner": "SC",
+      "cadence": "weekly; per send",
+      "events": [
+        "newsletter_signup",
+        "newsletter_verified"
+      ]
+    },
+    {
+      "id": "K10",
+      "name": "Discord members",
+      "category": "discord",
+      "definition": "Members in the TechPlay.gg Discord server.",
+      "formula": "Bot guild.memberCount at Monday 09:00; joins by invite code from D-011.",
+      "source": "Discord API via Professor Buffy",
+      "baseline": {
+        "value": "160 members (24 online)",
+        "date": "2026-09-27",
+        "note": "A code comment gives 153 (undated) [R01]; use the API figure."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 210–240",
+        "2026-11-30": "TARGET 300–380",
+        "2026-12-31": "TARGET 400–500 (C36 Road to 500)"
+      },
+      "owner": "SC",
+      "cadence": "weekly",
+      "events": [
+        "discord_click",
+        "discord_join"
+      ]
+    },
+    {
+      "id": "K11",
+      "name": "Returning users",
+      "category": "returning",
+      "definition": "Primary: returning members = accounts active on ≥ 2 distinct days in the week (last_seen_at / action dates). Secondary: GA4 returning users (consented visitors only, directional).",
+      "formula": "Q-08 on accounts; GA4 Explore 'new vs returning' for the consented sample. The first-party collector cannot answer this: the visitor hash is re-salted nightly [README §19].",
+      "source": "Production DB; GA4 (consented)",
+      "baseline": {
+        "value": "UNKNOWN — run Q-08",
+        "date": "2026-09-27",
+        "note": "No returning-visitor count exists anywhere today [R12, R16 §4]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 20–30 returning members/week",
+        "2026-11-30": "TARGET 40–60",
+        "2026-12-31": "TARGET 55–80"
+      },
+      "owner": "EIC",
+      "cadence": "weekly",
+      "events": [
+        "d1_return"
+      ]
+    },
+    {
+      "id": "K12",
+      "name": "Pages per session",
+      "category": "engagement",
+      "definition": "Page views per session.",
+      "formula": "SUM(pageviews) ÷ SUM(sessions) from analytics_daily (Q-02); segment by landing type (article, game, hub) from raw rows.",
+      "source": "First-party collector; GA4 views per session (consented) as a cross-check",
+      "baseline": {
+        "value": "UNKNOWN — run Q-02",
+        "date": "2026-09-27",
+        "note": "Sessions exist only for hits with a GA session id; check the share of hits without one (Q-09)."
+      },
+      "targets": {
+        "2026-10-31": "TARGET +10% vs W39",
+        "2026-11-30": "TARGET +20% vs W39",
+        "2026-12-31": "TARGET +20% vs W39"
+      },
+      "owner": "ED",
+      "cadence": "weekly",
+      "events": [
+        "page_view",
+        "cta_click"
+      ]
+    },
+    {
+      "id": "K13",
+      "name": "Member retention D7 / D30",
+      "category": "retention",
+      "definition": "Share of A2 members who perform a meaningful action on day 7 (days 6–8) and day 30 (days 28–32) after sign-up.",
+      "formula": "Cohort query Q-10 over the WRM action union.",
+      "source": "Production DB",
+      "baseline": {
+        "value": "UNKNOWN — run Q-10",
+        "date": "2026-09-27",
+        "note": "Cohorts are tiny; report counts next to percentages."
+      },
+      "targets": {
+        "2026-10-31": "TARGET D7 ≥ 35%",
+        "2026-11-30": "TARGET D7 ≥ 40%; D30 ≥ 20%",
+        "2026-12-31": "TARGET D7 ≥ 45%; D30 ≥ 25%"
+      },
+      "owner": "DEV",
+      "cadence": "weekly (D7), monthly (D30)",
+      "events": [
+        "d1_return",
+        "shelf_add",
+        "reminder_set"
+      ]
+    },
+    {
+      "id": "K14",
+      "name": "Approved comments",
+      "category": "community",
+      "definition": "Comments with status = approved created in the week, and the number of distinct commenters.",
+      "formula": "COUNT(comments) WHERE status = 'approved' by created_at week; COUNT(DISTINCT user_id) (Q-11).",
+      "source": "Production DB (comments)",
+      "baseline": {
+        "value": "22 comments total",
+        "date": "2026-09-07",
+        "note": "7 of 55 members had commented (before 31 Aug) [R12]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 8–15/week from ≥ 5 commenters",
+        "2026-11-30": "TARGET 20–40/week from ≥ 12 commenters",
+        "2026-12-31": "TARGET 15–30/week from ≥ 12 commenters"
+      },
+      "owner": "SC",
+      "cadence": "weekly",
+      "events": [
+        "comment_created",
+        "comment_approved"
+      ]
+    },
+    {
+      "id": "K15",
+      "name": "Social follower growth",
+      "category": "social",
+      "definition": "Net new followers per platform per week (X, Instagram, Facebook, TikTok, YouTube, Threads, Bluesky, LinkedIn).",
+      "formula": "Follower count Monday minus previous Monday, typed into the sheet by SC from each platform's own page.",
+      "source": "Platform analytics (manual entry)",
+      "baseline": {
+        "value": "YouTube 20 subscribers; others UNVERIFIED — SC records all on 28 Sep",
+        "date": "2026-09-27",
+        "note": "Facebook and Instagram counts sit behind login walls; TikTok, Bluesky, LinkedIn accounts not found [R02]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET YouTube 40–60; every active platform shows net growth in ≥ 3 of 5 weeks",
+        "2026-11-30": "TARGET YouTube 80–150; X/IG/FB +20% vs 28 Sep",
+        "2026-12-31": "TARGET YouTube 120–250; X/IG/FB +40% vs 28 Sep"
+      },
+      "owner": "SC",
+      "cadence": "weekly",
+      "events": [
+        "social_share"
+      ]
+    },
+    {
+      "id": "K16",
+      "name": "Video views",
+      "category": "video",
+      "definition": "Views of TechPlay short and long videos per week, all platforms, and the median 7-day views per video.",
+      "formula": "Sum of platform-reported views for videos published since 5 Oct; median of 7-day views per video; utm sessions per 1,000 views.",
+      "source": "Platform analytics (TikTok, YouTube Studio, Instagram, Facebook); first-party utm sessions",
+      "baseline": {
+        "value": "0 (no public videos found)",
+        "date": "2026-09-27",
+        "note": "YouTube channel joined 9 Feb 2026, 20 subscribers, no uploads visible [R02]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET ≥ 12 videos published; October median recorded as baseline",
+        "2026-11-30": "TARGET median 7-day views ≥ 2× October median",
+        "2026-12-31": "TARGET median 7-day views ≥ 3× October median; ≥ 1 session per 500 views"
+      },
+      "owner": "SC",
+      "cadence": "weekly",
+      "events": [
+        "cta_click"
+      ]
+    },
+    {
+      "id": "K17",
+      "name": "Campaign CAC (paid)",
+      "category": "paid",
+      "definition": "Paid spend per activated (A2) member attributed to a paid campaign.",
+      "formula": "Spend in period ÷ A2 members whose users.signup_utm_medium in (cpc, paid-social) (D-008). Reported per campaign (C56, C57, C58).",
+      "source": "Ad platform spend exports; production DB",
+      "baseline": {
+        "value": "Not applicable — no paid spend before 19 Oct",
+        "date": "2026-09-27",
+        "note": "No ad pixel installed; collector drops UTMs today [R16]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET ≤ $25 per A2 member (ESTIMATE basis: $10 per verified registration ÷ 40% A2)",
+        "2026-11-30": "TARGET ≤ $25 per A2 member; stop any campaign above $60",
+        "2026-12-31": "TARGET ≤ $20 per A2 member"
+      },
+      "owner": "EIC",
+      "cadence": "weekly while spending",
+      "events": [
+        "registration_complete",
+        "library_connected"
+      ]
+    },
+    {
+      "id": "K18",
+      "name": "Cost per verified registration",
+      "category": "paid",
+      "definition": "Paid spend per verified registration (A1) attributed to paid; companion costs per newsletter_verified and per Discord join.",
+      "formula": "Spend ÷ verified registrations with paid signup UTM; spend ÷ newsletter_verified with paid UTM; spend ÷ discord_join by paid invite code.",
+      "source": "Ad platform exports; production DB; D-011 join log",
+      "baseline": {
+        "value": "Not applicable — no paid spend before 19 Oct",
+        "date": "2026-09-27",
+        "note": "R16 §3: worth a second quarter under ~$10, stop above ~$25; newsletter < $8 (T9); Discord join < $3 (T4)."
+      },
+      "targets": {
+        "2026-10-31": "TARGET ≤ $10 per verified registration (C56 only running)",
+        "2026-11-30": "TARGET ≤ $10; ≤ $8 per newsletter_verified; ≤ $3 per Discord join",
+        "2026-12-31": "TARGET ≤ $10; stop-loss $25"
+      },
+      "owner": "EIC",
+      "cadence": "weekly while spending",
+      "events": [
+        "registration_complete",
+        "email_verified",
+        "newsletter_verified",
+        "discord_join"
+      ]
+    },
+    {
+      "id": "K19",
+      "name": "Email complaint rate (guardrail)",
+      "category": "guardrail",
+      "definition": "Spam complaints per delivered email, per send.",
+      "formula": "Complaints ÷ delivered for each campaign and automated stream.",
+      "source": "Mail desk (mail_campaigns); provider feedback where available",
+      "baseline": {
+        "value": "UNKNOWN — complaints are not ingested (MailSuppression never records them) [R01 B.12]",
+        "date": "2026-09-27",
+        "note": "Self-hosted sender without Gmail reputation; DNS/SMTP changes need approval [R20]."
+      },
+      "targets": {
+        "2026-10-31": "GUARDRAIL < 0.1% per send",
+        "2026-11-30": "GUARDRAIL < 0.1% per send",
+        "2026-12-31": "GUARDRAIL < 0.1% per send"
+      },
+      "owner": "SC",
+      "cadence": "per send",
+      "events": [
+        "newsletter_verified"
+      ]
+    },
+    {
+      "id": "K20",
+      "name": "Unsubscribe rate (guardrail)",
+      "category": "guardrail",
+      "definition": "Unsubscribes per delivered email, per send.",
+      "formula": "Unsubscribes attributed to a send ÷ delivered.",
+      "source": "Mail desk",
+      "baseline": {
+        "value": "UNKNOWN — run per send",
+        "date": "2026-09-27",
+        "note": "Unsubscribe links are deliberately untracked; count via token use [R20]."
+      },
+      "targets": {
+        "2026-10-31": "GUARDRAIL < 0.5% per send",
+        "2026-11-30": "GUARDRAIL < 0.5% per send",
+        "2026-12-31": "GUARDRAIL < 0.5% per send"
+      },
+      "owner": "SC",
+      "cadence": "per send",
+      "events": []
+    },
+    {
+      "id": "K21",
+      "name": "Giveaway-only account share (guardrail)",
+      "category": "guardrail",
+      "definition": "Share of accounts created through a giveaway that, 14 days later, have no action other than giveaway entry and tasks.",
+      "formula": "Accounts with from=giveaway (D-008) and no WRM action 14 days after creation ÷ all from=giveaway accounts (Q-12).",
+      "source": "Production DB",
+      "baseline": {
+        "value": "UNKNOWN; 21 of 55 members had entered a giveaway (before 31 Aug)",
+        "date": "2026-09-27",
+        "note": "25-GIVEAWAYS sets ≤ 60% at close; paid giveaway traffic stops above 70% [R16 T13]."
+      },
+      "targets": {
+        "2026-10-31": "GUARDRAIL ≤ 60%",
+        "2026-11-30": "GUARDRAIL ≤ 60%",
+        "2026-12-31": "GUARDRAIL ≤ 60%"
+      },
+      "owner": "SC",
+      "cadence": "per giveaway; weekly while live",
+      "events": [
+        "giveaway_entered",
+        "giveaway_task_done"
+      ]
+    },
+    {
+      "id": "K22",
+      "name": "Comment moderation queue time (guardrail)",
+      "category": "guardrail",
+      "definition": "Median and maximum hours from comment_created to approval or rejection for pending comments.",
+      "formula": "comments.updated_at − created_at where status moved from pending (Q-11b); needs an approved_at timestamp to be exact.",
+      "source": "Production DB; Filament moderation",
+      "baseline": {
+        "value": "UNKNOWN — run Q-11b",
+        "date": "2026-09-27",
+        "note": "First three comments of every new member are held [R11 §1.3]."
+      },
+      "targets": {
+        "2026-10-31": "GUARDRAIL max < 24 h",
+        "2026-11-30": "GUARDRAIL max < 24 h (GTA week: < 12 h)",
+        "2026-12-31": "GUARDRAIL max < 24 h"
+      },
+      "owner": "SC",
+      "cadence": "weekly",
+      "events": [
+        "comment_created",
+        "comment_approved"
+      ]
+    },
+    {
+      "id": "K23",
+      "name": "Reminders set",
+      "category": "product-loop",
+      "definition": "Release reminders switched on per week (members and, after D-016, guests who registered through the modal).",
+      "formula": "COUNT(user_games) WHERE notify_on_release switched on in the week (Q-13; needs an audit timestamp or the reminder_set event log).",
+      "source": "Production DB; GA4 reminder_set",
+      "baseline": {
+        "value": "UNKNOWN — run Q-13",
+        "date": "2026-09-27",
+        "note": "Reminders exist but are delivered to the bell only [R12]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET 30–60/week",
+        "2026-11-30": "TARGET 80–150/week (GTA VI release-time tool)",
+        "2026-12-31": "TARGET 40–80/week"
+      },
+      "owner": "DEV",
+      "cadence": "weekly",
+      "events": [
+        "reminder_set",
+        "game_followed"
+      ]
+    },
+    {
+      "id": "K24",
+      "name": "Alert delivered → visit rate",
+      "category": "product-loop",
+      "definition": "Share of delivered release-day, price-drop and personalised alerts (email, Discord DM, push) followed by a click-through within 24 hours.",
+      "formula": "alert_clicked ÷ reminder_delivered per channel and alert type.",
+      "source": "Mail click tracking; bot DM log; D-019 push log",
+      "baseline": {
+        "value": "Not applicable — no alert leaves the site before C43 (19 Oct)",
+        "date": "2026-09-27",
+        "note": "20 of 22 notification types are bell-only [R01]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET ≥ 20% (first two weeks of C43)",
+        "2026-11-30": "TARGET ≥ 20%",
+        "2026-12-31": "TARGET ≥ 20%"
+      },
+      "owner": "DEV",
+      "cadence": "weekly",
+      "events": [
+        "reminder_delivered",
+        "alert_clicked"
+      ]
+    },
+    {
+      "id": "K25",
+      "name": "Index health of the priority set",
+      "category": "organic",
+      "definition": "Share of priority URLs (articles, hubs, enriched game pages) that Google reports as indexed; Googlebot requests per day.",
+      "formula": "GSC Pages report filtered to the priority sitemaps; GSC crawl stats requests/day.",
+      "source": "Google Search Console",
+      "baseline": {
+        "value": "56,355 indexed / 338,358 not; ~290 Googlebot requests/day (77 game pages)",
+        "date": "2026-09-07",
+        "note": "The total indexed count is not a goal; the priority set is [R03 §9]."
+      },
+      "targets": {
+        "2026-10-31": "TARGET ≥ 80% of articles published since 28 Sep indexed",
+        "2026-11-30": "TARGET ≥ 90% of articles + hubs indexed",
+        "2026-12-31": "TARGET ≥ 90% of priority set indexed; crawl requests ≥ 2× 290/day"
+      },
+      "owner": "DEV",
+      "cadence": "weekly",
+      "events": []
+    },
+    {
+      "id": "K26",
+      "name": "Measurement health: EEA consent rate and attribution coverage",
+      "category": "measurement",
+      "definition": "EEA/UK/CH share of visitors with analytics consent granted; share of registrations with a from/UTM value; share of Discord joins attributed to an invite code.",
+      "formula": "Consented visitors ÷ visitors for EEA countries (collector consent column, Q-14); registrations with signup_from ÷ registrations; attributed joins ÷ joins.",
+      "source": "First-party collector; production DB; D-011 join log",
+      "baseline": {
+        "value": "Consent 2–7% before 20 Sep; post-CMP UNKNOWN",
+        "date": "2026-09-20",
+        "note": "If EEA consent stays under 30%, EEA paid tests are read on first-party data only [R16 §4]."
+      },
+      "targets": {
+        "2026-10-31": "REPORT only; attribution coverage ≥ 90% of registrations",
+        "2026-11-30": "REPORT; ≥ 90%",
+        "2026-12-31": "REPORT; ≥ 90%"
+      },
+      "owner": "DEV",
+      "cadence": "weekly",
+      "events": []
+    }
+  ]
+}
