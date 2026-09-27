@@ -12,7 +12,7 @@ Covers brief Parts 13 (SEO and content) and 14 (editorial mix). Execution window
 - Five pillar clusters (P1–P5) plus game, tech, evergreen, seasonal, guide and hub clusters are mapped query by query: **124 mapped rows** using real queries from [R09] and [R17], each ending in a product action (reminder, shelf add, newsletter, analyzer run).
 - Programmatic templates (where to play, release time, file size, requirements, crossplay, games like, series order) are built as **sections on the canonical game or series page, not new URLs**, and rolled out only to a demand list: 50 titles in October, capped at 300 by 31 Dec (TARGET).
 - Editorial mix for 2 writers + EIC: about 62 production hours a week. News drops from ~24 mostly rewritten items a week to 10 pillar-filtered news and breaking items plus 4 news franchises; evergreen, templates, a weekly Verdict and a fortnightly data story take the freed time. A three-slot publishing grid adds 08:30 and 14:30 Sarajevo slots to today's 17:30–21:30 habit [R02].
-- Title rules end truncated titles, stale numbers ("140,000+"), promised "benchmarks" that do not exist and duplicated brand suffixes; 16 before/after rewrites are in §9.
+- Title rules end truncated titles, stale numbers ("140,000+"), promised "benchmarks" that do not exist and duplicated brand suffixes; 17 before/after rewrites are in §9.
 - "Do not waste effort on" list: general tech and phones, Genshin guides, reviews that land weeks late with no new angle, commodity rewrites, codes pages, live-service tier lists, long-tail template spam.
 
 ---
@@ -597,7 +597,7 @@ No click targets are set while the baseline is 1–2 clicks a day. Targets are o
 2. Search Console: which reasons does it give for the 338,358 not-indexed URLs? The answer may change the Stage 2 thresholds.
 3. How many games have Steam requirement data today (EA-091 coverage is UNKNOWN)?
 4. Does the game bundle include guides in "News & reviews" (UNVERIFIED [R01] F03)? If not, guides do not count toward S-a until it does.
-5. IGDB licence (research risk C16): if the imported descriptions must be replaced, the indexable rule may need an "own description" signal sooner.
+5. IGDB licence ([R23] item 16): if the imported descriptions must be replaced, the indexable rule may need an "own description" signal sooner.
 6. Does EIC want esports covered at all? This plan assumes no.
 7. Series slugs in §5 (`grand-theft-auto`, `call-of-duty`, `persona`…) are indicative; confirm against `game_series` before linking.
 8. Conflict noted with the spine: none found. One nuance: spine C52 says Verdict "weekly from 6 Oct"; this plan publishes the first Verdict on Thu 8 Oct, inside that week.

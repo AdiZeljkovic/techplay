@@ -7,7 +7,7 @@ Part 28 of the growth strategy. Owners: SC (runs giveaways), EIC (prizes, partne
 - **A GTA 6 draw closing 20 Oct is referenced in code** (`JoinPrompt.tsx` comment) but not visible on the live hub. Status: **VERIFY IN ADMIN on Mon 28 Sep** before a single post promotes it (C09).
 - **Three code-level defects must be fixed before any giveaway is promoted** (found reading the repo for this plan, not in Phase 1 research): an entrant who completes no task holds 0 points and is excluded from `pickWinner()`, so "free entry" currently means "no chance"; the 5-per-IP limit is checked only in `enter()`, not in the task and daily-bonus paths that also create entries; and all task types except `referral` and `forum_post` are "self-reported by the click alone" (controller comment).
 - **Redesign the points so they reward activation, not follows.** Linking a library, adding three games, setting a release reminder and joining Discord (verified by the bot) earn the points. Shares, retweets, tags and referral points are removed from any giveaway that is advertised or posted on Meta surfaces, because Meta forbids requiring or incentivising entrants to share or publicise a promotion [R16 §2.1, §2.15].
-- **Q4 calendar (TARGET):** C09 GTA 6 draw (to 20 Oct, if live) → C71a Next Fest Keys (19 Oct–2 Nov, partner keys, $0) → C31a Wishlist Wins (20 Nov–1 Dec, $180) → C33a Winter Keys (1–20 Dec, partner keys + $50). Cash prize cap for the quarter: **$330–$380 TARGET**, plus up to $100 for C09 if its prize is not already bought.
+- **Q4 calendar (TARGET):** C09 GTA 6 draw (to 20 Oct, if live) → C71a Next Fest Keys (19 Oct–2 Nov, partner keys, $0) → C31a Wishlist Wins (20 Nov–1 Dec, $180) → C33a Winter Keys (1–20 Dec, partner keys + $50). Cash prizes for the quarter: **$230 committed (C31a $180, C33a $50) plus up to $100 for C09 if its prize is not already bought, TARGET cap $330**, excluding whatever the overdue World of Tanks prize costs.
 - **The funnel is GIVEAWAY → REGISTRATION → ACTIVATION → NEWSLETTER → COMMUNITY → RETURN**, measured on accounts, with `giveaway_entered` counted on first entry only and giveaway-only accounts never counted as registrations [spine §3, §10; R16 §2.12].
 - **Quality gates:** entrant→A2 within 7 days TARGET ≥25%; giveaway-only share at close TARGET ≤60%, hard stop for paid giveaway traffic at >70% (R16 T13); fraud score reviewed before every draw.
 - **Official rules template** below (no purchase necessary, eligibility, dates, draw method, winner notification, platform release). **Legal review needed before C09 is promoted and before any paid giveaway traffic**; whether "create an account" counts as consideration in some US states is UNKNOWN [R16 §2.15].
@@ -119,7 +119,7 @@ DEV load: roughly 3 h (D-039, a, b), 10–14 h (c), 3 h (d), 4 h (e), 5 h (f) = 
 | C33a | Winter Keys | Opens Tue 1 Dec, closes Sun 20 Dec 23:59, draw Mon 21 Dec, codes out by Wed 23 Dec | Tiered: 1 × $50 store credit; 5–10 partner keys (C71/C55 contacts, publishers met through Keymailer/PressEngine [R15]) | Partners + small budget | $50 | A | C33 Gift Guide, C29/C30 awards pages, TGA night (10 Dec) Discord watch party, newsletter; paid C57e only if gates in §9 are met |
 | C36a | Discord 500 | Triggered when the server reaches 500 members (C36), runs 7 days | 3 partner keys | Leftover partner keys | $0 | B | Discord only |
 
-**Quarter total cash: $230 (C31a + C33a) + up to $100 (C09) + WoT prize if not yet bought = TARGET cap $380 excluding WoT.** Approval: EIC by 30 Sep. Source of funds is separate from the paid-media budget in 26.
+**Quarter total cash: $230 (C31a + C33a) + up to $100 (C09) = TARGET cap $330, excluding the World of Tanks prize if it still has to be bought.** Approval: EIC by 30 Sep. Source of funds is separate from the paid-media budget in 26.
 
 **Prize sourcing without budget (EIC, C71/C55).**
 
@@ -405,5 +405,5 @@ With C09, C71a, C31a and C33a in Q4 this is ≈45 h across 13 weeks, about 3.5 h
 4. Is referral-with-points "incentivising publicity" under Meta's policy? The plan assumes yes and removes it from Profile A.
 5. Does a giveaways mailbox exist for AMOE and winner replies?
 6. Which store regions can TechPlay buy PlayStation/Xbox codes or credit for? This sets the eligible-country list for C09 and C31a.
-7. Cash prize budget approval (TARGET cap $380 plus C09 if needed) and whether it sits outside the paid-media budget.
+7. Cash prize budget approval (TARGET cap $330 including C09) and whether it sits outside the paid-media budget.
 8. Can DEV fit D-039c (verified activation tasks) before 19 Oct, or do they move to C31a?

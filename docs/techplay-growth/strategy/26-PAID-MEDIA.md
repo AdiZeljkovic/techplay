@@ -159,7 +159,7 @@ Common settings: Advantage+ audience (interests only as suggestions, since granu
 | Field | Plan |
 |---|---|
 | Objective | Sales/Leads objective optimised for CompleteRegistration (verified server event); secondary read `library_connected` |
-| Audience | US, 18–44 (R16 T2), Advantage+; exclude `registration_complete` (180 days) and all current account emails via CAPI match (no list upload) |
+| Audience | US, 18–44 (R16 T2), Advantage+; exclude X1 from 27 §4 (`registration_complete` ever, plus members matched through server-side login events; no list upload) |
 | Creative A | 12 s screen recording of the import wizard (existing `wizard_*` flow): 0–2 s "Connect Steam" pressed; 2–7 s shelf fills with covers and hours; 7–10 s PlayStation and Xbox rows appear; 10–12 s end card "TechPlay · free · no card" |
 | Creative B | Static 4:5 card: five store logos in a row → one shelf; line "Five stores. One shelf." |
 | Headline | Every game you own, on one shelf |

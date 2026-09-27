@@ -504,7 +504,7 @@ Rules for the week: no leaked or datamined content; no modded footage; spoilers 
 Line 1: the answer or the news, specific, under ~125 characters so it shows before "more" (length UNVERIFIED; keep it short anyway).
 Line 2: the one detail that makes it useful (date, platform, price, what changed).
 Line 3: source, if the slides don't already carry it.
-Line 4: the action: "Save this", "Link in bio: [label]", "Reminder link in today's Stories". One action only.
+Line 4: the action: "Save this", "Link in bio: [label]", "Reminder link in the Stories today". One action only.
 Line 5: 3–5 hashtags.
 ```
 
