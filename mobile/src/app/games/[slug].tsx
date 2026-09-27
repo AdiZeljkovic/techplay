@@ -1,8 +1,12 @@
 import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
+    Dimensions,
+    Modal,
     Pressable,
     RefreshControl,
     ScrollView,
@@ -18,6 +22,7 @@ import { Body, Eyebrow, Notice, Screen, Title } from '@/components/Screen';
 import { ShelfPicker } from '@/components/ShelfPicker';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
+import { platformMarks } from '@/lib/calendar';
 import { getShelfEntry, SHELF_STATUS, type ShelfStatus } from '@/lib/library';
 import { colors, font, radius, size, space, TOUCH_TARGET } from '@/theme/tokens';
 
@@ -50,6 +55,58 @@ interface Game {
      */
     time_to_beat: { hastily?: number; normally?: number; completely?: number; count: number } | null;
     esrb_rating: { name: string } | null;
+    /** Key art. Wider than a cover and made to sit behind something. */
+    artworks?: { image: string; thumbnail_image?: string | null }[] | null;
+    /** Plain YouTube URLs. */
+    videos?: string[] | null;
+}
+
+interface Shot {
+    image: string;
+    thumbnail_image?: string | null;
+    caption?: string | null;
+}
+
+interface Suggested {
+    slug: string;
+    name: string;
+    cover_url: string | null;
+    released?: string | null;
+}
+
+/**
+ * The bundle's articles are not shaped like the feed's.
+ *
+ * `image`, not `featured_image_url` — the field that was assumed, which drew
+ * four grey rectangles on the emulator and looked like four images failing to
+ * load.
+ *
+ * `path` is the web section — news, reviews, guides — and is deliberately not
+ * used for navigation. The app has one reader screen for all four and reaches
+ * any of them by slug; `lib/feed.ts` says the same thing about feed items and
+ * is the convention to follow rather than to work around.
+ */
+interface LinkedArticle {
+    slug: string;
+    title: string;
+    image: string | null;
+}
+
+/**
+ * One request for the whole screen.
+ *
+ * `/games/{slug}` answers with the game alone, and the screenshots, the
+ * suggestions and the articles were three more calls. The site already learned
+ * this the expensive way — its own comment records five of twelve pages
+ * failing at fifteen requests a minute once each render fanned out — and the
+ * bundle endpoint exists because of it. A phone on a train reopening a game is
+ * the same shape of problem with a worse connection.
+ */
+interface Bundle {
+    game: Game;
+    screenshots?: Shot[] | null;
+    suggested?: Suggested[] | null;
+    articles?: LinkedArticle[] | null;
 }
 
 const SITE = 'https://techplay.gg';
@@ -58,9 +115,29 @@ export default function GameScreen() {
     const { slug } = useLocalSearchParams<{ slug: string }>();
     const { user } = useAuth();
 
-    const [game, setGame] = useState<Game | null>(null);
+    const [bundle, setBundle] = useState<Bundle | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
+
+    /** Which screenshot is open full-screen, or null. */
+    const [viewing, setViewing] = useState<number | null>(null);
+
+    const game = bundle?.game ?? null;
+    const shots = bundle?.screenshots ?? [];
+    const suggested = bundle?.suggested ?? [];
+    const articles = bundle?.articles ?? [];
+
+    /*
+     * Key art if there is any, then a screenshot, then nothing.
+     *
+     * Not the cover: it is portrait and made to be seen whole, so stretching
+     * it across the top crops the title off its own art. A game with neither
+     * gets no backdrop rather than a blurred cover, which is a way of saying
+     * "we had no picture" that costs a reader a second to decode.
+     */
+    const backdrop = game?.artworks?.[0]?.image ?? shots[0]?.image ?? null;
+
+    const trailer = (game?.videos ?? []).find((v) => typeof v === 'string' && v.length > 0) ?? null;
 
     /** What this reader has already said about it, or null. */
     const [shelf, setShelf] = useState<ShelfStatus | null>(null);
@@ -70,7 +147,7 @@ export default function GameScreen() {
         setError(null);
 
         try {
-            setGame(await api<Game>(`/games/${slug}`, { auth: false, signal }));
+            setBundle(await api<Bundle>(`/games/${slug}/bundle`, { auth: false, signal }));
         } catch (e) {
             /*
              * A purged game answers 410, and that is not the same as a typo.
@@ -154,6 +231,23 @@ export default function GameScreen() {
                         />
                     }
                 >
+                    {/* Key art behind the title, where the site puts it.
+
+                        Artwork first and a screenshot second: they are
+                        different pictures. Key art is drawn to be sat behind
+                        something and has room for text; a screenshot is a
+                        moment of play and puts a HUD under the headline. */}
+                    {backdrop ? (
+                        <View style={styles.backdropWrap} pointerEvents="none">
+                            <Image source={{ uri: backdrop }} style={styles.backdrop} contentFit="cover" transition={200} />
+                            <LinearGradient
+                                colors={['rgba(8,8,10,0.35)', 'rgba(8,8,10,0.86)', colors.surface0]}
+                                locations={[0, 0.6, 1]}
+                                style={styles.backdropVeil}
+                            />
+                        </View>
+                    ) : null}
+
                     <View style={styles.head}>
                         {game.cover_url && (
                             <Image source={{ uri: game.cover_url }} style={styles.cover} contentFit="cover" transition={160} />
@@ -167,6 +261,21 @@ export default function GameScreen() {
                                     game.developers[0] ?? null,
                                 ].filter(Boolean).join('  ·  ')}
                             </Text>
+
+                            <View style={styles.badges}>
+                                {platformMarks(game.platforms).map((m) => (
+                                    <Text key={m.mark} style={[styles.mark, { color: m.tint, borderColor: m.tint }]}>
+                                        {m.mark}
+                                    </Text>
+                                ))}
+
+                                {/* The age rating carries its own colour on the
+                                    site, and it is the one badge here a parent
+                                    is actually looking for. */}
+                                {game.esrb_rating?.name ? (
+                                    <Text style={[styles.mark, styles.esrb]}>{game.esrb_rating.name}</Text>
+                                ) : null}
+                            </View>
                         </View>
                     </View>
 
@@ -201,6 +310,47 @@ export default function GameScreen() {
 
                     <TimeToBeat times={game.time_to_beat} />
 
+                    {/* The trailer, as a link rather than a player.
+
+                        An inline YouTube embed on this screen would be a third
+                        WebView on a page that already renders one for nothing
+                        else; the system player is better at video than we are
+                        and already knows the reader's account. */}
+                    {trailer ? (
+                        <CommandButton
+                            label="Watch the trailer"
+                            variant="quiet"
+                            onPress={() => WebBrowser.openBrowserAsync(trailer)}
+                        />
+                    ) : null}
+
+                    {shots.length > 0 ? (
+                        <View style={{ gap: space.sm }}>
+                            <Eyebrow>Screenshots</Eyebrow>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ gap: space.sm }}
+                            >
+                                {shots.map((s, i) => (
+                                    <Pressable
+                                        key={s.image}
+                                        onPress={() => setViewing(i)}
+                                        accessibilityRole="imagebutton"
+                                        accessibilityLabel={s.caption || `Screenshot ${i + 1}`}
+                                    >
+                                        <Image
+                                            source={{ uri: s.thumbnail_image || s.image }}
+                                            style={styles.shot}
+                                            contentFit="cover"
+                                            transition={140}
+                                        />
+                                    </Pressable>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    ) : null}
+
                     <Facts game={game} />
 
                     {user ? (
@@ -219,6 +369,100 @@ export default function GameScreen() {
                         variant="quiet"
                         onPress={() => Share.share({ message: `${SITE}/games/${game.slug}` })}
                     />
+
+                    {suggested.length > 0 ? (
+                        <View style={{ gap: space.sm }}>
+                            <Eyebrow>If you liked this</Eyebrow>
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ gap: space.md }}
+                            >
+                                {suggested.map((s) => (
+                                    <Pressable
+                                        key={s.slug}
+                                        onPress={() => router.push(`/games/${s.slug}`)}
+                                        style={({ pressed }) => [styles.suggest, pressed ? { opacity: 0.7 } : null]}
+                                        accessibilityRole="button"
+                                        accessibilityLabel={s.name}
+                                    >
+                                        {s.cover_url ? (
+                                            <Image source={{ uri: s.cover_url }} style={styles.suggestArt} contentFit="cover" transition={140} />
+                                        ) : (
+                                            <View style={[styles.suggestArt, { backgroundColor: colors.surface2 }]} />
+                                        )}
+                                        <Text style={styles.suggestName} numberOfLines={2}>{s.name}</Text>
+                                    </Pressable>
+                                ))}
+                            </ScrollView>
+                        </View>
+                    ) : null}
+
+                    {articles.length > 0 ? (
+                        <View style={{ gap: space.md }}>
+                            <Eyebrow>We wrote about it</Eyebrow>
+
+                            {articles.slice(0, 4).map((a) => (
+                                <Pressable
+                                    key={a.slug}
+                                    onPress={() => router.push(`/news/${a.slug}`)}
+                                    style={({ pressed }) => [styles.linked, pressed ? { opacity: 0.7 } : null]}
+                                    accessibilityRole="button"
+                                    accessibilityLabel={a.title}
+                                >
+                                    {a.image ? (
+                                        <Image source={{ uri: a.image }} style={styles.linkedArt} contentFit="cover" transition={120} />
+                                    ) : (
+                                        <View style={[styles.linkedArt, { backgroundColor: colors.surface2 }]} />
+                                    )}
+                                    <Text style={styles.linkedTitle} numberOfLines={3}>{a.title}</Text>
+                                </Pressable>
+                            ))}
+                        </View>
+                    ) : null}
+
+                    {/* A screenshot, full width, with the rest swipeable.
+
+                        Opening it in the browser was the cheaper option and the
+                        wrong one: it hands the reader to Chrome and a back
+                        button that leaves the app rather than the picture. */}
+                    <Modal
+                        visible={viewing !== null}
+                        animationType="fade"
+                        onRequestClose={() => setViewing(null)}
+                        statusBarTranslucent
+                    >
+                        <View style={styles.viewer}>
+                            <ScrollView
+                                horizontal
+                                pagingEnabled
+                                showsHorizontalScrollIndicator={false}
+                                contentOffset={{ x: (viewing ?? 0) * Dimensions.get('window').width, y: 0 }}
+                            >
+                                {shots.map((s) => (
+                                    <View key={s.image} style={styles.viewerPage}>
+                                        <Image
+                                            source={{ uri: s.image }}
+                                            style={styles.viewerArt}
+                                            contentFit="contain"
+                                            transition={160}
+                                        />
+                                        {s.caption ? <Text style={styles.viewerCaption}>{s.caption}</Text> : null}
+                                    </View>
+                                ))}
+                            </ScrollView>
+
+                            <Pressable
+                                onPress={() => setViewing(null)}
+                                style={styles.viewerClose}
+                                hitSlop={12}
+                                accessibilityRole="button"
+                                accessibilityLabel="Close"
+                            >
+                                <Text style={styles.viewerCloseGlyph}>×</Text>
+                            </Pressable>
+                        </View>
+                    </Modal>
                 </ScrollView>
             )}
 
@@ -334,7 +578,72 @@ function stripTags(html: string): string {
         .trim();
 }
 
+const VIEWPORT = Dimensions.get('window').width;
+
 const styles = StyleSheet.create({
+    backdropWrap: { position: 'absolute', top: 0, left: 0, right: 0, height: 260 },
+    backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+    backdropVeil: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+
+    badges: { flexDirection: 'row', gap: 5, marginTop: 4, flexWrap: 'wrap' },
+    mark: {
+        fontFamily: font.mono,
+        fontSize: 9,
+        lineHeight: 14,
+        paddingHorizontal: 5,
+        borderRadius: 3,
+        borderWidth: StyleSheet.hairlineWidth,
+        overflow: 'hidden',
+    },
+    esrb: { color: colors.warning, borderColor: colors.warning },
+
+    shot: { width: 232, height: 131, borderRadius: radius.inner, backgroundColor: colors.surface2 },
+
+    suggest: { width: 104, gap: 6 },
+    suggestArt: { width: 104, height: 139, borderRadius: radius.inner },
+    suggestName: { fontFamily: font.bodyMedium, fontSize: 12, lineHeight: 15, color: colors.inkMid },
+
+    linked: { flexDirection: 'row', gap: space.md, alignItems: 'center' },
+    linkedArt: { width: 96, height: 60, borderRadius: 8 },
+    linkedTitle: {
+        flex: 1,
+        fontFamily: font.bodyMedium,
+        fontSize: size.small,
+        lineHeight: size.small * 1.32,
+        color: colors.inkHi,
+    },
+
+    viewer: { flex: 1, backgroundColor: '#000' },
+    /* A column: the picture takes what is left, the caption takes what it
+       needs. Two earlier attempts got this wrong in ways only the device
+       showed — a fixed 72% frame stranded the caption a third of a screen
+       below its image, and an absolutely positioned caption inside a paging
+       ScrollView drew itself twice, once at each end. */
+    viewerPage: { width: VIEWPORT, flex: 1, flexDirection: 'column' },
+    viewerArt: { width: VIEWPORT, flex: 1 },
+    viewerCaption: {
+        fontFamily: font.body,
+        fontSize: 12,
+        lineHeight: 18,
+        color: colors.inkLow,
+        paddingHorizontal: space.lg,
+        paddingBottom: space.xl,
+        paddingTop: space.md,
+        textAlign: 'center',
+    },
+    viewerClose: {
+        position: 'absolute',
+        top: 44,
+        right: space.lg,
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 20,
+        backgroundColor: 'rgba(0,0,0,0.55)',
+    },
+    viewerCloseGlyph: { fontSize: 26, lineHeight: 30, color: '#fff' },
+
     htb: {
         gap: space.md,
         padding: space.lg,
