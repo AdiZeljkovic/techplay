@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Jobs\SyncGw2Account;
 use App\Models\ConnectedAccount;
+use App\Services\Gw2\Advisor\Dashboard;
+use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Gw2Connection;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
@@ -26,7 +28,10 @@ class Gw2Controller extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly Gw2Connection $connections) {}
+    public function __construct(
+        private readonly Gw2Connection $connections,
+        private readonly Dashboard $dashboard,
+    ) {}
 
     /**
      * POST /gw2/connect
@@ -121,6 +126,60 @@ class Gw2Controller extends Controller
         $this->connections->disconnect($request->user());
 
         return $this->success(null, 'Disconnected. Your key and everything read with it are gone.');
+    }
+
+    /**
+     * GET /gw2/dashboard
+     *
+     * The whole advisor in one read, out of our own tables. Nothing on this path
+     * touches ArenaNet: the rate limit is counted per IP for the entire site, so
+     * a page that fetched on render would spend everyone's budget on whoever
+     * happened to open it.
+     *
+     * The optional intent — how long they have, what to skip — is read from the
+     * query string because it is a question, not a setting. Answers to it are not
+     * cached; the unfiltered view is.
+     */
+    public function dashboard(Request $request): JsonResponse
+    {
+        $request->validate([
+            'minutes' => 'nullable|integer|min:5|max:600',
+            'goal' => 'nullable|string|max:24',
+            'avoid' => 'nullable|array|max:8',
+            'avoid.*' => 'string|max:24',
+        ]);
+
+        $connection = $this->find($request);
+
+        if (! $connection) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $accountId = DB::table('gw2_accounts')
+            ->where('connected_account_id', $connection->id)
+            ->value('id');
+
+        $payload = $accountId ? $this->dashboard->for((int) $accountId, new Intent(
+            goal: $request->string('goal')->toString() ?: null,
+            minutes: $request->integer('minutes') ?: null,
+            avoid: $request->input('avoid', []),
+        )) : null;
+
+        if (! $payload) {
+            /*
+             * Connected but never read. A player who has just pasted a key lands
+             * here for the half minute the queued sync takes, and telling them
+             * that is better than an empty dashboard that looks broken.
+             */
+            return $this->success(
+                ['connection' => $this->describe($connection)],
+                'We have not finished reading your account yet. Give it a moment.'
+            );
+        }
+
+        $payload['connection'] = $this->describe($connection);
+
+        return $this->success($payload);
     }
 
     private function find(Request $request): ?ConnectedAccount
