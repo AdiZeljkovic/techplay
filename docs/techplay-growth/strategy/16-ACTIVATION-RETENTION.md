@@ -9,7 +9,7 @@ Scope: Parts 17 and 18. What an activated TechPlay member is, what a new member 
 - **TechPlay built the loops and delivers almost none of them.** 20 of 22 notification types stay in the bell, including release reminders and the Friday digest [R12 §1]. The first retention work is delivery (C43 email and Discord DM, 19 Oct; C41 Monday email, 26 Oct; C59 push, 9 Nov), not new mechanics.
 - **Loops are "your games changed" loops first** (release day, price drop, reply, session suggestion), then shared rituals (What Are You Playing, Poll, Game Club, Save File), then seasonal events (Season 2, TGA league, Year in Review). 28 loops are specified with trigger, action, reward, investment, owner, requirement, cap and ethics check (§4).
 - **Ethics are rules, not intentions:** streak freeze, streaks never emailed or pushed, per-topic opt-in, no guilt copy, no fake urgency, Bounty stays cosmetic [R12 §3]. Two existing mechanics break these rules and are fixed before Season 2 starts on 1 Nov: the 30-day streak quest and the uncapped Discord `/daily` (§4.6).
-- **WRM (Weekly Returning Members) needs one new table.** Meaningful actions are scattered over eight tables and some (reminder set, Analyzer run, Discord XP) leave no timestamped row. D-007b adds `member_actions`, written from the `QuestService::progress()` calls that already fire at every meaningful action (§2, §5).
+- **WRM (Weekly Returning Members) needs one view.** Meaningful actions are scattered over eight tables and some (reminder set, Analyzer run, Discord XP) leave no timestamped row. D-007b is a `member_actions` view over the `growth_events` table that D-007 adds (30-ANALYTICS), fed from the `QuestService::progress()` calls that already fire at every meaningful action (§2, §5).
 - **Retention is measured on accounts and actions,** never on visits: the first-party counter re-salts IP hashes nightly and cannot see returning people [R12 §0].
 - **Capacity:** about 60 DEV hours (mostly C41, C43, D-007b, D-035), SC about 4 h/week for rituals and the weekly retention report, DS 6 h for onboarding screens.
 
@@ -59,24 +59,24 @@ Column names follow the models and migrations read on 27 Sep 2026: `GameRating` 
 
 **Baseline.** Only a proxy exists: 13 connected accounts / 60 users = 21.7% ever connected [R11 §6]. The A2 rate by 7-day cohort is UNKNOWN until the query runs on production (DEV, W40).
 
-**TARGETs.** 100 members reach A2 by 31 Dec 2026 (Founding 100, C68). A2 ÷ A0 within 7 days: TARGET ↑ week on week; an absolute TARGET is set on Mon 2 Nov from four weekly cohorts.
+**TARGETs** (shared with 03-FUNNEL §4): 100 cumulative A2 members by 31 Dec 2026 (Founding 100, C68); A2 ≥ 40% of new registrations within 7 days; A3 ≥ 35% of A2; A4 ≥ 15% of A2 within 30 days. Re-based on Mon 2 Nov from four weekly cohorts.
 
 ---
 
-## 2. `member_actions`: the table the North Star needs (D-007b)
+## 2. `member_actions`: the North Star view (D-007b, on top of D-007's `growth_events`)
 
-Meaningful actions (spine §3) live in eight places and three leave no usable row: reminders are a boolean on `user_games`, `wow_analyses` has no `user_id`, and Discord XP is applied without a persistent ledger row. `QuestService::progress()` is already called at nearly every meaningful action (`comment_posted`, `platform_connected`, `game_added`, `game_completed`, `game_rated`, `list_published`, `session_logged`, `thread_started`, `forum_post`, `friend_made`) [R01 B.2.5]. D-007b writes one row there and at three extra points.
+Meaningful actions (spine §3) live in eight places and three leave no usable row: reminders are a boolean on `user_games`, `wow_analyses` has no `user_id`, and Discord XP is applied without a persistent ledger row. 30-ANALYTICS already specifies one server-side event table, `growth_events` (`id`, `user_id`, `event`, `params`, `occurred_at`), written inside D-007. This file does not add a second table. **D-007b is a database view, `member_actions`, over `growth_events`**, restricted to the meaningful actions and with one normalised `action` name, so every retention query in §5 reads one place.
 
-| Column | Type | Notes |
+| View column | From `growth_events` | Notes |
 |---|---|---|
-| id | bigserial | — |
-| user_id | bigint, indexed with created_at | — |
-| action | text | one of: shelf_change, rating, comment, list_edit, reminder_set, analyzer_run, discord_xp, session_logged, forum_post, library_connected |
-| object_type, object_id | text, bigint | game, article, list, thread |
-| source | text | web, discord, email, push |
-| created_at | timestamptz | — |
+| user_id | user_id | non-null only |
+| action | mapped from `event` | shelf_change (`shelf_add` and member-initiated status changes), rating (`rating_created`), comment (`comment_created`), list_edit (`list_created` and list edits), reminder_set, analyzer_run (`tool_run` tool=wow, signed in; needs D-040a), discord_xp (at most one per user per day), session_logged, forum_post, library_connected |
+| source | params.source | web, discord, email, push |
+| created_at | occurred_at | — |
 
-Extra write points: `CalendarController` reminder toggle (reminder_set), `WowAnalysis` create when signed in (analyzer_run, needs D-040a), `DiscordXpController` award (discord_xp, at most one row per user per day). **Excluded on purpose:** logins, page views, daily streak claims, giveaway daily visits. A loop that only rewards showing up must not move the North Star (§4.6). Retention: 400 days. Effort: DEV 6 h (ESTIMATE).
+**Where the writes come from.** `QuestService::progress()` is already called at nearly every meaningful action (`comment_posted`, `platform_connected`, `game_added`, `game_completed`, `game_rated`, `list_published`, `session_logged`, `thread_started`, `forum_post`, `friend_made`) [R01 B.2.5]. Recording the matching `growth_events` row next to those calls, plus the reminder toggle in `CalendarController`, the signed-in Analyzer run and `DiscordXpController`, covers the whole list with one helper (`GrowthEvents::record()` in 30-ANALYTICS).
+
+**Excluded on purpose:** logins, page views, daily streak claims, giveaway daily visits and sync-created shelf rows. A loop that only rewards showing up must not move the North Star (§4.6). Until D-007 ships, WRM is read with the approximation query Q-01 in 30-ANALYTICS. Effort for the view: DEV 2 h (ESTIMATE); the event writes are budgeted in D-007.
 
 ---
 
@@ -88,14 +88,14 @@ Extra write points: `CalendarController` reminder toggle (reminder_set), `WowAna
 |---|---|---|---|---|
 | 0 s | Social callback with a `redirect` | Returns to the page; toast: "You're in. {Game} is on your shelf." or "You're in. We'll email you on {date}." | `registration_complete` (method, from), resumed action | D-014, D-016 |
 | 0 s | Social callback without a redirect, or email link confirmed | Onboarding wizard, screen 1 | `wizard_shown` (existing Redis counter) | rewrite `WelcomeOnboarding.tsx` |
-| 0–20 s | **Wizard 1: Bring your games in** | Title "Bring your games in". Sub "Pick one. You can add the others later in Settings." Card A "Connect Steam — Your library, hours and achievements. The import runs in the background while you look around." [Connect Steam]. Card B "Connect Xbox — Just your gamertag, no password. Your Xbox privacy must let others see your game history." [Connect Xbox]. Card C "PlayStation, GOG or Epic — These take a code you paste once. We'll walk you through it." [Set up]. Card D "Nothing to connect? Pick five games by hand — we use them to work out your taste, nothing is guessed." [Pick games]. Text link "Skip for now — your checklist stays on your profile." | `wizard_steam_click`, `wizard_xbox_submitted`, `wizard_pick_started`, `wizard_skipped` | DS 2 h, DEV 2 h |
+| 0–20 s | **Wizard 1: Bring your games in** | Title "Bring your games in". Sub "Pick one. You can add the others later in Settings." Card A "Connect Steam and your library fills itself. Hours and achievements come too; the import runs in the background while you look around." [Connect Steam]. Card B "Link Xbox with your gamertag. No password; your Xbox privacy must let others see your game history." [Connect Xbox]. Card C "PlayStation, GOG or Epic: these take a code you paste once. We'll walk you through it." [Set up]. Card D "Add three games you're playing or waiting for." [Pick games]. Text link "Later" (checklist stays on your profile). Card A, B, D and "Later" use the lines agreed in 03-FUNNEL §4. | `wizard_steam_click`, `wizard_xbox_submitted`, `wizard_pick_started`, `wizard_skipped` | DS 2 h, DEV 2 h |
 | — | *Signed up with Steam (after D-015)* | Wizard 1 is skipped; screen 2 opens directly | `library_connected` (steam) | D-015 |
 | 20–50 s | **Wizard 2: Importing** | "Importing your Steam library" / "{n} games so far. This updates itself, and you can leave the page; the import keeps going." | — | poll sync status |
 | — | Steam profile private (sync status `private`) | "Steam says your game details are private, so we can't see your library. In Steam: Profile → Edit Profile → Privacy Settings → Game details → Public. Then [Try again]." Secondary: "Pick games by hand instead" | — | copy |
 | 50–60 s | **Wizard 3: Your library** | "{n} games, {h} hours on record." / "Most played: {game} ({hours} h)." / Buttons: [Mark what you're playing now] [Find something to play tonight] (Backlog Advisor) [See your profile] | `library_connected`; A2 reached | DEV 2 h |
 | 60 s | If eligible for Founding 100 (C68) | Line under the numbers: "You qualify for the Founder badge. It arrives within a day." | — | C68 |
 
-Hand-picked path ends: "Five games on your shelf. That's enough for Gamer DNA to start; more games make it sharper." (Replaces the toast "Added {n} games to your collection!".) Copy removes the current "Welcome to TechPlay 👋" and "Full profile in ~30 seconds" (import time is not measured).
+Hand-picked path ends: "Three games on your shelf. That's enough for Gamer DNA and Taste Match to start; more games make them sharper." (Replaces the toast "Added {n} games to your collection!"; `PICK_TARGET` in `WelcomeOnboarding.tsx` changes from 5 to 3 to match A2.) Copy removes the current "Welcome to TechPlay 👋" and "Full profile in ~30 seconds" (import time is not measured).
 
 ### 3.2 First 5 minutes
 
@@ -127,7 +127,7 @@ Removed: "Create a game list" (moves to week 2, L-M4) and "Join a forum discussi
 | When | Channel | Content | Requirement |
 |---|---|---|---|
 | Within 5 min of A1 (social: of sign-up) | Email | Member welcome M1 (17 §12, E-01): subject "Your TechPlay library is ready for games"; or, if A2 already reached, "{n} games are on your shelf" | D-013, C42 |
-| On `/link` or Discord sign-up | Discord DM from Professor Buffy | See copy below | D-011b (DM on link) |
+| On `/link` or Discord sign-up | Discord DM from Professor Buffy | See copy below | D-011o (DM on link) |
 | First achievement unlocks ("Verified Gamer", "Game Hunter") | Bell and toast (existing) | unchanged; no email | exists |
 | +24 h, no A2 | Bell | "Your shelf is empty. Steam and Xbox take one click, or pick five games by hand. [Bring your games in]" | copy |
 | First return visit (24–48 h) | Dashboard card | If Steam linked and `SessionSuggestionService` has a proposal: "Steam says you played {game} for {h} h since yesterday. Log it as a session?" [Log it] [Not a session]. Otherwise: "Out this week: {3 releases from the calendar}" | exists (suggestions), `d1_return` counter |
@@ -149,11 +149,12 @@ Removed: "Create a game list" (moves to week 2, L-M4) and "Join a forum discussi
 |---|---|---|---|
 | D0 | Wizard, checklist | M1 welcome | Buffy DM if linked |
 | D1 | Session suggestion or "Out this week" card | — | — |
-| D2 | — | M2 "Which platforms do you play on?" (one-click answers set segments) | — |
+| D1 | (see above) | M2: A2 members "Your shelf, one day in" (03-FUNNEL); others "What do you play on?" | — |
+| D2 | — | — | — |
 | D3 | Bell nudge if no A2 | E-03 profile incomplete, only if no A2 | — |
 | D4 | Hidden Gem Thursday on homepage rail (if Thursday) | — | #hidden-gems post |
 | D5 | Bell weekly digest (existing, Friday 16:00) | The Save File, only if opted in | Poll result, Game Club reminder |
-| D6 | — | M3: variant A (no A2) "Your library in one click"; variant B (A2) "Compare your taste" | — |
+| D6 | — | M3: variant A (no A2) "Your library in one click"; variant B (A2) "How close is your taste to ours?" | — |
 | D7 | Monday thread (C37) | C41 "Your releases this week", only if a reminder or wishlist game releases in the next 7 days (from 26 Oct) | Buffy posts the Monday thread |
 
 If the member unsubscribes from lifecycle mail, the site-side steps continue unchanged.
@@ -272,24 +273,9 @@ These are the surfaces the loops above feed. None needs a new model before 31 De
 | Share card | Gamer DNA and list cards (D-024, `/og/list` exists) | Button "Share your DNA card" · after share: "Anyone who opens it can make their own in one step." | D-024 |
 | Achievements | 67 in the catalogue; unlocks toast and go to the bell [R01 B.2.4] | No email for achievements. Rare ones (fewer than 5% of members) get a "Share" button once D-024 exists | D-024 |
 
-### 4.9 Buffy's Discord lines, rewritten (C35; SC, 2 h)
+### 4.9 Buffy's voice in these loops
 
-The current lines ("Hoot hoot! A new adventurer has joined our ranks!", "The prophecy spoke of your arrival... Welcome, young one!", "Even in my centuries of wisdom…") are the "cartoon teacher" voice [R13 §7]. Replacement set:
-
-| Moment | New line |
-|---|---|
-| Welcome embed title | "Welcome to TechPlay, {name}." |
-| Welcome body | "Three things worth doing: link your account with `/link`, bring your games in on the site, and say what you're playing in #what-are-you-playing. Rules are in #rules; they're short." |
-| Welcome footer | "Professor Buffy · TechPlay" |
-| Rank up | "{name} is now {rank}. Next rank at {xp} XP." |
-| Achievement | "{name} unlocked {achievement}: {description}." |
-| Leaderboard climb | "{name} moved up to #{n} this week." |
-| Weekly wrap opener | "Here's the week. Member of the week, what we published, and what's out next week." |
-| On This Day | "On this day in {year}: {game} came out on {platforms}. Who played it at launch?" |
-| Monday thread | "What are you playing this week? Link your shelf if you want people to see the rest." |
-| Sign-off (at most once per message) | "— Buffy" or one dry owl line, e.g. "— Buffy, who has read the patch notes so you don't have to." |
-
-Remove the `buffy-avatar.png` reference for good and ship a real avatar asset (DS, 2 h) [R13 §7].
+The Discord welcome embed, rank-up, daily, tip, DM and event lines are rewritten in 12-DISCORD §8.2–8.3 (D-011a); this file does not repeat them. Loops in §4 follow the same rules: plain first line with the member's own data, at most one owl line in the sign-off, never a mention of absence or streak risk [R13 §7]. The one new message this file adds is the DM on account link (§3.4, D-011o); 12-DISCORD's `/remind` and release-day DM (D-011h) carry L-D1 on Discord.
 
 ### 4.10 Loop coverage check
 
@@ -345,7 +331,7 @@ SELECT
 FROM wk JOIN users u ON u.id = wk.user_id;
 ```
 
-**TARGET (provisional, confirm on 2 Nov):** WRM ≥ 100 in W51 (14–20 Dec), the week Year in Review and the TGA results bring members back. Basis: the Founding 100 target for A2 by 31 Dec, and that the December loops (L-S4, L-S6) are built to bring back already-activated members. Week-on-week WRM ↑ from W44 is the directional TARGET until then.
+**TARGET.** This file sets no separate WRM number. Two strategy files already do and they differ: 30-ANALYTICS K00 sets 15–25 (31 Oct), 30–50 (30 Nov), 45–70 (last week of December); 03-FUNNEL sets 60–120 averaged over 7–20 Dec. EIC to pick one on 2 Nov once the first four readings exist (open question 7). Week-on-week WRM ↑ from W44 is the directional TARGET for the loops in §4.
 
 ### 5.2 D1, D7, D30 action retention
 
@@ -424,8 +410,8 @@ Five numbers and one sentence each: WRM (with new / retained / resurrected), A2 
 | Week | Dates | Ships | Loops live | Owner | Hours (ESTIMATE) |
 |---|---|---|---|---|---|
 | W40 | 28 Sep–4 Oct | A2 baseline query run once on production; C37 thread and C65 On This Day start; C39 poll from 30 Sep | L-W2, L-W4, L-D6 | DEV, SC | DEV 1, SC 4 |
-| W41 | 5–11 Oct | D-007b `member_actions`; wizard, checklist and verify-state copy (§3); Game Club October opens (Control Resonant) | L-M1 | DEV, DS, SC | DEV 8, DS 4, SC 3 |
-| W42 | 12–18 Oct | C42 welcome sequence (17); D-011b Buffy DM on link; D-013a notification preferences | first-day steps | DEV, SC | DEV 8, SC 3 |
+| W41 | 5–11 Oct | D-007b `member_actions` view (after D-007's `growth_events`); wizard, checklist and verify-state copy (§3); Game Club October opens (Control Resonant) | L-M1 | DEV, DS, SC | DEV 8, DS 4, SC 3 |
+| W42 | 12–18 Oct | C42 welcome sequence (17); D-011o Buffy DM on link; D-013a notification preferences | first-day steps | DEV, SC | DEV 8, SC 3 |
 | W43 | 19–25 Oct | C43 release-day email and Discord DM; D-013b replies by email; Next Fest diary | L-D1, L-D3, L-S2 | DEV, ED | DEV 10, ED 6 |
 | W44 | 26 Oct–1 Nov | C41 Monday email (26 Oct); D-035 and Fix 1 before Season 2 (1 Nov); D-035a freeze | L-W1, L-D5, L-M2 | DEV, SC | DEV 10 |
 | W45 | 2–8 Nov | Targets set from four cohorts; D-027 price alerts start (Steam) | L-D2 | DEV, EIC | DEV 8 |
@@ -443,9 +429,9 @@ Totals (ESTIMATE): DEV ≈ 65 h over 13 weeks (overlapping the C41/C43 hours als
 ## Dependencies and open questions
 
 **Dependencies**
-- D-007 and D-007b (`member_actions`) before any WRM or D1/D7/D30 number is reported; D-007a widget to read it.
-- C43 (release-day email and DM, 19 Oct), C41 and D-028 (Monday email, 26 Oct), D-027 (price alerts), C59 and D-019 (push, 9 Nov), D-013 (mail channel), D-013a (per-type preferences), D-013b (reply emails), D-013d (member time zone for quiet hours), D-011b (Buffy DM on link), D-035 and D-035a (streak merge and freeze), D-040 and D-040a (Analyzer saved characters), D-024 and D-025 (cards, Year in Review), D-026 (prediction league).
-- New sub-IDs introduced here: D-007b `member_actions`, D-011b Buffy DM on link, D-013a notification preference centre, D-013b reply mail channel, D-013d member time zone, D-035a streak freeze.
+- D-007 (`growth_events`, specified in 30-ANALYTICS) and D-007b (`member_actions` view) before any WRM or D1/D7/D30 number is reported; D-007a widget to read it.
+- C43 (release-day email and DM, 19 Oct), C41 and D-028 (Monday email, 26 Oct), D-027 (price alerts), C59 and D-019 (push, 9 Nov), D-013 (mail channel), D-013a (per-type preferences), D-013b (reply emails), D-013d (member time zone for quiet hours), D-011o (Buffy DM on link; D-011h in 12-DISCORD covers `/remind` and the release-day DM path), D-035 and D-035a (streak merge and freeze), D-040 and D-040a (Analyzer saved characters), D-024 and D-025 (cards, Year in Review), D-026 (prediction league).
+- New sub-IDs introduced here: D-007b `member_actions` view, D-011o Buffy DM on link, D-013a notification preference centre, D-013b reply mail channel, D-013d member time zone, D-035a streak freeze.
 - 15-REGISTRATION.md (R-03 Steam sign-in skips wizard screen 1; R-06 email capture) and 17-NEWSLETTER-EMAIL.md (M1–M3, E-01 to E-12 copy).
 
 **Open questions**
@@ -455,3 +441,4 @@ Totals (ESTIMATE): DEV ≈ 65 h over 13 weeks (overlapping the C41/C43 hours als
 4. Is the "Thirty Days Running" quest editable in admin, or does Fix 1 need a migration?
 5. Discord DM delivery for release alerts: the bot's DM subscriptions poll every 5 minutes for news and giveaways only [R01 B.8.2]; C43 needs a new subscription type or a push from the backend. DEV to choose by 9 Oct.
 6. Quiet hours need a time zone per member; none is stored today. Until D-013d, sends go at fixed UTC times chosen for EU mornings and US mornings (17 §2).
+7. WRM TARGETs differ between 03-FUNNEL (60–120 averaged 7–20 Dec) and 30-ANALYTICS K00 (45–70 in the last week of December). This file adopts neither; EIC to choose one number on 2 Nov.

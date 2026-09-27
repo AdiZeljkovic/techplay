@@ -59,7 +59,7 @@ Audience codes are spine §5 segments. "Exists" means no code beyond copy. Metri
 | R-07 | Guest sees the header on any page | Header (desktop) and mobile "Join" tab | Test "Join TechPlay" vs "Start your library" / microcopy none | Clear label for what joining gives | all |
 | R-08 | First visit to homepage | Homepage hero (existing) | Keep "One library for everything you play." / "Start your library" / "Free, and no card." plus live line "{n} games added to shelves this week" shown only when n ≥ 50 | Sees the product in use, with a number that can be checked | all |
 | R-09 | Scrolls to the end of homepage | Homepage closing band `ProfileCtaBand` | "The record builds itself." / "Start your library" / "This is {member}'s profile card, shared with permission." with a real Gamer DNA card image | Sees the artefact instead of a description of it | S2, S10 |
-| R-10 | Reader passes 60% of an article that has `game_id` | Article end block (C46) | "Following {Game}?" / "Add it to your shelf" / "We'll tell you when there's news, a release date or a price drop. Free, no card." | Tracks the game the article was about | S1, S3, S4, S5, S6 |
+| R-10 | Reader passes 60% of an article that has `game_id` | Article end block (C46; copy shared with 03-FUNNEL §3.3) | "Keep track of the games in this story" / "Add {game} to my shelf" / until 19 Oct "It goes on your release calendar and your shelf. Free, no card."; from 19 Oct "We'll tell you when it's out, on sale or reviewed. Free, no card." | Tracks the game the article was about | S1, S3, S4, S5, S6 |
 | R-11 | Reader passes 60% of any article while a verified giveaway is live | Article end, giveaway swap (exists) | "Giveaway · closes {date}" / "Enter with Google or Discord" / "Free to enter. One click creates the account; the account keeps your library too." | Enters a draw with no form | S4, S7, S10 |
 | R-12 | Guest clicks "Remind me" on an unreleased game | Game page and release page (C45) | Modal: "Get a reminder for {Game}" / "Continue with Google" · "Sign in through Steam" · "Discord" · "Use email" / "We'll email you on {date} and put it on your calendar page. You'll come straight back here." | Reminder set without losing the page | S1, S4, S6 |
 | R-13 | Guest clicks "Add to Collection"/"Track" on a released game | Game page `TrackGameButton` | Modal: "Put {Game} on your shelf" / same buttons / "Or bring your whole library: Steam and Xbox connect in one click." | Starts a library from the game they're looking at | S2, S3 |
@@ -98,25 +98,25 @@ Audience codes are spine §5 segments. "Exists" means no code beyond copy. Metri
 | R-05 | Copy; resend exists; D-014 | A: "resend" primary. B: "use Google instead" primary | `email_verified` | `email_verified ÷ registration_complete(method=email)` within 72 h, TARGET ↑; prune count (`users:prune-unverified --dry-run`), TARGET ↓ |
 | R-06 | D-015a email capture for Steam-only accounts, sends verify mail | A: ask at first reminder. B: ask on day 2 in the bell | `email_verified` (method=steam) | Steam accounts with verified email ÷ Steam accounts, TARGET ↑ |
 | R-07 | Copy | A: "Join TechPlay". B: "Start your library" | `cta_click` (cta_id=header-join) | header clicks ÷ guest page views, TARGET ↑ |
-| R-08 | Counter from `user_games.created_at` (D-029a), hidden below 50 | A: counter shown. B: none | `cta_click` (cta_id=home-hero) | hero clicks ÷ homepage guest views, TARGET ↑ |
+| R-08 | Counter from `user_games.created_at` (D-029a), hidden below 50 | A: counter shown. B: none | `cta_click` (cta_id=home-hero-library) | hero clicks ÷ homepage guest views, TARGET ↑ |
 | R-09 | D-024 card image; written consent from the member (SC) | A: card image. B: four text rows (current) | `cta_click` (cta_id=home-band) | band clicks ÷ homepage guest views, TARGET ↑ |
-| R-10 | D-010 article-end block with game variant; `articles.game_id` exists | A: "Add {Game} to your shelf". B: generic "Create your profile" (current) | `cta_click` (cta_id=article-end-game), `registration_complete` (from=article-game) | registrations from=article-game ÷ article guest views with game_id, TARGET ↑ vs from=article |
+| R-10 | D-010 article-end block with game variant; `articles.game_id` exists | A: "Add {game} to my shelf". B: generic "Create your profile" (current) | `cta_click` (cta_id=art-end-shelf), `registration_complete` (from=article-game) | registrations from=article-game ÷ article guest views with game_id, TARGET ↑ vs from=article |
 | R-11 | Exists; giveaway verified in admin (C09) | A: "Enter with Google or Discord". B: "Enter the giveaway" (current) | `giveaway_entered`, `registration_complete` (from=giveaway) | A2 Shelved rate of from=giveaway accounts, guardrail: giveaway-only share (entered, never shelved) TARGET ↓ |
-| R-12 | D-016 guest modal, returns to page; C43 email delivery | A: modal with Steam first. B: Google first | `cta_click` (cta_id=remind-guest), `registration_complete` (from=game), `reminder_set` | `reminder_set` by new accounts ÷ guest remind clicks, TARGET ↑ |
+| R-12 | D-016 guest modal, returns to page; C43 email delivery | A: modal with Steam first. B: Google first | `cta_click` (cta_id=game-remind), `registration_complete` (from=game), `reminder_set` | `reminder_set` by new accounts ÷ guest remind clicks, TARGET ↑ |
 | R-13 | D-016 | A: "Put {Game} on your shelf". B: "Track {Game}" | `shelf_add` (status), `registration_complete` (from=game) | new-account `shelf_add` within 10 min ÷ guest track clicks, TARGET ↑ |
 | R-14 | D-016 | none until volume allows | `rating_created` | ratings by accounts < 24 h old per week, TARGET ↑ |
-| R-15 | D-016; C45 | A: "Track everything you're waiting for". B: "Get release-day emails" | `game_followed`, `reminder_set` (from=calendar) | reminders set per 1,000 guest calendar views, TARGET ↑ |
+| R-15 | D-016; C45 | A: "Track everything you're waiting for". B: "Get release-day emails" | `cta_click` (cta_id=cal-remind), `game_followed`, `reminder_set` (from=calendar) | reminders set per 1,000 guest calendar views, TARGET ↑ |
 | R-16 | D-016, D-017 (hub SSR), C08 | A: "Remind me on launch day". B: "Get the unlock time for your time zone" | `reminder_set` (game=gta6), `registration_complete` (from=gta6) | GTA VI reminders set ÷ hub guest views, TARGET ↑ through 19 Nov |
 | R-17 | D-018 tool, reminder at T−1h (C43 delivery) | A: reminder T−1h. B: reminder at unlock | `tool_run` (tool=release-time), `reminder_set` | `reminder_set ÷ tool_run`, TARGET ↑ |
 | R-18 | Copy; D-014 honours `redirect=back` | A: moderation note shown. B: current "earn community XP" line | `comment_created` (account age < 24 h) | first comments from new accounts ÷ guest reply clicks, TARGET ↑ |
 | R-19 | Exists (watch); modal via D-016 | none | `cta_click` (cta_id=thread-watch) | registrations from=forum per week, TARGET ↑ |
 | R-20 | D-029 empty state copy | none | `cta_click` (cta_id=leaderboard-empty) | registrations from=leaderboard, TARGET ↑ |
-| R-21 | D-024a guest Taste Match preview (shows the three weights, blurred %) | A: blurred %. B: text only | `registration_complete` (from=profile) | new accounts that view a match within 24 h, TARGET ↑ |
+| R-21 | D-024c guest Taste Match preview (shows the three weights, blurred %) | A: blurred %. B: text only | `registration_complete` (from=profile) | new accounts that view a match within 24 h, TARGET ↑ |
 | R-22 | Exists; modal via D-016 | none | `list_created` (account age < 7 d) | lists created by new accounts per month, TARGET ↑ |
 | R-23 | D-016b guest row action in search | none | `search_performed`, `shelf_add` | adds from search by new accounts per week, TARGET ↑ |
 | R-24 | D-037 guest mode | A: import first. B: questions first | `tool_run` (tool=backlog), `library_connected` | `library_connected ÷ tool_run(tool=backlog, guest)`, TARGET ↑ |
-| R-25 | D-040 copy and OG; D-040a store `user_id` on analysis when signed in | A: "Save and track". B: no CTA (control) | `tool_run` (tool=wow), `registration_complete` (method=battlenet, from=wow) | Battle.net registrations ÷ Analyzer runs, TARGET ↑ |
-| R-26 | D-011a bot reply with Discord OAuth link | none | `registration_complete` (method=discord, from=discord) | linked Discord members ÷ server members (API count), TARGET ↑ |
+| R-25 | D-040 copy and OG; D-040a store `user_id` on analysis when signed in | A: "Save and track". B: no CTA (control) | `cta_click` (cta_id=wow-save-character), `tool_run` (tool=wow), `registration_complete` (method=battlenet, from=wow) | Battle.net registrations ÷ Analyzer runs, TARGET ↑ |
+| R-26 | D-011n bot reply with Discord OAuth link | none | `registration_complete` (method=discord, from=discord) | linked Discord members ÷ server members (API count), TARGET ↑ |
 | R-27 | C35 Discord onboarding; working invite only | A: three steps. B: link step only | `discord_join` (invite code), `registration_complete` (from=discord) | registrations within 7 days of `discord_join`, TARGET ↑ |
 | R-28 | D-012 verify page block, email pre-filled | A: Google button. B: email pre-filled form | `newsletter_verified`, `registration_complete` (from=newsletter-verify) | registrations within 10 min of verify ÷ verifies, TARGET ↑ |
 | R-29 | D-013 footer block with signed link that pre-fills email | none | `registration_complete` (from=newsletter) | registrations from=newsletter per issue, TARGET ↑ |
@@ -271,7 +271,7 @@ One component, opened only by a click on a member action. It never opens on scro
 | After email sign-up | "Check your inbox. When you click the link we'll finish this and bring you back here." (the action is stored with the redirect) |
 | Dismiss | "Not now" (text button). No second prompt on the same page view. |
 
-Events: `cta_click` (cta_id = remind-guest | track-guest | rate-guest | watch-guest | list-guest | search-guest), then `registration_start`, `registration_complete` (from=game | calendar | forum | list | search), then the resumed action event.
+Events: `cta_click` (cta_id = game-remind | game-track | rate-guest | watch-guest | list-guest | search-guest; the first two as named in 03-FUNNEL §6), then `registration_start`, `registration_complete` (from=game | calendar | forum | list | search), then the resumed action event.
 
 ### 4.7 Existing copy to replace (W40–W42)
 
@@ -284,7 +284,7 @@ Events: `cta_click` (cta_id = remind-guest | track-guest | rate-guest | watch-gu
 | Leaderboard "How to earn more XP" | "Read articles and leave comments" | "Comment, rate and finish games. Reading doesn't earn XP." | W40 |
 | Comments guest panel (`CommentsSection.tsx`) | "Join the Conversation — Log in to comment and earn community XP." | R-18 copy | W42 |
 | Comment placeholder (members) | "Share your thoughts… (earn 10 XP!)" | "Share your thoughts. XP arrives when the comment is approved." (first three) / "Share your thoughts." (after) | W42 |
-| Article JoinPrompt panel | "Free TechPlay account — Your gaming life, in one place…" "XP, twenty ranks and achievements for what you already play" | Keep headline; replace the XP bullet with "One email on release day for games you're waiting for" (after C43); add game variant R-10 | W41 |
+| Article JoinPrompt panel | "Free TechPlay account — Your gaming life, in one place…" "XP, twenty ranks and achievements for what you already play" | Replaced by the C46 end block (03-FUNNEL §3.3 copy, R-10) for articles with a game; for articles without one keep the headline and replace the XP bullet with "One email on release day for games you're waiting for" (after C43) | W41 |
 | Roadmap CTA (`RoadmapCTA.tsx`) | "Follow our progress… Join TechPlay" and dead invite | "Lists, Backlog Advisor and the Discord bot are live. [Try lists]" and invite wPQG9gUMXH | W40 |
 | Support tiers | "Join our inner circle. Get exclusive benefits…" | Hide the page link from the footer until tiers exist (not a registration surface; flagged to EIC) | W40 |
 | GTA 6 newsletter block | "Join thousands of fans…" "Join the Crew" and dead invite | 17 §6 copy | W40 |
@@ -415,10 +415,10 @@ A failure on 1–6 goes to DEV the same day as P0.
 | W40 | 28 Sep–4 Oct | D-001 false claims off /register, /login, GTA 6 CTA, sign-in walls; D-004 dead invites; verify giveaway in admin (C09) | R-36 copy, R-01 interim copy | DEV, EIC | DEV 4, EIC 2 |
 | W41 | 5–11 Oct | D-007 events for §3 names; D-007a funnel widget; D-010 article-end block starts (C46) | R-10 build | DEV, ED | DEV 8 |
 | W42 | 12–18 Oct | D-014 register rewrite: social first, copy §4, `redirect`, `from`, R-30 checkbox, verify page; D-012 newsletter landing and verify block; Discord welcome (C35); D-018 release-time tool (C08, 14 Oct) | R-01, R-02, R-04, R-05, R-17, R-18, R-27, R-28, R-30 | DEV, EIC, SC | DEV 10, EIC 4, DS 4 |
-| W43 | 19–25 Oct | D-016 guest Remind/Follow modal (C45, 19 Oct); C43 release-day email; D-011a bot link reply | R-12, R-13, R-14, R-15, R-16, R-19, R-26 | DEV, SC | DEV 12 |
+| W43 | 19–25 Oct | D-016 guest Remind/Follow modal (C45, 19 Oct); C43 release-day email; D-011n bot link reply | R-12, R-13, R-14, R-15, R-16, R-19, R-26 | DEV, SC | DEV 12 |
 | W44 | 26 Oct–1 Nov | D-015 Steam sign-in (C44 close, 26 Oct); D-015a email ask; C68 Founding 100 live; first test R-10 | R-03, R-06, R-32 | DEV, SC | DEV 12 |
 | W45 | 2–8 Nov | Targets set (§7); D-029 empty states; C57 Meta test landing uses from=paid-meta (needs D-031) | R-20, R-22, R-23 | DEV, EIC | DEV 6 |
-| W46 | 9–15 Nov | D-037 Advisor guest mode; D-024a guest Taste Match preview; R-12 test | R-21, R-24 | DEV | DEV 8 |
+| W46 | 9–15 Nov | D-037 Advisor guest mode; D-024c guest Taste Match preview; R-12 test | R-21, R-24 | DEV | DEV 8 |
 | W47 | 16–22 Nov | **Freeze** on registration code (GTA VI week). R-16 runs as built. | — | SC | monitoring 2 |
 | W48 | 23–29 Nov | D-024 DNA card; D-040/D-040a Analyzer | R-09, R-25, R-33 | DEV, DS | DEV 6, DS 4 |
 | W49 | 30 Nov–6 Dec | R-02 test; R-35 already live from 18 Nov via D-026 | R-35 | DEV | DEV 2 |
@@ -434,8 +434,8 @@ Total ESTIMATE for registration items in this file: DEV ≈ 70 h over 13 weeks, 
 **Dependencies**
 - D-001 and C01 (false claims) before any paid or PR traffic points at /register.
 - D-007, D-007a, D-008 (C03) before any A/B test and before targets are set.
-- D-014 (register rewrite, redirect, from, checkbox), D-014a (scoped-token decision), D-015 (Steam sign-in), D-015a (email capture for Steam-only accounts), D-016 (guest modal), D-016b (search row action), D-010 (article end block), D-012 (newsletter verify block), D-011a (bot link reply), D-024 and D-024a (cards, guest match), D-025, D-026, D-029 and D-029a (empty states, shelf counter), D-037, D-039, D-040 and D-040a.
-- New sub-IDs introduced here (not in the spine list): D-007a funnel widget, D-011a bot link reply, D-014a scoped token decision, D-015a Steam email capture, D-016b search "+ Shelf", D-024a guest Taste Match preview, D-029a weekly shelf-add counter, D-040a store user_id on WoW analyses (the `wow_analyses` table has no `user_id` column today, so Analyzer runs cannot be tied to members).
+- D-014 (register rewrite, redirect, from, checkbox), D-014a (scoped-token decision), D-015 (Steam sign-in), D-015a (email capture for Steam-only accounts), D-016 (guest modal), D-016b (search row action), D-010 (article end block), D-012 (newsletter verify block), D-011n (bot link reply), D-024 and D-024c (cards, guest match), D-025, D-026, D-029 and D-029a (empty states, shelf counter), D-037, D-039, D-040 and D-040a.
+- New sub-IDs introduced here (not in the spine list): D-007a funnel widget, D-011n bot link reply, D-014a scoped token decision, D-015a Steam email capture, D-016b search "+ Shelf", D-024c guest Taste Match preview, D-029a weekly shelf-add counter, D-040a store user_id on WoW analyses (the `wow_analyses` table has no `user_id` column today, so Analyzer runs cannot be tied to members).
 - C43 (release-day email, 19 Oct) makes the "we'll email you" copy true; until then copy says "notifications".
 - 17-NEWSLETTER-EMAIL.md for R-28, R-29, R-30 flows and the Steam-only verify mail.
 

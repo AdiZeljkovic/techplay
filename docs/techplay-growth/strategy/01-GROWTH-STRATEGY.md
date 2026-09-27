@@ -133,14 +133,14 @@ Detail, hours and the weekly grid are in 13-SEO-CONTENT. The shape:
 | Hub / evergreen pages | 1 new or rebuilt | ED | /guides/pc-fixes, /switch-2, /steam, /mmo |
 | Newsletter | 1 (+1 personalised from 26 Oct) | SC/EIC | The most reliable return trigger we control |
 
-**Publishing times.** Today everything goes out 17:30–21:30 CET [R02]. From 28 Sep one piece a day goes out in the morning (07:30–09:00 CET) so it is fresh for Europe's day and the US morning. F01 goes out Monday 07:30 CET.
+**Publishing times.** Today everything goes out 17:30–21:30 CET [R02]. From 28 Sep publishing uses three slots, 08:30, 14:30 and 19:00 CET (13-SEO-CONTENT) so it is fresh for Europe's day and the US morning. F01 goes out Monday 08:30 CET.
 
 ## 7. Phases and monthly objectives (Part 41)
 
 ### Phase A — Fix and measure: 28 Sep to 18 Oct
 
 **October objective 1: stop the leaks.** All false claims gone by 2 Oct (C01). Breadcrumbs, RSS, dead invites, SearchAction and the GTA page relation fixed by 9 Oct (C02). Measurement working by 16 Oct (C03).
-**October objective 2: start the rhythm.** Every franchise live by 12 Oct: F01 from 28 Sep, F02 from 28 Sep, F03 from 1 Oct, F05 from 1 Oct, F07 from 2 Oct, F09 from 3 Oct, F24 from 6 Oct. The Save File sends every Friday from 2 Oct.
+**October objective 2: start the rhythm.** Every franchise live by 12 Oct: F01 from 28 Sep, F02 from 28 Sep, F03 from 1 Oct, F05 from 1 Oct, F07 from 2 Oct, F09 from 3 Oct, F24 from 8 Oct (restart announced 6 Oct). The Save File sends every Friday from 2 Oct.
 **October objective 3: build the return loops.** Welcome sequence (12 Oct), off-site alerts and guest "Remind me" (19 Oct), registration rebuild (26 Oct), first personalised releases email (26 Oct).
 **October objective 4: first two data stories.** Release Congestion Index (7 Oct), Studios Closed tracker (14 Oct), Balkan Game Dev Census (28 Oct).
 
@@ -184,7 +184,7 @@ The calendar files hold every date. This is the pattern they follow.
 
 | Day | Franchise output | Community and email | Team rituals |
 |---|---|---|---|
-| **Mon** | F01 Out This Week (07:30 CET); F24 Verdict on most weeks; F11 forum thread | F11 in Discord; C41 personalised email 08:00 CET (from 26 Oct); YouTube Community poll | 09:30 **Monday review** (EIC, ED, SC; 30 min): last week's KPI sheet, this week's calendar rows, blockers. DEV sprint check (15 min) |
+| **Mon** | F01 Out This Week (08:30 CET); F24 Verdict on most weeks; F11 forum thread | F11 in Discord; C41 personalised email 08:00 CET (from 26 Oct); YouTube Community poll | 09:30 **Monday review** (EIC, ED, SC; 30 min): last week's KPI sheet, this week's calendar rows, blockers. DEV sprint check (15 min) |
 | **Tue** | F08 Where Can I Play It?; F13 Steam Movers; F04 The Number | F15 Readiness Check 16:00 CET (US WoW reset); Facebook Groups slot | DS batch day 1: this week's templates filled |
 | **Wed** | F12 Poll; F10 Worth It in 2026?; F17 Studio Watch; GTA countdown vertical | Discord native poll; Story poll | PR/data day for EIC when a campaign is due |
 | **Thu** | F05 Hidden Gem; F03 Confirmed or Rumour?; F04 The Number | LinkedIn (EIC, one post); Groups slot | SC video batch: next week's three verticals edited |
