@@ -62,6 +62,15 @@ class CatalogueSync
          */
         'stories' => 'reference',
         'stories/seasons' => 'reference',
+        /*
+         * Achievement grouping. 360 categories inside 19 groups, and it is the
+         * only structured way to say "these eighteen achievements are the
+         * Skyscale collection" — matching on the word in the name would be a
+         * guess that breaks on the first achievement called "Skyscale Rider"
+         * that belongs somewhere else.
+         */
+        'achievements/categories' => 'reference',
+        'achievements/groups' => 'reference',
     ];
 
     public function __construct(private readonly Gw2Client $api) {}
