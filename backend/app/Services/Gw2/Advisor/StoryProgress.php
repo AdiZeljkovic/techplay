@@ -102,6 +102,24 @@ class StoryProgress
                     continue;
                 }
 
+                /*
+                 * A chapter this character can never reach is not a chapter
+                 * they are missing.
+                 *
+                 * The personal story branches by race, and the catalogue's 313
+                 * "My Story" steps are every race's branch added together. A
+                 * Human can see roughly a sixth of them, so counting the whole
+                 * thing reports 49 of 313 — sixteen per cent — for somebody who
+                 * has in fact finished their personal story. That is not a
+                 * conservative estimate, it is a wrong one, and it is exactly
+                 * the failure §5 names: an API gap interpreted as incomplete.
+                 */
+                $races = $story['races'] ?? [];
+
+                if ($races !== [] && $character->race !== null && ! in_array($character->race, $races, true)) {
+                    continue;
+                }
+
                 $total = $totalByStory[(int) $storyId] ?? 0;
                 $doneCount = $doneByStory[(int) $storyId] ?? 0;
 
@@ -112,7 +130,7 @@ class StoryProgress
                     'level' => $story['level'] ?? null,
                     // Races, where the story is race-specific. Shown so nobody
                     // reads a charr-only chapter as something they skipped.
-                    'races' => $story['races'] ?? [],
+                    'races' => $races,
                     'steps_seen' => $doneCount,
                     'steps_total' => $total,
                 ];
@@ -140,12 +158,13 @@ class StoryProgress
             'steps_seen' => count($done),
             'seasons' => $seasons,
             /*
-             * The sentence that keeps this honest, and it is not boilerplate:
-             * all three reasons below are real and documented.
+             * Race branching is handled above rather than excused here. A
+             * caveat that explains a wrong number is worse than a right number;
+             * what is left in this note is only what filtering cannot fix.
              */
-            'note' => 'Story is recorded per character, the game\'s quest data can lag behind what you '
-                .'have played, and the early personal story branches by race and order. So this is what we '
-                .'can detect on '.$character->name.' — not a claim about your account.',
+            'note' => 'Story is recorded per character and the quest data can lag behind what you '
+                .'have actually played, so this is what we can detect on '.$character->name.' — not a claim '
+                .'about your account. Chapters your race never gets are not counted.',
         ];
     }
 
