@@ -142,13 +142,30 @@ class AuthHardeningTest extends TestCase
     {
         $this->member();
 
+        /*
+         * The mocked `make` returns a **real** bcrypt string, and that detail
+         * is the whole reason this comment exists.
+         *
+         * The controller caches its throwaway hash in a static, so whatever
+         * `make` returns while mocked stays in that property for the rest of
+         * the PHP process. Returning a placeholder left `$2y$dummy` there, and
+         * the next test class to reach the unknown-address branch compared a
+         * real password against a string that is not a hash — a 500 instead of
+         * a 422, in a test that had nothing to do with this one.
+         *
+         * A partial mock is not the answer either: HashManager forwards `make`
+         * through `__call`, which Mockery's partial does not proxy, so the
+         * controller got null and threw inside this test instead of a later one.
+         */
+        $realHash = password_hash('unused-but-genuinely-bcrypt', PASSWORD_BCRYPT);
+
         $checks = 0;
         Hash::shouldReceive('check')->andReturnUsing(function () use (&$checks) {
             $checks++;
 
             return false;
         });
-        Hash::shouldReceive('make')->andReturn('$2y$dummy');
+        Hash::shouldReceive('make')->andReturn($realHash);
         Hash::shouldReceive('needsRehash')->andReturn(false);
 
         $this->attempt('wrong-password');
