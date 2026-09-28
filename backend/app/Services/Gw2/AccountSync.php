@@ -8,10 +8,14 @@ use Illuminate\Support\Facades\DB;
 /**
  * Read one account, and write down what changed.
  *
- * Nineteen requests: eighteen account endpoints and one `characters?ids=all`.
- * Measured at eighteen on 27 September 2026 and grown by one when
- * `account/dungeons` was added, because the count is a fact about this list
- * and not a slogan. That last one is
+ * Nineteen requests plus one per character: eighteen account endpoints, one
+ * `characters?ids=all`, and one story read for each character it returns.
+ *
+ * It was eighteen when measured on 27 September, nineteen when
+ * `account/dungeons` joined, and twenty on the one-character test account once
+ * story arrived. A veteran with fifteen characters costs thirty-four. The count
+ * is a fact about a list and it has changed three times, which is why it is
+ * written out rather than repeated as a slogan. That last one is
  * the surprise — it returns the worn equipment, the bags, specializations,
  * skills, recipes and crafting in a single response, so `equipment_tabs` and
  * `build_tabs` are not needed at all unless inactive templates are ever shown.
@@ -48,9 +52,9 @@ class AccountSync
         'account/raids' => 'progression',
         'account/worldbosses' => 'progression',
         'account/dailycrafting' => 'progression',
-        // Paths cleared since the daily reset. The nineteenth request, and the
-        // only record of it: like raids and world bosses, the API keeps no
-        // history of what was run before today.
+        // Paths cleared since the daily reset, and the only record of it: like
+        // raids and world bosses, the API keeps no history of what was run
+        // before today.
         'account/dungeons' => 'progression',
         'account/wizardsvault/daily' => 'progression',
         'account/wizardsvault/weekly' => 'progression',
