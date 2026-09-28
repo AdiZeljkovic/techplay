@@ -689,6 +689,7 @@ Testovi koji čuvaju skupo naučene stvari:
 | `Gw2ConnectionTest` | GW2 ključ ne izađe u odgovoru; brzi prolaz ne prebriše puni |
 | `Gw2AdvisorTest` | `access` nije istina o ekspanzijama; alati za branje nisu ascended slotovi |
 | `UserDataExportTest` | nijedan kredencijal ne izađe u preuzetoj datoteci |
+| `Gw2MasteryArithmeticTest` | potrošene mastery tačke se slažu sa onim što nalog prijavljuje |
 
 ---
 
@@ -1447,6 +1448,7 @@ round-robin po domenu preko svih šest mjesta, ne samo prve tri.
 | | |
 |---|---|
 | `GET /api/v1/gw2/dashboard` | kartice + savjeti + istorija; `?minutes=`, `?goal=`, `?avoid[]=` |
+| `GET /api/v1/gw2/masteries` | sve trake po regiji, cijene nivoa, šta tačke dosežu |
 | `php artisan gw2:snapshot` | ispiše normalizovano stanje |
 | `php artisan gw2:advise --minutes=30 --avoid=vault` | ispiše savjete |
 
@@ -1465,6 +1467,83 @@ naloga. Dva od njih su prvo bila napisana **pogrešno**: prolazila su i kad se
 popravka ukloni, jer ih je štitila nepovezana granica (kapa od 2 po cilju,
 odnosno fixture sa manje kandidata nego mjesta). Prepisani su i onda dokazani
 lomljenjem popravke.
+
+### Masteries — dvije neizrečene stvari o API-ju
+
+Obje su tihe kad su pogrešne: preimenovana regija ili promijenjeno značenje
+`level`-a prepolovile bi nečiji napredak bez ijedne greške igdje. Obje su
+**izvedene aritmetikom**, ne pročitane.
+
+#### 1. Dva različita imena za istu regiju
+
+`/v2/masteries` kaže `Maguuma`. `/v2/account/mastery/points` za istu regiju kaže
+`Heart of Thorns`. **Ništa u odgovorima ih ne povezuje.**
+
+| Katalog | Nalog |
+|---|---|
+| `Tyria` | Central Tyria |
+| `Maguuma` | Heart of Thorns |
+| `Desert` | Path of Fire |
+| `Tundra` | Icebrood Saga |
+| `Jade` | End of Dragons |
+| `Sky` | Secrets of the Obscure |
+| `Wild` | Janthir Wilds |
+| `Magic` | **nema para** |
+
+`Magic` (Castoran Survivalist, Wild Castoran Magic, Skimmer Adaptation, Rift
+Amplification) nema odgovarajuću regiju u endpointu za tačke. Ostaje nemapiran i
+prikazuje se odvojeno — pogađanje bi upisalo tačke pod pogrešnu ekspanziju.
+
+#### 2. `level` broji od nule
+
+Pročitano kao „broj završenih nivoa" dalo je 10, 6, 3 i 0 potrošenih tačaka
+protiv četiri regije koje sam nalog prijavljuje kao **24, 11, 8 i 1**.
+
+Pročitano kao **indeks od nule** — dakle `level + 1` plaćenih nivoa — daje
+24, 11, 8 i 1. Četiri nezavisna zbira, svi tačni.
+
+Posljedica: traka prijavljena sa `level: 0` ima **prvi nivo plaćen**, ne nijedan.
+Traka bez ijednog plaćenog nivoa **uopšte nije u odgovoru**.
+
+`Gw2MasteryArithmeticTest` je ta ravnoteža, pa preimenovanje regije ili izmjena
+značenja `level`-a obori test umjesto da tiho prepolovi traku napretka.
+
+#### Zbog čega je ovo bitno: imenilac postoji
+
+Mockup crta „Heart of Thorns 73% · 186 / 254 Mastery Points". Prvo sam taj broj
+otpisao kao neizračunljiv. Nije: `/v2/masteries` nosi `point_cost` na **svakom**
+nivou, pa je imenilac zbir nad katalogom, a ne broj koji je neko izabrao.
+
+Na testnom nalogu: Heart of Thorns 17% (24/144), Path of Fire 7% (8/110),
+Central Tyria 22% (11/49), Icebrood Saga 2% (1/63).
+
+#### Preporuka po nivou, ne po traci
+
+Cijene rastu strmo — Itzel Lore ide 1, 2, 3, 5, 8, 12. Zato „imaš 16
+nepotrošenih tačaka" nije savjet nego činjenica; savjet je „sljedeći nivo
+Glidinga košta 3". Šesnaest tačaka ili kupi četiri jeftina nivoa ili većinu
+jednog skupog, i samo cijena nivoa kaže koji.
+
+Dva pravila **dijele posao** kroz činjenicu `mastery.affordable_tiers`: kad nešto
+jeste dostupno, pali se pravilo koje imenuje nivo i cijenu; kad tačke ne dosežu
+ništa, ostaje ono neodređenije, jer je ono jedino tačno.
+
+**Naučeno usput: univerzalna napomena nije blokada.** Prvo sam tom pravilu dao
+blokadu „nivo traži i iskustvo, ne samo tačke". Tačno — i tačno za svaki nivo na
+svakoj traci uvijek. Kao blokada to nije informacija nego disclaimer, i koštalo
+je pravilo 30% boda, pa se nikad nije pojavilo. Napomena koja važi za sve ide u
+rečenicu, ne u rangiranje.
+
+#### Seeder posjeduje pravilo dok ga čovjek ne pregleda
+
+`firstOrCreate` je zamrznuo podrazumijevane vrijednosti na dan kad su prvi put
+upisane — ispravljen prag u kodu nikad nije stigao do baze koja je red već
+imala. Isti kvar zastarjelog spiska koji su imali i izvoz podataka i brisanje
+naloga.
+
+Sada: red bez `reviewed_at` se **ažurira** iz seedera, red sa `reviewed_at` se
+**ne dira**. Postavljanje tog datuma je način na koji urednik kaže „ovo je sad
+moje".
 
 ### Frontend — `/gw2`
 
@@ -1513,6 +1592,21 @@ savjetnik koji radi.
 
 Registrovan u `lib/tools.ts` (čitaju ga i header dropdown i `/tools`), plus
 `lib/mobileBar.ts` i `MoreSheet.tsx`.
+
+#### `/gw2/masteries`
+
+Regije sa stvarnim procentom, pa sve trake po regiji: koji nivo je sljedeći, šta
+košta, i da li ga nepotrošene tačke **dosežu**. Odvojen endpoint
+(`GET /api/v1/gw2/masteries`) jer je četrdeset traka sa imenima nivoa nekoliko
+kilobajta koji naslovnoj ne trebaju.
+
+Tri stvari sa mockupa 3 nisu nacrtane jer ih ništa ne računa: **„Currently
+Training"** (API to ne izlaže), **„Nearby Priorities"** sa udaljenostima u
+metrima (treba živa pozicija igrača) i **Weekly Completion Score**.
+
+Traka koja se broji je **ona koja se kupuje** (`tiers_paid + 1`), ne broj
+plaćenih — inače piše „tier 0 of 4" za traku koju niko nije počeo, što je
+aritmetika koja curi u engleski.
 
 ### Otvoreno
 
