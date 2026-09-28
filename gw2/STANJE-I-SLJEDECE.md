@@ -363,3 +363,129 @@ Redom iz dokumenta, ništa od ovoga nije počelo:
 - **Sedam preostalih familija vodiča** — sistem postoji, tekstovi ne
 - **Kuracija** — ekran postoji, prvih sto redova čeka čovjeka
 - **Vremena bosova** — ekran postoji, tabela prazna dok neko ne provjeri
+
+
+---
+
+## 11. Šta je urađeno 30. 9. 2026.
+
+Ostatak spiska sa dna sekcije 10.
+
+### Kuracija postignuća — igra sama daje odgovor
+
+Nije bila presuda nego **ArenaNetovi vlastiti flagovi**:
+
+| Flag | Redova | Zašto ispada |
+|---|---|---|
+| `IgnoreNearlyComplete` | **744** | igra doslovno kaže „ovo nije kandidat za skoro-gotovo" |
+| `Hidden` | 571 | §12.1 ga imenuje |
+| `Daily` / `Weekly` / `Monthly` | 1.346 | resetuju se; „jedan korak" je sutra besmisleno |
+| `Repeatable` | 94 | isto |
+| `Pvp` | 893 | §6.1 i §26 oboje odgađaju PvP |
+| `RequiresUnlock` | 114 | §5: ne pretvarati nevidljiv preduslov u sigurnost |
+| `Permanent`, ostalo | **4.577** | odobreno |
+
+**Nula neodlučenih** — svako postignuće ima flag koji odlučuje.
+
+`IgnoreNearlyComplete` je **kvar, ne praznina u kuraciji**: motor ga je ignorisao
+otkad postoji i preporučivao 744 postignuća koja je igra označila kao
+neprikladna. Sada se primjenjuje **u čitaču**, ne samo kroz kuraciju — osvježenje
+kataloga donosi nova postignuća i novo sa tim flagom mora ispasti istog časa.
+
+**Efekat:** postignuće je skočilo sa **53,1 na 75,9** boda i ušlo u naslov.
+
+### TP cijene — dvije kante, §13.2
+
+27.997 predmeta kojima se trguje (od 74.265), ~140 zahtjeva, **noćno** u 03:20.
+§19 predlaže 2–10 minuta; to je tačno za alat za trgovinu, ovo je planer izrade
+gdje cijena od jutros odgovara na pitanje a zastarjelost je **vidljiva** jer
+svaka stranica nosi vremensku oznaku.
+
+Obje cijene se čuvaju jer odgovaraju na različita pitanja. Na jednom ascended
+ramenu: **5g 94s odmah** naspram **5g 31s čekanjem**.
+
+**Autoritet o tome šta je u kojoj kanti je sam endpoint cijena.** Predmet kojeg
+u njemu nema ne može se kupiti nizašto — `Augur's Stone` je izdvojen, ne sabran.
+Sabrati ga kao nulu bilo bi tačno ono što §13.2 zabranjuje.
+
+### Story modul — §16, najopreznija sekcija dokumenta
+
+`characters?ids=all` vraća osamnaest polja i **`quests` nije među njima**
+(izmjereno), pa je story **jedan zahtjev po liku**. Na testnom nalogu 172
+završena koraka.
+
+**Dvije greške uhvaćene ovdje, obje iste vrste:**
+
+1. **„My Story 49/313"** — katalog sabira grane **svih rasa**. Human može
+   dosegnuti oko šestine. To nije konzervativna procjena nego **pogrešna**, i
+   tačno je kvar koji §5 imenuje: „API gap interpreted as incomplete". Priče
+   nose `races`, pa se nedosežne filtriraju → 49/137.
+2. **49/137 i dalje laže** — unutar rase priča se grana po redu i biografiji, a
+   API nijedno ne izlaže. Sezona koja se grana sada **nema imenilac uopšte**:
+   „49 koraka viđeno". Broj koji fali je pošten; pogrešan nije.
+
+Usput izmjereno: **`training` vraća prazan niz**, tačno kako §5 tvrdi. Zato se
+elite spec **pita**, ne zaključuje.
+
+### Mount engine — §9.5, presječen tamo gdje ga dokument presijeca
+
+Posmatriva polovina je mehanička (deset tipova u katalogu, četiri otključana na
+testnom nalogu). Polovina koja kaže **kako** je kurirani sadržaj.
+
+Mount bez vodiča se **i dalje preporučuje**, sa poštenom blokadom „nismo napisali
+kako se dobija". Sakriti tačnu činjenicu iza uredničkog zaostatka ne pomaže
+nikome.
+
+### Osam vodiča, i linija kroz sredinu
+
+| Familija | Stranica |
+|---|---|
+| `progression` | kako napredovanje uopšte radi |
+| `level-80` | šta poslije 80 |
+| `fractals` | Agony Resistance |
+| `masteries` | zašto su tačke zaključane za regiju |
+| `wizards-vault` | šta plaća i zašto su sedmične važnije |
+| `goals` | prvi ascended set |
+| `achievements` | kako naći ono što je na korak |
+| `legendary` | šta zapravo kupuješ |
+
+**Šta namjerno nije napisano i zašto:**
+
+- **Putanje nabavke mountova** — §9.5 ih zove kuriranim sadržajem baš zato što
+  ih nema ni u jednom API-ju. „Skyscale traži kolekciju X" bilo bi izmišljanje
+  znanja iz igre.
+- **Walkthroughovi postignuća** — isto, osam hiljada puta.
+- **Recepti legendarnih** — §14 sam odgađa kalkulator i kaže da gw2efficiency to
+  radi bolje.
+
+Te tri traže nekoga ko igra. Sistem i ekran postoje.
+
+### Legendary panel nije napravljen
+
+Legendary Armory na testnom nalogu je **prazan**, pa se panel ne bi mogao
+provjeriti ni na čemu stvarnom. §14 ionako kaže da je diferencijator „šta te
+blokira", a to traži kurirane grafove nabavke. Vodič objašnjava sistem.
+
+### Broj poziva se promijenio treći put
+
+18 → 19 (`account/dungeons`) → **20** na nalogu s jednim likom (story nema bulk
+endpoint). Veteran sa 15 likova: **34**. Komentari su prepisani kao **izvod**, ne
+kao broj — brojka koja se pomjerila tri puta u tri dana pomjerit će se opet.
+
+### Raspored
+
+| Kad | Šta |
+|---|---|
+| 03:10 | `gw2:catalogue` |
+| 03:20 | `gw2:prices` |
+| 03:25 | `gw2:curate-achievements` |
+| 03:28 | `gw2:pick-indexable` |
+| 03:30 | `gw2:sync-accounts` |
+
+### Jedino što i dalje čeka čovjeka
+
+**Vremena svjetskih bosova.** Rasporeda nema nigdje u API-ju; vremena su stvarna,
+objavljena i **vanjska**. Tabela i `/admin/gw2-events` postoje, prazni. Red stiže
+do čitaoca samo ako je i objavljen i **provjeren**, uz bilješku gdje.
+
+Neću ih prepisati po sjećanju. Pogrešno vrijeme šalje igrača na praznu mapu.
