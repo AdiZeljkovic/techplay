@@ -34,6 +34,21 @@ class Dashboard
      */
     private const TTL_SECONDS = 3600;
 
+    /**
+     * Bumped whenever the shape of this payload changes.
+     *
+     * The key below carries `observed_at`, which answers "has the account
+     * changed" and not "has the *answer* changed". Ship a payload with a new
+     * field in it and every connected player keeps the old shape for an hour,
+     * with a deploy that reports success and a page that quietly renders
+     * nothing new — which is exactly what happened the first time the icons
+     * went out.
+     *
+     * The public pages carry the same constant for the same reason. Change the
+     * shape, change this number, in the same commit.
+     */
+    private const PAYLOAD_VERSION = 2;
+
     public function __construct(
         private readonly SnapshotReader $reader,
         private readonly Advisor $advisor,
@@ -80,7 +95,8 @@ class Dashboard
          */
         $pin = $this->choices->defaultGoal($snapshot->accountId) ?? 'none';
 
-        return "gw2:dashboard:{$snapshot->accountId}:{$pin}:".($snapshot->observedAt ?? 'never');
+        return 'gw2:dashboard:v'.self::PAYLOAD_VERSION
+            .":{$snapshot->accountId}:{$pin}:".($snapshot->observedAt ?? 'never');
     }
 
     /**
