@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, Compass, RefreshCw, Zap } from "lucide-react";
 import Panel from "@/components/ui/Panel";
@@ -9,7 +9,7 @@ import Chip from "@/components/ui/Chip";
 import Meter from "@/components/ui/Meter";
 import StatCards from "@/components/gw2/StatCards";
 import RecommendationCard from "@/components/gw2/RecommendationCard";
-import { requestSync, slotLabel, type Gw2Dashboard, type Gw2Intent } from "@/lib/gw2";
+import { getGoals, requestSync, slotLabel, type Gw2Dashboard, type Gw2GoalOption, type Gw2Intent } from "@/lib/gw2";
 
 /**
  * The dashboard, once an account has been read.
@@ -321,8 +321,50 @@ function IntentBar({
     onChange: (next: Gw2Intent) => void;
     onToggleAvoid: (domain: string) => void;
 }) {
+    const [goals, setGoals] = useState<Gw2GoalOption[]>([]);
+
+    useEffect(() => {
+        void getGoals().then(setGoals).catch(() => setGoals([]));
+    }, []);
+
     return (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b pb-4" style={{ borderColor: "var(--line)" }}>
+        <div className="space-y-3 border-b pb-4" style={{ borderColor: "var(--line)" }}>
+        {goals.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
+                    Working towards
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                    {goals.map((goal) => {
+                        const on = intent.goal === goal.slug;
+
+                        return (
+                            <button
+                                key={goal.slug}
+                                type="button"
+                                // Picking the same one again clears it. A goal
+                                // is a hint, and a hint you cannot take back is
+                                // a setting.
+                                onClick={() => onChange({ ...intent, goal: on ? null : goal.slug })}
+                                aria-pressed={on}
+                                title={goal.summary ?? undefined}
+                                className="rounded-[var(--radius-inner)] border px-2.5 py-1 text-xs transition-colors"
+                                style={{
+                                    borderColor: on
+                                        ? "color-mix(in srgb, var(--accent) 45%, transparent)"
+                                        : "var(--line-strong)",
+                                    background: on ? "var(--accent-soft)" : "transparent",
+                                    color: on ? "var(--ink-hi)" : "var(--ink-low)",
+                                }}
+                            >
+                                {goal.title}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+        )}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
                 <Compass size={12} aria-hidden />
                 I have
@@ -379,6 +421,7 @@ function IntentBar({
                     );
                 })}
             </div>
+        </div>
         </div>
     );
 }

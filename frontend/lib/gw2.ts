@@ -455,6 +455,14 @@ export interface Gw2Connection {
 }
 
 /** What the player asked for. Every field optional; the empty case is normal. */
+export interface Gw2GoalOption {
+    slug: string;
+    title: string;
+    summary: string | null;
+    domain: string | null;
+    icon: string | null;
+}
+
 export interface Gw2Intent {
     minutes?: number | null;
     goal?: string | null;
@@ -538,6 +546,12 @@ export async function getContent(): Promise<Gw2Content | null> {
     const { data } = await axiosInstance.get<Envelope<Gw2Content | null>>("/gw2/content");
 
     return data.data ?? null;
+}
+
+export async function getGoals(): Promise<Gw2GoalOption[]> {
+    const { data } = await axiosInstance.get<Envelope<Gw2GoalOption[]>>("/gw2/goals");
+
+    return data.data ?? [];
 }
 
 export async function connectKey(apiKey: string): Promise<Gw2Connection> {
