@@ -489,3 +489,94 @@ objavljena i **vanjska**. Tabela i `/admin/gw2-events` postoje, prazni. Red sti�
 do čitaoca samo ako je i objavljen i **provjeren**, uz bilješku gdje.
 
 Neću ih prepisati po sjećanju. Pogrešno vrijeme šalje igrača na praznu mapu.
+
+## 12. Koraci, §12.1 i mountovi — 30. 9. 2026.
+
+Tri stvari koje je dokument tražio a nisu bile napravljene, i jedna granica koju
+je istraživanje pomjerilo.
+
+### Igra piše korake; mi ih nismo čitali
+
+Savjet je glasio „Skyscale Eggs — ostala 3 koraka" i nije mogao reći **koja**
+tri. Nije bilo zato što podatka nema.
+
+`bits` na postignuću je uređena lista koraka s tekstom koji je napisala
+ArenaNet — *„Somewhere in Necrotic Coast."*, *„Gorrik could have picked this one
+up himself."* Zapis naloga za isto postignuće nosi `bits` kao **listu indeksa
+već završenih koraka**. Zrcalili smo prvo, čitali drugo, i nikad ih spojili.
+
+Sad se spajaju po poziciji, u `AchievementSteps`, za oba pozivaoca — kartice
+savjeta i stranice vodiča. Gdje igra ne da tekst, ime dolazi iz `gw2_items`;
+gdje ni toga nema, korak ostaje neimenovan umjesto izmišljen.
+
+Nijedan vanjski izvor. Nema wikija, nema skrapanja, nema pitanja o licenci —
+službeni API pod uslovima koje ionako prihvatamo da bismo pročitali nalog.
+
+### §12.1 — „boost achievements that award a Mastery Point needed by the region"
+
+`mastery_region` je izvučen iz `rewards[]` u indeksiranu kolonu; **909**
+postignuća ga nosi.
+
+Dvije stvari koje je lako pogriješiti, i obje su napravljene kako treba:
+
+**Dizanje ide prije reza, ne poslije.** Producer pokazuje šest. Preslagivanje
+tih šest ne može dovući sedmo na ekran, a dovlačenje je cijeli zahtjev.
+
+**„Needed" ne znači „u toj regiji".** Nalog sa 31 nepotrošenim Path of Fire
+poenom ne treba još jedan — savjet koji ništa ne mijenja je tačno ono što ovaj
+alat postoji da izbjegne. Poen treba tamo gdje regija ima neistreniranu traku
+**i** nepotrošeni poeni ne pokrivaju najjeftiniju sljedeću stepenicu.
+
+Test to dokazuje lomljenjem: bez nagrade, to postignuće je ono koje ispadne.
+
+**Poznata granica:** 77 postignuća plaća u regiju `Magic`, koja nema pandana u
+endpointu naloga. Njih §12.1 ne može dizati.
+
+### Mountovi — granica je drugdje nego što je izgledalo
+
+§9.5 kaže da je put do mounta kurirani sadržaj. I dalje važi, ali manje.
+
+**Ne radi:** `prerequisites` je postavljen na **jednom** od četrdeset Skyscale
+postignuća. Kategorije ne pomažu — kolekcije sjede u „War Eternal" pored
+trideset jedne nepovezane stvari.
+
+**Radi:** svaki mount ima mastery traku čiji `requirement` piše ArenaNet. To je
+citat, i kičma je svih devet stranica. Usput rješava i ono što svi vodiči
+pogriješe: **warclaw je izašao iz WvW-a** i sad ga otključava Janthir Wilds
+poglavlje `Unknown Territory`.
+
+Kod Skyscalea igra piše i **redoslijed**: pet faza nosi `locked_text` tipa
+*„Unlocks a short time after completing the Saving Skyscales collection."* —
+jedina četiri postignuća u katalogu od 8.339 koja to rade. A svaka faza u
+tekstu koraka imenuje kolekcije koje traži.
+
+Otud podjela: **čovjek drži kičmu, `gw2:expand-chains` izvede djecu.**
+
+| Mount | Upisano | Izvedeno | Ukupno |
+|---|---|---|---|
+| Skyscale | 6 | 24 | **30** |
+| Roller Beetle | 4 | 0 | 4 |
+| Siege Turtle | 3 | 0 | 3 |
+| ostalih šest | — | — | proza iz `requirement` trake |
+
+Komanda je ručna, ne u rasporedu: prepisuje uredničke podatke, a takva komanda
+u 3 ujutro jednom poništi nečiju ispravku. Dedupe-a po prvom pojavljivanju, pa
+je drugi run no-op.
+
+Devet stranica je u sitemapu. **Sve su `reviewed_at = null`** — proza je
+sastavljena iz igrinih stringova i tačna je, ali je niko ko igra nije pročitao.
+
+### Šta je ovo zatvorilo
+
+`MountsToUnlock` je prestao pisati blokadu *„We have not written up how to get
+this one yet."* — sad postoji stranica za svaki mount koji nalogu fali.
+
+### Šta i dalje čeka čovjeka
+
+**Vremena svjetskih bosova** — po dogovoru odgođeno, `gw2_events` ostaje prazna.
+
+**Legendarni planer** — traži kurirane grafove nabavke; Armory testnog naloga je
+prazan pa se ni ne može provjeriti.
+
+**Pregled devet stranica mountova** — jedini posao koji traži nekoga ko igra, i
+sad je sitan: pročitati devet strana i kliknuti „reviewed".

@@ -1261,18 +1261,22 @@ falila jedna pauza.
 
 Provjera košta **jedan zahtjev**: `/v2/build` vrati jedan cijeli broj. Ako se
 build nije promijenio, run tu i završi. Kad se promijeni, ponovno čitanje svih
-jedanaest endpointa je oko **492 zahtjeva**.
+osamnaest endpointa je oko **495 zahtjeva**.
 
-Stanje na build `207318` — 96.293 reda, 49 MB:
+Stanje na build `207318` — 95.862 reda:
 
 | Tabela | Redova |
 |---|---|
 | `gw2_items` | 74.265 |
 | `gw2_recipes` | 13.198 |
 | `gw2_achievements` | 8.339 |
-| `gw2_reference` (currencies, itemstats, professions, quests, specializations, titles, mounts) | 1.451 |
+| `gw2_reference` (14 vrsta) | 2.020 |
 | `gw2_masteries` | 40 |
-| `gw2_reference` (+ raids 6, dungeons 8, worldbosses 15) | struktura, bez imena |
+
+`gw2_reference` po vrsti: quests 586, titles 496, **achievements_categories
+360**, itemstats 191, stories 148, specializations 81, currencies 79,
+**achievements_groups 19**, worldbosses 15, stories_seasons 13, professions 9,
+mounts_types 9, dungeons 8, raids 6.
 
 `gw2_catalog_meta` pamti build i grešku po endpointu, pa jedan odbijen endpoint
 ne obori ostale — sljedeći run pročita tačno ono što fali.
@@ -1280,6 +1284,111 @@ ne obori ostale — sljedeći run pročita tačno ono što fali.
 **`gw2_achievements.advisor_eligible`, `effort_band` i `reviewed_at` su naša
 kuracija i namjerno su izvan osvježavanja.** Refresh ih ne dira; da ih dira,
 svako čitanje kataloga bi obrisalo ručni rad.
+
+#### Dvije zamke koje su se ponovile
+
+**Ključ keša zna da se nalog promijenio, ne da se payload promijenio.**
+`gw2:dashboard:*` nosi `observed_at`. Doda se polje u payload i svaki povezani
+igrač sat vremena dobija stari oblik — uz deploy koji javlja uspjeh i stranicu
+koja tiho ne crta ništa novo. Zato `Dashboard::PAYLOAD_VERSION`, isto kao na
+javnim stranicama. **Mijenjaš oblik → mijenjaš broj, u istom commitu.**
+
+**`CatalogueSync::store()` grana na *vrijednost* iz `ENDPOINTS`, ne na ključ.**
+Za `achievements/categories` ta vrijednost je `reference`, ista kao za desetak
+drugih. Grana pisana po imenu endpointa izgleda ispravno i nikad se ne izvrši —
+`category_id` je ostao prazan kroz pun sync koji je javio 360 redova.
+
+**I: isti id dvaput u jednom upsertu je Postgres greška**, ne no-op.
+`/v2/mounts/skins` vrati 488 id-jeva od kojih su 487 različiti. Deduplikacija je
+sad u `upsert()`, ne na pozivnom mjestu.
+
+#### Korake postignuća piše ArenaNet, ne mi
+
+`gw2_achievements.bits` je uređena lista koraka s tekstom koji je napisala
+ArenaNet — *„Somewhere in Necrotic Coast."*. Zapis naloga za isto postignuće
+nosi `bits` kao **listu indeksa već završenih koraka**. Jedno je mapa, drugo
+čioda, i spajaju se po poziciji: korak tri je `bits[2]` i gotov je ako se 2
+pojavi u nalogovoj listi.
+
+Mjesec dana smo zrcalili prvo i čitali drugo i nikad ih spojili, pa je savjet
+glasio „Skyscale Eggs — ostala 3 koraka" bez ijedne riječi **koja** tri. Sad
+`AchievementSteps` radi to spajanje za oba pozivaoca (savjeti i vodiči), a
+`AchievementStep.text` pada na ime predmeta iz `gw2_items` kad igra ne da tekst.
+Gdje ni toga nema, `text` je `null` i crta se kao neimenovan korak — nikad
+izmišljen.
+
+**Ako walkthrough ikad počne čitati kao besmislica**, sumnjati na to da je
+ArenaNet promijenila redoslijed u `bits` između buildova. Nije se desilo,
+katalog se osvježava noću, a nalog se čita protiv istog builda — ali to je
+jedini način da ovaj spoj tiho pukne.
+
+`mastery_region` je izvučen iz `rewards[]` u kolonu jer je §12.1 filter a ne
+prikaz: **909 postignuća** nosi mastery poen. Čuva se kako ga igra piše
+(`Desert`, `Sky`), ne kako ga piše endpoint naloga (`Path of Fire`) — prijevod
+je i dalje samo u `MasteryRegions`. **77 ih plaća u regiju `Magic`, koja nema
+pandana u nalogu**, pa ta postignuća §12.1 ne može dizati; to je poznata
+granica, ne kvar.
+
+#### Ikonice — igra ih šalje, mi ih nismo prenosili
+
+Svaki payload ovog alata bio je tekst i brojevi. To nije bila odluka o dizajnu:
+slike stižu u istim odgovorima koje ionako plaćamo.
+
+| Izvor | Pokrivenost |
+|---|---|
+| `gw2_items.icon` | 74.264 / 74.265 |
+| `achievements/categories` ikonice | 360 / 360 |
+| `gw2_achievements.icon` | 1.418 / 8.339 |
+| **postignuće koje može nacrtati sliku** | **7.686 / 8.339 (92 %)** preko `category_id` |
+| `gw2_masteries.background` | 40 / 40 — scene render po traci |
+| `levels[].icon` | po stepenici, već je unutar `levels` |
+| `mounts/skins` | mount ikonica preko `default_skin` |
+
+`mounts/types` **nema** ikonicu — nosi samo `default_skin`, a slika je na skinu.
+Zato je i taj endpoint u zrcalu.
+
+Ono što API **ne** šalje i što se ovdje ne izmišlja: expansion key art iza hero
+banera na mockupima i thumbnailovi događaja. To je ArenaNetova marketinška
+grafika. `background` mastery trake je najbliža poštena stvar i bar jeste slika
+nečega u toj regiji.
+
+**Boja po domenu** je u `frontend/lib/gw2domain.ts` i namjerno **nije**
+`--accent`. Akcenat pripada TechPlayu i prati korisnikovu postavku; ove boje
+pripadaju igri i moraju stajati, jer igrač već povezuje rozu s ascended opremom.
+`GameIcon` crta okvir u igrinoj boji rijetkosti.
+
+#### Lanci mountova — šta je izvedeno a šta kurirano
+
+§9.5 kaže da je put do mounta kurirani sadržaj, i to i dalje važi — ali manje
+nego što je izgledalo.
+
+**Ne radi:** `prerequisites` je postavljen na **jednom** od četrdeset Skyscale
+postignuća. Kategorije ne pomažu — kolekcije sjede u „War Eternal" pored
+trideset jedne nepovezane stvari. Traženje po imenu je pogađanje.
+
+**Radi:** svaki mount ima mastery traku čiji `requirement` piše ArenaNet —
+*„Complete the Guild Wars 2: Janthir Wilds story chapter Unknown Territory to
+unlock the Warclaw Mastery track."* To je citat, i kičma je svih devet stranica
+u `gw2_guides` s `family = 'mounts'`. (Usput rješava i ono što svi vodiči
+pogriješe: warclaw je izašao iz WvW-a.)
+
+Tri mounta idu dalje. Skyscale, Siege Turtle i Roller Beetle se otključavaju
+kolekcijama, a kod Skyscalea **igra sama piše redoslijed**: njegovih pet faza
+nosi `locked_text` tipa *„Unlocks a short time after completing the Saving
+Skyscales collection."* — jedina četiri postignuća u katalogu od 8.339 koja to
+rade. A svaka faza u svom tekstu koraka imenuje kolekcije koje traži.
+
+Otud podjela: **čovjek drži kičmu u `gw2_guides.achievement_ids`, a
+`gw2:expand-chains` izvede djecu iz teksta igre.** Skyscale: 6 upisanih → 30.
+Komanda je namjerno ručna i dedupe-a po prvom pojavljivanju (drugi run je
+no-op); nije u rasporedu jer bi komanda koja noću prepisuje uredničke podatke
+jednom poništila nečiju ispravku.
+
+Beetle je izuzetak u drugom smjeru — `Beetlemania` ima gole `id`-jeve bez teksta
+pa se ništa ne izvodi, i njegova tri djeteta su upisana ručno.
+
+**Sve stranice mountova su `reviewed_at = null`.** Proza je sastavljena iz
+igrinih stringova i tačna je, ali je niko ko igra još nije pročitao.
 
 ### Nalog — `gw2:sync-accounts`, 03:30
 
@@ -1294,10 +1403,12 @@ veza u koju igrač vjeruje i sinhronizacija koja pada svaku noć. Dozvole koje
 fale se **imenuju** (`missing_features`), da UI može reći koja funkcija je
 ugašena i zašto.
 
-**Puno čitanje je 19 zahtjeva** — osamnaest `account/*` endpointa i jedan
+**Puno čitanje je 19 zahtjeva plus jedan po liku** — osamnaest `account/*` endpointa i jedan
 `characters?ids=all`. To zadnje je iznenađenje: u jednom odgovoru vrati nošenu
 opremu, torbe, specijalizacije, vještine, recepte i craft, pa `equipment_tabs` i
-`build_tabs` uopšte ne trebaju dok se ne prikazuju neaktivni šabloni.
+`build_tabs` uopšte ne trebaju dok se ne prikazuju neaktivni šabloni. Jedan
+zahtjev po liku ide na `characters/:id/quests` — priča se vodi po liku i drugog
+pogleda nema.
 **Brzo čitanje je 6 zahtjeva** — ono što se mijenja unutar dana.
 
 Provjereno na živom nalogu 28. 9.: 19 poziva, 1 lik, 832 reda u knjizi
