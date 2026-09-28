@@ -172,7 +172,14 @@ class Gw2MountGuideSeeder extends Seeder
                     'It has no vertical movement at all and needs a run-up to be worth anything, which is why it '
                     .'feels useless for a map or two and then never leaves your bar.'
                 ),
-                'achievement_ids' => [4202],
+                /*
+                 * Beetlemania is the spine and its three children are listed
+                 * rather than derived: its own steps are bare item ids with no
+                 * wording, so nothing names them. Their requirement lines put
+                 * them beyond doubt all the same — feed Petey, medicine for
+                 * Petey, saddle parts to Blish.
+                 */
+                'achievement_ids' => [4202, 4270, 4265, 4205],
                 'seo_title' => 'Guild Wars 2 Roller Beetle — the full collection chain',
                 'seo_description' => 'Every collection the roller beetle asks for, with your own progress through each one if you connect an account.',
                 'keywords' => ['gw2 roller beetle', 'beetlemania collection', 'roller beetle unlock'],
