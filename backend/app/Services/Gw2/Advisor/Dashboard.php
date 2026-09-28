@@ -300,12 +300,7 @@ class Dashboard
                 'min_rating' => $root->minRating,
                 'have_it' => array_intersect($root->disciplines, $disciplines) !== [],
             ] : null,
-            /*
-             * Said out loud rather than left to be assumed. This is a materials
-             * plan, not a cost: trading post prices are live market data we do
-             * not mirror, so any gold figure here would have been invented.
-             */
-            'prices' => null,
+            'prices' => $this->priceBuckets($list),
             'observed_at' => $snapshot->observedAt,
         ];
     }
@@ -482,6 +477,91 @@ class Dashboard
 
         return app(ContentProgress::class)->for($snapshot) + [
             'observed_at' => $snapshot->observedAt,
+        ];
+    }
+
+    /**
+     * What the missing materials cost, in two buckets that must not be added up.
+     *
+     * §13.2: *"Never collapse gold-equivalent and account-bound/time-gated
+     * requirements into one misleading cost. Show separate buckets."*
+     *
+     * The authority on which bucket something is in is the price endpoint
+     * itself — 27,997 of the catalogue's 74,265 items appear in it. An item
+     * absent from it cannot be bought at any price, and counting it as zero is
+     * exactly the misleading total that rule forbids.
+     *
+     * Both prices are reported because they answer different questions: the
+     * sell price is what you pay to have it now, the buy price is what you pay
+     * to wait. On 30 September a Glob of Ectoplasm was 1,690 to bid and 1,780
+     * to buy outright, and a single "price" would have to pick a side silently.
+     *
+     * @param  array<int, RecipeNode>  $list
+     * @return array<string, mixed>|null
+     */
+    private function priceBuckets(array $list): ?array
+    {
+        if ($list === []) {
+            return null;
+        }
+
+        $ids = array_map(fn (RecipeNode $n) => $n->itemId, $list);
+        $prices = DB::table('gw2_item_prices')->whereIn('item_id', $ids)->get()->keyBy('item_id');
+
+        if ($prices->isEmpty()) {
+            // No prices loaded at all: say nothing rather than report a total
+            // of zero, which reads as "free".
+            return null;
+        }
+
+        $buyNow = 0;
+        $bidAndWait = 0;
+        $tradable = [];
+        $untradable = [];
+        $observedAt = null;
+
+        foreach ($list as $node) {
+            $price = $prices[$node->itemId] ?? null;
+
+            if (! $price || ($price->sell_unit === null && $price->buy_unit === null)) {
+                $untradable[] = ['item_id' => $node->itemId, 'name' => $node->name, 'missing' => $node->missing()];
+
+                continue;
+            }
+
+            $buyNow += (int) ($price->sell_unit ?? 0) * $node->missing();
+            $bidAndWait += (int) ($price->buy_unit ?? 0) * $node->missing();
+
+            $tradable[] = [
+                'item_id' => $node->itemId,
+                'name' => $node->name,
+                'missing' => $node->missing(),
+                'sell_unit' => $price->sell_unit,
+                'buy_unit' => $price->buy_unit,
+                /*
+                 * Quantity, because a price without it is not a price anybody
+                 * can act on. Three copper against a stock of two is not what
+                 * four hundred of them will cost.
+                 */
+                'sell_quantity' => $price->sell_quantity,
+            ];
+
+            $observedAt = max($observedAt, $price->observed_at);
+        }
+
+        return [
+            // Copper. Turning it into gold is a display decision and belongs
+            // where the display is.
+            'buy_now' => $buyNow,
+            'bid_and_wait' => $bidAndWait,
+            'tradable' => $tradable,
+            /*
+             * The other bucket, listed rather than summed. These come from
+             * vendors, currencies, time gates and drops, and there is no
+             * exchange rate between them and gold.
+             */
+            'not_tradable' => $untradable,
+            'observed_at' => $observedAt,
         ];
     }
 

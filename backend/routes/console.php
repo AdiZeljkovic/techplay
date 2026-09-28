@@ -322,6 +322,39 @@ Schedule::command('gw2:catalogue')
     ->withoutOverlapping(120)
     ->onFailure($reportFailure('gw2:catalogue'));
 
+/*
+ * Trading post prices, before the accounts that read them.
+ *
+ * 27,997 tradable items at 200 ids a request is about 140 calls. §19 suggests
+ * 2–10 minutes for prices and that cadence is right for a trading tool; this is
+ * a crafting planner, where a price from this morning answers the question and
+ * every page that shows one carries its timestamp.
+ */
+Schedule::command('gw2:prices')
+    ->dailyAt('03:20')
+    ->withoutOverlapping(60)
+    ->onFailure($reportFailure('gw2:prices'));
+
+/*
+ * Curation from the game's own flags. Cheap, and it has to run after the
+ * catalogue: a refresh brings new achievements, and a new one carrying
+ * IgnoreNearlyComplete should be decided the same night rather than sitting
+ * unreviewed until somebody notices.
+ */
+Schedule::command('gw2:curate-achievements')
+    ->dailyAt('03:25')
+    ->withoutOverlapping(30)
+    ->onFailure($reportFailure('gw2:curate-achievements'));
+
+/*
+ * Which recipe pages are worth indexing. Also after the catalogue, for the same
+ * reason: a new ascended item should reach the sitemap on the night it appears.
+ */
+Schedule::command('gw2:pick-indexable')
+    ->dailyAt('03:28')
+    ->withoutOverlapping(30)
+    ->onFailure($reportFailure('gw2:pick-indexable'));
+
 Schedule::command('gw2:sync-accounts')
     ->dailyAt('03:30')
     ->withoutOverlapping(120)
