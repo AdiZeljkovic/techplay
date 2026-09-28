@@ -167,7 +167,7 @@ class Gw2AchievementStepsTest extends TestCase
         // The sentence names the first thing left rather than the achievement's
         // blanket requirement, which is the whole point of storing `bits`.
         $this->assertSame(
-            '8 of 10 done, so 2 to go. Somewhere in Dragon\'s Causeway.',
+            '8 of 10 done, so 2 to go. Next: Somewhere in Dragon\'s Causeway.',
             $payload['body']
         );
     }

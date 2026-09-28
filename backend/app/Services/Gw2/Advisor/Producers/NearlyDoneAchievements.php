@@ -102,9 +102,18 @@ class NearlyDoneAchievements implements Producer
     private function nextStep(EasyWin $win, array $left): string
     {
         foreach ($left as $step) {
-            if ($step->text !== null) {
-                return $step->text;
+            if ($step->text === null) {
+                continue;
             }
+
+            /*
+             * Some step text is a sentence — "Somewhere in Necrotic Coast." —
+             * and some is a bare label, "Morwood Wilds". Dropped straight into
+             * a rule body the second reads as a sentence fragment stuck to the
+             * end of the previous one. The lead-in makes both read, and the
+             * full stop is added only where the game left one off.
+             */
+            return 'Next: '.rtrim($step->text, '.').'.';
         }
 
         /*
