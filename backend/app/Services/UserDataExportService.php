@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -84,6 +85,54 @@ class UserDataExportService
         'giveaway_tier_winners' => ['column' => 'user_id', 'as' => 'giveaways_won'],
         'orders' => ['column' => 'user_id', 'as' => 'orders'],
         'user_supports' => ['column' => 'user_id', 'as' => 'support_given'],
+
+        /*
+         * Guild Wars 2. The one below it matters more than it looks.
+         *
+         * `gw2_progress_events` is the difference between two of our reads, and
+         * it is the only record of that history that will ever exist anywhere:
+         * the game's API reports raid clears for the current week and world
+         * bosses for the current day, with no lifetime view of either. If a
+         * person takes their data and leaves, this is the part they genuinely
+         * cannot get again from ArenaNet.
+         */
+        'gw2_accounts' => ['column' => 'user_id', 'as' => 'gw2_account'],
+    ];
+
+    /**
+     * Tables reached through another exported row rather than through a user id.
+     *
+     * The Guild Wars 2 tables hang off `gw2_accounts`, so the column scan in
+     * UserDataExportTest cannot see them — which is exactly why they are listed
+     * here by hand and not left to be noticed later.
+     *
+     * @var array<string, array{via: string, column: string, as: string}>
+     */
+    private const EXPORTED_VIA = [
+        'gw2_characters' => ['via' => 'gw2_accounts', 'column' => 'gw2_account_id', 'as' => 'gw2_characters'],
+        'gw2_account_state' => ['via' => 'gw2_accounts', 'column' => 'gw2_account_id', 'as' => 'gw2_account_state'],
+        'gw2_item_ledger' => ['via' => 'gw2_accounts', 'column' => 'gw2_account_id', 'as' => 'gw2_inventory'],
+        'gw2_progress_events' => ['via' => 'gw2_accounts', 'column' => 'gw2_account_id', 'as' => 'gw2_progress_history'],
+    ];
+
+    /**
+     * Columns that must never leave this machine, per table.
+     *
+     * The export reads with the query builder, not Eloquent, so a model's
+     * `$hidden` does nothing here — `connected_accounts` and `user_integrations`
+     * were both shipping `access_token` and `refresh_token` in the downloaded
+     * file. Encrypted, so not immediately usable, but ciphertext of somebody's
+     * Steam, Discord and Guild Wars 2 credentials is not theirs to be handed in
+     * a zip, and it stays decryptable for as long as APP_KEY does.
+     *
+     * The person still gets the row: which provider, which display name, when it
+     * was connected, when it last synced. Everything except the credential.
+     *
+     * @var array<string, list<string>>
+     */
+    private const SECRET_BY_TABLE = [
+        'connected_accounts' => ['access_token', 'refresh_token'],
+        'user_integrations' => ['access_token', 'refresh_token'],
     ];
 
     /**
@@ -129,6 +178,24 @@ class UserDataExportService
 
             $rows = DB::table($table)->where($spec['column'], $user->id)->get();
 
+            $rows = $this->withoutSecrets($table, $rows);
+
+            if ($rows->isNotEmpty()) {
+                $data[$spec['as']] = $rows;
+            }
+        }
+
+        foreach (self::EXPORTED_VIA as $table => $spec) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $spec['column'])) {
+                continue;
+            }
+
+            $rows = DB::table($table)
+                ->whereIn($spec['column'], fn ($q) => $q->select('id')->from($spec['via'])->where('user_id', $user->id))
+                ->get();
+
+            $rows = $this->withoutSecrets($table, $rows);
+
             if ($rows->isNotEmpty()) {
                 $data[$spec['as']] = $rows;
             }
@@ -143,9 +210,38 @@ class UserDataExportService
         ];
     }
 
+    /**
+     * Drop the columns this table must not hand over.
+     *
+     * @param  Collection<int, object>  $rows
+     * @return Collection<int, object>
+     */
+    private function withoutSecrets(string $table, $rows)
+    {
+        $secrets = self::SECRET_BY_TABLE[$table] ?? [];
+
+        if ($secrets === []) {
+            return $rows;
+        }
+
+        return $rows->map(function ($row) use ($secrets) {
+            $fields = (array) $row;
+
+            foreach ($secrets as $secret) {
+                unset($fields[$secret]);
+            }
+
+            return (object) $fields;
+        });
+    }
+
     /** @return list<string> */
     public static function classifiedTables(): array
     {
-        return array_merge(array_keys(self::EXPORTED), array_keys(self::EXCLUDED));
+        return array_merge(
+            array_keys(self::EXPORTED),
+            array_keys(self::EXPORTED_VIA),
+            array_keys(self::EXCLUDED),
+        );
     }
 }
