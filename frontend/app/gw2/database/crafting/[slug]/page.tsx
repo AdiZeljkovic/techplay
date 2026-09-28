@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Hammer } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Panel from "@/components/ui/Panel";
-import { craftingHref, getPublicRecipe, itemIdFromSlug, GW2_REVALIDATE } from "@/lib/gw2public";
+import { craftingHref, getPublicRecipe, itemIdFromSlug } from "@/lib/gw2public";
 import type { PlanNode } from "@/lib/gw2";
 
 /**
@@ -20,7 +20,18 @@ import type { PlanNode } from "@/lib/gw2";
  * Ingot usually wants to know what it is for, and it is also what turns thirteen
  * thousand separate pages into a graph a crawler can walk.
  */
-export const revalidate = GW2_REVALIDATE;
+/*
+ * A literal, not the shared constant.
+ *
+ * Next reads segment config at build time by statically analysing the module,
+ * so `export const revalidate = SOMETHING_IMPORTED` is not a value it can see —
+ * it fails the build with "Invalid segment configuration export detected" and
+ * the route then 404s. The number has to be written here.
+ *
+ * 86400: a day. A game patch is the only thing that changes any of this, and
+ * the API caches on the catalogue build underneath.
+ */
+export const revalidate = 86400;
 
 /*
  * Nothing pre-rendered at build. There are 13,156 of these and they are a

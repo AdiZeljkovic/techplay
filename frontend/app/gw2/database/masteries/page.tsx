@@ -4,7 +4,7 @@ import Link from "next/link";
 import Container from "@/components/ui/Container";
 import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
-import { getPublicMasteries, GW2_REVALIDATE } from "@/lib/gw2public";
+import { getPublicMasteries } from "@/lib/gw2public";
 
 /**
  * Every mastery track, for anyone.
@@ -15,7 +15,18 @@ import { getPublicMasteries, GW2_REVALIDATE } from "@/lib/gw2public";
  * people genuinely search for — "how many mastery points does Gliding cost" —
  * which nothing in the game itself answers in one place.
  */
-export const revalidate = GW2_REVALIDATE;
+/*
+ * A literal, not the shared constant.
+ *
+ * Next reads segment config at build time by statically analysing the module,
+ * so `export const revalidate = SOMETHING_IMPORTED` is not a value it can see —
+ * it fails the build with "Invalid segment configuration export detected" and
+ * the route then 404s. The number has to be written here.
+ *
+ * 86400: a day. A game patch is the only thing that changes any of this, and
+ * the API caches on the catalogue build underneath.
+ */
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Mastery Tracks — Every Tier and What It Costs",

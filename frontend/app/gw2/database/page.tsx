@@ -4,7 +4,7 @@ import { Hammer, Sparkles } from "lucide-react";
 import Container from "@/components/ui/Container";
 import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
-import { getCraftable, getPublicMasteries, GW2_REVALIDATE } from "@/lib/gw2public";
+import { getCraftable, getPublicMasteries } from "@/lib/gw2public";
 
 /**
  * The public half of the Guild Wars 2 tool.
@@ -17,7 +17,18 @@ import { getCraftable, getPublicMasteries, GW2_REVALIDATE } from "@/lib/gw2publi
  * robots story one line instead of a judgement per route, and it means a reader
  * who arrives from a search never lands on something that renders empty for them.
  */
-export const revalidate = GW2_REVALIDATE;
+/*
+ * A literal, not the shared constant.
+ *
+ * Next reads segment config at build time by statically analysing the module,
+ * so `export const revalidate = SOMETHING_IMPORTED` is not a value it can see —
+ * it fails the build with "Invalid segment configuration export detected" and
+ * the route then 404s. The number has to be written here.
+ *
+ * 86400: a day. A game patch is the only thing that changes any of this, and
+ * the API caches on the catalogue build underneath.
+ */
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Database — Crafting Recipes and Mastery Tracks",
