@@ -12,6 +12,7 @@ import Meter from "@/components/ui/Meter";
 import Chip from "@/components/ui/Chip";
 import { Skeleton } from "@/components/ui/Skeleton";
 import {
+    coin,
     getPlan,
     searchItems,
     type Gw2ItemSummary,
@@ -301,6 +302,65 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
             </div>
 
             <div className="space-y-5">
+                {plan.prices && (
+                    <Panel material="instrument" title="What the missing part costs">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <div className="font-numeric text-lg text-[var(--ink-hi)]">
+                                        {coin(plan.prices.buy_now)}
+                                    </div>
+                                    <div className="text-[11px] text-[var(--ink-low)]">buying outright</div>
+                                </div>
+                                <div>
+                                    <div className="font-numeric text-lg text-[var(--ink-mid)]">
+                                        {coin(plan.prices.bid_and_wait)}
+                                    </div>
+                                    <div className="text-[11px] text-[var(--ink-low)]">bidding and waiting</div>
+                                </div>
+                            </div>
+
+                            {/*
+                             * The other bucket, listed rather than added.
+                             * §13.2 forbids collapsing account-bound and
+                             * time-gated requirements into a gold figure, and
+                             * these have no exchange rate to gold at all.
+                             */}
+                            {plan.prices.not_tradable.length > 0 && (
+                                <div
+                                    className="space-y-1.5 border-t pt-3"
+                                    style={{ borderColor: "var(--line)" }}
+                                >
+                                    <p className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
+                                        Not buyable at any price
+                                    </p>
+                                    <ul className="space-y-1">
+                                        {plan.prices.not_tradable.map((line) => (
+                                            <li
+                                                key={line.item_id}
+                                                className="flex justify-between gap-2 text-sm text-[var(--ink-mid)]"
+                                            >
+                                                <span className="truncate">{line.name}</span>
+                                                <span className="shrink-0 font-numeric text-xs">×{line.missing}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <p className="text-[11px] text-[var(--ink-faint)]">
+                                        Vendors, currencies, time gates or drops. There is no gold figure for
+                                        these, so they are not in the totals above.
+                                    </p>
+                                </div>
+                            )}
+
+                            {plan.prices.observed_at && (
+                                <p className="text-[11px] text-[var(--ink-faint)]">
+                                    Trading post as of {new Date(plan.prices.observed_at).toLocaleString()}.
+                                </p>
+                            )}
+                        </div>
+                    </Panel>
+                )}
+
                 <Panel material="matte" title="What this counts">
                     <div className="space-y-3 text-sm text-[var(--ink-mid)]">
                         <p>
@@ -312,13 +372,9 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                             ingot is the same as owning the ore that went into it.
                         </p>
                         <p className="text-[var(--ink-low)]">
-                            {/*
-                             * Said plainly rather than left for somebody to
-                             * discover. The mockup shows a gold total; we do not
-                             * mirror trading post prices, so we do not show one.
-                             */}
-                            No prices. Trading post values change by the minute and we do not mirror them,
-                            so this is a materials plan rather than a cost.
+                            Prices are refreshed nightly and every total says when it was taken. They cover
+                            only what can actually be bought — anything from a vendor, a currency or a time
+                            gate is listed apart, because there is no exchange rate between those and gold.
                         </p>
                         {plan.observed_at && (
                             <p className="text-[11px] text-[var(--ink-faint)]">

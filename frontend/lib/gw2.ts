@@ -177,13 +177,32 @@ export interface Gw2Plan {
     /** Whether anybody on the account can make it, and at what rating. */
     requires: { disciplines: string[]; min_rating: number; have_it: boolean } | null;
     /**
-     * Always null, and the field exists to say so.
+     * Two buckets that must not be added together.
      *
-     * Trading post prices are live market data we do not mirror, so the mockup's
-     * "18g 42s estimated remaining cost" would have been a number nobody
-     * computed. A materials plan is what this is.
+     * §13.2 forbids collapsing gold and account-bound requirements into one
+     * cost, and the price endpoint is the authority on which is which: 27,997
+     * of the catalogue's 74,265 items appear in it, and an item absent from it
+     * cannot be bought at any price. So `not_tradable` is a list, never a sum.
+     *
+     * Null when no prices have been loaded — saying nothing beats reporting a
+     * total of zero, which reads as "free".
      */
-    prices: null;
+    prices: {
+        /** Copper. Buying outright at the lowest sell order. */
+        buy_now: number;
+        /** Copper. Bidding at the highest buy order and waiting. */
+        bid_and_wait: number;
+        tradable: {
+            item_id: number;
+            name: string | null;
+            missing: number;
+            sell_unit: number | null;
+            buy_unit: number | null;
+            sell_quantity: number;
+        }[];
+        not_tradable: { item_id: number; name: string | null; missing: number }[];
+        observed_at: string | null;
+    } | null;
     observed_at: string | null;
 }
 
@@ -575,6 +594,23 @@ export async function requestSync(full = false): Promise<Gw2Connection> {
 
 export async function disconnect(): Promise<void> {
     await axiosInstance.delete("/gw2/connection");
+}
+
+/**
+ * Copper into the game's own notation.
+ *
+ * Stored as copper because that is what the API gives and because converting
+ * earlier would move a display decision into the database. 10,000 copper is a
+ * gold; 100 is a silver.
+ */
+export function coin(copper: number): string {
+    const gold = Math.floor(copper / 10000);
+    const silver = Math.floor((copper % 10000) / 100);
+    const copperLeft = copper % 100;
+
+    return [gold > 0 ? `${gold}g` : null, gold > 0 || silver > 0 ? `${silver}s` : null, `${copperLeft}c`]
+        .filter(Boolean)
+        .join(" ");
 }
 
 /** Slot names come back as the game spells them: `Ring1`, `WeaponA1`, `Backpack`. */
