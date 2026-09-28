@@ -156,6 +156,24 @@ class CatalogueSync
             return 0;
         }
 
+        /*
+         * Categories hand their membership to the achievements themselves.
+         *
+         * Before the match, and by endpoint name rather than inside it,
+         * because the match branches on ENDPOINTS' *value* — which for this
+         * endpoint is `reference`, same as a dozen others. An arm keyed on
+         * `achievements/categories` sits there looking correct and never runs;
+         * it did exactly that for one deploy, and the column stayed null while
+         * the sync reported 360 rows stored.
+         *
+         * The mapping only exists in this direction — a category lists its
+         * achievements, an achievement names no category — so this is the one
+         * moment it is in hand.
+         */
+        if ($endpoint === 'achievements/categories') {
+            $this->linkCategories($rows);
+        }
+
         return match (self::ENDPOINTS[$endpoint]) {
             'items' => $this->upsert('gw2_items', array_map(fn ($r) => [
                 'id' => $r['id'],
@@ -222,24 +240,6 @@ class CatalogueSync
                 'build_id' => $buildId,
             ], $rows), ['name', 'region', 'requirement', 'order', 'levels', 'background', 'build_id']),
 
-            /*
-             * Categories go into `gw2_reference` like any other lookup, and
-             * then hand their membership to the achievements themselves.
-             *
-             * The mapping only exists in this direction — a category lists its
-             * achievements, an achievement names no category — so this is the
-             * one moment it is in hand. Doing it here also means a lone
-             * `--only=achievements/categories` re-links, which is what you want
-             * after the achievements themselves have been refreshed.
-             */
-            'achievements/categories' => $this->linkCategories($rows, $this->upsert('gw2_reference', array_map(fn ($r) => [
-                'kind' => $this->kind($endpoint),
-                'ref_id' => is_numeric($r['id'] ?? null) ? (int) $r['id'] : crc32((string) ($r['id'] ?? '')),
-                'name' => $this->text($r['name'] ?? ($r['id'] ?? '')),
-                'payload' => $this->json($r),
-                'build_id' => $buildId,
-            ], $rows), ['name', 'payload', 'build_id'], ['kind', 'ref_id'])),
-
             default => $this->upsert('gw2_reference', array_map(fn ($r) => [
                 'kind' => $this->kind($endpoint),
                 /*
@@ -266,11 +266,9 @@ class CatalogueSync
      * Grouped by category and issued as one statement per category rather than
      * one per achievement — 360 updates instead of about eight thousand.
      *
-     * Returns the row count it was handed, so it can wrap the upsert inline.
-     *
      * @param  array<int, array<string, mixed>>  $rows
      */
-    private function linkCategories(array $rows, int $stored): int
+    private function linkCategories(array $rows): void
     {
         foreach ($rows as $category) {
             $ids = array_values(array_filter(array_map(
@@ -289,8 +287,6 @@ class CatalogueSync
                 ->whereIn('id', $ids)
                 ->update(['category_id' => (int) $category['id']]);
         }
-
-        return $stored;
     }
 
     /**
