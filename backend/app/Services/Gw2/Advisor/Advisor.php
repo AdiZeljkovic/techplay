@@ -5,6 +5,7 @@ namespace App\Services\Gw2\Advisor;
 use App\Models\Gw2Rule;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
+use App\Services\Gw2\Advisor\Producers\MasteryTierToBuy;
 use App\Services\Gw2\Advisor\Producers\NearlyDoneAchievements;
 use App\Services\Gw2\Advisor\Producers\UnclaimedAcclaim;
 use App\Services\Gw2\Advisor\Producers\UnspentMasteryPoints;
@@ -57,6 +58,7 @@ class Advisor
     /** @var array<string, class-string<Producer>> */
     private const PRODUCERS = [
         NearlyDoneAchievements::KEY => NearlyDoneAchievements::class,
+        MasteryTierToBuy::KEY => MasteryTierToBuy::class,
         UnspentMasteryPoints::KEY => UnspentMasteryPoints::class,
         GearGaps::KEY => GearGaps::class,
         AgonyGap::KEY => AgonyGap::class,

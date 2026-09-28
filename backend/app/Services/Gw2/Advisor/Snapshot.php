@@ -21,6 +21,7 @@ readonly class Snapshot
      * @param  array<int, string>  $expansions  Content the account can actually reach.
      * @param  array<string, RegionMastery>  $masteryRegions  Keyed by region name.
      * @param  array<int, int>  $masteryLevels  Mastery track id => level reached.
+     * @param  array<int, MasteryTrack>  $masteryTracks  Every track in the catalogue.
      * @param  array<int, EasyWin>  $nearlyDone  Achievements close to finished.
      * @param  array<int, CharacterView>  $characters
      * @param  array<int, int>  $wallet  Currency id => amount.
@@ -37,6 +38,7 @@ readonly class Snapshot
         public array $expansions,
         public array $masteryRegions,
         public array $masteryLevels,
+        public array $masteryTracks,
         public array $nearlyDone,
         public array $characters,
         public array $wallet,
@@ -52,6 +54,60 @@ readonly class Snapshot
     public function unspentMasteryPoints(): int
     {
         return array_sum(array_map(fn (RegionMastery $r) => $r->unspent(), $this->masteryRegions));
+    }
+
+    /**
+     * Tracks in one region, by the name the account endpoint uses.
+     *
+     * @return array<int, MasteryTrack>
+     */
+    public function tracksIn(string $region): array
+    {
+        return array_values(array_filter($this->masteryTracks, fn (MasteryTrack $t) => $t->region === $region));
+    }
+
+    /**
+     * What the account could buy right now in a region, cheapest tier first.
+     *
+     * Affordability is per region because points are region-locked, and it is per
+     * tier because the costs climb steeply — sixteen Heart of Thorns points buys
+     * the next tier of four tracks or most of one, and only the tier cost says
+     * which.
+     *
+     * @return array<int, MasteryTrack>
+     */
+    public function affordableIn(string $region): array
+    {
+        // A region the account has never entered is absent from the points
+        // endpoint entirely, so this is a real case and not defensive padding.
+        $budget = ($this->masteryRegions[$region] ?? null)?->unspent() ?? 0;
+
+        $affordable = array_filter(
+            $this->tracksIn($region),
+            fn (MasteryTrack $t) => ! $t->finished() && $t->nextTierCost() !== null && $t->nextTierCost() <= $budget
+        );
+
+        usort($affordable, fn (MasteryTrack $a, MasteryTrack $b) => $a->nextTierCost() <=> $b->nextTierCost());
+
+        return $affordable;
+    }
+
+    /**
+     * Point costs the account has already paid in a region.
+     *
+     * The figure the arithmetic test reconciles against what the account itself
+     * reports as spent. It is also the honest denominator for a progress bar:
+     * the mockup's "186 / 254 Mastery Points" is this, summed from the catalogue,
+     * rather than a number nothing computes.
+     */
+    public function pointsSpentIn(string $region): int
+    {
+        return array_sum(array_map(fn (MasteryTrack $t) => $t->pointsSpent(), $this->tracksIn($region)));
+    }
+
+    public function pointsTotalIn(string $region): int
+    {
+        return array_sum(array_map(fn (MasteryTrack $t) => $t->pointsTotal(), $this->tracksIn($region)));
     }
 
     /**

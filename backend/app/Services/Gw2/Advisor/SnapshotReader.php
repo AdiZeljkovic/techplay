@@ -53,6 +53,7 @@ class SnapshotReader
             expansions: $this->expansions($account, $regions),
             masteryRegions: $regions,
             masteryLevels: $this->masteryLevels($state),
+            masteryTracks: $this->masteryTracks($state),
             nearlyDone: $this->nearlyDone($state),
             characters: $this->characters($gw2AccountId),
             wallet: $this->wallet($state),
@@ -142,6 +143,49 @@ class SnapshotReader
         }
 
         return $levels;
+    }
+
+    /**
+     * Every mastery track in the catalogue, with the account's place in it.
+     *
+     * The whole catalogue, not only the tracks the account has touched: a track
+     * with nothing paid for is absent from the account's response entirely, and
+     * those are exactly the ones worth recommending. Forty rows, so reading all
+     * of them costs nothing.
+     *
+     * @return array<int, MasteryTrack>
+     */
+    private function masteryTracks(?object $state): array
+    {
+        $paid = [];
+
+        foreach ($this->json($state->masteries ?? null) as $entry) {
+            if (isset($entry['id'])) {
+                // level is a zero-based index of the highest completed tier, so
+                // the account has paid for level + 1. See MasteryRegions.
+                $paid[(int) $entry['id']] = MasteryRegions::tiersPaid((int) ($entry['level'] ?? 0));
+            }
+        }
+
+        return DB::table('gw2_masteries')
+            ->orderBy('region')
+            ->orderBy('order')
+            ->get(['id', 'name', 'requirement', 'region', 'levels'])
+            ->map(function ($row) use ($paid) {
+                $levels = $this->json($row->levels);
+
+                return new MasteryTrack(
+                    id: (int) $row->id,
+                    name: (string) $row->name,
+                    requirement: $row->requirement,
+                    catalogueRegion: $row->region,
+                    region: MasteryRegions::toAccountName($row->region),
+                    tierCosts: array_map(fn ($l) => (int) ($l['point_cost'] ?? 0), $levels),
+                    tierNames: array_map(fn ($l) => (string) ($l['name'] ?? ''), $levels),
+                    tiersPaid: min($paid[(int) $row->id] ?? 0, count($levels)),
+                );
+            })
+            ->all();
     }
 
     /**

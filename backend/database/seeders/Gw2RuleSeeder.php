@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Gw2Rule;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
+use App\Services\Gw2\Advisor\Producers\MasteryTierToBuy;
 use App\Services\Gw2\Advisor\Producers\NearlyDoneAchievements;
 use App\Services\Gw2\Advisor\Producers\UnclaimedAcclaim;
 use App\Services\Gw2\Advisor\Producers\UnspentMasteryPoints;
@@ -113,6 +114,27 @@ class Gw2RuleSeeder extends Seeder
                 'weights' => ['remaining' => -2.0],
                 'confidence' => 'medium',
                 'effort_band' => 'session',
+            ],
+
+            /*
+             * The tier the points actually buy.
+             *
+             * Ranked above the plain unspent-points rule and pushing the same
+             * goal, so for a region where something is affordable this one wins
+             * and the other becomes the fallback. "You have 16 points" is a
+             * fact; "Gliding's next tier costs 2 of them" is a next step.
+             */
+            [
+                'key' => 'mastery-tier-affordable',
+                'producer' => MasteryTierToBuy::KEY,
+                'domain' => 'masteries',
+                'title' => '{tier} on {track} costs {cost} {point}',
+                'body' => 'You have {unspent} unspent {region} points, so this leaves {left_over}. It is tier {tiers_paid} of {tiers} on that track.',
+                'requires' => [['path' => 'mastery.unspent_total', 'op' => '>=', 'value' => 1]],
+                'base_score' => 78,
+                'weights' => ['cost' => -1.5],
+                'confidence' => 'high',
+                'effort_band' => 'quick',
             ],
 
             /*
