@@ -265,13 +265,21 @@ function Step({ step, last }: { step: SessionStep; last: boolean }) {
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <span className="font-numeric text-[11px] text-[var(--ink-faint)]">
                         {/*
-                         * No clock where the rule carries no estimate. Writing
-                         * "0–10 min" there would be inventing the one number
-                         * this page is careful about.
+                         * Three states, and they are genuinely different.
+                         *
+                         * A position in the session when the player gave a
+                         * budget. Nothing at all when they did not — we have an
+                         * estimate, there is simply no session to place it in,
+                         * and the chip below still shows it. "No estimate" only
+                         * when the rule really carries none, because writing
+                         * "0–10 min" there would invent the one number this page
+                         * is careful about.
                          */}
                         {step.starts_at !== null && step.costs !== null
                             ? `${step.starts_at}–${step.starts_at + step.costs} min`
-                            : "no estimate"}
+                            : step.minutes_low === null
+                              ? "no estimate"
+                              : ""}
                     </span>
                     <span className="text-sm font-medium text-[var(--ink-hi)]">{step.title}</span>
                 </div>
