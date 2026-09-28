@@ -13,11 +13,13 @@ use App\Models\NewsletterSubscriber;
 use App\Models\User;
 use App\Services\CampaignAudience;
 use App\Services\CampaignBody;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 /**
@@ -57,13 +59,11 @@ class MailDeskTest extends TestCase
      */
     public function test_the_admin_screens_open(): void
     {
-        $admin = User::factory()->create(['email_verified_at' => now()]);
+        $this->seed(RolesAndPermissionsSeeder::class);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // The panel gates on a permission, deliberately — the `role` column
-        // used to be a second way in and was taken out. Granting it directly
-        // keeps this test about the screens rather than about Spatie.
-        Permission::findOrCreate('view admin panel', 'web');
-        $admin->givePermissionTo('view admin panel');
+        $admin = User::factory()->create(['email_verified_at' => now()]);
+        $admin->assignRole('Super Admin');
 
         foreach ([
             '/admin/mail-campaigns',
@@ -71,6 +71,34 @@ class MailDeskTest extends TestCase
             '/admin/mail-templates',
         ] as $url) {
             $this->actingAs($admin)->get($url)->assertOk();
+        }
+    }
+
+    /**
+     * And they open for nobody else.
+     *
+     * These two resources shipped on 21 September with no policy at all, and
+     * Filament treats an unmapped model as allowed — so every moderator and
+     * journalist, whose only intended powers are the forum and the newsroom,
+     * could send a newsletter to every registered member or rewrite the wording
+     * of every transactional mail the site sends. Nothing refused; the
+     * navigation simply happened to be long.
+     *
+     * Admin-only rather than editorial on purpose. A campaign is personal data
+     * and the site's reputation in somebody's inbox, not an article.
+     */
+    public function test_the_mail_desk_is_closed_to_editorial_staff(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        foreach (['Editor-in-Chief', 'Journalist', 'Moderator'] as $role) {
+            $staff = User::factory()->create(['email_verified_at' => now()]);
+            $staff->assignRole($role);
+
+            $this->actingAs($staff->fresh())
+                ->get('/admin/mail-campaigns')
+                ->assertForbidden();
         }
     }
 

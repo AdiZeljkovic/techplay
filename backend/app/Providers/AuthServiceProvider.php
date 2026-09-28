@@ -84,13 +84,6 @@ class AuthServiceProvider extends ServiceProvider
         // Editorial in the strictest sense: these rows decide what the Guild
         // Wars 2 advisor tells a reader, so an open door here writes advice.
         Gw2Rule::class => ContentPolicy::class,
-        // The mail desk. These two went in on 21 September without a policy and
-        // were an open door for three weeks — anyone who could open the panel
-        // could edit a campaign or rewrite the wording of every transactional
-        // mail the site sends. Found by the check in PanelToolingTest, which
-        // nobody had run.
-        MailCampaign::class => ContentPolicy::class,
-        MailTemplate::class => ContentPolicy::class,
         HelpArticle::class => ContentPolicy::class,
         HelpCategory::class => ContentPolicy::class,
         Media::class => ContentPolicy::class,
@@ -145,6 +138,14 @@ class AuthServiceProvider extends ServiceProvider
 
         // Who we have been told to stop writing to. Personal data, and a
         // list whose removal has consequences for the sending domain.
+        // The rest of the mail desk. Both went in on 21 September with no policy
+        // at all, so anyone who could open the panel could send a newsletter to
+        // every registered member or rewrite the wording of every transactional
+        // mail the site sends. Admin-only rather than editorial: this policy's
+        // own docblock already names the newsletter list, and a campaign is
+        // personal data and reputation, not an article.
+        MailCampaign::class => AdminOnlyPolicy::class,
+        MailTemplate::class => AdminOnlyPolicy::class,
         MailSuppression::class => AdminOnlyPolicy::class,
     ];
 
