@@ -690,6 +690,7 @@ Testovi koji čuvaju skupo naučene stvari:
 | `Gw2AdvisorTest` | `access` nije istina o ekspanzijama; alati za branje nisu ascended slotovi |
 | `UserDataExportTest` | nijedan kredencijal ne izađe u preuzetoj datoteci |
 | `Gw2MasteryArithmeticTest` | potrošene mastery tačke se slažu sa onim što nalog prijavljuje |
+| `Gw2RecipeTreeTest` | zaliha se oduzme tačno jednom, ma kroz koliko grana materijal stigao |
 
 ---
 
@@ -1449,6 +1450,8 @@ round-robin po domenu preko svih šest mjesta, ne samo prve tri.
 |---|---|
 | `GET /api/v1/gw2/dashboard` | kartice + savjeti + istorija; `?minutes=`, `?goal=`, `?avoid[]=` |
 | `GET /api/v1/gw2/masteries` | sve trake po regiji, cijene nivoa, šta tačke dosežu |
+| `GET /api/v1/gw2/plan?item_id=&quantity=` | stablo izrade + spisak za nabavku |
+| `GET /api/v1/gw2/items?q=` | pretraga 74.265 predmeta, trigram |
 | `php artisan gw2:snapshot` | ispiše normalizovano stanje |
 | `php artisan gw2:advise --minutes=30 --avoid=vault` | ispiše savjete |
 
@@ -1545,6 +1548,70 @@ Sada: red bez `reviewed_at` se **ažurira** iz seedera, red sa `reviewed_at` se
 **ne dira**. Postavljanje tog datuma je način na koji urednik kaže „ovo je sad
 moje".
 
+### Planer izrade — `RecipeTree`
+
+Za zadati predmet vraća sve što još treba, uz oduzetu postojeću zalihu. **Sve
+lokalno:** 13.198 recepata i 74.265 predmeta su već u našim tabelama, pa je plan
+nekoliko indeksiranih upita. Preko API-ja ne bi ni bilo moguće — jedno ascended
+rame je **90 čvorova kroz 6 nivoa**, a limit pripada cijelom sajtu.
+
+Mjereno 28. 9. na živom nalogu: **63 ms**, 10 stavki na spisku.
+
+#### Pravilo koje ovo čini korisnim
+
+**Ono što imaš, ne razlaže se.** Dva Deldrimor Steel Ingota u banci znače šest
+ruda koje niko ne mora kopati — i one se **uopšte ne pojavljuju** na spisku.
+Planer koji sve razloži pa oduzme na dnu šalje ljude da kupe ono što im već stoji
+u banci, a to je jedini kvar zbog kojeg ova funkcija i postoji.
+
+#### Zaliha je bazen koji se troši, ne broj koji svaka grana čita
+
+Ovo je greška koju sam uhvatio prije nego je otišla, i tiha je kad se desi.
+
+Isti materijal stiže u plan kroz **više grana** — mithril kroz ingot, kroz ploču
+i kroz ležište. Ako svaka grana oduzme istih 20 ruda iz iste banke, **svaka**
+prijavi manjak 20 manji nego što jeste. Plan izgleda uvjerljivo, zbirovi su
+pogrešni, a igrač to sazna za tezgom.
+
+Rješenje: bazen ide **po referenci**. Prva grana uzme što joj treba, sljedeća
+vidi šta je ostalo. `Gw2RecipeTreeTest` to čuva, i dokazano je vraćanjem
+popravke (`array &$pool` → `array $pool`).
+
+#### Ostale zamke u hodaču
+
+| | |
+|---|---|
+| **Recept koji referiše sam sebe** | Graf je ArenaNetov i preslikava se kakav jeste; jedan takav red bi se širio dok se ne potroši memorija i odnio bi radnika reda. `MAX_DEPTH = 10` + skup otvorenih putanja. |
+| **Recept koji pravi više komada** | Pet konca iz jednog craft-a. Zaokružuje se **naviše** — ne može se napraviti 0,8 craft-a. |
+| **Više recepata za isti predmet** | 105 od 13.065, gotovo uvijek isti sastojci pod drugom disciplinom. Bira se ona koju nalog ima; inače najmanji `min_rating`. Payload kaže da je izbor napravljen. |
+| **Spisak = samo listovi** | Niko ne kupuje ingot koji će napraviti od rude koju već ima. |
+
+#### Discipline se skupljaju sa **svih** likova
+
+Izrada je po liku, nalog nije. Ko ima Tailora i Armorsmitha može oboje, pa bi
+pitanje samo lika kojeg dashboard slučajno prikazuje prijavilo zid kojeg nema.
+
+Kad je zid stvaran — testni nalog je Tailor, a Beigarth's Shoulderguard traži
+**Leatherworker 500** — stranica to kaže, umjesto da preda spisak materijala koji
+tiho sugeriše suprotno.
+
+#### Cilj imenuje igrač, ne pogađamo ga
+
+Ascended set dolazi u stat prefiksu i težini oklopa, a **ništa u API-ju ne kaže
+koji neko hoće**. Planer koji bi birao, samouvjereno bi planirao pogrešan set.
+Zato i pretraga predmeta: trigram indeks (`gw2_items_name_trgm_gin`), jer se
+traži **karakteristična riječ** — `name LIKE 'damask%'` ne nalazi „Bolt of
+Damask", nego bi čitao svih 74.265 redova. Mjereno: **1,17 ms**.
+
+Indeks je pravljen `CONCURRENTLY` — tabelu čita svaki dashboard koji crta opremu.
+
+#### Cijene: `prices: null`, i to piše
+
+Trading post cijene su živi podaci s tržišta koje **ne preslikavamo**. Mockupov
+„18g 42s estimated remaining cost" bio bi broj koji niko nije izračunao. Payload
+nosi `prices: null`, a stranica to kaže rečenicom. Ovo je plan materijala, ne
+trošak.
+
 ### Frontend — `/gw2`
 
 Klijentski, i to namjerno: sve na stranici je nečiji vlastiti nalog pročitan
@@ -1607,6 +1674,18 @@ metrima (treba živa pozicija igrača) i **Weekly Completion Score**.
 Traka koja se broji je **ona koja se kupuje** (`tiers_paid + 1`), ne broj
 plaćenih — inače piše „tier 0 of 4" za traku koju niko nije počeo, što je
 aritmetika koja curi u engleski.
+
+#### `/gw2/goals`
+
+Pretraga predmeta, pa plan: šta treba, šta već imaš i šta fali. Razlaganje se
+crta kao stablo, a **spisak za nabavku samo listove**.
+
+Mockup 2 je „Ascended Set Planner" sa već odabranim ciljem (Berserker's, šest
+komada). Mi ga ne biramo — vidi „Cilj imenuje igrač". I nema zlatnog zbira.
+
+Na testnom nalogu ta konkretna meta je ionako **već završena**: svih šest
+komada oklopa je ascended, a ono što fali su tri nakita (Ring2, Accessory1,
+Accessory2), koji se ne izrađuju receptom nego dolaze iz lovorika i valuta.
 
 ### Otvoreno
 
