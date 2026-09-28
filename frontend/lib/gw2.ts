@@ -257,6 +257,39 @@ export interface Gw2Tonight {
     observed_at: string | null;
 }
 
+export interface RaidWing {
+    raid: string;
+    wing: string;
+    encounters: { id: string; name: string; type: string; cleared_this_week: boolean; ever_cleared: boolean }[];
+    bosses: number;
+    cleared_this_week: number;
+    /** Since the day the account connected, never before — the API keeps no history. */
+    ever_cleared: number;
+}
+
+export interface Gw2Content {
+    raids: { wings: RaidWing[]; cleared_this_week: number; bosses_total: number };
+    world_bosses: {
+        bosses: { id: string; name: string; killed_today: boolean; ever_killed: boolean }[];
+        killed_today: number;
+        total: number;
+    };
+    dungeons: {
+        dungeons: { id: string; name: string; paths: { id: string; name: string; type: string; run_today: boolean }[]; run_today: number }[];
+        paths_today: number;
+    };
+    /**
+     * Where the "ever" column starts.
+     *
+     * Not decoration. The game reports raids for the current week and bosses for
+     * the current day and has no lifetime view of either, so everything before
+     * this date is unknown to us and unknowable — an account connected yesterday
+     * would otherwise appear to have done nothing in nine years of play.
+     */
+    tracked_since: string | null;
+    observed_at: string | null;
+}
+
 export interface Gw2Dashboard {
     account: {
         name: string;
@@ -439,6 +472,12 @@ export async function getTonight(minutes?: number | null): Promise<Gw2Tonight | 
     const { data } = await axiosInstance.get<Envelope<Gw2Tonight | null>>(
         `/gw2/tonight${minutes ? `?minutes=${minutes}` : ""}`
     );
+
+    return data.data ?? null;
+}
+
+export async function getContent(): Promise<Gw2Content | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Content | null>>("/gw2/content");
 
     return data.data ?? null;
 }

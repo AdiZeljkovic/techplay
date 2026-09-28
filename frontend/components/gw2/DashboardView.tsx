@@ -101,6 +101,13 @@ export default function DashboardView({
                     All masteries
                 </Link>
                 <Link
+                    href="/gw2/content"
+                    className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
+                    style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
+                >
+                    Raids &amp; bosses
+                </Link>
+                <Link
                     href="/gw2/tonight"
                     className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
                     style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
