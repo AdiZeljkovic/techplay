@@ -1,0 +1,250 @@
+# GW2 Progression Advisor — stanje naspram originalnog dokumenta
+
+Provjera od **28. 9. 2026**, protiv `TechPlay_GW2_Progression_Advisor_Working_Document_v1.docx`
+(28 sekcija), četiri mockupa i `ANALIZA-I-PLAN.md`.
+
+Sve tvrdnje ispod su provjerene u kodu i na produkciji, ne po sjećanju. Gdje piše
+da nešto ne postoji — provjereno je grepom ili upitom nad bazom.
+
+---
+
+## 1. MVP spisak iz §26 — dvanaest stavki
+
+Dokument ima izričit „V1 must-have" spisak. Ovo je stanje po stavkama:
+
+| # | Stavka iz §26 | Stanje |
+|---|---|---|
+| 1 | API-key konekcija + validator dozvola | **Gotovo** — `/v2/tokeninfo` prije upisa, `missing_features` imenuje šta fali |
+| 2 | Account/character selektor i sync health | **Pola** — sync health da; **selektora lika nema**, `primaryCharacter()` bira sam |
+| 3 | Dashboard po domenima, bez lažnog skora | **Gotovo** — pet kartica, nigdje zbirnog skora |
+| 4 | Next Best Actions s objašnjenjem i pouzdanošću | **Gotovo** — 3 + 3, `confidence`, `blockers` |
+| 5 | Pinned goal framework | **Ne postoji** — nema `gw2_goals` ni `gw2_user_goals` |
+| 6 | Analizator aktivne opreme / AR | **Gotovo** — AR iz nošenog seta, kroz katalog |
+| 7 | Mastery trake i stanje tačaka | **Gotovo** — i više nego traženo (stvarni procenti) |
+| 8 | Easy wins **ograničen na kurirana postignuća** | **Pola** — motor radi, **kuracije nema** (8.339 redova, `advisor_eligible` svugdje `false`) |
+| 9 | Wizard's Vault dnevna/sedmična kartica | **Gotovo** |
+| 10 | Istorija napretka od dana povezivanja | **Gotovo** — uz baseline popravku od 28. 9. |
+| 11 | Uređivački deep linkovi i polja izvora | **Ne postoji** — `gw2_rules` nema `owner`, `sources`, `game_build` |
+| 12 | Mehanizam ručne potvrde za nepoznato stanje | **Ne postoji** |
+
+**Osam od dvanaest gotovo, dvije napola, dvije ne postoje.**
+
+---
+
+## 2. Dvije greške u onome što *jeste* napravljeno
+
+Ovo nisu nedostajuće funkcije nego stvari koje izgledaju gotovo a nisu.
+
+### 2.1 `goal` se prima i ignoriše
+
+`GET /api/v1/gw2/dashboard?goal=fractals` **validira** parametar, `Intent` ga
+nosi, i onda ga **niko ne koristi**. Jedino mjesto gdje se pojavljuje je provjera
+da li zaobići keš:
+
+```php
+// Dashboard.php:60 — jedina upotreba u cijelom kodu
+if ($intent === null || ($intent->minutes === null && $intent->avoid === [] && $intent->goal === null)) {
+```
+
+Dokument §8.2 stavlja **Goal relevance (0–35)** kao najveću pojedinačnu
+komponentu boda — veću od uklanjanja blokade (0–25). Kod nje nema uopšte.
+
+Posljedica: „Pick a goal" iz javnog obećanja proizvoda (§1) trenutno **ne radi**,
+a API se ponaša kao da radi.
+
+### 2.2 Pravila nemaju porijeklo
+
+§24 traži: *„Every rule has owner, source(s), reviewed_at, game_build/patch
+context and version."*
+
+`gw2_rules` ima `reviewed_at` i `version`. **Nema `owner`, `sources`,
+`game_build`.** Tabele `gw2_source_registry` (§18.2) nema.
+
+Posljedica: kad se pravilo pokaže pogrešnim, nema traga ko ga je uveo, po čemu, i
+za koji build igre. To je tačno onaj kvar zbog kojeg §25 navodi „Incorrect
+recommendation → Trust damage in a knowledgeable MMO community".
+
+---
+
+## 3. Gdje sam otišao mimo dokumenta — i gdje me dokument upozorava
+
+### 3.1 13.024 stranice recepata
+
+Napravio sam `/gw2/database/crafting/{id}-{slug}` — po jedna stranica za svaki
+predmet sa receptom.
+
+**Dokument to ne traži i dva puta upozorava na taj obrazac:**
+
+> §20.2: *„Programmatic pages must be generated from **reviewed data**, not
+> thousands of low-value API dump pages."*
+
+> §25 (rizik): *„SEO spam — Thousands of shallow generated pages" → kontrola:
+> „Only reviewed, useful public guide families."*
+
+U odbranu: stranice **nisu** plitke — nose puno stablo materijala, discipline,
+rejting, i `used_in` linkove, pa su povezan graf a ne dump. Ali su
+**nepregledane** i generisane iz API-ja, što je doslovno ono što ta kontrola
+zabranjuje.
+
+**Ovo je tvoja odluka, ne moja.** Tri opcije:
+
+1. **Ostaviti** — sadržaj je stvaran i koristan, a rizik je Googleov sud o
+   „thin content" na skali.
+2. **Suziti** — indeksirati samo predmete iznad praga (npr. Ascended/Exotic i
+   glavni materijali ≈ nekoliko stotina), ostalo `noindex, follow` da graf
+   ostane prohodan.
+3. **Ostaviti uz kuraciju** — dodati `reviewed_at` na predmet, indeksirati
+   pregledane.
+
+Moja preporuka je **2**, jer jedina poštuje kontrolu iz §25 a ne baca posao.
+
+### 3.2 Javne familije stranica iz §20.1 — nijedna nije napravljena
+
+Dokument imenuje devet:
+
+| Putanja iz §20.1 | Stanje |
+|---|---|
+| `/gw2/progression` (pillar) | ne postoji |
+| `/gw2/masteries/{region-or-track}` | ne postoji — imamo jednu zbirnu, ne po traci |
+| `/gw2/achievements/{slug}` | ne postoji |
+| `/gw2/fractals/agony-resistance` | ne postoji |
+| `/gw2/goals/first-ascended-set` | ne postoji |
+| `/gw2/mounts/{mount}` | ne postoji |
+| `/gw2/legendary/{item-or-family}` | ne postoji |
+| `/gw2/wizards-vault` | ne postoji |
+| `/gw2/level-80-what-next` | ne postoji |
+
+Te stranice su **uređivačke** — objašnjenje + personalizacija poslije
+povezivanja. To je motor dolaska koji dokument opisuje, i on **nije napravljen**.
+Ono što jeste napravljeno (baza recepata) je drugačija vrsta stranice.
+
+`/gw2/masteries` i `/gw2/goals` **postoje ali su privatne** (`noindex`) — to su
+alati, ne javne stranice iz §20.1.
+
+---
+
+## 4. Domeni iz ontologije (§7) — pokrivenost
+
+| Domen | Stanje |
+|---|---|
+| Foundation (80 lvl, oprema, build, ekspanzije) | **Gotovo** |
+| Story | **Ne postoji** — `/characters/:id/quests` se ne čita |
+| Masteries | **Gotovo** |
+| Specializations | **Pola** — čuvamo `specializations` po modu, nigdje se ne prikazuje; hero points se ne čitaju |
+| Mounts & movement | **Pola** — čitamo otključane, nema goal engine (§9.5) |
+| Open world | **Gotovo** — svjetski bosovi, dnevno + „ikad" |
+| Fractals | **Gotovo** — nivo, AR, deficit do T4 |
+| Raids | **Gotovo** — sedmica + naša istorija, bez tvrdnje o spremnosti |
+| Gear | **Gotovo** — rijetkost, slotovi, infuzije |
+| Achievements | **Pola** — motor da, kuracija ne |
+| Legendary | **Ne postoji** — dokument ga i stavlja u Phase 3 |
+| Wizard's Vault | **Gotovo** |
+| Crafting | **Gotovo** — i preko traženog (stablo recepata) |
+| Collections / unlocks | **Ne postoji** |
+
+---
+
+## 5. Endpointi koje dokument navodi a mi ih ne čitamo
+
+| Endpoint | Šta bi dao | Zašto još nije |
+|---|---|---|
+| `/characters/:id/heropoints` | koliko hero tačaka po liku — ulaz za elite spec | nije bilo potrebe do sada |
+| `/characters/:id/buildtabs` | traits, skills po šablonu | nošeni build je dovoljan za AR i opremu |
+| `/characters/:id/equipmenttabs` | neaktivni šabloni | §9.3 izričito traži **samo aktivni** |
+| `/characters/:id/quests` | story napredak | story modul ne postoji |
+| `/v2/commerce/prices` | zlatna cijena nedostajućih materijala | **namjerno** — vidi ispod |
+| `/v2/account/home` (cats/nodes) | kućni instanc | nije u dokumentu kao prioritet |
+
+**TP cijene** su jedini od ovih koje dokument traži u MVP-u posredno (§13.2:
+„Use current commerce price API for tradable deficits, with timestamp"). Nisu
+napravljene i payload to **kaže naglas** (`prices: null`), ali to ostaje
+nedostatak naspram §13.2 i mockupa 2.
+
+---
+
+## 6. Šta mockupi crtaju a nije nacrtano — i zašto
+
+Ovo je već zapisano u `docs/README.md` §21, ovdje sažeto:
+
+| Mockup | Element | Zašto ne |
+|---|---|---|
+| 1 | „Weekly Completion Score 72/100" | jedan skor preko pet nevezanih domena mora izmisliti i težine i imenilac; §7 i §11.1 oboje to zabranjuju |
+| 1 | „Confidence to complete: High" uz brojku | tvrdnja bez računa iza sebe |
+| 1, 4 | Plan po minutima (0–10, 10–20…) | igra ne prijavljuje trajanje ničega; sada **rasponi**, označeni kao naši (§12.1 traži baš „effort band rather than fake minute-level precision") |
+| 2 | „18g 42s estimated remaining cost" | TP cijene ne preslikavamo |
+| 3 | „Mastery Progress 73%" | **ispalo izračunljivo** — `point_cost` po nivou; nacrtano |
+| 3 | „Currently Training" | API to ne izlaže |
+| 3 | „Nearby Priorities" sa metrima | traži živu poziciju igrača |
+| 4 | „Current Events" sa vremenima | rasporeda nema u API-ju; mašinerija postoji (`gw2_events` + admin), **tabela prazna dok neko ne provjeri vremena** |
+| 4 | „Potential Rewards Tonight" | ništa to ne izvodi iz plana |
+
+Sve osim „Mastery Progress" ostaje nenacrtano **namjerno**.
+
+---
+
+## 7. Šta je napravljeno preko dokumenta
+
+Pošteno je navesti i ovo:
+
+- **Katalog igre lokalno** — 96.293 reda, 14 endpointa. Dokument (§19) predviđa
+  keš 6–24 h; mi imamo punu kopiju vezanu za `build_id`, što je jače.
+- **Stablo recepata sa oduzimanjem zalihe** — §13.1 traži jedinstvenu knjigu
+  predmeta; napravljen je i planer koji je koristi rekurzivno.
+- **Pravila kao podaci sa admin ekranom** — §18.2 predviđa
+  `gw2_recommendation_rules`; napravljeno plus Filament ekran za uređivanje.
+- **39 testova**, svaki dokazan lomljenjem popravke.
+
+---
+
+## 8. Redoslijed koji predlažem
+
+Poređano po odnosu vrijednosti i rizika, ne po redoslijedu iz dokumenta.
+
+### Prvo — zatvoriti ono što izgleda gotovo a nije
+
+1. **`goal` da radi.** Najveća komponenta boda po §8.2, trenutno mrtva. Traži:
+   listu ciljeva (`gw2_goals`), izbor u UI-ju, i `goal_relevance` u bodovanju.
+   Bez ovoga „Pick a goal" iz obećanja proizvoda ne postoji.
+2. **Porijeklo pravila** — `owner`, `sources`, `game_build` na `gw2_rules`,
+   plus `gw2_source_registry`. Jeftino, a §25 ga navodi kao kontrolu nad
+   najvećim rizikom proizvoda.
+3. **Odluka o 13k stranica** (sekcija 3.1 gore). Tvoja.
+
+### Drugo — MVP stavke koje fale
+
+4. **Pinned goals** (§26.5) — tek s njima postoji „retention product" iz §23
+   Phase 2.
+5. **Ručna potvrda nepoznatog** (§26.12, §17.3) — „Unknown must be a
+   first-class state."
+6. **Selektor lika** (§26.2) — sada biramo sami; veteran sa 15 likova će htjeti
+   birati.
+7. **Kuracija postignuća** — motor postoji, `advisor_eligible` je svugdje
+   `false`. Prvih stotinu redova otključava najkorisniju stvar na nalogu.
+
+### Treće — javni motor dolaska
+
+8. **Uređivačke stranice iz §20.1** — počevši od `/gw2/level-80-what-next` i
+   `/gw2/fractals/agony-resistance`, koje dokument izdvaja kao glavne ulaze.
+
+### Kasnije — dokument ih i sam odgađa
+
+9. TP cijene (§13.2), story (§16), legendary (§14, Phase 3), collections.
+
+---
+
+## 9. Kratak odgovor na „dokle smo"
+
+**MVP je oko 70% — osam od dvanaest must-have stavki, dvije napola, dvije ne
+postoje.** Motor preporuka, snapshot, katalog, planer i pet ekrana rade i
+provjereni su na živom nalogu.
+
+Ono što fali nije infrastruktura nego **sloj ciljeva** (pin, izbor, relevantnost
+u bodovanju) i **uređivački sloj** (kuracija, porijeklo, javne stranice). To su i
+dvije stvari koje dokument izdvaja kao *defensible layer* (§22):
+
+> *„The moat is not the API call. Everyone can call the API. The defensible
+> layer is a maintained progression ontology + versioned decision rules +
+> personalized editorial guidance."*
+
+Ontologija i verzionisana pravila postoje. **Kuracija i uređivačko vođenje još
+ne.**
