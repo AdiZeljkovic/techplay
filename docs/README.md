@@ -692,6 +692,7 @@ Testovi koji čuvaju skupo naučene stvari:
 | `Gw2MasteryArithmeticTest` | potrošene mastery tačke se slažu sa onim što nalog prijavljuje |
 | `Gw2RecipeTreeTest` | zaliha se oduzme tačno jednom, ma kroz koliko grana materijal stigao |
 | `Gw2SessionPlanTest` | zadati budžet se ne prekoračuje; pravilo bez procjene nije besplatno |
+| `Gw2PublicPagesTest` | sitemap navodi tačno ono do čega indeks dolazi; javno ne traži nalog |
 
 ---
 
@@ -1457,6 +1458,9 @@ round-robin po domenu preko svih šest mjesta, ne samo prve tri.
 | `GET /api/v1/gw2/items?q=` | pretraga 74.265 predmeta, trigram |
 | `GET /api/v1/gw2/tonight?minutes=` | plan sesije, prioriteti, raspored |
 | `GET /api/v1/gw2/content` | rajdovi, bosovi, tamnice — prozor i „ikad“ |
+| `GET /api/v1/gw2/public/recipe/{id}` | **bez ključa** — stablo + u šta ulazi |
+| `GET /api/v1/gw2/public/masteries` | **bez ključa** — 40 traka, cijene nivoa |
+| `GET /api/v1/gw2/public/craftable?page=` | **bez ključa** — indeks, 131 stranica |
 | `php artisan gw2:snapshot` | ispiše normalizovano stanje |
 | `php artisan gw2:advise --minutes=30 --avoid=vault` | ispiše savjete |
 
@@ -1751,6 +1755,88 @@ ugrizen brojkama koje su ostale u prozi nakon što se stvar promijenila.
 **Nikakve tvrdnje da je igrač „spreman za rajd".** Oprema ne govori ništa o tome
 zna li neko susret, a alat koji drugo zaključuje iz prvog sprema ljude da budu
 izbačeni iz grupe.
+
+### Javni dio — `/gw2/database`
+
+Po planu je ovo **motor dolaska**: javni dio mora biti koristan **bez ključa**, a
+povezivanje naloga ga personalizuje, ne otključava.
+
+**Podjela ide po putanji, ne po stranici.** Sve pod `/gw2/database` je isto za
+svakog igrača i **indeksira se**; sve pod `/gw2` je nečiji nalog i nosi
+`noindex`. Tako je robots priča jedna linija umjesto procjene po ruti, i čitalac
+koji dođe iz pretrage nikad ne padne na stranicu koja se njemu ne iscrta.
+
+| | |
+|---|---|
+| `/gw2/database` | hub |
+| `/gw2/database/crafting` | indeks, 131 stranica po 100 |
+| `/gw2/database/crafting/{id}-{slug}` | **13.024 stranice** recepata |
+| `/gw2/database/masteries` | 40 traka, svaki nivo i cijena |
+
+#### Server-rendered je uslov, ne preferenca
+
+Puzač nema `localStorage`. Ove stranice čitaju kroz **serverski fetch** sa
+internim tokenom (`lib/gw2public.ts`), ne kroz autentifikovani axios klijent kao
+lični dio (`lib/gw2.ts`). Provjereno na produkciji: `<h1>` s imenom predmeta,
+imena materijala i **46 različitih internih linkova** u sirovom HTML-u.
+
+Svaka stranica recepta linka na svoje materijale **i** na ono u šta predmet ulazi
+(`used_in`), pa je skup **povezan graf**, ne spisak. To je za otkrivanje važnije
+od same indeks stranice.
+
+Indeks stranice **poslije prve su `noindex, follow`**: vrijednost je na
+stranicama predmeta do kojih vode, a sto skoro identičnih indeksa koji se
+takmiče međusobno ne pomaže nikome.
+
+#### URL nosi id, slug je ukras
+
+74.265 predmeta dijeli 51.604 imena, a jedno se pojavljuje **135 puta**. Ruta
+koja bi hvatala po slugu pukla bi na „Fallen Adventurer's Backpack" i nigdje
+drugdje — najgora vrsta greške za kasnije. 103 reda imaju **prazno ime** i ne
+dobijaju stranicu.
+
+#### Greška koja je htjela 404 u vlastitoj paginaciji
+
+Jedan broj odlučuje tri stvari: koliko stranica indeks nudi, koliko URL-ova
+sitemap navodi, i šta hub kaže čitaocu.
+
+Građen kao `join` + `distinct()`, `paginate()` je brojao **spojene** redove prije
+nego se distinct primijeni — **13.156** gdje ih je **13.024**, dakle 132 stranice
+gdje ih je 131. Zadnja bi bila prazna, a indeks praznu stranicu pretvara u 404 —
+i sitemap bi pokazivao na nju.
+
+Dovoljno je 105 predmeta sa više recepata. Sada `whereExists` (broji svaki
+predmet jednom **po konstrukciji**), i **sitemap zove istu metodu kao API** —
+lekcija koju je ovaj repo već platio sa `sitemap-videos.xml`.
+
+#### „U šta ovo ulazi" ima prekidač po drajveru
+
+Produkcija je PostgreSQL i `@>` je ono što odgovara `gw2_recipes_ingredients_gin`
+— **0,147 ms** naspram 9,2 ms za skan koji je zamijenio. Suite vrti na SQLite,
+koji nema ni jedno ni drugo, pa tamo ide `json_each` + `json_extract`.
+
+Ono čega **namjerno nema** je `LIKE` nad serijalizovanim JSON-om: prošao bi svaki
+test u fajlu i tiho pronalazio predmet 1000 kad se traži 100.
+
+#### `revalidate` mora biti literal
+
+Next čita segment konfiguraciju **statičkom analizom modula**, pa
+`export const revalidate = GW2_REVALIDATE` nije vrijednost koju vidi: build pada
+sa „Invalid segment configuration export detected", a rute onda vraćaju **404**.
+Broj se mora napisati na mjestu.
+
+Ostatak sajta je bio netaknut — kvar je po segmentu — ali deploy ga **jeste**
+isporučio i te četiri stranice su bile žive i pokvarene dok nije popravljeno.
+
+#### Sitemap
+
+`sitemap-gw2.xml`, 2,2 MB, 13.027 URL-ova (13.024 predmeta + 3 hub stranice),
+piše se u **kataloškoj** polovini generatora — ovo se mijenja kad igra dobije
+zakrpu, a ne svakih petnaest minuta.
+
+**`sitemap.xml` se piše u sadržajnoj polovini.** Pokretanje samo `--catalogue`
+napiše `sitemap-gw2.xml` ali **ne osvježi indeks koji ga imenuje**; treba i
+`--content` (ili puni noćni prolaz).
 
 ### Frontend — `/gw2`
 
