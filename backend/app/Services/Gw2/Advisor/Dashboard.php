@@ -182,6 +182,73 @@ class Dashboard
         ];
     }
 
+    /**
+     * What it takes to make one thing, given what this account holds.
+     *
+     * The target is named by the player rather than guessed. An ascended set
+     * comes in a stat prefix and an armour weight, and nothing in the API says
+     * which one somebody wants — a planner that picked for them would be
+     * confidently planning the wrong set.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function plan(int $gw2AccountId, int $itemId, int $quantity): ?array
+    {
+        $snapshot = $this->reader->for($gw2AccountId);
+
+        if (! $snapshot) {
+            return null;
+        }
+
+        $target = DB::table('gw2_items')->where('id', $itemId)->first(['id', 'name', 'rarity', 'type', 'icon']);
+
+        if (! $target) {
+            return null;
+        }
+
+        $disciplines = $snapshot->primaryCharacter()?->craftingDisciplines ?? [];
+
+        $tree = app(RecipeTree::class);
+        $root = $tree->plan($itemId, $quantity, $snapshot->owned, $disciplines);
+        $list = $tree->shoppingList($root);
+
+        return [
+            'target' => [
+                'item_id' => (int) $target->id,
+                'name' => $target->name,
+                'rarity' => $target->rarity,
+                'type' => $target->type,
+                'icon' => $target->icon,
+                'quantity' => $quantity,
+            ],
+            'craftable' => $root->craftable(),
+            'already_have' => $root->owned,
+            'tree' => $root->toArray(),
+            /*
+             * The part worth acting on. Intermediates are interesting to look at
+             * and useless to shop for — nobody buys a steel ingot they are about
+             * to make out of ore they already have.
+             */
+            'shopping_list' => array_map(fn (RecipeNode $n) => [
+                'item_id' => $n->itemId,
+                'name' => $n->name,
+                'rarity' => $n->rarity,
+                'icon' => $n->icon,
+                'needed' => $n->needed,
+                'owned' => $n->owned,
+                'missing' => $n->missing(),
+            ], $list),
+            'disciplines_used' => $disciplines,
+            /*
+             * Said out loud rather than left to be assumed. This is a materials
+             * plan, not a cost: trading post prices are live market data we do
+             * not mirror, so any gold figure here would have been invented.
+             */
+            'prices' => null,
+            'observed_at' => $snapshot->observedAt,
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function account(Snapshot $snapshot): array
     {

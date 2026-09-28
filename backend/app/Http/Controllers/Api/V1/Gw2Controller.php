@@ -210,6 +210,82 @@ class Gw2Controller extends Controller
         return $this->success($payload);
     }
 
+    /**
+     * GET /gw2/plan
+     *
+     * What it takes to make one thing, given what this account holds.
+     */
+    public function plan(Request $request): JsonResponse
+    {
+        $request->validate([
+            'item_id' => 'required|integer|min:1',
+            'quantity' => 'nullable|integer|min:1|max:250',
+        ]);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $payload = $this->dashboard->plan(
+            $accountId,
+            $request->integer('item_id'),
+            $request->integer('quantity') ?: 1,
+        );
+
+        if (! $payload) {
+            return $this->error('We do not have that item, or your account has not been read yet.', 404);
+        }
+
+        return $this->success($payload);
+    }
+
+    /**
+     * GET /gw2/items?q=
+     *
+     * Finding the thing to plan for, out of 74,265.
+     *
+     * Three tiers of match rather than one `LIKE '%q%'`: an exact name, then a
+     * prefix, then anything containing it. Without the ordering, searching
+     * "damask" returns "Bolt of Damask" somewhere below thirty items whose
+     * description happens to mention it.
+     */
+    public function items(Request $request): JsonResponse
+    {
+        $request->validate(['q' => 'required|string|min:2|max:80']);
+
+        $term = $request->string('q')->toString();
+
+        // pgsql in production, sqlite in the suite — the operator differs and
+        // the query has to be testable on both.
+        $like = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        $items = DB::table('gw2_items')
+            ->where('name', $like, '%'.$term.'%')
+            ->orderByRaw(
+                'case when lower(name) = ? then 0 when lower(name) like ? then 1 else 2 end, length(name), name',
+                [mb_strtolower($term), mb_strtolower($term).'%']
+            )
+            ->limit(20)
+            ->get(['id', 'name', 'rarity', 'type', 'level', 'icon']);
+
+        return $this->success($items);
+    }
+
+    private function accountId(Request $request): ?int
+    {
+        $connection = $this->find($request);
+
+        if (! $connection) {
+            return null;
+        }
+
+        $id = DB::table('gw2_accounts')->where('connected_account_id', $connection->id)->value('id');
+
+        return $id ? (int) $id : null;
+    }
+
     private function find(Request $request): ?ConnectedAccount
     {
         return ConnectedAccount::query()

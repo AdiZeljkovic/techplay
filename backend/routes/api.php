@@ -246,6 +246,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/gw2/connection', [Gw2Controller::class, 'connection']);
         Route::get('/gw2/dashboard', [Gw2Controller::class, 'dashboard']);
         Route::get('/gw2/masteries', [Gw2Controller::class, 'masteries']);
+        Route::get('/gw2/plan', [Gw2Controller::class, 'plan']);
+        Route::get('/gw2/items', [Gw2Controller::class, 'items']);
         Route::delete('/gw2/connection', [Gw2Controller::class, 'disconnect']);
 
         // Forum activity (own profile)
