@@ -149,7 +149,7 @@ class Gw2RuleSeeder extends Seeder
                 'producer' => MasteryTierToBuy::KEY,
                 'domain' => 'masteries',
                 'title' => '{tier} on {track} costs {cost} {point}',
-                'body' => 'You have {unspent} unspent {region} points, so this leaves {left_over}. It is tier {tiers_paid} of {tiers} on that track, and it needs the track filled with experience as well as the points.',
+                'body' => 'You have {unspent} unspent {region} points, so this leaves {left_over}. It is tier {buying_tier} of {tiers} on that track, and it needs the track filled with experience as well as the points.',
                 'requires' => [['path' => 'mastery.affordable_tiers', 'op' => '>=', 'value' => 1]],
                 'base_score' => 78,
                 'weights' => ['cost' => -1.5],

@@ -55,6 +55,13 @@ class MasteryTierToBuy implements Producer
                         'unspent' => $region->unspent(),
                         'left_over' => $region->unspent() - (int) $track->nextTierCost(),
                         'tiers_paid' => $track->tiersPaid,
+                        /*
+                         * The tier being bought, which is one past the last one
+                         * paid for. Without it the sentence reads "tier 0 of 4"
+                         * for a track nobody has started, which is arithmetic
+                         * leaking into English.
+                         */
+                        'buying_tier' => $track->tiersPaid + 1,
                         'tiers' => $track->tiers(),
                         'point' => $track->nextTierCost() === 1 ? 'point' : 'points',
                     ],

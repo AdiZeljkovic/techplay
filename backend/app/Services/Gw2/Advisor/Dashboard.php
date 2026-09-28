@@ -129,11 +129,37 @@ class Dashboard
                 continue;
             }
 
+            $tracks = $snapshot->tracksIn($region->region);
+            $pointsTotal = $snapshot->pointsTotalIn($region->region);
+            $pointsSpent = $snapshot->pointsSpentIn($region->region);
+
             $regions[] = [
                 'region' => $region->region,
                 'earned' => $region->earned,
                 'spent' => $region->spent,
                 'unspent' => $region->unspent(),
+                /*
+                 * A real denominator, summed from the catalogue's per-tier point
+                 * costs. The mockup draws "186 / 254 Mastery Points" beside a
+                 * percentage; this is that figure, computed rather than chosen,
+                 * and it reconciles against what the account itself reports as
+                 * spent — see Gw2MasteryArithmeticTest.
+                 */
+                'points_spent' => $pointsSpent,
+                'points_total' => $pointsTotal,
+                'percent' => $pointsTotal > 0 ? (int) round($pointsSpent / $pointsTotal * 100) : 0,
+                'tracks_finished' => count(array_filter($tracks, fn (MasteryTrack $t) => $t->finished())),
+                'tracks' => count($tracks),
+                // Cheapest first: the one that leaves the most over.
+                'affordable' => array_map(fn (MasteryTrack $t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'tier' => $t->nextTierName(),
+                    'buying_tier' => $t->tiersPaid + 1,
+                    'tiers' => $t->tiers(),
+                    'cost' => $t->nextTierCost(),
+                    'points_remaining' => $t->pointsRemaining(),
+                ], array_slice($snapshot->affordableIn($region->region), 0, 4)),
             ];
         }
 
@@ -142,8 +168,17 @@ class Dashboard
         return [
             'unspent_total' => $snapshot->unspentMasteryPoints(),
             'regions' => $regions,
-            'tracks_trained' => count(array_filter($snapshot->masteryLevels, fn ($l) => $l > 0)),
-            'tracks_unlocked' => count($snapshot->masteryLevels),
+            /*
+             * Tracks the account has paid at least one tier of.
+             *
+             * It used to count tracks with `level > 0`, which was wrong twice
+             * over: `level` is a zero-based index, so a track at level 0 has its
+             * first tier paid for, and a track with nothing paid for is absent
+             * from the response rather than sitting there at zero.
+             */
+            'tracks_started' => count(array_filter($snapshot->masteryTracks, fn (MasteryTrack $t) => $t->tiersPaid > 0)),
+            'tracks_finished' => count(array_filter($snapshot->masteryTracks, fn (MasteryTrack $t) => $t->finished())),
+            'tracks_total' => count(array_filter($snapshot->masteryTracks, fn (MasteryTrack $t) => $t->region !== null)),
         ];
     }
 
