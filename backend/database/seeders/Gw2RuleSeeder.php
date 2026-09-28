@@ -7,6 +7,7 @@ use App\Models\Gw2Source;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
 use App\Services\Gw2\Advisor\Producers\MasteryTierToBuy;
+use App\Services\Gw2\Advisor\Producers\MountsToUnlock;
 use App\Services\Gw2\Advisor\Producers\NearlyDoneAchievements;
 use App\Services\Gw2\Advisor\Producers\UnclaimedAcclaim;
 use App\Services\Gw2\Advisor\Producers\UnspentMasteryPoints;
@@ -97,6 +98,7 @@ class Gw2RuleSeeder extends Seeder
         'gear-no-crafting-discipline' => ['first-ascended-set'],
         'fractals-agony-for-tier-4' => ['fractals'],
         'fractals-agony-active-player' => ['fractals'],
+        'mounts-not-unlocked' => ['mounts', 'what-next'],
     ];
 
     /**
@@ -126,6 +128,7 @@ class Gw2RuleSeeder extends Seeder
         'fractals-agony-for-tier-4' => [45, 90],
         'fractals-agony-active-player' => [45, 90],
         'gear-no-crafting-discipline' => [60, 180],
+        'mounts-not-unlocked' => [60, 240],
     ];
 
     /**
@@ -259,6 +262,25 @@ class Gw2RuleSeeder extends Seeder
                 'weights' => ['cost' => -1.5],
                 'confidence' => 'high',
                 'effort_band' => 'quick',
+            ],
+
+            /*
+             * Mounts. §9.5 splits this engine: which types are missing is
+             * mechanical, and how to get one is curated content. The rule says
+             * the first half and points at the second.
+             */
+            [
+                'key' => 'mounts-not-unlocked',
+                'producer' => MountsToUnlock::KEY,
+                'domain' => 'mounts',
+                'title' => 'Unlock the {mount}',
+                'body' => 'You have {unlocked} of the {total} mount types. Each one changes how you move '
+                    .'through the world permanently, which is why they outlast most gear goals.',
+                'requires' => [],
+                'base_score' => 52,
+                'weights' => [],
+                'confidence' => 'confirmed',
+                'effort_band' => 'long',
             ],
 
             /*

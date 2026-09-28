@@ -9,10 +9,11 @@ use Illuminate\Database\Seeder;
 /**
  * The goals a player can pick, and the sources the rules stand on.
  *
- * §9 of the working document names five goal engines. These are the five, minus
- * the ones the current rules cannot actually serve yet — there is no mount
- * acquisition graph and no story detector, so offering those as goals would be
- * a picker that changes nothing.
+ * §9 of the working document names five goal engines. Five of them are here.
+ * Mounts joined once a producer existed that could serve the goal — §9.5 splits
+ * that engine in two, and the observable half (which mount types the account
+ * lacks) is mechanical while the acquisition route is curated content in the
+ * `mounts` guide family.
  *
  * That restraint is the point. A goal exists when rules advance it; adding the
  * row first would put a choice in front of a player that the engine ignores,
@@ -71,6 +72,14 @@ class Gw2GoalSeeder extends Seeder
                 'domain' => 'masteries',
                 'icon' => 'sparkles',
                 'sort_order' => 40,
+            ],
+            [
+                'slug' => 'mounts',
+                'title' => 'Unlock the mounts I am missing',
+                'summary' => 'Which mount types your account does not have, and where the write-up is.',
+                'domain' => 'mounts',
+                'icon' => 'rabbit',
+                'sort_order' => 45,
             ],
             [
                 'slug' => 'raid-entry',
