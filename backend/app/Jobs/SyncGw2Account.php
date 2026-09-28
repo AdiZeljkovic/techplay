@@ -19,8 +19,8 @@ use Illuminate\Support\Facades\Log;
  *
  * A job rather than a controller because the rate limit belongs to the whole
  * site: it is counted per IP and every request TechPlay makes leaves from one
- * server, so eighteen requests spent while somebody waits on a page are
- * eighteen another reader does not get. The queue is what keeps that fair.
+ * server, so nineteen requests spent while somebody waits on a page are
+ * nineteen another reader does not get. The queue is what keeps that fair.
  *
  * The backoff is long on purpose. Measured on 27 September 2026, the bucket
  * refills completely inside thirty seconds — but a rate limit means the whole

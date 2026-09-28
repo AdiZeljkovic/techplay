@@ -429,6 +429,24 @@ class Dashboard
             ->all();
     }
 
+    /**
+     * Raids, dungeons and world bosses.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function content(int $gw2AccountId): ?array
+    {
+        $snapshot = $this->reader->for($gw2AccountId);
+
+        if (! $snapshot) {
+            return null;
+        }
+
+        return app(ContentProgress::class)->for($snapshot) + [
+            'observed_at' => $snapshot->observedAt,
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function account(Snapshot $snapshot): array
     {

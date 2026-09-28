@@ -28,6 +28,7 @@ readonly class Snapshot
      * @param  array<int, int>  $owned  Item id => how many, everywhere combined.
      * @param  array<int, string>  $raidsThisWeek  Encounter ids cleared since the weekly reset.
      * @param  array<int, string>  $bossesToday  World boss ids killed since the daily reset.
+     * @param  array<int, string>  $dungeonPathsToday  Dungeon paths run since the daily reset.
      */
     public function __construct(
         public int $accountId,
@@ -45,6 +46,7 @@ readonly class Snapshot
         public array $owned,
         public array $raidsThisWeek,
         public array $bossesToday,
+        public array $dungeonPathsToday,
         public ?VaultView $vault,
         public ?string $observedAt,
         public ?string $lastFullSyncAt,

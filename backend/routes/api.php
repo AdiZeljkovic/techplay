@@ -247,6 +247,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/gw2/dashboard', [Gw2Controller::class, 'dashboard']);
         Route::get('/gw2/masteries', [Gw2Controller::class, 'masteries']);
         Route::get('/gw2/tonight', [Gw2Controller::class, 'tonight']);
+        Route::get('/gw2/content', [Gw2Controller::class, 'content']);
         Route::get('/gw2/plan', [Gw2Controller::class, 'plan']);
         Route::get('/gw2/items', [Gw2Controller::class, 'items']);
         Route::delete('/gw2/connection', [Gw2Controller::class, 'disconnect']);

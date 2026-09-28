@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\DB;
 /**
  * Read one account, and write down what changed.
  *
- * Eighteen requests, measured against the live API on 27 September 2026:
- * seventeen account endpoints and one `characters?ids=all`. That last one is
+ * Nineteen requests: eighteen account endpoints and one `characters?ids=all`.
+ * Measured at eighteen on 27 September 2026 and grown by one when
+ * `account/dungeons` was added, because the count is a fact about this list
+ * and not a slogan. That last one is
  * the surprise — it returns the worn equipment, the bags, specializations,
  * skills, recipes and crafting in a single response, so `equipment_tabs` and
  * `build_tabs` are not needed at all unless inactive templates are ever shown.
@@ -24,7 +26,7 @@ use Illuminate\Support\Facades\DB;
 class AccountSync
 {
     /**
-     * The seventeen, and the permission each one needs.
+     * The eighteen, and the permission each one needs.
      *
      * A key without `inventories` cannot answer what a player owns, and
      * asking anyway spends budget to receive a 403. The scope is checked
@@ -46,6 +48,10 @@ class AccountSync
         'account/raids' => 'progression',
         'account/worldbosses' => 'progression',
         'account/dailycrafting' => 'progression',
+        // Paths cleared since the daily reset. The nineteenth request, and the
+        // only record of it: like raids and world bosses, the API keeps no
+        // history of what was run before today.
+        'account/dungeons' => 'progression',
         'account/wizardsvault/daily' => 'progression',
         'account/wizardsvault/weekly' => 'progression',
     ];
@@ -55,6 +61,7 @@ class AccountSync
         'account',
         'account/raids',
         'account/worldbosses',
+        'account/dungeons',
         'account/dailycrafting',
         'account/wizardsvault/daily',
         'account/wizardsvault/weekly',
@@ -192,6 +199,7 @@ class AccountSync
             'account/raids' => 'raids',
             'account/worldbosses' => 'world_bosses',
             'account/dailycrafting' => 'daily_crafting',
+            'account/dungeons' => 'dungeons',
         ];
 
         $row = ['observed_at' => now()];

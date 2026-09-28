@@ -60,6 +60,7 @@ class SnapshotReader
             owned: $this->owned($gw2AccountId),
             raidsThisWeek: array_values($this->json($state->raids ?? null)),
             bossesToday: array_values($this->json($state->world_bosses ?? null)),
+            dungeonPathsToday: array_values($this->json($state->dungeons ?? null)),
             vault: $this->vault($state),
             observedAt: $state->observed_at ?? null,
             lastFullSyncAt: $account->last_full_sync_at ?? null,

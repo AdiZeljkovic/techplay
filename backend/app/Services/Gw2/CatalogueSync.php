@@ -40,6 +40,20 @@ class CatalogueSync
         'titles' => 'reference',
         'quests' => 'reference',
         'mounts/types' => 'reference',
+        /*
+         * Structure, not names. `/v2/raids` gives wings and the encounters in
+         * them, `/v2/dungeons` gives paths, `/v2/worldbosses` gives the
+         * canonical fifteen — and all three return bare slugs with no display
+         * name anywhere in the API.
+         *
+         * They are here because the account endpoints return the same slugs and
+         * nothing else: `/v2/account/raids` answers ["samarog","deimos",...],
+         * which is unreadable until you know which wing each one belongs to.
+         * Seven requests for raids, eight for dungeons, one for world bosses.
+         */
+        'raids' => 'reference',
+        'dungeons' => 'reference',
+        'worldbosses' => 'reference',
     ];
 
     public function __construct(private readonly Gw2Client $api) {}

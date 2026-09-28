@@ -211,6 +211,29 @@ class Gw2Controller extends Controller
     }
 
     /**
+     * GET /gw2/content
+     *
+     * Raids this week, world bosses today, dungeons today — and, separately,
+     * everything since the day the account connected.
+     */
+    public function content(Request $request): JsonResponse
+    {
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $payload = $this->dashboard->content($accountId);
+
+        if (! $payload) {
+            return $this->success(null, 'We have not finished reading your account yet.');
+        }
+
+        return $this->success($payload);
+    }
+
+    /**
      * GET /gw2/tonight
      *
      * An evening, ordered out of recommendations that already hold.

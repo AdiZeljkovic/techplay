@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\DB;
  * player's history that will ever exist, and a player who does not open the
  * page still expects their history to be there when they do.
  *
- * Staggered rather than dispatched in one go. A full read is eighteen requests
+ * Staggered rather than dispatched in one go. A full read is nineteen requests
  * and the rate limit is counted per IP for the whole site, so fifty accounts
  * released at once would spend the budget, take a wave of 429s, and come back
  * through the backoff a quarter of an hour later. Spacing them costs nothing at
@@ -36,7 +36,7 @@ class SyncGw2Accounts extends Command
     /**
      * Seconds between dispatches.
      *
-     * Eighteen requests per account against a budget of 400 a minute means
+     * Nineteen requests per account against a budget of 400 a minute means
      * twelve accounts a minute is around half the allowance — enough headroom
      * that somebody connecting a key at 3am is not queued behind the sweep.
      */
