@@ -366,11 +366,37 @@ class AccountSync
     }
 
     /**
-     * What moved since last time.
+     * What moved since last time — and, on the very first read, what was
+     * already there.
      *
-     * Deliberately narrow. Every field could be diffed, and the result would
-     * be a feed nobody reads — "your karma went up" is not progress. These
-     * four are the ones a player would have told somebody about.
+     * Deliberately narrow. Every field could be diffed and the result would be a
+     * feed nobody reads; "your karma went up" is not progress. These four are
+     * the ones a player would have told somebody about.
+     *
+     * ── Why the first read is not empty ────────────────────────────────
+     *
+     * It used to be, on the reasoning that calling every existing unlock an
+     * "event" would bury a new account in a history it did not live through.
+     * That reasoning is right for achievements and wrong for the windowed
+     * endpoints, and the difference cost this project real data.
+     *
+     * `/v2/account/raids` reports the current week and nothing else. An account
+     * that connects on Thursday having cleared four encounters has those four in
+     * its first read, in a state row — and the next weekly reset overwrites that
+     * row with an empty list. The clears are then gone from the game's answer and
+     * gone from ours, which is exactly the loss these snapshots exist to prevent.
+     * It happened here on 28 September 2026: four encounters observed at connect,
+     * zero rows in the event table, and nothing anywhere to recover them from.
+     *
+     * So the first read writes a **baseline**: the same event types, marked
+     * `baseline: true` and dated to the connection rather than to now. A reader
+     * has to be able to tell "you cleared this on Thursday" from "this was
+     * already done when you arrived", and the flag is what lets the interface
+     * say the second one.
+     *
+     * Achievements stay out of the baseline. 364 completed achievements is not a
+     * history, it is a wall, and unlike raids they can be read back from the API
+     * in full at any time.
      *
      * @param  array<string, mixed>  $read
      */
@@ -378,10 +404,8 @@ class AccountSync
     {
         $before = DB::table('gw2_account_state')->where('gw2_account_id', $accountId)->first();
 
-        // Nothing to compare against on the first read, and calling every
-        // unlock an "event" would bury the account in a fake history.
         if (! $before) {
-            return 0;
+            return $this->baseline($accountId, $read);
         }
 
         $events = [];
@@ -404,20 +428,68 @@ class AccountSync
             $read['account/worldbosses'] ?? null
         ));
 
+        $events = array_merge($events, $this->newIds(
+            'dungeon_path_run',
+            json_decode($before->dungeons ?? '[]', true),
+            $read['account/dungeons'] ?? null
+        ));
+
         $events = array_merge($events, $this->newAchievements(
             json_decode($before->achievements ?? '[]', true),
             $read['account/achievements'] ?? null
         ));
 
+        return $this->record($accountId, $events, false);
+    }
+
+    /**
+     * What was already done when the account connected.
+     *
+     * Only the endpoints that report a window and keep no history of their own.
+     * Anything the API can be asked for again does not need a baseline.
+     *
+     * @param  array<string, mixed>  $read
+     */
+    private function baseline(int $accountId, array $read): int
+    {
+        $events = [];
+
+        foreach ([
+            'raid_encounter_cleared' => 'account/raids',
+            'world_boss_killed' => 'account/worldbosses',
+            'dungeon_path_run' => 'account/dungeons',
+        ] as $type => $endpoint) {
+            foreach ($read[$endpoint] ?? [] as $id) {
+                $events[] = ['type' => $type, 'payload' => ['id' => $id, 'baseline' => true]];
+            }
+        }
+
+        return $this->record($accountId, $events, true);
+    }
+
+    /**
+     * @param  array<int, array{type: string, payload: array<string, mixed>}>  $events
+     */
+    private function record(int $accountId, array $events, bool $baseline): int
+    {
         if ($events === []) {
             return 0;
         }
+
+        /*
+         * A baseline is dated to when the account was connected, not to now.
+         * Dating it to the moment of the read would claim the player did all of
+         * it in the second they pasted their key.
+         */
+        $occurredAt = $baseline
+            ? (DB::table('gw2_accounts')->where('id', $accountId)->value('created_at') ?: now())
+            : now();
 
         DB::table('gw2_progress_events')->insert(array_map(fn ($e) => [
             'gw2_account_id' => $accountId,
             'type' => $e['type'],
             'payload' => json_encode($e['payload'], JSON_UNESCAPED_UNICODE),
-            'occurred_at' => now(),
+            'occurred_at' => $occurredAt,
         ], $events));
 
         return count($events);

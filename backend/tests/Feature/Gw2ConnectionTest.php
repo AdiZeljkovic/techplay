@@ -89,17 +89,56 @@ class Gw2ConnectionTest extends TestCase
             ->assertJsonPath('data.missing_features.wallet', 'your currencies, for goal and material planning');
     }
 
-    public function test_the_first_read_writes_no_history(): void
+    public function test_the_first_read_records_what_was_already_cleared(): void
     {
         $connection = $this->connect();
 
         app(AccountSync::class)->full($connection);
 
-        // Calling every unlock an event would bury a new account in a history
-        // it did not live through.
-        $this->assertDatabaseCount('gw2_progress_events', 0);
+        /*
+         * This is the loss that made the baseline necessary, and it is worth
+         * spelling out because the first version of this test asserted the
+         * opposite.
+         *
+         * /v2/account/raids reports the current week and nothing else. An
+         * account connecting on Thursday having cleared an encounter has it in
+         * the first read, in a state row that the next weekly reset overwrites
+         * with an empty list. On 28 September 2026 exactly that happened: four
+         * encounters observed at connect, zero rows in the event table, and
+         * nothing anywhere to recover them from.
+         */
+        $this->assertDatabaseHas('gw2_progress_events', ['type' => 'raid_encounter_cleared']);
+
+        $event = DB::table('gw2_progress_events')->where('type', 'raid_encounter_cleared')->first();
+        $payload = json_decode($event->payload, true);
+
+        // Marked, so a reader can tell "you cleared this on Thursday" from
+        // "this was already done when you arrived".
+        $this->assertTrue($payload['baseline']);
+        $this->assertSame('spirit_woods', $payload['id']);
+
+        // Achievements stay out of it. 364 completed achievements is a wall,
+        // not a history — and unlike raids they can be read back in full at any
+        // time.
+        $this->assertDatabaseMissing('gw2_progress_events', ['type' => 'achievement_completed']);
+
         $this->assertDatabaseCount('gw2_characters', 1);
         $this->assertDatabaseHas('gw2_item_ledger', ['item_id' => 19721, 'location_type' => 'materials']);
+    }
+
+    public function test_a_baseline_is_dated_to_the_connection_not_to_the_read(): void
+    {
+        $connection = $this->connect();
+
+        $this->travel(3)->hours();
+        app(AccountSync::class)->full($connection);
+
+        $connectedAt = DB::table('gw2_accounts')->where('connected_account_id', $connection->id)->value('created_at');
+        $occurredAt = DB::table('gw2_progress_events')->value('occurred_at');
+
+        // Dating it to the read would claim the player did all of it in the
+        // second they pasted their key.
+        $this->assertSame((string) $connectedAt, (string) $occurredAt);
     }
 
     public function test_the_second_read_records_only_what_changed(): void
@@ -120,7 +159,17 @@ class Gw2ConnectionTest extends TestCase
 
         $sync->full($connection);
 
-        $types = DB::table('gw2_progress_events')->orderBy('id')->pluck('type')->all();
+        /*
+         * Baselines excluded. Those describe what was already done at connect
+         * and are a different claim from "this happened between two reads",
+         * which is what this test is about.
+         */
+        $types = DB::table('gw2_progress_events')
+            ->orderBy('id')
+            ->get(['type', 'payload'])
+            ->reject(fn ($e) => json_decode($e->payload, true)['baseline'] ?? false)
+            ->pluck('type')
+            ->all();
 
         $this->assertSame(['raid_encounter_cleared', 'achievement_completed'], $types);
     }
