@@ -41,6 +41,7 @@ use App\Http\Controllers\Api\V1\GameListController;
 use App\Http\Controllers\Api\V1\GameRatingController;
 use App\Http\Controllers\Api\V1\GamerDnaController;
 use App\Http\Controllers\Api\V1\Gw2Controller;
+use App\Http\Controllers\Api\V1\Gw2PublicController;
 use App\Http\Controllers\Api\V1\GiveawayController;
 use App\Http\Controllers\Api\V1\GiveawayHubController;
 use App\Http\Controllers\Api\V1\Gta6CharactersController;
@@ -702,6 +703,19 @@ Route::prefix('v1')->group(function () {
         // Before the slug route, so a date is never mistaken for a game.
         Route::get('/calendar/day/{date}', [CalendarController::class, 'day']);
         Route::get('/calendar/{slug}', [CalendarController::class, 'show']);
+        /*
+         * Guild Wars 2 reference, for everyone.
+         *
+         * Game data that is the same for every player: what a recipe takes,
+         * what a mastery tier costs. No key, no account, nothing personal —
+         * and the reason somebody arrives at the tool in the first place.
+         * Connecting personalises these pages rather than unlocking them.
+         */
+        Route::get('/gw2/public/masteries', [Gw2PublicController::class, 'masteries']);
+        Route::get('/gw2/public/craftable', [Gw2PublicController::class, 'craftable']);
+        Route::get('/gw2/public/recipe/{item}', [Gw2PublicController::class, 'recipe'])
+            ->whereNumber('item');
+
         Route::get('/games/hub', [GameHubController::class, 'index']);
         Route::get('/games/calendar', [GameController::class, 'calendar']);
         Route::get('/games/hidden-gems', [GameController::class, 'hiddenGems']);
