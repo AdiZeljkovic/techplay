@@ -691,6 +691,7 @@ Testovi koji čuvaju skupo naučene stvari:
 | `UserDataExportTest` | nijedan kredencijal ne izađe u preuzetoj datoteci |
 | `Gw2MasteryArithmeticTest` | potrošene mastery tačke se slažu sa onim što nalog prijavljuje |
 | `Gw2RecipeTreeTest` | zaliha se oduzme tačno jednom, ma kroz koliko grana materijal stigao |
+| `Gw2SessionPlanTest` | zadati budžet se ne prekoračuje; pravilo bez procjene nije besplatno |
 
 ---
 
@@ -1310,6 +1311,7 @@ Tabele:
 | `gw2_item_ledger` | sve što nalog ima, gdje god stoji |
 | `gw2_progress_events` | **razlika između dva čitanja** |
 | `gw2_rules` | šta savjetnik smije reći i kad — uredničko, ne kod |
+| `gw2_events` | vremena bosova i meta; **prazna**, puni je čovjek koji provjeri |
 
 ### Zašto raspored, a ne dugme
 
@@ -1452,6 +1454,7 @@ round-robin po domenu preko svih šest mjesta, ne samo prve tri.
 | `GET /api/v1/gw2/masteries` | sve trake po regiji, cijene nivoa, šta tačke dosežu |
 | `GET /api/v1/gw2/plan?item_id=&quantity=` | stablo izrade + spisak za nabavku |
 | `GET /api/v1/gw2/items?q=` | pretraga 74.265 predmeta, trigram |
+| `GET /api/v1/gw2/tonight?minutes=` | plan sesije, prioriteti, raspored |
 | `php artisan gw2:snapshot` | ispiše normalizovano stanje |
 | `php artisan gw2:advise --minutes=30 --avoid=vault` | ispiše savjete |
 
@@ -1612,6 +1615,69 @@ Trading post cijene su živi podaci s tržišta koje **ne preslikavamo**. Mockup
 nosi `prices: null`, a stranica to kaže rečenicom. Ovo je plan materijala, ne
 trošak.
 
+### „Tonight" — sesija iz preporuka koje već važe
+
+`SessionPlan` ne izmišlja ništa. Savjetnik je već odlučio šta vrijedi raditi i
+koliko je siguran; ovo samo **poredi podskup** da stane u vrijeme koje je igrač
+rekao. Planer koji bi generisao vlastite aktivnosti bio bi drugi savjetnik bez
+pravila ispod sebe.
+
+#### Minute su uređivačka procjena, i to piše u sučelju
+
+Mockup crta raspored: 0–10 trezor, 10–20 fractal, 20–35 hero point voz. **Ništa
+to ne računa** — igra ne prijavljuje trajanje ničega, a ljudi igraju različitom
+brzinom.
+
+Zato su procjene:
+
+- **rasponi**, ne brojke („oko 10–20 min" je tvrdnja iza koje neko može stati,
+  „10 min" nije)
+- na **pravilu** (`gw2_rules.minutes_low` / `minutes_high`), pa se ispravljaju
+  bez deploya
+- **nullable**: pravilo koje niko nije procijenio **nema sat pored sebe**, a ne
+  podrazumijevanih deset
+
+Budžet se puni **donjim krajem** raspona. Prekoračiti nečiji sat je gori kvar
+nego ne popuniti ga: veče sa viškom vremena je dobro veče, a plan kojem je
+trebalo devedeset minuta je plan koji se nije mogao ispratiti.
+
+Payload nosi `unaccounted` — koliko minuta ostaje neisplanirano — i to se
+**prikazuje**. Plan koji popuni 24 od 30 minuta govori nešto istinito o tome
+koliko zapravo znamo.
+
+Na testnom nalogu: 30 min → 24 isplanirano, 60 min → 54.
+
+#### Tri stanja sata, ne dva
+
+| Stanje | Šta se crta |
+|---|---|
+| ima budžet i procjenu | pozicija u sesiji, npr. `10–12 min` |
+| nema budžeta | **ništa** — procjena postoji, ali nema sesije u koju se stavlja (raspon se i dalje vidi kao čip) |
+| nema procjene | `no estimate` |
+
+Prva verzija je pisala „no estimate" i u srednjem slučaju, što je bilo netačno.
+
+#### Rasporedi bosova: mašinerija da, podaci ne
+
+`/v2/account/worldbosses` kaže **koje si ubio danas**, nikad kad sljedeći
+izlazi. **Rasporeda nema nigdje u API-ju.** Vremena jesu stvarna, fiksna i
+objavljena — ali su **vanjsko znanje**, a tabela prepisana po sjećanju je tačno
+ono što je ovaj alat svuda drugdje odbio.
+
+Zato: tabela `gw2_events` i Filament ekran postoje, a **tabela ide prazna**. Red
+stiže do čitaoca samo ako je **i objavljen i provjeren** (`verified_at` +
+`verified_source` — gdje je provjereno, da sljedeći ko posumnja ne kreće ispočetka).
+Dok redova nema, panel se **uopšte ne crta**.
+
+Pogrešno vrijeme izlaska šalje igrača na praznu mapu. Prazan panel je bolji kvar.
+
+#### Prioriteti su mjereni
+
+Trake sa desne strane nemaju nijedan izmišljen imenilac: AR se sabira iz nošenih
+infuzija protiv jedinog izvorno potvrđenog praga (150 za T4), oprema broji
+dvanaest slotova koji uopšte imaju ascended nivo, a mastery procenat je zbir nad
+kataloškim `point_cost`-ovima.
+
 ### Frontend — `/gw2`
 
 Klijentski, i to namjerno: sve na stranici je nečiji vlastiti nalog pročitan
@@ -1686,6 +1752,17 @@ komada). Mi ga ne biramo — vidi „Cilj imenuje igrač". I nema zlatnog zbira.
 Na testnom nalogu ta konkretna meta je ionako **već završena**: svih šest
 komada oklopa je ascended, a ono što fali su tri nakita (Ring2, Accessory1,
 Accessory2), koji se ne izrađuju receptom nego dolaze iz lovorika i valuta.
+
+#### `/gw2/tonight`
+
+Izbor vremena (30 min / 1 h / 2 h / bez limita), pa **vremenska osa** koraka,
+ispod nje „ako imaš duže", a sa strane mjereni prioriteti. Panel sa rasporedom
+događaja se crta tek kad neko unese i provjeri vremena.
+
+Tri stvari sa mockupa 4 nisu nacrtane: **„Potential Rewards Tonight"** (ikone
+nagrada koje ništa ne izvodi iz plana), **„Current Events"** dok tabela
+`gw2_events` ne dobije provjerene redove, i minutne brojke kao tvrdnje — ovdje
+su rasponi, i piše da su naši.
 
 ### Otvoreno
 
