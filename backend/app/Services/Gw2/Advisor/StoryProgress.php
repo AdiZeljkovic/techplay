@@ -140,12 +140,28 @@ class StoryProgress
                 continue;
             }
 
+            /*
+             * Whether a fraction would lie here.
+             *
+             * Filtering by race took "My Story" from 313 steps to 137, which is
+             * the reachable set for a Human. It still branches below that — by
+             * order, and by the biography choices made at creation — and the
+             * API exposes neither, so 49 of 137 would read as thirty-six per
+             * cent for a character who may well have finished their personal
+             * story.
+             *
+             * A season that branches reports steps seen and no denominator. A
+             * missing number is honest; a wrong one is not.
+             */
+            $branching = array_filter($rows, fn ($r) => $r['races'] !== []) !== [];
+
             $seasons[] = [
                 'name' => $season['name'] ?? '',
                 'order' => $season['order'] ?? 0,
                 'stories' => $rows,
                 'steps_seen' => array_sum(array_column($rows, 'steps_seen')),
-                'steps_total' => array_sum(array_column($rows, 'steps_total')),
+                'steps_total' => $branching ? null : array_sum(array_column($rows, 'steps_total')),
+                'branches' => $branching,
             ];
         }
 
