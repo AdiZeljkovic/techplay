@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Api\V1\Gw2PublicController;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Game;
@@ -743,13 +744,11 @@ class SitemapController extends Controller
          * join makes each page progressively more expensive to skip past and
          * the pattern is the one the games sitemap already uses.
          */
-        DB::table('gw2_items')
-            ->join('gw2_recipes', 'gw2_recipes.output_item_id', '=', 'gw2_items.id')
-            ->where('gw2_items.name', '!=', '')
-            ->whereNotNull('gw2_items.name')
-            ->distinct()
-            ->orderBy('gw2_items.id')
-            ->select(['gw2_items.id', 'gw2_items.name'])
+        // The same query the API pages, called through the same method so the
+        // sitemap cannot list a URL the index never reaches.
+        Gw2PublicController::craftableQuery()
+            ->orderBy('id')
+            ->select(['id', 'name'])
             ->each(function ($item) use (&$xml) {
                 $slug = trim(preg_replace('/-+/', '-', preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($item->name))), '-');
 

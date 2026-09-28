@@ -7,6 +7,7 @@ use App\Services\Gw2\Advisor\MasteryRegions;
 use App\Services\Gw2\Advisor\RecipeNode;
 use App\Services\Gw2\Advisor\RecipeTree;
 use App\Traits\ApiResponse;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -169,23 +170,19 @@ class Gw2PublicController extends Controller
             'type' => 'nullable|string|max:32',
         ]);
 
-        $query = DB::table('gw2_items')
-            ->join('gw2_recipes', 'gw2_recipes.output_item_id', '=', 'gw2_items.id')
-            ->where('gw2_items.name', '!=', '')
-            ->whereNotNull('gw2_items.name')
-            ->distinct();
+        $query = self::craftableQuery();
 
         if ($rarity = $request->string('rarity')->toString()) {
-            $query->where('gw2_items.rarity', $rarity);
+            $query->where('rarity', $rarity);
         }
 
         if ($type = $request->string('type')->toString()) {
-            $query->where('gw2_items.type', $type);
+            $query->where('type', $type);
         }
 
         $items = $query
-            ->orderBy('gw2_items.id')
-            ->paginate(100, ['gw2_items.id', 'gw2_items.name', 'gw2_items.rarity', 'gw2_items.type', 'gw2_items.icon']);
+            ->orderBy('id')
+            ->paginate(100, ['id', 'name', 'rarity', 'type', 'icon']);
 
         return $this->success([
             'items' => array_map(fn ($i) => [
@@ -203,6 +200,31 @@ class Gw2PublicController extends Controller
     }
 
     /**
+     * Items that have a recipe, counted exactly once.
+     *
+     * `whereExists` rather than a join with `distinct()`, and the difference is
+     * not style. 105 items in this catalogue have more than one recipe, and
+     * `paginate()` builds its total from `count(*)` over the joined rows before
+     * the distinct is applied — so a join reported 13,156 craftable items where
+     * there are 13,024, and therefore 132 pages where there are 131. The last
+     * page would have been empty, and the index page turns an empty page into a
+     * 404: a broken link inside our own pagination, pointed at by our own
+     * sitemap.
+     *
+     * The sitemap builds its list the same way for the same reason. The two have
+     * to agree by construction, not by both being written carefully.
+     */
+    public static function craftableQuery(): Builder
+    {
+        return DB::table('gw2_items')
+            ->whereExists(fn ($q) => $q->selectRaw('1')
+                ->from('gw2_recipes')
+                ->whereColumn('gw2_recipes.output_item_id', 'gw2_items.id'))
+            ->where('name', '!=', '')
+            ->whereNotNull('name');
+    }
+
+    /**
      * What this item goes into.
      *
      * The reason a materials page is worth reading on its own: somebody looking
@@ -213,10 +235,31 @@ class Gw2PublicController extends Controller
      */
     private function usedIn(int $itemId): array
     {
-        return DB::table('gw2_recipes')
+        $query = DB::table('gw2_recipes')
             ->join('gw2_items', 'gw2_items.id', '=', 'gw2_recipes.output_item_id')
-            ->whereRaw('gw2_recipes.ingredients @> ?::jsonb', [json_encode([['item_id' => $itemId]])])
-            ->where('gw2_items.name', '!=', '')
+            ->where('gw2_items.name', '!=', '');
+
+        /*
+         * Exact on both databases, each through its own facility.
+         *
+         * Production is PostgreSQL and `@>` is what `gw2_recipes_ingredients_gin`
+         * answers — 0.147 ms against 9.2 ms for the scan it replaced. The suite
+         * runs on SQLite, which has neither, so it walks the array with JSON1.
+         *
+         * What is deliberately *not* here is a LIKE on the serialised JSON. It
+         * would pass every test in this file and quietly match item 1000 when
+         * asked for item 100.
+         */
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $query->whereRaw('gw2_recipes.ingredients @> ?::jsonb', [json_encode([['item_id' => $itemId]])]);
+        } else {
+            $query->whereRaw(
+                "exists (select 1 from json_each(gw2_recipes.ingredients) je where json_extract(je.value, '$.item_id') = ?)",
+                [$itemId]
+            );
+        }
+
+        return $query
             ->orderBy('gw2_items.rarity')
             ->limit(24)
             ->get(['gw2_items.id', 'gw2_items.name', 'gw2_items.rarity', 'gw2_items.icon'])
