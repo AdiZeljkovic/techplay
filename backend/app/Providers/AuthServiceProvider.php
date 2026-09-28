@@ -17,8 +17,11 @@ use App\Models\Gta6Character;
 use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
 use App\Models\Guide;
+use App\Models\Gw2Achievement;
 use App\Models\Gw2Event;
+use App\Models\Gw2Goal;
 use App\Models\Gw2Rule;
+use App\Models\Gw2Source;
 use App\Models\HelpArticle;
 use App\Models\HelpCategory;
 use App\Models\MailCampaign;
@@ -88,6 +91,11 @@ class AuthServiceProvider extends ServiceProvider
         // Spawn times somebody has to check against the game. Editorial, same
         // as the rules: a wrong one sends a player to an empty map.
         Gw2Event::class => ContentPolicy::class,
+        // Curation: which achievements the advisor may speak confidently about,
+        // and which goals a player may pick. Editorial in the strictest sense.
+        Gw2Achievement::class => ContentPolicy::class,
+        Gw2Goal::class => ContentPolicy::class,
+        Gw2Source::class => ContentPolicy::class,
         HelpArticle::class => ContentPolicy::class,
         HelpCategory::class => ContentPolicy::class,
         Media::class => ContentPolicy::class,

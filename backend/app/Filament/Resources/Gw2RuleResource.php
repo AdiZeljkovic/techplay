@@ -3,7 +3,9 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\Gw2RuleResource\Pages;
+use App\Models\Gw2Goal;
 use App\Models\Gw2Rule;
+use App\Models\Gw2Source;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
 use App\Services\Gw2\Advisor\Producers\NearlyDoneAchievements;
@@ -147,6 +149,25 @@ class Gw2RuleResource extends Resource
                 ])
                 ->nullable()
                 ->helperText('Checked against what the account has demonstrably played, not against the API\'s access field — that field names the product bought, and omits Heart of Thorns for accounts that own it.'),
+
+            Forms\Components\Select::make('goals')
+                ->multiple()
+                ->options(fn () => Gw2Goal::query()->active()->orderBy('sort_order')->pluck('title', 'slug')->all())
+                ->helperText('Picking one of these adds 35 to the score of this rule — the largest single component there is. A rule may serve several: an ascended ring is a step towards a set and the gear an infusion sockets into.'),
+
+            Forms\Components\TextInput::make('owner')
+                ->maxLength(60)
+                ->helperText('Who answers for this rule. "seed" means it is a default nobody has adopted yet.'),
+
+            Forms\Components\Select::make('source_ids')
+                ->label('Sources')
+                ->multiple()
+                ->options(fn () => Gw2Source::query()->orderBy('label')->pluck('label', 'id')->all())
+                ->helperText('What this rule stands on. A wrong recommendation that cannot be traced is the risk §25 names first.'),
+
+            Forms\Components\TextInput::make('game_build')
+                ->numeric()
+                ->helperText('The build this was last judged against. A rule right in August can be wrong in September without anybody touching it.'),
 
             Forms\Components\Toggle::make('is_active')->default(true),
 

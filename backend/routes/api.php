@@ -249,6 +249,16 @@ Route::prefix('v1')->group(function () {
         Route::get('/gw2/masteries', [Gw2Controller::class, 'masteries']);
         Route::get('/gw2/tonight', [Gw2Controller::class, 'tonight']);
         Route::get('/gw2/content', [Gw2Controller::class, 'content']);
+
+        /*
+         * What the player tells us, as against what ArenaNet does. Pins persist
+         * a goal, the character overrides our guess, and a confirmation answers
+         * something the API cannot see.
+         */
+        Route::post('/gw2/pins', [Gw2Controller::class, 'pin']);
+        Route::delete('/gw2/pins/{goal}', [Gw2Controller::class, 'unpin']);
+        Route::put('/gw2/character', [Gw2Controller::class, 'chooseCharacter']);
+        Route::post('/gw2/confirm', [Gw2Controller::class, 'confirm']);
         Route::get('/gw2/plan', [Gw2Controller::class, 'plan']);
         Route::get('/gw2/items', [Gw2Controller::class, 'items']);
         Route::delete('/gw2/connection', [Gw2Controller::class, 'disconnect']);

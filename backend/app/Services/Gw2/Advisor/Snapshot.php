@@ -48,6 +48,7 @@ readonly class Snapshot
         public array $bossesToday,
         public array $dungeonPathsToday,
         public ?VaultView $vault,
+        public ?string $featuredCharacter,
         public ?string $observedAt,
         public ?string $lastFullSyncAt,
     ) {}
@@ -122,6 +123,19 @@ readonly class Snapshot
      */
     public function primaryCharacter(): ?CharacterView
     {
+        /*
+         * The player's choice beats the guess. Nothing in the API says which
+         * character somebody considers their main, so until they tell us we
+         * rank — and the moment they do, we stop.
+         */
+        if ($this->featuredCharacter !== null) {
+            foreach ($this->characters as $character) {
+                if ($character->name === $this->featuredCharacter) {
+                    return $character;
+                }
+            }
+        }
+
         $ranked = $this->characters;
 
         usort($ranked, fn (CharacterView $a, CharacterView $b) => [$b->level, $b->ascendedSlots] <=> [$a->level, $a->ascendedSlots]);

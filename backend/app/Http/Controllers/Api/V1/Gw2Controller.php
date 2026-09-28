@@ -8,6 +8,7 @@ use App\Models\ConnectedAccount;
 use App\Models\Gw2Goal;
 use App\Services\Gw2\Advisor\Dashboard;
 use App\Services\Gw2\Advisor\Intent;
+use App\Services\Gw2\Advisor\PlayerChoices;
 use App\Services\Gw2\Gw2Connection;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
@@ -32,6 +33,7 @@ class Gw2Controller extends Controller
     public function __construct(
         private readonly Gw2Connection $connections,
         private readonly Dashboard $dashboard,
+        private readonly PlayerChoices $choices,
     ) {}
 
     /**
@@ -232,6 +234,124 @@ class Gw2Controller extends Controller
         }
 
         return $this->success($payload);
+    }
+
+    /**
+     * POST|DELETE /gw2/pins
+     *
+     * Persist what somebody is working towards.
+     *
+     * §21 is explicit about why: *"Pinned goals: player returns to see the next
+     * blocker."* Without this the advisor forgets the moment a tab closes,
+     * which is the opposite of the loop the document is asking for.
+     */
+    public function pin(Request $request): JsonResponse
+    {
+        $request->validate([
+            'goal' => 'required|string|max:48',
+            'character' => 'nullable|string|max:64',
+        ]);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $ok = $this->choices->pin(
+            $accountId,
+            $request->string('goal')->toString(),
+            $request->string('character')->toString() ?: null
+        );
+
+        if (! $ok) {
+            return $this->error('No such goal.', 404);
+        }
+
+        return $this->success($this->choices->pins($accountId), 'Pinned.');
+    }
+
+    public function unpin(Request $request, string $goal): JsonResponse
+    {
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $this->choices->unpin($accountId, $goal);
+
+        return $this->success($this->choices->pins($accountId), 'Unpinned.');
+    }
+
+    /**
+     * PUT /gw2/character
+     *
+     * Which character the advisor should talk about.
+     *
+     * We rank by level and gear until told otherwise, which is a reasonable
+     * guess and still a guess — a veteran with fifteen characters has a main
+     * and nothing in the API says which.
+     */
+    public function chooseCharacter(Request $request): JsonResponse
+    {
+        $request->validate(['character' => 'nullable|string|max:64']);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $name = $request->string('character')->toString() ?: null;
+
+        // Null clears the choice and hands it back to the ranking, which is a
+        // thing somebody should be able to undo.
+        if ($name !== null && ! DB::table('gw2_characters')
+            ->where('gw2_account_id', $accountId)
+            ->where('name', $name)
+            ->exists()) {
+            return $this->error('That character is not on this account.', 422);
+        }
+
+        DB::table('gw2_accounts')->where('id', $accountId)->update([
+            'featured_character' => $name,
+            'updated_at' => now(),
+        ]);
+
+        return $this->success(['featured_character' => $name], $name ? 'Character chosen.' : 'Back to our pick.');
+    }
+
+    /**
+     * POST /gw2/confirm
+     *
+     * Answer something the API cannot see.
+     *
+     * §17.3: *"Unknown must be a first-class state. Use 'We cannot verify this
+     * from the API' with a small confirm control."*
+     */
+    public function confirm(Request $request): JsonResponse
+    {
+        $request->validate([
+            'subject' => 'required|string|max:160',
+            'answer' => 'required|in:yes,no,unsure',
+            'note' => 'nullable|string|max:500',
+        ]);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $this->choices->confirm(
+            $accountId,
+            $request->string('subject')->toString(),
+            $request->string('answer')->toString(),
+            $request->string('note')->toString() ?: null
+        );
+
+        return $this->success(null, 'Noted — thank you.');
     }
 
     /**

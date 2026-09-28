@@ -37,6 +37,7 @@ class Dashboard
     public function __construct(
         private readonly SnapshotReader $reader,
         private readonly Advisor $advisor,
+        private readonly PlayerChoices $choices,
     ) {}
 
     /**
@@ -72,7 +73,14 @@ class Dashboard
     {
         // Spelled once. Three places spelling an article cache key by hand is how
         // edits stopped reaching readers for an hour in August.
-        return "gw2:dashboard:{$snapshot->accountId}:".($snapshot->observedAt ?? 'never');
+        /*
+         * The pin is part of the answer, so it is part of the key. Without it a
+         * player who pins a goal keeps being served the cached advice from
+         * before they picked one.
+         */
+        $pin = $this->choices->defaultGoal($snapshot->accountId) ?? 'none';
+
+        return "gw2:dashboard:{$snapshot->accountId}:{$pin}:".($snapshot->observedAt ?? 'never');
     }
 
     /**
@@ -80,6 +88,21 @@ class Dashboard
      */
     private function build(Snapshot $snapshot, Intent $intent): array
     {
+        /*
+         * A pin is the goal the player already told us about. Falling back to
+         * it is the whole reason pinning exists — §21 wants somebody to return
+         * and see the next blocker, not to re-state their goal every visit.
+         */
+        $pins = $this->choices->pins($snapshot->accountId);
+
+        if ($intent->goal === null && $pins !== []) {
+            $intent = new Intent(
+                goal: $pins[0]['slug'],
+                minutes: $intent->minutes,
+                avoid: $intent->avoid,
+            );
+        }
+
         return [
             'account' => $this->account($snapshot),
             'cards' => [
@@ -91,6 +114,21 @@ class Dashboard
             ],
             'advice' => $this->advisor->advise($snapshot, $intent),
             'since_last_sync' => $this->delta($snapshot),
+            'pins' => $pins,
+            'goal_in_use' => $intent->goal,
+            /*
+             * The questions the API cannot answer, with whatever the player has
+             * already said. §17.3 makes unknown a first-class state, and a
+             * first-class state needs somewhere to be resolved.
+             */
+            'open_questions' => $this->choices->openQuestions($snapshot),
+            'characters' => array_map(fn (CharacterView $c) => [
+                'name' => $c->name,
+                'profession' => $c->profession,
+                'level' => $c->level,
+                'ascended_core' => $c->ascendedSlots,
+            ], $snapshot->characters),
+            'featured_character' => $snapshot->featuredCharacter,
         ];
     }
 

@@ -62,6 +62,7 @@ class SnapshotReader
             bossesToday: array_values($this->json($state->world_bosses ?? null)),
             dungeonPathsToday: array_values($this->json($state->dungeons ?? null)),
             vault: $this->vault($state),
+            featuredCharacter: $account->featured_character ?? null,
             observedAt: $state->observed_at ?? null,
             lastFullSyncAt: $account->last_full_sync_at ?? null,
         );
