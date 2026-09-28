@@ -123,35 +123,50 @@ class AuthHardeningTest extends TestCase
      * The refusal for an address nobody has registered has to cost the same as
      * the refusal for one that exists, or the difference answers the question
      * the identical wording refuses to.
+     *
+     * ── Why this counts hashes instead of timing them ──────────────────
+     *
+     * It used to measure wall-clock time and assert the unknown address took at
+     * least 35% as long. That failed roughly one run in three on a loaded
+     * machine — measured on 30 September 2026: two passes and a failure in
+     * three consecutive runs — and a test that cries wolf a third of the time
+     * is worse than no test, because people learn to scroll past red.
+     *
+     * The defence is not "takes a similar time", it is "does the same work":
+     * the login path hashes a throwaway value when the account does not exist,
+     * precisely so both branches pay for one bcrypt. Counting the hash is
+     * deterministic and checks the actual mechanism rather than its shadow.
      */
     #[Test]
     public function a_missing_account_still_pays_for_a_hash(): void
     {
         $this->member();
 
-        $known = $this->timeOf(fn () => $this->attempt('wrong-password'));
-        RateLimiter::clear('login:'.sha1('nobody@example.test|127.0.0.1'));
-        $unknown = $this->timeOf(function () {
-            $this->postJson('/api/v1/auth/login', [
-                'email' => 'nobody@example.test',
-                'password' => 'wrong-password',
-            ]);
+        $checks = 0;
+        Hash::shouldReceive('check')->andReturnUsing(function () use (&$checks) {
+            $checks++;
+
+            return false;
         });
+        Hash::shouldReceive('make')->andReturn('$2y$dummy');
+        Hash::shouldReceive('needsRehash')->andReturn(false);
 
-        // Generous, because CI timing is noisy — this catches the old shape,
-        // where the unknown address returned in a small fraction of the time.
-        $this->assertGreaterThan(
-            $known * 0.35,
-            $unknown,
-            'An address with no account answers far faster, which tells an attacker it has no account.'
+        $this->attempt('wrong-password');
+        $known = $checks;
+
+        RateLimiter::clear('login:'.sha1('nobody@example.test|127.0.0.1'));
+        $checks = 0;
+
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'nobody@example.test',
+            'password' => 'wrong-password',
+        ]);
+
+        $this->assertSame(1, $known, 'A real address should cost exactly one hash comparison.');
+        $this->assertSame(
+            $known,
+            $checks,
+            'An address with no account skipped the hash, which makes it answer faster and tells an attacker it has no account.'
         );
-    }
-
-    private function timeOf(callable $fn): float
-    {
-        $start = microtime(true);
-        $fn();
-
-        return microtime(true) - $start;
     }
 }
