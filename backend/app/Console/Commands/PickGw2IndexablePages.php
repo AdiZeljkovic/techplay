@@ -93,7 +93,14 @@ class PickGw2IndexablePages extends Command
 
             $set = 0;
 
-            foreach (array_chunk(array_keys($chosen), 1000, true) as $chunk) {
+            /*
+             * The map, not its keys. Chunking `array_keys($chosen)` gives
+             * chunks whose *values* are item ids, and the filter below then
+             * compares an item id against the string 'rarity' — which is never
+             * true, so the first run of this command set exactly nothing while
+             * reporting the right totals.
+             */
+            foreach (array_chunk($chosen, 1000, true) as $chunk) {
                 foreach (['rarity', 'material'] as $reason) {
                     $ids = array_keys(array_filter($chunk, fn ($r) => $r === $reason));
 
