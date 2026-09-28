@@ -230,6 +230,31 @@ class Gw2AdvisorTest extends TestCase
     }
 
     /**
+     * The game tells us which achievements are not nearly-complete candidates.
+     *
+     * `IgnoreNearlyComplete` is ArenaNet's own flag and it means exactly that.
+     * 744 achievements carry it, and this engine recommended them for as long
+     * as it existed. Curation catches them too, but a catalogue refresh adds
+     * new achievements and a new one with this flag has to be excluded the
+     * moment it arrives rather than when somebody gets round to reviewing it —
+     * so the reader applies it directly, unreviewed rows included.
+     */
+    public function test_an_achievement_the_game_flags_as_ignorable_is_never_offered(): void
+    {
+        DB::table('gw2_achievements')->where('id', 2)->update([
+            'flags' => json_encode(['Permanent', 'IgnoreNearlyComplete']),
+        ]);
+
+        $names = array_map(
+            fn ($win) => $win->name,
+            app(SnapshotReader::class)->for($this->accountId)->nearlyDone
+        );
+
+        $this->assertContains('Auric Basin Explorer', $names);
+        $this->assertNotContains('Bava Nisos Explorer', $names);
+    }
+
+    /**
      * A re-seed corrects a default and leaves an edited rule alone.
      *
      * Both halves matter. `firstOrCreate` on its own froze the defaults at

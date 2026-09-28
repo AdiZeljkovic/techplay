@@ -225,7 +225,7 @@ class SnapshotReader
 
         $catalogue = DB::table('gw2_achievements')
             ->whereIn('id', array_keys($candidates))
-            ->get(['id', 'name', 'requirement', 'advisor_eligible', 'effort_band', 'reviewed_at'])
+            ->get(['id', 'name', 'requirement', 'advisor_eligible', 'effort_band', 'reviewed_at', 'flags'])
             ->keyBy('id');
 
         $wins = [];
@@ -234,6 +234,21 @@ class SnapshotReader
             $meta = $catalogue[$id] ?? null;
 
             if ($meta && $meta->reviewed_at && ! $meta->advisor_eligible) {
+                continue;
+            }
+
+            /*
+             * The game's own answer, applied whether or not anybody has
+             * reviewed the row.
+             *
+             * `IgnoreNearlyComplete` means exactly "this is not a
+             * nearly-complete candidate" — 744 achievements carry it, and this
+             * engine recommended them for as long as it existed. Curation
+             * catches them too, but a catalogue refresh adds new achievements
+             * and a new one with this flag has to be excluded the moment it
+             * arrives, not when somebody gets round to it.
+             */
+            if ($meta && in_array('IgnoreNearlyComplete', $this->json($meta->flags), true)) {
                 continue;
             }
 
