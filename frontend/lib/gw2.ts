@@ -133,6 +133,60 @@ export interface Gw2Masteries {
     observed_at: string | null;
 }
 
+export interface Gw2ItemSummary {
+    id: number;
+    name: string;
+    rarity: string | null;
+    type: string | null;
+    level: number;
+    icon: string | null;
+}
+
+export interface PlanLine {
+    item_id: number;
+    name: string | null;
+    rarity: string | null;
+    icon: string | null;
+    needed: number;
+    owned: number;
+    missing: number;
+}
+
+export interface PlanNode extends PlanLine {
+    craftable: boolean;
+    disciplines: string[];
+    min_rating: number;
+    recipe_was_chosen: boolean;
+    depth: number;
+    children: PlanNode[];
+}
+
+export interface Gw2Plan {
+    target: Gw2ItemSummary & { item_id: number; quantity: number };
+    craftable: boolean;
+    already_have: number;
+    tree: PlanNode;
+    /**
+     * The part worth acting on — leaves only.
+     *
+     * Intermediates are interesting to look at and useless to shop for: nobody
+     * buys a steel ingot they are about to make out of ore they already have.
+     */
+    shopping_list: PlanLine[];
+    disciplines_used: string[];
+    /** Whether anybody on the account can make it, and at what rating. */
+    requires: { disciplines: string[]; min_rating: number; have_it: boolean } | null;
+    /**
+     * Always null, and the field exists to say so.
+     *
+     * Trading post prices are live market data we do not mirror, so the mockup's
+     * "18g 42s estimated remaining cost" would have been a number nobody
+     * computed. A materials plan is what this is.
+     */
+    prices: null;
+    observed_at: string | null;
+}
+
 export interface Gw2Dashboard {
     account: {
         name: string;
@@ -293,6 +347,22 @@ export async function getMasteries(): Promise<Gw2Masteries | null> {
     const { data } = await axiosInstance.get<Envelope<Gw2Masteries | null>>("/gw2/masteries");
 
     return data.data ?? null;
+}
+
+export async function searchItems(q: string): Promise<Gw2ItemSummary[]> {
+    const { data } = await axiosInstance.get<Envelope<Gw2ItemSummary[]>>(
+        `/gw2/items?q=${encodeURIComponent(q)}`
+    );
+
+    return data.data ?? [];
+}
+
+export async function getPlan(itemId: number, quantity = 1): Promise<Gw2Plan> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Plan>>(
+        `/gw2/plan?item_id=${itemId}&quantity=${quantity}`
+    );
+
+    return data.data;
 }
 
 export async function connectKey(apiKey: string): Promise<Gw2Connection> {

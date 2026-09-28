@@ -261,6 +261,15 @@ const nextConfig: NextConfig = {
         hostname: 'cdn.discordapp.com',
       },
       {
+        // ArenaNet's own asset CDN: every Guild Wars 2 item, achievement and
+        // mastery icon. Rendered with `unoptimized` at the call site, like the
+        // other CDNs here — they already serve sized, cached images, and
+        // proxying them through /_next/image would spend our bandwidth to gain
+        // nothing.
+        protocol: 'https',
+        hostname: 'render.guildwars2.com',
+      },
+      {
         protocol: 'https',
         hostname: '**.gravatar.com',
       },

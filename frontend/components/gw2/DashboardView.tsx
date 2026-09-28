@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Check, Compass, RefreshCw, Zap } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -87,6 +88,26 @@ export default function DashboardView({
     return (
         <div className="space-y-6">
             <StatCards dashboard={dashboard} />
+
+            {/* The two places a card sends you when its number is the one you
+                came to act on. Kept here rather than in the page shell so they
+                do not appear beside the connect form, where neither works. */}
+            <nav className="flex flex-wrap gap-2">
+                <Link
+                    href="/gw2/masteries"
+                    className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
+                    style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
+                >
+                    All masteries
+                </Link>
+                <Link
+                    href="/gw2/goals"
+                    className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
+                    style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
+                >
+                    Crafting planner
+                </Link>
+            </nav>
 
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="space-y-5">

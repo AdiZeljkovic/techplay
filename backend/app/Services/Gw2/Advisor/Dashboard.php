@@ -206,7 +206,17 @@ class Dashboard
             return null;
         }
 
-        $disciplines = $snapshot->primaryCharacter()?->craftingDisciplines ?? [];
+        /*
+         * Every character's disciplines, not the featured one's.
+         *
+         * Crafting is per character but an account is not: somebody with a
+         * Tailor and an Armorsmith can make either, and asking only the
+         * character the dashboard happens to feature would report a wall that
+         * is not there.
+         */
+        $disciplines = array_values(array_unique(array_merge(
+            ...array_map(fn (CharacterView $c) => $c->craftingDisciplines, $snapshot->characters)
+        )));
 
         $tree = app(RecipeTree::class);
         $root = $tree->plan($itemId, $quantity, $snapshot->owned, $disciplines);
@@ -239,6 +249,18 @@ class Dashboard
                 'missing' => $n->missing(),
             ], $list),
             'disciplines_used' => $disciplines,
+            /*
+             * Whether anybody on the account can actually make this.
+             *
+             * The test account is a Tailor and this is Armorsmith work, which is
+             * a real obstacle and the kind a materials list quietly implies is
+             * not there. Named rather than left for the crafting station.
+             */
+            'requires' => $root->craftable() ? [
+                'disciplines' => $root->disciplines,
+                'min_rating' => $root->minRating,
+                'have_it' => array_intersect($root->disciplines, $disciplines) !== [],
+            ] : null,
             /*
              * Said out loud rather than left to be assumed. This is a materials
              * plan, not a cost: trading post prices are live market data we do
