@@ -1,7 +1,12 @@
 # GW2 Progression Advisor — stanje naspram originalnog dokumenta
 
-Provjera od **28. 9. 2026**, protiv `TechPlay_GW2_Progression_Advisor_Working_Document_v1.docx`
-(28 sekcija), četiri mockupa i `ANALIZA-I-PLAN.md`.
+Prva provjera **28. 9. 2026**, protiv
+`TechPlay_GW2_Progression_Advisor_Working_Document_v1.docx` (28 sekcija), četiri
+mockupa i `ANALIZA-I-PLAN.md`.
+
+> **Ažurirano 29. 9. 2026.** Sve iz sekcije 8 ispod je odrađeno. Šta je tačno
+> urađeno piše u sekciji 10 na dnu; tekst iznad je ostavljen kakav je bio, jer
+> je to nalaz koji je odluke izazvao.
 
 Sve tvrdnje ispod su provjerene u kodu i na produkciji, ne po sjećanju. Gdje piše
 da nešto ne postoji — provjereno je grepom ili upitom nad bazom.
@@ -248,3 +253,113 @@ dvije stvari koje dokument izdvaja kao *defensible layer* (§22):
 
 Ontologija i verzionisana pravila postoje. **Kuracija i uređivačko vođenje još
 ne.**
+
+
+---
+
+## 10. Šta je urađeno 29. 9. 2026.
+
+Cijeli spisak iz sekcije 8, plus odluka o 13k stranica.
+
+### Odluka o indeksiranju — opcija 2, uz ispravku
+
+Mjerenje je promijenilo dio upute: **Exotic sam je 3.187 craftable predmeta**,
+pa „Ascended/Exotic + materijali" daje 5.738 i jedva suzuje išta.
+
+| Pravilo | Stranica |
+|---|---|
+| Ascended + Legendary | 1.904 |
+| **+ materijali u ≥50 recepata** | **1.990** ← odabrano |
+| + materijali u ≥20 recepata | 2.597 |
+| + Exotic | 5.738 |
+
+Prag ≥50 pogađa Glob of Ectoplasm (907 recepata), Vision Crystal (899),
+Crystalline Dust (280), Mithril Ingot (174).
+
+**Ostalo je `noindex, follow`**, i taj par je poenta: stranica van pregledanog
+skupa i dalje vrijedi puzati, jer su njeni linkovi način na koji se pregledane
+pronalaze. `noindex` bez `follow` bi presjekao graf.
+
+Zastavica je **podesiva** (`gw2:pick-indexable --materials=20`) i **pregaziva
+ručno** (`indexable_reviewed_at` — komanda ne dira red koji je čovjek pogledao).
+
+### `goal` radi
+
+Pet ciljeva u `gw2_goals`, pravilo imenuje koje unapređuje, izbor dodaje **+35**
+— najveća pojedinačna komponenta po §8.2. Bonus se dodaje **prije** množitelja
+pouzdanosti, da siguran relevantan nadmaši sigurnog nerelevantnog, a nesiguran
+relevantan ne preskoči sigurnog.
+
+Namjerno **nisu** dodata dva cilja koje §9 imenuje (mounts, story): nema grafa
+nabavke ni detektora priče, pa bi to bio izbor koji motor ignoriše — tačno kvar
+koji se ovdje popravlja.
+
+### Porijeklo pravila
+
+`gw2_rules` je dobio `owner`, `source_ids`, `game_build`. Registar izvora je
+`gw2_sources` (§18.2), sa `checked_at` — jer izvor nije citat nego stvar koja
+može zastariti, a wiki link koji niko nije otvorio od zadnje zakrpe izgleda kao
+temeljitost a nije.
+
+### Pin, lik, potvrda
+
+| | |
+|---|---|
+| **Pin** (§21, §26.5) | `gw2_user_goals`; dashboard pada nazad na pin, i **pin je dio keš ključa** — inače bi se posluživao savjet od prije izbora |
+| **Lik** (§26.2) | `featured_character` gazi naše rangiranje; brisanje vraća izbor nama |
+| **Potvrda** (§17.3) | `gw2_confirmations`; `unsure` je pravi odgovor i pamti se, jer to je razlika između alata koji sluša i onog koji davi. Svaki odgovor nosi `source: player` |
+
+Otvoreno pitanje je zasad jedno i dokumentovo je vlastito (§5):
+`/characters/:id/training` vraća prazno uvijek, pa slotovana elite spec dokazuje
+da je upotrebljiva i ne dokazuje da je trening završen.
+
+### Kuracija postignuća
+
+`/admin/gw2-achievements`, sa **grupnim** odobri/isključi — pregledati 8.339
+redova jedan po jedan nije plan, a zanimljive odluke su isključenja i njih je
+malo. Značka u navigaciji broji nepregledane.
+
+### Javni uređivački sistem
+
+`gw2_guides` + `/admin/gw2-guides` + jedna dinamička ruta `/gw2/[family]/[slug]`
+koja opslužuje svih devet familija iz §20.1.
+
+**`personalise_as`** je ono što ovo čini više od bloga: vodič imenuje šta čitaočev
+nalog dodaje (`agony`, `masteries`, `next-steps`…), a **klijentsko ostrvo** to
+dovuče. Za odjavljenog se ne crta **ništa** — ni zid za prijavu ni prazna kutija.
+
+Dva vodiča **napisana**, ne devet zasijanih: `level-80/what-next` i
+`fractals/agony-resistance`, dva koja §20.1 izdvaja kao glavne ulaze. Sedam
+punjenja pod stvarnim URL-ovima bio bi tanak sadržaj koji §20.2 zabranjuje.
+
+Provjereno kako ih puzač vidi: `<h1>`, tijelo, pet `<h2>`, `index, follow`,
+kanonik.
+
+### Usput
+
+`/gw2/goals` → **`/gw2/planner`** (301 u tabeli preusmjerenja). „Goals" sada
+znači prikačene ciljeve; dva značenja pod jednom putanjom čitaju se dobro
+nedjelju dana pa koštaju popodne.
+
+### Tri greške uhvaćene u ovoj rundi
+
+1. **Komanda za indeksiranje upisala nula redova** dok je prijavljivala tačne
+   zbirove — `array_chunk(array_keys(...))` daje komade čije su *vrijednosti*
+   id-jevi, pa se id poredio sa riječju „rarity".
+2. **Keš ključ je nosio build igre, ne verziju našeg payloada** — dodavanje polja
+   `indexable` promijenilo je svaki payload i poništilo nijedan.
+3. **Zastavica, a ne craftability, je autoritet** — 86 pregledanih materijala
+   nema vlastiti recept, pa je 26 stranica bilo označeno `index` a nije bilo
+   nigdje imenovano.
+
+### Šta i dalje fali
+
+Redom iz dokumenta, ništa od ovoga nije počelo:
+
+- **Story modul** (§16) — `/characters/:id/quests` se ne čita
+- **Legendary planer** (§14) — dokument ga i sam stavlja u Phase 3
+- **TP cijene** (§13.2) — `prices: null`, i stranica to kaže
+- **Mount goal engine** (§9.5) — otključanja čitamo, graf nabavke ne postoji
+- **Sedam preostalih familija vodiča** — sistem postoji, tekstovi ne
+- **Kuracija** — ekran postoji, prvih sto redova čeka čovjeka
+- **Vremena bosova** — ekran postoji, tabela prazna dok neko ne provjeri
