@@ -51,6 +51,13 @@ class Gw2PublicPagesTest extends TestCase
 
         // A recipe whose output has no name at all.
         $this->recipe(4, 400, [[300, 1]]);
+
+        /*
+         * Both craftables reviewed, so the tests about counting are about
+         * counting. The one test that cares about the reviewed subset narrows
+         * it itself.
+         */
+        DB::table('gw2_items')->whereIn('id', [100, 200])->update(['is_indexable' => true]);
     }
 
     public function test_an_item_with_two_recipes_is_counted_once(): void
@@ -81,6 +88,25 @@ class Gw2PublicPagesTest extends TestCase
         // item with no name.
         $this->assertSame(['100-ascended-chestpiece', '200-deldrimor-steel-ingot'], $matches[1]);
         $this->assertStringContainsString('/gw2/database/masteries</loc>', $body);
+    }
+
+    public function test_only_a_reviewed_page_is_advertised_but_all_of_them_are_reachable(): void
+    {
+        // Narrow to one of the two.
+        DB::table('gw2_items')->where('id', 200)->update(['is_indexable' => false]);
+
+        // The browse index and the sitemap offer only that one...
+        $this->assertSame(1, $this->getJson('/api/v1/gw2/public/craftable')->json('data.total'));
+
+        $sitemap = $this->get('/sitemap-gw2.xml')->assertOk()->getContent();
+        $this->assertStringContainsString('/gw2/database/crafting/100-', $sitemap);
+        $this->assertStringNotContainsString('/gw2/database/crafting/200-', $sitemap);
+
+        // ...while both pages still answer, and each says which it is. A page
+        // outside the reviewed set is noindex, follow: its links are how the
+        // reviewed ones get found, so cutting the crawl would defeat the point.
+        $this->assertTrue($this->getJson('/api/v1/gw2/public/recipe/100')->json('data.indexable'));
+        $this->assertFalse($this->getJson('/api/v1/gw2/public/recipe/200')->assertOk()->json('data.indexable'));
     }
 
     public function test_a_recipe_page_carries_the_tree_and_what_the_item_goes_into(): void

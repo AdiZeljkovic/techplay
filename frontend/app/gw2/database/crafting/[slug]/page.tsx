@@ -73,6 +73,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
             // unique in this catalogue, so the id is the identity.
             canonical: craftingHref(item.id, item.slug),
         },
+        /*
+         * `follow` either way, and that is the point of the pair.
+         *
+         * A page outside the reviewed set is still worth crawling — its links
+         * into the rest of the graph are how the reviewed pages get found — it
+         * is simply not worth asking Google to rank. noindex without follow
+         * would cut the graph; index on all thirteen thousand is the thing the
+         * working document warns about twice.
+         */
+        robots: recipe.indexable ? { index: true, follow: true } : { index: false, follow: true },
         openGraph: {
             title: `${item.name} — what it takes to craft`,
             description,

@@ -53,7 +53,7 @@ class Gw2PublicController extends Controller
             $this->key("recipe:{$item}"),
             self::TTL,
             function () use ($item) {
-                $row = DB::table('gw2_items')->where('id', $item)->first(['id', 'name', 'rarity', 'type', 'level', 'icon', 'details']);
+                $row = DB::table('gw2_items')->where('id', $item)->first(['id', 'name', 'rarity', 'type', 'level', 'icon', 'details', 'is_indexable']);
 
                 if (! $row || $row->name === '' || $row->name === null) {
                     // 103 rows in this catalogue have an empty name. They are
@@ -75,6 +75,17 @@ class Gw2PublicController extends Controller
                         'icon' => $row->icon,
                     ],
                     'craftable' => $root->craftable(),
+                    /*
+                     * Whether Google should be told about this page.
+                     *
+                     * Every page stays reachable — the material tree and the
+                     * "used in" links are the graph a crawler walks — but only a
+                     * reviewed subset is indexed. §20.2 of the working document
+                     * asks for reviewed data rather than thousands of generated
+                     * pages, and thirteen thousand unreviewed ones is the thing
+                     * it names.
+                     */
+                    'indexable' => (bool) $row->is_indexable,
                     'requires' => $root->craftable() ? [
                         'disciplines' => $root->disciplines,
                         'min_rating' => $root->minRating,
@@ -181,6 +192,9 @@ class Gw2PublicController extends Controller
         }
 
         $items = $query
+            // The browse index offers what the sitemap offers. Anything else
+            // is reachable by link and simply not advertised.
+            ->where('is_indexable', true)
             ->orderBy('id')
             ->paginate(100, ['id', 'name', 'rarity', 'type', 'icon']);
 
@@ -214,9 +228,10 @@ class Gw2PublicController extends Controller
      * The sitemap builds its list the same way for the same reason. The two have
      * to agree by construction, not by both being written carefully.
      */
-    public static function craftableQuery(): Builder
+    public static function craftableQuery(bool $indexableOnly = false): Builder
     {
         return DB::table('gw2_items')
+            ->when($indexableOnly, fn ($q) => $q->where('is_indexable', true))
             ->whereExists(fn ($q) => $q->selectRaw('1')
                 ->from('gw2_recipes')
                 ->whereColumn('gw2_recipes.output_item_id', 'gw2_items.id'))

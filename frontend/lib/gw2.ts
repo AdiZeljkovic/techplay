@@ -311,6 +311,16 @@ export interface PublicMaterial {
 export interface PublicRecipe {
     item: Gw2ItemSummary & { item_id?: number; slug: string };
     craftable: boolean;
+    /**
+     * Whether Google should be told about this page.
+     *
+     * All 13,024 stay reachable — the material tree and the "used in" links are
+     * the graph a crawler walks — but only a reviewed subset is indexed. The
+     * working document asks for reviewed data rather than thousands of
+     * generated pages, and thirteen thousand unreviewed ones is the thing it
+     * names.
+     */
+    indexable: boolean;
     requires: { disciplines: string[]; min_rating: number } | null;
     tree: PlanNode;
     materials: PublicMaterial[];

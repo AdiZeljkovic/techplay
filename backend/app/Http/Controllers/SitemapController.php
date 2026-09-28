@@ -744,9 +744,14 @@ class SitemapController extends Controller
          * join makes each page progressively more expensive to skip past and
          * the pattern is the one the games sitemap already uses.
          */
-        // The same query the API pages, called through the same method so the
-        // sitemap cannot list a URL the index never reaches.
-        Gw2PublicController::craftableQuery()
+        /*
+         * The same query the API pages, called through the same method so the
+         * sitemap cannot list a URL the index never reaches — and narrowed to
+         * the reviewed set, because a sitemap is a request to index rather than
+         * a map of what exists. Everything else stays reachable and crawlable;
+         * it is simply `noindex, follow`.
+         */
+        Gw2PublicController::craftableQuery(indexableOnly: true)
             ->orderBy('id')
             ->select(['id', 'name'])
             ->each(function ($item) use (&$xml) {
