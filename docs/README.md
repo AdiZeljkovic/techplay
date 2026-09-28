@@ -611,6 +611,45 @@ techplay-deploy.sh --no-pull    # kad je već povučeno
 
 Sa Windowsa: `./deployment/push_and_deploy.ps1`.
 
+### Frontend build je na ivici memorije — i ne kaže to
+
+Mašina je aarch64 sa 7,5 GB RAM-a i **2 GB swapa koji je hronično pun**. Kad
+swap nestane, svaki skok ide pravo na OOM killer, a `next build` ga zna izazvati.
+
+Greška **ne izgleda** kao memorijska. 28.09.2026. je prvi pad glasio:
+
+```
+CssSyntaxError: tailwindcss: app/globals.css:2:53664: Missed semicolon
+```
+
+`globals.css` ima 1187 linija i linija 2 je 78 znakova — pozicija je unutar
+*proširenog* Tailwind izlaza, a ne u izvoru. Tek drugi pokušaj je rekao istinu:
+`postcss` potproces ubijen signalom 9. Potvrda je `dmesg -T | grep -i oom-kill`.
+
+**Ako frontend build padne s čudnom greškom u loaderu ili CSS-u, prvo `free -h`
+i `dmesg | grep oom`, pa tek onda kod.**
+
+Privremeni swap samo za build:
+
+```bash
+fallocate -l 6G /swapfile.build && chmod 600 /swapfile.build
+mkswap -q /swapfile.build && swapon /swapfile.build
+techplay-deploy.sh frontend --no-pull
+swapoff /swapfile.build && rm -f /swapfile.build
+```
+
+### Snimak `.next` prije rizičnog builda
+
+`deploy_frontend.sh` ima `set -euo pipefail`, ali `next build` piše u `.next`
+**u mjestu** — pad na pola ostavlja živi build u polustanju, a sajt to ne
+pokaže dok se proces ne restartuje. Hardlink snimak košta ništa:
+
+```bash
+cd /var/www/techplay/frontend && rm -rf .next.prev && cp -al .next .next.prev
+# ako build padne:
+rm -rf .next && mv .next.prev .next && chown -R techplay:techplay .next
+```
+
 Skripta radi, redom: `git pull` kao root → **vraćanje vlasništva** → migracije →
 `config:cache`, `route:cache`, `view:cache` → `env:validate` → **mapa obrisanih
 igara** → logrotate → build fronta → restart procesa → čišćenje nginx keša za
