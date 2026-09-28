@@ -20,6 +20,7 @@ use App\Models\Guide;
 use App\Models\Gw2Achievement;
 use App\Models\Gw2Event;
 use App\Models\Gw2Goal;
+use App\Models\Gw2Guide;
 use App\Models\Gw2Rule;
 use App\Models\Gw2Source;
 use App\Models\HelpArticle;
@@ -95,6 +96,7 @@ class AuthServiceProvider extends ServiceProvider
         // and which goals a player may pick. Editorial in the strictest sense.
         Gw2Achievement::class => ContentPolicy::class,
         Gw2Goal::class => ContentPolicy::class,
+        Gw2Guide::class => ContentPolicy::class,
         Gw2Source::class => ContentPolicy::class,
         HelpArticle::class => ContentPolicy::class,
         HelpCategory::class => ContentPolicy::class,

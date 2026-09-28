@@ -7,6 +7,7 @@ use App\Jobs\SyncGw2Account;
 use App\Models\ConnectedAccount;
 use App\Models\Gw2Goal;
 use App\Services\Gw2\Advisor\Dashboard;
+use App\Services\Gw2\Advisor\GuidePersonalisation;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\PlayerChoices;
 use App\Services\Gw2\Gw2Connection;
@@ -352,6 +353,29 @@ class Gw2Controller extends Controller
         );
 
         return $this->success(null, 'Noted — thank you.');
+    }
+
+    /**
+     * GET /gw2/personalise/{key}
+     *
+     * What this reader's own account adds to a public guide.
+     *
+     * Deliberately separate from the guide itself. The guide is cached for
+     * everyone and has to be complete without this; the figures here are one
+     * person's and cannot live in a shared cache.
+     */
+    public function personalise(Request $request, string $key): JsonResponse
+    {
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            // Not an error. A signed-in reader with no Guild Wars 2 account
+            // connected sees the guide exactly as a stranger does, which is
+            // what it was written for.
+            return $this->success(null);
+        }
+
+        return $this->success(app(GuidePersonalisation::class)->for($key, $accountId));
     }
 
     /**

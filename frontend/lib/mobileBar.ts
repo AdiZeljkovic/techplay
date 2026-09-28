@@ -56,7 +56,7 @@ const LABELS: Array<[string, string, string]> = [
     ["/wow-analyzer", "WoW Analyzer", "/"],
     ["/gw2", "GW2 Advisor", "/"],
     ["/gw2/masteries", "Masteries", "/gw2"],
-    ["/gw2/goals", "Crafting planner", "/gw2"],
+    ["/gw2/planner", "Crafting planner", "/gw2"],
     ["/gw2/tonight", "Tonight", "/gw2"],
     ["/gw2/content", "Raids & bosses", "/gw2"],
     ["/backlog-advisor", "Backlog Advisor", "/"],

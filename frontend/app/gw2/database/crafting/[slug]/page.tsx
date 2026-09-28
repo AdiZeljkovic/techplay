@@ -178,7 +178,7 @@ export default async function CraftingPage({ params }: Params) {
                                     style={{ borderColor: "var(--line)" }}
                                 >
                                     This is the whole tree with nothing subtracted.{" "}
-                                    <Link href="/gw2/goals" className="text-[var(--accent-ink)] hover:underline">
+                                    <Link href="/gw2/planner" className="text-[var(--accent-ink)] hover:underline">
                                         Connect your account
                                     </Link>{" "}
                                     and we take off what is already in your bank, your material storage and

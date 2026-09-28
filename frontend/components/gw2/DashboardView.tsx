@@ -115,7 +115,7 @@ export default function DashboardView({
                     Tonight
                 </Link>
                 <Link
-                    href="/gw2/goals"
+                    href="/gw2/planner"
                     className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
                     style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
                 >

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Gw2Guide;
 use App\Services\Gw2\Advisor\MasteryRegions;
 use App\Services\Gw2\Advisor\RecipeNode;
 use App\Services\Gw2\Advisor\RecipeTree;
@@ -173,6 +174,82 @@ class Gw2PublicController extends Controller
 
             return array_values($regions);
         }));
+    }
+
+    /**
+     * GET /gw2/public/guides
+     *
+     * Every published guide, for the index and the sitemap.
+     */
+    public function guides(): JsonResponse
+    {
+        return $this->success(Cache::remember($this->key('guides'), self::TTL, fn () => Gw2Guide::query()
+            ->published()
+            ->orderBy('family')
+            ->orderBy('sort_order')
+            ->get(['family', 'slug', 'title', 'standfirst', 'hero_image', 'updated_at'])
+            ->map(fn (Gw2Guide $g) => [
+                'family' => $g->family,
+                'slug' => $g->slug,
+                'title' => $g->title,
+                'standfirst' => $g->standfirst,
+                'hero_image' => $g->hero_image,
+                'path' => $g->path(),
+                'updated_at' => $g->updated_at?->toIso8601String(),
+            ])
+            ->all()));
+    }
+
+    /**
+     * GET /gw2/public/guides/{family}/{slug}
+     *
+     * One guide, with no account attached. The personalised half is a separate,
+     * authenticated call — this one has to be complete on its own, because
+     * §20.2 requires the page to be useful without a key and because a page
+     * that is empty for a crawler cannot rank.
+     */
+    public function guide(string $family, string $slug): JsonResponse
+    {
+        $payload = Cache::remember(
+            $this->key("guide:{$family}:{$slug}"),
+            self::TTL,
+            function () use ($family, $slug) {
+                $guide = Gw2Guide::query()->published()->where('family', $family)->where('slug', $slug)->first();
+
+                if (! $guide) {
+                    return null;
+                }
+
+                return [
+                    'family' => $guide->family,
+                    'slug' => $guide->slug,
+                    'path' => $guide->path(),
+                    'title' => $guide->title,
+                    'standfirst' => $guide->standfirst,
+                    'body' => $guide->body,
+                    'hero_image' => $guide->hero_image,
+                    'next_steps' => $guide->next_steps ?? [],
+                    /*
+                     * Named, not resolved. The figures behind it are somebody's
+                     * own account and cannot be in a page cached for everyone.
+                     */
+                    'personalise_as' => $guide->personalise_as,
+                    'seo' => [
+                        'title' => $guide->seo_title ?: $guide->title,
+                        'description' => $guide->seo_description ?: $guide->standfirst,
+                        'keywords' => $guide->keywords ?? [],
+                    ],
+                    'reviewed_at' => $guide->reviewed_at?->toIso8601String(),
+                    'updated_at' => $guide->updated_at?->toIso8601String(),
+                ];
+            }
+        );
+
+        if (! $payload) {
+            return $this->error('No such guide.', 404);
+        }
+
+        return $this->success($payload);
     }
 
     /**

@@ -739,6 +739,30 @@ class SitemapController extends Controller
         }
 
         /*
+         * The editorial guides first and highest.
+         *
+         * §20 calls these the acquisition model — public pages that personalise
+         * after connection — and the recipe pages below are a reference. A
+         * priority is only a hint, but the ordering says which of the two this
+         * section is actually for.
+         */
+        if (Schema::hasTable('gw2_guides')) {
+            DB::table('gw2_guides')
+                ->where('is_published', true)
+                ->orderBy('family')
+                ->orderBy('sort_order')
+                ->get(['family', 'slug', 'updated_at'])
+                ->each(function ($guide) use (&$xml) {
+                    $xml .= $this->urlEntry(
+                        "{$this->frontendUrl}/gw2/{$guide->family}/{$guide->slug}",
+                        $guide->updated_at ? Carbon::parse($guide->updated_at)->toIso8601String() : null,
+                        'monthly',
+                        '0.8'
+                    );
+                });
+        }
+
+        /*
          * Walked in id order with a cursor rather than by OFFSET. Thirteen
          * thousand rows is not enough for that to matter on its own, but the
          * join makes each page progressively more expensive to skip past and

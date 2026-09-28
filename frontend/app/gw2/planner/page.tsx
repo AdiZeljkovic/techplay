@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     ],
     // Somebody's own inventory. Nothing here renders for a signed-out crawler.
     robots: { index: false, follow: true },
-    alternates: { canonical: "/gw2/goals" },
+    alternates: { canonical: "/gw2/planner" },
 };
 
 export default function Gw2GoalsPage() {

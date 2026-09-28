@@ -87,6 +87,37 @@ export function itemIdFromSlug(segment: string): number | null {
     return Number.isFinite(id) && id > 0 ? id : null;
 }
 
+export interface PublicGuide {
+    family: string;
+    slug: string;
+    path: string;
+    title: string;
+    standfirst: string | null;
+    body: string | null;
+    hero_image: string | null;
+    next_steps: Record<string, string>;
+    /**
+     * What the reader's own account adds, named rather than resolved.
+     *
+     * The figures behind it are one person's and cannot sit in a page cached
+     * for everyone, so the guide carries the key and a client island fetches
+     * the rest. The guide has to read correctly without it — §20.2, and also
+     * simple arithmetic: a page that is empty for a crawler cannot rank.
+     */
+    personalise_as: string | null;
+    seo: { title: string; description: string | null; keywords: string[] };
+    reviewed_at: string | null;
+    updated_at: string | null;
+}
+
+export function getGuide(family: string, slug: string): Promise<PublicGuide | null> {
+    return read<PublicGuide>(`/gw2/public/guides/${encodeURIComponent(family)}/${encodeURIComponent(slug)}`, 3600);
+}
+
+export function getGuides(): Promise<{ family: string; slug: string; title: string; standfirst: string | null; path: string; updated_at: string | null }[] | null> {
+    return read("/gw2/public/guides", 3600);
+}
+
 export function regionHref(region: string): string {
     return `/gw2/database/masteries/${region.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 }

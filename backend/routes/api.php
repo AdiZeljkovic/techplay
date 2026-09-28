@@ -259,6 +259,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/gw2/pins/{goal}', [Gw2Controller::class, 'unpin']);
         Route::put('/gw2/character', [Gw2Controller::class, 'chooseCharacter']);
         Route::post('/gw2/confirm', [Gw2Controller::class, 'confirm']);
+        Route::get('/gw2/personalise/{key}', [Gw2Controller::class, 'personalise']);
         Route::get('/gw2/plan', [Gw2Controller::class, 'plan']);
         Route::get('/gw2/items', [Gw2Controller::class, 'items']);
         Route::delete('/gw2/connection', [Gw2Controller::class, 'disconnect']);
@@ -724,6 +725,8 @@ Route::prefix('v1')->group(function () {
         // The goal picker is public: it is half the product's promise and
         // should be readable before anybody connects a key.
         Route::get('/gw2/goals', [Gw2Controller::class, 'goals']);
+        Route::get('/gw2/public/guides', [Gw2PublicController::class, 'guides']);
+        Route::get('/gw2/public/guides/{family}/{slug}', [Gw2PublicController::class, 'guide']);
         Route::get('/gw2/public/masteries', [Gw2PublicController::class, 'masteries']);
         Route::get('/gw2/public/craftable', [Gw2PublicController::class, 'craftable']);
         Route::get('/gw2/public/recipe/{item}', [Gw2PublicController::class, 'recipe'])
