@@ -688,6 +688,7 @@ Testovi koji čuvaju skupo naučene stvari:
 | `AboutPageTellsTheTruthTest` | brojke na /about se broje, ne pamte |
 | `Gw2ConnectionTest` | GW2 ključ ne izađe u odgovoru; brzi prolaz ne prebriše puni |
 | `Gw2AdvisorTest` | `access` nije istina o ekspanzijama; alati za branje nisu ascended slotovi |
+| `UserDataExportTest` | nijedan kredencijal ne izađe u preuzetoj datoteci |
 
 ---
 
@@ -891,6 +892,26 @@ ovdje koji se ne smije micati. Rješenje je provjeriti postoji li red i onda
 `last_full_sync_at` je dolazio sa sirovog query builder reda, kao string koji je
 PostgreSQL zapisao. Tako natpis „sinhronizovano prije 2 sata" promaši za dva
 sata. Sirovi redovi se moraju `Carbon::parse`-ovati prije nego odu klijentu.
+
+### Izvoz podataka čita query builderom, pa `$hidden` na modelu ne radi ništa
+
+`UserDataExportService` vuče redove sa `DB::table(...)->get()`. Eloquentov
+`$hidden` se tu **ne primjenjuje**, pa su `connected_accounts` i
+`user_integrations` slali `access_token` i `refresh_token` u preuzetu datoteku.
+
+Šifrovano, pa nije odmah upotrebljivo — ali šifrat tuđih Steam, Discord i GW2
+kredencijala nije njegov da mu se preda u zipu, i ostaje dešifrabilan dokle god
+je `APP_KEY` isti.
+
+Rješenje je `SECRET_BY_TABLE` u servisu. Test provjerava **cijeli serijalizovani
+dokument**, ne imenovane ključeve, jer sljedeća tabela s tokenom neće biti ove
+dvije.
+
+Uz to: `UserDataExportTest` skenira kolone (`user_id`, `author_id`, `sender_id`)
+i pada kad neka tabela nije klasifikovana. GW2 tabele osim `gw2_accounts` vise o
+`gw2_account_id`, pa ih skener **ne vidi** — zato su u `EXPORTED_VIA`, ručno.
+`gw2_progress_history` je tu najvažniji: GW2 API nema lifetime pregled raidova ni
+svjetskih bosova, pa su ti redovi jedini primjerak te historije koji postoji.
 
 ## 17. Šta nije ono što izgleda
 
@@ -1444,6 +1465,54 @@ naloga. Dva od njih su prvo bila napisana **pogrešno**: prolazila su i kad se
 popravka ukloni, jer ih je štitila nepovezana granica (kapa od 2 po cilju,
 odnosno fixture sa manje kandidata nego mjesta). Prepisani su i onda dokazani
 lomljenjem popravke.
+
+### Frontend — `/gw2`
+
+Klijentski, i to namjerno: sve na stranici je nečiji vlastiti nalog pročitan
+ključem koji je samo on dao. Nema šta da se server-renderuje za pretraživač i
+nema šta da se keširа između posjetilaca, pa je stranica `noindex`. **Javne,
+indeksabilne stranice alata tek treba napraviti** — one su motor dolaska, ova
+nije.
+
+Četiri stanja, i treće se najlakše promaši:
+
+| Stanje | Šta se crta |
+|---|---|
+| odjavljen | poziv na prijavu |
+| bez veze | forma za ključ |
+| **čita** | „čitamo tvoj nalog, traje pola minute" |
+| spreman | dashboard |
+
+„Čita" postoji jer **ništa na stranici ne zove ArenaNet dok neko čeka**. Čitanje
+je posao u redu; tih pola minute pošteno je napisati rečenicu, a ne nacrtati
+prazan dashboard koji izgleda pokvareno.
+
+#### Šta je iz mockupa uzeto, a šta nije
+
+Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:
+
+| Mockup | Šta se crta umjesto toga |
+|---|---|
+| „Mastery Progress 73%" | nepotrošene tačke **po regiji** — tačke su zaključane za regiju, zbir po nalogu mjeri veličinu koja ne postoji |
+| „2.847 AP, 48% complete" | broj postignuća na jedan korak od kraja |
+| „Fractal Level 37 · Tier 4" | nivo i AR cilj; tier se ne imenuje |
+| „Tonight in GW2" (plan po minutima) | **šta je stvarno otvoreno u trezoru** — dolazi s vlastitim naslovima, ciljevima i acclaimom |
+
+Zbirnog skora nema nigdje.
+
+**Blokirane preporuke se crtaju, ne skrivaju.** „Infuzije ulaze samo u ascended
+opremu" je rečenica koja spašava veče; samo se rangira ispod nečega što igrač
+može odmah uraditi.
+
+#### Ključ
+
+Ide u **tijelo** zahtjeva, nikad u query string, i briše se iz stanja komponente
+čim je prihvaćen. Ekran za povezivanje imenuje šta svaka dozvola kupuje, pa neko
+ko ne želi dijeliti inventar može tu razmjenu napraviti svjesno i i dalje dobiti
+savjetnik koji radi.
+
+Registrovan u `lib/tools.ts` (čitaju ga i header dropdown i `/tools`), plus
+`lib/mobileBar.ts` i `MoreSheet.tsx`.
 
 ### Otvoreno
 
