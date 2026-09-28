@@ -300,6 +300,22 @@ class CatalogueSync
      */
     private function upsert(string $table, array $rows, array $update, array $by = ['id']): int
     {
+        /*
+         * The same key twice in one statement is a Postgres error, not a
+         * no-op: "ON CONFLICT DO UPDATE command cannot affect row a second
+         * time". And the game hands us duplicates — `/v2/mounts/skins` lists
+         * 488 ids of which 487 are distinct, with 537 appearing twice. That is
+         * upstream and we do not get to fix it there.
+         *
+         * Last one wins, which is the same answer two identical rows would
+         * have given anyway.
+         */
+        $rows = array_values(array_column(
+            array_map(fn ($row) => [implode('|', array_map(fn ($k) => (string) ($row[$k] ?? ''), $by)), $row], $rows),
+            1,
+            0
+        ));
+
         // Postgres has a parameter ceiling per statement, and 200 rows of a
         // wide item is comfortably inside it while still being one round trip.
         foreach (array_chunk($rows, 200) as $chunk) {
