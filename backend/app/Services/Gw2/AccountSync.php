@@ -122,6 +122,36 @@ class AccountSync
         if ($withCharacters && in_array('characters', $scopes, true)) {
             $read['characters'] = $this->api->account('characters', $key, ['ids' => 'all']);
             $calls++;
+
+            /*
+             * Story is per character and has no bulk endpoint.
+             *
+             * `characters?ids=all` returns eighteen fields and `quests` is not
+             * among them — measured on 30 September 2026 — so this is one more
+             * request per character. On the test account that is one; on a
+             * veteran's fifteen it is fifteen, which is why it only happens on
+             * a full read and never on the quick pass.
+             */
+            foreach ($read['characters'] as $character) {
+                if (! isset($character['name'])) {
+                    continue;
+                }
+
+                try {
+                    $read['quests'][$character['name']] = $this->api->account(
+                        'characters/'.rawurlencode($character['name']).'/quests',
+                        $key
+                    );
+                    $calls++;
+                } catch (Gw2Unavailable) {
+                    /*
+                     * One character's story failing must not lose the other
+                     * eighteen endpoints. §16 already asks for conservative
+                     * language here; a gap in it is exactly the "unknown" the
+                     * document wants rendered as unknown.
+                     */
+                }
+            }
         }
 
         $events = DB::transaction(function () use ($accountId, $read, $withCharacters) {
@@ -133,7 +163,7 @@ class AccountSync
             $this->storeState($accountId, $read);
 
             if ($withCharacters && isset($read['characters'])) {
-                $this->storeCharacters($accountId, $read['characters']);
+                $this->storeCharacters($accountId, $read['characters'], $read['quests'] ?? []);
                 $this->storeLedger($accountId, $read);
             }
 
@@ -235,7 +265,7 @@ class AccountSync
     }
 
     /** @param array<int, array<string, mixed>> $characters */
-    private function storeCharacters(int $accountId, array $characters): void
+    private function storeCharacters(int $accountId, array $characters, array $quests = []): void
     {
         $seen = [];
 
@@ -271,6 +301,14 @@ class AccountSync
                 'specializations' => json_encode($character['specializations'] ?? [], JSON_UNESCAPED_UNICODE),
                 'skills' => json_encode($character['skills'] ?? [], JSON_UNESCAPED_UNICODE),
                 'crafting' => json_encode($character['crafting'] ?? [], JSON_UNESCAPED_UNICODE),
+                /*
+                 * Quest ids this character has completed. §16 is firm that this
+                 * is "detected story progress" and never "account story
+                 * completion" — the endpoint is per character, a player may
+                 * have done the same story elsewhere, and the quest data is
+                 * documented as able to lag the story endpoints.
+                 */
+                'quests' => json_encode(array_values($quests[$character['name']] ?? []), JSON_UNESCAPED_UNICODE),
                 'observed_at' => now(),
                 'updated_at' => now(),
             ];

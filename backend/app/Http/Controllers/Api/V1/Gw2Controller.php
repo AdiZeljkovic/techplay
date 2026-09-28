@@ -10,6 +10,8 @@ use App\Services\Gw2\Advisor\Dashboard;
 use App\Services\Gw2\Advisor\GuidePersonalisation;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\PlayerChoices;
+use App\Services\Gw2\Advisor\SnapshotReader;
+use App\Services\Gw2\Advisor\StoryProgress;
 use App\Services\Gw2\Gw2Connection;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
@@ -353,6 +355,35 @@ class Gw2Controller extends Controller
         );
 
         return $this->success(null, 'Noted — thank you.');
+    }
+
+    /**
+     * GET /gw2/story
+     *
+     * Detected story progress for one character.
+     *
+     * §16 is the most cautious section in the document and this endpoint keeps
+     * its language: per character, medium confidence, never "complete".
+     */
+    public function story(Request $request): JsonResponse
+    {
+        $request->validate(['character' => 'nullable|string|max:64']);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $snapshot = app(SnapshotReader::class)->for($accountId);
+
+        if (! $snapshot) {
+            return $this->success(null, 'We have not finished reading your account yet.');
+        }
+
+        return $this->success(
+            app(StoryProgress::class)->for($snapshot, $request->string('character')->toString() ?: null)
+        );
     }
 
     /**

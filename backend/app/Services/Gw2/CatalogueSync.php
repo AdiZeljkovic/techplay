@@ -54,6 +54,14 @@ class CatalogueSync
         'raids' => 'reference',
         'dungeons' => 'reference',
         'worldbosses' => 'reference',
+        /*
+         * Story structure. `/v2/stories` is 148 chapters and
+         * `/v2/stories/seasons` groups them into 13 — two requests for the only
+         * thing that turns a character's 172 completed quest ids into
+         * something a reader recognises.
+         */
+        'stories' => 'reference',
+        'stories/seasons' => 'reference',
     ];
 
     public function __construct(private readonly Gw2Client $api) {}

@@ -259,6 +259,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/gw2/pins/{goal}', [Gw2Controller::class, 'unpin']);
         Route::put('/gw2/character', [Gw2Controller::class, 'chooseCharacter']);
         Route::post('/gw2/confirm', [Gw2Controller::class, 'confirm']);
+        Route::get('/gw2/story', [Gw2Controller::class, 'story']);
         Route::get('/gw2/personalise/{key}', [Gw2Controller::class, 'personalise']);
         Route::get('/gw2/plan', [Gw2Controller::class, 'plan']);
         Route::get('/gw2/items', [Gw2Controller::class, 'items']);
