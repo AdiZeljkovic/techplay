@@ -69,6 +69,9 @@ class SitemapController extends Controller
         // Its own file rather than a few thousand more lines in
         // sitemap-hub.xml: a page type this new is one whose indexing you want
         // to be able to read on its own in Search Console.
+        if (self::hasGw2Catalogue()) {
+            $sitemaps[] = 'sitemap-gw2.xml';
+        }
         if (GameSeries::indexable()->exists()) {
             $sitemaps[] = 'sitemap-series.xml';
         }
@@ -709,6 +712,71 @@ class SitemapController extends Controller
      * decision, and the studio page sends the rest `noindex, follow` so the
      * links out of them still count.
      */
+    /**
+     * The Guild Wars 2 reference.
+     *
+     * Its own file rather than more lines in sitemap-hub.xml, for the same
+     * reason the game series got one: a section this new is one whose indexing
+     * you want to be able to read on its own in Search Console.
+     *
+     * Only the public half. Everything under /gw2 itself is somebody's own
+     * account, renders nothing for a signed-out crawler, and carries noindex —
+     * listing it would be asking Google to fetch thirteen empty pages.
+     *
+     * Every URL carries the item id. Names in this catalogue are not unique —
+     * 74,265 items share 51,604 names and one appears 135 times — so the slug
+     * is for the reader and the id is the identity.
+     */
+    public function gw2(): Response
+    {
+        $xml = $this->xmlHeader();
+
+        foreach (['/gw2/database', '/gw2/database/crafting', '/gw2/database/masteries'] as $path) {
+            $xml .= $this->urlEntry("{$this->frontendUrl}{$path}", null, 'weekly', '0.7');
+        }
+
+        /*
+         * Walked in id order with a cursor rather than by OFFSET. Thirteen
+         * thousand rows is not enough for that to matter on its own, but the
+         * join makes each page progressively more expensive to skip past and
+         * the pattern is the one the games sitemap already uses.
+         */
+        DB::table('gw2_items')
+            ->join('gw2_recipes', 'gw2_recipes.output_item_id', '=', 'gw2_items.id')
+            ->where('gw2_items.name', '!=', '')
+            ->whereNotNull('gw2_items.name')
+            ->distinct()
+            ->orderBy('gw2_items.id')
+            ->select(['gw2_items.id', 'gw2_items.name'])
+            ->each(function ($item) use (&$xml) {
+                $slug = trim(preg_replace('/-+/', '-', preg_replace('/[^a-z0-9]+/', '-', mb_strtolower($item->name))), '-');
+
+                // A name of nothing but punctuation slugs to an empty string.
+                // The id alone is still a working URL, so it gets one.
+                $path = $slug === ''
+                    ? "/gw2/database/crafting/{$item->id}"
+                    : "/gw2/database/crafting/{$item->id}-{$slug}";
+
+                $xml .= $this->urlEntry("{$this->frontendUrl}{$path}", null, 'monthly', '0.5');
+            });
+
+        $xml .= '</urlset>';
+
+        return response($xml, 200)->header('Content-Type', 'application/xml');
+    }
+
+    /**
+     * Is there a Guild Wars 2 catalogue to name?
+     *
+     * Shared with GenerateSitemap for the reason the lists check is shared: the
+     * index and the writer have to agree exactly, or the index names a file
+     * nothing ever writes.
+     */
+    public static function hasGw2Catalogue(): bool
+    {
+        return Schema::hasTable('gw2_recipes') && DB::table('gw2_recipes')->exists();
+    }
+
     public function studios(): Response
     {
         $xml = $this->xmlHeader();

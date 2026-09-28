@@ -105,6 +105,18 @@ class GenerateSitemap extends Command
         }
 
         if ($full || $onlyCatalogue) {
+            /*
+             * Catalogue, not content — thirteen thousand recipe pages that
+             * change when the game patches and not otherwise. Rebuilding them
+             * on the fifteen-minute content pass would be a megabyte of XML
+             * written ninety-six times a day to say the same thing.
+             *
+             * One file: comfortably inside the 50,000 URLs a sitemap may hold.
+             */
+            if (SitemapController::hasGw2Catalogue()) {
+                $sitemaps['sitemap-gw2.xml'] = fn () => $sitemap->gw2();
+            }
+
             // Images are article covers, but the file is 222 KB and rebuilding
             // it belongs with the slow half rather than every fifteen minutes.
             $sitemaps['sitemap-images.xml'] = fn () => $sitemap->images();

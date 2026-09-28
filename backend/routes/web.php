@@ -45,6 +45,9 @@ Route::get('/sitemap-images.xml', [SitemapController::class, 'images']);
 Route::get('/sitemap-games-{page}.xml', [SitemapController::class, 'games'])->where('page', '[1-9][0-9]*');
 Route::get('/sitemap-studios.xml', [SitemapController::class, 'studios']);
 Route::get('/sitemap-series.xml', [SitemapController::class, 'series']);
+// The public Guild Wars 2 reference. Only the half that needs no key —
+// everything under /gw2 itself is somebody's own account and carries noindex.
+Route::get('/sitemap-gw2.xml', [SitemapController::class, 'gw2']);
 
 /*
  * The help centre's own robots.txt and sitemap.

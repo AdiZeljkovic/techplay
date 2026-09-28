@@ -290,6 +290,54 @@ export interface Gw2Content {
     observed_at: string | null;
 }
 
+/**
+ * The public reference — read on the server, with no token.
+ *
+ * Everything here is the same for every player, so these are plain fetches
+ * against the API with the internal header rather than calls through the
+ * authenticated axios client. That is what lets the pages be server-rendered
+ * and indexed: a crawler has no localStorage, and a page that needs one renders
+ * nothing for it.
+ */
+export interface PublicMaterial {
+    item_id: number;
+    name: string | null;
+    slug: string | null;
+    rarity: string | null;
+    icon: string | null;
+    needed: number;
+}
+
+export interface PublicRecipe {
+    item: Gw2ItemSummary & { item_id?: number; slug: string };
+    craftable: boolean;
+    requires: { disciplines: string[]; min_rating: number } | null;
+    tree: PlanNode;
+    materials: PublicMaterial[];
+    /** What this goes into. It is what turns 13,000 pages into a graph. */
+    used_in: { id: number; name: string; slug: string; rarity: string | null; icon: string | null }[];
+}
+
+export interface PublicMasteryRegion {
+    region: string;
+    catalogue_region: string;
+    /**
+     * False for the one catalogue region the account endpoint does not name.
+     * Shown under its own heading rather than filed under a guess.
+     */
+    paired: boolean;
+    points_total: number;
+    tracks: {
+        id: number;
+        name: string;
+        slug: string;
+        requirement: string | null;
+        tiers: number;
+        points_total: number;
+        levels: { name: string; description: string | null; point_cost: number }[];
+    }[];
+}
+
 export interface Gw2Dashboard {
     account: {
         name: string;
