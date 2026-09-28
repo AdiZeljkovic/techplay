@@ -29,6 +29,20 @@ readonly class MasteryTrack
         public array $tierCosts,
         public array $tierNames,
         public int $tiersPaid,
+        /**
+         * One icon per tier, straight out of `levels[].icon`.
+         *
+         * @var array<int, string>
+         */
+        public array $tierIcons = [],
+        /**
+         * A scene render for the track.
+         *
+         * The only art at that scale the API gives out, and the reason a
+         * mastery row can look like the thing it is about rather than like a
+         * row in a table.
+         */
+        public ?string $background = null,
     ) {}
 
     public function tiers(): int

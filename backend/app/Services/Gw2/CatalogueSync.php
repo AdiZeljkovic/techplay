@@ -41,6 +41,12 @@ class CatalogueSync
         'quests' => 'reference',
         'mounts/types' => 'reference',
         /*
+         * Mount icons. `mounts/types` carries no icon at all — it names a
+         * `default_skin`, and the skin is what has the picture. So the nine
+         * mount cards need this endpoint or they need drawing without one.
+         */
+        'mounts/skins' => 'reference',
+        /*
          * Structure, not names. `/v2/raids` gives wings and the encounters in
          * them, `/v2/dungeons` gives paths, `/v2/worldbosses` gives the
          * canonical fifteen — and all three return bare slugs with no display
@@ -207,8 +213,32 @@ class CatalogueSync
                 'requirement' => $this->text($r['requirement'] ?? ''),
                 'order' => (int) ($r['order'] ?? 0),
                 'levels' => $this->json($r['levels'] ?? null),
+                /*
+                 * A scene render per track, and the only art at that scale the
+                 * API gives out. `levels[].icon` comes along inside `levels`,
+                 * which is already stored whole.
+                 */
+                'background' => $r['background'] ?? null,
                 'build_id' => $buildId,
-            ], $rows), ['name', 'region', 'requirement', 'order', 'levels', 'build_id']),
+            ], $rows), ['name', 'region', 'requirement', 'order', 'levels', 'background', 'build_id']),
+
+            /*
+             * Categories go into `gw2_reference` like any other lookup, and
+             * then hand their membership to the achievements themselves.
+             *
+             * The mapping only exists in this direction — a category lists its
+             * achievements, an achievement names no category — so this is the
+             * one moment it is in hand. Doing it here also means a lone
+             * `--only=achievements/categories` re-links, which is what you want
+             * after the achievements themselves have been refreshed.
+             */
+            'achievements/categories' => $this->linkCategories($rows, $this->upsert('gw2_reference', array_map(fn ($r) => [
+                'kind' => $this->kind($endpoint),
+                'ref_id' => is_numeric($r['id'] ?? null) ? (int) $r['id'] : crc32((string) ($r['id'] ?? '')),
+                'name' => $this->text($r['name'] ?? ($r['id'] ?? '')),
+                'payload' => $this->json($r),
+                'build_id' => $buildId,
+            ], $rows), ['name', 'payload', 'build_id'], ['kind', 'ref_id'])),
 
             default => $this->upsert('gw2_reference', array_map(fn ($r) => [
                 'kind' => $this->kind($endpoint),
@@ -223,6 +253,44 @@ class CatalogueSync
                 'build_id' => $buildId,
             ], $rows), ['name', 'payload', 'build_id'], ['kind', 'ref_id']),
         };
+    }
+
+    /**
+     * Writes each category's id onto the achievements it names.
+     *
+     * The point is coverage, not tidiness. Only 1,418 of 8,339 achievements
+     * carry an icon; all 360 categories do. With this column an achievement
+     * card can fall back to its category's picture, and almost none are left
+     * without one.
+     *
+     * Grouped by category and issued as one statement per category rather than
+     * one per achievement — 360 updates instead of about eight thousand.
+     *
+     * Returns the row count it was handed, so it can wrap the upsert inline.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     */
+    private function linkCategories(array $rows, int $stored): int
+    {
+        foreach ($rows as $category) {
+            $ids = array_values(array_filter(array_map(
+                // A category's `achievements` are bare integers today. The
+                // objects are guarded against because this array has carried
+                // both shapes in the past and costs nothing to allow.
+                fn ($entry) => is_array($entry) ? (int) ($entry['id'] ?? 0) : (int) $entry,
+                (array) ($category['achievements'] ?? [])
+            )));
+
+            if ($ids === [] || ! isset($category['id'])) {
+                continue;
+            }
+
+            DB::table('gw2_achievements')
+                ->whereIn('id', $ids)
+                ->update(['category_id' => (int) $category['id']]);
+        }
+
+        return $stored;
     }
 
     /**

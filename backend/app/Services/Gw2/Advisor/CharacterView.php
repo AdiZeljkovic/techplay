@@ -48,6 +48,16 @@ readonly class CharacterView
         public int $weaponSlots,
         public array $craftingDisciplines,
         public ?int $deaths,
+        /**
+         * The worn piece in each core slot — name, icon and rarity.
+         *
+         * Separate from `slotRarity`, which stays a bare string per slot
+         * because every count in this class is built on it and a count should
+         * not have to reach through a picture to get at a rarity.
+         *
+         * @var array<string, array{name: string, icon: ?string, rarity: string}>
+         */
+        public array $slotItems = [],
     ) {}
 
     /** Core slots still below ascended, in the order a player would fill them. */

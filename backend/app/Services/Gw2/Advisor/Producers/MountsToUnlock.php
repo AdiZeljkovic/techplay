@@ -63,6 +63,7 @@ class MountsToUnlock implements Producer
                 ],
                 blockers: $this->blockers($slug, $guides),
                 pushes: ['mounts'],
+                details: array_filter(['icon' => $this->icons()[$slug] ?? null]),
             );
         }
 
@@ -99,6 +100,47 @@ class MountsToUnlock implements Producer
         $decoded = is_string($state) ? json_decode($state, true) : $state;
 
         return array_values(array_filter((array) ($decoded['mounts'] ?? [])));
+    }
+
+    /**
+     * A picture per mount, slug to icon.
+     *
+     * `mounts/types` carries no icon — it names a `default_skin`, and the skin
+     * is what has the picture. Two lookups rather than one, and the reason the
+     * skins endpoint is mirrored at all.
+     *
+     * @return array<string, string>
+     */
+    private function icons(): array
+    {
+        static $icons = null;
+
+        if ($icons !== null) {
+            return $icons;
+        }
+
+        $skins = DB::table('gw2_reference')
+            ->where('kind', 'mounts_skins')
+            ->pluck('payload')
+            ->mapWithKeys(function ($payload) {
+                $row = json_decode($payload, true) ?: [];
+
+                return [(int) ($row['id'] ?? 0) => (string) ($row['icon'] ?? '')];
+            })
+            ->all();
+
+        $icons = DB::table('gw2_reference')
+            ->where('kind', 'mounts_types')
+            ->pluck('payload')
+            ->mapWithKeys(function ($payload) use ($skins) {
+                $row = json_decode($payload, true) ?: [];
+
+                return [(string) ($row['id'] ?? '') => $skins[(int) ($row['default_skin'] ?? 0)] ?? ''];
+            })
+            ->filter()
+            ->all();
+
+        return $icons;
     }
 
     /**

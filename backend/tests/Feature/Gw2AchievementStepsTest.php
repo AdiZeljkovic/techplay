@@ -244,11 +244,11 @@ class Gw2AchievementStepsTest extends TestCase
 
         Gw2Guide::create([
             'family' => 'mounts', 'slug' => 'skyscale', 'title' => 'Skyscale',
-            'personalise_as' => 'guide:mounts/skyscale', 'is_published' => true,
+            'personalise_as' => 'guide:mounts:skyscale', 'is_published' => true,
             'achievement_ids' => [4666, 4668, 4712],
         ]);
 
-        $block = app(GuidePersonalisation::class)->for('guide:mounts/skyscale', $this->accountId);
+        $block = app(GuidePersonalisation::class)->for('guide:mounts:skyscale', $this->accountId);
 
         $this->assertSame('collection', $block['kind']);
         $this->assertSame(1, $block['complete']);
@@ -281,13 +281,45 @@ class Gw2AchievementStepsTest extends TestCase
 
         Gw2Guide::create([
             'family' => 'mounts', 'slug' => 'raptor', 'title' => 'Raptor',
-            'personalise_as' => 'guide:mounts/raptor', 'is_published' => true,
+            'personalise_as' => 'guide:mounts:raptor', 'is_published' => true,
         ]);
 
         // A page nobody has listed the achievements for reads exactly as it
         // does for a stranger, which is what it was written to do.
-        $this->assertNull(app(GuidePersonalisation::class)->for('guide:mounts/raptor', $this->accountId));
-        $this->assertNull(app(GuidePersonalisation::class)->for('guide:mounts/nothing-here', $this->accountId));
+        $this->assertNull(app(GuidePersonalisation::class)->for('guide:mounts:raptor', $this->accountId));
+        $this->assertNull(app(GuidePersonalisation::class)->for('guide:mounts:nothing-here', $this->accountId));
+    }
+
+    public function test_the_personalisation_key_survives_being_a_url(): void
+    {
+        $this->given([
+            ['id' => 4666, 'current' => 1, 'max' => 2, 'bits' => [0]],
+        ], [
+            [4666, 'Skyscale Eggs', null, [['type' => 'Item', 'id' => 1, 'text' => 'One.'], ['type' => 'Item', 'id' => 2, 'text' => 'Two.']]],
+        ]);
+
+        Gw2Guide::create([
+            'family' => 'mounts', 'slug' => 'skyscale', 'title' => 'Skyscale',
+            'personalise_as' => 'guide:mounts:skyscale', 'is_published' => true,
+            'achievement_ids' => [4666],
+        ]);
+
+        /*
+         * The key travels as one route segment. It was `guide:mounts/skyscale`
+         * for an afternoon, which does not match `{key}` at all — the endpoint
+         * would have 404'd and every mount page would have quietly lost its
+         * personalisation while looking perfectly fine. Nothing else in the
+         * suite goes through the router, so nothing else would have noticed.
+         */
+        // Read off the guide rather than written out here, so this guards the
+        // format the guides actually use and not one letter of it.
+        $key = Gw2Guide::first()->personalise_as;
+
+        $response = $this->actingAs(User::first())->getJson("/api/v1/gw2/personalise/{$key}");
+
+        $response->assertOk();
+        $this->assertSame('collection', $response->json('data.kind'));
+        $this->assertSame(['Two.'], array_column($response->json('data.items.0.steps_remaining'), 'text'));
     }
 
     /**

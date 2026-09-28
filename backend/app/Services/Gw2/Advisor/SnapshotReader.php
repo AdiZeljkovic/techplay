@@ -2,6 +2,7 @@
 
 namespace App\Services\Gw2\Advisor;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -172,7 +173,7 @@ class SnapshotReader
         return DB::table('gw2_masteries')
             ->orderBy('region')
             ->orderBy('order')
-            ->get(['id', 'name', 'requirement', 'region', 'levels'])
+            ->get(['id', 'name', 'requirement', 'region', 'levels', 'background'])
             ->map(function ($row) use ($paid) {
                 $levels = $this->json($row->levels);
 
@@ -185,6 +186,8 @@ class SnapshotReader
                     tierCosts: array_map(fn ($l) => (int) ($l['point_cost'] ?? 0), $levels),
                     tierNames: array_map(fn ($l) => (string) ($l['name'] ?? ''), $levels),
                     tiersPaid: min($paid[(int) $row->id] ?? 0, count($levels)),
+                    tierIcons: array_values(array_filter(array_map(fn ($l) => (string) ($l['icon'] ?? ''), $levels))),
+                    background: $row->background,
                 );
             })
             ->all();
@@ -234,11 +237,12 @@ class SnapshotReader
             ->whereIn('id', array_keys($candidates))
             ->get([
                 'id', 'name', 'requirement', 'advisor_eligible', 'effort_band',
-                'reviewed_at', 'flags', 'bits', 'mastery_region',
+                'reviewed_at', 'flags', 'bits', 'mastery_region', 'icon', 'category_id',
             ])
             ->keyBy('id');
 
         $steps = new AchievementSteps($catalogue);
+        $categoryIcons = $this->categoryIcons($catalogue);
 
         $wins = [];
 
@@ -274,6 +278,7 @@ class SnapshotReader
                 curated: (bool) ($meta->reviewed_at ?? false),
                 steps: $steps->for($id, $progress['bits']),
                 masteryRegion: $meta->mastery_region ?? null,
+                icon: $meta->icon ?: ($categoryIcons[$meta->category_id ?? 0] ?? null),
             );
         }
 
@@ -281,6 +286,31 @@ class SnapshotReader
         usort($wins, fn (EasyWin $a, EasyWin $b) => [$a->remaining(), -$a->ratio()] <=> [$b->remaining(), -$b->ratio()]);
 
         return $wins;
+    }
+
+    /**
+     * Category icons for a batch of achievements, in one query.
+     *
+     * @param  Collection<int, object>  $catalogue
+     * @return array<int, string>
+     */
+    private function categoryIcons($catalogue): array
+    {
+        $ids = array_values(array_unique(array_filter(
+            $catalogue->pluck('category_id')->all()
+        )));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        return DB::table('gw2_reference')
+            ->where('kind', 'achievements_categories')
+            ->whereIn('ref_id', $ids)
+            ->pluck('payload', 'ref_id')
+            ->map(fn ($payload) => (string) ((json_decode($payload, true) ?: [])['icon'] ?? ''))
+            ->filter()
+            ->all();
     }
 
     /** @return array<int, CharacterView> */
@@ -303,12 +333,13 @@ class SnapshotReader
 
         $items = $itemIds === []
             ? collect()
-            : DB::table('gw2_items')->whereIn('id', $itemIds)->get(['id', 'rarity', 'details'])->keyBy('id');
+            : DB::table('gw2_items')->whereIn('id', $itemIds)->get(['id', 'name', 'icon', 'rarity', 'details'])->keyBy('id');
 
         return $rows->values()->map(function ($row, $i) use ($equipment, $items) {
             $worn = $equipment[$i];
 
             $rarity = [];
+            $slotItems = [];
             $agony = 0;
             $ascendedWeapons = 0;
             $weaponSlots = 0;
@@ -319,6 +350,12 @@ class SnapshotReader
 
                 if ($slot !== null && in_array($slot, CharacterView::CORE_SLOTS, true) && $item) {
                     $rarity[$slot] = (string) $item->rarity;
+
+                    $slotItems[$slot] = [
+                        'name' => (string) $item->name,
+                        'icon' => $item->icon ?: null,
+                        'rarity' => (string) $item->rarity,
+                    ];
                 }
 
                 // Land weapons only. Aquatic slots and gathering tools are in
@@ -351,6 +388,7 @@ class SnapshotReader
                 weaponSlots: $weaponSlots,
                 craftingDisciplines: $this->disciplines($row->crafting),
                 deaths: $row->deaths !== null ? (int) $row->deaths : null,
+                slotItems: $slotItems,
             );
         })->all();
     }

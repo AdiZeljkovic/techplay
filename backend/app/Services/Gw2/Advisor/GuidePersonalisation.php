@@ -45,8 +45,13 @@ class GuidePersonalisation
             'raids' => $this->raids($snapshot),
             'next-steps' => $this->nextSteps($snapshot),
             /*
-             * `guide:mounts/skyscale` — a guide showing progress through its
+             * `guide:mounts:skyscale` — a guide showing progress through its
              * own curated achievement list.
+             *
+             * Colon-separated, not slash-separated. The key travels as a
+             * single route segment in `/gw2/personalise/{key}`, and a slash
+             * inside it simply does not match — the endpoint 404s and the page
+             * silently loses its personalisation.
              *
              * Prefixed rather than named one-by-one because there is one of
              * these per mount and there will be one per legendary, and a match
@@ -202,7 +207,7 @@ class GuidePersonalisation
      */
     private function collection(string $path, Snapshot $snapshot): ?array
     {
-        [$family, $slug] = array_pad(explode('/', $path, 2), 2, null);
+        [$family, $slug] = array_pad(explode(':', $path, 2), 2, null);
 
         $guide = $slug === null ? null : Gw2Guide::query()
             ->published()

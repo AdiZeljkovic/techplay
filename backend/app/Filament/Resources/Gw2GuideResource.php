@@ -87,7 +87,7 @@ class Gw2GuideResource extends Resource
                  */
                 ->options(fn (?Gw2Guide $record) => $record?->family && $record?->slug
                     ? Gw2Guide::PERSONALISATIONS + [
-                        "guide:{$record->family}/{$record->slug}" => 'This guide\'s own achievement chain',
+                        "guide:{$record->family}:{$record->slug}" => 'This guide\'s own achievement chain',
                     ]
                     : Gw2Guide::PERSONALISATIONS)
                 ->placeholder('Nothing — purely editorial')

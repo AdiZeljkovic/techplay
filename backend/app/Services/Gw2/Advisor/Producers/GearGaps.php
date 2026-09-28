@@ -69,6 +69,13 @@ class GearGaps implements Producer
                 ],
                 blockers: $this->blockers($character),
                 pushes: ['ascended_set:'.$character->name],
+                details: array_filter([
+                    // The exotic ring the card is about, not a generic glyph
+                    // for "gear". Empty where the slot is empty, which is the
+                    // one case where there is nothing to show a picture of.
+                    'icon' => $character->slotItems[$slot]['icon'] ?? null,
+                    'item' => $character->slotItems[$slot]['name'] ?? null,
+                ]),
             );
         }
 

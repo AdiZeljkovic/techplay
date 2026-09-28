@@ -42,6 +42,16 @@ readonly class EasyWin
          * reader still has tracks to train in.
          */
         public ?string $masteryRegion = null,
+        /**
+         * The achievement's picture, or its category's.
+         *
+         * Only 1,418 of 8,339 achievements have one of their own; all 360
+         * categories do. Falling back to the category is what takes coverage
+         * from a sixth of the list to nearly all of it, and it is honest — a
+         * category icon says what kind of thing this is, which is exactly the
+         * job an icon on a card has.
+         */
+        public ?string $icon = null,
     ) {}
 
     /**

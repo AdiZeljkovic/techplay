@@ -52,7 +52,7 @@ class Gw2MountGuideSeeder extends Seeder
             $guide['game_build'] = $build;
             $guide['owner'] = 'seed';
             $guide['is_published'] = true;
-            $guide['personalise_as'] = 'guide:mounts/'.$guide['slug'];
+            $guide['personalise_as'] = 'guide:mounts:'.$guide['slug'];
 
             $existing ? $existing->update($guide) : Gw2Guide::create($guide);
         }

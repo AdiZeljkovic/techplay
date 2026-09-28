@@ -79,6 +79,13 @@ class MasteryTierToBuy implements Producer
                     // Same goal as the plain unspent-points rule, so the two
                     // cannot both fill the board.
                     pushes: ['mastery:'.$region->region],
+                    details: array_filter([
+                        // The icon of the tier being bought, and the track's
+                        // own scene render behind it. Both come out of the
+                        // masteries endpoint; neither was being carried.
+                        'icon' => $track->tierIcons[$track->tiersPaid] ?? ($track->tierIcons[0] ?? null),
+                        'background' => $track->background,
+                    ]),
                 );
             }
         }

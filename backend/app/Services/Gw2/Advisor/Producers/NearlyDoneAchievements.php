@@ -81,13 +81,16 @@ class NearlyDoneAchievements implements Producer
                 ],
                 blockers: $this->blockers($win),
                 pushes: $wanted ? ['achievement_points', 'masteries'] : ['achievement_points'],
-                details: $win->stepsKnown() ? [
-                    'steps_total' => count($win->steps),
-                    'steps_remaining' => array_map(fn (AchievementStep $s) => [
-                        'index' => $s->index,
-                        'text' => $s->text,
-                    ], $left),
-                ] : [],
+                details: array_filter([
+                    'icon' => $win->icon,
+                    ...($win->stepsKnown() ? [
+                        'steps_total' => count($win->steps),
+                        'steps_remaining' => array_map(fn (AchievementStep $s) => [
+                            'index' => $s->index,
+                            'text' => $s->text,
+                        ], $left),
+                    ] : []),
+                ]),
             );
         }
 

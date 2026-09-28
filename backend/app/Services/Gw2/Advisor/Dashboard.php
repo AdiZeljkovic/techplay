@@ -676,6 +676,14 @@ class Dashboard
             'weapon_slots' => $character->weaponSlots,
             // Slot by slot, because a set at 9/12 says nothing about which three.
             'slots' => $character->slotRarity,
+            /*
+             * And the piece actually worn in each — name, icon, rarity.
+             *
+             * `slots` stays as it was because every count is built on it. This
+             * is the layer on top: a row of twelve rarities is a table, and a
+             * row of twelve items somebody recognises is their character.
+             */
+            'items' => $character->slotItems,
             'crafting' => $character->craftingDisciplines,
         ];
     }
@@ -722,6 +730,13 @@ class Dashboard
                 // which.
                 'reviewed' => $w->curated,
                 'effort' => $w->effortBand,
+                'icon' => $w->icon,
+                // Only what is left, and only where the game named it. A list
+                // of three things beats a bar at 94% every time.
+                'steps_remaining' => array_values(array_filter(array_map(
+                    fn ($step) => $step->text,
+                    $w->remainingSteps()
+                ))),
             ], array_slice($snapshot->nearlyDone, 0, 8)),
         ];
     }
