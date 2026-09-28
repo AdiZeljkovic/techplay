@@ -21,6 +21,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $minutes_low
  * @property int|null $minutes_high
  * @property string|null $needs_expansion
+ * @property array<int, string>|null $goals
+ * @property string|null $owner
+ * @property array<int, int>|null $source_ids
+ * @property int|null $game_build
  */
 class Gw2Rule extends Model
 {
@@ -28,11 +32,14 @@ class Gw2Rule extends Model
         'key', 'producer', 'domain', 'title', 'body', 'requires',
         'base_score', 'weights', 'confidence', 'effort_band', 'minutes_low', 'minutes_high',
         'needs_expansion', 'is_active', 'version', 'reviewed_at',
+        'goals', 'owner', 'source_ids', 'game_build',
     ];
 
     protected $casts = [
         'requires' => 'array',
         'weights' => 'array',
+        'goals' => 'array',
+        'source_ids' => 'array',
         'is_active' => 'boolean',
         'reviewed_at' => 'datetime',
     ];

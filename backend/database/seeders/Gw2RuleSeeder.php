@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Gw2Rule;
+use App\Models\Gw2Source;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
 use App\Services\Gw2\Advisor\Producers\MasteryTierToBuy;
@@ -11,6 +12,7 @@ use App\Services\Gw2\Advisor\Producers\UnclaimedAcclaim;
 use App\Services\Gw2\Advisor\Producers\UnspentMasteryPoints;
 use App\Services\Gw2\Advisor\Producers\VaultObjectives;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The advisor's opening vocabulary.
@@ -35,6 +37,18 @@ class Gw2RuleSeeder extends Seeder
                 self::MINUTES[$rule['key']] ?? [null, null]
             );
 
+            $rule['goals'] = self::GOALS[$rule['key']] ?? [];
+
+            /*
+             * Provenance, which §24 asks for on every rule and this seeder has
+             * been shipping without. `owner` is the seed itself: these are
+             * defaults rather than somebody's editorial judgement, and saying
+             * so is more honest than putting a person's name on them.
+             */
+            $rule['owner'] ??= 'seed';
+            $rule['source_ids'] ??= $this->sourceIds();
+            $rule['game_build'] ??= $this->currentBuild();
+
             $existing = Gw2Rule::firstWhere('key', $rule['key']);
 
             /*
@@ -58,6 +72,32 @@ class Gw2RuleSeeder extends Seeder
             }
         }
     }
+
+    /**
+     * Which goals each rule advances.
+     *
+     * An array because one activity serves several — an ascended ring is both
+     * a step towards a full set and the gear an Agony infusion sockets into —
+     * and §8.1 makes that overlap explicit: deduplication exists precisely
+     * because one activity pushes several goals.
+     *
+     * A rule absent from this map advances no particular goal and simply never
+     * gets the relevance bonus. That is the right answer for the Wizard's
+     * Vault, which §15 says to treat as recurring value rather than as a goal.
+     *
+     * @var array<string, list<string>>
+     */
+    private const GOALS = [
+        'achievement-one-step-away' => ['what-next'],
+        'achievement-nearly-done' => ['what-next'],
+        'mastery-tier-affordable' => ['masteries', 'what-next'],
+        'mastery-unspent-points' => ['masteries', 'what-next'],
+        'gear-empty-core-slot' => ['first-ascended-set', 'fractals', 'raid-entry', 'what-next'],
+        'gear-slot-below-ascended' => ['first-ascended-set', 'fractals', 'raid-entry'],
+        'gear-no-crafting-discipline' => ['first-ascended-set'],
+        'fractals-agony-for-tier-4' => ['fractals'],
+        'fractals-agony-active-player' => ['fractals'],
+    ];
 
     /**
      * How long each one takes, low and high, in minutes.
@@ -87,6 +127,36 @@ class Gw2RuleSeeder extends Seeder
         'fractals-agony-active-player' => [45, 90],
         'gear-no-crafting-discipline' => [60, 180],
     ];
+
+    /**
+     * The sources these defaults stand on, by id.
+     *
+     * Looked up rather than hardcoded: Gw2GoalSeeder writes them and this runs
+     * after it, so the ids are whatever that seeder produced.
+     *
+     * @return array<int, int>
+     */
+    private function sourceIds(): array
+    {
+        return Gw2Source::query()
+            ->whereIn('kind', ['measured', 'wiki', 'editorial'])
+            ->pluck('id')
+            ->all();
+    }
+
+    /**
+     * The game build the catalogue was last read at.
+     *
+     * §24 wants patch context on every rule so that a "review everything older
+     * than the last balance patch" pass is possible. Nothing enforces it yet;
+     * recording it is what makes it possible later.
+     */
+    private function currentBuild(): ?int
+    {
+        return DB::table('gw2_catalog_meta')
+            ->where('endpoint', 'items')
+            ->value('build_id');
+    }
 
     /**
      * @return array<int, array<string, mixed>>

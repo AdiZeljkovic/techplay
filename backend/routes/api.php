@@ -711,6 +711,9 @@ Route::prefix('v1')->group(function () {
          * and the reason somebody arrives at the tool in the first place.
          * Connecting personalises these pages rather than unlocking them.
          */
+        // The goal picker is public: it is half the product's promise and
+        // should be readable before anybody connects a key.
+        Route::get('/gw2/goals', [Gw2Controller::class, 'goals']);
         Route::get('/gw2/public/masteries', [Gw2PublicController::class, 'masteries']);
         Route::get('/gw2/public/craftable', [Gw2PublicController::class, 'craftable']);
         Route::get('/gw2/public/recipe/{item}', [Gw2PublicController::class, 'recipe'])

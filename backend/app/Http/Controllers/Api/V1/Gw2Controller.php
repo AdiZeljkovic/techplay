@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Jobs\SyncGw2Account;
 use App\Models\ConnectedAccount;
+use App\Models\Gw2Goal;
 use App\Services\Gw2\Advisor\Dashboard;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Gw2Connection;
@@ -231,6 +232,20 @@ class Gw2Controller extends Controller
         }
 
         return $this->success($payload);
+    }
+
+    /**
+     * GET /gw2/goals
+     *
+     * What a player may pick. No account needed — the picker is part of the
+     * public promise ("Connect your account. Pick a goal") and should be
+     * readable before anybody connects anything.
+     */
+    public function goals(): JsonResponse
+    {
+        return $this->success(
+            Gw2Goal::query()->active()->orderBy('sort_order')->get(['slug', 'title', 'summary', 'domain', 'icon'])
+        );
     }
 
     /**

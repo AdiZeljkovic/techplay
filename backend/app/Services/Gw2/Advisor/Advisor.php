@@ -47,6 +47,20 @@ class Advisor
     ];
 
     /**
+     * What a matching goal is worth.
+     *
+     * §8.2 of the working document makes goal relevance the largest single
+     * component of a recommendation's score — 0–35, ahead of blocker removal at
+     * 0–25 — and the reasoning is sound: somebody who has said "I am working
+     * towards fractals" has told us more than any inference we could make from
+     * their account.
+     *
+     * Added flat rather than scaled. A rule either advances the chosen goal or
+     * it does not; there is no half-relevant.
+     */
+    private const GOAL_RELEVANCE = 35.0;
+
+    /**
      * What an unresolved blocker costs.
      *
      * A penalty, not an exclusion. "This needs ascended gear first" is often the
@@ -82,7 +96,7 @@ class Advisor
             }
 
             foreach ($this->produce($rule, $snapshot, $intent) as $signal) {
-                $signal->score = $this->score($signal, $facts);
+                $signal->score = $this->score($signal, $facts, $intent->goal);
                 $candidates[] = $signal;
             }
         }
@@ -173,7 +187,7 @@ class Advisor
      *
      * @param  array<string, int|float|bool|string|null>  $facts
      */
-    private function score(Signal $signal, array $facts): float
+    private function score(Signal $signal, array $facts, ?string $goal): float
     {
         $score = (float) $signal->rule->base_score;
 
@@ -184,6 +198,16 @@ class Advisor
             if (is_numeric($value)) {
                 $score += (float) $weight * (float) $value;
             }
+        }
+
+        /*
+         * Before the certainty multiplier, deliberately. A confident rule that
+         * serves the chosen goal should beat a confident one that does not, and
+         * multiplying the bonus would make an uncertain relevant rule score
+         * higher than a certain relevant one at some weights.
+         */
+        if ($goal !== null && in_array($goal, $signal->rule->goals ?? [], true)) {
+            $score += self::GOAL_RELEVANCE;
         }
 
         $score *= self::CERTAINTY[$signal->rule->confidence] ?? 1.0;

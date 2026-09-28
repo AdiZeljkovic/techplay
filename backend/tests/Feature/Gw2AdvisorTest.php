@@ -256,6 +256,45 @@ class Gw2AdvisorTest extends TestCase
         $this->assertSame(7, $edited->fresh()->base_score, 'a reviewed rule belongs to whoever reviewed it');
     }
 
+    /**
+     * Picking a goal changes the answer.
+     *
+     * This is the test the feature existed without. `?goal=` was validated,
+     * carried through Intent, and used by exactly one line — the cache bypass
+     * check — while §8.2 makes goal relevance the largest single component of a
+     * score at 0–35, ahead of blocker removal at 0–25. Half the product's
+     * public promise, "Pick a goal", did nothing.
+     */
+    public function test_choosing_a_goal_lifts_the_rules_that_serve_it(): void
+    {
+        $this->rule([
+            'key' => 'vault-thing', 'producer' => VaultObjectives::KEY, 'domain' => 'vault',
+            'title' => '{title}', 'base_score' => 80, 'goals' => [],
+            'requires' => [['path' => 'vault.open_objectives', 'op' => '>', 'value' => 0]],
+        ]);
+
+        $this->rule([
+            'key' => 'gear-thing', 'producer' => GearGaps::KEY, 'domain' => 'gear',
+            'title' => 'Upgrade the {slot}', 'base_score' => 50, 'goals' => ['first-ascended-set'],
+            'requires' => [['path' => 'character.ascended_missing', 'op' => '>', 'value' => 0]],
+        ]);
+
+        // With nothing chosen, the higher base score leads.
+        $this->assertSame('vault-thing', $this->advise()['headline'][0]['key']);
+
+        // Choosing the goal the second rule serves puts it in front: 50 + 35
+        // beats 80, which is the weighting §8.2 asks for. The bonus is large
+        // enough to overturn a thirty-point gap and not large enough to
+        // overturn any gap at all.
+        $chosen = $this->advise(new Intent(goal: 'first-ascended-set'));
+        $this->assertSame('gear-thing', $chosen['headline'][0]['key']);
+
+        // And a goal nothing serves changes nothing rather than emptying the
+        // board.
+        $unserved = $this->advise(new Intent(goal: 'raid-entry'));
+        $this->assertSame('vault-thing', $unserved['headline'][0]['key']);
+    }
+
     /** @return array{headline: array<int, array<string, mixed>>, alternatives: array<int, array<string, mixed>>, considered: int} */
     private function advise(?Intent $intent = null): array
     {
@@ -269,6 +308,7 @@ class Gw2AdvisorTest extends TestCase
     {
         return Gw2Rule::create($attributes + [
             'body' => 'because.',
+            'goals' => [],
             'base_score' => 50,
             'confidence' => 'medium',
             'is_active' => true,
