@@ -54,10 +54,24 @@ class Facts
          * between them, so "you have 35 unspent" is useless if all of them sit
          * in a region whose tracks are finished.
          */
+        $affordable = 0;
+
         foreach ($snapshot->masteryRegions as $region) {
             $facts["mastery.unspent.{$region->region}"] = $region->unspent();
             $facts["mastery.earned.{$region->region}"] = $region->earned;
+            $affordable += count($snapshot->affordableIn($region->region));
         }
+
+        /*
+         * How many mastery tiers the unspent points could actually pay for.
+         *
+         * This exists so two rules can divide the work instead of competing.
+         * "Gliding's next tier costs 3" is strictly better advice than "you have
+         * 16 points", but only when something is affordable — and on an account
+         * holding fifteen points in a region whose cheapest remaining tier costs
+         * twenty, the vaguer sentence is the only true one left.
+         */
+        $facts['mastery.affordable_tiers'] = $affordable;
 
         // Booleans rather than a list, so a rule can ask `expansion.PathOfFire`
         // without needing an `in` operator.

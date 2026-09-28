@@ -30,7 +30,27 @@ class Gw2RuleSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->rules() as $rule) {
-            Gw2Rule::firstOrCreate(['key' => $rule['key']], $rule);
+            $existing = Gw2Rule::firstWhere('key', $rule['key']);
+
+            /*
+             * The seed owns a rule until a person has read it.
+             *
+             * `firstOrCreate` alone left the defaults frozen at whatever they
+             * were on the day they first ran, so a threshold corrected in this
+             * file never reached a database that already had the row — which is
+             * the same stale-list failure the export and the deletion routine
+             * have each had. Setting `reviewed_at` is how an editor says the row
+             * is theirs now, and from then on this leaves it alone.
+             */
+            if ($existing && $existing->reviewed_at === null) {
+                $existing->update($rule);
+
+                continue;
+            }
+
+            if (! $existing) {
+                Gw2Rule::create($rule);
+            }
         }
     }
 
@@ -129,8 +149,8 @@ class Gw2RuleSeeder extends Seeder
                 'producer' => MasteryTierToBuy::KEY,
                 'domain' => 'masteries',
                 'title' => '{tier} on {track} costs {cost} {point}',
-                'body' => 'You have {unspent} unspent {region} points, so this leaves {left_over}. It is tier {tiers_paid} of {tiers} on that track.',
-                'requires' => [['path' => 'mastery.unspent_total', 'op' => '>=', 'value' => 1]],
+                'body' => 'You have {unspent} unspent {region} points, so this leaves {left_over}. It is tier {tiers_paid} of {tiers} on that track, and it needs the track filled with experience as well as the points.',
+                'requires' => [['path' => 'mastery.affordable_tiers', 'op' => '>=', 'value' => 1]],
                 'base_score' => 78,
                 'weights' => ['cost' => -1.5],
                 'confidence' => 'high',
@@ -147,7 +167,15 @@ class Gw2RuleSeeder extends Seeder
                 'domain' => 'masteries',
                 'title' => 'Spend {unspent} {region} mastery {point}',
                 'body' => 'You have earned {earned} mastery points in {region} and spent {spent}. Points are region-locked, so these {unspent} can only go into {region} tracks.',
-                'requires' => [['path' => 'mastery.unspent_total', 'op' => '>=', 'value' => 2]],
+                /*
+                 * The fallback, not the headline. When a tier is affordable the
+                 * rule above names it, which is better advice; this one is what
+                 * is left to say when the points cannot reach anything yet.
+                 */
+                'requires' => [
+                    ['path' => 'mastery.unspent_total', 'op' => '>=', 'value' => 2],
+                    ['path' => 'mastery.affordable_tiers', 'op' => '==', 'value' => 0],
+                ],
                 'base_score' => 66,
                 'weights' => ['unspent' => 1.2],
                 'confidence' => 'high',

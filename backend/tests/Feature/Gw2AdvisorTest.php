@@ -13,6 +13,7 @@ use App\Services\Gw2\Advisor\Producers\NearlyDoneAchievements;
 use App\Services\Gw2\Advisor\Producers\UnspentMasteryPoints;
 use App\Services\Gw2\Advisor\Producers\VaultObjectives;
 use App\Services\Gw2\Advisor\SnapshotReader;
+use Database\Seeders\Gw2RuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -226,6 +227,33 @@ class Gw2AdvisorTest extends TestCase
 
         $this->assertSame([], $this->advise()['headline']);
         $this->assertDatabaseHas('gw2_rules', ['key' => 'retired']);
+    }
+
+    /**
+     * A re-seed corrects a default and leaves an edited rule alone.
+     *
+     * Both halves matter. `firstOrCreate` on its own froze the defaults at
+     * whatever they were the day they first ran, so a threshold corrected in the
+     * seeder never reached a database that already had the row — the same stale-
+     * list failure the export and the deletion routine have each had. Updating
+     * unconditionally would be worse: it would overwrite an editor mid-sentence.
+     *
+     * `reviewed_at` is how an editor says the row is theirs now.
+     */
+    public function test_reseeding_corrects_a_default_and_respects_an_editor(): void
+    {
+        $this->seed(Gw2RuleSeeder::class);
+
+        $untouched = Gw2Rule::firstWhere('key', 'vault-unclaimed-acclaim');
+        $untouched->update(['base_score' => 1]);
+
+        $edited = Gw2Rule::firstWhere('key', 'vault-open-objective');
+        $edited->update(['base_score' => 7, 'reviewed_at' => now()]);
+
+        $this->seed(Gw2RuleSeeder::class);
+
+        $this->assertSame(95, $untouched->fresh()->base_score, 'an unreviewed default should be corrected');
+        $this->assertSame(7, $edited->fresh()->base_score, 'a reviewed rule belongs to whoever reviewed it');
     }
 
     /** @return array{headline: array<int, array<string, mixed>>, alternatives: array<int, array<string, mixed>>, considered: int} */

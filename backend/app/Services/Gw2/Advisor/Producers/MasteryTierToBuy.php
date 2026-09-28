@@ -4,7 +4,6 @@ namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
 use App\Services\Gw2\Advisor\Intent;
-use App\Services\Gw2\Advisor\MasteryTrack;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\RegionMastery;
 use App\Services\Gw2\Advisor\Signal;
@@ -59,30 +58,24 @@ class MasteryTierToBuy implements Producer
                         'tiers' => $track->tiers(),
                         'point' => $track->nextTierCost() === 1 ? 'point' : 'points',
                     ],
-                    blockers: $this->blockers($track),
+                    /*
+                     * No blocker, deliberately.
+                     *
+                     * A tier costs experience as well as points, and that is
+                     * true of every tier on every track always — so as a blocker
+                     * it is not information, it is a disclaimer, and it was
+                     * costing this rule thirty per cent of its score against one
+                     * that simply says "you have points". A caveat that applies
+                     * to everything belongs in the sentence, not in the ranking.
+                     */
+                    blockers: [],
                     // Same goal as the plain unspent-points rule, so the two
-                    // cannot both fill the board — this one outranks it and the
-                    // other becomes the fallback for a region with nothing
-                    // affordable in it.
+                    // cannot both fill the board.
                     pushes: ['mastery:'.$region->region],
                 );
             }
         }
 
         return $signals;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function blockers(MasteryTrack $track): array
-    {
-        /*
-         * A mastery tier costs experience as well as points, and whether this
-         * account has enough of it is not in the API anywhere. Saying "you can
-         * buy this now" would be the overstatement; naming the other cost is
-         * true and lets the player check it themselves in a second.
-         */
-        return ['A tier also needs the track filled with experience — the points are only half of it.'];
     }
 }
