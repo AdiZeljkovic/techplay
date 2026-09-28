@@ -18,13 +18,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property array<string, float>|null $weights
  * @property string $confidence
  * @property string|null $effort_band
+ * @property int|null $minutes_low
+ * @property int|null $minutes_high
  * @property string|null $needs_expansion
  */
 class Gw2Rule extends Model
 {
     protected $fillable = [
         'key', 'producer', 'domain', 'title', 'body', 'requires',
-        'base_score', 'weights', 'confidence', 'effort_band',
+        'base_score', 'weights', 'confidence', 'effort_band', 'minutes_low', 'minutes_high',
         'needs_expansion', 'is_active', 'version', 'reviewed_at',
     ];
 

@@ -187,6 +187,76 @@ export interface Gw2Plan {
     observed_at: string | null;
 }
 
+export interface SessionStep {
+    key: string;
+    subject: string;
+    domain: string;
+    title: string;
+    body: string;
+    confidence: Confidence;
+    effort: Effort;
+    blockers: string[];
+    /**
+     * An editorial estimate, never a measurement — the game reports the
+     * duration of nothing. Null means nobody has judged this rule yet, and the
+     * UI must render that as silence rather than as zero.
+     */
+    minutes_low: number | null;
+    minutes_high: number | null;
+    /** Minutes from the start of the session, or null when there is no estimate. */
+    starts_at: number | null;
+    costs: number | null;
+}
+
+export interface Priority {
+    key: string;
+    label: string;
+    current: number;
+    target: number;
+    unit: string;
+    note?: string;
+}
+
+export interface ScheduledEvent {
+    name: string;
+    slug: string;
+    kind: string;
+    region: string | null;
+    waypoint: string | null;
+    rewards: string | null;
+    minutes_away: number;
+    live_now: boolean;
+}
+
+export interface Gw2Tonight {
+    plan: {
+        minutes: number | null;
+        steps: SessionStep[];
+        /** The same recommendations, below the line the budget drew. */
+        if_you_have_longer: SessionStep[];
+        accounted_for: number;
+        /**
+         * How much of the stated time the estimates do not cover.
+         *
+         * Shown rather than hidden: a plan filling eighteen minutes of a stated
+         * hour is saying something true about how much we actually know.
+         */
+        unaccounted: number | null;
+        estimates_are_ours: true;
+    };
+    priorities: Priority[];
+    /**
+     * Empty until somebody enters and verifies the times.
+     *
+     * There is no schedule endpoint in the game's API — /v2/account/worldbosses
+     * says which ones you killed today, never when the next one spawns. A wrong
+     * spawn time sends a player to an empty map, so an empty panel is the better
+     * failure.
+     */
+    events: ScheduledEvent[];
+    observed_at: string | null;
+}
+
 export interface Gw2Dashboard {
     account: {
         name: string;
@@ -363,6 +433,14 @@ export async function getPlan(itemId: number, quantity = 1): Promise<Gw2Plan> {
     );
 
     return data.data;
+}
+
+export async function getTonight(minutes?: number | null): Promise<Gw2Tonight | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Tonight | null>>(
+        `/gw2/tonight${minutes ? `?minutes=${minutes}` : ""}`
+    );
+
+    return data.data ?? null;
 }
 
 export async function connectKey(apiKey: string): Promise<Gw2Connection> {

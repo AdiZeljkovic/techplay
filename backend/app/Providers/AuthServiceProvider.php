@@ -17,6 +17,7 @@ use App\Models\Gta6Character;
 use App\Models\Gta6Vehicle;
 use App\Models\Gta6Weapon;
 use App\Models\Guide;
+use App\Models\Gw2Event;
 use App\Models\Gw2Rule;
 use App\Models\HelpArticle;
 use App\Models\HelpCategory;
@@ -84,6 +85,9 @@ class AuthServiceProvider extends ServiceProvider
         // Editorial in the strictest sense: these rows decide what the Guild
         // Wars 2 advisor tells a reader, so an open door here writes advice.
         Gw2Rule::class => ContentPolicy::class,
+        // Spawn times somebody has to check against the game. Editorial, same
+        // as the rules: a wrong one sends a player to an empty map.
+        Gw2Event::class => ContentPolicy::class,
         HelpArticle::class => ContentPolicy::class,
         HelpCategory::class => ContentPolicy::class,
         Media::class => ContentPolicy::class,

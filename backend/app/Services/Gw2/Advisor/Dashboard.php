@@ -4,6 +4,7 @@ namespace App\Services\Gw2\Advisor;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Everything one dashboard render needs, in one payload.
@@ -269,6 +270,163 @@ class Dashboard
             'prices' => null,
             'observed_at' => $snapshot->observedAt,
         ];
+    }
+
+    /**
+     * An evening: a plan, the priorities behind it, and what is scheduled.
+     *
+     * Built entirely out of recommendations that already hold. The advisor has
+     * decided what is worth doing and how sure it is; this only orders a subset
+     * into something that fits the time. A planner that generated its own
+     * activities would be a second advisor with no rules behind it.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function tonight(int $gw2AccountId, ?int $minutes): ?array
+    {
+        $snapshot = $this->reader->for($gw2AccountId);
+
+        if (! $snapshot) {
+            return null;
+        }
+
+        $advice = $this->advisor->advise($snapshot, new Intent(minutes: $minutes));
+
+        return [
+            'plan' => app(SessionPlan::class)->build(
+                [...$advice['headline'], ...$advice['alternatives']],
+                $minutes
+            ),
+            'priorities' => $this->priorities($snapshot),
+            'events' => $this->events(),
+            'observed_at' => $snapshot->observedAt,
+        ];
+    }
+
+    /**
+     * The bars down the right of the mockup, and every one is measured.
+     *
+     * No invented denominators here: Agony Resistance is summed from worn
+     * infusions against the one sourced threshold, the gear figure counts the
+     * twelve slots that have an ascended tier, and the mastery percentage is a
+     * sum over the catalogue's own point costs.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function priorities(Snapshot $snapshot): array
+    {
+        $out = [];
+        $character = $snapshot->primaryCharacter();
+
+        if ($character && $character->agonyShortfall() > 0) {
+            $out[] = [
+                'key' => 'agony',
+                'label' => 'Agony Resistance for Tier 4',
+                'current' => $character->agonyResistance,
+                'target' => CharacterView::TIER_4_AGONY,
+                'unit' => 'AR',
+            ];
+        }
+
+        if ($character && $character->ascendedSlots < $character->coreSlots) {
+            $out[] = [
+                'key' => 'ascended',
+                'label' => 'Ascended core slots',
+                'current' => $character->ascendedSlots,
+                'target' => $character->coreSlots,
+                'unit' => 'slots',
+            ];
+        }
+
+        foreach ($snapshot->masteryRegions as $region) {
+            if ($region->unspent() < 2) {
+                continue;
+            }
+
+            $total = $snapshot->pointsTotalIn($region->region);
+
+            if ($total === 0) {
+                continue;
+            }
+
+            $out[] = [
+                'key' => 'mastery:'.$region->region,
+                'label' => $region->region.' masteries',
+                'current' => $snapshot->pointsSpentIn($region->region),
+                'target' => $total,
+                'unit' => 'points',
+                'note' => $region->unspent().' unspent',
+            ];
+        }
+
+        if ($snapshot->vault && $snapshot->vault->weeklyMetaTarget > 0) {
+            $out[] = [
+                'key' => 'vault_weekly',
+                'label' => "Wizard's Vault, this week",
+                'current' => $snapshot->vault->weeklyMetaProgress,
+                'target' => $snapshot->vault->weeklyMetaTarget,
+                'unit' => 'objectives',
+            ];
+        }
+
+        return array_slice($out, 0, 5);
+    }
+
+    /**
+     * World bosses and metas, when somebody has checked them.
+     *
+     * `/v2/account/worldbosses` says which ones this account killed today and
+     * never when the next one spawns — there is no schedule endpoint. The times
+     * are real, fixed and published, and they are external knowledge, so they
+     * are rows a person enters and verifies rather than a table typed from
+     * memory. Nothing unverified reaches a reader: a wrong spawn time sends
+     * somebody to an empty map, which is worse than saying nothing.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function events(): array
+    {
+        if (! Schema::hasTable('gw2_events')) {
+            return [];
+        }
+
+        $now = (int) now()->utc()->format('H') * 60 + (int) now()->utc()->format('i');
+
+        return DB::table('gw2_events')
+            ->where('is_published', true)
+            ->whereNotNull('verified_at')
+            ->get(['name', 'slug', 'kind', 'region', 'waypoint', 'daily_times_utc', 'duration_minutes', 'rewards'])
+            ->map(function ($event) use ($now) {
+                $times = json_decode($event->daily_times_utc ?? '[]', true) ?: [];
+                $next = null;
+
+                foreach ($times as $minute) {
+                    // Wrapping past midnight is the normal case late in the
+                    // evening, not an edge one.
+                    $away = ((int) $minute - $now + 1440) % 1440;
+
+                    if ($next === null || $away < $next) {
+                        $next = $away;
+                    }
+                }
+
+                return [
+                    'name' => $event->name,
+                    'slug' => $event->slug,
+                    'kind' => $event->kind,
+                    'region' => $event->region,
+                    'waypoint' => $event->waypoint,
+                    'rewards' => $event->rewards,
+                    'minutes_away' => $next,
+                    'live_now' => $next !== null && $event->duration_minutes
+                        && $next >= 1440 - (int) $event->duration_minutes,
+                ];
+            })
+            ->filter(fn ($e) => $e['minutes_away'] !== null)
+            ->sortBy('minutes_away')
+            ->take(6)
+            ->values()
+            ->all();
     }
 
     /** @return array<string, mixed> */

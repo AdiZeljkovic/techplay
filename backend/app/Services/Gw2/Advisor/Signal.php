@@ -85,6 +85,13 @@ class Signal
             'subject' => $this->subject,
             'confidence' => $this->rule->confidence,
             'effort' => $this->rule->effort_band,
+            /*
+             * An editorial estimate, not a measurement — the game reports how
+             * long nothing takes. Null where nobody has judged the rule yet,
+             * which a client must render as silence rather than as zero.
+             */
+            'minutes_low' => $this->rule->minutes_low,
+            'minutes_high' => $this->rule->minutes_high,
             'blockers' => $this->blockers,
             'score' => round($this->score, 1),
             'facts' => $this->facts,

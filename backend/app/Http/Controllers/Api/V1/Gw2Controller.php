@@ -211,6 +211,30 @@ class Gw2Controller extends Controller
     }
 
     /**
+     * GET /gw2/tonight
+     *
+     * An evening, ordered out of recommendations that already hold.
+     */
+    public function tonight(Request $request): JsonResponse
+    {
+        $request->validate(['minutes' => 'nullable|integer|min:5|max:600']);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $payload = $this->dashboard->tonight($accountId, $request->integer('minutes') ?: null);
+
+        if (! $payload) {
+            return $this->success(null, 'We have not finished reading your account yet.');
+        }
+
+        return $this->success($payload);
+    }
+
+    /**
      * GET /gw2/plan
      *
      * What it takes to make one thing, given what this account holds.

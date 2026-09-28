@@ -30,6 +30,11 @@ class Gw2RuleSeeder extends Seeder
     public function run(): void
     {
         foreach ($this->rules() as $rule) {
+            $rule += array_combine(
+                ['minutes_low', 'minutes_high'],
+                self::MINUTES[$rule['key']] ?? [null, null]
+            );
+
             $existing = Gw2Rule::firstWhere('key', $rule['key']);
 
             /*
@@ -53,6 +58,35 @@ class Gw2RuleSeeder extends Seeder
             }
         }
     }
+
+    /**
+     * How long each one takes, low and high, in minutes.
+     *
+     * Editorial estimates and nothing more — the game reports the duration of
+     * nothing, and people play at very different speeds. They are here rather
+     * than derived from `effort_band` because two quick things are not the same
+     * length: claiming acclaim already earned is opening a panel, while an
+     * achievement one step from done can still be a trip across a map.
+     *
+     * A rule absent from this map keeps null, and a session plan then orders it
+     * without claiming a duration. That is the honest state for anything nobody
+     * has judged.
+     *
+     * @var array<string, array{0: int, 1: int}>
+     */
+    private const MINUTES = [
+        'vault-unclaimed-acclaim' => [1, 2],
+        'vault-open-objective' => [10, 20],
+        'achievement-one-step-away' => [10, 25],
+        'achievement-nearly-done' => [25, 60],
+        'mastery-tier-affordable' => [2, 5],
+        'mastery-unspent-points' => [2, 5],
+        'gear-empty-core-slot' => [5, 15],
+        'gear-slot-below-ascended' => [40, 120],
+        'fractals-agony-for-tier-4' => [45, 90],
+        'fractals-agony-active-player' => [45, 90],
+        'gear-no-crafting-discipline' => [60, 180],
+    ];
 
     /**
      * @return array<int, array<string, mixed>>
