@@ -1271,6 +1271,7 @@ Stanje na build `207318` — 96.293 reda, 49 MB:
 | `gw2_achievements` | 8.339 |
 | `gw2_reference` (currencies, itemstats, professions, quests, specializations, titles, mounts) | 1.451 |
 | `gw2_masteries` | 40 |
+| `gw2_reference` (+ raids 6, dungeons 8, worldbosses 15) | struktura, bez imena |
 
 `gw2_catalog_meta` pamti build i grešku po endpointu, pa jedan odbijen endpoint
 ne obori ostale — sljedeći run pročita tačno ono što fali.
@@ -1292,13 +1293,13 @@ veza u koju igrač vjeruje i sinhronizacija koja pada svaku noć. Dozvole koje
 fale se **imenuju** (`missing_features`), da UI može reći koja funkcija je
 ugašena i zašto.
 
-**Puno čitanje je 18 zahtjeva** — sedamnaest `account/*` endpointa i jedan
+**Puno čitanje je 19 zahtjeva** — osamnaest `account/*` endpointa i jedan
 `characters?ids=all`. To zadnje je iznenađenje: u jednom odgovoru vrati nošenu
 opremu, torbe, specijalizacije, vještine, recepte i craft, pa `equipment_tabs` i
 `build_tabs` uopšte ne trebaju dok se ne prikazuju neaktivni šabloni.
 **Brzo čitanje je 6 zahtjeva** — ono što se mijenja unutar dana.
 
-Provjereno na živom nalogu 28. 9.: 18 poziva, 1 lik, 832 reda u knjizi
+Provjereno na živom nalogu 28. 9.: 19 poziva, 1 lik, 832 reda u knjizi
 predmeta, 6 poziva na brzom prolazu.
 
 Tabele:
@@ -1455,6 +1456,7 @@ round-robin po domenu preko svih šest mjesta, ne samo prve tri.
 | `GET /api/v1/gw2/plan?item_id=&quantity=` | stablo izrade + spisak za nabavku |
 | `GET /api/v1/gw2/items?q=` | pretraga 74.265 predmeta, trigram |
 | `GET /api/v1/gw2/tonight?minutes=` | plan sesije, prioriteti, raspored |
+| `GET /api/v1/gw2/content` | rajdovi, bosovi, tamnice — prozor i „ikad“ |
 | `php artisan gw2:snapshot` | ispiše normalizovano stanje |
 | `php artisan gw2:advise --minutes=30 --avoid=vault` | ispiše savjete |
 
@@ -1678,6 +1680,78 @@ infuzija protiv jedinog izvorno potvrđenog praga (150 za T4), oprema broji
 dvanaest slotova koji uopšte imaju ascended nivo, a mastery procenat je zbir nad
 kataloškim `point_cost`-ovima.
 
+### Rajdovi, bosovi, tamnice — i dan kad smo izgubili podatke
+
+Tri endpointa naloga, isti oblik problema: `/v2/account/raids` prijavljuje
+**tekuću sedmicu**, `/v2/account/worldbosses` i `/v2/account/dungeons` **tekući
+dan**. Nijedan nema lifetime pregled. Pitaš igru šta je neko ikad ubio — odgovora
+nema.
+
+Zato dvije kolone, i one **znače različite stvari**:
+
+| Kolona | Odakle | Dokle seže |
+|---|---|---|
+| „ove sedmice" / „danas" | iz igre, potpuno | tekući prozor |
+| **„ikad"** | **naši snimci** (`gw2_progress_events`) | **od dana povezivanja, nikad ranije** |
+
+Datum povezivanja se **ispisuje**. Bez njega bi nalog povezan juče izgledao kao
+neko ko devet godina nije uradio ništa.
+
+#### Šta se stvarno desilo 28. 9. 2026.
+
+Sedmični reset je pao između dva čitanja. Četiri rajd susreta koja smo **već
+izmjerili** — cairn, mursaat_overseer, samarog, deimos — nestala su:
+
+- igra ih više ne prijavljuje (nova sedmica)
+- kod nas su stajala samo u `gw2_account_state.raids`, koji se **prepisuje**
+- `gw2_progress_events` je imao **0 redova**
+
+Uzrok: prvo čitanje namjerno nije pisalo istoriju, uz obrazloženje da bi
+proglašavanje svakog postojećeg otključanja „događajem" zatrpalo novi nalog
+prošlošću koju nije proživio. **To je tačno za postignuća i pogrešno za
+endpointe koji prijavljuju prozor.**
+
+Nalog koji se poveže usred sedmice ima svoja čišćenja u prvom čitanju — i prvi
+reset ih briše. Tačno gubitak zbog kojeg ovi snimci i postoje.
+
+#### Popravka: prvo čitanje piše *baseline*
+
+Prvo čitanje sada upisuje događaje za ta tri tipa, označene
+`baseline: true` i **datirane na povezivanje, ne na čitanje**. Čitalac mora moći
+razlikovati „ovo si očistio u četvrtak" od „ovo je već bilo gotovo kad si došao",
+a datiranje na čitanje bi tvrdilo da je igrač sve to uradio u sekundi kad je
+zalijepio ključ.
+
+Postignuća ostaju izvan baseline-a: 364 završena postignuća su zid, ne istorija —
+i, za razliku od rajdova, mogu se ponovo pročitati iz API-ja u cijelosti.
+
+**Stari test je tvrdio suprotno i prolazio dok su se podaci gubili.** Sada opisuje
+gubitak.
+
+Ona četiri susreta su vraćena ručno, sa bilješkom u payloadu odakle su — bila su
+naše provjereno opažanje, ne pretpostavka.
+
+#### Katalog je dobio strukturu
+
+Sva tri endpointa naloga odgovaraju **golim slugovima**: `["samarog","deimos"]`.
+Kojem krilu pripadaju piše u `/v2/raids`, pa katalog sada preslikava i `raids`
+(6), `dungeons` (8) i `worldbosses` (15) — 16 zahtjeva ukupno, samo struktura,
+jer **API nema prikazno ime ni za jedno od njih**. Slugovi se prevode mehanički
+(`vale_guardian` → `Vale Guardian`), ne iz tabele imena koju niko ne bi mogao
+provjeriti.
+
+#### Puno čitanje je sada 19 zahtjeva, ne 18
+
+`account/dungeons` je devetnaesti. Svaki komentar koji je tvrdio osamnaest je
+ispravljen — broj je činjenica o spisku, ne slogan, a ovaj repo je već dvaput
+ugrizen brojkama koje su ostale u prozi nakon što se stvar promijenila.
+
+#### Čega namjerno nema
+
+**Nikakve tvrdnje da je igrač „spreman za rajd".** Oprema ne govori ništa o tome
+zna li neko susret, a alat koji drugo zaključuje iz prvog sprema ljude da budu
+izbačeni iz grupe.
+
 ### Frontend — `/gw2`
 
 Klijentski, i to namjerno: sve na stranici je nečiji vlastiti nalog pročitan
@@ -1763,6 +1837,12 @@ Tri stvari sa mockupa 4 nisu nacrtane: **„Potential Rewards Tonight"** (ikone
 nagrada koje ništa ne izvodi iz plana), **„Current Events"** dok tabela
 `gw2_events` ne dobije provjerene redove, i minutne brojke kao tvrdnje — ovdje
 su rasponi, i piše da su naši.
+
+#### `/gw2/content`
+
+Krila rajdova sa susretima, petnaest svjetskih bosova, osam tamnica. Dvije
+kolone — „ove sedmice / danas" iz igre i „ikad" iz naših snimaka — i panel na
+vrhu koji **objasni razliku i ispiše datum** od kog „ikad" počinje.
 
 ### Otvoreno
 
