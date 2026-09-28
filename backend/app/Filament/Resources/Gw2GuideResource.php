@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\Gw2GuideResource\Pages;
+use App\Models\Gw2Achievement;
 use App\Models\Gw2Guide;
 use App\Models\Gw2Source;
 use Filament\Actions\BulkActionGroup;
@@ -77,9 +78,56 @@ class Gw2GuideResource extends Resource
                 ->helperText('Write it for somebody with no account connected. Everything below is an addition to this, never a replacement for it.'),
 
             Forms\Components\Select::make('personalise_as')
-                ->options(Gw2Guide::PERSONALISATIONS)
+                /*
+                 * The fixed list, plus one option only this guide can offer:
+                 * its own achievement chain. The key has to name the guide, so
+                 * it cannot be a constant — and it cannot be offered before
+                 * the guide has a slug either, which is why a new page has to
+                 * be saved once before the option appears.
+                 */
+                ->options(fn (?Gw2Guide $record) => $record?->family && $record?->slug
+                    ? Gw2Guide::PERSONALISATIONS + [
+                        "guide:{$record->family}/{$record->slug}" => 'This guide\'s own achievement chain',
+                    ]
+                    : Gw2Guide::PERSONALISATIONS)
                 ->placeholder('Nothing — purely editorial')
                 ->helperText('What a signed-in reader sees inlined. Leaving it empty is a legitimate answer: not every page has a number to show.'),
+
+            Forms\Components\Repeater::make('achievement_ids')
+                ->label('Achievement chain')
+                ->columnSpanFull()
+                ->addActionLabel('Add an achievement')
+                ->reorderable()
+                ->collapsible()
+                ->itemLabel(fn (array $state) => Gw2Achievement::find($state['id'] ?? null)?->name ?? 'Pick one')
+                ->schema([
+                    Forms\Components\Select::make('id')
+                        ->label('Achievement')
+                        ->searchable()
+                        ->required()
+                        ->getSearchResultsUsing(fn (string $search) => Gw2Achievement::query()
+                            ->where('name', 'ilike', '%'.$search.'%')
+                            ->orderBy('name')
+                            ->limit(40)
+                            ->pluck('name', 'id')
+                            ->all())
+                        ->getOptionLabelUsing(fn ($value) => Gw2Achievement::find($value)?->name),
+                ])
+                /*
+                 * The column is a flat list of ids and a repeater wants a list
+                 * of rows, so the two are converted here rather than in the
+                 * page classes — the shape is this field's business and
+                 * splitting it across create and edit is how one of them ends
+                 * up forgotten.
+                 */
+                ->afterStateHydrated(fn (Forms\Components\Repeater $component, $state) => $component->state(
+                    array_map(fn ($id) => ['id' => (int) $id], array_values((array) $state))
+                ))
+                ->dehydrateStateUsing(fn ($state) => array_values(array_map(
+                    fn ($row) => (int) $row['id'],
+                    array_filter((array) $state, fn ($row) => ! empty($row['id']))
+                )))
+                ->helperText('The order matters — it is the order a player does them in, and it is the part of this page the game does not publish. Every step inside each achievement comes from the game itself.'),
 
             Forms\Components\KeyValue::make('next_steps')
                 ->keyLabel('Label')

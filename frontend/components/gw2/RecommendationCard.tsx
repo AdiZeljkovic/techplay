@@ -35,7 +35,17 @@ export default function RecommendationCard({
     recommendation: Recommendation;
     featured?: boolean;
 }) {
-    const { title, body, confidence, effort, blockers, domain } = recommendation;
+    const { title, body, confidence, effort, blockers, domain, details } = recommendation;
+
+    /*
+     * Three at most, and the count when there are more.
+     *
+     * An achievement can have eighteen steps left and a card is not a
+     * checklist — the page it links to is. Three is enough to show the card is
+     * telling the truth about what is left, which is the job here.
+     */
+    const steps = details?.steps_remaining ?? [];
+    const shown = steps.filter((step) => step.text !== null).slice(0, 3);
 
     return (
         <article
@@ -66,6 +76,28 @@ export default function RecommendationCard({
             <h3 className="font-display text-base leading-snug text-[var(--ink-hi)] text-balance">{title}</h3>
 
             <p className="text-sm leading-relaxed text-[var(--ink-mid)]">{body}</p>
+
+            {shown.length > 0 && (
+                <div className="space-y-1.5">
+                    <ul className="space-y-1">
+                        {shown.map((step) => (
+                            <li key={step.index} className="flex gap-2 text-xs text-[var(--ink-low)]">
+                                <span
+                                    aria-hidden
+                                    className="mt-[5px] h-1 w-1 shrink-0 rounded-full"
+                                    style={{ background: "var(--ink-faint)" }}
+                                />
+                                <span>{step.text}</span>
+                            </li>
+                        ))}
+                    </ul>
+                    {steps.length > shown.length && (
+                        <p className="text-[11px] text-[var(--ink-faint)]">
+                            and {steps.length - shown.length} more
+                        </p>
+                    )}
+                </div>
+            )}
 
             {blockers.length > 0 && (
                 <ul className="mt-auto space-y-1.5 border-t pt-3" style={{ borderColor: "var(--line)" }}>

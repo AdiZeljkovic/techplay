@@ -20,6 +20,7 @@ class Gw2Guide extends Model
 {
     protected $fillable = [
         'family', 'slug', 'title', 'standfirst', 'body', 'personalise_as', 'next_steps',
+        'achievement_ids',
         'seo_title', 'seo_description', 'keywords', 'hero_image',
         'owner', 'source_ids', 'game_build', 'reviewed_at',
         'is_published', 'sort_order',
@@ -27,6 +28,7 @@ class Gw2Guide extends Model
 
     protected $casts = [
         'next_steps' => 'array',
+        'achievement_ids' => 'array',
         'keywords' => 'array',
         'source_ids' => 'array',
         'is_published' => 'boolean',

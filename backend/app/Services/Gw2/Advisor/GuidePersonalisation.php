@@ -2,6 +2,9 @@
 
 namespace App\Services\Gw2\Advisor;
 
+use App\Models\Gw2Guide;
+use Illuminate\Support\Facades\DB;
+
 /**
  * What a reader's own account adds to a public guide.
  *
@@ -41,9 +44,18 @@ class GuidePersonalisation
             'vault' => $this->vault($snapshot),
             'raids' => $this->raids($snapshot),
             'next-steps' => $this->nextSteps($snapshot),
-            // A guide naming a key nothing resolves renders as though it had
-            // none. That is the right failure and not one to invite.
-            default => null,
+            /*
+             * `guide:mounts/skyscale` — a guide showing progress through its
+             * own curated achievement list.
+             *
+             * Prefixed rather than named one-by-one because there is one of
+             * these per mount and there will be one per legendary, and a match
+             * arm per page would put the page list in code. The key names the
+             * guide; the guide names the achievements.
+             */
+            default => str_starts_with($key, 'guide:')
+                ? $this->collection(substr($key, 6), $snapshot)
+                : null,
         };
     }
 
@@ -165,6 +177,134 @@ class GuidePersonalisation
             'note' => 'Guild Wars 2 reports only the current week, so this resets every Monday '
                 .'regardless of what you have done before.',
         ];
+    }
+
+    /**
+     * A guide's own achievement chain, with this account's progress on it.
+     *
+     * The division of labour here is the whole design, and it is forced rather
+     * than chosen. **Which** achievements make up a mount, and **in what
+     * order**, is not in the API: across the forty Skyscale achievements
+     * exactly one has a `prerequisites` entry, and the collections sit in the
+     * "War Eternal" category beside thirty-one unrelated things. So membership
+     * and order are curated — a list on the guide row, editable by a person
+     * who knows the game. §9.5 called this before anyone checked: *"The
+     * acquisition path is content logic and must be maintained as TechPlay
+     * curated data."*
+     *
+     * Everything inside a collection is ArenaNet's. The step text is theirs
+     * verbatim, the tick against each step is the account's own record, and
+     * neither is written by us. Which means a guide's editor maintains nine
+     * ordered lists of ids, not nine hundred steps — and the steps stay right
+     * through a patch that the prose would not survive.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function collection(string $path, Snapshot $snapshot): ?array
+    {
+        [$family, $slug] = array_pad(explode('/', $path, 2), 2, null);
+
+        $guide = $slug === null ? null : Gw2Guide::query()
+            ->published()
+            ->where('family', $family)
+            ->where('slug', $slug)
+            ->first(['title', 'achievement_ids']);
+
+        $ids = array_values(array_filter(array_map('intval', (array) ($guide->achievement_ids ?? []))));
+
+        if ($ids === []) {
+            // Either no such guide or nobody has listed its achievements yet.
+            // Both render as a page with no personalisation, which is what the
+            // page was written to be.
+            return null;
+        }
+
+        $progress = $this->achievementProgress($snapshot->accountId, $ids);
+
+        $catalogue = DB::table('gw2_achievements')
+            ->whereIn('id', $ids)
+            ->get(['id', 'name', 'requirement', 'bits'])
+            ->keyBy('id');
+
+        $steps = new AchievementSteps($catalogue);
+        $rows = [];
+        $done = 0;
+
+        // The curated order, not the catalogue's — that order is the part a
+        // person contributed and sorting it away would throw it out.
+        foreach ($ids as $id) {
+            $meta = $catalogue[$id] ?? null;
+
+            if (! $meta) {
+                continue;
+            }
+
+            $mine = $progress[$id] ?? null;
+            $complete = (bool) ($mine['done'] ?? false);
+            $done += $complete ? 1 : 0;
+
+            $remaining = array_values(array_filter(
+                $steps->for($id, array_map('intval', (array) ($mine['bits'] ?? []))),
+                fn (AchievementStep $step) => ! $step->done
+            ));
+
+            $rows[] = [
+                'id' => $id,
+                'name' => $meta->name,
+                'requirement' => $meta->requirement,
+                'done' => $complete,
+                /*
+                 * Null rather than zero where the account has no record of
+                 * this achievement. It means "not started as far as the API
+                 * shows", and an achievement can also be absent because it has
+                 * not been unlocked yet — a zero would flatten those two into
+                 * a claim we cannot make.
+                 */
+                'current' => $mine === null ? null : (int) ($mine['current'] ?? 0),
+                'max' => $mine === null ? null : (int) ($mine['max'] ?? 0),
+                'steps_remaining' => $complete ? [] : array_map(fn (AchievementStep $s) => [
+                    'index' => $s->index,
+                    'text' => $s->text,
+                ], $remaining),
+            ];
+        }
+
+        return $rows === [] ? null : [
+            'kind' => 'collection',
+            'label' => 'Your progress through this chain',
+            'complete' => $done,
+            'total' => count($rows),
+            'items' => $rows,
+            'note' => 'Step wording comes from the game itself. Which collections make up this '
+                .'chain, and the order to do them in, is ours — the game does not publish it.',
+        ];
+    }
+
+    /**
+     * This account's record for a named set of achievements.
+     *
+     * @param  array<int, int>  $ids
+     * @return array<int, array<string, mixed>>
+     */
+    private function achievementProgress(int $gw2AccountId, array $ids): array
+    {
+        $raw = DB::table('gw2_account_state')
+            ->where('gw2_account_id', $gw2AccountId)
+            ->value('achievements');
+
+        $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
+        $wanted = array_flip($ids);
+        $rows = [];
+
+        foreach ((array) $decoded as $row) {
+            $id = (int) ($row['id'] ?? 0);
+
+            if (isset($wanted[$id])) {
+                $rows[$id] = $row;
+            }
+        }
+
+        return $rows;
     }
 
     /** @return array<string, mixed>|null */

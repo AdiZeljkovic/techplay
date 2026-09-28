@@ -235,7 +235,7 @@ class Gw2RuleSeeder extends Seeder
                 'producer' => NearlyDoneAchievements::KEY,
                 'domain' => 'achievements',
                 'title' => 'Close on {name}',
-                'body' => '{current} of {max} done, so {remaining} to go. {requirement}',
+                'body' => '{current} of {max} done, so {remaining} to go. {next_step}{mastery_note}',
                 'requires' => [['path' => 'achievements.nearly_done', 'op' => '>=', 'value' => 3]],
                 'base_score' => 50,
                 'weights' => ['remaining' => -2.0],

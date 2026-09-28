@@ -38,6 +38,19 @@ export interface Recommendation {
      */
     blockers: string[];
     score: number;
+    /**
+     * Structured extras, absent on most cards.
+     *
+     * Kept apart from the sentence rather than folded into it because the
+     * steps carry an index each, and the index is what lets a client line the
+     * remaining ones up against the full list. A comma-separated string would
+     * lose that.
+     */
+    details?: {
+        steps_total: number;
+        /** Only what is left. The wording is the game's own. */
+        steps_remaining: { index: number; text: string | null }[];
+    };
 }
 
 export interface MasteryRegion {

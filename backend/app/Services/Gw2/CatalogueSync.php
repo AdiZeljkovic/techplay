@@ -178,8 +178,16 @@ class CatalogueSync
                 'rewards' => $this->json($r['rewards'] ?? null),
                 'flags' => $this->json($r['flags'] ?? null),
                 'bits' => $this->json($r['bits'] ?? null),
+                'description' => $this->text($r['description'] ?? ''),
+                'locked_text' => $this->text($r['locked_text'] ?? ''),
+                'icon' => $r['icon'] ?? null,
+                'prerequisites' => $this->json($r['prerequisites'] ?? null),
+                'mastery_region' => $this->masteryRegion($r['rewards'] ?? null),
                 'build_id' => $buildId,
-            ], $rows), ['name', 'requirement', 'type', 'tiers', 'rewards', 'flags', 'bits', 'build_id']),
+            ], $rows), [
+                'name', 'requirement', 'type', 'tiers', 'rewards', 'flags', 'bits',
+                'description', 'locked_text', 'icon', 'prerequisites', 'mastery_region', 'build_id',
+            ]),
 
             'recipes' => $this->upsert('gw2_recipes', array_map(fn ($r) => [
                 'id' => $r['id'],
@@ -236,6 +244,30 @@ class CatalogueSync
     private function kind(string $endpoint): string
     {
         return str_replace('/', '_', $endpoint);
+    }
+
+    /**
+     * The mastery region an achievement pays out in, or null.
+     *
+     * Lifted from `rewards[]` rather than computed later because it is asked
+     * of every candidate on every snapshot and the answer never changes
+     * between builds. Kept in ArenaNet's spelling — `Desert`, `Sky` — so this
+     * column stays a mirror of the payload; `MasteryRegions` owns the
+     * translation to what the account endpoint calls the same place, and that
+     * separation is not decorative: collapsing the two is the bug that left
+     * the mastery rule scoring zero for a fortnight.
+     *
+     * @param  array<int, array<string, mixed>>|null  $rewards
+     */
+    private function masteryRegion(?array $rewards): ?string
+    {
+        foreach ($rewards ?? [] as $reward) {
+            if (($reward['type'] ?? null) === 'Mastery' && ($reward['region'] ?? null)) {
+                return (string) $reward['region'];
+            }
+        }
+
+        return null;
     }
 
     private function json(mixed $value): ?string

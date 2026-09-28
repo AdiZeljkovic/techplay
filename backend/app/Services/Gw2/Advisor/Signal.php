@@ -23,6 +23,7 @@ class Signal
      * @param  array<string, int|float|string|bool|null>  $facts  Fills the rule's {placeholders}.
      * @param  array<int, string>  $blockers  Plain sentences, in the order they must be cleared.
      * @param  array<int, string>  $pushes  Which goals this also moves, for dedupe.
+     * @param  array<string, mixed>  $details  Structured extras for the client.
      */
     public function __construct(
         public readonly Gw2Rule $rule,
@@ -31,6 +32,17 @@ class Signal
         public readonly array $blockers = [],
         public readonly array $pushes = [],
         public float $score = 0.0,
+        /*
+         * Anything with a shape, kept out of `facts` on purpose.
+         *
+         * `facts` fills {placeholders} and weights a score, which means every
+         * value in it has to survive being cast to a string and compared with
+         * a number. A list of achievement steps does neither. Rather than
+         * flatten one into "three things, comma separated" and lose the
+         * per-step done flag the client needs, structured data comes through
+         * here and a rule never sees it.
+         */
+        public readonly array $details = [],
     ) {}
 
     /**
@@ -65,13 +77,27 @@ class Signal
      */
     private function fill(string $template): string
     {
-        return preg_replace_callback(
+        $filled = preg_replace_callback(
             '/\{(\w+)}/',
             fn ($m) => array_key_exists($m[1], $this->facts)
                 ? (string) $this->facts[$m[1]]
                 : $m[0],
             $template
         );
+
+        /*
+         * A fact that is deliberately empty leaves a hole in the sentence
+         * around it.
+         *
+         * Some facts only sometimes apply — a mastery note that appears for
+         * the one achievement in fifty that pays a point, and is an empty
+         * string for the rest. The alternative to an empty string is two
+         * rule bodies and a producer choosing between them, which moves
+         * prose into code and is the arrangement this whole table exists to
+         * avoid. So the empty string stays, and the double space and the
+         * space before the full stop it leaves behind get cleaned up here.
+         */
+        return trim(preg_replace(['/ {2,}/', '/ +([.,;:])/'], [' ', '$1'], $filled));
     }
 
     /** @return array<string, mixed> */
@@ -95,6 +121,9 @@ class Signal
             'blockers' => $this->blockers,
             'score' => round($this->score, 1),
             'facts' => $this->facts,
+            // Omitted entirely when empty, so a client can test for the key
+            // rather than for an empty array it then has to interpret.
+            ...($this->details === [] ? [] : ['details' => $this->details]),
         ];
     }
 }

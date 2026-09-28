@@ -3,8 +3,10 @@
 namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\AchievementStep;
 use App\Services\Gw2\Advisor\EasyWin;
 use App\Services\Gw2\Advisor\Intent;
+use App\Services\Gw2\Advisor\MasteryRegions;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\Signal;
 use App\Services\Gw2\Advisor\Snapshot;
@@ -38,8 +40,9 @@ class NearlyDoneAchievements implements Producer
     public function produce(Gw2Rule $rule, Snapshot $snapshot, Intent $intent): array
     {
         $signals = [];
+        $needed = $this->regionsWherePointsWouldHelp($snapshot);
 
-        foreach (array_slice($snapshot->nearlyDone, 0, self::MOST) as $win) {
+        foreach (array_slice($this->masteryFirst($snapshot->nearlyDone, $needed), 0, self::MOST) as $win) {
             // Nothing to say about an achievement whose name we do not have.
             // The catalogue is mirrored locally so this is rare, and when it
             // happens it means the catalogue is behind the game rather than that
@@ -47,6 +50,10 @@ class NearlyDoneAchievements implements Producer
             if ($win->name === null) {
                 continue;
             }
+
+            $region = MasteryRegions::toAccountName($win->masteryRegion);
+            $wanted = $region !== null && in_array($region, $needed, true);
+            $left = $win->remainingSteps();
 
             $signals[] = new Signal(
                 rule: $rule,
@@ -58,13 +65,139 @@ class NearlyDoneAchievements implements Producer
                     'max' => $win->max,
                     'step' => $win->remaining() === 1 ? 'step' : 'steps',
                     'requirement' => $win->requirement ?? '',
+                    // The game's words for the next thing to do, falling back
+                    // to the achievement's own requirement line where it has
+                    // no step list. Always populated, so the rule body needs
+                    // no conditional.
+                    'next_step' => $this->nextStep($win, $left),
+                    // Empty unless the point lands somewhere it is wanted. A
+                    // rule that reads "{mastery_note}" then renders nothing,
+                    // which is the behaviour to want from a fact that only
+                    // sometimes applies.
+                    'mastery_note' => $wanted
+                        ? " It also pays a {$region} mastery point, and you have {$region} tracks that are short of points."
+                        : '',
+                    'mastery_region' => $region ?? '',
                 ],
                 blockers: $this->blockers($win),
-                pushes: ['achievement_points'],
+                pushes: $wanted ? ['achievement_points', 'masteries'] : ['achievement_points'],
+                details: $win->stepsKnown() ? [
+                    'steps_total' => count($win->steps),
+                    'steps_remaining' => array_map(fn (AchievementStep $s) => [
+                        'index' => $s->index,
+                        'text' => $s->text,
+                    ], $left),
+                ] : [],
             );
         }
 
         return $signals;
+    }
+
+    /**
+     * The next thing to do, in the game's own words where it has any.
+     *
+     * @param  array<int, AchievementStep>  $left
+     */
+    private function nextStep(EasyWin $win, array $left): string
+    {
+        foreach ($left as $step) {
+            if ($step->text !== null) {
+                return $step->text;
+            }
+        }
+
+        /*
+         * No named step, so the achievement's requirement line is the best
+         * sentence available. That is not a degraded case — plenty of
+         * achievements are a single counter with no steps at all, and for
+         * those the requirement *is* the instruction.
+         */
+        return $win->requirement ?? '';
+    }
+
+    /**
+     * §12.1, which asks for one thing and is worth quoting exactly:
+     *
+     * > *"Boost achievements that award a Mastery Point needed by the user's
+     * > currently selected region/goal."*
+     *
+     * "Needed" is doing the work, and the obvious reading of it is wrong. An
+     * account with 31 unspent Path of Fire points does not need another one;
+     * handing it a mastery-point achievement would be advice that changes
+     * nothing. A point is needed where the region still has a track to train
+     * **and** the unspent points do not already cover the cheapest next tier —
+     * that is, where the point is the thing standing in the way.
+     *
+     * Applied before the cut rather than after it, because a boost that only
+     * reorders the six already on screen cannot lift the seventh onto it, and
+     * lifting is the entire request.
+     *
+     * @param  array<int, EasyWin>  $wins
+     * @param  array<int, string>  $needed
+     * @return array<int, EasyWin>
+     */
+    private function masteryFirst(array $wins, array $needed): array
+    {
+        if ($needed === []) {
+            return $wins;
+        }
+
+        $lifted = [];
+        $rest = [];
+
+        foreach ($wins as $win) {
+            $region = MasteryRegions::toAccountName($win->masteryRegion);
+
+            if ($region !== null && in_array($region, $needed, true)) {
+                $lifted[] = $win;
+            } else {
+                $rest[] = $win;
+            }
+        }
+
+        /*
+         * Order within each half is untouched. The reader already sorted by
+         * closest-to-done, and that is still the right tiebreak — this moves
+         * a group, it does not re-rank inside one.
+         */
+        return [...$lifted, ...$rest];
+    }
+
+    /**
+     * Regions where one more mastery point would actually unblock something.
+     *
+     * @return array<int, string>
+     */
+    private function regionsWherePointsWouldHelp(Snapshot $snapshot): array
+    {
+        $cheapest = [];
+
+        foreach ($snapshot->masteryTracks as $track) {
+            if ($track->region === null || $track->finished()) {
+                continue;
+            }
+
+            $cost = $track->nextTierCost();
+
+            if ($cost === null) {
+                continue;
+            }
+
+            $cheapest[$track->region] = min($cheapest[$track->region] ?? PHP_INT_MAX, $cost);
+        }
+
+        $needed = [];
+
+        foreach ($cheapest as $region => $cost) {
+            $unspent = ($snapshot->masteryRegions[$region] ?? null)?->unspent() ?? 0;
+
+            if ($unspent < $cost) {
+                $needed[] = $region;
+            }
+        }
+
+        return $needed;
     }
 
     /**

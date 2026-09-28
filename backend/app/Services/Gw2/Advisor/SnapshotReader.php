@@ -215,7 +215,14 @@ class SnapshotReader
             }
 
             if ($current / $max >= self::NEARLY_DONE) {
-                $candidates[(int) $row['id']] = ['current' => $current, 'max' => $max];
+                $candidates[(int) $row['id']] = [
+                    'current' => $current,
+                    'max' => $max,
+                    // Which step indices this account has already ticked. The
+                    // account endpoint gives these and only these; the text
+                    // for them lives in the catalogue.
+                    'bits' => array_map('intval', (array) ($row['bits'] ?? [])),
+                ];
             }
         }
 
@@ -225,8 +232,13 @@ class SnapshotReader
 
         $catalogue = DB::table('gw2_achievements')
             ->whereIn('id', array_keys($candidates))
-            ->get(['id', 'name', 'requirement', 'advisor_eligible', 'effort_band', 'reviewed_at', 'flags'])
+            ->get([
+                'id', 'name', 'requirement', 'advisor_eligible', 'effort_band',
+                'reviewed_at', 'flags', 'bits', 'mastery_region',
+            ])
             ->keyBy('id');
+
+        $steps = new AchievementSteps($catalogue);
 
         $wins = [];
 
@@ -260,6 +272,8 @@ class SnapshotReader
                 max: $progress['max'],
                 effortBand: $meta->effort_band ?? null,
                 curated: (bool) ($meta->reviewed_at ?? false),
+                steps: $steps->for($id, $progress['bits']),
+                masteryRegion: $meta->mastery_region ?? null,
             );
         }
 

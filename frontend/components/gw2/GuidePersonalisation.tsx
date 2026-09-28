@@ -54,7 +54,32 @@ interface Recommendations {
     items: { title: string; body: string; confidence: string }[];
 }
 
-type Block = Figure | Checklist | Rows | Recommendations;
+/**
+ * A curated chain, with this reader's progress through it.
+ *
+ * Which achievements make up a mount and in what order is ours — the game
+ * publishes neither. Every step inside them is ArenaNet's own wording, which is
+ * why `steps_remaining` is rendered verbatim and never paraphrased.
+ */
+interface Collection {
+    kind: "collection";
+    label: string;
+    complete: number;
+    total: number;
+    items: {
+        id: number;
+        name: string;
+        requirement: string | null;
+        done: boolean;
+        /** Null where the account has no record of this one at all. */
+        current: number | null;
+        max: number | null;
+        steps_remaining: { index: number; text: string | null }[];
+    }[];
+    note: string | null;
+}
+
+type Block = Figure | Checklist | Rows | Recommendations | Collection;
 
 export default function GuidePersonalisation({ personaliseAs }: { personaliseAs: string }) {
     const { user, isLoading } = useAuth();
@@ -168,6 +193,68 @@ export default function GuidePersonalisation({ personaliseAs }: { personaliseAs:
                             </li>
                         ))}
                     </ul>
+                    {block.note && <p className="text-sm text-[var(--ink-mid)]">{block.note}</p>}
+                </div>
+            )}
+
+            {block.kind === "collection" && (
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <span className="font-numeric text-2xl text-[var(--ink-hi)]">
+                            {block.complete} <span className="text-base text-[var(--ink-low)]">/ {block.total}</span>
+                        </span>
+                        <Meter value={block.complete} max={block.total} size="sm" />
+                    </div>
+
+                    <ol className="space-y-3">
+                        {block.items.map((item) => (
+                            <li key={item.id} className="space-y-1.5">
+                                <div className="flex items-baseline justify-between gap-3 text-sm">
+                                    <span
+                                        className="truncate"
+                                        style={{
+                                            color: item.done ? "var(--ink-low)" : "var(--ink-hi)",
+                                            // A finished collection stays on the
+                                            // page — the chain is the point, and
+                                            // seeing what is behind you is half
+                                            // of what makes it readable.
+                                            textDecoration: item.done ? "line-through" : undefined,
+                                        }}
+                                    >
+                                        {item.name}
+                                    </span>
+                                    <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">
+                                        {item.done
+                                            ? "done"
+                                            : item.current === null
+                                              ? "not started"
+                                              : `${item.current} / ${item.max}`}
+                                    </span>
+                                </div>
+
+                                {item.steps_remaining.length > 0 && (
+                                    <ul className="space-y-1 pl-3">
+                                        {item.steps_remaining
+                                            .filter((step) => step.text !== null)
+                                            .map((step) => (
+                                                <li
+                                                    key={step.index}
+                                                    className="flex gap-2 text-xs text-[var(--ink-low)]"
+                                                >
+                                                    <span
+                                                        aria-hidden
+                                                        className="mt-[5px] h-1 w-1 shrink-0 rounded-full"
+                                                        style={{ background: "var(--ink-faint)" }}
+                                                    />
+                                                    <span>{step.text}</span>
+                                                </li>
+                                            ))}
+                                    </ul>
+                                )}
+                            </li>
+                        ))}
+                    </ol>
+
                     {block.note && <p className="text-sm text-[var(--ink-mid)]">{block.note}</p>}
                 </div>
             )}
