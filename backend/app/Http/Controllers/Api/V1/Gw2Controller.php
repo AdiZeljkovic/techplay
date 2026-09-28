@@ -182,6 +182,34 @@ class Gw2Controller extends Controller
         return $this->success($payload);
     }
 
+    /**
+     * GET /gw2/masteries
+     *
+     * Every track with the account's place in it. Separate from the dashboard
+     * because forty tracks and their tier names are a few kilobytes the front
+     * page has no use for.
+     */
+    public function masteries(Request $request): JsonResponse
+    {
+        $connection = $this->find($request);
+
+        if (! $connection) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $accountId = DB::table('gw2_accounts')
+            ->where('connected_account_id', $connection->id)
+            ->value('id');
+
+        $payload = $accountId ? $this->dashboard->masteries((int) $accountId) : null;
+
+        if (! $payload) {
+            return $this->success(null, 'We have not finished reading your account yet.');
+        }
+
+        return $this->success($payload);
+    }
+
     private function find(Request $request): ?ConnectedAccount
     {
         return ConnectedAccount::query()

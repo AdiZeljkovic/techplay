@@ -93,6 +93,95 @@ class Dashboard
         ];
     }
 
+    /**
+     * Every mastery track, grouped by region.
+     *
+     * Its own call rather than part of the dashboard: forty tracks with their
+     * tier names is a few kilobytes that the front page does not need, and the
+     * masteries page is the only thing that reads it.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function masteries(int $gw2AccountId): ?array
+    {
+        $snapshot = $this->reader->for($gw2AccountId);
+
+        if (! $snapshot) {
+            return null;
+        }
+
+        $regions = [];
+
+        foreach ($snapshot->masteryRegions as $region) {
+            $tracks = $snapshot->tracksIn($region->region);
+
+            if ($tracks === []) {
+                continue;
+            }
+
+            $total = $snapshot->pointsTotalIn($region->region);
+            $spent = $snapshot->pointsSpentIn($region->region);
+
+            $regions[] = [
+                'region' => $region->region,
+                'earned' => $region->earned,
+                'spent' => $region->spent,
+                'unspent' => $region->unspent(),
+                'points_spent' => $spent,
+                'points_total' => $total,
+                'percent' => $total > 0 ? (int) round($spent / $total * 100) : 0,
+                'tracks' => array_map(fn (MasteryTrack $t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'requirement' => $t->requirement,
+                    'tiers_paid' => $t->tiersPaid,
+                    'tiers' => $t->tiers(),
+                    'tier_costs' => $t->tierCosts,
+                    'tier_names' => $t->tierNames,
+                    'next_tier' => $t->nextTierName(),
+                    'next_cost' => $t->nextTierCost(),
+                    'points_spent' => $t->pointsSpent(),
+                    'points_total' => $t->pointsTotal(),
+                    'points_remaining' => $t->pointsRemaining(),
+                    'finished' => $t->finished(),
+                    'untouched' => $t->untouched(),
+                    // Whether this region's spare points reach it. The answer
+                    // is what turns a list into a recommendation.
+                    'affordable' => ! $t->finished()
+                        && $t->nextTierCost() !== null
+                        && $t->nextTierCost() <= $region->unspent(),
+                ], $tracks),
+            ];
+        }
+
+        usort($regions, fn ($a, $b) => $b['unspent'] <=> $a['unspent']);
+
+        /*
+         * Tracks the catalogue has but no account region claims.
+         *
+         * `Magic` — Castoran Survivalist and the rest — has no counterpart in
+         * /v2/account/mastery/points, so pairing it would file points under the
+         * wrong expansion. Shown apart, and said out loud, rather than hidden.
+         */
+        $unpaired = array_values(array_filter(
+            $snapshot->masteryTracks,
+            fn (MasteryTrack $t) => $t->region === null
+        ));
+
+        return [
+            'regions' => $regions,
+            'unspent_total' => $snapshot->unspentMasteryPoints(),
+            'unpaired' => array_map(fn (MasteryTrack $t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'catalogue_region' => $t->catalogueRegion,
+                'tiers' => $t->tiers(),
+                'points_total' => $t->pointsTotal(),
+            ], $unpaired),
+            'observed_at' => $snapshot->observedAt,
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function account(Snapshot $snapshot): array
     {
@@ -149,7 +238,10 @@ class Dashboard
                 'points_total' => $pointsTotal,
                 'percent' => $pointsTotal > 0 ? (int) round($pointsSpent / $pointsTotal * 100) : 0,
                 'tracks_finished' => count(array_filter($tracks, fn (MasteryTrack $t) => $t->finished())),
-                'tracks' => count($tracks),
+                // Named apart from the masteries payload's `tracks`, which is the
+                // list itself. One word meaning both a count and a collection is
+                // how a client ends up rendering "6" where a table belongs.
+                'track_count' => count($tracks),
                 // Cheapest first: the one that leaves the most over.
                 'affordable' => array_map(fn (MasteryTrack $t) => [
                     'id' => $t->id,

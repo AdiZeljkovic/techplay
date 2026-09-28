@@ -287,7 +287,12 @@ export default async function RootLayout({
             config below it, and those attributes are exactly what would let it
             run after. React hoists async scripts to the top of the head, which
             is how the library below ended up executing before its own
-            configuration. */}
+            configuration.
+
+            The lint rule below is disabled on purpose rather than left failing:
+            being synchronous is the entire point of this tag, and a rule
+            reported as an error every run is a rule nobody reads. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/consent" />
 
         {/* GA4 itself, in the head rather than after hydration.

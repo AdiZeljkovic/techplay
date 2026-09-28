@@ -60,14 +60,13 @@ export default function Gw2Client() {
         []
     );
 
+    /*
+     * Signed out is a branch below, not a state set from here — it is already
+     * derivable from `user`, and setting it in an effect body costs a second
+     * render and reads as if the two could disagree.
+     */
     useEffect(() => {
-        if (authLoading) return;
-
-        if (!user) {
-            setState("disconnected");
-
-            return;
-        }
+        if (authLoading || !user) return;
 
         void load(intent, true);
         // `intent` is deliberately a dependency: changing the time budget or the
@@ -99,16 +98,7 @@ export default function Gw2Client() {
         return () => clearInterval(timer);
     }, [state, intent, load]);
 
-    if (authLoading || state === "loading") {
-        return (
-            <div className="space-y-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-64 w-full" />
-            </div>
-        );
-    }
-
-    if (!user) {
+    if (!authLoading && !user) {
         return (
             <Panel material="lit" crown title="Sign in to connect your account">
                 <div className="space-y-4">
@@ -126,6 +116,15 @@ export default function Gw2Client() {
                     </div>
                 </div>
             </Panel>
+        );
+    }
+
+    if (authLoading || state === "loading") {
+        return (
+            <div className="space-y-4">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-64 w-full" />
+            </div>
         );
     }
 

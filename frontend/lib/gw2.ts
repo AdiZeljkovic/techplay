@@ -45,6 +45,28 @@ export interface MasteryRegion {
     earned: number;
     spent: number;
     unspent: number;
+    /**
+     * Summed from the catalogue's per-tier point costs, not chosen.
+     *
+     * The tier costs climb steeply — Itzel Lore runs 1, 2, 3, 5, 8, 12 — so this
+     * denominator is real work to compute and is the reason the catalogue is
+     * mirrored locally at all.
+     */
+    points_spent?: number;
+    points_total?: number;
+    percent?: number;
+    tracks_finished?: number;
+    /** A count. The masteries payload's `tracks` is the list itself. */
+    track_count?: number;
+    affordable?: {
+        id: number;
+        name: string;
+        tier: string | null;
+        buying_tier: number;
+        tiers: number;
+        cost: number | null;
+        points_remaining: number;
+    }[];
 }
 
 export interface VaultObjective {
@@ -69,6 +91,48 @@ export interface NearlyDone {
     effort: string | null;
 }
 
+export interface MasteryTrackView {
+    id: number;
+    name: string;
+    requirement: string | null;
+    tiers_paid: number;
+    tiers: number;
+    tier_costs: number[];
+    tier_names: string[];
+    next_tier: string | null;
+    next_cost: number | null;
+    points_spent: number;
+    points_total: number;
+    points_remaining: number;
+    finished: boolean;
+    /** Nothing paid for. Different from a track sitting at its first tier. */
+    untouched: boolean;
+    /** Whether this region's spare points reach the next tier. */
+    affordable: boolean;
+}
+
+export interface MasteryRegionView extends MasteryRegion {
+    points_spent: number;
+    points_total: number;
+    percent: number;
+    tracks: MasteryTrackView[];
+}
+
+export interface Gw2Masteries {
+    regions: MasteryRegionView[];
+    unspent_total: number;
+    /**
+     * Tracks the catalogue holds that no account region claims.
+     *
+     * The game names regions differently in its two endpoints — the catalogue
+     * says `Maguuma`, the account says `Heart of Thorns` — and one catalogue
+     * region has no counterpart at all. Rather than file its points under a
+     * guessed expansion, those tracks are listed apart and the page says why.
+     */
+    unpaired: { id: number; name: string; catalogue_region: string | null; tiers: number; points_total: number }[];
+    observed_at: string | null;
+}
+
 export interface Gw2Dashboard {
     account: {
         name: string;
@@ -90,8 +154,9 @@ export interface Gw2Dashboard {
         masteries: {
             unspent_total: number;
             regions: MasteryRegion[];
-            tracks_trained: number;
-            tracks_unlocked: number;
+            tracks_started: number;
+            tracks_finished: number;
+            tracks_total: number;
         };
         /** `null` when no character has been read yet. */
         gear: {
@@ -222,6 +287,12 @@ export async function getDashboard(intent?: Gw2Intent): Promise<Gw2Dashboard | n
     );
 
     return "cards" in data.data ? (data.data as Gw2Dashboard) : null;
+}
+
+export async function getMasteries(): Promise<Gw2Masteries | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Masteries | null>>("/gw2/masteries");
+
+    return data.data ?? null;
 }
 
 export async function connectKey(apiKey: string): Promise<Gw2Connection> {
