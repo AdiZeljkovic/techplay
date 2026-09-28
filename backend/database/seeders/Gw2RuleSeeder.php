@@ -218,7 +218,7 @@ class Gw2RuleSeeder extends Seeder
                 'producer' => NearlyDoneAchievements::KEY,
                 'domain' => 'achievements',
                 'title' => 'Finish {name} — {remaining} {step} left',
-                'body' => 'You are at {current} of {max}. {requirement}',
+                'body' => 'You are at {current} of {max}. {next_step}{mastery_note}',
                 'requires' => [['path' => 'achievements.one_step_away', 'op' => '>', 'value' => 0]],
                 'base_score' => 72,
                 'weights' => ['remaining' => -6.0],
