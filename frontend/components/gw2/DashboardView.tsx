@@ -9,6 +9,8 @@ import Chip from "@/components/ui/Chip";
 import Meter from "@/components/ui/Meter";
 import StatCards from "@/components/gw2/StatCards";
 import RecommendationCard from "@/components/gw2/RecommendationCard";
+import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { getGoals, requestSync, slotLabel, type Gw2Dashboard, type Gw2GoalOption, type Gw2Intent } from "@/lib/gw2";
 
 /**
@@ -230,11 +232,20 @@ export default function DashboardView({
                             <ul className="space-y-3">
                                 {cards.achievements.closest.slice(0, 5).map((win) => (
                                     <li key={win.id} className="flex items-start gap-2.5">
-                                        <Zap
-                                            size={14}
-                                            className="mt-0.5 shrink-0 text-[var(--ink-faint)]"
-                                            aria-hidden
-                                        />
+                                        {win.icon ? (
+                                            <GameIcon
+                                                src={win.icon}
+                                                alt=""
+                                                size="md"
+                                                tone={DOMAIN_TONE.achievements}
+                                            />
+                                        ) : (
+                                            <Zap
+                                                size={14}
+                                                className="mt-0.5 shrink-0 text-[var(--ink-faint)]"
+                                                aria-hidden
+                                            />
+                                        )}
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-baseline justify-between gap-2">
                                                 <span className="truncate text-sm text-[var(--ink-hi)]">
@@ -244,10 +255,26 @@ export default function DashboardView({
                                                     {win.current}/{win.max}
                                                 </span>
                                             </div>
-                                            {win.requirement && (
+                                            {/*
+                                             * What is left, in the game's words,
+                                             * ahead of the achievement's blanket
+                                             * requirement. "Morwood Wilds" is a
+                                             * place to go; "Explore all areas in
+                                             * Auric Basin" is the thing they
+                                             * already know they are doing.
+                                             */}
+                                            {win.steps_remaining.length > 0 ? (
                                                 <p className="truncate text-[11px] text-[var(--ink-faint)]">
-                                                    {win.requirement}
+                                                    {win.steps_remaining.slice(0, 2).join(" · ")}
+                                                    {win.steps_remaining.length > 2 &&
+                                                        ` · +${win.steps_remaining.length - 2}`}
                                                 </p>
+                                            ) : (
+                                                win.requirement && (
+                                                    <p className="truncate text-[11px] text-[var(--ink-faint)]">
+                                                        {win.requirement}
+                                                    </p>
+                                                )
                                             )}
                                         </div>
                                     </li>
@@ -437,19 +464,38 @@ function GearPanel({ gear }: { gear: NonNullable<Gw2Dashboard["cards"]["gear"]> 
                 </span>
             }
         >
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-3">
+            {/*
+             * Twelve slots as twelve worn pieces rather than twelve words.
+             *
+             * The frame is the game's own rarity colour — a player reads pink
+             * for ascended and orange for exotic faster than either word, and
+             * "which three are behind" is the only question this panel exists
+             * to answer.
+             */}
+            <div className="grid grid-cols-2 gap-x-5 gap-y-2.5 sm:grid-cols-3">
                 {Object.entries(gear.slots).map(([slot, rarity]) => {
                     const done = rarity === "Ascended" || rarity === "Legendary";
+                    const item = gear.items?.[slot];
 
                     return (
-                        <div key={slot} className="flex items-baseline justify-between gap-2 text-sm">
-                            <span className="truncate text-[var(--ink-low)]">{slotLabel(slot)}</span>
-                            <span
-                                className="shrink-0 text-xs"
-                                style={{ color: done ? "var(--ink-mid)" : "var(--accent-ink)" }}
-                            >
-                                {rarity}
-                            </span>
+                        <div key={slot} className="flex items-center gap-2.5">
+                            <GameIcon
+                                src={item?.icon}
+                                alt=""
+                                size="md"
+                                rarity={rarity}
+                                dim={done}
+                            />
+                            <div className="min-w-0 flex-1">
+                                <div className="truncate text-xs text-[var(--ink-low)]">{slotLabel(slot)}</div>
+                                <div
+                                    className="truncate text-xs"
+                                    style={{ color: done ? "var(--ink-mid)" : RARITY_COLOUR[rarity] }}
+                                    title={item?.name}
+                                >
+                                    {item?.name ?? rarity}
+                                </div>
+                            </div>
                         </div>
                     );
                 })}

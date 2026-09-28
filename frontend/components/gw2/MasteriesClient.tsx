@@ -7,6 +7,8 @@ import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import Meter from "@/components/ui/Meter";
+import GameIcon from "@/components/gw2/GameIcon";
+import { regionTone } from "@/lib/gw2domain";
 import Chip from "@/components/ui/Chip";
 import { Skeleton } from "@/components/ui/Skeleton";
 import {
@@ -148,23 +150,57 @@ function ConnectFirst() {
 }
 
 function RegionCard({ region }: { region: MasteryRegionView }) {
+    const tone = regionTone(region.region);
+
+    /*
+     * The first track that has one. Deliberately the first in catalogue order
+     * rather than a favourite — a region's identity should not move about
+     * because the account trained something.
+     */
+    const art = region.tracks.find((track) => track.background)?.background ?? null;
+
     return (
         <div
-            className="flex flex-col gap-3 rounded-[var(--radius-card)] border p-4"
+            className="relative flex flex-col gap-3 overflow-hidden rounded-[var(--radius-card)] border p-4"
             style={{
                 background: "var(--surface-2)",
+                /*
+                 * The expansion's own colour, stronger where there is
+                 * something to spend. Five regions in one accent read as one
+                 * long list; in five hues they read as five places, which is
+                 * what they are — points do not move between them.
+                 */
                 borderColor:
                     region.unspent > 0
-                        ? "color-mix(in srgb, var(--accent) 30%, transparent)"
+                        ? `color-mix(in srgb, ${tone} 45%, transparent)`
                         : "var(--line-strong)",
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
             }}
         >
-            <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-low)]">
+            {/* A track's scene render, borrowed as the region's. The API has
+                no art for a region — this is the nearest honest thing, and it
+                is at least a picture of somewhere in it. */}
+            {art && (
+                <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                        backgroundImage: `linear-gradient(to top, var(--surface-2) 45%, transparent), url(${art})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        opacity: 0.4,
+                    }}
+                />
+            )}
+
+            <span
+                className="relative text-[11px] font-medium uppercase tracking-wider"
+                style={{ color: tone }}
+            >
                 {region.region}
             </span>
 
-            <div>
+            <div className="relative">
                 <div className="font-numeric text-2xl leading-none text-[var(--ink-hi)]">
                     {region.percent}%
                 </div>
@@ -173,10 +209,14 @@ function RegionCard({ region }: { region: MasteryRegionView }) {
                 </div>
             </div>
 
-            <Meter value={region.points_spent} max={region.points_total} size="sm" />
+            <div className="relative">
+                <Meter value={region.points_spent} max={region.points_total} size="sm" tone={tone} />
+            </div>
 
             {region.unspent > 0 && (
-                <p className="text-[11px] text-[var(--accent-ink)]">{region.unspent} to spend</p>
+                <p className="relative text-[11px]" style={{ color: tone }}>
+                    {region.unspent} to spend
+                </p>
             )}
         </div>
     );
@@ -184,6 +224,7 @@ function RegionCard({ region }: { region: MasteryRegionView }) {
 
 function RegionTracks({ region }: { region: MasteryRegionView }) {
     const affordable = region.tracks.filter((t) => t.affordable).length;
+    const tone = regionTone(region.region);
 
     return (
         <Panel
@@ -199,16 +240,28 @@ function RegionTracks({ region }: { region: MasteryRegionView }) {
         >
             <ul className="divide-y" style={{ borderColor: "var(--line)" }}>
                 {region.tracks.map((track) => (
-                    <TrackRow key={track.id} track={track} />
+                    <TrackRow key={track.id} track={track} tone={tone} />
                 ))}
             </ul>
         </Panel>
     );
 }
 
-function TrackRow({ track }: { track: MasteryTrackView }) {
+function TrackRow({ track, tone }: { track: MasteryTrackView; tone: string }) {
     return (
         <li className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0">
+            {/*
+             * The tier being bought, pictured — or the first one on a track
+             * that is finished, so a completed row still shows what it was.
+             */}
+            <GameIcon
+                src={track.tier_icons?.[Math.min(track.tiers_paid, (track.tier_icons?.length ?? 1) - 1)]}
+                alt=""
+                size="lg"
+                tone={tone}
+                dim={track.finished}
+            />
+
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                     {track.finished && (
@@ -229,7 +282,7 @@ function TrackRow({ track }: { track: MasteryTrackView }) {
             </div>
 
             <div className="w-28 shrink-0">
-                <Meter value={track.tiers_paid} max={track.tiers} segmentLimit={12} size="sm" />
+                <Meter value={track.tiers_paid} max={track.tiers} segmentLimit={12} size="sm" tone={tone} />
             </div>
 
             <div className="w-24 shrink-0 text-right">
@@ -238,7 +291,7 @@ function TrackRow({ track }: { track: MasteryTrackView }) {
                 ) : (
                     <span
                         className="inline-flex items-center gap-1 font-numeric text-xs"
-                        style={{ color: track.affordable ? "var(--accent-ink)" : "var(--ink-low)" }}
+                        style={{ color: track.affordable ? tone : "var(--ink-low)" }}
                     >
                         <CircleDollarSign size={12} aria-hidden />
                         {track.next_cost}

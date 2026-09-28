@@ -47,9 +47,21 @@ export interface Recommendation {
      * lose that.
      */
     details?: {
-        steps_total: number;
+        /**
+         * The thing the card is about, pictured.
+         *
+         * The exotic ring for a gear card, the achievement for an achievement
+         * card, the mount for a mount card. Absent where nothing specific
+         * applies, and then the card draws its domain glyph instead.
+         */
+        icon?: string;
+        /** Named alongside the icon where the subject is an item. */
+        item?: string;
+        /** A mastery track's scene render. */
+        background?: string;
+        steps_total?: number;
         /** Only what is left. The wording is the game's own. */
-        steps_remaining: { index: number; text: string | null }[];
+        steps_remaining?: { index: number; text: string | null }[];
     };
 }
 
@@ -102,6 +114,15 @@ export interface NearlyDone {
     /** Whether a person has checked this row. Some achievements are seasonal or retired. */
     reviewed: boolean;
     effort: string | null;
+    /**
+     * The achievement's own picture, or its category's.
+     *
+     * Only about a sixth of achievements carry one; every category does, and
+     * the fallback takes coverage to roughly 92%. Null for the rest.
+     */
+    icon: string | null;
+    /** The game's own wording for what is left, where it gave any. */
+    steps_remaining: string[];
 }
 
 export interface MasteryTrackView {
@@ -112,6 +133,15 @@ export interface MasteryTrackView {
     tiers: number;
     tier_costs: number[];
     tier_names: string[];
+    /** One icon per tier, from the game. */
+    tier_icons: string[];
+    /**
+     * A scene render for the track.
+     *
+     * The only art at this scale the API publishes, and what lets a mastery
+     * row look like the place it is about. Null on a track that has none.
+     */
+    background: string | null;
     next_tier: string | null;
     next_cost: number | null;
     points_spent: number;
@@ -415,6 +445,14 @@ export interface Gw2Dashboard {
             ascended_weapons: number;
             weapon_slots: number;
             slots: Record<string, string>;
+            /**
+             * The piece actually worn in each core slot.
+             *
+             * `slots` stays a bare rarity per slot because every count is
+             * built on it; this is the layer that makes the panel a character
+             * rather than a table.
+             */
+            items: Record<string, { name: string; icon: string | null; rarity: string }>;
             crafting: string[];
         } | null;
         fractals: {

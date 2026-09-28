@@ -177,6 +177,10 @@ class Dashboard
                     'tiers' => $t->tiers(),
                     'tier_costs' => $t->tierCosts,
                     'tier_names' => $t->tierNames,
+                    // One picture per tier, and a scene render for the track.
+                    // Both come out of /v2/masteries and neither was carried.
+                    'tier_icons' => $t->tierIcons,
+                    'background' => $t->background,
                     'next_tier' => $t->nextTierName(),
                     'next_cost' => $t->nextTierCost(),
                     'points_spent' => $t->pointsSpent(),

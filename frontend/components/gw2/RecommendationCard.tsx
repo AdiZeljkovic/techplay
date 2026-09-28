@@ -2,6 +2,8 @@
 
 import { AlertTriangle, Clock } from "lucide-react";
 import Chip from "@/components/ui/Chip";
+import GameIcon from "@/components/gw2/GameIcon";
+import { domainTone } from "@/lib/gw2domain";
 import { CONFIDENCE_LABEL, EFFORT_LABEL, type Recommendation } from "@/lib/gw2";
 
 /**
@@ -47,24 +49,53 @@ export default function RecommendationCard({
     const steps = details?.steps_remaining ?? [];
     const shown = steps.filter((step) => step.text !== null).slice(0, 3);
 
+    /*
+     * The domain's colour, and the picture of whatever this card is about.
+     *
+     * Both are the difference between six cards that read as six kinds of
+     * thing and six cards that read as a list. The tone is Guild Wars 2's,
+     * not the site's, because a player already associates crimson with gear
+     * and violet with fractals before reading either word.
+     */
+    const tone = domainTone(domain);
+    const background = details?.background;
+
     return (
         <article
-            className="flex h-full flex-col gap-3 rounded-[var(--radius-card)] border p-4"
+            className="relative flex h-full flex-col gap-3 overflow-hidden rounded-[var(--radius-card)] border p-4"
             style={{
                 background: "var(--surface-2)",
-                // One lit surface per column. A featured card earns the accent
-                // edge; the rest stay quiet so it still means something.
-                borderColor: featured
-                    ? "color-mix(in srgb, var(--accent) 30%, transparent)"
-                    : "var(--line-strong)",
+                // The domain's own colour on the edge, brighter on a featured
+                // card. One rail per card rather than one accent per board.
+                borderColor: `color-mix(in srgb, ${tone} ${featured ? "38%" : "18%"}, var(--line-strong))`,
                 boxShadow: `inset 0 1px 0 rgba(255,255,255,${featured ? "0.09" : "0.07"})`,
             }}
         >
-            <div className="flex flex-wrap items-center gap-2">
+            {/*
+             * A mastery track's scene render, where there is one. Held well
+             * back — it is atmosphere behind a sentence, and a card whose text
+             * has to fight its own background is a worse card than a plain one.
+             */}
+            {background && (
+                <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 rounded-[var(--radius-card)]"
+                    style={{
+                        backgroundImage: `linear-gradient(to right, var(--surface-2) 38%, transparent), url(${background})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        opacity: 0.32,
+                    }}
+                />
+            )}
+
+            <div className="relative flex flex-wrap items-center gap-2">
                 <Chip variant={CONFIDENCE_VARIANT[confidence]} size="sm">
                     {CONFIDENCE_LABEL[confidence]}
                 </Chip>
-                <span className="text-[10px] uppercase tracking-wider text-[var(--ink-faint)]">{domain}</span>
+                <span className="text-[10px] uppercase tracking-wider" style={{ color: tone }}>
+                    {domain}
+                </span>
                 {effort && (
                     <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-[var(--ink-low)]">
                         <Clock size={11} aria-hidden />
@@ -73,12 +104,15 @@ export default function RecommendationCard({
                 )}
             </div>
 
-            <h3 className="font-display text-base leading-snug text-[var(--ink-hi)] text-balance">{title}</h3>
+            <div className="relative flex items-start gap-3">
+                <GameIcon src={details?.icon} alt="" size="lg" tone={tone} />
+                <h3 className="font-display text-base leading-snug text-[var(--ink-hi)] text-balance">{title}</h3>
+            </div>
 
-            <p className="text-sm leading-relaxed text-[var(--ink-mid)]">{body}</p>
+            <p className="relative text-sm leading-relaxed text-[var(--ink-mid)]">{body}</p>
 
             {shown.length > 0 && (
-                <div className="space-y-1.5">
+                <div className="relative space-y-1.5">
                     <ul className="space-y-1">
                         {shown.map((step) => (
                             <li key={step.index} className="flex gap-2 text-xs text-[var(--ink-low)]">
@@ -100,7 +134,7 @@ export default function RecommendationCard({
             )}
 
             {blockers.length > 0 && (
-                <ul className="mt-auto space-y-1.5 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+                <ul className="relative mt-auto space-y-1.5 border-t pt-3" style={{ borderColor: "var(--line)" }}>
                     {blockers.map((blocker) => (
                         <li key={blocker} className="flex gap-2 text-xs text-[var(--ink-low)]">
                             <AlertTriangle size={13} className="mt-0.5 shrink-0" aria-hidden />
