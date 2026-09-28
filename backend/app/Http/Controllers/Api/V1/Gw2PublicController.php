@@ -39,6 +39,17 @@ class Gw2PublicController extends Controller
     private const TTL = 86400;
 
     /**
+     * The shape of these payloads. Bump it when a field is added or removed.
+     *
+     * The key was versioned by the game build alone, which is right for the
+     * *data* and wrong for the *structure*: adding `indexable` changed every
+     * payload and invalidated none of them, so the field was missing from every
+     * cached page for a day while the code that set it was live. A build id
+     * says when ArenaNet changed; this says when we did.
+     */
+    private const PAYLOAD_VERSION = 2;
+
+    /**
      * GET /gw2/public/recipe/{item}
      *
      * What it takes to make one of something, with nothing subtracted.
@@ -181,7 +192,9 @@ class Gw2PublicController extends Controller
             'type' => 'nullable|string|max:32',
         ]);
 
-        $query = self::craftableQuery();
+        // The browse index offers what the sitemap offers. Everything else is
+        // reachable by link and simply not advertised.
+        $query = self::craftableQuery(indexableOnly: true);
 
         if ($rarity = $request->string('rarity')->toString()) {
             $query->where('rarity', $rarity);
@@ -192,9 +205,6 @@ class Gw2PublicController extends Controller
         }
 
         $items = $query
-            // The browse index offers what the sitemap offers. Anything else
-            // is reachable by link and simply not advertised.
-            ->where('is_indexable', true)
             ->orderBy('id')
             ->paginate(100, ['id', 'name', 'rarity', 'type', 'icon']);
 
@@ -230,13 +240,26 @@ class Gw2PublicController extends Controller
      */
     public static function craftableQuery(bool $indexableOnly = false): Builder
     {
-        return DB::table('gw2_items')
-            ->when($indexableOnly, fn ($q) => $q->where('is_indexable', true))
-            ->whereExists(fn ($q) => $q->selectRaw('1')
-                ->from('gw2_recipes')
-                ->whereColumn('gw2_recipes.output_item_id', 'gw2_items.id'))
+        $query = DB::table('gw2_items')
             ->where('name', '!=', '')
             ->whereNotNull('name');
+
+        if ($indexableOnly) {
+            /*
+             * The flag is the authority, not craftability.
+             *
+             * 86 of the reviewed items are materials rather than products —
+             * Mithril Ore has no recipe and is in 174 of them — and their page
+             * answers "what is this used for", which is exactly why they were
+             * reviewed in. Keying the sitemap on craftability left 26 pages
+             * marked index and named nowhere.
+             */
+            return $query->where('is_indexable', true);
+        }
+
+        return $query->whereExists(fn ($q) => $q->selectRaw('1')
+            ->from('gw2_recipes')
+            ->whereColumn('gw2_recipes.output_item_id', 'gw2_items.id'));
     }
 
     /**
@@ -302,7 +325,7 @@ class Gw2PublicController extends Controller
             ->where('endpoint', 'items')
             ->value('build_id'));
 
-        return "gw2:public:{$build}:{$suffix}";
+        return 'gw2:public:v'.self::PAYLOAD_VERSION.":{$build}:{$suffix}";
     }
 
     /**
