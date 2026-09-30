@@ -266,7 +266,7 @@ commit), razliku upija `mobile/src/lib/paging.ts` — jedno mjesto, s popisom.
 | `SteamService`, `OpenXblService`, `PlayStationService`, `GogService`, `EpicService` | pet platformi |
 | `PresenceService` | ko šta trenutno igra (Steam) |
 | `SchemaService` | JSON-LD — **ali ga čita samo staff debug endpoint**, vidi §17 |
-| `IndexNowService` | javlja Bingu/Yandexu pri objavi |
+| `SubmitIndexNow` (**job**, ne servis — `IndexNowService` ne postoji) | javlja Bingu/Yandexu pri objavi, vidi §13 |
 | `NginxPageCache` | briše nginx keš za pojedinu igru |
 | `ImageOptimizer` | GD, pravi `_thumb`/`_medium`/`_large` |
 | `GroqService`, `BlizzardService`, `RaiderIOService` | WoW Analyzer |
@@ -526,7 +526,7 @@ Scheduler je u `routes/console.php`, radi kao `www-data`. Svaki unos ima
 | **Cloudflare Turnstile** | zaštita registracije | `TURNSTILE_*` |
 | **OpenCritic** | ocjene igara | `OPENCRITIC_KEY` |
 | **YouTube** | trejleri | `YOUTUBE_KEY` |
-| **IndexNow** | javljanje Bingu/Yandexu | `INDEXNOW_KEY` |
+| **IndexNow** | javljanje Bingu/Yandexu | **admin → SEO → IndexNow key**, ne `INDEXNOW_KEY` |
 | **Telegram** | greške na telefon | `TELEGRAM_*` |
 | **Resend / Postmark / SES** | mail | `RESEND_KEY` … |
 | **Slack** | obavijesti | `SLACK_*` |
@@ -637,6 +637,42 @@ mkswap -q /swapfile.build && swapon /swapfile.build
 techplay-deploy.sh frontend --no-pull
 swapoff /swapfile.build && rm -f /swapfile.build
 ```
+
+### IndexNow: dva mamca, oba su već jednom ubila funkciju
+
+**Ključ nije u `.env`.** `INDEXNOW_KEY` postoji u `.env` i `config/services.php`
+ga čita kao `services.indexnow.key` — a **to ne čita niko**. Pravi ključ je
+`site_settings.seo_indexnow_key`, iz admin panela. Ko postavi env varijablu i
+provjeri da je u configu, dobiće tačan config i funkciju koja ne radi.
+
+**A do 30.09.2026. nije radila ni s ispravnim ključem.** Job je počinjao sa
+`if (! SiteSetting::get('seo_indexnow_enabled')) return;`, a taj ključ se u
+cijelom kodu pojavljivao **tačno jednom — u tom `if`-u**. Nema ga ni u jednom
+seederu, migraciji, ni na ekranu postavki. `SiteSetting::get()` vraća `null` za
+nepostojeći red, i job je izlazio u prvom redu — *prije* ijednog `Log::` poziva,
+pa u logu nije bilo ni greške. Pored polja za ključ u adminu je pisalo „Live.
+Bing and Yandex are pinged with this key on every publish."
+
+**Potpis se vidi u `storage/logs/worker.log`, po trajanju:**
+
+```
+App\Jobs\SubmitIndexNow .................... 7.22ms DONE     ← nije ni pokušao
+App\Jobs\SubmitIndexNow .................. 617.00ms DONE     ← poslao
+```
+
+Job koji „uspješno" završi za par milisekundi a trebao je pozvati vanjski
+servis nije uradio ništa. **To gledati prije koda.**
+
+Sve mrtve prekidače odjednom:
+
+```bash
+grep -rhoE "SiteSetting::get\('[a-z0-9_]+'" app/ | sed "s/.*'\(.*\)'/\1/" | sort -u > /tmp/used
+psql -Atc 'select key from site_settings order by key' | sort -u > /tmp/have
+comm -23 /tmp/used /tmp/have
+```
+
+Napomena: `LOG_LEVEL=error` na produkciji, pa se `Log::info` o uspjehu **ne
+vidi** — samo greške. To je namjerno, ne mijenjati zbog ovoga.
 
 ### Snimak `.next` prije rizičnog builda
 
