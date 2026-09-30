@@ -46,10 +46,6 @@ class SubmitIndexNow implements ShouldQueue
      */
     public function handle(): void
     {
-        if (! SiteSetting::get('seo_indexnow_enabled')) {
-            return;
-        }
-
         /*
          * The site's own address, not the API's.
          *
@@ -70,8 +66,25 @@ class SubmitIndexNow implements ShouldQueue
         $host = parse_url($siteUrl, PHP_URL_HOST);
         $key = SiteSetting::get('seo_indexnow_key');
 
+        /*
+         * The key is the switch, and it is the only switch.
+         *
+         * There used to be a second one above this — a `seo_indexnow_enabled`
+         * setting — and it is why nothing was ever submitted. That key appears
+         * exactly once in the whole codebase, in the `if` that read it: no
+         * seeder created it, no migration added it, and the settings screen
+         * has no field for it. `SiteSetting::get()` returns null for a row
+         * that does not exist, null is falsy, and the job returned on its
+         * first line. Before any logging, so there was not even a warning to
+         * find — while the admin panel said, beside the key field, "Live. Bing
+         * and Yandex are pinged with this key on every publish."
+         *
+         * Two switches where one is invisible is how a feature dies quietly
+         * for months. A configured key already means "do this"; an absent one
+         * already means "not set up yet", and says so out loud.
+         */
         if (! $key) {
-            Log::warning('IndexNow: API Key not configured.');
+            Log::warning('IndexNow: API Key not configured, nothing submitted.', ['urls' => count($this->urls)]);
 
             return;
         }
