@@ -22,6 +22,13 @@ use Tests\TestCase;
  * submissions authenticated with a key whose file is served only because
  * somebody left a static copy behind.
  *
+ * A third failure outlived both: the job also opened with a check on a
+ *  setting that nothing in the codebase ever created, so
+ * it returned on its first line for months. This file used to set that row by
+ * hand, which is exactly why it passed while production submitted nothing. The
+ * gate is gone and the line with it; a configured key is now the whole
+ * contract.
+ *
  * The protocol's own rule is the part that was broken everywhere: the key file
  * has to sit on the same host as the URLs being submitted. The job built both
  * `host` and `keyLocation` from `app.url`, which is the API domain, while every
@@ -81,7 +88,6 @@ class IndexNowSubmitsOnceAndFromOneHostTest extends TestCase
     {
         Http::fake(['api.indexnow.org/*' => Http::response('', 200)]);
 
-        SiteSetting::updateOrCreate(['key' => 'seo_indexnow_enabled'], ['value' => '1']);
         SiteSetting::updateOrCreate(['key' => 'seo_indexnow_key'], ['value' => 'tpaaaabbbbccccddddeeeeffff11']);
 
         $site = rtrim((string) config('app.site_url'), '/');
