@@ -384,6 +384,45 @@ export default async function RootLayout({
         `}}
         />
 
+        {/* Microsoft Clarity — session replay and heatmaps.
+
+            In the head, and host-gated by the snippet itself. Both halves of
+            that are deliberate.
+
+            In the head, because this records sessions: mounted after
+            hydration it would start filming partway through, and the first
+            seconds are the ones that explain a bounce. That is the same
+            reason GA4 moved out of `afterInteractive` above.
+
+            Host-gated, because the project id is compiled into the bundle and
+            Clarity would otherwise record a developer's `npm run dev` session
+            and file it under production. AdSense learned this the expensive
+            way — it billed real impressions from `127.0.0.1` and the bare
+            origin IP — and session recording is worse than a stray
+            impression, because the footage is of somebody's screen.
+
+            The check runs inside the inline script rather than in a client
+            component so the layout stays static. `lib/host.ts` owns the list.
+
+            Consent: Clarity turns its own Consent Mode on for the EEA, the UK
+            and Switzerland, and in those regions sets no cookies until it
+            receives a signal. Nothing here passes it one, so European sessions
+            are not recorded. That is the safe direction to be wrong in, and
+            bridging the site's existing `/consent` answer into
+            `clarity('consent', …)` is a separate piece of work. */}
+        <script
+          dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            if (["techplay.gg", "www.techplay.gg"].indexOf(location.hostname) === -1) return;
+            (function(c,l,a,r,i,t,y){
+              c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+              t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+              y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "yr5au7jrmx");
+          })();
+        `}}
+        />
+
         {/* AdSense script moved to body via Script component (afterInteractive) */}
       </head>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>

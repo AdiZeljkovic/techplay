@@ -1,3 +1,5 @@
+import { isProductionHost } from "@/lib/host";
+
 /**
  * Where advertising is allowed to exist, and under whose account.
  *
@@ -20,11 +22,12 @@
  */
 export const AD_CLIENT = "ca-pub-7427807317921666";
 
-const PRODUCTION_HOSTS = new Set(["techplay.gg", "www.techplay.gg"]);
-
-/** False during SSR, on localhost, on the bare origin IP, and on previews. */
+/**
+ * False during SSR, on localhost, on the bare origin IP, and on previews.
+ *
+ * The host list moved to `lib/host.ts` when session recording needed the same
+ * answer. Same fact, one copy.
+ */
 export function adsAllowedHere(): boolean {
-    if (typeof window === "undefined") return false;
-
-    return PRODUCTION_HOSTS.has(window.location.hostname);
+    return isProductionHost();
 }
