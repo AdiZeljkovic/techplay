@@ -40,3 +40,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# The chunk archive deploy_frontend.sh keeps so open tabs survive a deploy.
+#
+# Ignored for a reason that is not about git. Tailwind v4's scanner skips what
+# .gitignore skips — which is how it never reads `.next` — and this directory
+# was the one build artefact it was still allowed to read. It holds old
+# compiled CSS chunks and woff2 fonts, so the scanner pulled class candidates
+# out of minified CSS and binary font data — selectors carrying a U+FFFD
+# replacement character and a raw 0x01 byte, twenty-seven of them.
+#
+# Harmless until production, where Tailwind runs the output through Lightning
+# CSS, which refuses a control byte in a selector. The build then fails as
+# `globals.css: Missed semicolon` — a file that is perfectly valid — while
+# `npm run dev` and every local build stay green, because neither optimises.
+.static-archive/
+.next.*

@@ -611,68 +611,65 @@ techplay-deploy.sh --no-pull    # kad je već povučeno
 
 Sa Windowsa: `./deployment/push_and_deploy.ps1`.
 
-### Frontend build je na ivici memorije — i ne kaže to
+### `globals.css: Missed semicolon` nije CSS greška — nego `.static-archive`
 
-Mašina je aarch64 sa 7,5 GB RAM-a i **2 GB swapa koji je hronično pun**. Kad
-swap nestane, svaki skok ide pravo na OOM killer, a `next build` ga zna izazvati.
+**Ovo je ispravka ranijeg zapisa.** 29.09. je ovdje pisalo da build pada zbog
+memorije. To je bilo pogrešno: jedan od pokušaja jeste pao na OOM, pa je to
+izgledalo kao uzrok, a swap je „popravio" stvar slučajno.
 
-Greška **ne izgleda** kao memorijska. 28.09.2026. je prvi pad glasio:
+Pravi uzrok, dokazan 02.10.:
 
 ```
-CssSyntaxError: tailwindcss: app/globals.css:2:53664: Missed semicolon
+CssSyntaxError: tailwindcss: app/globals.css:1:1: app/globals.css:2:53664: Missed semicolon
 ```
 
-`globals.css` ima 1187 linija i linija 2 je 78 znakova — pozicija je unutar
-*proširenog* Tailwind izlaza, a ne u izvoru. Tek drugi pokušaj je rekao istinu:
-`postcss` potproces ubijen signalom 9. Potvrda je `dmesg -T | grep -i oom-kill`.
+`globals.css` je ispravan. Pozicija je u **proširenom** izlazu, iza Tailwindovih
+vlastitih fajlova (27.442 + 17.453 + 8.382 ≈ 53.277 bajta).
 
-**Ako frontend build padne s čudnom greškom u loaderu ili CSS-u, prvo `free -h`
-i `dmesg | grep oom`, pa tek onda kod.**
+**Lanac:**
 
-Privremeni swap samo za build:
+1. `deploy_frontend.sh` arhivira `.next/static` u `frontend/.static-archive/`
+   da otvorene kartice prežive deploy (bez toga `ChunkLoadError`).
+2. Ta arhiva **nije bila u `.gitignore`**.
+3. **Tailwind v4 skener preskače ono što `.gitignore` preskače** — tako nikad i
+   ne čita `.next`. Arhiva je bila jedini build artefakt koji je smio čitati.
+4. U njoj su stari minifikovani CSS chunkovi i `woff2` fontovi. Skener iz njih
+   vadi kandidate za imena klasa:
+   `.rounded-[var(--radius-<U+FFFD><0x01>A)]` i još dvadeset šest sličnih.
+5. Tailwind ih ispiše kao pravila. **Dvadeset sedam kontrolnih bajtova u CSS-u.**
+6. Tek u **produkciji** Tailwind pusti izlaz kroz **Lightning CSS**, koji
+   kontrolni bajt u selektoru odbija:
+   `Unexpected token Delim('\u{1}')`.
+
+**Zato se ne vidi lokalno ni u `npm run dev`** — nijedno ne optimizuje. Isti
+izvor, isti paketi, ista verzija: lokalno zeleno, na serveru pad.
+
+**Popravka je jedan red** u `frontend/.gitignore`: `.static-archive/`.
+
+**Kako se prepoznaje.** Ako `next build` padne na CSS-u a fajl je očigledno
+ispravan, reprodukuj van builda — i obavezno s `NODE_ENV=production`, jer bez
+njega prolazi:
 
 ```bash
-fallocate -l 6G /swapfile.build && chmod 600 /swapfile.build
-mkswap -q /swapfile.build && swapon /swapfile.build
-techplay-deploy.sh frontend --no-pull
-swapoff /swapfile.build && rm -f /swapfile.build
+cd frontend
+cat > d.mjs <<'EOF'
+import postcss from "postcss";
+import tw from "@tailwindcss/postcss";
+import fs from "node:fs";
+try {
+  const r = await postcss([tw({})]).process(fs.readFileSync("app/globals.css","utf8"), { from: "app/globals.css" });
+  console.log("OK", r.css.length);
+} catch (e) { console.log("GRESKA", e.reason, e.column); }
+EOF
+sudo -u techplay env NODE_ENV=production node d.mjs
 ```
 
-### IndexNow: dva mamca, oba su već jednom ubila funkciju
+Pa onda pusti izlaz kroz `lightningcss` — on imenuje tačan bajt i liniju, dok
+postcss samo kaže „Missed semicolon" na mjestu koje ne znači ništa.
 
-**Ključ nije u `.env`.** `INDEXNOW_KEY` postoji u `.env` i `config/services.php`
-ga čita kao `services.indexnow.key` — a **to ne čita niko**. Pravi ključ je
-`site_settings.seo_indexnow_key`, iz admin panela. Ko postavi env varijablu i
-provjeri da je u configu, dobiće tačan config i funkciju koja ne radi.
-
-**A do 30.09.2026. nije radila ni s ispravnim ključem.** Job je počinjao sa
-`if (! SiteSetting::get('seo_indexnow_enabled')) return;`, a taj ključ se u
-cijelom kodu pojavljivao **tačno jednom — u tom `if`-u**. Nema ga ni u jednom
-seederu, migraciji, ni na ekranu postavki. `SiteSetting::get()` vraća `null` za
-nepostojeći red, i job je izlazio u prvom redu — *prije* ijednog `Log::` poziva,
-pa u logu nije bilo ni greške. Pored polja za ključ u adminu je pisalo „Live.
-Bing and Yandex are pinged with this key on every publish."
-
-**Potpis se vidi u `storage/logs/worker.log`, po trajanju:**
-
-```
-App\Jobs\SubmitIndexNow .................... 7.22ms DONE     ← nije ni pokušao
-App\Jobs\SubmitIndexNow .................. 617.00ms DONE     ← poslao
-```
-
-Job koji „uspješno" završi za par milisekundi a trebao je pozvati vanjski
-servis nije uradio ništa. **To gledati prije koda.**
-
-Sve mrtve prekidače odjednom:
-
-```bash
-grep -rhoE "SiteSetting::get\('[a-z0-9_]+'" app/ | sed "s/.*'\(.*\)'/\1/" | sort -u > /tmp/used
-psql -Atc 'select key from site_settings order by key' | sort -u > /tmp/have
-comm -23 /tmp/used /tmp/have
-```
-
-Napomena: `LOG_LEVEL=error` na produkciji, pa se `Log::info` o uspjehu **ne
-vidi** — samo greške. To je namjerno, ne mijenjati zbog ovoga.
+**Pravilo koje iz ovoga slijedi:** svaki build artefakt koji ostaje u
+`frontend/` mora biti u `.gitignore`, inače ga Tailwind čita. To važi i za
+privremene kopije — zato `.next.*` stoji uz njega.
 
 ### Snimak `.next` prije rizičnog builda
 
@@ -680,10 +677,17 @@ vidi** — samo greške. To je namjerno, ne mijenjati zbog ovoga.
 **u mjestu** — pad na pola ostavlja živi build u polustanju, a sajt to ne
 pokaže dok se proces ne restartuje. Hardlink snimak košta ništa:
 
+**Snimak ide IZVAN `frontend/`.** Hardlinkovi traže isti filesystem, a sve što
+ostane u projektu Tailwind čita (vidi gore):
+
 ```bash
-cd /var/www/techplay/frontend && rm -rf .next.prev && cp -al .next .next.prev
+mkdir -p /var/www/.techplay-build-snapshots
+cd /var/www/techplay/frontend
+rm -rf /var/www/.techplay-build-snapshots/next.prev
+cp -al .next /var/www/.techplay-build-snapshots/next.prev
 # ako build padne:
-rm -rf .next && mv .next.prev .next && chown -R techplay:techplay .next
+rm -rf .next && cp -al /var/www/.techplay-build-snapshots/next.prev .next
+chown -R techplay:techplay .next
 ```
 
 Skripta radi, redom: `git pull` kao root → **vraćanje vlasništva** → migracije →
