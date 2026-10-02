@@ -601,6 +601,50 @@ Pri 77 stranica dnevno jedan prolaz kroz katalog traje deset godina.
 
 ---
 
+### Novi autor
+
+Uloge su Spatie, ne kolona `users.role` (ona je zaobilazila dozvole i ugašena je
+28.08.2026). Pet uloga, i razlika koja se najčešće previdi:
+
+| Uloga | admin panel | piše | **objavljuje** |
+|---|---|---|---|
+| Journalist | da | da | **ne** |
+| Editor | da | da | da |
+| Editor-in-Chief | da | da | da |
+
+**Počni od Journalista.** Podizanje na Editora je jedna linija; skidanje nakon
+što je neko objavio nije.
+
+Tri polja se lako pomiješaju:
+
+- `display_name` — **potpis ispod teksta** („Adi Zeljković")
+- `name` — nadimak/handle („Chroniclus"), ne ide u potpis
+- `author_slug` — **URL stranice autora**, `/author/adi-zeljkovic`; jedinstven,
+  slugifikovano `display_name`. Mijenjati ga poslije znači mijenjati URL.
+
+`User` nema observer ni `booted()` kuke — kreiranje ne okida ni dobrodošlicu ni
+Discord ni XP.
+
+**Lozinku ne postavljati ručno.** Napravi nalog s nasumičnom lozinkom koja se
+nigdje ne ispisuje, pa pošalji link:
+
+```php
+$u = new User();
+$u->name = 'Emir'; $u->username = 'emir';
+$u->display_name = 'Emir Muhamedigić'; $u->author_slug = 'emir-muhamedigic';
+$u->email = 'emir@techplay.gg';
+$u->password = Hash::make(Str::random(48));
+$u->email_verified_at = now();   // vlasnik pravi nalog kolegi, nema šta da potvrđuje
+$u->save();
+$u->assignRole('Journalist');
+
+Password::sendResetLink(['email' => $u->email]);   // vrati passwords.sent
+```
+
+Mail ide kroz vanjski SMTP (`mail.thefutura.llc`), pa na ovoj mašini nema
+`mail.log` — `passwords.sent` znači da ga je SMTP prihvatio, ne da je mailbox
+primio. Postoji li `emir@techplay.gg` kao sanduče je stvar mail servera.
+
 ## 13. Deploy
 
 ```bash
