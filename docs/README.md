@@ -631,7 +631,7 @@ nigdje ne ispisuje, pa pošalji link:
 ```php
 $u = new User();
 $u->name = 'Emir'; $u->username = 'emir';
-$u->display_name = 'Emir Muhamedigić'; $u->author_slug = 'emir-muhamedigic';
+$u->display_name = 'Emir Muhamedagić'; $u->author_slug = 'emir-muhamedagic';
 $u->email = 'emir@techplay.gg';
 $u->password = Hash::make(Str::random(48));
 $u->email_verified_at = now();   // vlasnik pravi nalog kolegi, nema šta da potvrđuje
