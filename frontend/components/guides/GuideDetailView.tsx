@@ -307,28 +307,40 @@ export default function GuideDetailView({ guide, game, userVote: initialVote }: 
                                                 `splitForAds` returns one part
                                                 for a short piece, two for a
                                                 normal one and three only past
-                                                twelve paragraphs — so the
-                                                second unit appears on long
-                                                reads and nowhere else.
-
-                                                And the second one is desktop
-                                                only. On a phone this column
-                                                already carries the in-text
-                                                unit and the pair that stands in
-                                                for the rail; a fourth would be
-                                                more advertising than article
-                                                on anything short of an essay. */}
-                                            {i > 0 && (
-                                                <div className={i === 2 ? "hidden xl:block" : undefined}>
-                                                    <InArticleAd />
-                                                </div>
-                                            )}
+                                                twelve paragraphs, so a second
+                                                one appears on long reads and
+                                                nowhere else. Both show on a
+                                                phone: past twelve paragraphs
+                                                the piece is long enough to
+                                                carry them, and the unit that
+                                                stays off a phone is the one
+                                                after the body, below. */}
+                                            {i > 0 && <InArticleAd />}
                                             <div
                                                 className={ARTICLE_PROSE}
                                                 dangerouslySetInnerHTML={{ __html: part }}
                                             />
                                         </Fragment>
                                     ))}
+
+                                    {/* The unit after the last sentence.
+
+                                        Every piece gets one, including the four-paragraph news item
+                                        that `splitForAds` refuses to cut. That refusal is about the
+                                        middle of a short article, not the end of it: an ad between two
+                                        paragraphs of a 200-word post is an ad with an article around
+                                        it, while the same ad after the last sentence is the ordinary
+                                        end-of-read placement and interrupts nothing.
+
+                                        Desktop only, and that is what keeps the two columns level.
+                                        Below 1280px the rail collapses and its stand-in unit already
+                                        sits a few lines under this spot; drawing both would put two
+                                        units back to back with no text between them. So a phone
+                                        reaches the same one, two, three through the unit it already
+                                        had, and never carries an extra. */}
+                                    <div className="hidden xl:block mt-8">
+                                        <InArticleAd />
+                                    </div>
                                     </div>
 
                                     <GuideSteps steps={guide.steps} />

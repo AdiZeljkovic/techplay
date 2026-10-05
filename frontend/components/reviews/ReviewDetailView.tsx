@@ -298,17 +298,32 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                                         phone already carries the
                                                         in-text unit and the pair
                                                         standing in for the rail. */}
-                                                    {i > 0 && (
-                                                        <div className={i === 2 ? "hidden xl:block" : undefined}>
-                                                            <InArticleAd />
-                                                        </div>
-                                                    )}
+                                                    {i > 0 && <InArticleAd />}
                                                     <div
                                                         className={ARTICLE_PROSE}
                                                         dangerouslySetInnerHTML={{ __html: part }}
                                                     />
                                                 </Fragment>
                                             ))}
+
+                                            {/* The unit after the last sentence.
+
+                                                Every piece gets one, including the four-paragraph news item
+                                                that `splitForAds` refuses to cut. That refusal is about the
+                                                middle of a short article, not the end of it: an ad between two
+                                                paragraphs of a 200-word post is an ad with an article around
+                                                it, while the same ad after the last sentence is the ordinary
+                                                end-of-read placement and interrupts nothing.
+
+                                                Desktop only, and that is what keeps the two columns level.
+                                                Below 1280px the rail collapses and its stand-in unit already
+                                                sits a few lines under this spot; drawing both would put two
+                                                units back to back with no text between them. So a phone
+                                                reaches the same one, two, three through the unit it already
+                                                had, and never carries an extra. */}
+                                            <div className="hidden xl:block mt-8">
+                                                <InArticleAd />
+                                            </div>
                                             </div>
                                         </>
                                     ) : (
