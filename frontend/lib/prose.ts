@@ -222,6 +222,66 @@ export function splitForAd(html: string, minParagraphs = 6): [string, string | n
 }
 
 /**
+ * The same body, cut twice instead of once — for pieces long enough to carry it.
+ *
+ * `splitForAd` above is untouched and still the default. This is the long-form
+ * variant, and it exists because a 1,500-word review and a four-paragraph news
+ * item are not the same page: one has room for a second unit between paragraphs
+ * and the other does not.
+ *
+ * The thresholds are the whole argument. Under `minParagraphs` the body comes
+ * back whole and carries no advertising at all. Between that and
+ * `minForSecond` it is cut once, exactly as before. Only at twelve top-level
+ * paragraphs — somewhere near 600 words — does a second cut appear, and even
+ * then the caller decides whether to draw anything in it.
+ *
+ * Twelve rather than ten because the count is of paragraphs the reader sees:
+ * the scan ignores anything inside a block element, so a release-date table
+ * does not inflate it. See `splitForAd` for why that matters.
+ *
+ * @returns 1, 2 or 3 parts. The caller puts a unit between consecutive parts.
+ */
+export function splitForAds(
+    html: string,
+    minParagraphs = 6,
+    minForSecond = 12,
+): string[] {
+    if (!html) return [html];
+
+    const ends: number[] = [];
+    let depth = 0;
+
+    BOUNDARY.lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = BOUNDARY.exec(html)) !== null) {
+        const isParagraphEnd = match[1] === undefined;
+
+        if (isParagraphEnd) {
+            if (depth === 0) ends.push(match.index + match[0].length);
+            continue;
+        }
+
+        depth = match[1] === '/' ? Math.max(0, depth - 1) : depth + 1;
+    }
+
+    if (ends.length < minParagraphs) return [html];
+
+    if (ends.length < minForSecond) {
+        const at = ends[Math.max(2, Math.floor(ends.length / 2) - 1)];
+
+        return [html.slice(0, at), html.slice(at)];
+    }
+
+    // Thirds, and never before the third paragraph — an ad above the point
+    // where the piece has said anything is an ad in front of the article.
+    const first = ends[Math.max(2, Math.floor(ends.length / 3) - 1)];
+    const second = ends[Math.max(4, Math.floor((ends.length * 2) / 3) - 1)];
+
+    return [html.slice(0, first), html.slice(first, second), html.slice(second)];
+}
+
+/**
  * An excerpt, ended like a sentence rather than mid-word.
  *
  * The API serves excerpts cut to exactly 200 characters, so the last word is

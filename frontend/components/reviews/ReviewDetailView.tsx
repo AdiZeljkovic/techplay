@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Check, X, Star } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, Fragment } from "react";
 import Script from "next/script";
 import GameInfoCard from "@/components/games/GameInfoCard";
 import AdUnit from "@/components/ads/AdUnit";
@@ -16,7 +16,7 @@ import DiscordWidget from "@/components/home/DiscordWidget";
 import { Article } from "@/types";
 import Breadcrumbs from "@/components/seo/Breadcrumbs";
 import { processContent } from "@/lib/content";
-import { ARTICLE_PROSE, splitForAd } from "@/lib/prose";
+import { ARTICLE_PROSE, splitForAds } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import { getScoreMeta } from "@/lib/score";
 import ReadingProgress from "@/components/ui/ReadingProgress";
@@ -88,7 +88,7 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
     };
 
     const { content: processedContent } = useMemo(() => processContent(review?.content || ''), [review?.content]);
-    const [bodyBefore, bodyAfter] = useMemo(() => splitForAd(processedContent), [processedContent]);
+    const bodyParts = useMemo(() => splitForAds(processedContent), [processedContent]);
 
     // Every hook has run by here.
     if (!review) return null;
@@ -288,19 +288,27 @@ export default function ReviewDetailView({ review }: ReviewDetailViewProps) {
                                     {processedContent ? (
                                         <>
                                             <div id="article-body">
-                                            <div
-                                                className={ARTICLE_PROSE}
-                                                dangerouslySetInnerHTML={{ __html: bodyBefore }}
-                                            />
-                                            {bodyAfter !== null && (
-                                                <>
-                                                    <InArticleAd />
+                                            {bodyParts.map((part, i) => (
+                                                <Fragment key={i}>
+                                                    {/* A unit between consecutive
+                                                        parts. `splitForAds` gives
+                                                        three only past twelve
+                                                        paragraphs, and the second
+                                                        one is desktop only — a
+                                                        phone already carries the
+                                                        in-text unit and the pair
+                                                        standing in for the rail. */}
+                                                    {i > 0 && (
+                                                        <div className={i === 2 ? "hidden xl:block" : undefined}>
+                                                            <InArticleAd />
+                                                        </div>
+                                                    )}
                                                     <div
                                                         className={ARTICLE_PROSE}
-                                                        dangerouslySetInnerHTML={{ __html: bodyAfter }}
+                                                        dangerouslySetInnerHTML={{ __html: part }}
                                                     />
-                                                </>
-                                            )}
+                                                </Fragment>
+                                            ))}
                                             </div>
                                         </>
                                     ) : (

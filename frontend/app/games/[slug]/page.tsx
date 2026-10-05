@@ -1492,6 +1492,17 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                         </Panel>
                     )}
 
+                    {/* The second unit in this column, and the last one.
+
+                        It sits where the page turns from data about the game to
+                        what we wrote about it — the one break a reader makes on
+                        a page that otherwise runs panel to panel. Carries the
+                        same `adWorthy` gate as the first: a game with no
+                        description gets no advertising anywhere on the page. */}
+                    {adWorthy && relatedArticles.length > 0 && (
+                        <DisplayAd minHeight={110} className="my-6" />
+                    )}
+
                     {relatedArticles.length > 0 && (
                         <Panel title="News & reviews" meta={<Newspaper className="w-4 h-4 text-white/25" />}>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1653,6 +1664,15 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                                 another fact. */}
                         </div>
                     </Panel>
+
+                    {/* The rail unit.
+
+                        This column is sticky — it holds its place while the
+                        reader scrolls eleven panels — so one unit here is seen
+                        for longer than anything in the main column. Same
+                        `adWorthy` gate, and placed under Facts rather than
+                        above them: the facts are what the reader came for. */}
+                    {adWorthy && <DisplayAd minHeight={250} />}
 
                     {game.tags.length > 0 && (
                         <Panel title="Tags" meta={<Tag className="w-4 h-4 text-white/25" />}>

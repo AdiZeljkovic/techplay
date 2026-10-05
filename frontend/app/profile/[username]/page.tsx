@@ -22,6 +22,7 @@ import LibraryTab from "@/components/profile/LibraryTab";
 import JournalTab from "@/components/profile/JournalTab";
 import ListsTab from "@/components/profile/ListsTab";
 import GamerDnaPanel from "@/components/profile/GamerDnaPanel";
+import { DisplayAd } from "@/components/ads/AdSense";
 import WelcomeOnboarding from "@/components/profile/WelcomeOnboarding";
 import { PROFILE_TABS, LEGACY_TABS, type ProfileTab } from "@/lib/profileTabs";
 import { heroFromProfile } from "@/lib/hero";
@@ -217,6 +218,14 @@ function ProfilePageInner() {
         );
     }
 
+    /*
+     * Whether this profile has anything to be about. The snapshot is five
+     * buckets — playing, backlog, completed, wishlist, favourites — and a
+     * profile where all five are zero has no content for an ad to sit beside.
+     */
+    const hasCollection = (profile?.collection_snapshot ?? [])
+        .reduce((n: number, b: { count?: number }) => n + (b?.count ?? 0), 0) > 0;
+
     return (
         <main className="min-h-screen bg-[var(--surface-0)] bg-hud-grid" style={rootStyle}>
             <div className="container-page py-8 space-y-6">
@@ -301,6 +310,23 @@ function ProfilePageInner() {
                         </div>
                     )}
                 </div>
+
+                {/* The one advertising slot on a profile, under the tab the
+                    reader is looking at rather than inside it.
+
+                    Gated on the collection having something in it. An empty
+                    profile is a page with a name and five zeroes, and an ad on
+                    that is the same scaled-content signal the game pages were
+                    carrying when this account went under an ad serving limit
+                    in August. A profile with games is a real page.
+
+                    Shown on your own profile too — the owner sees what a
+                    visitor sees. */}
+                {hasCollection && (
+                    <div className="tp-fade-up tp-d3">
+                        <DisplayAd minHeight={250} />
+                    </div>
+                )}
             </div>
 
             <SendMessageModal

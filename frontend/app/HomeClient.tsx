@@ -54,6 +54,15 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                     <HomeHero gameCount={initialData?.gameCount} heroArticles={heroArticles} />
                     <QuickLinksBand />
                 </div>
+                {/* The billboard.
+
+                    Above the fold on a desktop, first thing under the hero
+                    band on a phone — the only unit on this page that every
+                    reader passes, since most never reach the section break
+                    further down. The homepage carries no rail, so both of its
+                    units sit in the flow. */}
+                <DisplayAd className="tp-fade-up tp-d2" minHeight={110} />
+
                 <div className="tp-fade-up tp-d2"><DiscoverGames /></div>
                 <div className="tp-fade-up tp-d3"><EditorialSpotlight news={news} reviews={reviews} tech={tech} /></div>
                 {/* One unit on the front page, between the editorial block

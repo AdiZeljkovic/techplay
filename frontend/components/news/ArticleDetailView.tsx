@@ -4,9 +4,9 @@ import { Article } from "@/types";
 import Link from "next/link";
 import { ArrowLeft, Play } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, Fragment } from "react";
 import { processContent } from "@/lib/content";
-import { ARTICLE_PROSE, splitForAd, tidyExcerpt } from "@/lib/prose";
+import { ARTICLE_PROSE, splitForAds, tidyExcerpt } from "@/lib/prose";
 import { InArticleAd, DisplayAd } from "@/components/ads/AdSense";
 import ReadingProgress from "@/components/ui/ReadingProgress";
 import { useEmbedScripts } from "@/hooks/useEmbedScripts";
@@ -97,7 +97,7 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
     }, [article.content]);
 
     const { content: processedContent } = useMemo(() => processContent(article.content), [article.content]);
-    const [bodyBefore, bodyAfter] = useMemo(() => splitForAd(processedContent), [processedContent]);
+    const bodyParts = useMemo(() => splitForAds(processedContent), [processedContent]);
 
     // Every hook has run by here. The guard used to sit above the memo, which
     // is a hook-order mismatch the first time a caller passes a falsy article.
@@ -305,19 +305,35 @@ export default function ArticleDetailView({ article, initialComments }: ArticleD
                                         paragraphs with a unit halfway down is an
                                         ad with an article around it. */}
                                     <div id="article-body">
-                                    <div
-                                        className={ARTICLE_PROSE}
-                                        dangerouslySetInnerHTML={{ __html: bodyBefore }}
-                                    />
-                                    {bodyAfter !== null && (
-                                        <>
-                                            <InArticleAd />
+                                    {bodyParts.map((part, i) => (
+                                        <Fragment key={i}>
+                                            {/* A unit between consecutive parts.
+
+                                                `splitForAds` returns one part
+                                                for a short piece, two for a
+                                                normal one and three only past
+                                                twelve paragraphs — so the
+                                                second unit appears on long
+                                                reads and nowhere else.
+
+                                                And the second one is desktop
+                                                only. On a phone this column
+                                                already carries the in-text
+                                                unit and the pair that stands in
+                                                for the rail; a fourth would be
+                                                more advertising than article
+                                                on anything short of an essay. */}
+                                            {i > 0 && (
+                                                <div className={i === 2 ? "hidden xl:block" : undefined}>
+                                                    <InArticleAd />
+                                                </div>
+                                            )}
                                             <div
                                                 className={ARTICLE_PROSE}
-                                                dangerouslySetInnerHTML={{ __html: bodyAfter }}
+                                                dangerouslySetInnerHTML={{ __html: part }}
                                             />
-                                        </>
-                                    )}
+                                        </Fragment>
+                                    ))}
                                     </div>
 
                                     {/* The first thing after the last sentence,
