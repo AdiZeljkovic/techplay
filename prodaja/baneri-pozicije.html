@@ -1,0 +1,875 @@
+<title>TechPlay Banner Positions</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* Layout: a sales sheet — two banded sections (desktop, mobile), each a grid of
+   device mocks. Crimson marks a desktop slot, amber a mobile one. */
+:root {
+  --ink-hi: #10141b;
+  --ink-mid: #3f4855;
+  --ink-low: #6d7684;
+  --ink-faint: #9aa3b1;
+  --surface-0: #f2f4f7;
+  --surface-1: #ffffff;
+  --surface-2: #e8ebf0;
+  --line: #d5dae2;
+  --frame: #2b323d;
+  --block: #cdd3dc;
+  --block-2: #dde1e8;
+
+  --desk: #d2103b;
+  --desk-band: rgba(210, 16, 59, 0.05);
+  --mob: #d97706;
+  --mob-band: rgba(217, 119, 6, 0.06);
+  --no: #8a94a3;
+
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink-hi: #edf0f5; --ink-mid: #b0b8c5; --ink-low: #858d9c; --ink-faint: #616978;
+    --surface-0: #0a0d12; --surface-1: #11161d; --surface-2: #171d26;
+    --line: #242c38; --frame: #5a6675; --block: #2c3542; --block-2: #222a35;
+    --desk: #ff4d6d; --desk-band: rgba(255, 77, 109, 0.07);
+    --mob: #fbbf24; --mob-band: rgba(251, 191, 36, 0.07);
+    --no: #5e6775;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ink-hi: #edf0f5; --ink-mid: #b0b8c5; --ink-low: #858d9c; --ink-faint: #616978;
+  --surface-0: #0a0d12; --surface-1: #11161d; --surface-2: #171d26;
+  --line: #242c38; --frame: #5a6675; --block: #2c3542; --block-2: #222a35;
+  --desk: #ff4d6d; --desk-band: rgba(255, 77, 109, 0.07);
+  --mob: #fbbf24; --mob-band: rgba(251, 191, 36, 0.07);
+  --no: #5e6775;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--surface-0);
+  color: var(--ink-mid);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  padding-inline: 16px;
+  padding-block: 0 64px;
+}
+.wrap { max-width: 1040px; margin-inline: auto; }
+
+h1, h2, h3 { font-family: var(--font-display); color: var(--ink-hi); margin: 0; line-height: 1.15; text-wrap: balance; }
+h1 { font-size: clamp(1.7rem, 4.5vw, 2.3rem); font-weight: 800; letter-spacing: -0.025em; }
+h2 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.01em; }
+p { margin: 0 0 0.9em; }
+code { font-family: var(--font-mono); font-size: 0.86em; background: var(--surface-2); padding: 0.08em 0.34em; border-radius: 3px; color: var(--ink-hi); }
+strong { color: var(--ink-hi); font-weight: 600; }
+
+header.top { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; justify-content: space-between; border-bottom: 2px solid var(--ink-hi); padding-block: 36px 14px; margin-bottom: 26px; }
+header.top .brand { font-family: var(--font-display); font-weight: 800; font-size: 1.05rem; color: var(--ink-hi); letter-spacing: 0.01em; }
+header.top .brand span { color: var(--ink-faint); font-weight: 600; }
+header.top .lede { max-width: 56ch; color: var(--ink-low); font-size: 0.93rem; margin: 0; }
+
+/* ── band ─────────────────────────────────────────────── */
+.band { border-radius: 8px; padding: 18px 18px 22px; margin-bottom: 26px; }
+.band.desktop { background: var(--desk-band); }
+.band.mobile { background: var(--mob-band); }
+.band-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 18px; }
+.band-head h2 { font-size: 1.02rem; }
+.band.desktop .band-head h2 { color: var(--desk); }
+.band.mobile .band-head h2 { color: var(--mob); }
+.band-head .sub { color: var(--ink-faint); font-size: 0.92rem; }
+
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px 16px; }
+@media (max-width: 820px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+figure.fmt { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+
+/* ── monitor ──────────────────────────────────────────── */
+.mon { width: 100%; max-width: 166px; }
+.mon .glass {
+  border: 2.5px solid var(--frame);
+  border-radius: 6px;
+  background: var(--surface-1);
+  aspect-ratio: 5 / 3.7;
+  padding: 5px;
+  overflow: hidden;
+}
+.mon .neck { width: 9px; height: 9px; background: var(--frame); margin: 0 auto; }
+.mon .foot { width: 52px; height: 2.5px; background: var(--frame); border-radius: 2px; margin: 0 auto; }
+
+/* ── phone ────────────────────────────────────────────── */
+.ph { width: 100%; max-width: 92px; }
+.ph .glass {
+  border: 2.5px solid var(--frame);
+  border-radius: 10px;
+  background: var(--surface-1);
+  aspect-ratio: 9 / 17;
+  padding: 7px 4px 5px;
+  overflow: hidden;
+  position: relative;
+}
+.ph .glass::before {
+  content: ""; position: absolute; top: 3px; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 2px; border-radius: 2px; background: var(--frame); opacity: 0.55;
+}
+
+/* ── page inside the screen ───────────────────────────── */
+.pg { display: flex; flex-direction: column; gap: 2.5px; height: 100%; }
+.r { display: grid; gap: 2.5px; }
+.r.c2 { grid-template-columns: 1fr 1fr; }
+.r.c3 { grid-template-columns: repeat(3, 1fr); }
+.r.c4 { grid-template-columns: repeat(4, 1fr); }
+.r.rail { grid-template-columns: 1fr 34%; }
+.r.rail3 { grid-template-columns: 22% 1fr 26%; }
+.k { background: var(--block-2); border-radius: 1.5px; }
+.k.d { background: var(--block); }
+.k.h6 { height: 6px; } .k.h9 { height: 9px; } .k.h12 { height: 12px; }
+.k.h16 { height: 16px; } .k.h22 { height: 22px; } .k.grow { flex: 1; min-height: 8px; }
+.lines { display: flex; flex-direction: column; gap: 2.5px; }
+.lines i { display: block; height: 3px; background: var(--block-2); border-radius: 1px; }
+.lines i.s { width: 62%; }
+
+/* the ad itself */
+.ad { border-radius: 1.5px; }
+.band.desktop .ad { background: var(--desk); }
+.band.mobile .ad { background: var(--mob); }
+.ad.h6 { height: 6px; } .ad.h9 { height: 9px; } .ad.h12 { height: 12px; }
+.ad.h16 { height: 16px; } .ad.h20 { height: 20px; } .ad.h26 { height: 26px; }
+.ad.h34 { height: 34px; } .ad.grow { flex: 1; min-height: 10px; }
+.ad.play { display: grid; place-items: center; }
+.ad.play::after { content: "▶"; color: var(--surface-1); font-size: 8px; line-height: 1; }
+.ad.hatch { background: repeating-linear-gradient(45deg, var(--desk) 0 3px, transparent 3px 6px); border: 1px solid var(--desk); }
+.band.mobile .ad.hatch { background: repeating-linear-gradient(45deg, var(--mob) 0 3px, transparent 3px 6px); border-color: var(--mob); }
+.ad.x { position: relative; }
+.ad.x::after { content: "×"; position: absolute; top: -1px; right: 1px; font-size: 7px; color: var(--surface-1); line-height: 1; }
+
+/* ── caption ──────────────────────────────────────────── */
+figcaption { text-align: center; display: flex; flex-direction: column; gap: 1px; }
+figcaption .nm { font-family: var(--font-display); font-weight: 700; font-size: 0.86rem; color: var(--ink-hi); letter-spacing: -0.005em; }
+.band.desktop figcaption .nm { color: var(--desk); }
+.band.mobile figcaption .nm { color: var(--mob); }
+figcaption .sz { font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-low); }
+figcaption .wh { font-size: 0.72rem; color: var(--ink-faint); line-height: 1.35; }
+figcaption .tag { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-faint); margin-top: 2px; }
+
+.bandnote { font-size: 0.78rem; color: var(--ink-faint); margin: 18px 0 0; text-align: right; line-height: 1.45; }
+
+/* ── table ────────────────────────────────────────────── */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-1); margin: 16px 0 0; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; min-width: 540px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+thead th { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-low); background: var(--surface-2); white-space: nowrap; }
+tbody tr:last-child td { border-bottom: none; }
+td.c { font-family: var(--font-mono); font-size: 0.78rem; white-space: nowrap; color: var(--ink-hi); }
+
+section.block { margin-bottom: 34px; }
+section.block > h2 { margin-bottom: 4px; }
+section.block > .sub { color: var(--ink-faint); font-size: 0.88rem; margin-bottom: 14px; }
+
+.note { border-left: 3px solid var(--desk); background: var(--desk-band); padding: 13px 15px; border-radius: 0 4px 4px 0; margin: 16px 0; }
+.note p:last-child { margin-bottom: 0; }
+
+/* ── density band ─────────────────────────────────────── */
+.band.density { background: var(--surface-2); }
+.band.density .band-head h2 { color: var(--ink-hi); }
+.band.density .ad { background: var(--desk); }
+
+.mathrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+@media (max-width: 620px) { .mathrow { grid-template-columns: 1fr; } }
+.stat { background: var(--surface-1); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.stat .v { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; color: var(--ink-hi); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat .v.now { color: var(--ink-low); }
+.stat .v.goal { color: var(--desk); }
+.stat .l { font-size: 0.78rem; color: var(--ink-faint); margin-top: 3px; line-height: 1.4; }
+
+.dgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 16px; }
+@media (max-width: 860px) { .dgrid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .dgrid { grid-template-columns: 1fr; } }
+
+figure.dfmt { margin: 0; display: flex; flex-direction: column; gap: 9px; }
+.dmon { width: 100%; }
+.dmon .glass { border: 2.5px solid var(--frame); border-radius: 6px; background: var(--surface-1); padding: 6px; aspect-ratio: 5 / 6.4; overflow: hidden; }
+.dcap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.dcap .nm { font-family: var(--font-display); font-weight: 700; font-size: 0.92rem; color: var(--ink-hi); }
+.dcap .cnt { font-family: var(--font-mono); font-size: 0.72rem; color: var(--desk); margin-left: auto; white-space: nowrap; }
+.dcap .pv { font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-faint); width: 100%; }
+.dnote { font-size: 0.78rem; color: var(--ink-low); line-height: 1.45; }
+.dnote em { color: var(--ink-faint); font-style: normal; }
+
+.newtag { display: inline-block; font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--desk); border: 1px solid var(--desk); border-radius: 2px; padding: 0 3px; vertical-align: 1px; }
+
+footer.end { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 34px; font-size: 0.8rem; color: var(--ink-faint); }
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>Baneri / Pozicije</h1>
+    <p class="lede">Formati i mjesta na kojima se prikazuju. Raspored unutar svakog ekrana je stvarni raspored TechPlay stranice na koju se format odnosi.</p>
+  </div>
+  <div class="brand">TECHPLAY<span>.gg</span></div>
+</header>
+
+<!-- ══════════ DESKTOP ══════════ -->
+<div class="band desktop">
+  <div class="band-head">
+    <h2>Desktop</h2>
+    <span class="sub">/ Pozicije na slici</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- Billboard -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="ad h20"></div>
+          <div class="r c4"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+          <div class="k grow"></div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">Billboard</span>
+        <span class="sz">970×250</span>
+        <span class="wh">naslovna, ispod navigacije</span>
+        <span class="tag">sponzor</span>
+      </figcaption>
+    </figure>
+
+    <!-- Megaboard -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="k d h16"></div>
+          <div class="ad h9"></div>
+          <div class="r c3"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+          <div class="k grow"></div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">Megaboard</span>
+        <span class="sz">728×90</span>
+        <span class="wh">prelaz između sekcija — naslovna, listinzi, igre</span>
+        <span class="tag">sponzor + adsense</span>
+      </figcaption>
+    </figure>
+
+    <!-- Rectangle -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="r rail" style="flex:1">
+            <div class="lines"><i></i><i></i><i></i><i></i><i></i><i></i><i class="s"></i></div>
+            <div class="pg"><div class="ad h22"></div><div class="k d h12"></div><div class="k grow"></div></div>
+          </div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">Rectangle</span>
+        <span class="sz">300×250</span>
+        <span class="wh">desni rail — članci, recenzije, sekcije</span>
+        <span class="tag">sponzor + adsense</span>
+      </figcaption>
+    </figure>
+
+    <!-- Half-page -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="r rail" style="flex:1">
+            <div class="lines"><i></i><i></i><i></i><i></i><i></i><i></i><i class="s"></i></div>
+            <div class="pg"><div class="ad grow"></div><div class="k d h9"></div></div>
+          </div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">Half-page</span>
+        <span class="sz">300×600</span>
+        <span class="wh">rail uz stranicu igre — <strong>ljepljiv</strong>, ostaje u kadru</span>
+        <span class="tag">sponzor</span>
+      </figcaption>
+    </figure>
+
+    <!-- In-text Rectangle -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="r rail" style="flex:1">
+            <div class="lines"><i></i><i></i><i class="s"></i><div class="ad h16" style="margin:2px 0"></div><i></i><i></i><i class="s"></i></div>
+            <div class="pg"><div class="k d h12"></div><div class="k grow"></div></div>
+          </div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">In-text Rectangle</span>
+        <span class="sz">336×280</span>
+        <span class="wh">između pasusa teksta</span>
+        <span class="tag">adsense</span>
+      </figcaption>
+    </figure>
+
+    <!-- In-feed -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="r rail3" style="flex:1">
+            <div class="k"></div>
+            <div class="pg">
+              <div class="r c3"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+              <div class="r c3"><div class="k d h12"></div><div class="ad h12"></div><div class="k d h12"></div></div>
+              <div class="r c3"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+            </div>
+            <div class="k"></div>
+          </div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">In-feed</span>
+        <span class="sz">u ritmu kartica</span>
+        <span class="wh">unutar mreže — baza igara, listinzi</span>
+        <span class="tag">adsense</span>
+      </figcaption>
+    </figure>
+
+    <!-- Product rail -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="k d h16"></div>
+          <div class="r rail" style="flex:1">
+            <div class="pg"><div class="k d h12"></div><div class="k grow"></div></div>
+            <div class="pg"><div class="k d h9"></div><div class="ad h26"></div><div class="k grow"></div></div>
+          </div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">Product rail</span>
+        <span class="sz">300×250</span>
+        <span class="wh">uz činjenice o igri, na stranici proizvoda</span>
+        <span class="tag">samo sponzor</span>
+      </figcaption>
+    </figure>
+
+    <!-- Outstream video -->
+    <figure class="fmt">
+      <div class="mon">
+        <div class="glass"><div class="pg">
+          <div class="k h6"></div>
+          <div class="r rail" style="flex:1">
+            <div class="lines"><i></i><i></i><i class="s"></i><div class="ad h22 play" style="margin:2px 0"></div><i></i><i></i></div>
+            <div class="pg"><div class="k d h12"></div><div class="k grow"></div></div>
+          </div>
+        </div></div>
+        <div class="neck"></div><div class="foot"></div>
+      </div>
+      <figcaption>
+        <span class="nm">Outstream Video</span>
+        <span class="sz">16:9 u tekstu</span>
+        <span class="wh">trejler izdavača unutar članka</span>
+        <span class="tag">samo sponzor</span>
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <p class="bandnote">
+    Rail formati (Rectangle, Half-page, Product rail) prikazuju se <strong>od 1280 px naviše</strong>.<br>
+    Ispod te širine zamjenjuje ih mobilni raspored.
+  </p>
+</div>
+
+<!-- ══════════ MOBILE ══════════ -->
+<div class="band mobile">
+  <div class="band-head">
+    <h2>Mobile</h2>
+    <span class="sub">/ Pozicije na slici</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- Billboard -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="ad h26"></div>
+        <div class="k d h16"></div>
+        <div class="r c2"><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">Billboard</span>
+        <span class="sz">320×100</span>
+        <span class="wh">vrh naslovne</span>
+        <span class="tag">sponzor</span>
+      </figcaption>
+    </figure>
+
+    <!-- Rectangle -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h16"></div>
+        <div class="ad h34"></div>
+        <div class="r c2"><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">Rectangle</span>
+        <span class="sz">300×250</span>
+        <span class="wh">između sekcija — zamjena za rail</span>
+        <span class="tag">sponzor + adsense</span>
+      </figcaption>
+    </figure>
+
+    <!-- In-text -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="lines"><i></i><i></i><i></i><i class="s"></i></div>
+        <div class="ad h26"></div>
+        <div class="lines"><i></i><i></i><i></i><i class="s"></i></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">In-text Rectangle</span>
+        <span class="sz">300×250</span>
+        <span class="wh">između pasusa teksta</span>
+        <span class="tag">adsense</span>
+      </figcaption>
+    </figure>
+
+    <!-- In-feed -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="r c2"><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="r c2"><div class="ad h12"></div><div class="k d h12"></div></div>
+        <div class="r c2"><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">In-feed</span>
+        <span class="sz">u ritmu kartica</span>
+        <span class="wh">unutar mreže igara</span>
+        <span class="tag">adsense</span>
+      </figcaption>
+    </figure>
+
+    <!-- Bottom half-page -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="lines"><i></i><i></i><i class="s"></i></div>
+        <div class="ad grow"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">Bottom Half-page</span>
+        <span class="sz">300×600</span>
+        <span class="wh">dno članka, poslije teksta</span>
+        <span class="tag">sponzor</span>
+      </figcaption>
+    </figure>
+
+    <!-- Outstream -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="lines"><i></i><i></i><i class="s"></i></div>
+        <div class="ad h22 play"></div>
+        <div class="lines"><i></i><i></i><i class="s"></i></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">Outstream Video</span>
+        <span class="sz">16:9 u tekstu</span>
+        <span class="wh">trejler unutar članka</span>
+        <span class="tag">samo sponzor</span>
+      </figcaption>
+    </figure>
+
+    <!-- Sticky — not recommended -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h16"></div>
+        <div class="lines"><i></i><i></i><i class="s"></i></div>
+        <div class="k grow"></div>
+        <div class="ad hatch h12 x"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">Fiksni (sticky)</span>
+        <span class="sz">320×50</span>
+        <span class="wh">lijepi se za dno ekrana</span>
+        <span class="tag">ne preporučujem — vidi dolje</span>
+      </figcaption>
+    </figure>
+
+    <!-- Interstitial — not recommended -->
+    <figure class="fmt">
+      <div class="ph"><div class="glass" style="background:var(--surface-2)"><div class="pg">
+        <div class="ad hatch grow x"></div>
+      </div></div></div>
+      <figcaption>
+        <span class="nm">Interstitial</span>
+        <span class="sz">preko cijelog ekrana</span>
+        <span class="wh">između dvije stranice</span>
+        <span class="tag">ne preporučujem — vidi dolje</span>
+      </figcaption>
+    </figure>
+
+  </div>
+
+  <p class="bandnote">
+    Šrafirani formati su u ponudi, ali ih danas ne bih puštao.
+  </p>
+</div>
+
+<!-- ══════════ GUSTINA ══════════ -->
+<div class="band density">
+  <div class="band-head">
+    <h2>Gustina</h2>
+    <span class="sub">/ Koliko pozicija po stranici — desktop i mobitel odvojeno</span>
+  </div>
+
+  <div class="mathrow">
+    <div class="stat">
+      <div class="v now">0,25</div>
+      <div class="l">prikaza po pregledu danas<br><em>743 prikaza / 2.920 pregleda</em></div>
+    </div>
+    <div class="stat">
+      <div class="v now">0,64</div>
+      <div class="l">slotova po pregledu danas<br><em>popunjenost ~39 % — to je limit</em></div>
+    </div>
+    <div class="stat">
+      <div class="v goal">1,85</div>
+      <div class="l">slotova s ovim planom<br><em>desktop 2,0 · mobitel 1,5</em></div>
+    </div>
+  </div>
+
+  <p style="font-size:.88rem;color:var(--ink-low);max-width:70ch;margin:-6px 0 20px">
+    Promet je <strong>65,5 % desktop i 33,2 % mobitel</strong>. Na telefonu nestaje desni
+    rail, pa se sve što na njemu stoji slaže u jednu kolonu — zato mobilna verzija svuda
+    nosi jedan slot manje. Brojevi ispod su <strong>desktop / mobitel</strong>.
+  </p>
+
+  <div class="dgrid">
+
+    <!-- Igra -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h16"></div>
+        <div class="r rail" style="flex:1">
+          <div class="pg">
+            <div class="k d h12"></div>
+            <div class="ad h9"></div>
+            <div class="k d h16"></div>
+            <div class="ad h9"></div>
+            <div class="k d h12"></div>
+            <div class="k d h12"></div>
+            <div class="ad h9"></div>
+            <div class="k grow"></div>
+          </div>
+          <div class="pg"><div class="k d h9"></div><div class="ad h26"></div><div class="k grow"></div></div>
+        </div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">Igra</span>
+        <span class="cnt">1 &rarr; 4 / 3</span>
+        <span class="pv">228 pregleda · 92,5 % na stranici s opisom</span>
+      </div>
+      <p class="dnote">Iza galerije, ispod opisa <em>(postoji)</em>, prije uredničkog bloka, i rail uz činjenice.
+      <strong>Sva četiri nose <code>adWorthy</code> uslov.</strong> Na mobitelu rail otpada &rarr; 3.</p>
+    </figure>
+
+    <!-- Clanak -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="r rail" style="flex:1">
+          <div class="pg">
+            <div class="k d h22"></div>
+            <div class="lines"><i></i><i></i><i class="s"></i></div>
+            <div class="ad h12"></div>
+            <div class="lines"><i></i><i></i><i></i><i class="s"></i></div>
+            <div class="ad h12"></div>
+            <div class="lines"><i></i><i class="s"></i></div>
+          </div>
+          <div class="pg"><div class="ad h20"></div><div class="k d h12"></div><div class="k grow"></div><div class="ad h20"></div></div>
+        </div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">Članak</span>
+        <span class="cnt">4 &rarr; 5 / 3</span>
+        <span class="pv">97 pregleda · već najgušća stranica</span>
+      </div>
+      <p class="dnote">Drugi in-text <strong>samo na desktopu</strong>. Na telefonu ostaje 3 — tamo već stoje
+      in-text, <code>article_mid</code> i zamjena za rail, a četvrti bi na kratkoj vijesti bio više reklame nego teksta.</p>
+    </figure>
+
+    <!-- Baza -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h16"></div>
+        <div class="r rail3" style="flex:1">
+          <div class="k"></div>
+          <div class="pg">
+            <div class="ad h9"></div>
+            <div class="r c3"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+            <div class="r c3"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+            <div class="r c3"><div class="ad h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+            <div class="k grow"></div>
+          </div>
+          <div class="pg"><div class="k d h12"></div><div class="ad h22"></div></div>
+        </div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">Baza igara</span>
+        <span class="cnt">1 &rarr; 3 / 2</span>
+        <span class="pv">190 pregleda · uslov 6+ rezultata</span>
+      </div>
+      <p class="dnote">Iznad mreže, in-feed poslije dvanaeste kartice, rail <em>(postoji)</em>. Mobitel gubi rail &rarr; 2.</p>
+    </figure>
+
+    <!-- Studio -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h22"></div>
+        <div class="ad h9"></div>
+        <div class="r c3"><div class="k d h16"></div><div class="k d h16"></div><div class="k d h16"></div></div>
+        <div class="ad h12"></div>
+        <div class="r c3"><div class="k d h16"></div><div class="k d h16"></div><div class="k d h16"></div></div>
+        <div class="ad h9"></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">Studio <span class="newtag">novo</span></span>
+        <span class="cnt">0 &rarr; 3 / 2</span>
+        <span class="pv">24 pregleda · 17.607 studija u bazi</span>
+      </div>
+      <p class="dnote">Iznad polica, između dvije police, i pred kraj. <strong>Uslov: 6+ igara i opis</strong> — inače
+      je to 17 hiljada praznih stranica s tri reklame, tačno ono zbog čega je limit i stigao.</p>
+    </figure>
+
+    <!-- Profil -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h22"></div>
+        <div class="r c3"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="k d h16"></div>
+        <div class="ad h16"></div>
+        <div class="r c3"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">Profil <span class="newtag">novo</span></span>
+        <span class="cnt">0 &rarr; 1 / 1</span>
+        <span class="pv">288 pregleda · najveća sekcija bez reklame</span>
+      </div>
+      <p class="dnote">Jedan slot ispod kolekcije, <strong>i na svom i na tuđem profilu</strong>. Isti za sve — nema izuzetka za vlasnika.</p>
+    </figure>
+
+    <!-- Naslovna -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h22"></div>
+        <div class="ad h16"></div>
+        <div class="r c4"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="k d h16"></div>
+        <div class="ad h9"></div>
+        <div class="r c4"><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div><div class="k d h12"></div></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">Naslovna</span>
+        <span class="cnt">1 &rarr; 2 / 2</span>
+        <span class="pv">141 pregled</span>
+      </div>
+      <p class="dnote">Billboard ispod prečica (Privee), i postojeći između uredničkog bloka i recenzija. Nema raila, pa je mobitel isti.</p>
+    </figure>
+
+    <!-- Listinzi -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h16"></div>
+        <div class="ad h9"></div>
+        <div class="r c2"><div class="k d h16"></div><div class="k d h16"></div></div>
+        <div class="r c2"><div class="k d h16"></div><div class="k d h16"></div></div>
+        <div class="ad h12"></div>
+        <div class="r c2"><div class="k d h16"></div><div class="k d h16"></div></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">/latest · autor <span class="newtag">novo</span></span>
+        <span class="cnt">0 &rarr; 2 / 2</span>
+        <span class="pv">73 pregleda · danas nijedan slot</span>
+      </div>
+      <p class="dnote">Iznad liste i in-feed, isto kao sekcije. Uslov 6+ stavki.</p>
+    </figure>
+
+    <!-- Giveaway -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h22"></div>
+        <div class="k d h16"></div>
+        <div class="ad h9"></div>
+        <div class="k d h16"></div>
+        <div class="k d h22"></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm">Giveaway <span class="newtag">novo</span></span>
+        <span class="cnt">0 &rarr; 1 / 1</span>
+        <span class="pv">75 pregleda</span>
+      </div>
+      <p class="dnote">Jedan, između opisa nagrade i zadataka. <strong>Nikad uz dugme za učešće</strong> — tu su slučajni klikovi.</p>
+    </figure>
+
+    <!-- Bez reklama -->
+    <figure class="dfmt">
+      <div class="dmon"><div class="glass" style="opacity:.6"><div class="pg">
+        <div class="k h6"></div>
+        <div class="k d h16"></div>
+        <div class="k d h22"></div>
+        <div class="lines"><i></i><i></i><i class="s"></i></div>
+        <div class="k grow"></div>
+      </div></div></div>
+      <div class="dcap">
+        <span class="nm" style="color:var(--ink-low)">Ostaje prazno</span>
+        <span class="cnt" style="color:var(--ink-faint)">0 &rarr; 0</span>
+        <span class="pv">219 pregleda — prijava, registracija, postavke</span>
+      </div>
+      <p class="dnote">Plus poruke, prijatelji, shop i pravne stranice. Reklama na prijavi smanjuje registracije, a one su jedino što raste.</p>
+    </figure>
+
+  </div>
+
+  <div class="note" style="margin-top:22px">
+    <p>
+      <strong>Mobilna verzija nosi jedan slot manje svuda gdje postoji rail.</strong>
+      Na telefonu se desni rail slaže ispod sadržaja, pa bi stranica igre s četiri jedinice
+      imala tri uzastopne reklame bez teksta između. Zato je mobilni plan 1,5 naspram 2,0 —
+      ista stranica, manje gusto. To nije ustupak, nego razlog zašto se ovakav list uvijek
+      crta dvaput.
+    </p>
+  </div>
+
+  <div class="note">
+    <p>
+      <strong>Dvije stvari idu protiv „nema više limita", i treba ih pustiti u dva koraka.</strong>
+      Više jedinica dok je nalog ograničen <em>ne</em> podiže prikaze — Google ih ostavi prazne,
+      a gušći raspored na stranicama s malo teksta je upravo signal zbog kojeg je limit stigao
+      21. 8. Zato: <strong>prvi val</strong> — pozicije na stranicama koje sigurno imaju sadržaj
+      (profil, naslovna, članci, igre s opisom). <strong>Drugi val</strong> — studiji, listinzi i
+      in-feed, tek kad se limit skine i popunjenost vrati preko 70 %.
+    </p>
+  </div>
+
+  <div class="note">
+    <p>
+      <strong>Računica do cilja.</strong> Plan daje 1,85 slota po pregledu. Pri današnjoj
+      popunjenosti od 39 % to je <strong>0,72 prikaza</strong> — već blizu donje granice
+      preporuke. Na 70 % popunjenosti je <strong>1,30</strong>, na 85 % je <strong>1,57</strong>.
+      Dakle raspored vas dovede do praga, a limit odlučuje hoćete li biti u sredini raspona
+      ili iznad njega.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════ SPECIFIKACIJA ══════════ -->
+<section class="block">
+  <h2>Specifikacija</h2>
+  <p class="sub">Ime pozicije je ono što se kupuje — vrijedi na svim stranicama tog tipa.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Format</th><th>Oznaka</th><th>Dimenzije</th><th>Stranice</th><th>Stanje</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Billboard</td><td class="c">home_billboard</td><td class="c">970×250 / 320×100</td><td>naslovna</td><td>treba napraviti</td></tr>
+        <tr><td>Megaboard</td><td class="c">megaboard</td><td class="c">728×90</td><td>naslovna, listinzi, igre</td><td>treba napraviti</td></tr>
+        <tr><td>Rectangle</td><td class="c">sidebar_top</td><td class="c">300×250</td><td>članci, recenzije, vodiči, sekcije</td><td><strong>postoji, prazno</strong></td></tr>
+        <tr><td>Rectangle (dno)</td><td class="c">sidebar_bottom</td><td class="c">300×250</td><td>isto</td><td><strong>postoji, prazno</strong></td></tr>
+        <tr><td>Rectangle (mobitel)</td><td class="c">article_mid</td><td class="c">300×250</td><td>članci ispod 1280 px</td><td><strong>postoji, prazno</strong></td></tr>
+        <tr><td>In-text Rectangle</td><td class="c">InArticleAd</td><td class="c">336×280</td><td>tijelo članka</td><td>radi</td></tr>
+        <tr><td>Half-page</td><td class="c">halfpage</td><td class="c">300×600</td><td>stranica igre (ljepljiv rail)</td><td>treba napraviti</td></tr>
+        <tr><td>Product rail</td><td class="c">game_sidebar</td><td class="c">300×250</td><td>igre s opisom 200+ znakova</td><td>treba napraviti</td></tr>
+        <tr><td>In-feed</td><td class="c">listing_infeed</td><td class="c">u ritmu kartica</td><td>baza igara, listinzi</td><td>treba napraviti</td></tr>
+        <tr><td>Outstream Video</td><td class="c">outstream</td><td class="c">16:9</td><td>članci</td><td>treba napraviti</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ NAPOMENE ══════════ -->
+<section class="block">
+  <h2>Tri napomene uz ponudu</h2>
+
+  <div class="note">
+    <p>
+      <strong>Fiksni i interstitial danas ne.</strong> Nalog je 21. 8. 2026. stavljen pod
+      AdSense ad serving limit. Dok se ne skine, formati koji pokrivaju sadržaj i nose
+      slučajne klikove rade protiv nas. Ostaju u ponudi za direktnog sponzora kad se
+      stanje sredi.
+    </p>
+  </div>
+
+  <div class="note">
+    <p>
+      <strong>Tri pozicije već postoje i prazne su.</strong> <code>sidebar_top</code>,
+      <code>sidebar_bottom</code> i <code>article_mid</code> traže se oko 1.090 puta i ne
+      vraćaju ništa — nijedna kampanja nije vezana za njih. Istovremeno dvije plaćene
+      kampanje stoje na pozicijama koje se ne prikazuju nigdje.
+    </p>
+  </div>
+
+  <div class="note">
+    <p>
+      <strong>Doseg koji stvarno ide u ponudu.</strong> Panel pokazuje 67.600 pregleda u
+      28 dana, ali tu je i skraper koji obilazi katalog. Pregleda gdje se posjetilac
+      zadržao bar tri sekunde ima <strong>1.460</strong> — oko 52 dnevno. Tu brojku
+      stavljam u ponudu sponzoru, jer je to ono što se može braniti.
+    </p>
+  </div>
+</section>
+
+<footer class="end">
+  Rasporedi unutar ekrana čitani iz koda (<code>HomeClient</code>,
+  <code>ArticleDetailView</code>, <code>games/[slug]</code>, <code>SectionHub</code>,
+  <code>GameDatabaseHub</code>, <code>GiveawayClient</code>). Doseg iz
+  <code>analytics_events</code>, 9. 9. – 4. 10. 2026.
+</footer>
+
+</div>
