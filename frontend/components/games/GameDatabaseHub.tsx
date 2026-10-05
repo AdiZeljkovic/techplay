@@ -635,6 +635,23 @@ export default function GameDatabaseHub({
                                 ))}
                             </div>
 
+                            {/* The phone's only unit on this page.
+
+                                The right rail carries one, but that rail is
+                                `hidden xl:block` — so below 1280px this page,
+                                the second busiest on the site, was serving no
+                                advertising at all. It sits under the grid
+                                rather than inside it: an in-feed unit between
+                                cards has to be the in-feed format, and this is
+                                a display one.
+
+                                Only once there is a grid worth scrolling. A
+                                result page of three covers with a banner under
+                                them is a banner with three covers above it. */}
+                            {rows.length >= 6 && (
+                                <DisplayAd className="xl:hidden mt-5" minHeight={250} />
+                            )}
+
                             {/* Pushed to the floor of the column, so it lands
                                 level with the bottom of the filter rail at any
                                 width — a fixed number of cards could not, since
