@@ -715,24 +715,38 @@ postcss samo kaže „Missed semicolon" na mjestu koje ne znači ništa.
 `frontend/` mora biti u `.gitignore`, inače ga Tailwind čita. To važi i za
 privremene kopije — zato `.next.*` stoji uz njega.
 
-### Snimak `.next` prije rizičnog builda
+### Snimak `.next` prije builda — od 28. 10. ga pravi skripta
 
-`deploy_frontend.sh` ima `set -euo pipefail`, ali `next build` piše u `.next`
-**u mjestu** — pad na pola ostavlja živi build u polustanju, a sajt to ne
-pokaže dok se proces ne restartuje. Hardlink snimak košta ništa:
+`next build` **briše `.next` u mjestu** prije nego išta kompajlira, dok živi
+server i dalje servira iz njega. Pad na pola ostavlja živi build bez
+`.next/static` i bez `BUILD_ID`: stranice se i dalje vraćaju (proces ih drži u
+memoriji), ali **svaki CSS i JS odgovara 500**, a restart procesa u tom stanju se
+ne bi ni podigao. Tačno to se desilo 28. 10. — vidi
+`docs/incidenti/2026-10-28-build-obrisao-css.md`.
 
-**Snimak ide IZVAN `frontend/`.** Hardlinkovi traže isti filesystem, a sve što
-ostane u projektu Tailwind čita (vidi gore):
+`deploy_frontend.sh` sada, prije `npm run build`:
+
+1. napravi hardlink snimak živog `.next` u
+   `/var/www/.techplay-build-snapshots/next.prev` — **izvan `frontend/`**, jer sve
+   što ostane u projektu Tailwind čita (vidi gore). Bez `cache` foldera (njega
+   build ne dira) i **samo ako postoji `BUILD_ID`**: pokvaren `.next` ne smije
+   pregaziti zadnji dobar snimak;
+2. ako build padne na **`ENOTEMPTY`** — sudar sa živim serverom koji upisuje ISR
+   osvježenje u `.next` dok ga build briše — pokuša **još jednom**;
+3. ako build padne i drugi put, ili na bilo čemu drugom, **vrati cijeli snimak**
+   (dva preimenovanja, keš ostaje), **ne restartuje pm2** i izađe s greškom.
+   Živi sajt ostaje na prethodnom buildu, kompletan.
+
+Ručno vraćanje, ako ikad zatreba:
 
 ```bash
-mkdir -p /var/www/.techplay-build-snapshots
 cd /var/www/techplay/frontend
-rm -rf /var/www/.techplay-build-snapshots/next.prev
-cp -al .next /var/www/.techplay-build-snapshots/next.prev
-# ako build padne:
 rm -rf .next && cp -al /var/www/.techplay-build-snapshots/next.prev .next
 chown -R techplay:techplay .next
 ```
+
+A ako fali samo `.next/static` (CSS/JS daju 500), dovoljno je:
+`sudo -u techplay cp -rn .static-archive/. .next/static/`.
 
 Skripta radi, redom: `git pull` kao root → **vraćanje vlasništva** → migracije →
 `config:cache`, `route:cache`, `view:cache` → `env:validate` → **mapa obrisanih

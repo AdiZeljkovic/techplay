@@ -50,7 +50,77 @@ fi
 rm -rf .next/cache/fetch-cache
 
 run_as_owner "npm install --no-audit --no-fund"
-run_as_owner "npm run build"
+
+# 2a. A copy of the live build, taken before `next build` starts deleting it.
+#
+# `next build` clears `.next` in place before it compiles anything, while the
+# running server is still serving out of it. On 28.10.2026 the build died in
+# that clear — ENOTEMPTY on .next/server/app/latest.segments, because the live
+# server was writing a revalidated /latest into the directory the build was
+# emptying — and by then `.next/static` and BUILD_ID were already gone.
+# `set -e` stopped the script before step 3 could put the chunks back, so every
+# stylesheet and script on the live site answered 500 until they were restored
+# by hand; a restart of the old server in that state would not have come up.
+#
+# Hard links, so the copy costs no space and is near instant. Outside this tree
+# on purpose: Tailwind's scanner reads anything under frontend/ that .gitignore
+# does not exclude (see .static-archive in docs §13). The cache is left out — a
+# failed build does not touch it — and so is a `.next` with no BUILD_ID, which
+# is a broken build: keeping the last good copy beats replacing it with that.
+SNAPSHOT=/var/www/.techplay-build-snapshots/next.prev
+if [ -f .next/BUILD_ID ]; then
+    rm -rf "$SNAPSHOT"
+    mkdir -p "$SNAPSHOT"
+    find .next -mindepth 1 -maxdepth 1 ! -name cache -exec cp -al {} "$SNAPSHOT/" \; \
+        || echo "  (snimak .next mozda nepotpun — zivi server je pisao u njega)"
+fi
+
+# Put the snapshot back as the live `.next`, keeping the cache the failed build
+# left alone. Two renames rather than a delete-then-copy, so the window with no
+# `.next` at all is the gap between them and not the length of a copy.
+restore_snapshot() {
+    if [ ! -f "$SNAPSHOT/BUILD_ID" ]; then
+        echo "  Nema ispravnog snimka — .next ostaje kako ga je build ostavio."
+        return
+    fi
+
+    rm -rf .next.restore .next.failed
+    cp -al "$SNAPSHOT" .next.restore
+    if [ -d .next/cache ]; then mv .next/cache .next.restore/cache; fi
+    if [ -e .next ]; then mv .next .next.failed; fi
+    mv .next.restore .next
+    chown -R "$(stat -c '%U:%G' "$FRONT")" .next 2>/dev/null || true
+    rm -rf .next.failed 2>/dev/null || true
+
+    echo "  .next vracen iz snimka — zivi sajt i dalje radi na prethodnom buildu."
+}
+
+# 2b. Build, with one more try for the race above and a way back if it fails.
+#
+# The retry is for ENOTEMPTY only: it is a collision with the live server, not a
+# fault in the code, and the next attempt clears what the first one left. Any
+# other failure is a real one and is not retried — a compile error fails the
+# same way twice, a minute later.
+BUILD_LOG=$(mktemp)
+built=0
+for attempt in 1 2; do
+    if run_as_owner "npm run build" 2>&1 | tee "$BUILD_LOG"; then
+        built=1
+        break
+    fi
+
+    grep -q 'ENOTEMPTY' "$BUILD_LOG" || break
+    [ "$attempt" -eq 1 ] && echo "Build je pao na ENOTEMPTY (zivi server je pisao u .next) — jos jedan pokusaj."
+done
+rm -f "$BUILD_LOG"
+
+if [ "$built" -ne 1 ]; then
+    echo
+    echo "NEUSPJEH: next build nije prosao."
+    restore_snapshot
+    echo "  pm2 NIJE restartovan; stari proces i dalje sluzi stari build."
+    exit 1
+fi
 
 # 3. Resurrect prior chunks alongside the new ones (-n: never overwrite new).
 if [ -d "$ARCHIVE" ]; then
