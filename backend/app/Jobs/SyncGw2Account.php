@@ -13,6 +13,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Read one player's account from ArenaNet.
@@ -67,6 +68,21 @@ class SyncGw2Account implements ShouldQueue
             ]);
         } catch (Gw2RateLimited $e) {
             /*
+             * The last attempt says so instead of releasing again. A release
+             * past `tries` is not retried — the worker fails the job without
+             * running it — so the row used to sit at "pending" for good, and
+             * the page kept saying a read was on its way.
+             */
+            if ($this->attempts() >= $this->tries) {
+                $connection->forceFill([
+                    'sync_status' => 'error',
+                    'sync_error' => 'ArenaNet was too busy to read your account just now. What you see is from the last read, and the nightly read will try again.',
+                ])->save();
+
+                return;
+            }
+
+            /*
              * Not this account's fault and not a failure. Put it back and let
              * the backoff carry it past the busy minute; the connection keeps
              * its previous state so the dashboard still has something to draw.
@@ -99,5 +115,33 @@ class SyncGw2Account implements ShouldQueue
                 'sync_error' => 'ArenaNet could not be reached. Your last synced data is still shown.',
             ])->save();
         }
+    }
+
+    /**
+     * Everything handle() did not see coming.
+     *
+     * A database error, a worker killed at the timeout, an exception nobody
+     * named — each ends here once the retries are spent, and before this method
+     * existed each one left the connection at "syncing" or "pending" forever:
+     * a spinner on the page and a sync button that looked busy.
+     */
+    public function failed(?Throwable $e): void
+    {
+        $connection = ConnectedAccount::find($this->connectionId);
+
+        if (! $connection) {
+            return;
+        }
+
+        $connection->forceFill([
+            'sync_status' => 'error',
+            'sync_error' => 'Reading your account failed on our side. Your last synced data is still shown, and the nightly read will try again.',
+        ])->save();
+
+        Log::channel('connections')->warning('GW2 account sync failed', [
+            'connection' => $connection->id,
+            'mode' => $this->quick ? 'quick' : 'full',
+            'error' => $e?->getMessage(),
+        ]);
     }
 }

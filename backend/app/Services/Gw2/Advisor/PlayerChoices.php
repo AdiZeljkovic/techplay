@@ -115,6 +115,19 @@ class PlayerChoices
     }
 
     /**
+     * When this account last answered anything — part of the dashboard's cache
+     * key, so a new answer is not hidden behind a cached old one.
+     */
+    public function lastAnswerAt(int $gw2AccountId): ?string
+    {
+        $at = DB::table('gw2_confirmations')
+            ->where('gw2_account_id', $gw2AccountId)
+            ->max('updated_at');
+
+        return $at === null ? null : (string) $at;
+    }
+
+    /**
      * Record an answer to something the API cannot see.
      *
      * `unsure` is a real answer and is stored like any other. It stops the

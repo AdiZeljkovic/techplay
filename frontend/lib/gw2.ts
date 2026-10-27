@@ -420,6 +420,11 @@ export interface Gw2Dashboard {
         expansions: string[];
         observed_at: string | null;
         last_full_sync_at: string | null;
+        /**
+         * The character every card is about — the player's choice when they
+         * made one, our ranking when they did not. Compare the top-level
+         * `featured_character` to tell which.
+         */
         featured_character: {
             name: string;
             profession: string | null;
@@ -504,7 +509,77 @@ export interface Gw2Dashboard {
          */
         tracked_since: string | null;
     };
+    /** Goals the player pinned, newest first. The first one is used whenever no goal is asked for. */
+    pins: Gw2Pin[];
+    /** The goal this answer was weighted for: the one asked for, else the top pin, else none. */
+    goal_in_use: string | null;
+    open_questions: Gw2OpenQuestion[];
+    /** Every character on the account, for choosing which one the advice is about. */
+    characters: Gw2CharacterOption[];
+    /** The player's own choice, or null while our ranking picks. */
+    featured_character: string | null;
     connection: Gw2Connection;
+}
+
+export interface Gw2Pin {
+    slug: string;
+    title: string;
+    summary: string | null;
+    domain: string | null;
+    character_name: string | null;
+    priority: number;
+    pinned_at: string | null;
+}
+
+export interface Gw2CharacterOption {
+    name: string;
+    profession: string | null;
+    level: number;
+    ascended_core: number;
+}
+
+export interface Gw2OpenQuestion {
+    subject: string;
+    question: string;
+    why: string;
+    answer: "yes" | "no" | "unsure" | null;
+    answered_at: string | null;
+}
+
+export interface Gw2StoryRow {
+    id: number;
+    name: string;
+    timeline: string | null;
+    level: number | null;
+    /** Set where the chapter belongs to some races only, so nobody reads it as skipped. */
+    races: string[];
+    steps_seen: number;
+    steps_total: number;
+}
+
+export interface Gw2StorySeason {
+    name: string;
+    order: number;
+    stories: Gw2StoryRow[];
+    steps_seen: number;
+    /**
+     * Null where the season branches. The API exposes neither the order nor the
+     * biography choices that pick a branch, so a denominator would be wrong — a
+     * missing number is honest and a wrong one is not.
+     */
+    steps_total: number | null;
+    branches: boolean;
+}
+
+export interface Gw2Story {
+    character: string;
+    race?: string | null;
+    /** False when nothing was read for this character — unknown, not "nothing done". */
+    known: boolean;
+    steps_seen?: number;
+    seasons: Gw2StorySeason[];
+    note: string;
+    characters: { name: string; race: string | null; profession: string | null; level: number }[];
 }
 
 export interface Gw2Connection {
@@ -558,14 +633,19 @@ export async function getConnection(): Promise<Gw2Connection | null> {
 }
 
 /**
- * The dashboard.
+ * The dashboard, and the connection it was read through.
  *
- * Returns `null` while a freshly connected account is still being read — the
- * backend answers with the connection alone for the half minute the queued sync
- * takes, and the page says so rather than drawing an empty dashboard that looks
- * broken.
+ * `dashboard` is null while a freshly connected account is still being read —
+ * the backend answers with the connection alone for the half minute the queued
+ * sync takes, and the page says so rather than drawing an empty dashboard that
+ * looks broken. The connection comes back either way, because it is what tells
+ * "still reading" apart from "the read failed": this used to return a bare
+ * null and throw the connection away, so a first read that failed looked like
+ * one that was taking its time, for ever.
  */
-export async function getDashboard(intent?: Gw2Intent): Promise<Gw2Dashboard | null> {
+export async function getDashboard(
+    intent?: Gw2Intent
+): Promise<{ dashboard: Gw2Dashboard | null; connection: Gw2Connection | null }> {
     const params = new URLSearchParams();
 
     if (intent?.minutes) params.set("minutes", String(intent.minutes));
@@ -579,7 +659,13 @@ export async function getDashboard(intent?: Gw2Intent): Promise<Gw2Dashboard | n
         `/gw2/dashboard${query ? `?${query}` : ""}`
     );
 
-    return "cards" in data.data ? (data.data as Gw2Dashboard) : null;
+    if ("cards" in data.data) {
+        const dashboard = data.data as Gw2Dashboard;
+
+        return { dashboard, connection: dashboard.connection };
+    }
+
+    return { dashboard: null, connection: data.data.connection ?? null };
 }
 
 export async function getMasteries(): Promise<Gw2Masteries | null> {
@@ -635,16 +721,70 @@ export async function connectKey(apiKey: string): Promise<Gw2Connection> {
     return data.data;
 }
 
-export async function requestSync(full = false): Promise<Gw2Connection> {
+/**
+ * Ask for a read. The message matters: a full read inside the hour is answered
+ * with "read less than an hour ago" rather than queued, and the player should
+ * hear that instead of a spinner that changes nothing.
+ */
+export async function requestSync(full = false): Promise<{ connection: Gw2Connection; message: string | null }> {
     const { data } = await axiosInstance.post<Envelope<Gw2Connection>>(
         `/gw2/sync${full ? "?full=1" : ""}`
     );
 
-    return data.data;
+    return { connection: data.data, message: data.message ?? null };
 }
 
 export async function disconnect(): Promise<void> {
     await axiosInstance.delete("/gw2/connection");
+}
+
+/** Pin a goal so it outlives the tab. Answers with every pin, newest first. */
+export async function pinGoal(goal: string): Promise<Gw2Pin[]> {
+    const { data } = await axiosInstance.post<Envelope<Gw2Pin[]>>("/gw2/pins", { goal });
+
+    return data.data ?? [];
+}
+
+export async function unpinGoal(goal: string): Promise<Gw2Pin[]> {
+    const { data } = await axiosInstance.delete<Envelope<Gw2Pin[]>>(`/gw2/pins/${encodeURIComponent(goal)}`);
+
+    return data.data ?? [];
+}
+
+/** Which character the advice is about. `null` hands the choice back to our ranking. */
+export async function chooseCharacter(character: string | null): Promise<void> {
+    await axiosInstance.put("/gw2/character", { character });
+}
+
+/**
+ * Story detected on one character — never "account story completion", because
+ * the game reports it per character and a player may have done a chapter on
+ * another one. Null when no character has been read at all.
+ */
+export async function getStory(character?: string | null): Promise<Gw2Story | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Story | null>>(
+        `/gw2/story${character ? `?character=${encodeURIComponent(character)}` : ""}`
+    );
+
+    return data.data ?? null;
+}
+
+/**
+ * What the backend said, for the error a player is shown.
+ *
+ * The messages there are written for a reader — "read less than an hour ago",
+ * "that character is not on this account" — and a generic toast would throw
+ * them away. A 429 from the route's own throttle carries Laravel's stock
+ * wording, so it is given a sentence of its own.
+ */
+export function gw2Error(e: unknown, fallback: string): string {
+    const response = (e as { response?: { status?: number; data?: { message?: string } } }).response;
+
+    if (response?.status === 429) {
+        return "That was a lot of requests in a minute. Give it a moment and try again.";
+    }
+
+    return response?.data?.message ?? fallback;
 }
 
 /**

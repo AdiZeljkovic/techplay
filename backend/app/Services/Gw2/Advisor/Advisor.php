@@ -4,6 +4,7 @@ namespace App\Services\Gw2\Advisor;
 
 use App\Models\Gw2Rule;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
+use App\Services\Gw2\Advisor\Producers\EmptyCoreSlots;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
 use App\Services\Gw2\Advisor\Producers\MasteryTierToBuy;
 use App\Services\Gw2\Advisor\Producers\MountsToUnlock;
@@ -77,6 +78,7 @@ class Advisor
         MountsToUnlock::KEY => MountsToUnlock::class,
         UnspentMasteryPoints::KEY => UnspentMasteryPoints::class,
         GearGaps::KEY => GearGaps::class,
+        EmptyCoreSlots::KEY => EmptyCoreSlots::class,
         AgonyGap::KEY => AgonyGap::class,
         VaultObjectives::KEY => VaultObjectives::class,
         UnclaimedAcclaim::KEY => UnclaimedAcclaim::class,

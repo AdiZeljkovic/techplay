@@ -61,7 +61,7 @@ class GearGaps implements Producer
                 subject: "slot:{$character->name}:{$slot}",
                 facts: [
                     'character' => $character->name,
-                    'slot' => $this->readable($slot),
+                    'slot' => self::readable($slot),
                     'rarity' => $character->slotRarity[$slot] ?? 'nothing',
                     'ascended' => $character->ascendedSlots,
                     'total' => $character->coreSlots,
@@ -98,8 +98,8 @@ class GearGaps implements Producer
             : [];
     }
 
-    /** `Ring1` is a slot name, not English. */
-    private function readable(string $slot): string
+    /** `Ring1` is a slot name, not English. Shared with EmptyCoreSlots. */
+    public static function readable(string $slot): string
     {
         return match ($slot) {
             'Ring1' => 'first ring',

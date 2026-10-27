@@ -2,16 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Compass, RefreshCw, Zap } from "lucide-react";
+import toast from "react-hot-toast";
+import { Check, Compass, Link2Off, Pin, PinOff, RefreshCw, UserRound, Zap } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import Meter from "@/components/ui/Meter";
+import Select from "@/components/ui/Select";
 import StatCards from "@/components/gw2/StatCards";
 import RecommendationCard from "@/components/gw2/RecommendationCard";
 import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
-import { getGoals, requestSync, slotLabel, type Gw2Dashboard, type Gw2GoalOption, type Gw2Intent } from "@/lib/gw2";
+import {
+    chooseCharacter,
+    disconnect,
+    getGoals,
+    gw2Error,
+    pinGoal,
+    requestSync,
+    slotLabel,
+    unpinGoal,
+    type Gw2Dashboard,
+    type Gw2GoalOption,
+    type Gw2Intent,
+    type Gw2Pin,
+} from "@/lib/gw2";
 
 /**
  * The dashboard, once an account has been read.
@@ -44,37 +59,117 @@ const TIMES = [
     { minutes: null, label: "No limit" },
 ];
 
+const LINKS = [
+    { href: "/gw2/masteries", label: "All masteries" },
+    { href: "/gw2/content", label: "Raids & bosses" },
+    { href: "/gw2/story", label: "Story" },
+    { href: "/gw2/tonight", label: "Tonight" },
+    { href: "/gw2/planner", label: "Crafting planner" },
+    // The public half, reachable from the private one. Nothing here linked
+    // back to it, so a signed-in player never found the reference pages.
+    { href: "/gw2/database", label: "Database" },
+];
+
 export default function DashboardView({
     dashboard,
     intent,
     onIntentChange,
     onRefresh,
+    onDisconnected,
     busy,
 }: {
     dashboard: Gw2Dashboard;
     intent: Gw2Intent;
     onIntentChange: (next: Gw2Intent) => void;
     onRefresh: () => void;
+    onDisconnected: () => void;
     busy: boolean;
 }) {
-    const [syncing, setSyncing] = useState(false);
-    const { account, cards, advice, since_last_sync: history } = dashboard;
+    const [syncing, setSyncing] = useState<"quick" | "full" | null>(null);
+    const { account, cards, advice, since_last_sync: history, connection } = dashboard;
 
-    async function sync() {
-        setSyncing(true);
+    async function sync(full: boolean) {
+        setSyncing(full ? "full" : "quick");
 
         try {
-            await requestSync();
+            const { connection: after, message } = await requestSync(full);
+
+            /*
+             * A full read inside the hour is answered with the time of the last
+             * one rather than queued, and only a queued read leaves the
+             * connection pending. Saying so is the whole response — reloading
+             * after it would only redraw what is already on screen.
+             */
+            if (after.sync_status !== "pending") {
+                toast(message ?? "Your account was read recently.");
+
+                return;
+            }
+
             /*
              * The read is queued, not immediate — the game's rate limit belongs
              * to the whole site, so nothing here waits on ArenaNet. Give the
              * worker a moment, then reload. If it is not done, the next refresh
              * catches it.
              */
-            await new Promise((resolve) => setTimeout(resolve, 4000));
+            await new Promise((resolve) => setTimeout(resolve, full ? 8000 : 4000));
             onRefresh();
+        } catch (e: unknown) {
+            // This used to be try/finally with no catch, so a 429 from the
+            // route's own throttle was an unhandled rejection and no message.
+            toast.error(gw2Error(e, "We could not ask for a read just now."));
         } finally {
-            setSyncing(false);
+            setSyncing(null);
+        }
+    }
+
+    async function pickCharacter(name: string) {
+        try {
+            await chooseCharacter(name || null);
+            onRefresh();
+        } catch (e: unknown) {
+            toast.error(gw2Error(e, "We could not change the character just now."));
+        }
+    }
+
+    async function togglePin(slug: string, pinned: boolean) {
+        try {
+            if (pinned) {
+                await unpinGoal(slug);
+
+                // Unpinning the goal that is also the one asked for clears both;
+                // otherwise the chip would stay lit by the request alone.
+                if (intent.goal === slug) {
+                    onIntentChange({ ...intent, goal: null });
+
+                    return;
+                }
+            } else {
+                await pinGoal(slug);
+            }
+
+            onRefresh();
+        } catch (e: unknown) {
+            toast.error(gw2Error(e, "We could not save that just now."));
+        }
+    }
+
+    async function disconnectAccount() {
+        if (
+            !confirm(
+                "Disconnect your Guild Wars 2 account?\n\nThe key is deleted, and so is everything read with it — " +
+                    "including the history since you connected, which the game does not keep and cannot give back."
+            )
+        ) {
+            return;
+        }
+
+        try {
+            await disconnect();
+            toast.success("Disconnected. The key and everything read with it are gone.");
+            onDisconnected();
+        } catch (e: unknown) {
+            toast.error(gw2Error(e, "We could not disconnect just now."));
         }
     }
 
@@ -87,42 +182,28 @@ export default function DashboardView({
         });
     }
 
+    const missing = Object.entries(connection.missing_features ?? {});
+
     return (
         <div className="space-y-6">
+            <CharacterBar dashboard={dashboard} onPick={pickCharacter} />
+
             <StatCards dashboard={dashboard} />
 
-            {/* The two places a card sends you when its number is the one you
-                came to act on. Kept here rather than in the page shell so they
-                do not appear beside the connect form, where neither works. */}
+            {/* The places a card sends you when its number is the one you came
+                to act on. Kept here rather than in the page shell so they do not
+                appear beside the connect form, where none of them works. */}
             <nav className="flex flex-wrap gap-2">
-                <Link
-                    href="/gw2/masteries"
-                    className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
-                    style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
-                >
-                    All masteries
-                </Link>
-                <Link
-                    href="/gw2/content"
-                    className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
-                    style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
-                >
-                    Raids &amp; bosses
-                </Link>
-                <Link
-                    href="/gw2/tonight"
-                    className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
-                    style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
-                >
-                    Tonight
-                </Link>
-                <Link
-                    href="/gw2/planner"
-                    className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
-                    style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
-                >
-                    Crafting planner
-                </Link>
+                {LINKS.map((link) => (
+                    <Link
+                        key={link.href}
+                        href={link.href}
+                        className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
+                        style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
+                    >
+                        {link.label}
+                    </Link>
+                ))}
             </nav>
 
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -131,47 +212,56 @@ export default function DashboardView({
                         material="matte"
                         title="What to do next"
                         meta={
-                            <span className="text-xs text-[var(--ink-faint)]">
-                                {advice.considered} weighed
+                            <span className="text-xs text-[var(--ink-faint)]" aria-live="polite">
+                                {busy ? "Weighing…" : `${advice.considered} weighed`}
                             </span>
                         }
                     >
                         <div className="space-y-4">
-                            <IntentBar intent={intent} onChange={onIntentChange} onToggleAvoid={toggleAvoid} />
+                            <IntentBar
+                                intent={intent}
+                                pins={dashboard.pins ?? []}
+                                goalInUse={dashboard.goal_in_use ?? null}
+                                onChange={onIntentChange}
+                                onToggleAvoid={toggleAvoid}
+                                onTogglePin={togglePin}
+                            />
 
-                            {advice.headline.length === 0 ? (
-                                <p className="py-6 text-center text-sm text-[var(--ink-low)]">
-                                    {advice.considered === 0
-                                        ? "Nothing matched right now — which usually means your account is in good shape."
-                                        : "Everything we weighed was filtered out. Try relaxing the time limit."}
-                                </p>
-                            ) : (
-                                <div className="grid gap-3 md:grid-cols-3">
-                                    {advice.headline.map((recommendation, i) => (
-                                        <RecommendationCard
-                                            key={recommendation.key + recommendation.subject}
-                                            recommendation={recommendation}
-                                            featured={i === 0}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            {advice.alternatives.length > 0 && (
-                                <div className="space-y-3">
-                                    <h3 className="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-faint)]">
-                                        Or instead
-                                    </h3>
+                            <div className={busy ? "opacity-60 transition-opacity" : "transition-opacity"}>
+                                {advice.headline.length === 0 ? (
+                                    <p className="py-6 text-center text-sm text-[var(--ink-low)]">
+                                        {advice.considered === 0
+                                            ? "Nothing matched right now — which usually means your account is in good shape."
+                                            : "Everything we weighed was filtered out. Try relaxing the time limit."}
+                                    </p>
+                                ) : (
                                     <div className="grid gap-3 md:grid-cols-3">
-                                        {advice.alternatives.map((recommendation) => (
+                                        {advice.headline.map((recommendation, i) => (
                                             <RecommendationCard
                                                 key={recommendation.key + recommendation.subject}
                                                 recommendation={recommendation}
+                                                featured={i === 0}
                                             />
                                         ))}
                                     </div>
-                                </div>
-                            )}
+                                )}
+
+                                {advice.alternatives.length > 0 && (
+                                    <div className="mt-4 space-y-3">
+                                        <h3 className="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-faint)]">
+                                            Or instead
+                                        </h3>
+                                        <div className="grid gap-3 md:grid-cols-3">
+                                            {advice.alternatives.map((recommendation) => (
+                                                <RecommendationCard
+                                                    key={recommendation.key + recommendation.subject}
+                                                    recommendation={recommendation}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </Panel>
 
@@ -187,12 +277,20 @@ export default function DashboardView({
                         }
                     >
                         {!cards.vault ? (
-                            // Absent is not empty: a key without `progression`
-                            // never read the vault at all, and saying "nothing
-                            // open" would be inventing that.
+                            // Absent is not empty, and absent has two causes. A
+                            // key without `progression` never read the vault; a
+                            // key with it simply has not been read since the
+                            // vault arrived. Saying "nothing open" would be
+                            // inventing either.
                             <p className="text-sm text-[var(--ink-low)]">
-                                Your key does not include the <strong>progression</strong> permission, so we
-                                cannot read your vault.
+                                {connection.permissions.includes("progression") ? (
+                                    "We have not read your vault yet. It arrives with the next read."
+                                ) : (
+                                    <>
+                                        Your key does not include the <strong>progression</strong> permission, so we
+                                        cannot read your vault.
+                                    </>
+                                )}
                             </p>
                         ) : cards.vault.open.length === 0 ? (
                             <p className="text-sm text-[var(--ink-low)]">
@@ -316,37 +414,178 @@ export default function DashboardView({
                         )}
                     </Panel>
 
-                    <div className="flex items-center justify-between gap-3 text-xs text-[var(--ink-faint)]">
-                        <span>
-                            Read{" "}
-                            {account.observed_at
-                                ? new Date(account.observed_at).toLocaleString()
-                                : "never"}
-                        </span>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={sync}
-                            isLoading={syncing || busy}
-                            icon={<RefreshCw size={13} />}
-                        >
-                            Refresh
-                        </Button>
-                    </div>
+                    {/*
+                     * The connection itself: what was read and when, what the key
+                     * does not share, and the two things the connect screen
+                     * promises — reading again, and taking the key away. The
+                     * promise "disconnecting deletes the key" had no button
+                     * anywhere on the site until this panel.
+                     */}
+                    <Panel
+                        material="matte"
+                        title="Your connection"
+                        meta={
+                            <span className="truncate text-xs text-[var(--ink-faint)]">
+                                {connection.account_name ?? account.name}
+                            </span>
+                        }
+                    >
+                        <div className="space-y-3 text-xs">
+                            <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-[var(--ink-low)]">
+                                <dt>Last read</dt>
+                                <dd className="text-right text-[var(--ink-mid)]">
+                                    {account.observed_at ? new Date(account.observed_at).toLocaleString() : "never"}
+                                </dd>
+                                <dt>Last full read</dt>
+                                <dd className="text-right text-[var(--ink-mid)]">
+                                    {connection.last_full_sync_at
+                                        ? new Date(connection.last_full_sync_at).toLocaleString()
+                                        : "never"}
+                                </dd>
+                                {connection.key_name && (
+                                    <>
+                                        <dt>Key</dt>
+                                        <dd className="truncate text-right text-[var(--ink-mid)]">{connection.key_name}</dd>
+                                    </>
+                                )}
+                            </dl>
+
+                            {(connection.sync_status === "pending" || connection.sync_status === "syncing") && (
+                                <p className="text-[var(--ink-mid)]">A read is on its way.</p>
+                            )}
+
+                            {connection.sync_status === "error" && connection.sync_error && (
+                                <p role="status" className="text-[var(--accent-ink)]">
+                                    {connection.sync_error}
+                                </p>
+                            )}
+
+                            {missing.length > 0 && (
+                                <div className="space-y-1.5 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+                                    <p className="text-[var(--ink-mid)]">Your key does not share:</p>
+                                    <ul className="space-y-1 text-[var(--ink-low)]">
+                                        {missing.map(([permission, feature]) => (
+                                            <li key={permission}>
+                                                <span className="font-numeric text-[var(--ink-mid)]">{permission}</span>
+                                                {" — "}
+                                                {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <p className="text-[var(--ink-faint)]">
+                                        A new key with these ticked lights them up.
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="flex flex-wrap gap-2 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => void sync(false)}
+                                    isLoading={syncing === "quick"}
+                                    disabled={syncing !== null}
+                                    icon={<RefreshCw size={13} />}
+                                    title="Re-reads what changes within a day: the vault, raids, bosses and dungeons."
+                                >
+                                    Refresh
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => void sync(true)}
+                                    isLoading={syncing === "full"}
+                                    disabled={syncing !== null}
+                                    title="Reads everything again — characters, gear, story and inventory. Once an hour."
+                                >
+                                    Full read
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => void disconnectAccount()}
+                                    icon={<Link2Off size={13} />}
+                                    className="ml-auto text-[var(--accent-ink)]"
+                                >
+                                    Disconnect
+                                </Button>
+                            </div>
+                        </div>
+                    </Panel>
                 </div>
             </div>
         </div>
     );
 }
 
+/**
+ * Which character the cards are about.
+ *
+ * We rank by level and gear until told otherwise, which is a reasonable guess
+ * and still a guess — a veteran with fifteen characters has a main, and nothing
+ * in the API says which. One character needs no control, only its name.
+ */
+function CharacterBar({
+    dashboard,
+    onPick,
+}: {
+    dashboard: Gw2Dashboard;
+    onPick: (name: string) => void;
+}) {
+    const current = dashboard.account.featured_character;
+    const characters = dashboard.characters ?? [];
+
+    if (!current) return null;
+
+    const chosen = dashboard.featured_character ?? "";
+
+    return (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+            <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
+                <UserRound size={12} aria-hidden />
+                Advice is about
+            </span>
+
+            {characters.length > 1 ? (
+                <Select
+                    value={chosen}
+                    onChange={onPick}
+                    ariaLabel="Character the advice is about"
+                    className="h-9 min-w-[220px] px-3 text-[13px]"
+                    options={[
+                        {
+                            value: "",
+                            // Named, so the reader can see what our guess is
+                            // before deciding whether to overrule it.
+                            label: `Our pick — ${chosen ? "by level and gear" : current.name}`,
+                        },
+                        ...characters.map((c) => ({
+                            value: c.name,
+                            label: `${c.name} — ${[c.profession, `level ${c.level}`].filter(Boolean).join(", ")}`,
+                        })),
+                    ]}
+                />
+            ) : (
+                <span className="text-[var(--ink-hi)]">{current.name}</span>
+            )}
+        </div>
+    );
+}
+
 function IntentBar({
     intent,
+    pins,
+    goalInUse,
     onChange,
     onToggleAvoid,
+    onTogglePin,
 }: {
     intent: Gw2Intent;
+    pins: Gw2Pin[];
+    goalInUse: string | null;
     onChange: (next: Gw2Intent) => void;
     onToggleAvoid: (domain: string) => void;
+    onTogglePin: (slug: string, pinned: boolean) => void;
 }) {
     const [goals, setGoals] = useState<Gw2GoalOption[]>([]);
 
@@ -354,41 +593,86 @@ function IntentBar({
         void getGoals().then(setGoals).catch(() => setGoals([]));
     }, []);
 
+    const pinned = new Set(pins.map((pin) => pin.slug));
+
     return (
         <div className="space-y-3 border-b pb-4" style={{ borderColor: "var(--line)" }}>
         {goals.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
-                    Working towards
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                    {goals.map((goal) => {
-                        const on = intent.goal === goal.slug;
+            <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                    <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
+                        Working towards
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                        {goals.map((goal) => {
+                            // Lit by what the answer was weighted for, which is
+                            // the asked-for goal or, failing that, the top pin.
+                            // Lit only by `intent` it showed nothing selected
+                            // while a pin was quietly shaping the advice.
+                            const on = goalInUse === goal.slug;
+                            const isPinned = pinned.has(goal.slug);
+                            const onlyByPin = on && intent.goal !== goal.slug;
 
-                        return (
-                            <button
-                                key={goal.slug}
-                                type="button"
-                                // Picking the same one again clears it. A goal
-                                // is a hint, and a hint you cannot take back is
-                                // a setting.
-                                onClick={() => onChange({ ...intent, goal: on ? null : goal.slug })}
-                                aria-pressed={on}
-                                title={goal.summary ?? undefined}
-                                className="rounded-[var(--radius-inner)] border px-2.5 py-1 text-xs transition-colors"
-                                style={{
-                                    borderColor: on
-                                        ? "color-mix(in srgb, var(--accent) 45%, transparent)"
-                                        : "var(--line-strong)",
-                                    background: on ? "var(--accent-soft)" : "transparent",
-                                    color: on ? "var(--ink-hi)" : "var(--ink-low)",
-                                }}
-                            >
-                                {goal.title}
-                            </button>
-                        );
-                    })}
+                            return (
+                                <span
+                                    key={goal.slug}
+                                    className="inline-flex items-stretch overflow-hidden rounded-[var(--radius-inner)] border text-xs transition-colors"
+                                    style={{
+                                        borderColor: on
+                                            ? "color-mix(in srgb, var(--accent) 45%, transparent)"
+                                            : "var(--line-strong)",
+                                        background: on ? "var(--accent-soft)" : "transparent",
+                                    }}
+                                >
+                                    <button
+                                        type="button"
+                                        /*
+                                         * Picking the same one again clears it —
+                                         * a goal is a hint, and a hint you cannot
+                                         * take back is a setting. One lit only by
+                                         * its pin has nothing to clear, so the
+                                         * same click unpins it.
+                                         */
+                                        onClick={() =>
+                                            onlyByPin
+                                                ? onTogglePin(goal.slug, true)
+                                                : onChange({ ...intent, goal: on ? null : goal.slug })
+                                        }
+                                        aria-pressed={on}
+                                        title={
+                                            onlyByPin
+                                                ? "Your pinned goal — click to unpin it"
+                                                : goal.summary ?? undefined
+                                        }
+                                        className="px-2.5 py-1"
+                                        style={{ color: on ? "var(--ink-hi)" : "var(--ink-low)" }}
+                                    >
+                                        {goal.title}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onTogglePin(goal.slug, isPinned)}
+                                        aria-pressed={isPinned}
+                                        aria-label={isPinned ? `Unpin “${goal.title}”` : `Pin “${goal.title}”`}
+                                        title={isPinned ? "Pinned — kept for next time" : "Pin it, so it is kept for next time"}
+                                        className="border-l px-1.5 transition-colors hover:bg-[var(--fill-1)]"
+                                        style={{
+                                            borderColor: "var(--line)",
+                                            color: isPinned ? "var(--accent-ink)" : "var(--ink-faint)",
+                                        }}
+                                    >
+                                        {isPinned ? <Pin size={11} aria-hidden /> : <PinOff size={11} aria-hidden />}
+                                    </button>
+                                </span>
+                            );
+                        })}
+                    </div>
                 </div>
+                {pins.length > 0 && (
+                    <p className="text-[11px] text-[var(--ink-faint)]">
+                        Pinned goals are kept, and the newest one is used whenever you have not picked another.
+                    </p>
+                )}
             </div>
         )}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

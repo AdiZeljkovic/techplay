@@ -152,6 +152,54 @@ class Gw2PlayerChoicesTest extends TestCase
         $this->assertSame('fractals', $response->json('data.pins.0.slug'));
     }
 
+    /**
+     * The dashboard is cached for an hour against the last sync, and a chosen
+     * character does not change the sync. Without the choice in the cache key
+     * the page went on showing our pick for up to an hour after the player
+     * made theirs.
+     */
+    public function test_a_chosen_character_reaches_the_cached_dashboard_at_once(): void
+    {
+        $before = $this->actingAs($this->user)->getJson('/api/v1/gw2/dashboard')->assertOk();
+        $this->assertSame('Isara Moonbloom', $before->json('data.account.featured_character.name'));
+
+        $this->actingAs($this->user)
+            ->putJson('/api/v1/gw2/character', ['character' => 'Little Alt'])
+            ->assertOk();
+
+        $after = $this->actingAs($this->user)->getJson('/api/v1/gw2/dashboard')->assertOk();
+
+        $this->assertSame('Little Alt', $after->json('data.featured_character'));
+        $this->assertSame('Little Alt', $after->json('data.account.featured_character.name'));
+    }
+
+    public function test_an_answer_reaches_the_cached_dashboard_at_once(): void
+    {
+        $this->actingAs($this->user)->getJson('/api/v1/gw2/dashboard')->assertOk();
+
+        app(PlayerChoices::class)->confirm($this->accountId, 'elite_spec:Isara Moonbloom', 'yes');
+
+        $this->actingAs($this->user)
+            ->getJson('/api/v1/gw2/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.open_questions.0.answer', 'yes');
+    }
+
+    public function test_the_story_page_is_offered_the_characters_and_refuses_one_not_on_the_account(): void
+    {
+        $response = $this->actingAs($this->user)->getJson('/api/v1/gw2/story')->assertOk();
+
+        // Story is per character, so the page has to be able to offer the others.
+        $this->assertEqualsCanonicalizing(
+            ['Isara Moonbloom', 'Little Alt'],
+            array_column($response->json('data.characters'), 'name')
+        );
+
+        $this->actingAs($this->user)
+            ->getJson('/api/v1/gw2/story?character='.urlencode('Not Mine'))
+            ->assertNotFound();
+    }
+
     private function seedAccount(): int
     {
         $this->user = User::factory()->create();

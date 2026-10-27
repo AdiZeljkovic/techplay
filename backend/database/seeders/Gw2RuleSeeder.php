@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Gw2Rule;
 use App\Models\Gw2Source;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
+use App\Services\Gw2\Advisor\Producers\EmptyCoreSlots;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
 use App\Services\Gw2\Advisor\Producers\MasteryTierToBuy;
 use App\Services\Gw2\Advisor\Producers\MountsToUnlock;
@@ -331,7 +332,9 @@ class Gw2RuleSeeder extends Seeder
              */
             [
                 'key' => 'gear-empty-core-slot',
-                'producer' => GearGaps::KEY,
+                // Not GearGaps: that one only emits slots with something in
+                // them, which put this sentence over worn exotic pieces.
+                'producer' => EmptyCoreSlots::KEY,
                 'domain' => 'gear',
                 'title' => 'Nothing equipped in the {slot} on {character}',
                 'body' => 'That slot is empty, so it is contributing no stats at all. Anything in it beats nothing.',

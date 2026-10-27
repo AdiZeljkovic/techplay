@@ -278,7 +278,11 @@ class SnapshotReader
                 curated: (bool) ($meta->reviewed_at ?? false),
                 steps: $steps->for($id, $progress['bits']),
                 masteryRegion: $meta->mastery_region ?? null,
-                icon: $meta->icon ?: ($categoryIcons[$meta->category_id ?? 0] ?? null),
+                // `?? null` like every field above: an achievement the account
+                // reports and our catalogue does not have yet (a patch landed
+                // before the nightly refresh) has no $meta, and reading ->icon
+                // off null took the whole dashboard down with a 500.
+                icon: ($meta->icon ?? null) ?: ($categoryIcons[$meta->category_id ?? 0] ?? null),
             );
         }
 

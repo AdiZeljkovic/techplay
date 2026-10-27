@@ -1,22 +1,32 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import ConnectKey from "@/components/gw2/ConnectKey";
 import DashboardView from "@/components/gw2/DashboardView";
-import { getDashboard, type Gw2Dashboard, type Gw2Intent } from "@/lib/gw2";
+import {
+    disconnect,
+    getDashboard,
+    gw2Error,
+    requestSync,
+    type Gw2Connection,
+    type Gw2Dashboard,
+    type Gw2Intent,
+} from "@/lib/gw2";
 
 /**
- * Four states, and the third is the one that is easy to get wrong.
+ * Five states, and the last two are the ones that are easy to get wrong.
  *
  *   signed out      there is nothing to personalise
  *   no connection   draw the key form
- *   reading         connected, but the queued sync has not finished
  *   ready           the dashboard
+ *   reading         connected, but the queued sync has not finished
+ *   failed          connected, never read, and the read said why
  *
  * "Reading" exists because nothing on this page calls ArenaNet while somebody
  * waits — the game's rate limit is counted per IP and every request the site
@@ -24,41 +34,57 @@ import { getDashboard, type Gw2Dashboard, type Gw2Intent } from "@/lib/gw2";
  * whole site's budget on whoever happened to open it. The read is a queued job,
  * it takes about half a minute, and for that half minute the honest thing to draw
  * is a sentence saying so rather than an empty dashboard that looks broken.
+ *
+ * "Failed" exists because a first read can fail, and until the connection came
+ * back with the dashboard there was no way to tell that apart from one still
+ * running: the page said "reading" for ever.
  */
 export default function Gw2Client() {
     const { user, isLoading: authLoading } = useAuth();
 
     const [dashboard, setDashboard] = useState<Gw2Dashboard | null>(null);
+    const [connection, setConnection] = useState<Gw2Connection | null>(null);
     const [intent, setIntent] = useState<Gw2Intent>({ minutes: null, avoid: [] });
-    const [state, setState] = useState<"loading" | "disconnected" | "reading" | "ready" | "error">("loading");
-    const [busy, setBusy] = useState(false);
-
-    const load = useCallback(
-        async (next: Gw2Intent, quiet = false) => {
-            if (!quiet) setBusy(true);
-
-            try {
-                const payload = await getDashboard(next);
-
-                if (payload) {
-                    setDashboard(payload);
-                    setState("ready");
-                } else {
-                    // Connected, no snapshot yet.
-                    setState("reading");
-                }
-            } catch (e: unknown) {
-                const status = (e as { response?: { status?: number } }).response?.status;
-
-                // 404 is the documented answer for "no account is connected",
-                // which is a state and not a failure.
-                setState(status === 404 ? "disconnected" : "error");
-            } finally {
-                setBusy(false);
-            }
-        },
-        []
+    const [state, setState] = useState<"loading" | "disconnected" | "reading" | "failed" | "ready" | "error">(
+        "loading"
     );
+    const [busy, setBusy] = useState(false);
+    const [retrying, setRetrying] = useState(false);
+
+    /*
+     * The first paint has its own skeleton; every load after it is a question
+     * the player just asked, and changing the time budget with nothing on screen
+     * moving reads as a button that did not work.
+     */
+    const loadedOnce = useRef(false);
+
+    const load = useCallback(async (next: Gw2Intent, quiet = false) => {
+        if (!quiet) setBusy(true);
+
+        try {
+            const result = await getDashboard(next);
+
+            setConnection(result.connection);
+
+            if (result.dashboard) {
+                setDashboard(result.dashboard);
+                setState("ready");
+            } else {
+                // Connected, no snapshot yet — and the connection says whether
+                // that is a read in progress or one that gave up.
+                setState(result.connection?.sync_status === "error" ? "failed" : "reading");
+            }
+        } catch (e: unknown) {
+            const status = (e as { response?: { status?: number } }).response?.status;
+
+            // 404 is the documented answer for "no account is connected",
+            // which is a state and not a failure.
+            setState(status === 404 ? "disconnected" : "error");
+        } finally {
+            loadedOnce.current = true;
+            setBusy(false);
+        }
+    }, []);
 
     /*
      * Signed out is a branch below, not a state set from here — it is already
@@ -68,16 +94,17 @@ export default function Gw2Client() {
     useEffect(() => {
         if (authLoading || !user) return;
 
-        void load(intent, true);
         // `intent` is deliberately a dependency: changing the time budget or the
         // avoid list is a new question, and the backend answers it without
-        // caching. The quiet flag only suppresses the spinner on first paint.
+        // caching.
+        void load(intent, !loadedOnce.current);
     }, [authLoading, user, intent, load]);
 
     /*
      * While the first sync runs, poll — but slowly and not forever. A full read
-     * is eighteen requests through a queue; if it has not landed inside a minute
-     * something is wrong and a spinner that never stops is worse than a button.
+     * is a couple of dozen requests through a queue; if it has not landed inside
+     * a minute something is wrong and a spinner that never stops is worse than a
+     * button.
      */
     useEffect(() => {
         if (state !== "reading") return;
@@ -97,6 +124,39 @@ export default function Gw2Client() {
 
         return () => clearInterval(timer);
     }, [state, intent, load]);
+
+    function disconnected() {
+        setDashboard(null);
+        setConnection(null);
+        setState("disconnected");
+    }
+
+    async function retryFirstRead() {
+        setRetrying(true);
+
+        try {
+            await requestSync(true);
+            setState("reading");
+        } catch (e: unknown) {
+            toast.error(gw2Error(e, "We could not ask for a read just now."));
+        } finally {
+            setRetrying(false);
+        }
+    }
+
+    async function disconnectFromFailed() {
+        if (!confirm("Disconnect this Guild Wars 2 account? The key is deleted, along with anything read with it.")) {
+            return;
+        }
+
+        try {
+            await disconnect();
+            toast.success("Disconnected. The key is gone.");
+            disconnected();
+        } catch (e: unknown) {
+            toast.error(gw2Error(e, "We could not disconnect just now."));
+        }
+    }
 
     if (!authLoading && !user) {
         return (
@@ -148,6 +208,27 @@ export default function Gw2Client() {
         return <ConnectKey onConnected={() => setState("reading")} />;
     }
 
+    if (state === "failed") {
+        return (
+            <Panel material="matte" title="We could not read your account">
+                <div className="space-y-4">
+                    <p className="text-sm text-[var(--ink-mid)]">
+                        {connection?.sync_error ??
+                            "The first read of your account did not finish. Nothing is lost — your key is stored and can be read again."}
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                        <Button onClick={() => void retryFirstRead()} isLoading={retrying}>
+                            Try reading again
+                        </Button>
+                        <Button variant="ghost" onClick={() => void disconnectFromFailed()}>
+                            Disconnect this key
+                        </Button>
+                    </div>
+                </div>
+            </Panel>
+        );
+    }
+
     if (state === "reading" || !dashboard) {
         return (
             <Panel material="instrument" title="Reading your account">
@@ -172,6 +253,7 @@ export default function Gw2Client() {
             intent={intent}
             onIntentChange={setIntent}
             onRefresh={() => void load(intent)}
+            onDisconnected={disconnected}
             busy={busy}
         />
     );

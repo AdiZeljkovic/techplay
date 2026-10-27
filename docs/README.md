@@ -1532,7 +1532,8 @@ opremu, torbe, specijalizacije, vještine, recepte i craft, pa `equipment_tabs` 
 `build_tabs` uopšte ne trebaju dok se ne prikazuju neaktivni šabloni. Jedan
 zahtjev po liku ide na `characters/:id/quests` — priča se vodi po liku i drugog
 pogleda nema.
-**Brzo čitanje je 6 zahtjeva** — ono što se mijenja unutar dana.
+**Brzo čitanje je 7 zahtjeva** — ono što se mijenja unutar dana (`account`, raids,
+worldbosses, dungeons, dailycrafting i oba trezora; `AccountSync::QUICK`).
 
 Provjereno na živom nalogu 28. 9.: 19 poziva, 1 lik, 832 reda u knjizi
 predmeta, 6 poziva na brzom prolazu.
@@ -1572,8 +1573,11 @@ Sweep je pola sata **poslije** kataloga, ne pored njega: iz istog budžeta piju.
 |---|---|
 | `POST /api/v1/gw2/connect` | `throttle:10,1`, ključ ide u **tijelu** |
 | `GET /api/v1/gw2/connection` | stanje, dozvole, šta fali |
-| `POST /api/v1/gw2/sync` | brzo; `?full=1` najviše jednom u sat |
+| `POST /api/v1/gw2/sync` | brzo; `?full=1` najviše jednom u sat (do 28. 10. nikad — vidi ispod) |
 | `DELETE /api/v1/gw2/connection` | ključ i sve izvedeno |
+| `POST /api/v1/gw2/pins`, `DELETE /api/v1/gw2/pins/{goal}` | prikačeni cilj; najnoviji je zadani |
+| `PUT /api/v1/gw2/character` | lik o kojem savjetnik govori; `null` vraća izbor nama |
+| `GET /api/v1/gw2/story?character=` | priča po liku, plus spisak likova za izbor |
 
 Ključ nikad ne ide kroz query string — URL završi u access logu, u refereru i u
 izvještaju o grešci, a ključ samo za čitanje je i dalje nečiji nalog.
@@ -2080,14 +2084,15 @@ nema šta da se keširа između posjetilaca, pa je stranica `noindex`. **Javne,
 indeksabilne stranice alata tek treba napraviti** — one su motor dolaska, ova
 nije.
 
-Četiri stanja, i treće se najlakše promaši:
+Pet stanja, i zadnja dva se najlakše promaše:
 
 | Stanje | Šta se crta |
 |---|---|
 | odjavljen | poziv na prijavu |
 | bez veze | forma za ključ |
-| **čita** | „čitamo tvoj nalog, traje pola minute" |
 | spreman | dashboard |
+| **čita** | „čitamo tvoj nalog, traje pola minute" |
+| **nije uspjelo** | `sync_error` + „pokušaj ponovo" i „odspoji" (od 28. 10.; prije je izgledalo kao „čita", zauvijek) |
 
 „Čita" postoji jer **ništa na stranici ne zove ArenaNet dok neko čeka**. Čitanje
 je posao u redu; tih pola minute pošteno je napisati rečenicu, a ne nacrtati
@@ -2163,6 +2168,50 @@ su rasponi, i piše da su naši.
 Krila rajdova sa susretima, petnaest svjetskih bosova, osam tamnica. Dvije
 kolone — „ove sedmice / danas" iz igre i „ikad" iz naših snimaka — i panel na
 vrhu koji **objasni razliku i ispiše datum** od kog „ikad" počinje.
+
+### 28. 10. 2026 — šest grešaka i ekrani koji su falili
+
+Pregled 27. 10. je našao da backend već zna stvari koje sajt nije pokazivao, i
+nekoliko kvarova koji su svi bili tihi. Svaki ima test, i svaki test je
+provjeren tako da padne kad se popravka vrati.
+
+| | Šta je bilo | Popravka |
+|---|---|---|
+| Puni sync | `now()->diffInMinutes($prošlost)` je u Carbonu 3 **negativan**, pa je „manje od sat” uvijek bilo tačno i dugme nikad nije dalo puno čitanje | poređenje trenutaka, `isAfter(now()->subHour())` |
+| Priča | rate limit usred čitanja priče je bio progutan, a likovi koji nisu pročitani dobijali su `quests = []` — **brisalo je poznat napredak** | `Gw2RateLimited` prekida petlju; nepročitano se ne piše, novo ostaje `null` (nepoznato) |
+| „Nothing equipped” | pravilo za prazan slot je radilo na `GearGaps`, koji emituje samo slotove **u kojima nešto ima** — rečenica je išla preko nošenog egzotičnog prstena | vlastiti producer `EmptyCoreSlots`; migracija ispravlja red na produkciji jer se seederi ne pokreću pri deployu |
+| Dashboard 500 | postignuće kojeg katalog još nema (zakrpa prije noćnog osvježenja) → `->icon` nad `null` | `?? null` kao i ostala polja |
+| Povezivanje 500 | drugi poziv ArenaNetu u `connect()` nije bio zaštićen, a `ConnectionException` (timeout) nije bio mapiran nigdje | oba postaju `Gw2Unavailable` s porukom igraču |
+| Zaglavljen status | posao bez `failed()` je ostavljao `syncing`/`pending` zauvijek; rate limit u zadnjem pokušaju je radio `release()` koji se više nikad ne izvrši | `failed()` + odgovor umjesto release u zadnjem pokušaju |
+
+Uz to: keš dashboarda je nosio pin ali ne i izabranog lika ni zadnju potvrdu, pa
+je izbor lika kasnio do sat vremena — sad su oba u ključu. Admin padajući meni
+producera nije imao `MasteryTierToBuy` ni `MountsToUnlock`, pa se ta pravila nisu
+mogla sačuvati u adminu.
+
+**Ekrani:**
+
+- **Izbor lika** iznad kartica (kad nalog ima više od jednog), sa „Our pick” za
+  povratak na naše rangiranje.
+- **Pin cilja** — svaki cilj ima dugme za pin; čip svijetli po onome za šta je
+  odgovor stvarno računat (`goal_in_use`), ne samo po izboru u ovom prozoru.
+  Ranije je pin tiho oblikovao savjete dok je UI pokazivao da ništa nije izabrano.
+- **Panel „Your connection”** — zadnje i zadnje puno čitanje, greška synca,
+  dozvole koje ključ ne dijeli, *Refresh*, *Full read* i **Disconnect**.
+  Ekran za povezivanje obećava da odspajanje briše ključ, a dugmeta nije bilo
+  nigdje na sajtu.
+- **Stanje „čitanje nije uspjelo”** — prvo čitanje koje padne ranije je
+  izgledalo kao ono koje još traje, zauvijek.
+- **`/gw2/story`** — priča po liku, sa izborom lika. Sezona koja se grana nema
+  imenilac; poglavlja samo za neke rase nose ime rase.
+- **Postavke → povezani nalozi** dobili su GW2 karticu (otvori, re-sync,
+  disconnect). Koristi GW2 endpointe, ne generičke: generički sync za ovaj
+  provider nema granu i odgovara „queued” a ne šalje ništa.
+
+**Namjerno nije napravljeno:** ekran za potvrde (`POST /gw2/confirm`). Odgovor
+se pamti, ali ga **ništa ne čita** — ni pravila, ni savjetnik, ni priča. Pitanje
+čiji odgovor ništa ne mijenja je tačno ono što ovaj alat svugdje drugdje odbija;
+prvo treba pravilo koje ga koristi.
 
 ### Otvoreno
 

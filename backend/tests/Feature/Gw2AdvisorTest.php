@@ -320,6 +320,50 @@ class Gw2AdvisorTest extends TestCase
         $this->assertSame('vault-thing', $unserved['headline'][0]['key']);
     }
 
+    /**
+     * "Nothing equipped" goes on the slot that is empty, and only there.
+     *
+     * The seeded rule used to run on GearGaps, which only emits slots that have
+     * something in them. Take one ring off and the condition held — so the
+     * sentence went out over the exotic ring and accessories the character was
+     * wearing, and the empty slot itself got nothing. Run against the seeder,
+     * not a hand-made rule, because the seeder is where the mistake was.
+     */
+    public function test_an_empty_slot_is_named_and_a_worn_one_is_never_called_empty(): void
+    {
+        $this->seed(Gw2RuleSeeder::class);
+
+        $equipment = collect(json_decode(DB::table('gw2_characters')->value('equipment'), true))
+            ->reject(fn ($piece) => $piece['slot'] === 'Ring1')
+            ->values()
+            ->all();
+
+        DB::table('gw2_characters')->update(['equipment' => json_encode($equipment)]);
+
+        // Gear only, so the other domains cannot crowd the cards this is about.
+        $advice = $this->advise(new Intent(avoid: ['vault', 'achievements', 'masteries', 'fractals', 'mounts']));
+        $titles = array_column([...$advice['headline'], ...$advice['alternatives']], 'title');
+
+        $empty = array_values(array_filter($titles, fn ($t) => str_starts_with($t, 'Nothing equipped')));
+
+        $this->assertSame(['Nothing equipped in the first ring on Isara Moonbloom'], $empty);
+    }
+
+    public function test_an_achievement_our_catalogue_does_not_have_yet_does_not_break_the_snapshot(): void
+    {
+        // A patch adds an achievement; the account reports progress on it before
+        // the nightly catalogue run has heard of it.
+        DB::table('gw2_account_state')->where('gw2_account_id', $this->accountId)->update([
+            'achievements' => json_encode([['id' => 999999, 'current' => 9, 'max' => 10, 'done' => false]]),
+        ]);
+
+        $wins = app(SnapshotReader::class)->for($this->accountId)->nearlyDone;
+
+        $this->assertCount(1, $wins);
+        $this->assertNull($wins[0]->name);
+        $this->assertNull($wins[0]->icon);
+    }
+
     /** @return array{headline: array<int, array<string, mixed>>, alternatives: array<int, array<string, mixed>>, considered: int} */
     private function advise(?Intent $intent = null): array
     {

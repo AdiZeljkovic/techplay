@@ -95,8 +95,18 @@ class Dashboard
          */
         $pin = $this->choices->defaultGoal($snapshot->accountId) ?? 'none';
 
+        /*
+         * The same goes for the other two things the player tells us. A chosen
+         * character changes every gear and fractal card, and an answered
+         * question changes `open_questions`; neither touches `observed_at`, so
+         * without them here the page showed the old answer for up to an hour
+         * after the player gave a new one.
+         */
+        $character = md5($snapshot->featuredCharacter ?? '');
+        $answered = $this->choices->lastAnswerAt($snapshot->accountId) ?? 'none';
+
         return 'gw2:dashboard:v'.self::PAYLOAD_VERSION
-            .":{$snapshot->accountId}:{$pin}:".($snapshot->observedAt ?? 'never');
+            .":{$snapshot->accountId}:{$pin}:{$character}:{$answered}:".($snapshot->observedAt ?? 'never');
     }
 
     /**

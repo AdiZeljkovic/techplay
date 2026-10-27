@@ -7,7 +7,10 @@ use App\Models\Gw2Goal;
 use App\Models\Gw2Rule;
 use App\Models\Gw2Source;
 use App\Services\Gw2\Advisor\Producers\AgonyGap;
+use App\Services\Gw2\Advisor\Producers\EmptyCoreSlots;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
+use App\Services\Gw2\Advisor\Producers\MasteryTierToBuy;
+use App\Services\Gw2\Advisor\Producers\MountsToUnlock;
 use App\Services\Gw2\Advisor\Producers\NearlyDoneAchievements;
 use App\Services\Gw2\Advisor\Producers\UnclaimedAcclaim;
 use App\Services\Gw2\Advisor\Producers\UnspentMasteryPoints;
@@ -58,7 +61,13 @@ class Gw2RuleResource extends Resource
         VaultObjectives::KEY => 'Vault — objectives still open',
         NearlyDoneAchievements::KEY => 'Achievements — close to finishing',
         UnspentMasteryPoints::KEY => 'Masteries — unspent points, per region',
+        // Both had live rules pointing at them and were missing here, so an
+        // editor opening one of those rules could not save it: the select
+        // rejects a value that is not among its options.
+        MasteryTierToBuy::KEY => 'Masteries — the next tier the points can buy',
+        MountsToUnlock::KEY => 'Mounts — not unlocked yet',
         GearGaps::KEY => 'Gear — a core slot below ascended',
+        EmptyCoreSlots::KEY => 'Gear — a core slot with nothing in it',
         AgonyGap::KEY => 'Fractals — Agony Resistance shortfall',
     ];
 

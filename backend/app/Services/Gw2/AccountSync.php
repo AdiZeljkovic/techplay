@@ -147,6 +147,14 @@ class AccountSync
                         $key
                     );
                     $calls++;
+                } catch (Gw2RateLimited) {
+                    /*
+                     * The budget is gone for this minute, and it is the whole
+                     * site's budget. Asking for the next character would only be
+                     * refused again. The characters not read here keep the story
+                     * they had — see storeCharacters().
+                     */
+                    break;
                 } catch (Gw2Unavailable) {
                     /*
                      * One character's story failing must not lose the other
@@ -305,17 +313,27 @@ class AccountSync
                 'specializations' => json_encode($character['specializations'] ?? [], JSON_UNESCAPED_UNICODE),
                 'skills' => json_encode($character['skills'] ?? [], JSON_UNESCAPED_UNICODE),
                 'crafting' => json_encode($character['crafting'] ?? [], JSON_UNESCAPED_UNICODE),
-                /*
-                 * Quest ids this character has completed. §16 is firm that this
-                 * is "detected story progress" and never "account story
-                 * completion" — the endpoint is per character, a player may
-                 * have done the same story elsewhere, and the quest data is
-                 * documented as able to lag the story endpoints.
-                 */
-                'quests' => json_encode(array_values($quests[$character['name']] ?? []), JSON_UNESCAPED_UNICODE),
                 'observed_at' => now(),
                 'updated_at' => now(),
             ];
+
+            /*
+             * Quest ids this character has completed. §16 is firm that this is
+             * "detected story progress" and never "account story completion" —
+             * the endpoint is per character, a player may have done the same
+             * story elsewhere, and the quest data is documented as able to lag
+             * the story endpoints.
+             *
+             * Written only when this read actually fetched it. A story request
+             * that failed or was never sent is not an empty story, and writing
+             * `[]` for it threw away every known step whenever the rate limit
+             * landed mid-loop. Not read means keep what we had — and, for a character
+             * we have never read, leave it null, which StoryProgress reports as
+             * unknown rather than as nothing done.
+             */
+            if (array_key_exists($character['name'], $quests)) {
+                $row['quests'] = json_encode(array_values($quests[$character['name']]), JSON_UNESCAPED_UNICODE);
+            }
 
             // Same reason as gw2_accounts: updateOrInsert would rewrite
             // created_at on every sync, and this row's age is how long the

@@ -2,6 +2,7 @@
 
 namespace App\Services\Gw2;
 
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
@@ -123,7 +124,17 @@ class Gw2Client
             $request = $request->withToken($key);
         }
 
-        $response = $request->get(self::BASE.'/'.ltrim($path, '/'), $query);
+        try {
+            $response = $request->get(self::BASE.'/'.ltrim($path, '/'), $query);
+        } catch (ConnectionException $e) {
+            /*
+             * A timeout or a refused connection is the API being unavailable,
+             * and every caller already knows what to do with that. Left as a
+             * ConnectionException it slipped past all of them: connecting a key
+             * answered 500, and one slow chunk ended a whole catalogue run.
+             */
+            throw new Gw2Unavailable("/{$path} could not be reached.", previous: $e);
+        }
 
         if ($response->status() === 429) {
             throw new Gw2RateLimited("Rate limited on /{$path}.");

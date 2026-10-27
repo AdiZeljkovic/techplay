@@ -76,7 +76,22 @@ class Gw2Connection
             ]);
         }
 
-        $account = $this->api->account('account', $key);
+        /*
+         * The second call to ArenaNet in this method, and it needs the same
+         * answers as the first. Unguarded, a 429 or a 5xx here — after the key
+         * had already passed tokeninfo — came back to the player as a 500.
+         */
+        try {
+            $account = $this->api->account('account', $key);
+        } catch (Gw2KeyRejected) {
+            throw ValidationException::withMessages([
+                'api_key' => ['ArenaNet refused that key. Check it was copied whole, and that it has not been deleted.'],
+            ]);
+        } catch (Gw2Unavailable) {
+            throw ValidationException::withMessages([
+                'api_key' => ['ArenaNet is not answering right now. Nothing was saved — try again in a minute.'],
+            ]);
+        }
 
         /*
          * One game account, one TechPlay account.

@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Services\Gw2\AccountSync;
 use App\Services\Gw2\Gw2Client;
 use App\Services\Gw2\Gw2Connection;
+use App\Services\Gw2\Gw2RateLimited;
+use App\Services\Gw2\Gw2Unavailable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
@@ -238,6 +240,111 @@ class Gw2ConnectionTest extends TestCase
             ->assertJsonValidationErrors('api_key');
     }
 
+    /**
+     * The button that asks for a full read had never once produced one.
+     *
+     * Carbon 3 made diffInMinutes signed, so `now()->diffInMinutes($past)` came
+     * out negative, always under sixty, and every press was answered "read less
+     * than an hour ago". Both halves are checked because a fix that made it
+     * always queue would pass the first half alone.
+     */
+    public function test_a_full_read_can_be_asked_for_again_once_an_hour_has_passed(): void
+    {
+        Queue::fake();
+
+        $connection = $this->connect();
+
+        DB::table('gw2_accounts')->where('connected_account_id', $connection->id)
+            ->update(['last_full_sync_at' => now()->subMinutes(90)]);
+
+        $this->actingAs($connection->user)
+            ->postJson('/api/v1/gw2/sync?full=1')
+            ->assertOk()
+            ->assertJsonPath('message', 'Reading your account.');
+
+        Queue::assertPushed(SyncGw2Account::class, fn (SyncGw2Account $job) => $job->quick === false);
+
+        Queue::fake();
+
+        DB::table('gw2_accounts')->where('connected_account_id', $connection->id)
+            ->update(['last_full_sync_at' => now()->subMinutes(10)]);
+
+        $this->actingAs($connection->user)
+            ->postJson('/api/v1/gw2/sync?full=1')
+            ->assertOk()
+            ->assertJsonPath('message', 'Your account was fully read less than an hour ago.');
+
+        Queue::assertNothingPushed();
+    }
+
+    public function test_a_rate_limit_during_the_story_read_keeps_the_story_already_known(): void
+    {
+        $connection = $this->connect();
+        $sync = app(AccountSync::class);
+
+        $this->api->quests = [101, 102, 103];
+        $sync->full($connection);
+
+        // The budget runs out between the account endpoints and the per-character
+        // story loop — the one place a full read swallowed it.
+        $this->api->rateLimitQuests = true;
+        $sync->full($connection);
+
+        $quests = json_decode(DB::table('gw2_characters')->value('quests'), true);
+
+        // Not read is not empty. Writing [] here is what used to wipe it.
+        $this->assertSame([101, 102, 103], $quests);
+    }
+
+    public function test_arena_net_failing_after_the_key_check_is_explained_not_a_500(): void
+    {
+        $user = User::factory()->create();
+
+        // tokeninfo answers; the account read after it does not.
+        $this->api->failOn = 'account';
+
+        $this->actingAs($user)
+            ->postJson('/api/v1/gw2/connect', ['api_key' => Gw2Stub::KEY])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('api_key');
+
+        $this->assertDatabaseCount('connected_accounts', 0);
+    }
+
+    /**
+     * A sync that runs out of attempts has to say so.
+     *
+     * Before failed() existed, a job that exhausted its retries left the row
+     * at "syncing" or "pending" for good — and so did a rate limit on the last
+     * attempt, because a release past `tries` is never run again.
+     */
+    public function test_a_sync_that_runs_out_of_attempts_says_so(): void
+    {
+        $connection = $this->connect();
+
+        $connection->forceFill(['sync_status' => 'syncing'])->save();
+
+        (new SyncGw2Account($connection->id))->failed(new \RuntimeException('worker killed'));
+
+        $this->assertSame('error', $connection->fresh()->sync_status);
+        $this->assertNotNull($connection->fresh()->sync_error);
+
+        // The last attempt, rate limited: an answer, not another release.
+        $connection->forceFill(['sync_status' => 'pending', 'sync_error' => null])->save();
+        $this->api->rateLimitEverything = true;
+
+        $job = new SyncGw2Account($connection->id, quick: true);
+        $queued = \Mockery::mock(\Illuminate\Contracts\Queue\Job::class);
+        $queued->shouldReceive('attempts')->andReturn($job->tries);
+        $queued->shouldNotReceive('release');
+        $job->setJob($queued);
+
+        $job->handle(app(AccountSync::class));
+
+        $this->assertSame('error', $connection->fresh()->sync_status);
+        $this->assertStringContainsString('too busy', $connection->fresh()->sync_error);
+    }
+
     private function connect(?User $user = null): ConnectedAccount
     {
         return app(Gw2Connection::class)->connect($user ?? User::factory()->create(), Gw2Stub::KEY);
@@ -269,6 +376,18 @@ class Gw2Stub extends Gw2Client
         ['id' => 3, 'done' => false, 'current' => 3],
     ];
 
+    /** @var array<int, int> Completed quest ids, for every character. */
+    public array $quests = [];
+
+    /** The per-character story read answers 429. */
+    public bool $rateLimitQuests = false;
+
+    /** Every account read answers 429. */
+    public bool $rateLimitEverything = false;
+
+    /** One account path that answers as if ArenaNet were down. */
+    public ?string $failOn = null;
+
     public function __construct()
     {
         parent::__construct('gw2:test');
@@ -281,6 +400,22 @@ class Gw2Stub extends Gw2Client
 
     public function account(string $path, string $key, array $query = []): array
     {
+        if ($this->rateLimitEverything) {
+            throw new Gw2RateLimited("Stub: rate limited on /{$path}.");
+        }
+
+        if ($this->failOn === $path) {
+            throw new Gw2Unavailable("Stub: /{$path} is down.");
+        }
+
+        if (str_starts_with($path, 'characters/') && str_ends_with($path, '/quests')) {
+            if ($this->rateLimitQuests) {
+                throw new Gw2RateLimited("Stub: rate limited on /{$path}.");
+            }
+
+            return $this->quests;
+        }
+
         return match ($path) {
             'account' => [
                 'id' => 'ABC-123',

@@ -81,9 +81,9 @@ class Gw2Controller extends Controller
     /**
      * POST /gw2/sync
      *
-     * A quick pass by default — the six endpoints that move within a day.
-     * A full read is eighteen requests and is not something a button should
-     * spend on every press.
+     * A quick pass by default — the endpoints that move within a day. A full
+     * read is every account endpoint plus one story request per character, and
+     * is not something a button should spend on every press.
      */
     public function sync(Request $request): JsonResponse
     {
@@ -105,7 +105,13 @@ class Gw2Controller extends Controller
                 ->where('connected_account_id', $connection->id)
                 ->value('last_full_sync_at');
 
-            if ($last && now()->diffInMinutes($last) < 60) {
+            /*
+             * Compared as moments, not through diffInMinutes. Carbon 3 made that
+             * difference signed, so `now()->diffInMinutes($past)` is negative,
+             * always below sixty — and for as long as this read that way, no
+             * button press ever got a full read.
+             */
+            if ($last && Carbon::parse($last)->isAfter(now()->subHour())) {
                 return $this->success(
                     $this->describe($connection),
                     'Your account was fully read less than an hour ago.'
@@ -381,9 +387,26 @@ class Gw2Controller extends Controller
             return $this->success(null, 'We have not finished reading your account yet.');
         }
 
-        return $this->success(
-            app(StoryProgress::class)->for($snapshot, $request->string('character')->toString() ?: null)
-        );
+        $asked = $request->string('character')->toString() ?: null;
+        $story = app(StoryProgress::class)->for($snapshot, $asked);
+
+        if ($story === null) {
+            // Two different answers: a name that is not on the account, and an
+            // account whose key cannot see characters at all.
+            return $asked
+                ? $this->error('That character is not on this account.', 404)
+                : $this->success(null, 'No characters have been read on this account.');
+        }
+
+        // Story is per character, so the page needs the names to offer.
+        $story['characters'] = array_map(fn ($c) => [
+            'name' => $c->name,
+            'race' => $c->race,
+            'profession' => $c->profession,
+            'level' => $c->level,
+        ], $snapshot->characters);
+
+        return $this->success($story);
     }
 
     /**

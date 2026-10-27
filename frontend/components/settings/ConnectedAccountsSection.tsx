@@ -1,8 +1,10 @@
 "use client";
 
 import useSWR from "swr";
+import Link from "next/link";
 import axios from "@/lib/axios";
 import toast from "react-hot-toast";
+import { disconnect as disconnectGw2, gw2Error, requestSync as requestGw2Sync } from "@/lib/gw2";
 import PlatformMark from "@/components/games/PlatformMark";
 import { useState, type ReactNode } from "react";
 import { Loader2, Link2, Link2Off, RefreshCw, CheckCircle2, Clock, AlertCircle, Shield, X, Eye, EyeOff } from "lucide-react";
@@ -411,6 +413,36 @@ export default function ConnectedAccountsSection() {
     }
 
     const connected = (providerId: string) => accounts.find((a) => a.provider === providerId);
+    const gw2 = connected("gw2");
+
+    async function handleGw2Sync(id: number) {
+        setBusyId(id);
+        try {
+            const { message } = await requestGw2Sync();
+            toast.success(message ?? "Read queued — the advisor will update shortly.");
+            mutate();
+        } catch (e) {
+            toast.error(gw2Error(e, "Couldn't queue a read."));
+        } finally {
+            setBusyId(null);
+        }
+    }
+
+    async function handleGw2Disconnect(id: number) {
+        if (!confirm(
+            "Disconnect Guild Wars 2?\n\nThe key is deleted, and so is everything read with it — including the history since you connected, which the game does not keep and cannot give back."
+        )) return;
+        setBusyId(id);
+        try {
+            await disconnectGw2();
+            toast.success("Disconnected. The key and everything read with it are gone.");
+            mutate();
+        } catch (e) {
+            toast.error(gw2Error(e, "Couldn't disconnect."));
+        } finally {
+            setBusyId(null);
+        }
+    }
 
     return (
         <div className="space-y-4">
@@ -818,6 +850,78 @@ export default function ConnectedAccountsSection() {
                     )}
                 </div>
             )}
+
+            {/*
+              * Guild Wars 2, kept apart from the stores above.
+              *
+              * It is not a library import: it feeds the Progression Advisor,
+              * and it connects with a key pasted on that page rather than a
+              * flow that fits this list. It still belongs here, because this
+              * is where people look for what they have connected — and until
+              * this card the key could not be seen or removed anywhere on the
+              * site, although the connect screen promises both.
+              *
+              * Its buttons call the GW2 endpoints, not the generic ones: the
+              * generic sync has no branch for this provider and would answer
+              * "queued" while queueing nothing.
+              */}
+            <div className="flex items-center gap-4 p-4 rounded-[var(--radius-card)] bg-white/[0.03] border border-white/[0.07] hover:border-white/[0.12] transition-colors">
+                <div className="w-12 h-12 rounded-[var(--radius-card)] flex items-center justify-center shrink-0 bg-[#2a0f0f]">
+                    <span className="font-display text-[12px] font-black tracking-tight text-[#e2574c]">GW2</span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[14px] font-bold text-white">Guild Wars 2</span>
+                        {gw2 && (
+                            <span className="text-[11px] font-semibold text-white/55 truncate">
+                                {gw2.display_name ?? "Connected"}
+                            </span>
+                        )}
+                    </div>
+                    {gw2 ? (
+                        <div className="flex flex-col gap-1">
+                            {syncStatusBadge(gw2.sync_status, gw2.last_synced_at)}
+                            {gw2.sync_error && <span className="text-[11px] text-amber-400/70">{gw2.sync_error}</span>}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-1">
+                            <span className="text-[12px] text-white/55">
+                                Read your account for the Progression Advisor — masteries, gear, the Wizard&apos;s Vault and what to do next
+                            </span>
+                            <span className="text-[11px] text-white/45 leading-snug">
+                                Connected with a read-only API key you make at account.arena.net, on the advisor page.
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                    {gw2 ? (
+                        <>
+                            <Link href="/gw2"
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors">
+                                Open advisor
+                            </Link>
+                            <button onClick={() => handleGw2Sync(gw2.id)} disabled={busyId === gw2.id || isSyncing(gw2)}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-white/60 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.07] transition-colors disabled:opacity-40">
+                                {busyId === gw2.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+                                Re-sync
+                            </button>
+                            <button onClick={() => handleGw2Disconnect(gw2.id)} disabled={busyId === gw2.id}
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-[var(--radius-card)] text-[12px] font-semibold text-red-400 hover:text-red-300 bg-red-500/[0.06] hover:bg-red-500/[0.12] border border-red-500/[0.15] transition-colors disabled:opacity-40">
+                                {busyId === gw2.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Link2Off className="w-3.5 h-3.5" />}
+                                Disconnect
+                            </button>
+                        </>
+                    ) : (
+                        <Link href="/gw2"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-[var(--radius-card)] text-[13px] font-bold text-white bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors">
+                            <Link2 className="w-3.5 h-3.5" /> Connect
+                        </Link>
+                    )}
+                </div>
+            </div>
 
             <div className="flex items-start gap-2 mt-2 p-3 rounded-[var(--radius-card)] bg-white/[0.02] border border-white/[0.05]">
                 <Shield className="w-3.5 h-3.5 text-white/25 mt-0.5 shrink-0" />
