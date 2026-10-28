@@ -359,3 +359,27 @@ Schedule::command('gw2:sync-accounts')
     ->dailyAt('03:30')
     ->withoutOverlapping(120)
     ->onFailure($reportFailure('gw2:sync-accounts'));
+
+/*
+ * Just before each reset, a quick read of everything that resets.
+ *
+ * The game forgets world bosses, dungeon paths, Hero's Choice chests and
+ * time-gated crafts at 00:00 UTC, and raid clears on Monday at 07:30 UTC. The
+ * 03:30 sweep runs after the daily reset, so until this existed a boss killed in
+ * the evening was gone from the game's answer before we ever asked — and the
+ * "ever" column, which is built from the difference between two reads, never
+ * heard of it. Thirty minutes ahead leaves room for 360 accounts at five seconds
+ * apart. `--force` because the dashboard's own quick reads would otherwise put
+ * every active account inside the skip window.
+ */
+Schedule::command('gw2:sync-accounts --quick --force')
+    ->timezone('UTC')
+    ->dailyAt('23:30')
+    ->withoutOverlapping(30)
+    ->onFailure($reportFailure('gw2:sync-accounts --quick (before daily reset)'));
+
+Schedule::command('gw2:sync-accounts --quick --force')
+    ->timezone('UTC')
+    ->weeklyOn(1, '07:00')
+    ->withoutOverlapping(30)
+    ->onFailure($reportFailure('gw2:sync-accounts --quick (before weekly reset)'));

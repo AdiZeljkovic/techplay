@@ -44,6 +44,22 @@ readonly class RecipeNode
          * pretending the choice did not happen.
          */
         public bool $recipeWasChosen = false,
+        /**
+         * For a recipe taught by a sheet: whether this account has learned
+         * it. Null when the recipe comes with the discipline, or when the
+         * account's recipes were not read.
+         */
+        public ?bool $recipeLearned = null,
+        /**
+         * Made in the Mystic Forge, from a checked recipe: its source, when it
+         * was checked, whether the forge is random for it, and how many
+         * attempts the plan is for. Null for everything else.
+         *
+         * @var array<string, mixed>|null
+         */
+        public ?array $forge = null,
+        /** A wallet currency rather than an item. `itemId` is 0 then. */
+        public ?int $currencyId = null,
     ) {}
 
     public function missing(): int
@@ -58,7 +74,7 @@ readonly class RecipeNode
 
     public function craftable(): bool
     {
-        return $this->recipeId !== null;
+        return $this->recipeId !== null || $this->forge !== null;
     }
 
     /** @return array<string, mixed> */
@@ -66,10 +82,12 @@ readonly class RecipeNode
     {
         return [
             'item_id' => $this->itemId,
+            'currency_id' => $this->currencyId,
             'name' => $this->name,
             'rarity' => $this->rarity,
             'icon' => $this->icon,
-            'wiki' => Wiki::item($this->itemId),
+            'wiki' => $this->currencyId === null ? Wiki::item($this->itemId) : null,
+            'forge' => $this->forge,
             'needed' => $this->needed,
             'owned' => $this->owned,
             'missing' => $this->missing(),
@@ -77,6 +95,7 @@ readonly class RecipeNode
             'disciplines' => $this->disciplines,
             'min_rating' => $this->minRating,
             'recipe_was_chosen' => $this->recipeWasChosen,
+            'recipe_learned' => $this->recipeLearned,
             'depth' => $this->depth,
             'children' => array_map(fn (RecipeNode $c) => $c->toArray(), $this->children),
         ];

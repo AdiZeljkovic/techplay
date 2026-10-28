@@ -138,6 +138,8 @@ class Dashboard
                 'fractals' => $this->fractalCard($snapshot),
                 'achievements' => $this->achievementCard($snapshot),
                 'vault' => $this->vaultCard($snapshot),
+                'season' => app(VaultSeason::class)->for($snapshot),
+                'today' => app(DailyChecklist::class)->for($snapshot),
             ],
             'advice' => $this->advisor->advise($snapshot, $intent),
             'since_last_sync' => $this->delta($snapshot),
@@ -291,7 +293,7 @@ class Dashboard
         )));
 
         $tree = app(RecipeTree::class);
-        $root = $tree->plan($itemId, $quantity, $snapshot->owned, $disciplines);
+        $root = $tree->plan($itemId, $quantity, $snapshot->owned, $disciplines, $this->learnedRecipes($gw2AccountId), $snapshot->wallet);
         $list = $tree->shoppingList($root);
 
         return [
@@ -314,10 +316,12 @@ class Dashboard
              */
             'shopping_list' => array_map(fn (RecipeNode $n) => [
                 'item_id' => $n->itemId,
+                // A wallet currency in a forge recipe — Spirit Shards, coin.
+                'currency_id' => $n->currencyId,
                 'name' => $n->name,
                 'rarity' => $n->rarity,
                 'icon' => $n->icon,
-                'wiki' => Wiki::item($n->itemId),
+                'wiki' => $n->currencyId === null ? Wiki::item($n->itemId) : null,
                 'needed' => $n->needed,
                 'owned' => $n->owned,
                 'missing' => $n->missing(),
@@ -330,14 +334,46 @@ class Dashboard
              * a real obstacle and the kind a materials list quietly implies is
              * not there. Named rather than left for the crafting station.
              */
-            'requires' => $root->craftable() ? [
+            // A discipline recipe only. The Mystic Forge is open to everybody
+            // and has no rating, so "nobody on the account has it" would be false.
+            'requires' => $root->recipeId !== null ? [
                 'disciplines' => $root->disciplines,
                 'min_rating' => $root->minRating,
                 'have_it' => array_intersect($root->disciplines, $disciplines) !== [],
             ] : null,
+            /*
+             * Recipes taught by a sheet that the account has not learned. A
+             * plan can be fully stocked and still impossible at the crafting
+             * station without these; null when the account's recipes are not
+             * known, which is not the same as none missing.
+             */
+            'recipes_to_learn' => $this->learnedRecipes($gw2AccountId) === null ? null : array_map(fn (RecipeNode $n) => [
+                'recipe_id' => $n->recipeId,
+                'item_id' => $n->itemId,
+                'name' => $n->name,
+                'icon' => $n->icon,
+                'disciplines' => $n->disciplines,
+                'wiki' => Wiki::item($n->itemId),
+            ], $tree->toLearn($root)),
             'prices' => $this->priceBuckets($list),
             'observed_at' => $snapshot->observedAt,
         ];
+    }
+
+    /**
+     * Recipe ids from `account/recipes`, or null when that was never read.
+     *
+     * @return array<int, int>|null
+     */
+    private function learnedRecipes(int $gw2AccountId): ?array
+    {
+        $unlocks = json_decode((string) DB::table('gw2_account_state')
+            ->where('gw2_account_id', $gw2AccountId)
+            ->value('unlocks'), true);
+
+        return is_array($unlocks) && isset($unlocks['recipes']) && is_array($unlocks['recipes'])
+            ? array_map('intval', $unlocks['recipes'])
+            : null;
     }
 
     /**
@@ -366,7 +402,7 @@ class Dashboard
                 $minutes
             ),
             'priorities' => $this->priorities($snapshot),
-            'events' => $this->events(),
+            'events' => $this->events($snapshot),
             'observed_at' => $snapshot->observedAt,
         ];
     }
@@ -452,7 +488,7 @@ class Dashboard
      *
      * @return array<int, array<string, mixed>>
      */
-    private function events(): array
+    private function events(Snapshot $snapshot): array
     {
         if (! Schema::hasTable('gw2_events')) {
             return [];
@@ -460,11 +496,19 @@ class Dashboard
 
         $now = (int) now()->utc()->format('H') * 60 + (int) now()->utc()->format('i');
 
+        /*
+         * A world boss's slug is its `/v2/worldbosses` id, so the account's
+         * own read says whether it is already done today. "Not killed yet,
+         * next in 12 minutes" is the line no timer site can show — they have
+         * no key.
+         */
+        $killed = array_flip($snapshot->bossesToday);
+
         return DB::table('gw2_events')
             ->where('is_published', true)
             ->whereNotNull('verified_at')
-            ->get(['name', 'slug', 'kind', 'region', 'waypoint', 'daily_times_utc', 'duration_minutes', 'rewards'])
-            ->map(function ($event) use ($now) {
+            ->get(['name', 'slug', 'kind', 'region', 'waypoint', 'waypoint_chat_link', 'daily_times_utc', 'duration_minutes', 'rewards'])
+            ->map(function ($event) use ($now, $killed) {
                 $times = json_decode($event->daily_times_utc ?? '[]', true) ?: [];
                 $next = null;
 
@@ -484,15 +528,20 @@ class Dashboard
                     'kind' => $event->kind,
                     'region' => $event->region,
                     'waypoint' => $event->waypoint,
+                    'waypoint_chat_link' => $event->waypoint_chat_link ?? null,
                     'rewards' => $event->rewards,
                     'minutes_away' => $next,
                     'live_now' => $next !== null && $event->duration_minutes
                         && $next >= 1440 - (int) $event->duration_minutes,
+                    // Null for anything that is not a world boss: the API
+                    // reports kills for those fifteen and nothing else.
+                    'killed_today' => $event->kind === 'world_boss' ? isset($killed[$event->slug]) : null,
                 ];
             })
             ->filter(fn ($e) => $e['minutes_away'] !== null)
-            ->sortBy('minutes_away')
-            ->take(6)
+            // What is still to do first, soonest first; done ones after.
+            ->sortBy(fn ($e) => [$e['killed_today'] === true ? 1 : 0, $e['minutes_away']])
+            ->take(8)
             ->values()
             ->all();
     }
@@ -553,9 +602,26 @@ class Dashboard
         $bidAndWait = 0;
         $tradable = [];
         $untradable = [];
+        $currencies = [];
         $observedAt = null;
 
         foreach ($list as $node) {
+            /*
+             * A forge recipe's currency. Coin (id 1) is gold already and goes
+             * into both totals as it stands; every other currency has no
+             * exchange rate to gold and is listed on its own.
+             */
+            if ($node->currencyId !== null) {
+                if ($node->currencyId === 1) {
+                    $buyNow += $node->missing();
+                    $bidAndWait += $node->missing();
+                } else {
+                    $currencies[] = ['currency_id' => $node->currencyId, 'name' => $node->name, 'missing' => $node->missing()];
+                }
+
+                continue;
+            }
+
             $price = $prices[$node->itemId] ?? null;
 
             if (! $price || ($price->sell_unit === null && $price->buy_unit === null)) {
@@ -603,6 +669,8 @@ class Dashboard
              * exchange rate between them and gold.
              */
             'not_tradable' => $untradable,
+            // Wallet currencies still short, from forge recipes.
+            'currencies' => $currencies,
             'observed_at' => $observedAt,
         ];
     }

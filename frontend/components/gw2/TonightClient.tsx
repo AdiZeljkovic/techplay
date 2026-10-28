@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Clock, MapPin } from "lucide-react";
+import { AlertTriangle, Clock, Copy, MapPin } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -223,17 +224,38 @@ export default function TonightClient() {
                                         <MapPin size={14} className="mt-0.5 shrink-0 text-[var(--ink-faint)]" aria-hidden />
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-baseline justify-between gap-2">
-                                                <span className="truncate text-sm text-[var(--ink-hi)]">
+                                                <span
+                                                    className="truncate text-sm"
+                                                    style={{ color: event.killed_today ? "var(--ink-low)" : "var(--ink-hi)" }}
+                                                >
                                                     {event.name}
                                                 </span>
                                                 <span className="shrink-0 font-numeric text-[11px] text-[var(--ink-low)]">
-                                                    {event.live_now ? "now" : `in ${event.minutes_away} min`}
+                                                    {event.live_now
+                                                        ? "now"
+                                                        : event.minutes_away >= 60
+                                                          ? `in ${Math.floor(event.minutes_away / 60)}h ${event.minutes_away % 60}m`
+                                                          : `in ${event.minutes_away} min`}
                                                 </span>
                                             </div>
+                                            {/* From the account's own read: the one thing a timer site cannot say. */}
+                                            {event.killed_today !== null && event.killed_today !== undefined && (
+                                                <p
+                                                    className="text-[11px]"
+                                                    style={{ color: event.killed_today ? "var(--ink-faint)" : "var(--accent-ink)" }}
+                                                >
+                                                    {event.killed_today ? "Done today" : "Not killed today"}
+                                                </p>
+                                            )}
                                             {event.region && (
-                                                <p className="truncate text-[11px] text-[var(--ink-faint)]">
-                                                    {event.region}
-                                                    {event.waypoint ? ` · ${event.waypoint}` : ""}
+                                                <p className="flex items-center gap-1 truncate text-[11px] text-[var(--ink-faint)]">
+                                                    <span className="truncate">
+                                                        {event.region}
+                                                        {event.waypoint ? ` · ${event.waypoint}` : ""}
+                                                    </span>
+                                                    {event.waypoint_chat_link && (
+                                                        <WaypointCode code={event.waypoint_chat_link} />
+                                                    )}
                                                 </p>
                                             )}
                                         </div>
@@ -245,6 +267,29 @@ export default function TonightClient() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function WaypointCode({ code }: { code: string }) {
+    async function copy() {
+        try {
+            await navigator.clipboard.writeText(code);
+            toast.success("Waypoint code copied — paste it in game chat and click it.");
+        } catch {
+            toast.error(`Could not copy. The code is ${code}`);
+        }
+    }
+
+    return (
+        <button
+            type="button"
+            onClick={() => void copy()}
+            title={`Copy ${code}`}
+            aria-label="Copy the waypoint chat code"
+            className="inline-flex shrink-0 items-center text-[var(--ink-faint)] hover:text-[var(--accent-ink)]"
+        >
+            <Copy size={11} aria-hidden />
+        </button>
     );
 }
 

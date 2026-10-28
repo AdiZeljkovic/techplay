@@ -42,13 +42,44 @@ class RecipeTree
     private array $items = [];
 
     /**
+     * Recipe ids the account has learned, or null when that is not known —
+     * a public page with no account, or a key without `unlocks`.
+     *
+     * @var array<int, bool>|null
+     */
+    private ?array $learned = null;
+
+    /**
+     * Checked Mystic Forge recipes, by output item. Used only where the API
+     * has no recipe at all — the forge is what the API leaves out.
+     *
+     * @var array<int, array<int, object>>
+     */
+    private array $forge = [];
+
+    /**
+     * The wallet, spent like the item pool: Spirit Shards that one gift took
+     * are not there for the next.
+     *
+     * @var array<int, int>
+     */
+    private array $wallet = [];
+
+    /** @var array<int, object> currency id => name and icon */
+    private array $currencies = [];
+
+    /**
      * Expand a target into everything still to obtain.
      *
      * @param  array<int, int>  $owned  Item id => how many, across the whole account.
      * @param  array<int, string>  $disciplines  Active crafting disciplines, to break ties.
+     * @param  array<int, int>|null  $learned  Recipe ids from `account/recipes`; null when unknown.
+     * @param  array<int, int>  $wallet  Currency id => amount.
      */
-    public function plan(int $itemId, int $quantity, array $owned, array $disciplines = []): RecipeNode
+    public function plan(int $itemId, int $quantity, array $owned, array $disciplines = [], ?array $learned = null, array $wallet = []): RecipeNode
     {
+        $this->learned = $learned === null ? null : array_fill_keys(array_map('intval', $learned), true);
+        $this->wallet = $wallet;
         $this->warm($itemId);
 
         /*
@@ -86,8 +117,11 @@ class RecipeTree
                     // same plan down several branches, and six entries for
                     // Mithril Ore is a list nobody can read. Both figures sum,
                     // because each branch drew from a disjoint part of the pool.
-                    $leaves[$node->itemId] = isset($leaves[$node->itemId])
-                        ? $this->merge($leaves[$node->itemId], $node)
+                    // Currencies are keyed apart — their ids overlap item ids.
+                    $key = $node->currencyId !== null ? 'c'.$node->currencyId : (string) $node->itemId;
+
+                    $leaves[$key] = isset($leaves[$key])
+                        ? $this->merge($leaves[$key], $node)
                         : $node;
                 }
 
@@ -134,6 +168,7 @@ class RecipeTree
             minRating: (int) ($recipe->min_rating ?? 0),
             depth: $depth,
             recipeWasChosen: $chosen,
+            recipeLearned: $recipe ? $this->learned($recipe) : null,
         );
 
         /*
@@ -148,6 +183,12 @@ class RecipeTree
         }
 
         $recipes = $this->recipes[$itemId] ?? [];
+
+        if ($recipes === [] && isset($this->forge[$itemId])) {
+            $path[$itemId] = true;
+
+            return $this->expandForge($itemId, $item, $needed, $taken, $missing, $pool, $disciplines, $path, $depth);
+        }
 
         if ($recipes === []) {
             return $node();
@@ -213,6 +254,119 @@ class RecipeTree
     }
 
     /**
+     * An item made in the Mystic Forge, from a checked recipe.
+     *
+     * A forge recipe that yields less than one on average — a Mystic Clover
+     * comes out of about a third of attempts — is planned in attempts, rounded
+     * up, and the node says so: the materials for the average number of tries
+     * is the honest figure, and the reader needs to know it is an average.
+     *
+     * @param  array<int, int>  $pool
+     * @param  array<int, string>  $disciplines
+     * @param  array<int, bool>  $path
+     */
+    private function expandForge(int $itemId, ?object $item, int $needed, int $taken, int $missing, array &$pool, array $disciplines, array $path, int $depth): RecipeNode
+    {
+        $recipe = $this->forge[$itemId][0];
+        $yield = max(0.001, (float) $recipe->output_count);
+        $attempts = (int) ceil($missing / $yield);
+        $children = [];
+
+        foreach ($this->json($recipe->ingredients) as $ingredient) {
+            $count = (int) ($ingredient['count'] ?? 1) * $attempts;
+
+            if (($ingredient['type'] ?? 'Item') === 'Currency') {
+                $children[] = $this->currencyNode((int) $ingredient['id'], $count, $depth + 1);
+
+                continue;
+            }
+
+            $children[] = $this->expand((int) $ingredient['id'], $count, $pool, $disciplines, $path, $depth + 1);
+        }
+
+        return new RecipeNode(
+            itemId: $itemId,
+            name: $item->name ?? null,
+            rarity: $item->rarity ?? null,
+            icon: $item->icon ?? null,
+            needed: $needed,
+            owned: $taken,
+            children: $children,
+            disciplines: ['Mystic Forge'],
+            depth: $depth,
+            forge: [
+                'source_url' => $recipe->source_url,
+                'source_label' => $recipe->source_label,
+                'checked_at' => $recipe->checked_at ? (string) $recipe->checked_at : null,
+                'random' => $yield < 1,
+                'attempts' => $attempts,
+            ],
+        );
+    }
+
+    /** A currency in a forge recipe, drawn from the wallet the way items are drawn from the bank. */
+    private function currencyNode(int $currencyId, int $needed, int $depth): RecipeNode
+    {
+        $taken = min($this->wallet[$currencyId] ?? 0, $needed);
+        $this->wallet[$currencyId] = ($this->wallet[$currencyId] ?? 0) - $taken;
+        $currency = $this->currencies[$currencyId] ?? null;
+
+        return new RecipeNode(
+            itemId: 0,
+            name: $currency->name ?? null,
+            rarity: null,
+            icon: $currency->icon ?? null,
+            needed: $needed,
+            owned: $taken,
+            depth: $depth,
+            currencyId: $currencyId,
+        );
+    }
+
+    /**
+     * Every recipe that will actually be crafted and has to be learned first,
+     * and has not been. Once each, however many branches use it.
+     *
+     * @return array<int, RecipeNode>
+     */
+    public function toLearn(RecipeNode $root): array
+    {
+        $found = [];
+
+        $walk = function (RecipeNode $node) use (&$walk, &$found): void {
+            if ($node->recipeLearned === false && $node->children !== []) {
+                $found[$node->recipeId] ??= $node;
+            }
+
+            foreach ($node->children as $child) {
+                $walk($child);
+            }
+        };
+
+        $walk($root);
+
+        return array_values($found);
+    }
+
+    /**
+     * Whether the account knows this recipe — asked only of the ones that
+     * must be learned.
+     *
+     * `LearnedFromItem` is the game's flag for a recipe taught by a sheet; an
+     * `AutoLearned` one comes with the discipline. Null for those, and for
+     * anything when the account's recipes are not known, because "not learned"
+     * is a claim and we only make it when `account/recipes` was read.
+     */
+    private function learned(object $recipe): ?bool
+    {
+        if (! in_array('LearnedFromItem', $this->json($recipe->flags ?? null), true)) {
+            return null;
+        }
+
+        return $this->learned === null ? null : isset($this->learned[(int) $recipe->id]);
+    }
+
+    /**
      * Load the whole recipe graph reachable from a target, breadth first.
      *
      * One query per level rather than one per node: a ninety-node tree would
@@ -235,7 +389,7 @@ class RecipeTree
 
             $rows = DB::table('gw2_recipes')
                 ->whereIn('output_item_id', $frontier)
-                ->get(['id', 'output_item_id', 'output_item_count', 'ingredients', 'disciplines', 'min_rating']);
+                ->get(['id', 'output_item_id', 'output_item_count', 'ingredients', 'disciplines', 'min_rating', 'flags']);
 
             $next = [];
 
@@ -249,7 +403,39 @@ class RecipeTree
                 }
             }
 
+            /*
+             * Forge recipes for the same frontier — only checked ones with a
+             * source. An unchecked row is somebody's draft, and a draft must
+             * not reach a plan.
+             */
+            $forge = DB::table('gw2_forge_recipes')
+                ->whereIn('output_item_id', $frontier)
+                ->whereNotNull('checked_at')
+                ->whereNotNull('source_url')
+                ->orderBy('id')
+                ->get(['id', 'output_item_id', 'output_count', 'ingredients', 'source_url', 'source_label', 'checked_at']);
+
+            foreach ($forge as $row) {
+                $this->forge[(int) $row->output_item_id][] = $row;
+
+                foreach ($this->json($row->ingredients) as $ingredient) {
+                    if (($ingredient['type'] ?? 'Item') === 'Item' && isset($ingredient['id'])) {
+                        $next[] = (int) $ingredient['id'];
+                    }
+                }
+            }
+
             $frontier = array_values(array_unique($next));
+        }
+
+        if ($this->forge !== []) {
+            $this->currencies = DB::table('gw2_reference')
+                ->where('kind', 'currencies')
+                ->pluck('payload')
+                ->map(fn ($p) => (object) (json_decode($p, true) ?: []))
+                ->filter(fn ($c) => isset($c->id))
+                ->keyBy('id')
+                ->all();
         }
 
         $this->items = DB::table('gw2_items')
@@ -272,6 +458,7 @@ class RecipeTree
             // recovers exactly what was there.
             owned: $a->owned + $b->owned,
             depth: min($a->depth, $b->depth),
+            currencyId: $a->currencyId,
         );
     }
 

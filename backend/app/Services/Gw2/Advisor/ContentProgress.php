@@ -3,6 +3,7 @@
 namespace App\Services\Gw2\Advisor;
 
 use App\Services\Gw2\Wiki;
+use App\Services\Gw2\WikiPages;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -28,12 +29,18 @@ use Illuminate\Support\Facades\DB;
  */
 class ContentProgress
 {
+    /** Subject => URL of the wiki pages an editor has confirmed. */
+    private array $pages = [];
+
+    public function __construct(private readonly WikiPages $wikiPages = new WikiPages) {}
+
     /**
      * @return array<string, mixed>
      */
     public function for(Snapshot $snapshot): array
     {
         $everCleared = $this->everCleared($snapshot->accountId);
+        $this->pages = $this->wikiPages->checked();
 
         return [
             'raids' => $this->raids($snapshot, $everCleared),
@@ -70,8 +77,8 @@ class ContentProgress
 
                     $encounters[] = [
                         'id' => $id,
-                        'name' => $this->humanise($id),
-                        'wiki' => Wiki::named($this->humanise($id)),
+                        'name' => self::humanise($id),
+                        'wiki' => Wiki::checked($this->pages, 'raid_encounter:'.$id),
                         // Boss or Checkpoint. A checkpoint is not a kill and
                         // counting it as one would inflate every wing.
                         'type' => $event['type'] ?? 'Boss',
@@ -83,9 +90,9 @@ class ContentProgress
                 $bosses = array_filter($encounters, fn ($e) => $e['type'] === 'Boss');
 
                 $wings[] = [
-                    'raid' => $this->humanise($raid['id'] ?? ''),
-                    'wing' => $this->humanise($wing['id'] ?? ''),
-                    'wiki' => Wiki::named($this->humanise($wing['id'] ?? '')),
+                    'raid' => self::humanise($raid['id'] ?? ''),
+                    'wing' => self::humanise($wing['id'] ?? ''),
+                    'wiki' => Wiki::checked($this->pages, 'raid_wing:'.($wing['id'] ?? '')),
                     'encounters' => $encounters,
                     'bosses' => count($bosses),
                     'cleared_this_week' => count(array_filter($bosses, fn ($e) => $e['cleared_this_week'])),
@@ -119,8 +126,8 @@ class ContentProgress
 
             $bosses[] = [
                 'id' => $id,
-                'name' => $this->humanise($id),
-                'wiki' => Wiki::named($this->humanise($id)),
+                'name' => self::humanise($id),
+                'wiki' => Wiki::checked($this->pages, 'world_boss:'.$id),
                 'killed_today' => isset($today[$id]),
                 'ever_killed' => isset($ever[$id]),
             ];
@@ -153,7 +160,7 @@ class ContentProgress
 
                 $paths[] = [
                     'id' => $id,
-                    'name' => $this->humanise($id),
+                    'name' => self::humanise($id),
                     // Story or Explorable. Story runs once; the explorable paths
                     // are the ones with a daily reward.
                     'type' => $path['type'] ?? 'Explorable',
@@ -163,8 +170,8 @@ class ContentProgress
 
             $dungeons[] = [
                 'id' => $dungeon['id'] ?? '',
-                'name' => $this->humanise($dungeon['id'] ?? ''),
-                'wiki' => Wiki::named($this->humanise($dungeon['id'] ?? '')),
+                'name' => self::humanise($dungeon['id'] ?? ''),
+                'wiki' => Wiki::checked($this->pages, 'dungeon:'.($dungeon['id'] ?? '')),
                 'paths' => $paths,
                 'run_today' => count(array_filter($paths, fn ($p) => $p['run_today'])),
             ];
@@ -218,7 +225,7 @@ class ContentProgress
      * differs from title case (an "of" or a "the" mid-name) the result is
      * slightly off, and that is a cost worth paying over inventing a name table.
      */
-    private function humanise(string $slug): string
+    public static function humanise(string $slug): string
     {
         $words = explode(' ', str_replace('_', ' ', $slug));
 

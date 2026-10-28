@@ -5,6 +5,7 @@ import Container from "@/components/ui/Container";
 import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
 import WikiLink from "@/components/gw2/WikiLink";
+import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicMasteries } from "@/lib/gw2public";
 
 /**
@@ -52,8 +53,14 @@ export default async function PublicMasteriesPage() {
 
     const total = regions.reduce((sum, region) => sum + region.points_total, 0);
 
+    const breadcrumb = gw2Breadcrumb([
+        { name: "Guild Wars 2 database", path: "/gw2/database" },
+        { name: "Mastery tracks", path: "/gw2/database/masteries" },
+    ]);
+
     return (
         <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
             <PageHero
                 title="Mastery tracks"
                 description={`Every track, every tier, and what each one costs — ${total} mastery points in all.`}

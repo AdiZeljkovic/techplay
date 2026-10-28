@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Gw2ReviewAction;
 use App\Filament\Resources\Gw2RuleResource\Pages;
 use App\Models\Gw2Goal;
 use App\Models\Gw2Rule;
@@ -220,6 +221,7 @@ class Gw2RuleResource extends Resource
                     ->nullable(),
             ])
             ->actions([
+                Gw2ReviewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

@@ -430,6 +430,21 @@ nisu puštene (`products`, `orders`, `support_tiers`), dio je mrtav ostatak
   redova) obrisane 29. 8.; arhiva je na
   `/var/backups/igdb-archive/igdb-staging-2026-08-29.dump`
 - API **nikad** ne proksira živi zahtjev prema prodavnici
+- `gw2_*` tabele su opisane u §21. Promjene šeme od 29. 10. 2026:
+  - `gw2_sources.subject` (nullable, unique) — red je wiki link za raid, krilo,
+    tamnicu ili world bossa, i vidi se tek s `checked_at`
+  - `gw2_account_state.map_chests`, `.vault_listings`, `.trading_post` (jsonb) —
+    Hero's Choice škrinje danas, kupovine u Vaultu ove sezone, TP šalter i nalozi
+  - `gw2_products` (12 redova) i `gw2_changes` (45 redova) — urednički, svaki red
+    s izvorom; početni podaci iz `backend/database/data/*.json`, učitani samo u
+    praznu tabelu
+  - `gw2_forge_recipes` — Mystic Forge recepti; **prazna**, koristi se samo red
+    sa `source_url` i `checked_at`
+  - `gw2_events.waypoint` proširen na 64 (sad je ime waypointa), nove
+    `waypoint_chat_link` i `sources`; 15 world bossova unaprijed upisano, **neobjavljeno**
+  - nove vrste u `gw2_reference`: `legendaryarmory`, `mapchests`, `dailycrafting`,
+    `wizardsvault` (jedan red), `wizardsvault_listings`, `minis`, `outfits`,
+    `skins`, `continent_maps`
 
 ---
 
@@ -2247,12 +2262,27 @@ https://wiki.guildwars2.com/index.php?title=Special%3ASearch&search=%5B%26AgEJTQ
 Taj URL u testu je onaj kojim gw2treasures linkuje isti predmet u produkciji, a
 ne vrijednost koju je naš kod proizveo pa je prepisana u vlastiti test.
 
-**Sve ostalo ide po tačnom imenu** — postignuća, mastery trake, mountovi,
-rajdovi, krila, bosovi, tamnice, Agony Resistance, Wizard's Vault. `go=Go` otvori
-stranicu kad se naslov poklapa, a inače pokaže rezultate pretrage — nikad 404.
-Imena rajdova i bosova su **humanizovani id-jevi** (`vale_guardian` → „Vale
-Guardian"), ne naslovi sa wikija, pa će poneki završiti na rezultatima umjesto
-na stranici. To je svjesno: tabela naslova bi bila prepisivanje wikija.
+**Ono što API imenuje ide po tačnom imenu** — postignuća, mastery trake,
+mountovi, Agony Resistance, Wizard's Vault. `go=Go` otvori stranicu kad se naslov
+poklapa, a inače pokaže rezultate pretrage — nikad 404.
+
+**Rajdovi, krila, tamnice i world bossovi dobijaju link tek kad ga urednik
+provjeri.** API ih zna samo po slugu (Dhuumov encounter je `voice_in_the_void`),
+a naslov napravljen od sluga može biti tačno neka druga stranica. Zato je svaki
+od njih red u `gw2_sources` sa kolonom `subject` (`raid_encounter:vale_guardian`,
+`raid_wing:…`, `dungeon:…`, `world_boss:…`): `WikiPages::ensure()` ga napravi s
+predloženim URL-om i **bez `checked_at`**, i dok ga niko ne potvrdi, čitalac ne
+vidi nikakav link. Redove pravi migracija `2026_10_29_090000` i noćni
+`gw2:catalogue` kad igra doda nešto novo; urednikov ispravljen URL se nikad ne
+prepisuje. Checkpointi (`spirit_woods`, `escort`) nemaju red — nisu kill i
+stranica za „Escort" je stranica za riječ.
+
+Potvrđuje se u adminu (*GW2 Rule Sources* → **Check page**): akcija dohvati tu
+jednu stranicu i pokaže **naslov**, ne status — dok wiki ne radi, svaki URL
+vraća 200 sa obavještenjem o održavanju, pa bi provjera statusa potvrdila stotinu
+stranica koje ne postoje. Članak se prepoznaje po sufiksu „ - Guild Wars 2 Wiki
+(GW2W)"; sve drugo se odbija. Dohvata se samo `/wiki/…` (robots.txt zabranjuje
+`index.php` i `Special:`), i samo kad urednik klikne — nikad automatski.
 
 Vodič za mount nosi ime koje igra daje mountu iz `gw2_reference`
 (`mounts_types`: naš URL kaže `turtle`, wiki „Siege Turtle"). Vodič o cijelom
@@ -2267,7 +2297,7 @@ stranice. Čitalac koji klikne nije crawler, ali naše indeksirane stranice ne
 trebaju slati pretraživače tamo gdje ih vlasnici ne žele.
 
 Gdje se vidi: kartice savjeta, Easy wins, oprema, plan za večeras, masteries,
-sadržaj (krila, bosovi, tamnice), planer (cilj, lista, „ne kupuje se", stablo), i
+sadržaj (krila, bosovi, tamnice — kad su provjereni), planer (cilj, lista, „ne kupuje se", stablo), i
 javno: recept (predmet, materijali, „u šta ulazi"), masteries, vodič za mount.
 **Stablo na javnoj stranici recepta namjerno nema link po čvoru** — svaki čvor
 vodi na našu stranicu tog predmeta, koja ga ima, a stablo legendarnog ima desetine
@@ -2275,6 +2305,115 @@ redova.
 
 `PAYLOAD_VERSION` je 3 i na dashboardu i na javnim stranicama — oblik se
 promijenio.
+
+### 29. 10. 2026 — izvori na vodičima
+
+Svaki vodič na dnu ima blok **Sources**: redovi iz `gw2_sources` po
+`source_ids`, sa vrstom i datumom provjere. **Neprovjeren izvor se pokazuje kao
+neprovjeren** („not checked yet"), ne skriva se — čitalac koji odlučuje koliko
+vjeruje stranici zaslužuje istu razliku koju vidi urednik. `internal://` izvori
+(mjerenje, urednička odluka) se imenuju ali ne linkuju. Redovi sa `subject`
+(wiki stranice za rajdove i bosove) nisu citati i ne pojavljuju se ovdje, osim
+ako ih urednik izričito doda vodiču.
+
+### 29. 10. 2026 — ostatak plana (tačke 3–14)
+
+Plan je na https://claude.ai/artifact/X4s3fkfKj5hinZfpBVxTvr. Pravni korak (15)
+je namjerno ostao zadnji i nije dio ovoga.
+
+**Novo u katalogu** (`gw2:catalogue`, samo na promjenu builda):
+`legendaryarmory`, `mapchests`, `dailycrafting`, `wizardsvault` (sezona — jedan
+objekt, zato tip `single`), `wizardsvault/listings`, `minis`, `outfits`,
+`skins` (~54 zahtjeva) i `continents`. **`continents` se čita floor po floor**
+(~90 zahtjeva, floor 1 je 7,9 MB JSON-a, memorija se za taj korak diže na 768M)
+i svodi na tri liste po mapi: insighti, hero challenge, waypointi s chat kodom.
+Mapa bez insighta i challenge-a se ne čuva.
+
+**Novo na nalogu** (`AccountSync`): `account/mapchests` i `account/wizardsvault/listings`
+(progression), `account/skins|minis|outfits|titles` (unlocks, u `unlocks`), i
+`commerce/delivery` + `commerce/transactions/current/buys|sells` (tradingpost,
+`page_size=200`). Brzo čitanje sad uključuje škrinje i TP. Ključ bez scopea
+endpoint ni ne pita, i kolona ostaje `null` — što UI čita kao „ne znamo", ne
+„nema".
+
+**3 — sezona Vaulta** (`VaultSeason`, kartica `season` na dashboardu): kraj
+sezone iz `/v2/wizardsvault`, Astral Acclaim (valuta 63) iz walleta, i
+ograničene nagrade koje nalog nije kupio do limita. Neograničene se ne nabrajaju.
+Dvije tvrdnje o kraju sezone nose izvor: Featured prelaze u Legacy **20% skuplje**
+— ArenaNet kaže samo „slightly higher"; 20% je izmjereno poređenjem listinga iz
+8. 3. 2026 (Wayback) i 28. 10. 2026 (375 → 450, 1000 → 1200) — i limiti se
+resetuju sa novom sezonom (bilješke 7. 11. 2023). API-jev `start` sezone
+(2024-12-31) je pogrešan i ne prikazuje se.
+
+**4 — već sinhronizovano**: Legendary Armory s `max_count` (koliko još kopija
+ima smisla); dnevni craftovi u dnevnoj listi; **planer označava recepte koji se
+uče sa sheeta** (`LearnedFromItem`) a nalog ih nema — `recipes_to_learn`, `null`
+kad `account/recipes` nije pročitan.
+
+**5 — cijene i JSON-LD**: javna stranica recepta ima cijenu predmeta i materijala
+(oba smjera tržišta), **izvan 24-satnog keša recepta** (cijena se mijenja svake
+noći), s datumom i oznakom kad je starija od 3 dana. Valute u Forge receptu nisu
+u zbiru, osim coina. JSON-LD: `BreadcrumbList` na svim javnim GW2 stranicama,
+`Article` na vodičima, `WebApplication` na `/gw2/database` (sam `/gw2` je
+noindex). Namjerno **nije `Product`** — nema cijene u novcu ni prodavca.
+
+**6 — pregled vodiča i pravila**: akcija **Mark reviewed** u adminu (vodiči i
+pravila) upiše `reviewed_at`, `game_build` i `owner`, a potvrda nabroji
+neprovjerene izvore. **Sam pregled je vlasnikov posao** — 17 vodiča i 12 pravila
+i dalje nisu pregledani.
+
+**7 — raspored world bossova**: 15 redova u `gw2_events`, **neobjavljeno i
+neprovjereno**. Vremena se slažu u svakom izvoru; za 13 osnovnih bossova i sa
+ArenaNetovom UTC tabelom iz 2014. Drakkar i Of Mists and Monsters imaju samo
+community izvore. Waypointi i chat kodovi su iz `/v2/continents`. Trajanje je
+prazno — nijedan izvor ga ne daje, samo prozore tajmera koji se ne slažu. Red ide
+čitaocu tek kad ga neko provjeri u igri (admin → GW2 Events → bulk **Checked in
+game — publish**). Na `/gw2/tonight` tada piše „Not killed today" iz
+`account/worldbosses` — jedino što tajmeri bez ključa ne mogu.
+
+**8 — G8 i dnevna lista**: `gw2:sync-accounts --quick --force` u **23:30 UTC**
+svaki dan i **ponedjeljkom 07:00 UTC** — prije resetova, inače čitanje u 03:30
+nikad nije vidjelo bossa ubijenog uveče. Panel **Today** (`DailyChecklist`)
+računa reset **od trenutka čitanja**, ne od pravljenja stranice, i kaže kad je
+reset prošao. Dvije granice su napisane u panelu: `/v2/mapchests` nema JW ni VoE
+škrinje, `/v2/raids` nema najnovije encountere (#148).
+
+**9 — mastery insighti**: `/gw2/database/insights` i stranica po mapi (javno,
+sitemap), s najbližim waypointom i njegovim chat kodom (računato iz koordinata
+igre). Prijavljenom igraču se dodaju kvačice. **Id-jevi su provjereni na
+vlasnikovom nalogu 29. 10.**: od 104 otključana, 22 su insighti s mape, 82 su
+mastery nagrade iz postignuća — isti prostor id-jeva. Hero challenge se samo
+broji: `characters/:id/heropoints` vraća prazno za sve od EoD-a.
+
+**10 — vlasništvo** (`Ownership`, `/gw2/account`): `access` nalog + `gw2_products`.
+PathOfFire računa i HoT (gw2-api #86); VoE je **nepoznato**, ne „nema" (#118); LW
+sezone iz `included_with` (LW2 besplatna, LW3–4 uz HoT/PoF, LW5 uz EoD — od
+13. 10. 2026).
+
+**11 — šta se promijenilo** (`/gw2/whats-new`, javno): 45 datiranih promjena od
+2023, svaka svojim riječima i s izvorom (skoro sve guildwars2.com). Prijavljen
+igrač upiše kad je zadnji put igrao (`PUT /gw2/returned`, pamti se kao potvrda
+`returned_from`), i lista se suzi na to i na ono što posjeduje.
+
+**12 — kolekcije**: skinovi, miniji, outfiti, titule; najjeftiniji nedostajući
+po komadu (nikad zbir), i titule najbliže kraju po postignuću. Skin → predmet ide
+preko `details.default_skin`, keširano po buildu.
+
+**13 — Trading Post i subtoken**: šalter (zlato i predmeti), otvoreni nalozi i
+koliko zlata drže. **Nema upozorenja o podbijenoj cijeni** — naše cijene su
+noćne. Pri povezivanju se sad čuva **`createsubtoken`** (iste dozvole, ističe za
+godinu) umjesto ključa; ako ga ArenaNet ne izda, čuva se ključ i to piše u
+`metadata.token_kind`. Postojeće veze drže ključ dok se ponovo ne povežu. Istekli
+subtoken daje svoju poruku u syncu.
+
+**14 — legendarni planer** (`/gw2/legendary`): lista iz `/v2/legendaryarmory`,
+stanje armoryja, i „Plan it" samo kad posljednji korak ima recept — API recept
+ili **provjeren** Forge recept iz `gw2_forge_recipes`. `RecipeTree` sad koristi
+Forge recept gdje API nema nijedan, troši valute iz walleta kao predmete iz
+banke, a nasumičan Forge (Mystic Clover ~0,33) planira u pokušajima i kaže da je
+prosjek. **Tabela je prazna.** Jedini otvoreni skup podataka (gw2efficiency
+`custom-recipes`) je GPL-3.0, a originalni repo je obrisan — uvoz je vlasnikova
+odluka.
 
 ### Otvoreno
 

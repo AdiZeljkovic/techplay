@@ -101,9 +101,20 @@ class SyncGw2Account implements ShouldQueue
                 throw $e;
             }
 
+            /*
+             * A limited token past its date is refused exactly like a deleted
+             * key, and the fix is different: reconnect, rather than go and look
+             * for a key that is still there.
+             */
+            $expires = $connection->metadata['token_expires_at'] ?? null;
+            $expired = ($connection->metadata['token_kind'] ?? null) === 'subtoken'
+                && $expires && now()->greaterThanOrEqualTo($expires);
+
             $connection->forceFill([
                 'sync_status' => 'error',
-                'sync_error' => 'ArenaNet refused the key. It may have been deleted at account.arena.net.',
+                'sync_error' => $expired
+                    ? 'The limited token we hold for your account expired. Connect your key again and we will issue a new one.'
+                    : 'ArenaNet refused the key. It may have been deleted at account.arena.net.',
             ])->save();
         } catch (Gw2Unavailable $e) {
             if ($this->attempts() < $this->tries) {

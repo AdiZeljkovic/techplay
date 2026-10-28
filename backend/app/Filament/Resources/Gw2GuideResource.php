@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Gw2ReviewAction;
 use App\Filament\Resources\Gw2GuideResource\Pages;
 use App\Models\Gw2Achievement;
 use App\Models\Gw2Guide;
@@ -181,7 +182,7 @@ class Gw2GuideResource extends Resource
                 Tables\Filters\TernaryFilter::make('is_published')->label('Published'),
                 Tables\Filters\TernaryFilter::make('reviewed_at')->label('Reviewed')->nullable(),
             ])
-            ->actions([EditAction::make(), DeleteAction::make()])
+            ->actions([Gw2ReviewAction::make(), EditAction::make(), DeleteAction::make()])
             ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
     }
 

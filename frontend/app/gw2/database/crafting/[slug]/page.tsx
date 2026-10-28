@@ -6,6 +6,8 @@ import { Hammer } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Panel from "@/components/ui/Panel";
 import WikiLink from "@/components/gw2/WikiLink";
+import { coin } from "@/lib/gw2format";
+import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { craftingHref, getPublicRecipe, itemIdFromSlug } from "@/lib/gw2public";
 import type { PlanNode, PublicRecipe } from "@/lib/gw2";
 
@@ -103,8 +105,15 @@ export default async function CraftingPage({ params }: Params) {
 
     const { item, materials, used_in: usedIn, requires } = recipe;
 
+    const breadcrumb = gw2Breadcrumb([
+        { name: "Guild Wars 2 database", path: "/gw2/database" },
+        { name: "Crafting", path: "/gw2/database/crafting" },
+        { name: item.name, path: craftingHref(item.id, item.slug) },
+    ]);
+
     return (
         <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
             <Container className="py-8">
                 <nav className="mb-6 flex flex-wrap gap-x-2 text-sm text-[var(--ink-low)]">
                     <Link href="/gw2/database" className="hover:text-[var(--accent-ink)]">
@@ -138,6 +147,16 @@ export default async function CraftingPage({ params }: Params) {
                     </div>
                 </header>
 
+                {recipe.prices?.item && (
+                    <PriceLine
+                        label="On the trading post"
+                        sell={recipe.prices.item.sell_unit}
+                        buy={recipe.prices.item.buy_unit}
+                        observedAt={recipe.prices.observed_at}
+                        stale={recipe.prices.stale}
+                    />
+                )}
+
                 {!recipe.craftable ? (
                     <Panel material="matte">
                         <p className="text-sm text-[var(--ink-mid)]">
@@ -151,7 +170,10 @@ export default async function CraftingPage({ params }: Params) {
                             <Panel material="lit" crown title="Everything it takes">
                                 <ul className="space-y-2.5">
                                     {materials.map((material) => (
-                                        <li key={material.item_id} className="flex items-center gap-3">
+                                        <li
+                                            key={material.currency_id ? `c${material.currency_id}` : material.item_id}
+                                            className="flex items-center gap-3"
+                                        >
                                             {material.icon && (
                                                 <Image
                                                     src={material.icon}
@@ -162,19 +184,56 @@ export default async function CraftingPage({ params }: Params) {
                                                     className="h-7 w-7 shrink-0 rounded-[var(--radius-inner)]"
                                                 />
                                             )}
-                                            <Link
-                                                href={craftingHref(material.item_id, material.slug)}
-                                                className="min-w-0 flex-1 truncate text-sm text-[var(--ink-hi)] hover:text-[var(--accent-ink)]"
-                                            >
-                                                {material.name}
-                                            </Link>
+                                            {material.currency_id ? (
+                                                <span className="min-w-0 flex-1 truncate text-sm text-[var(--ink-hi)]">
+                                                    {material.name}
+                                                </span>
+                                            ) : (
+                                                <Link
+                                                    href={craftingHref(material.item_id, material.slug)}
+                                                    className="min-w-0 flex-1 truncate text-sm text-[var(--ink-hi)] hover:text-[var(--accent-ink)]"
+                                                >
+                                                    {material.name}
+                                                </Link>
+                                            )}
                                             <WikiLink wiki={material.wiki} name={material.name} compact />
                                             <span className="shrink-0 font-numeric text-sm text-[var(--ink-low)]">
                                                 ×{material.needed}
                                             </span>
+                                            <span className="w-24 shrink-0 text-right font-numeric text-xs text-[var(--ink-faint)]">
+                                                {(() => {
+                                                    const unit = recipe.prices?.materials?.per_item[String(material.item_id)]?.sell_unit;
+                                                    return unit != null ? coin(unit * material.needed) : "—";
+                                                })()}
+                                            </span>
                                         </li>
                                     ))}
                                 </ul>
+
+                                {recipe.prices?.materials && (
+                                    <div
+                                        className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-sm"
+                                        style={{ borderColor: "var(--line)" }}
+                                    >
+                                        <div>
+                                            <div className="font-numeric text-[var(--ink-hi)]">
+                                                {coin(recipe.prices.materials.buy_now)}
+                                            </div>
+                                            <div className="text-[11px] text-[var(--ink-low)]">materials, buying outright</div>
+                                        </div>
+                                        <div>
+                                            <div className="font-numeric text-[var(--ink-mid)]">
+                                                {coin(recipe.prices.materials.bid_and_wait)}
+                                            </div>
+                                            <div className="text-[11px] text-[var(--ink-low)]">bidding and waiting</div>
+                                        </div>
+                                        <p className="col-span-2 text-[11px] text-[var(--ink-faint)]">
+                                            {recipe.prices.materials.not_tradable > 0 &&
+                                                `${recipe.prices.materials.not_tradable} of these are not sold on the trading post and are not in the totals. `}
+                                            {priceDate(recipe.prices.observed_at, recipe.prices.stale)}
+                                        </p>
+                                    </div>
+                                )}
 
                                 <p
                                     className="mt-4 border-t pt-3 text-xs text-[var(--ink-low)]"
@@ -203,6 +262,30 @@ export default async function CraftingPage({ params }: Params) {
                                 </Panel>
                             )}
 
+                            {/* The game does not publish forge recipes, so this one says where it is from. */}
+                            {recipe.forge && (
+                                <Panel material="instrument" title="Made in the Mystic Forge">
+                                    <p className="text-sm text-[var(--ink-mid)]">
+                                        The game&apos;s API does not list Mystic Forge recipes. This one is from{" "}
+                                        {recipe.forge.source_url ? (
+                                            <a
+                                                href={recipe.forge.source_url}
+                                                target="_blank"
+                                                rel="nofollow noopener noreferrer"
+                                                className="text-[var(--accent-ink)] hover:underline"
+                                            >
+                                                {recipe.forge.source_label ?? "its source"}
+                                            </a>
+                                        ) : (
+                                            "an editor's entry"
+                                        )}
+                                        {recipe.forge.checked_at &&
+                                            `, checked ${new Date(recipe.forge.checked_at).toLocaleDateString()}`}
+                                        .
+                                    </p>
+                                </Panel>
+                            )}
+
                             {usedIn.length > 0 && (
                                 <Panel material="matte" title="Used in">
                                     <ul className="space-y-2">
@@ -227,6 +310,52 @@ export default async function CraftingPage({ params }: Params) {
                 )}
             </Container>
         </div>
+    );
+}
+
+/**
+ * When the prices are from, and whether that is too long ago to trust.
+ *
+ * Read nightly. Past three days the read has failed at least twice, and the
+ * page says so instead of presenting the number as today's.
+ */
+function priceDate(observedAt: string | null, stale: boolean): string {
+    if (!observedAt) return "";
+
+    const date = new Date(observedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
+    return stale ? `Prices from ${date} — more than three days old.` : `Trading post prices as of ${date}.`;
+}
+
+/** Both sides of the market: what it costs to have now, and to wait for. */
+function PriceLine({
+    label,
+    sell,
+    buy,
+    observedAt,
+    stale,
+}: {
+    label: string;
+    sell: number | null;
+    buy: number | null;
+    observedAt: string | null;
+    stale: boolean;
+}) {
+    return (
+        <p className="-mt-2 mb-6 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-[var(--ink-mid)]">
+            <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">{label}</span>
+            {sell != null && (
+                <span>
+                    <strong className="font-numeric text-[var(--ink-hi)]">{coin(sell)}</strong> to buy now
+                </span>
+            )}
+            {buy != null && (
+                <span>
+                    <strong className="font-numeric">{coin(buy)}</strong> highest bid
+                </span>
+            )}
+            <span className="text-[11px] text-[var(--ink-faint)]">{priceDate(observedAt, stale)}</span>
+        </p>
     );
 }
 
@@ -277,12 +406,21 @@ function Branch({ node }: { node: PlanNode }) {
                     ) : (
                         <span className="w-3" />
                     )}
-                    <Link
-                        href={craftingHref(node.item_id, node.name ? slugify(node.name) : null)}
-                        className="truncate text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
-                    >
-                        {node.name ?? `#${node.item_id}`}
-                    </Link>
+                    {node.currency_id ? (
+                        <span className="truncate text-[var(--ink-mid)]">{node.name}</span>
+                    ) : (
+                        <Link
+                            href={craftingHref(node.item_id, node.name ? slugify(node.name) : null)}
+                            className="truncate text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
+                        >
+                            {node.name ?? `#${node.item_id}`}
+                        </Link>
+                    )}
+                    {node.forge && (
+                        <span className="shrink-0 text-[11px] text-[var(--ink-faint)]">
+                            Mystic Forge{node.forge.random && " · average, the forge is random"}
+                        </span>
+                    )}
                     <span className="ml-auto shrink-0 font-numeric text-xs text-[var(--ink-low)]">
                         ×{node.needed}
                     </span>

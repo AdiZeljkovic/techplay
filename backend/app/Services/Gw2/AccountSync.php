@@ -58,17 +58,56 @@ class AccountSync
         'account/dungeons' => 'progression',
         'account/wizardsvault/daily' => 'progression',
         'account/wizardsvault/weekly' => 'progression',
+        // Hero's Choice chests taken since the daily reset — the third daily
+        // list beside world bosses and time-gated crafts.
+        'account/mapchests' => 'progression',
+        // What this account has bought from the vault this season, against
+        // each listing's limit. The only way to say what is still on offer.
+        'account/wizardsvault/listings' => 'progression',
+        // Collections. Ids only; the catalogue names them.
+        'account/skins' => 'unlocks',
+        'account/minis' => 'unlocks',
+        'account/outfits' => 'unlocks',
+        'account/titles' => 'unlocks',
+        /*
+         * The trading post: coins and items waiting at the counter, and open
+         * orders. A scope many keys leave out, so a key without it simply has
+         * no trading post panel rather than an empty one.
+         */
+        'commerce/delivery' => 'tradingpost',
+        'commerce/transactions/current/buys' => 'tradingpost',
+        'commerce/transactions/current/sells' => 'tradingpost',
     ];
 
-    /** What a quick sync reads: the things that change within a day. */
+    /**
+     * Query parameters an endpoint needs. Open orders are paginated, and the
+     * default page is fifty — a busy trader has more than that.
+     */
+    private const QUERY = [
+        'commerce/transactions/current/buys' => ['page_size' => 200],
+        'commerce/transactions/current/sells' => ['page_size' => 200],
+    ];
+
+    /**
+     * What a quick sync reads: the things that change within a day.
+     *
+     * This is also what runs just before each reset (see routes/console.php):
+     * the daily lists and the weekly raids are windows the game forgets at
+     * reset, so a read at 03:30 Sarajevo — after the 00:00 UTC reset — never
+     * saw a boss killed the evening before.
+     */
     private const QUICK = [
         'account',
         'account/raids',
         'account/worldbosses',
         'account/dungeons',
         'account/dailycrafting',
+        'account/mapchests',
         'account/wizardsvault/daily',
         'account/wizardsvault/weekly',
+        'commerce/delivery',
+        'commerce/transactions/current/buys',
+        'commerce/transactions/current/sells',
     ];
 
     public function __construct(private readonly Gw2Client $api) {}
@@ -119,7 +158,7 @@ class AccountSync
                 continue;
             }
 
-            $read[$endpoint] = $this->api->account($endpoint, $key);
+            $read[$endpoint] = $this->api->account($endpoint, $key, self::QUERY[$endpoint] ?? []);
             $calls++;
         }
 
@@ -242,6 +281,8 @@ class AccountSync
             'account/worldbosses' => 'world_bosses',
             'account/dailycrafting' => 'daily_crafting',
             'account/dungeons' => 'dungeons',
+            'account/mapchests' => 'map_chests',
+            'account/wizardsvault/listings' => 'vault_listings',
         ];
 
         $row = ['observed_at' => now()];
@@ -258,7 +299,24 @@ class AccountSync
             'recipes' => $read['account/recipes'] ?? null,
             'mounts' => $read['account/mounts/types'] ?? null,
             'legendary_armory' => $read['account/legendaryarmory'] ?? null,
+            'skins' => $read['account/skins'] ?? null,
+            'minis' => $read['account/minis'] ?? null,
+            'outfits' => $read['account/outfits'] ?? null,
+            'titles' => $read['account/titles'] ?? null,
         ], fn ($v) => $v !== null);
+
+        /*
+         * The three trading post reads travel together: a key has the scope
+         * for all of them or for none, and a panel built from two of three
+         * would show orders without the gold waiting beside them.
+         */
+        if (array_key_exists('commerce/delivery', $read)) {
+            $row['trading_post'] = json_encode([
+                'delivery' => $read['commerce/delivery'],
+                'buys' => $read['commerce/transactions/current/buys'] ?? [],
+                'sells' => $read['commerce/transactions/current/sells'] ?? [],
+            ], JSON_UNESCAPED_UNICODE);
+        }
 
         if ($unlocks !== []) {
             $row['unlocks'] = json_encode($unlocks, JSON_UNESCAPED_UNICODE);

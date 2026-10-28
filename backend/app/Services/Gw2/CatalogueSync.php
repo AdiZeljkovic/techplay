@@ -77,7 +77,47 @@ class CatalogueSync
          */
         'achievements/categories' => 'reference',
         'achievements/groups' => 'reference',
+        /*
+         * What each legendary can be held in multiples of. Rings and
+         * accessories take two, some weapons four, and "how many more copies
+         * are still useful" is a question the account endpoint cannot answer
+         * on its own — it gives counts, not ceilings.
+         */
+        'legendaryarmory' => 'reference',
+        /*
+         * The daily-reset lists: Hero's Choice chests and time-gated crafts.
+         * Nineteen and five ids. The account endpoints return the ids already
+         * done today; these are the denominators.
+         */
+        'mapchests' => 'reference',
+        'dailycrafting' => 'reference',
+        /*
+         * The current Wizard's Vault season — one object, not a list — and
+         * what it sells. The season's `end` is the only deadline the API
+         * publishes anywhere.
+         */
+        'wizardsvault' => 'single',
+        'wizardsvault/listings' => 'reference',
+        /*
+         * Collections. Minis and outfits name the item that unlocks them, so
+         * a missing one can be priced; skins are reached through the items
+         * whose `default_skin` they are. 10,680 skins is about 54 requests.
+         */
+        'minis' => 'reference',
+        'outfits' => 'reference',
+        'skins' => 'reference',
+        /*
+         * Where things are in the world: mastery insights, hero challenges and
+         * waypoints, per map. Nothing else in the API has coordinates. Read
+         * floor by floor (see refreshContinents) and boiled down to those three
+         * lists, because a single floor is eight megabytes of mostly sector
+         * outlines nobody here draws.
+         */
+        'continents' => 'continents',
     ];
+
+    /** Tyria. The Mists has no mastery insights or hero challenges. */
+    private const CONTINENT = 1;
 
     public function __construct(private readonly Gw2Client $api) {}
 
@@ -126,6 +166,23 @@ class CatalogueSync
             ['attempted_at' => now(), 'last_error' => null]
         );
 
+        $total = match (self::ENDPOINTS[$endpoint]) {
+            'single' => $this->refreshSingle($endpoint, $buildId),
+            'continents' => $this->refreshContinents($buildId, $onProgress),
+            default => $this->refreshList($endpoint, $buildId, $onProgress),
+        };
+
+        DB::table('gw2_catalog_meta')->updateOrInsert(
+            ['endpoint' => $endpoint],
+            ['build_id' => $buildId, 'row_count' => $total, 'refreshed_at' => now(), 'last_error' => null]
+        );
+
+        return $total;
+    }
+
+    /** The ordinary shape: a list of ids, then the rows in batches of 200. */
+    private function refreshList(string $endpoint, int $buildId, ?callable $onProgress): int
+    {
         $ids = $this->api->public($endpoint);
         $total = 0;
 
@@ -139,12 +196,160 @@ class CatalogueSync
             }
         }
 
-        DB::table('gw2_catalog_meta')->updateOrInsert(
-            ['endpoint' => $endpoint],
-            ['build_id' => $buildId, 'row_count' => $total, 'refreshed_at' => now(), 'last_error' => null]
-        );
-
         return $total;
+    }
+
+    /** An endpoint that answers with one object — the Wizard's Vault season. */
+    private function refreshSingle(string $endpoint, int $buildId): int
+    {
+        $row = $this->api->public($endpoint);
+
+        if ($row === []) {
+            return 0;
+        }
+
+        return $this->upsert('gw2_reference', [[
+            'kind' => $this->kind($endpoint),
+            'ref_id' => 1,
+            'name' => $this->text((string) ($row['title'] ?? $endpoint)),
+            'payload' => $this->json($row),
+            'build_id' => $buildId,
+        ]], ['name', 'payload', 'build_id'], ['kind', 'ref_id']);
+    }
+
+    /**
+     * Every map in Tyria that has a mastery insight or a hero challenge, with
+     * its waypoints.
+     *
+     * Floor by floor, because that is the only call that returns whole maps
+     * with their points — and because a map's points are spread over its
+     * floors: Verdant Brink's canopy and its jungle floor list different
+     * insights. Measured 29 October 2026: 307 distinct insights across all
+     * floors, against 221 on floor 1 alone.
+     *
+     * One floor is up to eight megabytes, so each is decoded, boiled down and
+     * dropped before the next. The memory ceiling is raised for this endpoint
+     * only; it is the one read here that needs it.
+     *
+     * Insight ids are the same ids `account/mastery/points` reports as
+     * unlocked — checked against the owner's account on 29 October 2026, when
+     * every unlocked id was either one of these or an achievement's mastery
+     * reward. That is what makes "which insights are left" answerable.
+     */
+    private function refreshContinents(int $buildId, ?callable $onProgress): int
+    {
+        @ini_set('memory_limit', '768M');
+
+        $floors = $this->api->public('continents/'.self::CONTINENT.'/floors');
+        $maps = [];
+
+        foreach ($floors as $i => $floor) {
+            $data = $this->api->public('continents/'.self::CONTINENT.'/floors/'.$floor);
+
+            foreach ($data['regions'] ?? [] as $region) {
+                foreach ($region['maps'] ?? [] as $map) {
+                    $this->mergeMap($maps, $map, (string) ($region['name'] ?? ''), (int) $floor);
+                }
+            }
+
+            unset($data);
+
+            if ($onProgress) {
+                $onProgress($i + 1, count($floors));
+            }
+        }
+
+        $rows = [];
+
+        foreach ($maps as $id => $map) {
+            if ($map['mastery_points'] === [] && $map['hero_challenges'] === []) {
+                continue;
+            }
+
+            $map['mastery_points'] = array_values($map['mastery_points']);
+            $map['hero_challenges'] = array_values($map['hero_challenges']);
+            $map['waypoints'] = array_values($map['waypoints']);
+            sort($map['floors']);
+
+            $rows[] = [
+                'kind' => 'continent_maps',
+                'ref_id' => $id,
+                'name' => $this->text($map['name']),
+                'payload' => $this->json($map),
+                'build_id' => $buildId,
+            ];
+        }
+
+        /*
+         * A map that lost its last insight in a patch must not keep the old row,
+         * and upsert alone never deletes. Replaced whole, inside the run.
+         */
+        DB::transaction(function () use ($rows) {
+            DB::table('gw2_reference')->where('kind', 'continent_maps')->delete();
+            $this->upsert('gw2_reference', $rows, ['name', 'payload', 'build_id'], ['kind', 'ref_id']);
+        });
+
+        return count($rows);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $maps
+     * @param  array<string, mixed>  $map
+     */
+    private function mergeMap(array &$maps, array $map, string $region, int $floor): void
+    {
+        $id = (int) ($map['id'] ?? 0);
+
+        if ($id === 0) {
+            return;
+        }
+
+        $maps[$id] ??= [
+            'id' => $id,
+            'name' => (string) ($map['name'] ?? ''),
+            'region' => $region,
+            'min_level' => $map['min_level'] ?? null,
+            'max_level' => $map['max_level'] ?? null,
+            'map_rect' => $map['map_rect'] ?? null,
+            'continent_rect' => $map['continent_rect'] ?? null,
+            'floors' => [],
+            'mastery_points' => [],
+            'hero_challenges' => [],
+            'waypoints' => [],
+        ];
+
+        $maps[$id]['floors'][] = $floor;
+
+        // Keyed by id so the same point seen on two floors is kept once.
+        foreach ($map['mastery_points'] ?? [] as $point) {
+            if (isset($point['id'])) {
+                $maps[$id]['mastery_points'][$point['id']] = [
+                    'id' => (int) $point['id'],
+                    'region' => $point['region'] ?? null,
+                    'coord' => $point['coord'] ?? null,
+                ];
+            }
+        }
+
+        foreach ($map['skill_challenges'] ?? [] as $challenge) {
+            if (isset($challenge['id'])) {
+                $maps[$id]['hero_challenges'][(string) $challenge['id']] = [
+                    'id' => (string) $challenge['id'],
+                    'coord' => $challenge['coord'] ?? null,
+                ];
+            }
+        }
+
+        foreach ($map['points_of_interest'] ?? [] as $poi) {
+            if (($poi['type'] ?? null) === 'waypoint' && isset($poi['id'])) {
+                $maps[$id]['waypoints'][$poi['id']] = [
+                    'id' => (int) $poi['id'],
+                    'name' => $poi['name'] ?? null,
+                    'coord' => $poi['coord'] ?? null,
+                    'chat_link' => $poi['chat_link'] ?? null,
+                ];
+            }
+        }
     }
 
     /**

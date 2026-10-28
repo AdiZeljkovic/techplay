@@ -3,9 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Gw2Guide;
+use App\Models\Gw2Source;
 use App\Services\Gw2\Wiki;
+use App\Services\Gw2\WikiPages;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
@@ -99,6 +102,61 @@ class Gw2WikiLinksTest extends TestCase
         $this->assertNull(
             $this->getJson('/api/v1/gw2/public/guides/masteries/how-mastery-points-work')->assertOk()->json('data.wiki')
         );
+    }
+
+    public function test_a_guide_shows_its_sources_and_says_which_nobody_has_checked(): void
+    {
+        $measured = Gw2Source::create([
+            'label' => 'Measured against the live API', 'url' => 'internal://measured/2026-09-28',
+            'kind' => 'measured', 'checked_at' => '2026-09-28 13:48:38',
+        ]);
+        $wiki = Gw2Source::create([
+            'label' => 'GW2 Wiki — API:2/masteries', 'url' => 'https://wiki.guildwars2.com/wiki/API:2/masteries',
+            'kind' => 'wiki',
+        ]);
+        // A wiki-page row for a raid boss is not a citation of this guide.
+        Gw2Source::create(['label' => 'GW2 Wiki — Vale Guardian', 'url' => 'https://wiki.guildwars2.com/wiki/Vale_Guardian', 'kind' => 'wiki', 'subject' => 'raid_encounter:vale_guardian']);
+
+        $this->guide('masteries', 'how-mastery-points-work');
+        Gw2Guide::where('slug', 'how-mastery-points-work')->update(['source_ids' => json_encode([$wiki->id, $measured->id])]);
+
+        $sources = collect($this->getJson('/api/v1/gw2/public/guides/masteries/how-mastery-points-work')->assertOk()->json('data.sources'));
+
+        $this->assertCount(2, $sources);
+
+        // Something measured here has nothing to open, so it is named, not linked.
+        $this->assertNull($sources->firstWhere('kind', 'measured')['url']);
+        $this->assertNotNull($sources->firstWhere('kind', 'measured')['checked_at']);
+
+        // An unchecked source is shown as unchecked rather than left out.
+        $this->assertSame('https://wiki.guildwars2.com/wiki/API:2/masteries', $sources->firstWhere('kind', 'wiki')['url']);
+        $this->assertNull($sources->firstWhere('kind', 'wiki')['checked_at']);
+    }
+
+    public function test_a_page_is_confirmed_by_its_title_never_by_its_status(): void
+    {
+        Http::fake([
+            'wiki.guildwars2.com/wiki/Vale_Guardian' => Http::response(
+                '<html><head><title>Vale Guardian - Guild Wars 2 Wiki (GW2W)</title></head></html>'
+            ),
+            // How the wiki answered every URL in October 2026: 200, and a notice.
+            'wiki.guildwars2.com/wiki/Gorseval' => Http::response(
+                '<html><head><title>Guild Wars 2 Wiki</title></head><body>temporarily unavailable</body></html>'
+            ),
+        ]);
+
+        $pages = app(WikiPages::class);
+
+        $this->assertSame(
+            ['ok' => true, 'title' => 'Vale Guardian', 'reason' => ''],
+            $pages->title('https://wiki.guildwars2.com/wiki/Vale_Guardian')
+        );
+
+        $this->assertFalse($pages->title('https://wiki.guildwars2.com/wiki/Gorseval')['ok']);
+
+        // Search and index.php are disallowed to robots; they are never fetched.
+        $this->assertFalse($pages->title(Wiki::item(19721)['url'])['ok']);
+        Http::assertSentCount(2);
     }
 
     private function guide(string $family, string $slug): void

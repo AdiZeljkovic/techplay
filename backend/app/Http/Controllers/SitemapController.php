@@ -14,6 +14,7 @@ use App\Models\HelpArticle;
 use App\Models\HelpCategory;
 use App\Models\Product;
 use App\Models\Studio;
+use App\Services\Gw2\Advisor\MasteryInsights;
 use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
@@ -734,9 +735,24 @@ class SitemapController extends Controller
     {
         $xml = $this->xmlHeader();
 
-        foreach (['/gw2/database', '/gw2/database/crafting', '/gw2/database/masteries'] as $path) {
+        foreach (['/gw2/database', '/gw2/database/crafting', '/gw2/database/masteries', '/gw2/database/insights', '/gw2/whats-new'] as $path) {
             $xml .= $this->urlEntry("{$this->frontendUrl}{$path}", null, 'weekly', '0.7');
         }
+
+        /*
+         * One page per map with mastery insights — a few dozen, each a complete
+         * reference with waypoint codes, so all of them rather than a reviewed
+         * subset. Same slug rule as MasteryInsights::slug().
+         */
+        DB::table('gw2_reference')
+            ->where('kind', 'continent_maps')
+            ->orderBy('ref_id')
+            ->get(['ref_id', 'name', 'payload'])
+            ->filter(fn ($map) => (json_decode($map->payload, true)['mastery_points'] ?? []) !== [])
+            ->each(function ($map) use (&$xml) {
+                $path = '/gw2/database/insights/'.$map->ref_id.'-'.MasteryInsights::slug((string) $map->name);
+                $xml .= $this->urlEntry("{$this->frontendUrl}{$path}", null, 'monthly', '0.6');
+            });
 
         /*
          * The editorial guides first and highest.

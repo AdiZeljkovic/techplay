@@ -383,6 +383,42 @@ class Gw2AdvisorTest extends TestCase
         );
     }
 
+    public function test_a_raid_boss_links_to_the_wiki_only_once_an_editor_has_checked_the_page(): void
+    {
+        DB::table('gw2_reference')->insert([
+            'kind' => 'raids', 'ref_id' => crc32('forsaken_thicket'), 'name' => 'forsaken_thicket',
+            'payload' => json_encode(['id' => 'forsaken_thicket', 'wings' => [[
+                'id' => 'spirit_vale',
+                'events' => [
+                    ['id' => 'vale_guardian', 'type' => 'Boss'],
+                    ['id' => 'spirit_woods', 'type' => 'Checkpoint'],
+                ],
+            ]]]),
+        ]);
+
+        // The rows exist, suggested from the slug and unchecked.
+        $this->assertSame(2, app(\App\Services\Gw2\WikiPages::class)->ensure());
+        $this->assertSame(0, app(\App\Services\Gw2\WikiPages::class)->ensure(), 'a second run adds nothing');
+        $this->assertDatabaseMissing('gw2_sources', ['subject' => 'raid_encounter:spirit_woods']);
+
+        $content = fn () => app(\App\Services\Gw2\Advisor\ContentProgress::class)
+            ->for(app(SnapshotReader::class)->for($this->accountId))['raids']['wings'][0];
+
+        // A slug-made title is a guess, so a reader sees nothing yet.
+        $this->assertNull($content()['wiki']);
+        $this->assertNull($content()['encounters'][0]['wiki']);
+
+        // Once somebody has opened the page and said yes, it is the link —
+        // whatever URL they corrected it to.
+        DB::table('gw2_sources')->where('subject', 'raid_encounter:vale_guardian')->update([
+            'url' => 'https://wiki.guildwars2.com/wiki/Vale_Guardian',
+            'checked_at' => now(),
+        ]);
+
+        $this->assertSame('https://wiki.guildwars2.com/wiki/Vale_Guardian', $content()['encounters'][0]['wiki']['url']);
+        $this->assertNull($content()['wiki'], 'the wing is still unchecked');
+    }
+
     public function test_an_achievement_our_catalogue_does_not_have_yet_does_not_break_the_snapshot(): void
     {
         // A patch adds an achievement; the account reports progress on it before

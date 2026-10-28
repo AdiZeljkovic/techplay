@@ -264,6 +264,13 @@ Route::prefix('v1')->group(function () {
         Route::get('/gw2/plan', [Gw2Controller::class, 'plan']);
         Route::get('/gw2/items', [Gw2Controller::class, 'items']);
         Route::delete('/gw2/connection', [Gw2Controller::class, 'disconnect']);
+        Route::get('/gw2/insights', [Gw2Controller::class, 'insights']);
+        // What the account owns, holds, still lacks and has waiting at the
+        // trading post — one page, four panels, all from the last read.
+        Route::get('/gw2/account', [Gw2Controller::class, 'accountOverview']);
+        Route::get('/gw2/whats-new', [Gw2Controller::class, 'whatsNew']);
+        Route::put('/gw2/returned', [Gw2Controller::class, 'returned']);
+        Route::get('/gw2/legendary', [Gw2Controller::class, 'legendary']);
 
         // Forum activity (own profile)
         Route::get('/user/watched-threads', [ForumController::class, 'myWatchedThreads']);
@@ -732,6 +739,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/gw2/public/craftable', [Gw2PublicController::class, 'craftable']);
         Route::get('/gw2/public/recipe/{item}', [Gw2PublicController::class, 'recipe'])
             ->whereNumber('item');
+        Route::get('/gw2/public/insights', [Gw2PublicController::class, 'insights']);
+        Route::get('/gw2/public/insights/{map}', [Gw2PublicController::class, 'insightMap'])
+            ->whereNumber('map');
+        // Where the game changed, dated and sourced — public, because a returning
+        // player reads it before connecting anything.
+        Route::get('/gw2/public/changes', [Gw2PublicController::class, 'changes']);
 
         Route::get('/games/hub', [GameHubController::class, 'index']);
         Route::get('/games/calendar', [GameController::class, 'calendar']);

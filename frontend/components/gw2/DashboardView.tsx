@@ -13,6 +13,8 @@ import StatCards from "@/components/gw2/StatCards";
 import RecommendationCard from "@/components/gw2/RecommendationCard";
 import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
+import SeasonPanel from "@/components/gw2/SeasonPanel";
+import TodayPanel from "@/components/gw2/TodayPanel";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import {
     chooseCharacter,
@@ -66,6 +68,10 @@ const LINKS = [
     { href: "/gw2/story", label: "Story" },
     { href: "/gw2/tonight", label: "Tonight" },
     { href: "/gw2/planner", label: "Crafting planner" },
+    { href: "/gw2/legendary", label: "Legendaries" },
+    { href: "/gw2/account", label: "Your account" },
+    { href: "/gw2/whats-new", label: "What changed" },
+    { href: "/gw2/database/insights", label: "Mastery insights" },
     // The public half, reachable from the private one. Nothing here linked
     // back to it, so a signed-in player never found the reference pages.
     { href: "/gw2/database", label: "Database" },
@@ -322,6 +328,10 @@ export default function DashboardView({
                         )}
                     </Panel>
 
+                    {cards.season && <SeasonPanel season={cards.season} />}
+
+                    {cards.today && <TodayPanel today={cards.today} />}
+
                     <Panel material="matte" title="Easy wins">
                         {cards.achievements.closest.length === 0 ? (
                             <p className="text-sm text-[var(--ink-low)]">
@@ -450,7 +460,26 @@ export default function DashboardView({
                                         <dd className="truncate text-right text-[var(--ink-mid)]">{connection.key_name}</dd>
                                     </>
                                 )}
+                                <dt>We hold</dt>
+                                <dd className="text-right text-[var(--ink-mid)]">
+                                    {connection.token_kind === "subtoken"
+                                        ? `a limited token, until ${
+                                              connection.token_expires_at
+                                                  ? new Date(connection.token_expires_at).toLocaleDateString()
+                                                  : "—"
+                                          }`
+                                        : "your key"}
+                                </dd>
                             </dl>
+
+                            {/* Connections from before limited tokens still hold the key itself.
+                                Reconnecting swaps it — said once, plainly. */}
+                            {connection.token_kind !== "subtoken" && (
+                                <p className="text-[var(--ink-faint)]">
+                                    Connect your key again and we will keep a limited token that expires in a year
+                                    instead of the key itself.
+                                </p>
+                            )}
 
                             {(connection.sync_status === "pending" || connection.sync_status === "syncing") && (
                                 <p className="text-[var(--ink-mid)]">A read is on its way.</p>

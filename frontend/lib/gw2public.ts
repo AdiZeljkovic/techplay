@@ -1,5 +1,5 @@
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
-import type { Gw2WikiLink, PublicMasteryRegion, PublicRecipe } from "@/lib/gw2";
+import type { Gw2Change, Gw2WikiLink, PublicMasteryRegion, PublicRecipe } from "@/lib/gw2";
 
 /**
  * The Guild Wars 2 reference, read on the server.
@@ -87,6 +87,16 @@ export function itemIdFromSlug(segment: string): number | null {
     return Number.isFinite(id) && id > 0 ? id : null;
 }
 
+export interface GuideSource {
+    label: string;
+    kind: string;
+    kind_label: string;
+    /** Null for something measured or decided here — there is nothing to open. */
+    url: string | null;
+    /** Null means nobody has checked it, and the page says so. */
+    checked_at: string | null;
+}
+
 export interface PublicGuide {
     family: string;
     slug: string;
@@ -108,6 +118,8 @@ export interface PublicGuide {
     seo: { title: string; description: string | null; keywords: string[] };
     /** The wiki page for the one thing the guide is about. Null for a guide about a whole system. */
     wiki: Gw2WikiLink | null;
+    /** What the guide is based on, checked or not — shown as recorded. */
+    sources?: GuideSource[];
     reviewed_at: string | null;
     updated_at: string | null;
 }
@@ -118,6 +130,54 @@ export function getGuide(family: string, slug: string): Promise<PublicGuide | nu
 
 export function getGuides(): Promise<{ family: string; slug: string; title: string; standfirst: string | null; path: string; updated_at: string | null }[] | null> {
     return read("/gw2/public/guides", 3600);
+}
+
+export interface InsightRegion {
+    region: string;
+    label: string;
+    total: number;
+    /** Null on the public page — nobody's account. */
+    collected: number | null;
+    maps: { id: number; name: string; slug: string; total: number; collected: number | null }[];
+}
+
+export interface InsightMap {
+    id: number;
+    name: string;
+    slug: string;
+    region: string;
+    min_level: number | null;
+    max_level: number | null;
+    /** [[x1, y1], [x2, y2]] in continent units — the frame the coordinates sit in. */
+    continent_rect: [[number, number], [number, number]] | null;
+    insights: {
+        id: number;
+        region: string | null;
+        coord: [number, number] | null;
+        collected: boolean | null;
+        nearest_waypoint: { name: string | null; chat_link: string | null; distance: number } | null;
+    }[];
+    insights_total: number;
+    insights_collected: number | null;
+    hero_challenges: number;
+    waypoints: { name: string | null; coord: [number, number] | null; chat_link: string | null }[];
+}
+
+export function getPublicChanges(): Promise<Gw2Change[] | null> {
+    return read<Gw2Change[]>("/gw2/public/changes", 3600);
+}
+
+export function getPublicInsights(): Promise<InsightRegion[] | null> {
+    return read<InsightRegion[]>("/gw2/public/insights");
+}
+
+export function getPublicInsightMap(id: number): Promise<InsightMap | null> {
+    return read<InsightMap>(`/gw2/public/insights/${id}`);
+}
+
+/** Id first, like the recipe pages: map names are unique today, but the id is the identity. */
+export function insightHref(id: number, slug: string): string {
+    return `/gw2/database/insights/${id}-${slug}`;
 }
 
 export function regionHref(region: string): string {

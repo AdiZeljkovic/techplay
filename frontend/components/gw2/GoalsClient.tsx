@@ -98,6 +98,21 @@ export default function GoalsClient() {
         }
     }, []);
 
+    /*
+     * `?item=` opens a plan straight away — how the legendary page hands an
+     * item over. Read from the location rather than useSearchParams so the
+     * page needs no Suspense boundary; it only matters after sign-in anyway.
+     */
+    useEffect(() => {
+        if (authLoading || !user) return;
+
+        const id = Number(new URLSearchParams(window.location.search).get("item"));
+
+        if (Number.isInteger(id) && id > 0) {
+            void build({ id, name: `Item ${id}`, rarity: null, type: null, level: 0, icon: null }, 1);
+        }
+    }, [authLoading, user, build]);
+
     if (!authLoading && !user) {
         return (
             <Panel material="lit" crown title="Connect your account first">
@@ -257,6 +272,33 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                             </div>
                         )}
 
+                        {/*
+                         * A plan can be fully stocked and still stop at the
+                         * crafting station: these recipes are taught by a sheet,
+                         * and the account has not learned them.
+                         */}
+                        {plan.recipes_to_learn && plan.recipes_to_learn.length > 0 && (
+                            <div
+                                className="space-y-2 rounded-[var(--radius-card)] border px-3 py-2.5"
+                                style={{ borderColor: "var(--line-strong)" }}
+                            >
+                                <p className="text-sm text-[var(--ink-hi)]">
+                                    {plan.recipes_to_learn.length === 1
+                                        ? "One recipe here has to be learned from a recipe sheet first:"
+                                        : `${plan.recipes_to_learn.length} recipes here have to be learned from a recipe sheet first:`}
+                                </p>
+                                <ul className="space-y-1">
+                                    {plan.recipes_to_learn.map((recipe) => (
+                                        <li key={recipe.recipe_id} className="flex items-center gap-1.5 text-xs text-[var(--ink-mid)]">
+                                            <span className="truncate">{recipe.name ?? `#${recipe.item_id}`}</span>
+                                            <span className="text-[var(--ink-faint)]">{recipe.disciplines.join(" / ")}</span>
+                                            <WikiLink wiki={recipe.wiki} name={recipe.name} compact />
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                         {plan.craftable && (
                             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                                 <span className="text-[var(--ink-mid)]">
@@ -276,7 +318,10 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                     <Panel material="matte" title="Still to get">
                         <ul className="space-y-3">
                             {plan.shopping_list.map((line) => (
-                                <li key={line.item_id} className="flex items-center gap-3">
+                                <li
+                                    key={line.currency_id ? `c${line.currency_id}` : line.item_id}
+                                    className="flex items-center gap-3"
+                                >
                                     <ItemIcon icon={line.icon} name={line.name ?? ""} />
 
                                     <div className="min-w-0 flex-1">
@@ -293,7 +338,8 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                                     </div>
 
                                     <span className="w-16 shrink-0 text-right font-numeric text-sm text-[var(--accent-ink)]">
-                                        +{line.missing}
+                                        {/* Coin is copper: the game's own notation reads better than a raw count. */}
+                                        {line.currency_id === 1 ? coin(line.missing) : `+${line.missing}`}
                                     </span>
                                 </li>
                             ))}
@@ -357,6 +403,22 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                                         Vendors, currencies, time gates or drops. There is no gold figure for
                                         these, so they are not in the totals above.
                                     </p>
+                                </div>
+                            )}
+
+                            {plan.prices.currencies && plan.prices.currencies.length > 0 && (
+                                <div className="space-y-1.5 border-t pt-3" style={{ borderColor: "var(--line)" }}>
+                                    <p className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
+                                        Currencies still short
+                                    </p>
+                                    <ul className="space-y-1">
+                                        {plan.prices.currencies.map((c) => (
+                                            <li key={c.currency_id} className="flex justify-between gap-2 text-sm text-[var(--ink-mid)]">
+                                                <span className="truncate">{c.name ?? `Currency ${c.currency_id}`}</span>
+                                                <span className="shrink-0 font-numeric text-xs">×{c.missing}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
                             )}
 
@@ -429,13 +491,41 @@ function Branch({ node }: { node: PlanNode }) {
                         {node.name ?? `#${node.item_id}`}
                     </span>
                     <WikiLink wiki={node.wiki} name={node.name} compact />
+                    {/*
+                     * A forge step says where its recipe came from, because the
+                     * game does not publish it; a random one says the count is
+                     * an average, because it is.
+                     */}
+                    {node.forge && (
+                        <span className="shrink-0 text-[11px] text-[var(--ink-faint)]">
+                            Mystic Forge
+                            {node.forge.random && ` · about ${node.forge.attempts} attempts, on average`}
+                            {node.forge.source_url && (
+                                <>
+                                    {" · "}
+                                    <a
+                                        href={node.forge.source_url}
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        className="underline hover:text-[var(--accent-ink)]"
+                                    >
+                                        source
+                                    </a>
+                                </>
+                            )}
+                        </span>
+                    )}
                     <span className="ml-auto shrink-0 font-numeric text-xs text-[var(--ink-low)]">
-                        {node.missing > 0 ? `${node.missing} of ${node.needed}` : "have it"}
+                        {node.missing > 0
+                            ? node.currency_id === 1
+                                ? `${coin(node.missing)} of ${coin(node.needed)}`
+                                : `${node.missing} of ${node.needed}`
+                            : "have it"}
                     </span>
                 </div>
 
-                {node.children.map((child) => (
-                    <Branch key={`${child.item_id}-${child.depth}`} node={child} />
+                {node.children.map((child, i) => (
+                    <Branch key={`${child.currency_id ? `c${child.currency_id}` : child.item_id}-${child.depth}-${i}`} node={child} />
                 ))}
             </li>
         </ul>

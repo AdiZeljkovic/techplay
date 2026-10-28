@@ -6,6 +6,7 @@ use App\Services\Gw2\CatalogueSync;
 use App\Services\Gw2\Gw2Client;
 use App\Services\Gw2\Gw2RateLimited;
 use App\Services\Gw2\Gw2Unavailable;
+use App\Services\Gw2\WikiPages;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -30,7 +31,7 @@ class SyncGw2Catalogue extends Command
 
     protected $description = 'Mirror the Guild Wars 2 game catalogue into TechPlay';
 
-    public function handle(Gw2Client $api, CatalogueSync $catalogue): int
+    public function handle(Gw2Client $api, CatalogueSync $catalogue, WikiPages $pages): int
     {
         try {
             $build = $api->buildId();
@@ -83,6 +84,15 @@ class SyncGw2Catalogue extends Command
                 $this->note($endpoint, $e->getMessage());
                 $failed[] = $endpoint;
             }
+        }
+
+        /*
+         * A raid or world boss the game just added gets its row for an editor to
+         * confirm the same night. Only a suggestion: nobody sees a link until
+         * the page has been checked.
+         */
+        if ($added = $pages->ensure()) {
+            $this->line("  {$added} wiki page(s) waiting to be checked");
         }
 
         $this->newLine();

@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Gw2Guide;
+use App\Models\Gw2Source;
+use App\Services\Gw2\Advisor\MasteryInsights;
 use App\Services\Gw2\Advisor\MasteryRegions;
+use App\Services\Gw2\Advisor\WhatsNew;
 use App\Services\Gw2\Advisor\RecipeNode;
 use App\Services\Gw2\Advisor\RecipeTree;
 use App\Services\Gw2\Wiki;
@@ -100,18 +103,21 @@ class Gw2PublicController extends Controller
                      * it names.
                      */
                     'indexable' => (bool) $row->is_indexable,
-                    'requires' => $root->craftable() ? [
+                    // A discipline recipe only; the Mystic Forge has no rating.
+                    'requires' => $root->recipeId !== null ? [
                         'disciplines' => $root->disciplines,
                         'min_rating' => $root->minRating,
                     ] : null,
+                    'forge' => $root->forge,
                     'tree' => $root->toArray(),
                     'materials' => array_map(fn (RecipeNode $n) => [
                         'item_id' => $n->itemId,
+                        'currency_id' => $n->currencyId,
                         'name' => $n->name,
-                        'slug' => $n->name ? $this->slug($n->name) : null,
+                        'slug' => $n->name && $n->currencyId === null ? $this->slug($n->name) : null,
                         'rarity' => $n->rarity,
                         'icon' => $n->icon,
-                        'wiki' => Wiki::item($n->itemId),
+                        'wiki' => $n->currencyId === null ? Wiki::item($n->itemId) : null,
                         'needed' => $n->needed,
                     ], $tree->shoppingList($root)),
                     'used_in' => $this->usedIn((int) $row->id),
@@ -123,7 +129,89 @@ class Gw2PublicController extends Controller
             return $this->error('No such item.', 404);
         }
 
+        // Outside the cache: the recipe changes with a game build, the price
+        // every night, and a price cached for a day would be two days old.
+        $payload['prices'] = $this->recipePrices($payload);
+
         return $this->success($payload);
+    }
+
+    /**
+     * Trading post prices for the item and its materials, with their date.
+     *
+     * Read nightly by `gw2:prices`, and labelled as such. Both sides of the
+     * market are given — what it costs to have it now (the lowest sell
+     * listing) and to wait (the highest buy order) — because one "price"
+     * silently picks a side. Anything not sold on the trading post is counted,
+     * not priced: there is no exchange rate from a vendor currency to gold.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>|null
+     */
+    private function recipePrices(array $payload): ?array
+    {
+        $materials = $payload['materials'] ?? [];
+        $ids = array_merge([(int) $payload['item']['id']], array_map(fn ($m) => (int) $m['item_id'], $materials));
+
+        $prices = DB::table('gw2_item_prices')->whereIn('item_id', $ids)->get()->keyBy('item_id');
+
+        if ($prices->isEmpty()) {
+            return null;
+        }
+
+        $price = fn ($row) => $row && ($row->sell_unit !== null || $row->buy_unit !== null)
+            ? ['sell_unit' => $row->sell_unit === null ? null : (int) $row->sell_unit, 'buy_unit' => $row->buy_unit === null ? null : (int) $row->buy_unit]
+            : null;
+
+        $buyNow = 0;
+        $bidAndWait = 0;
+        $perItem = [];
+        $notTradable = 0;
+
+        foreach ($materials as $material) {
+            // Coin in a forge recipe is gold already; other currencies have no
+            // rate to gold and count as not sold on the trading post.
+            if (($material['currency_id'] ?? null) !== null) {
+                if ((int) $material['currency_id'] === 1) {
+                    $buyNow += (int) $material['needed'];
+                    $bidAndWait += (int) $material['needed'];
+                } else {
+                    $notTradable++;
+                }
+
+                continue;
+            }
+
+            $p = $price($prices[(int) $material['item_id']] ?? null);
+
+            if ($p === null) {
+                $notTradable++;
+
+                continue;
+            }
+
+            $perItem[(int) $material['item_id']] = $p;
+            $buyNow += ($p['sell_unit'] ?? 0) * (int) $material['needed'];
+            $bidAndWait += ($p['buy_unit'] ?? 0) * (int) $material['needed'];
+        }
+
+        // The oldest row that went into a figure, because that is how old the
+        // figure is.
+        $observed = $prices->min('observed_at');
+
+        return [
+            'item' => $price($prices[(int) $payload['item']['id']] ?? null),
+            'materials' => $materials === [] ? null : [
+                'buy_now' => $buyNow,
+                'bid_and_wait' => $bidAndWait,
+                'per_item' => (object) $perItem,
+                'not_tradable' => $notTradable,
+            ],
+            'observed_at' => $observed ? \Illuminate\Support\Carbon::parse($observed)->toIso8601String() : null,
+            // Past three days the nightly read has missed at least twice; the
+            // page says so rather than presenting the number as today's.
+            'stale' => $observed ? \Illuminate\Support\Carbon::parse($observed)->lt(now()->subDays(3)) : true,
+        ];
     }
 
     /**
@@ -178,6 +266,56 @@ class Gw2PublicController extends Controller
 
             return array_values($regions);
         }));
+    }
+
+    /**
+     * GET /gw2/public/changes
+     *
+     * Every dated change since 2023, each with its source and which purchase
+     * it concerns. Unfiltered — the signed-in version narrows it to what the
+     * reader owns and to the date they left.
+     */
+    public function changes(): JsonResponse
+    {
+        return $this->success(Cache::remember(
+            // Editorial rows, not catalogue data: keyed on the newest edit
+            // rather than the game build, so a correction shows the same hour.
+            'gw2:public:v'.self::PAYLOAD_VERSION.':changes:'.DB::table('gw2_changes')->max('updated_at'),
+            self::TTL,
+            fn () => app(WhatsNew::class)->changes()
+        ));
+    }
+
+    /**
+     * GET /gw2/public/insights
+     *
+     * Every map with mastery insights, by region, with counts. Nobody's
+     * account — the same for every reader, and cached on the build like the
+     * rest of this controller.
+     */
+    public function insights(): JsonResponse
+    {
+        return $this->success(Cache::remember(
+            $this->key('insights'),
+            self::TTL,
+            fn () => app(MasteryInsights::class)->regions()
+        ));
+    }
+
+    /**
+     * GET /gw2/public/insights/{map}
+     *
+     * One map: each insight, the nearest waypoint and its chat code.
+     */
+    public function insightMap(int $map): JsonResponse
+    {
+        $payload = Cache::remember(
+            $this->key("insights:{$map}"),
+            self::TTL,
+            fn () => app(MasteryInsights::class)->map($map)
+        );
+
+        return $payload ? $this->success($payload) : $this->error('No such map.', 404);
     }
 
     /**
@@ -239,6 +377,7 @@ class Gw2PublicController extends Controller
                      */
                     'personalise_as' => $guide->personalise_as,
                     'wiki' => $this->guideWiki($guide),
+                    'sources' => $this->guideSources($guide),
                     'seo' => [
                         'title' => $guide->seo_title ?: $guide->title,
                         'description' => $guide->seo_description ?: $guide->standfirst,
@@ -420,6 +559,42 @@ class Gw2PublicController extends Controller
             ->firstWhere('id', $id)['name'] ?? null;
 
         return Wiki::named($name);
+    }
+
+    /**
+     * What a guide is based on, as recorded — including what nobody has
+     * checked.
+     *
+     * §24 gives every guide sources, and until now they lived only in the
+     * admin, which is provenance nobody outside could see. Shown as they are:
+     * an unchecked source says so, because a reader deciding how far to trust a
+     * page deserves the same distinction an editor gets. `internal://` markers
+     * (a measurement, an editorial decision) are named but not linked — there
+     * is nothing at the other end to open.
+     *
+     * @return array<int, array{label: string, kind: string, kind_label: string, url: ?string, checked_at: ?string}>
+     */
+    private function guideSources(Gw2Guide $guide): array
+    {
+        $ids = array_map('intval', (array) ($guide->source_ids ?? []));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        return Gw2Source::query()
+            ->whereIn('id', $ids)
+            ->orderBy('kind')
+            ->orderBy('label')
+            ->get()
+            ->map(fn (Gw2Source $s) => [
+                'label' => $s->label,
+                'kind' => $s->kind,
+                'kind_label' => Gw2Source::KINDS[$s->kind] ?? $s->kind,
+                'url' => str_starts_with($s->url, 'http') ? $s->url : null,
+                'checked_at' => $s->checked_at?->toIso8601String(),
+            ])
+            ->all();
     }
 
     /**

@@ -16,12 +16,19 @@ use Illuminate\Database\Eloquent\Model;
  * has opened since a balance patch is worse than no link at all, because it
  * looks like diligence.
  *
+ * `subject` ties a row to one thing the API names only by slug —
+ * `raid_encounter:vale_guardian` — and makes it that thing's wiki link once
+ * `checked_at` is set (`WikiPages`). Rows without a subject are citations for
+ * rules and guides.
+ *
  * @property string $label
  * @property string $url
+ * @property string|null $subject
+ * @property \Illuminate\Support\Carbon|null $checked_at
  */
 class Gw2Source extends Model
 {
-    protected $fillable = ['label', 'url', 'kind', 'checked_at', 'notes'];
+    protected $fillable = ['label', 'url', 'kind', 'checked_at', 'notes', 'subject'];
 
     protected $casts = ['checked_at' => 'datetime'];
 

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\Gw2EventResource\Pages;
 use App\Models\Gw2Event;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -69,8 +70,12 @@ class Gw2EventResource extends Resource
             Forms\Components\TextInput::make('region')->maxLength(48),
 
             Forms\Components\TextInput::make('waypoint')
+                ->maxLength(64)
+                ->helperText('The waypoint\'s name, as the map shows it.'),
+
+            Forms\Components\TextInput::make('waypoint_chat_link')
                 ->maxLength(32)
-                ->helperText('The chat code, e.g. [&BKgBAAA=]. It is what a player actually pastes.'),
+                ->helperText('Its chat code, e.g. [&BKgBAAA=] — what a player actually pastes. From /v2/continents, not typed.'),
 
             Forms\Components\TagsInput::make('daily_times_utc')
                 ->helperText('Minutes past midnight UTC, one per daily spawn. 0 is 00:00 UTC, 90 is 01:30 UTC. UTC because the game resets on it — a reader\'s timezone is the browser\'s problem.')
@@ -91,6 +96,10 @@ class Gw2EventResource extends Resource
             Forms\Components\TextInput::make('verified_source')
                 ->maxLength(200)
                 ->helperText('Where you checked. The next person to doubt a time should not have to start over.'),
+
+            Forms\Components\Textarea::make('sources')
+                ->rows(3)
+                ->helperText('What a prefilled row rests on — read this before confirming it. Not shown to readers.'),
         ]);
     }
 
@@ -122,7 +131,30 @@ class Gw2EventResource extends Resource
                     ->nullable(),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
-            ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])]);
+            ->bulkActions([BulkActionGroup::make([
+                /*
+                 * For the person who has stood at the spawn: confirm several at
+                 * once, and say where. The rows were prefilled from sources that
+                 * agree with each other; this is the part that checks them
+                 * against the game.
+                 */
+                BulkAction::make('verify')
+                    ->label('Checked in game — publish')
+                    ->icon('heroicon-o-check-badge')
+                    ->schema([
+                        Forms\Components\TextInput::make('verified_source')
+                            ->label('Where you checked')
+                            ->default('In game, '.now()->toDateString())
+                            ->required()
+                            ->maxLength(200),
+                    ])
+                    ->action(fn ($records, array $data) => $records->each->update([
+                        'verified_at' => now(),
+                        'verified_source' => $data['verified_source'],
+                        'is_published' => true,
+                    ])),
+                DeleteBulkAction::make(),
+            ])]);
     }
 
     public static function getPages(): array

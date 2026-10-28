@@ -45,8 +45,9 @@ class Gw2Connection
         'characters' => 'your characters, their gear and Agony Resistance',
         'builds' => 'which specializations and traits you are running',
         'inventories' => 'what you own across bags, bank and material storage',
-        'unlocks' => 'mounts, recipes and the Legendary Armory',
+        'unlocks' => 'mounts, recipes, the Legendary Armory and your collections',
         'wallet' => 'your currencies, for goal and material planning',
+        'tradingpost' => 'gold and items waiting at the trading post, and your open orders',
     ];
 
     public function __construct(private readonly Gw2Client $api) {}
@@ -113,14 +114,16 @@ class Gw2Connection
             ]);
         }
 
-        return DB::transaction(function () use ($user, $key, $info, $account) {
+        $stored = $this->limitedToken($key, $info['permissions']);
+
+        return DB::transaction(function () use ($user, $stored, $info, $account) {
             /** @var ConnectedAccount $connection */
             $connection = ConnectedAccount::updateOrCreate(
                 ['user_id' => $user->id, 'provider' => self::PROVIDER],
                 [
                     'provider_user_id' => $account['id'],
                     'display_name' => $account['name'] ?? null,
-                    'access_token' => $key,          // encrypted by the model
+                    'access_token' => $stored['token'],          // encrypted by the model
                     'scopes' => $info['permissions'],
                     'sync_status' => 'pending',
                     'sync_error' => null,
@@ -131,6 +134,10 @@ class Gw2Connection
                         'key_name' => $info['name'] ?? null,
                         'key_id' => $info['id'] ?? null,
                         'connected_at' => now()->toIso8601String(),
+                        // What is actually held: a limited token with an end
+                        // date, or — when ArenaNet would not issue one — the key.
+                        'token_kind' => $stored['kind'],
+                        'token_expires_at' => $stored['expires_at'],
                     ],
                 ]
             );
@@ -170,6 +177,48 @@ class Gw2Connection
 
             return $connection;
         });
+    }
+
+    /**
+     * A subtoken in place of the player's key, where ArenaNet will issue one.
+     *
+     * `/v2/createsubtoken` turns the key into a signed token with the same
+     * permissions and an end date. Holding that instead of the key means a leak
+     * of our database hands out something that stops working by itself, and
+     * the key — which the player may use elsewhere — never sits here at all. It
+     * dies with the key, too: deleting the key at account.arena.net revokes
+     * every subtoken made from it.
+     *
+     * A year, because a token that expires is a reconnect the player has to do;
+     * the connection panel shows the date and the sync says so when it passes.
+     *
+     * If ArenaNet will not issue one — busy, or the endpoint misbehaving — the
+     * key is stored as before rather than refusing a key that works. The
+     * connection records which it holds, so nothing claims a protection it does
+     * not have.
+     *
+     * @param  array<int, string>  $permissions
+     * @return array{token: string, kind: 'subtoken'|'key', expires_at: ?string}
+     */
+    private function limitedToken(string $key, array $permissions): array
+    {
+        $expires = now()->addYear()->startOfSecond();
+
+        try {
+            $issued = $this->api->account('createsubtoken', $key, [
+                'expire' => $expires->utc()->format('Y-m-d\TH:i:s\Z'),
+                'permissions' => implode(',', $permissions),
+            ]);
+        } catch (Gw2Unavailable|Gw2KeyRejected) {
+            // Gw2RateLimited is a Gw2Unavailable. Either way: keep the key.
+            $issued = [];
+        }
+
+        $token = is_string($issued['subtoken'] ?? null) ? $issued['subtoken'] : null;
+
+        return $token
+            ? ['token' => $token, 'kind' => 'subtoken', 'expires_at' => $expires->toIso8601String()]
+            : ['token' => $key, 'kind' => 'key', 'expires_at' => null];
     }
 
     /**

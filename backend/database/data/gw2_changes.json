@@ -1,0 +1,407 @@
+[
+    {
+        "date":  "2023-02-06",
+        "title":  "DirectX 9 retired, DirectX 11 GPU now required",
+        "summary":  "The minimum PC requirements changed to a DirectX 11-compatible graphics card, and the DirectX 9 renderer was phased out over an eight-week rollout that ArenaNet expected to finish by 18 April 2023.",
+        "applies_to":  "all",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/guild-wars-2-minimum-system-requirements-update/",
+        "source_label":  "GuildWars2.com news, 5 Jan 2023"
+    },
+    {
+        "date":  "2023-02-28",
+        "title":  "End of Dragons story continues: \"What Lies Beneath\"",
+        "summary":  "A free update for End of Dragons owners added the Gyala Delve map, new story and the final Soo-Won legendary variant skin collection. Unlike older Living World episodes, it never needs to be unlocked with gems.",
+        "applies_to":  "end_of_dragons",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/continue-the-guild-wars-2-end-of-dragons-story-today-in-what-lies-beneath/",
+        "source_label":  "GuildWars2.com news, 28 Feb 2023"
+    },
+    {
+        "date":  "2023-05-23",
+        "title":  "\"What Lies Within\" concludes the End of Dragons story",
+        "summary":  "This update ended the End of Dragons storyline and expanded Gyala Delve with a new meta-event, siege turtle adventures and two skiff races. It also made the Thruster Control Units needed for the siege turtle mount purchasable in Gyala Delve.",
+        "applies_to":  "end_of_dragons",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/play-what-lies-within-today/",
+        "source_label":  "GuildWars2.com news, 23 May 2023"
+    },
+    {
+        "date":  "2023-08-22",
+        "title":  "Relics replace the six-piece rune bonus",
+        "summary":  "A new relic equipment slot now carries the special effects that a full set of six runes used to grant, and runes give only their stat bonuses. 40 core relics are available without any expansion; 12 more need Secrets of the Obscure.",
+        "applies_to":  "all",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/relics-bring-new-equipment-to-guild-wars-2-secrets-of-the-obscure/",
+        "source_label":  "GuildWars2.com news, 20 Jul 2023"
+    },
+    {
+        "date":  "2023-08-22",
+        "title":  "Weaponmaster Training: elite-spec weapons on any build",
+        "summary":  "Weaponmaster Training lets each profession equip the weapons that previously required an elite specialization (for example, warrior dagger or necromancer greatsword) without that trait line. It is unlocked through Secrets of the Obscure; the elite specialization trait lines still need their own expansions.",
+        "applies_to":  "secrets_of_the_obscure",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/combat-in-guild-wars-2-secrets-of-the-obscure/",
+        "source_label":  "GuildWars2.com news, 27 Jun 2023"
+    },
+    {
+        "date":  "2023-08-22",
+        "title":  "Secrets of the Obscure launches",
+        "summary":  "The fourth expansion launched with the Skywatch Archipelago and Amnytas maps, the Wizard\u0027s Tower hub, rift hunting, an easier route to the skyscale mount, new masteries and two strike missions. Its story continued in quarterly updates.",
+        "applies_to":  "secrets_of_the_obscure",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/guild-wars-2-secrets-of-the-obscure-launches-today/",
+        "source_label":  "GuildWars2.com news, 22 Aug 2023"
+    },
+    {
+        "date":  "2023-08-22",
+        "title":  "Wizard\u0027s Vault replaces daily achievements and login rewards",
+        "summary":  "The Wizard\u0027s Vault replaced daily login rewards and the generic daily achievements with rotating daily, weekly and special objectives that pay Astral Acclaim, which is spent in a reward shop. Any account with a level 80 character can use it, but some rewards and the vault\u0027s in-game location need Secrets of the Obscure.",
+        "applies_to":  "all",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/discover-the-wonders-within-the-wizards-vault-in-guild-wars-2-secrets-of-the-obscure/",
+        "source_label":  "GuildWars2.com news, 15 Aug 2023"
+    },
+    {
+        "date":  "2023-11-07",
+        "title":  "\"Through the Veil\": first Secrets of the Obscure update",
+        "summary":  "Added three story chapters, the Inner Nayos map, 50-player Convergences against legendary Kryptis and a Cosmic Observatory challenge mode. From this update on, missed Wizard\u0027s Vault cosmetics move to a legacy tab instead of expiring.",
+        "applies_to":  "secrets_of_the_obscure",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/live-now-through-the-veil-first-major-update-for-guild-wars-2-secrets-of-the-obscure/",
+        "source_label":  "GuildWars2.com news, 7 Nov 2023"
+    },
+    {
+        "date":  "2024-02-27",
+        "title":  "One new weapon type for every profession",
+        "summary":  "Each profession gained one more weapon proficiency: ranger mace, thief axe, warrior staff, revenant scepter, mesmer rifle, elementalist pistol, guardian pistol, necromancer sword and engineer short bow. It shipped with the second Secrets of the Obscure update.",
+        "applies_to":  "secrets_of_the_obscure",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/new-weapon-proficiencies-beta-feedback-update/",
+        "source_label":  "GuildWars2.com news, 14 Feb 2024"
+    },
+    {
+        "date":  "2024-02-27",
+        "title":  "\"The Realm of Dreams\": second Secrets of the Obscure update",
+        "summary":  "Added three story chapters, an expanded Inner Nayos, the craftable legendary relic, tier-one Obsidian legendary armor and a Temple of Febe challenge mode.",
+        "applies_to":  "secrets_of_the_obscure",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/live-now-the-realm-of-dreams-second-major-update-for-guild-wars-2-secrets-of-the-obscure/",
+        "source_label":  "GuildWars2.com news, 27 Feb 2024"
+    },
+    {
+        "date":  "2024-04-16",
+        "title":  "Cosmetic inspection",
+        "summary":  "Players can view another player\u0027s equipped skins and dyes (through the portrait menu or /inspect) without seeing stats, runes or sigils, and the inspect cannot be used on enemies in PvP or WvW.",
+        "applies_to":  "all",
+        "category":  "cosmetics",
+        "source_url":  "https://www.guildwars2.com/en/news/introducing-our-latest-quality-of-life-feature-cosmetic-inspection/",
+        "source_label":  "GuildWars2.com news, 15 Apr 2024"
+    },
+    {
+        "date":  "2024-05-21",
+        "title":  "Sixth guild slot and custom action-camera reticle",
+        "summary":  "Every account can now join six guilds instead of five, and the action-camera targeting reticle can be recoloured and reshaped.",
+        "applies_to":  "all",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/studio-update-guild-wars-2-in-spring-and-summer-2024/",
+        "source_label":  "GuildWars2.com news, 14 May 2024"
+    },
+    {
+        "date":  "2024-05-21",
+        "title":  "\"The Midnight King\" ends Secrets of the Obscure",
+        "summary":  "The final Secrets of the Obscure update finished the story and Inner Nayos with a new meta-event, and added the Lonely Tower fractal, a Convergence challenge mode and the upgrade to Suffused Obsidian legendary armor.",
+        "applies_to":  "secrets_of_the_obscure",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/the-midnight-king-is-now-live/",
+        "source_label":  "GuildWars2.com news, 21 May 2024"
+    },
+    {
+        "date":  "2024-06-14",
+        "title":  "WvW World Restructuring goes always-on",
+        "summary":  "From the 14 June reset, WvW World Restructuring ran permanently as an always-on beta, ending server relinking. Matchups are built from teams that are reshuffled periodically around each player\u0027s chosen WvW guild, instead of fixed home worlds.",
+        "applies_to":  "all",
+        "category":  "wvw_pvp",
+        "source_url":  "https://www.guildwars2.com/en/news/studio-update-guild-wars-2-in-spring-and-summer-2024/",
+        "source_label":  "GuildWars2.com news, 14 May 2024"
+    },
+    {
+        "date":  "2024-08-20",
+        "title":  "Homesteads",
+        "summary":  "An account-wide personal instance is unlocked through the Janthir Wilds story. Players decorate it, grow it through a Homesteading mastery, reach it from anywhere with a conjured doorway, and make decorations with the new account-wide Handiworker crafting discipline.",
+        "applies_to":  "janthir_wilds",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/homestead-essentials-living-in-janthir-wilds/",
+        "source_label":  "GuildWars2.com news, 31 Jul 2024"
+    },
+    {
+        "date":  "2024-08-20",
+        "title":  "Warclaw becomes an open-world mount",
+        "summary":  "The warclaw, previously a WvW-only mount, can be used in PvE and gains new skills and a mastery line, including no fall damage and a buff to endurance regeneration for all mounts. Its WvW skills were also reworked to help against gates and walls.",
+        "applies_to":  "janthir_wilds",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/janthir-wilds-unleashed-the-enhanced-warclaw-mount/",
+        "source_label":  "GuildWars2.com news, 17 Jul 2024"
+    },
+    {
+        "date":  "2024-08-20",
+        "title":  "Janthir Wilds launches",
+        "summary":  "The fifth expansion launched with two new maps in the Isles of Janthir, personal homesteads, spears as a land weapon and the warclaw as an open-world mount. A new raid and the rest of the story followed in quarterly updates.",
+        "applies_to":  "janthir_wilds",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/announcing-guild-wars-2-janthir-wilds/",
+        "source_label":  "GuildWars2.com news, 4 Jun 2024"
+    },
+    {
+        "date":  "2024-08-20",
+        "title":  "Spears become a land weapon for all professions",
+        "summary":  "Every profession got a land spear with its own skill set, unlocked through the first Kodan mastery or bought in WvW. ArenaNet states that this combat feature requires owning Janthir Wilds.",
+        "applies_to":  "janthir_wilds",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/straight-to-the-point-a-primer-on-spears-in-janthir-wilds/",
+        "source_label":  "GuildWars2.com news, 5 Jun 2024"
+    },
+    {
+        "date":  "2024-11-13",
+        "title":  "Guild Wars 2 on the Epic Games Store",
+        "summary":  "The free core game and all five expansions went on sale on the Epic Games Store in North America and Europe. Epic accounts cannot be linked to Steam or ArenaNet accounts, but all three play together.",
+        "applies_to":  "all",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/guild-wars-2-is-now-on-the-epic-games-store/",
+        "source_label":  "GuildWars2.com news, 13 Nov 2024"
+    },
+    {
+        "date":  "2024-11-19",
+        "title":  "Mount Balrior: first new raid in five years",
+        "summary":  "Mount Balrior, a 10-player raid wing, opened with the Godspawn update. Its normal mode is tuned for pickup groups, and challenge and legendary modes came in later updates.",
+        "applies_to":  "janthir_wilds",
+        "category":  "raids_fractals",
+        "source_url":  "https://www.guildwars2.com/en/news/raids-return-to-guild-wars-2-next-week/",
+        "source_label":  "GuildWars2.com news, 14 Nov 2024"
+    },
+    {
+        "date":  "2024-11-19",
+        "title":  "\"Godspawn\": first Janthir Wilds update",
+        "summary":  "Added three story chapters, a 50-player Convergence against the titans, the legendary spear Klobjarne Geirr, a new mastery tier, more expansion relics and a Wizard\u0027s Vault season.",
+        "applies_to":  "janthir_wilds",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/live-now-godspawn-first-major-update-for-guild-wars-2-janthir-wilds/",
+        "source_label":  "GuildWars2.com news, 19 Nov 2024"
+    },
+    {
+        "date":  "2025-03-11",
+        "title":  "\"Repentance\": second Janthir Wilds update",
+        "summary":  "Added the Mistburned Barrens map, new story chapters, the Mursaat Shadowcraft mastery track, challenge modes for the Mount Balrior bosses and 12 new core relics.",
+        "applies_to":  "janthir_wilds",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/repentance-is-now-live/",
+        "source_label":  "GuildWars2.com news, 11 Mar 2025"
+    },
+    {
+        "date":  "2025-06-03",
+        "title":  "Rift essences become a wallet currency; inventory clean-up",
+        "summary":  "Rift essences moved from the inventory into the wallet. All players can buy the Wizard\u0027s Gobbler, which merges over 20 portable exchangers into one item. Faction provisioners switched from a daily to a weekly limit, research notes got a new recipe, and the homestead decoration cap doubled to 2,000.",
+        "applies_to":  "all",
+        "category":  "economy",
+        "source_url":  "https://www.guildwars2.com/en/news/quality-of-life-improvements-in-janthir-wilds-absolution/",
+        "source_label":  "GuildWars2.com news, 29 May 2025"
+    },
+    {
+        "date":  "2025-06-03",
+        "title":  "\"Absolution\" ends Janthir Wilds",
+        "summary":  "The final Janthir Wilds update concluded the story and added the Bava Nisos map, the Kinfall fractal, the Ura Convergence and the legendary backpack Orrax Manifested.",
+        "applies_to":  "janthir_wilds",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/janthir-wilds-concludes-with-absolution-release-today/",
+        "source_label":  "GuildWars2.com news, 3 Jun 2025"
+    },
+    {
+        "date":  "2025-10-28",
+        "title":  "Skimmer can dive and gains new abilities",
+        "summary":  "Mastery upgrades learned during the Castora story let the skimmer dive underwater, ride ley lines and updrafts, and use new abilities: a sonar ping, a speed boost and water jets.",
+        "applies_to":  "visions_of_eternity",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/new-skimmer-updates-splash-onto-the-scene-with-visions-of-eternity/",
+        "source_label":  "GuildWars2.com news, 17 Sep 2025"
+    },
+    {
+        "date":  "2025-10-28",
+        "title":  "Skimmer quality-of-life for every owner",
+        "summary":  "Every skimmer owner, with or without masteries, can now dismount in mid-air and mount up while in combat.",
+        "applies_to":  "path_of_fire",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/new-skimmer-updates-splash-onto-the-scene-with-visions-of-eternity/",
+        "source_label":  "GuildWars2.com news, 17 Sep 2025"
+    },
+    {
+        "date":  "2025-10-28",
+        "title":  "Visions of Eternity launches",
+        "summary":  "The sixth expansion launched with two maps in Castora, a homestead island and shareable homestead layouts, the legendary aquabreather Selachimorpha and the legendary Aetheric Anchor. Its story is told over four releases into 2026.",
+        "applies_to":  "visions_of_eternity",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/guild-wars-2-visions-of-eternity-launches-today/",
+        "source_label":  "GuildWars2.com news, 28 Oct 2025"
+    },
+    {
+        "date":  "2025-10-28",
+        "title":  "Nine new elite specializations",
+        "summary":  "Visions of Eternity added nine elite specializations, one per profession, among them the engineer\u0027s Amalgam and the ranger\u0027s Galeshot.",
+        "applies_to":  "visions_of_eternity",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/play-new-elite-specializations-in-the-visions-of-eternity-beta-today/",
+        "source_label":  "GuildWars2.com news, 20 Aug 2025"
+    },
+    {
+        "date":  "2026-02-03",
+        "title":  "Fashion Templates",
+        "summary":  "A new Fashion tab saves whole cosmetic looks (skins and dyes) as templates that can be swapped and shared by chat code. Two templates are free, and up to nine total can be bought from the Black Lion Trading Company.",
+        "applies_to":  "all",
+        "category":  "cosmetics",
+        "source_url":  "https://www.guildwars2.com/en/news/the-raids-and-wardrobe-update-is-live-now/",
+        "source_label":  "GuildWars2.com news, 3 Feb 2026"
+    },
+    {
+        "date":  "2026-02-03",
+        "title":  "Wizard\u0027s Vault refresh",
+        "summary":  "Daily and weekly objectives were reworked: some were retired, new ones point to fractals, world bosses and WvW, and the daily and weekly category can be chosen separately. The shop gained Black Lion Chest Keys and a bag slot expansion.",
+        "applies_to":  "all",
+        "category":  "system",
+        "source_url":  "https://www.guildwars2.com/en/news/the-raids-and-wardrobe-update-is-live-now/",
+        "source_label":  "GuildWars2.com news, 3 Feb 2026"
+    },
+    {
+        "date":  "2026-02-03",
+        "title":  "Unlimited Bag of Coins removed from the Wizard\u0027s Vault",
+        "summary":  "The unlimited Bag of Coins listing was removed. The limited gold reward now pays more gold per season at a slightly higher Astral Acclaim cost, which ArenaNet says is meant to curb gold inflation.",
+        "applies_to":  "all",
+        "category":  "economy",
+        "source_url":  "https://www.guildwars2.com/en/news/the-raids-and-wardrobe-update-is-live-now/",
+        "source_label":  "GuildWars2.com news, 3 Feb 2026"
+    },
+    {
+        "date":  "2026-02-03",
+        "title":  "First Visions of Eternity update: new raid encounter and legendary ring",
+        "summary":  "The first Visions of Eternity quarterly release added the Guardian\u0027s Glade raid encounter (its challenge mode three weeks later), six new combat relics and the legendary ring Endless Summer. Per the post, this release focused on systems and added no new map.",
+        "applies_to":  "visions_of_eternity",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/the-raids-and-wardrobe-update-is-live-now/",
+        "source_label":  "GuildWars2.com news, 3 Feb 2026"
+    },
+    {
+        "date":  "2026-02-03",
+        "title":  "Strike missions merged into raids; raid quickplay",
+        "summary":  "Strike missions became raid encounters in one raid system with a new raid UI, weekly reward gating and a reward vendor. A quickplay queue matches players into eight easier encounters, such as Aetherblade Hideout and Old Lion\u0027s Court, with a group-wide bonus effect.",
+        "applies_to":  "all",
+        "category":  "raids_fractals",
+        "source_url":  "https://www.guildwars2.com/en/news/new-raid-encounter-quickplay-and-raid-system-improvements-coming-february-3/",
+        "source_label":  "GuildWars2.com news, 22 Jan 2026"
+    },
+    {
+        "date":  "2026-02-03",
+        "title":  "Prophet Shards converted to Magnetite Shards",
+        "summary":  "Prophet Shards were converted into Magnetite Shards, leaving Magnetite Shards and Gaeting Crystals as the only raid currencies. The weekly Magnetite cap rose to 800.",
+        "applies_to":  "all",
+        "category":  "economy",
+        "source_url":  "https://www.guildwars2.com/en/news/new-raid-encounter-quickplay-and-raid-system-improvements-coming-february-3/",
+        "source_label":  "GuildWars2.com news, 22 Jan 2026"
+    },
+    {
+        "date":  "2026-05-12",
+        "title":  "Fashion Templates cover mounts, gliders and skiffs",
+        "summary":  "A new Travel section lets players manage and dye mount, glider, conjured doorway and skiff skins, and a Current Fashion tab changes looks without saving a template.",
+        "applies_to":  "all",
+        "category":  "cosmetics",
+        "source_url":  "https://www.guildwars2.com/en/news/the-only-way-is-live-play-the-next-chapter-of-guild-wars-2-now/",
+        "source_label":  "GuildWars2.com news, 12 May 2026"
+    },
+    {
+        "date":  "2026-05-12",
+        "title":  "\"The Only Way\": second Visions of Eternity update",
+        "summary":  "Added five story chapters, the Eternity\u0027s Garden map, the craftable legendary accessories Stella Radians (PvE) and Strife Unending (WvW), new masteries and six expansion relics.",
+        "applies_to":  "visions_of_eternity",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/the-only-way-is-live-play-the-next-chapter-of-guild-wars-2-now/",
+        "source_label":  "GuildWars2.com news, 12 May 2026"
+    },
+    {
+        "date":  "2026-06-05",
+        "title":  "Guild Wars 3 announced",
+        "summary":  "ArenaNet announced Guild Wars 3 for PC and PlayStation 5, set in Orr, with a beta planned for autumn 2027. Guild Wars 2 players received a Summer Game Fest bonus event to mark the announcement.",
+        "applies_to":  "all",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/celebrating-the-announcement-of-guild-wars-3/",
+        "source_label":  "GuildWars2.com news, 5 Jun 2026"
+    },
+    {
+        "date":  "2026-06-06",
+        "title":  "No new expansion after Visions of Eternity for now",
+        "summary":  "ArenaNet said that once Visions of Eternity ended in September 2026, the Guild Wars 2 team would work on the game\u0027s foundations rather than a new expansion, starting with a Hall of Monuments update and then spending nearly a year revisiting older eras of the game.",
+        "applies_to":  "all",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/future-of-the-guild-wars-franchise/",
+        "source_label":  "GuildWars2.com news, 6 Jun 2026"
+    },
+    {
+        "date":  "2026-09-15",
+        "title":  "\"Code of Creation\" ends Visions of Eternity",
+        "summary":  "The final Visions of Eternity update added six story chapters, the Leyspring Hollows map, the Solitary Throne fractal, the Nexus of Eternity raid and Convergence, the legendary sword Wages of Stars and the Rift Amplification mastery. ArenaNet\u0027s post says expansions are now paused in favour of the Hall of Monuments and quality-of-life work.",
+        "applies_to":  "visions_of_eternity",
+        "category":  "expansion",
+        "source_url":  "https://www.guildwars2.com/en/news/play-the-finale-of-visions-of-eternity-today-with-code-of-creation/",
+        "source_label":  "GuildWars2.com news, 15 Sep 2026"
+    },
+    {
+        "date":  "2026-10-13",
+        "title":  "Living World no longer sold separately",
+        "summary":  "Living World episodes can no longer be bought individually. Purchases made after 12 Sep 2026 were refunded in gems automatically, including a partial refund for the Elder Dragon Saga Complete Collection.",
+        "applies_to":  "all",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/living-world-seasons-are-now-included-with-guild-wars-2-expansions/",
+        "source_label":  "GuildWars2.com news, 13 Oct 2026"
+    },
+    {
+        "date":  "2026-10-13",
+        "title":  "New Astral Ward Saga bundle; Elder Dragon Saga updated",
+        "summary":  "Elder Dragon Saga now bundles Heart of Thorns, Path of Fire and End of Dragons with Living World Seasons 3 to 5. The new Astral Ward Saga bundles Secrets of the Obscure, Janthir Wilds and Visions of Eternity, and the Complete Collection covers all six expansions plus Seasons 3 to 5.",
+        "applies_to":  "all",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/living-world-seasons-are-now-included-with-guild-wars-2-expansions/",
+        "source_label":  "GuildWars2.com news, 13 Oct 2026"
+    },
+    {
+        "date":  "2026-10-13",
+        "title":  "Starter Pack gains extra items",
+        "summary":  "At the same price, the Starter Pack now also contains a Copper-Fed Salvage-o-Matic, five Teleport to Friend items and two Black Lion Chest Keys, and earlier buyers received them by mail.",
+        "applies_to":  "core",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/living-world-seasons-are-now-included-with-guild-wars-2-expansions/",
+        "source_label":  "GuildWars2.com news, 13 Oct 2026"
+    },
+    {
+        "date":  "2026-10-13",
+        "title":  "Living World Season 2 is free",
+        "summary":  "Living World Season 2, which bridges the core story and Heart of Thorns, is now free for every account with a level 80 character, joining the already-free Season 1.",
+        "applies_to":  "all",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/living-world-seasons-are-now-included-with-guild-wars-2-expansions/",
+        "source_label":  "GuildWars2.com news, 13 Oct 2026"
+    },
+    {
+        "date":  "2026-10-13",
+        "title":  "Living World Seasons 3 and 4 included with Heart of Thorns and Path of Fire",
+        "summary":  "Living World Seasons 3 and 4 are now part of the Heart of Thorns and Path of Fire purchase, and existing owners automatically received any episodes they were missing.",
+        "applies_to":  "heart_of_thorns",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/living-world-seasons-are-now-included-with-guild-wars-2-expansions/",
+        "source_label":  "GuildWars2.com news, 13 Oct 2026"
+    },
+    {
+        "date":  "2026-10-13",
+        "title":  "The Icebrood Saga included with End of Dragons",
+        "summary":  "Living World Season 5 (The Icebrood Saga) is now included with End of Dragons, and existing owners automatically received any episodes they were missing.",
+        "applies_to":  "end_of_dragons",
+        "category":  "business",
+        "source_url":  "https://www.guildwars2.com/en/news/living-world-seasons-are-now-included-with-guild-wars-2-expansions/",
+        "source_label":  "GuildWars2.com news, 13 Oct 2026"
+    }
+]

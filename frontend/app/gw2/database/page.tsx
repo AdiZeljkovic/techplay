@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Hammer, Sparkles } from "lucide-react";
+import { Hammer, History, MapPin, Sparkles } from "lucide-react";
 import Container from "@/components/ui/Container";
 import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
+import { gw2Application, gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getCraftable, getPublicMasteries } from "@/lib/gw2public";
 
 /**
@@ -50,6 +51,15 @@ export default async function Gw2DatabasePage() {
 
     return (
         <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+            {/* The tool's own page is noindex — it is somebody's account —
+                so this public hub is where the tool is described. */}
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(gw2Application) }} />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: jsonLd(gw2Breadcrumb([{ name: "Guild Wars 2 database", path: "/gw2/database" }])),
+                }}
+            />
             <PageHero
                 title="Guild Wars 2 database"
                 description="Recipes broken down to the last material, and every mastery tier with what it costs. No account needed — connecting one just subtracts what you already have."
@@ -87,6 +97,37 @@ export default async function Gw2DatabasePage() {
                             >
                                 <Sparkles size={15} aria-hidden />
                                 Browse masteries
+                            </Link>
+                        </div>
+                    </Panel>
+
+                    <Panel material="matte" title="Mastery insights">
+                        <div className="space-y-4">
+                            <p className="text-sm text-[var(--ink-mid)]">
+                                Every insight on the map, map by map, with the nearest waypoint&apos;s chat code to
+                                travel there.
+                            </p>
+                            <Link
+                                href="/gw2/database/insights"
+                                className="inline-flex items-center gap-2 text-sm text-[var(--accent-ink)] hover:underline"
+                            >
+                                <MapPin size={15} aria-hidden />
+                                Browse insights
+                            </Link>
+                        </div>
+                    </Panel>
+
+                    <Panel material="matte" title="What changed">
+                        <div className="space-y-4">
+                            <p className="text-sm text-[var(--ink-mid)]">
+                                Back after a break? The changes since 2023 that matter, dated, each with its source.
+                            </p>
+                            <Link
+                                href="/gw2/whats-new"
+                                className="inline-flex items-center gap-2 text-sm text-[var(--accent-ink)] hover:underline"
+                            >
+                                <History size={15} aria-hidden />
+                                What changed while you were away
                             </Link>
                         </div>
                     </Panel>

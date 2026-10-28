@@ -23,9 +23,9 @@ use Illuminate\Database\Eloquent\Model;
 class Gw2Event extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'kind', 'region', 'waypoint',
+        'name', 'slug', 'kind', 'region', 'waypoint', 'waypoint_chat_link',
         'daily_times_utc', 'duration_minutes', 'rewards',
-        'is_published', 'verified_at', 'verified_source',
+        'is_published', 'verified_at', 'verified_source', 'sources',
     ];
 
     protected $casts = [

@@ -1,4 +1,5 @@
 import axiosInstance from "@/lib/axios";
+import type { InsightMap, InsightRegion } from "@/lib/gw2public";
 
 /**
  * The Guild Wars 2 advisor, from the browser's side.
@@ -208,6 +209,8 @@ export interface Gw2ItemSummary {
 
 export interface PlanLine {
     item_id: number;
+    /** A wallet currency in a Mystic Forge recipe; `item_id` is 0 then. */
+    currency_id?: number | null;
     name: string | null;
     rarity: string | null;
     icon: string | null;
@@ -222,6 +225,17 @@ export interface PlanNode extends PlanLine {
     disciplines: string[];
     min_rating: number;
     recipe_was_chosen: boolean;
+    /** Taught by a recipe sheet: learned or not. Null when it comes with the discipline, or is unknown. */
+    recipe_learned?: boolean | null;
+    /** Made in the Mystic Forge from a checked recipe. Null for everything else. */
+    forge?: {
+        source_url: string | null;
+        source_label: string | null;
+        checked_at: string | null;
+        /** The forge is random for this one; `attempts` is the average needed. */
+        random: boolean;
+        attempts: number;
+    } | null;
     depth: number;
     children: PlanNode[];
 }
@@ -241,6 +255,19 @@ export interface Gw2Plan {
     disciplines_used: string[];
     /** Whether anybody on the account can make it, and at what rating. */
     requires: { disciplines: string[]; min_rating: number; have_it: boolean } | null;
+    /**
+     * Recipes taught by a sheet that the plan needs and the account has not
+     * learned. Null when the account's recipes were not read — which is not
+     * the same as none missing.
+     */
+    recipes_to_learn?: {
+        recipe_id: number;
+        item_id: number;
+        name: string | null;
+        icon: string | null;
+        disciplines: string[];
+        wiki?: Gw2WikiLink;
+    }[] | null;
     /**
      * Two buckets that must not be added together.
      *
@@ -266,6 +293,8 @@ export interface Gw2Plan {
             sell_quantity: number;
         }[];
         not_tradable: { item_id: number; name: string | null; missing: number; wiki?: Gw2WikiLink }[];
+        /** Wallet currencies a forge recipe still needs. No rate to gold, so never summed. */
+        currencies?: { currency_id: number; name: string | null; missing: number }[];
         observed_at: string | null;
     } | null;
     observed_at: string | null;
@@ -307,10 +336,15 @@ export interface ScheduledEvent {
     slug: string;
     kind: string;
     region: string | null;
+    /** The waypoint's name. */
     waypoint: string | null;
+    /** Its chat code, to paste in game. */
+    waypoint_chat_link?: string | null;
     rewards: string | null;
     minutes_away: number;
     live_now: boolean;
+    /** From this account's own read: killed since the daily reset. Null for anything that is not a world boss. */
+    killed_today?: boolean | null;
 }
 
 export interface Gw2Tonight {
@@ -400,11 +434,13 @@ export interface Gw2Content {
  */
 export interface PublicMaterial {
     item_id: number;
+    /** A wallet currency in a Mystic Forge recipe; not an item, so no page of its own. */
+    currency_id?: number | null;
     name: string | null;
     slug: string | null;
     rarity: string | null;
     icon: string | null;
-    wiki?: Gw2WikiLink;
+    wiki?: Gw2WikiLink | null;
     needed: number;
 }
 
@@ -422,6 +458,23 @@ export interface PublicRecipe {
      */
     indexable: boolean;
     requires: { disciplines: string[]; min_rating: number } | null;
+    /** Made in the Mystic Forge from a checked recipe, with where the recipe came from. */
+    forge?: PlanNode["forge"];
+    /**
+     * Trading post prices, read nightly and dated. Null when no price has
+     * been read for anything on the page. Copper throughout.
+     */
+    prices?: {
+        item: { sell_unit: number | null; buy_unit: number | null } | null;
+        materials: {
+            buy_now: number;
+            bid_and_wait: number;
+            per_item: Record<string, { sell_unit: number | null; buy_unit: number | null }>;
+            not_tradable: number;
+        } | null;
+        observed_at: string | null;
+        stale: boolean;
+    } | null;
     tree: PlanNode;
     materials: PublicMaterial[];
     /** What this goes into. It is what turns 13,000 pages into a graph. */
@@ -447,6 +500,56 @@ export interface PublicMasteryRegion {
         points_total: number;
         levels: { name: string; description: string | null; point_cost: number }[];
     }[];
+}
+
+export interface Gw2VaultSeason {
+    title: string | null;
+    starts_at: string | null;
+    ends_at: string;
+    days_left: number;
+    /** Astral Acclaim in the wallet. */
+    acclaim: number;
+    /** Null when the account's vault purchases have never been read. */
+    still_to_buy: {
+        listings: {
+            id: number;
+            item_id: number;
+            name: string | null;
+            icon: string | null;
+            rarity: string | null;
+            count: number;
+            type: "Featured" | "Normal" | "Legacy" | string | null;
+            cost: number;
+            /** Purchases left before the listing's limit. */
+            left: number;
+            affordable: boolean;
+            wiki?: Gw2WikiLink | null;
+        }[];
+        cost_of_everything: number;
+    } | null;
+    /** Sourced statements about what happens at season end. */
+    notes?: { text: string; source: string }[];
+}
+
+export interface Gw2DailyList {
+    done: number;
+    total: number;
+    items: { id: string; name: string; done: boolean }[];
+}
+
+export interface Gw2Today {
+    daily_reset_at: string;
+    weekly_reset_at: string;
+    daily: {
+        world_bosses: { done: number; total: number };
+        /** Null when the account has never been read for chests — not the same as none taken. */
+        heros_choice_chests: Gw2DailyList | null;
+        time_gated_crafts: Gw2DailyList | null;
+        dungeon_paths: number;
+    };
+    weekly: { raid_encounters: number };
+    /** Where the game's own lists are known to be short. */
+    notes: { text: string; source: string }[];
 }
 
 export interface Gw2Dashboard {
@@ -530,6 +633,10 @@ export interface Gw2Dashboard {
             unclaimed_acclaim: number;
             open: VaultObjective[];
         } | null;
+        /** The Wizard's Vault season and what is left on its shelf. Null before the catalogue has a season. */
+        season?: Gw2VaultSeason | null;
+        /** What resets today and this week, and when. */
+        today?: Gw2Today;
     };
     advice: {
         headline: Recommendation[];
@@ -625,6 +732,9 @@ export interface Gw2Connection {
     connected: true;
     account_name: string | null;
     key_name: string | null;
+    /** `subtoken`: a limited token with an end date. `key`: the player's own key. */
+    token_kind?: "subtoken" | "key";
+    token_expires_at?: string | null;
     permissions: string[];
     /** Permission name → the feature that goes dark without it. */
     missing_features: Record<string, string>;
@@ -743,6 +853,165 @@ export async function getContent(): Promise<Gw2Content | null> {
     return data.data ?? null;
 }
 
+export interface Gw2Source {
+    url: string;
+    label: string | null;
+}
+
+export interface Gw2OwnedProduct {
+    key: string;
+    name: string;
+    kind: "base" | "expansion" | "living_world" | string;
+    /** null: the game does not say (Visions of Eternity), or nobody is signed in. */
+    owned: boolean | null;
+    how: "free" | "access" | "included" | "unknown" | null;
+    /** The products it came with, when `how` is `included`. */
+    with: string[];
+    is_free: boolean;
+    grants: string | null;
+    grants_source: Gw2Source | null;
+    note: string | null;
+    source: Gw2Source | null;
+}
+
+export interface Gw2AccountOverview {
+    ownership: Gw2OwnedProduct[];
+    /** Null when the armory was never read — a key without `unlocks`. */
+    legendary_armory: {
+        owned: {
+            item_id: number;
+            name: string | null;
+            icon: string | null;
+            type: string | null;
+            count: number;
+            max_count: number | null;
+            room: number | null;
+            wiki?: Gw2WikiLink;
+        }[];
+        in_catalogue: number;
+        owned_count: number;
+    } | null;
+    collections: {
+        counts: Record<"skins" | "minis" | "outfits" | "titles", { have: number; total: number }>;
+        cheapest: Record<
+            "minis" | "outfits" | "skins",
+            {
+                piece_id: number;
+                item_id: number;
+                name: string | null;
+                icon: string | null;
+                item_name: string | null;
+                item_icon: string | null;
+                sell_unit: number;
+                wiki?: Gw2WikiLink;
+            }[]
+        >;
+        closest_titles: {
+            title_id: number;
+            title: string | null;
+            achievement_id: number;
+            achievement: string | null;
+            current: number;
+            max: number;
+            wiki?: Gw2WikiLink | null;
+        }[];
+        prices_observed_at: string | null;
+    } | null;
+    trading_post: {
+        waiting: {
+            coins: number;
+            items: { item_id: number; name: string | null; icon: string | null; count: number; wiki?: Gw2WikiLink }[];
+        };
+        buys: Gw2Order[];
+        sells: Gw2Order[];
+        in_buy_orders: number;
+        listed_for: number;
+        observed_at: string | null;
+    } | null;
+}
+
+export interface Gw2Order {
+    item_id: number;
+    name: string | null;
+    icon: string | null;
+    rarity: string | null;
+    price: number;
+    quantity: number;
+    created: string | null;
+    wiki?: Gw2WikiLink;
+}
+
+export interface Gw2Change {
+    date: string;
+    title: string;
+    summary: string;
+    applies_to: string;
+    applies_to_name: string | null;
+    category: string;
+    source: Gw2Source;
+    /** true: applies to this account. null: cannot be told from the key, or nobody is signed in. */
+    yours: boolean | null;
+}
+
+export interface Gw2Legendaries {
+    legendaries: {
+        item_id: number;
+        name: string | null;
+        type: string | null;
+        subtype: string | null;
+        icon: string | null;
+        max_count: number;
+        held: number | null;
+        /** `recipe`: a discipline recipe. `forge`: a checked Mystic Forge recipe. null: not plannable yet. */
+        plannable: "recipe" | "forge" | null;
+        wiki?: Gw2WikiLink;
+    }[];
+    forge_recipes_checked: number;
+    armory_known: boolean;
+    today?: { id: string; item_id: number; name: string | null; missing: number; crafted_today: boolean | null }[];
+}
+
+export async function getAccountOverview(): Promise<Gw2AccountOverview | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2AccountOverview | null>>("/gw2/account");
+
+    return data.data ?? null;
+}
+
+export async function getWhatsNew(): Promise<{ returned_from: string | null; changes: Gw2Change[] } | null> {
+    const { data } = await axiosInstance.get<Envelope<{ returned_from: string | null; changes: Gw2Change[] } | null>>(
+        "/gw2/whats-new"
+    );
+
+    return data.data ?? null;
+}
+
+/** When the player last played before their break. Null clears it. */
+export async function setReturnedFrom(date: string | null): Promise<void> {
+    await axiosInstance.put("/gw2/returned", { date });
+}
+
+export async function getLegendaries(itemId?: number): Promise<Gw2Legendaries | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Legendaries | null>>(
+        itemId ? `/gw2/legendary?item_id=${itemId}` : "/gw2/legendary"
+    );
+
+    return data.data ?? null;
+}
+
+/** One map's insights with this account's collected flags. */
+export async function getInsightMap(mapId: number): Promise<InsightMap | null> {
+    const { data } = await axiosInstance.get<Envelope<InsightMap | null>>(`/gw2/insights?map=${mapId}`);
+
+    return data.data ?? null;
+}
+
+/** Every region's insights, counted against this account. `known` is false when the key cannot see mastery points. */
+export async function getInsights(): Promise<{ regions: InsightRegion[]; known: boolean } | null> {
+    const { data } = await axiosInstance.get<Envelope<{ regions: InsightRegion[]; known: boolean } | null>>("/gw2/insights");
+
+    return data.data ?? null;
+}
+
 export async function getGoals(): Promise<Gw2GoalOption[]> {
     const { data } = await axiosInstance.get<Envelope<Gw2GoalOption[]>>("/gw2/goals");
 
@@ -833,15 +1102,7 @@ export function gw2Error(e: unknown, fallback: string): string {
  * earlier would move a display decision into the database. 10,000 copper is a
  * gold; 100 is a silver.
  */
-export function coin(copper: number): string {
-    const gold = Math.floor(copper / 10000);
-    const silver = Math.floor((copper % 10000) / 100);
-    const copperLeft = copper % 100;
-
-    return [gold > 0 ? `${gold}g` : null, gold > 0 || silver > 0 ? `${silver}s` : null, `${copperLeft}c`]
-        .filter(Boolean)
-        .join(" ");
-}
+export { coin } from "@/lib/gw2format";
 
 /** Slot names come back as the game spells them: `Ring1`, `WeaponA1`, `Backpack`. */
 export function slotLabel(slot: string): string {

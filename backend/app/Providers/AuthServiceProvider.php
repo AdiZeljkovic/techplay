@@ -98,6 +98,12 @@ class AuthServiceProvider extends ServiceProvider
         Gw2Goal::class => ContentPolicy::class,
         Gw2Guide::class => ContentPolicy::class,
         Gw2Source::class => ContentPolicy::class,
+        // A forge recipe is a month of somebody's play; the product table says
+        // what a purchase includes; the changes are what a returning player
+        // reads first. All three are claims the site makes.
+        \App\Models\Gw2ForgeRecipe::class => ContentPolicy::class,
+        \App\Models\Gw2Product::class => ContentPolicy::class,
+        \App\Models\Gw2Change::class => ContentPolicy::class,
         HelpArticle::class => ContentPolicy::class,
         HelpCategory::class => ContentPolicy::class,
         Media::class => ContentPolicy::class,

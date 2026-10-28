@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
 class SyncGw2Accounts extends Command
 {
     protected $signature = 'gw2:sync-accounts
-        {--quick : Read only the six endpoints that move within a day}
+        {--quick : Read only the endpoints that move within a day (AccountSync::QUICK)}
         {--force : Include accounts already read inside the window}';
 
     protected $description = 'Queue a Guild Wars 2 account read for every connected player';

@@ -22,12 +22,17 @@ namespace App\Services\Gw2;
  * our catalogue, one of them 135 times, so a page guessed from a name would be
  * wrong for thousands of them. gw2treasures links items the same way.
  *
- * **Everything else goes by name.** Achievements, mastery tracks, mounts,
- * raid encounters, world bosses and dungeons have no chat code the wiki is
- * known to decode, so the link is a search for the exact name with "Go":
- * where a page has that title the wiki opens it, and where it does not the
- * reader gets search results — a list to pick from, never a wrong page
- * presented as the right one.
+ * **Named things go by their exact name.** Achievements, mastery tracks and
+ * mounts have no chat code the wiki is known to decode, but the API gives
+ * their real names, so the link is a search for that name with "Go": where a
+ * page has that title the wiki opens it, and where it does not the reader gets
+ * search results — a list to pick from, never a wrong page presented as the
+ * right one.
+ *
+ * **Slugs go only by a checked page.** Raids, wings, dungeons and world bosses
+ * have no name in the API at all, only `voice_in_the_void`, and a title made
+ * from a slug can be exactly a different page. Those link through `WikiPages`,
+ * and only after an editor has opened the page.
  */
 final class Wiki
 {
@@ -78,6 +83,18 @@ final class Wiki
         }
 
         return ['url' => self::search($name), 'chat_link' => null];
+    }
+
+    /**
+     * A page an editor has confirmed, from `WikiPages::checked()`. Null until
+     * somebody has — no link is better than a guessed one here.
+     *
+     * @param  array<string, string>  $checked
+     * @return array{url: string, chat_link: null}|null
+     */
+    public static function checked(array $checked, string $subject): ?array
+    {
+        return isset($checked[$subject]) ? ['url' => $checked[$subject], 'chat_link' => null] : null;
     }
 
     /**

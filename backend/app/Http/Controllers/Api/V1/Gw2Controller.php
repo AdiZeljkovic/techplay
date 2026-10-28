@@ -8,8 +8,15 @@ use App\Models\ConnectedAccount;
 use App\Models\Gw2Goal;
 use App\Services\Gw2\Advisor\Dashboard;
 use App\Services\Gw2\Advisor\GuidePersonalisation;
+use App\Services\Gw2\Advisor\Collections;
 use App\Services\Gw2\Advisor\Intent;
+use App\Services\Gw2\Advisor\LegendaryArmory;
+use App\Services\Gw2\Advisor\LegendaryPlanner;
+use App\Services\Gw2\Advisor\MasteryInsights;
+use App\Services\Gw2\Advisor\Ownership;
 use App\Services\Gw2\Advisor\PlayerChoices;
+use App\Services\Gw2\Advisor\TradingPost;
+use App\Services\Gw2\Advisor\WhatsNew;
 use App\Services\Gw2\Advisor\SnapshotReader;
 use App\Services\Gw2\Advisor\StoryProgress;
 use App\Services\Gw2\Gw2Connection;
@@ -243,6 +250,145 @@ class Gw2Controller extends Controller
         }
 
         return $this->success($payload);
+    }
+
+    /**
+     * GET /gw2/insights[?map=]
+     *
+     * Mastery insights by region, with what this account has collected — or
+     * one map's insights with the nearest waypoint to each.
+     */
+    public function insights(Request $request): JsonResponse
+    {
+        $request->validate(['map' => 'nullable|integer|min:1']);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $unlocked = MasteryInsights::unlockedFor($accountId);
+        $insights = app(MasteryInsights::class);
+
+        if ($request->filled('map')) {
+            $map = $insights->map($request->integer('map'), $unlocked);
+
+            return $map ? $this->success($map) : $this->error('No such map.', 404);
+        }
+
+        return $this->success([
+            'regions' => $insights->regions($unlocked),
+            // Null when the account read had no mastery points — a key without
+            // `progression` — so the page can say why nothing is ticked.
+            'known' => $unlocked !== null,
+        ]);
+    }
+
+    /**
+     * GET /gw2/account
+     *
+     * What the account owns and what came with it, the legendary armory,
+     * collections, and the trading post counter. Each part is null when the
+     * key cannot see it, and the page says which permission that is.
+     */
+    public function accountOverview(Request $request): JsonResponse
+    {
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        return $this->success([
+            'ownership' => app(Ownership::class)->for(Ownership::accessFor($accountId)),
+            'legendary_armory' => app(LegendaryArmory::class)->for($accountId),
+            'collections' => app(Collections::class)->for($accountId),
+            'trading_post' => app(TradingPost::class)->for($accountId),
+        ]);
+    }
+
+    /**
+     * GET /gw2/legendary[?item_id=]
+     *
+     * Every legendary with what the account holds and whether we can plan it;
+     * with an item, the time-gated crafts its plan still needs and whether
+     * today's has been used.
+     */
+    public function legendary(Request $request): JsonResponse
+    {
+        $request->validate(['item_id' => 'nullable|integer|min:1']);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $planner = app(LegendaryPlanner::class);
+        $payload = $planner->catalogue($accountId);
+
+        if ($request->filled('item_id')) {
+            $plan = $this->dashboard->plan($accountId, $request->integer('item_id'), 1);
+            $done = json_decode((string) DB::table('gw2_account_state')->where('gw2_account_id', $accountId)->value('daily_crafting'), true);
+
+            $payload['today'] = $plan ? $planner->today($plan['tree'], is_array($done) ? $done : null) : [];
+        }
+
+        return $this->success($payload);
+    }
+
+    /**
+     * GET /gw2/whats-new
+     *
+     * Changes since the date the player says they left, limited to what they
+     * own. Without a date, everything that applies to them.
+     */
+    public function whatsNew(Request $request): JsonResponse
+    {
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $since = WhatsNew::returnedFrom($accountId);
+        $owned = app(Ownership::class)->map(Ownership::accessFor($accountId));
+
+        return $this->success([
+            'returned_from' => $since,
+            'changes' => app(WhatsNew::class)->changes($owned, $since),
+        ]);
+    }
+
+    /**
+     * PUT /gw2/returned
+     *
+     * When the player last played before their break — a question the API
+     * cannot answer, so it is asked, and stored like every other answer.
+     */
+    public function returned(Request $request): JsonResponse
+    {
+        $data = $request->validate(['date' => 'nullable|date_format:Y-m-d|before_or_equal:today|after:2012-08-27']);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        if (empty($data['date'])) {
+            DB::table('gw2_confirmations')
+                ->where('gw2_account_id', $accountId)
+                ->where('subject', WhatsNew::SUBJECT)
+                ->delete();
+
+            return $this->success(['returned_from' => null]);
+        }
+
+        $this->choices->confirm($accountId, WhatsNew::SUBJECT, 'yes', $data['date']);
+
+        return $this->success(['returned_from' => $data['date']]);
     }
 
     /**
@@ -572,6 +718,14 @@ class Gw2Controller extends Controller
             'connected' => true,
             'account_name' => $connection->display_name,
             'key_name' => $connection->metadata['key_name'] ?? null,
+            /*
+             * What we actually hold. `subtoken` is a limited token with an end
+             * date; `key` is the player's own key — every connection made
+             * before limited tokens existed, or one ArenaNet would not issue a
+             * token for. Reconnecting replaces a held key with a token.
+             */
+            'token_kind' => $connection->metadata['token_kind'] ?? 'key',
+            'token_expires_at' => $connection->metadata['token_expires_at'] ?? null,
             'permissions' => $scopes,
             // Named so the UI can say which feature is dark and why, rather
             // than drawing an empty panel and letting the player guess.
