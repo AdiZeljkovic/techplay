@@ -186,16 +186,72 @@ export interface MasteryTrackView {
     affordable: boolean;
 }
 
+/**
+ * One map of a region, for the zone map on the masteries page: its frame in
+ * continent coordinates and its insights, ticked where the account has them.
+ * `collected` is null when the read had no unlocked list — not the same as none.
+ */
+export interface InsightZone {
+    id: number;
+    name: string;
+    slug: string;
+    continent_rect: [[number, number], [number, number]] | null;
+    total: number;
+    collected: number | null;
+    insights: { id: number; coord: [number, number] | null; collected: boolean | null }[];
+}
+
+/**
+ * Where a region's next mastery point is: an insight on the map, or an
+ * achievement close to done whose rewards name the region.
+ *
+ * `reach` is a straight line from the nearest waypoint, in bands set from the
+ * measured spread — never a time.
+ */
+export type PointToGet =
+    | {
+          kind: "insight";
+          id: number;
+          map_id: number;
+          map: string;
+          map_slug: string;
+          coord: [number, number] | null;
+          waypoint: string | null;
+          chat_link: string | null;
+          distance: number | null;
+          reach: "close" | "walk" | "far" | null;
+      }
+    | {
+          kind: "achievement";
+          id: number;
+          name: string | null;
+          icon: string | null;
+          current: number;
+          max: number;
+          remaining: number;
+          points: number | null;
+          next_step: string | null;
+          wiki?: Gw2WikiLink | null;
+      };
+
 export interface MasteryRegionView extends MasteryRegion {
     points_spent: number;
     points_total: number;
     percent: number;
     tracks: MasteryTrackView[];
+    /** More points that would buy everything here. Zero: another point would sit unspent. */
+    points_needed: number;
+    points_to_get: PointToGet[];
+    zones: InsightZone[];
 }
 
 export interface Gw2Masteries {
     regions: MasteryRegionView[];
     unspent_total: number;
+    /** False when the read had no unlocked insight list, so none can be called missing. */
+    insights_known: boolean;
+    /** The achievements closest to done, with what finishing pays. */
+    easy_wins: NearlyDone[];
     /**
      * Tracks the catalogue holds that no account region claims.
      *

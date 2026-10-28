@@ -63,7 +63,11 @@ Sve ispod je urađeno; detalji u `docs/README.md` §21, „Dashboard po mockupu 
 - **Backend:** `action` (href + label) i `progress` (current/target) po
   preporuci, gdje pravilo to zna.
 
-### Faza 3 — Masteries (mockup 3)
+### Faza 3 — Masteries (mockup 3) ✅ 28. 10.
+
+Urađeno; detalji u `docs/README.md` §21, „Masteries po mockupu 3". Granice
+udaljenosti su izmjerene (četvrtina insighta unutar 350 jedinica od waypointa,
+tri četvrtine unutar 950), mapa je iz zvaničnih pločica na spratu 1.
 
 - Kartice ekspanzija (već imaju prave %).
 - „Best mastery points for you”: insighti (mapa + najbliži waypoint + kod) i

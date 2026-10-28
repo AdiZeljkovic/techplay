@@ -53,6 +53,9 @@ class Dashboard
      */
     private const PAYLOAD_VERSION = 4;
 
+    /** How long the masteries page's "best points" list runs. The rest are on the insight pages. */
+    private const POINTS_TO_GET = 8;
+
     public function __construct(
         private readonly SnapshotReader $reader,
         private readonly Advisor $advisor,
@@ -183,6 +186,11 @@ class Dashboard
 
         $regions = [];
 
+        // Null when the read had no mastery points — a key without
+        // `progression` — and then nobody can say which insights are left.
+        $unlocked = MasteryInsights::unlockedFor($gw2AccountId);
+        $zones = app(MasteryInsights::class)->zones($unlocked);
+
         foreach ($snapshot->masteryRegions as $region) {
             $tracks = $snapshot->tracksIn($region->region);
 
@@ -192,6 +200,7 @@ class Dashboard
 
             $total = $snapshot->pointsTotalIn($region->region);
             $spent = $snapshot->pointsSpentIn($region->region);
+            $maps = $zones[$region->region] ?? [];
 
             $regions[] = [
                 'region' => $region->region,
@@ -201,6 +210,25 @@ class Dashboard
                 'points_spent' => $spent,
                 'points_total' => $total,
                 'percent' => $total > 0 ? (int) round($spent / $total * 100) : 0,
+                /*
+                 * How many more points would buy everything here. Zero means
+                 * the region already has every point its tracks can spend, and
+                 * collecting another insight there changes nothing — which the
+                 * page says rather than sending somebody on the walk.
+                 */
+                'points_needed' => max(0, $total - $region->earned),
+                'points_to_get' => $this->pointsToGet($snapshot, $region->region, $maps),
+                // The zone map: each map's frame and its insights, collected or
+                // not. Waypoints stay out — the list above carries the ones
+                // that matter, and the map has no room for the rest.
+                'zones' => array_map(fn ($map) => [
+                    ...$map,
+                    'insights' => array_map(fn ($i) => [
+                        'id' => $i['id'],
+                        'coord' => $i['coord'],
+                        'collected' => $i['collected'],
+                    ], $map['insights']),
+                ], $maps),
                 'tracks' => array_map(fn (MasteryTrack $t) => [
                     'id' => $t->id,
                     'name' => $t->name,
@@ -247,6 +275,10 @@ class Dashboard
         return [
             'regions' => $regions,
             'unspent_total' => $snapshot->unspentMasteryPoints(),
+            'insights_known' => $unlocked !== null,
+            // The row along the foot of mockup 3, from the same list the
+            // dashboard's easy wins come from.
+            'easy_wins' => array_slice($this->achievementCard($snapshot)['closest'], 0, 5),
             'unpaired' => array_map(fn (MasteryTrack $t) => [
                 'id' => $t->id,
                 'name' => $t->name,
@@ -257,6 +289,82 @@ class Dashboard
             ], $unpaired),
             'observed_at' => $snapshot->observedAt,
         ];
+    }
+
+    /**
+     * Where a region's next mastery points are, best first — mockup 3's list.
+     *
+     * Two sources, and only two, because only these are certain: achievements
+     * the account is close to finishing whose rewards name this region, and
+     * insights on the map that `account/mastery/points` does not list as
+     * unlocked. The mockup's "1–2 hours · Easy" is not here — the game reports
+     * how long nothing takes — and in its place each insight says how far it
+     * is from its nearest waypoint, in a straight line, and gives that
+     * waypoint's chat code.
+     *
+     * The order: an achievement one step from done, then insights nearest a
+     * waypoint first, then achievements with more to do. A single step is the
+     * surest point there is; a walk is surer than several steps.
+     *
+     * @param  array<int, array<string, mixed>>  $maps  This region's zones, with waypoints.
+     * @return array<int, array<string, mixed>>
+     */
+    private function pointsToGet(Snapshot $snapshot, string $region, array $maps): array
+    {
+        $achievements = [];
+
+        foreach ($snapshot->nearlyDone as $win) {
+            if (MasteryRegions::toAccountName($win->masteryRegion) !== $region) {
+                continue;
+            }
+
+            $achievements[] = [
+                'kind' => 'achievement',
+                'id' => $win->id,
+                'name' => $win->name,
+                'icon' => $win->icon,
+                'current' => $win->current,
+                'max' => $win->max,
+                'remaining' => $win->remaining(),
+                'points' => $win->points,
+                'next_step' => ($win->remainingSteps()[0] ?? null)?->text ?? $win->requirement,
+                'wiki' => Wiki::named($win->name),
+            ];
+        }
+
+        $insights = [];
+
+        foreach ($maps as $map) {
+            foreach ($map['insights'] as $insight) {
+                // Collected, or not known — a key without `progression`. Only
+                // the ones the account certainly lacks are worth the walk.
+                if ($insight['collected'] !== false) {
+                    continue;
+                }
+
+                $insights[] = [
+                    'kind' => 'insight',
+                    'id' => $insight['id'],
+                    'map_id' => $map['id'],
+                    'map' => $map['name'],
+                    'map_slug' => $map['slug'],
+                    'coord' => $insight['coord'],
+                    'waypoint' => $insight['nearest_waypoint']['name'] ?? null,
+                    'chat_link' => $insight['nearest_waypoint']['chat_link'] ?? null,
+                    'distance' => $insight['nearest_waypoint']['distance'] ?? null,
+                    'reach' => $insight['reach'],
+                ];
+            }
+        }
+
+        usort($achievements, fn ($a, $b) => $a['remaining'] <=> $b['remaining']);
+        usort($insights, fn ($a, $b) => ($a['distance'] ?? PHP_INT_MAX) <=> ($b['distance'] ?? PHP_INT_MAX));
+
+        return array_slice([
+            ...array_values(array_filter($achievements, fn ($a) => $a['remaining'] <= 1)),
+            ...$insights,
+            ...array_values(array_filter($achievements, fn ($a) => $a['remaining'] > 1)),
+        ], 0, self::POINTS_TO_GET);
     }
 
     /**

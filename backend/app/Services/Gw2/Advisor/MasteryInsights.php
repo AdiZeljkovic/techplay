@@ -148,6 +148,86 @@ class MasteryInsights
     }
 
     /**
+     * Every map with insights, grouped by the account's name for its region,
+     * with each insight's position, its nearest waypoint and whether it is
+     * collected — what the masteries page draws its zone map and its "best
+     * points" list from.
+     *
+     * Keyed by the account's spelling (Heart of Thorns, not Maguuma) because
+     * that is how the masteries payload names its regions. `Magic` has no
+     * account counterpart (see MasteryRegions) and is left out here, as it is
+     * there.
+     *
+     * @param  array<int, int>|null  $unlocked
+     * @return array<string, array<int, array<string, mixed>>> region => maps
+     */
+    public function zones(?array $unlocked): array
+    {
+        $done = $unlocked === null ? null : array_fill_keys($unlocked, true);
+        $zones = [];
+
+        foreach ($this->maps() as $map) {
+            $byRegion = [];
+
+            foreach ($map['mastery_points'] as $point) {
+                $region = MasteryRegions::toAccountName($point['region'] ?? null);
+
+                if ($region === null) {
+                    continue;
+                }
+
+                $waypoint = $this->nearest($point['coord'] ?? null, $map['waypoints']);
+
+                $byRegion[$region][] = [
+                    'id' => (int) $point['id'],
+                    'coord' => $point['coord'] ?? null,
+                    'collected' => $done === null ? null : isset($done[(int) $point['id']]),
+                    'nearest_waypoint' => $waypoint,
+                    'reach' => $waypoint ? self::reach($waypoint['distance']) : null,
+                ];
+            }
+
+            foreach ($byRegion as $region => $insights) {
+                $zones[$region][] = [
+                    'id' => $map['id'],
+                    'name' => $map['name'],
+                    'slug' => self::slug($map['name']),
+                    'continent_rect' => $map['continent_rect'],
+                    'total' => count($insights),
+                    'collected' => $done === null ? null : count(array_filter($insights, fn ($i) => $i['collected'])),
+                    'insights' => $insights,
+                ];
+            }
+        }
+
+        foreach ($zones as &$maps) {
+            usort($maps, fn ($a, $b) => $a['name'] <=> $b['name']);
+        }
+
+        unset($maps);
+
+        return $zones;
+    }
+
+    /**
+     * Straight-line distance to the nearest waypoint, in words.
+     *
+     * The bands are ours, set from the measured spread on 28 October 2026:
+     * across all 307 insights a quarter sit within 350 continent units of a
+     * waypoint and three quarters within 950. They say "close" or "a walk",
+     * never a time — the line ignores cliffs, canopies and jumping puzzles,
+     * which in Heart of Thorns are most of the walk.
+     */
+    public static function reach(int $distance): string
+    {
+        return match (true) {
+            $distance <= 350 => 'close',
+            $distance <= 950 => 'walk',
+            default => 'far',
+        };
+    }
+
+    /**
      * The insight ids an account has unlocked, or null when the read had none.
      *
      * @return array<int, int>|null

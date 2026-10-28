@@ -23,8 +23,8 @@ export default function Gw2MasteriesPage() {
     return (
         <div className="tp-page">
             <Gw2Hero
-                title="Masteries"
-                description="Points are locked to the region that earned them, and the tiers get steeply more expensive. This is where yours can actually go."
+                title="Masteries & easy wins"
+                description="Where each region's next points are, what your unspent ones already buy, and what is closest to done. Points are locked to the region that earned them."
                 tone={DOMAIN_TONE.masteries}
             />
 

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ConnectedAccount;
 use App\Models\User;
+use App\Services\Gw2\Advisor\Dashboard;
 use App\Services\Gw2\Advisor\MasteryRegions;
 use App\Services\Gw2\Advisor\SnapshotReader;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -161,6 +162,58 @@ class Gw2MasteryArithmeticTest extends TestCase
         foreach ($snapshot->affordableIn('Icebrood Saga') as $track) {
             $this->assertLessThanOrEqual(1, $track->nextTierCost());
         }
+    }
+
+    /**
+     * Mockup 3's list of where a region's next points are — and only the ones
+     * the account certainly lacks.
+     */
+    public function test_the_masteries_page_lists_the_insights_left_nearest_a_waypoint_first(): void
+    {
+        DB::table('gw2_reference')->insert([
+            'kind' => 'continent_maps', 'ref_id' => 1052, 'name' => 'Verdant Brink',
+            'payload' => json_encode([
+                'id' => 1052, 'name' => 'Verdant Brink', 'region' => 'Maguuma Jungle',
+                'min_level' => 80, 'max_level' => 80, 'map_rect' => null,
+                'continent_rect' => [[0, 0], [3000, 2000]], 'floors' => [1],
+                'mastery_points' => [
+                    // Twenty-odd units from a waypoint, over a thousand from
+                    // any, and one the account already has.
+                    ['id' => 9, 'region' => 'Maguuma', 'coord' => [100, 100]],
+                    ['id' => 10, 'region' => 'Maguuma', 'coord' => [2000, 1500]],
+                    ['id' => 43, 'region' => 'Maguuma', 'coord' => [900, 900]],
+                ],
+                'hero_challenges' => [],
+                'waypoints' => [
+                    ['id' => 1, 'name' => 'Jaka Itzel Waypoint', 'coord' => [120, 90], 'chat_link' => '[&BAAAAAA=]'],
+                    ['id' => 2, 'name' => "Faren's Flyer", 'coord' => [880, 950], 'chat_link' => '[&BBBBBBB=]'],
+                ],
+            ]),
+        ]);
+
+        $heartOfThorns = fn () => collect(app(Dashboard::class)->masteries($this->accountId)['regions'])
+            ->firstWhere('region', 'Heart of Thorns');
+
+        // No unlocked list on the read — a key without `progression` — so no
+        // insight can be called missing, and the map ticks nothing.
+        $this->assertSame([], $heartOfThorns()['points_to_get']);
+        $this->assertNull($heartOfThorns()['zones'][0]['collected']);
+
+        $points = json_decode(DB::table('gw2_account_state')->value('mastery_points'), true);
+        DB::table('gw2_account_state')->update(['mastery_points' => json_encode($points + ['unlocked' => [43]])]);
+
+        $region = $heartOfThorns();
+
+        $this->assertSame([9, 10], array_column($region['points_to_get'], 'id'));
+        $this->assertSame(['close', 'far'], array_column($region['points_to_get'], 'reach'));
+        $this->assertSame('[&BAAAAAA=]', $region['points_to_get'][0]['chat_link']);
+
+        // The map has all three, one ticked.
+        $this->assertSame(3, $region['zones'][0]['total']);
+        $this->assertSame(1, $region['zones'][0]['collected']);
+
+        // Five Heart of Thorns tracks cost 136 points in all; 40 are earned.
+        $this->assertSame(96, $region['points_needed']);
     }
 
     public function test_a_region_the_account_has_never_entered_affords_nothing(): void

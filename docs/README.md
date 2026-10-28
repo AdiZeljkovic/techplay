@@ -2193,6 +2193,54 @@ nula) i `mastery_region` u pravopisu naloga.
 
 `Dashboard::PAYLOAD_VERSION` je 4 — oblik payloada se promijenio.
 
+#### Masteries po mockupu 3 — faza 3, 28. 10. 2026.
+
+Regije su **tabovi** (redom izlaska ekspanzija), a ostatak stranice je o
+izabranoj. Otvara se na regiji kojoj treba najviše poena, a za koju imamo šta
+imenovati. `GET /gw2/masteries` po regiji sada nosi:
+
+- `points_needed`: koliko bi još poena kupilo sve u regiji. Nula znači da je
+  svaki tier plaćen, pa stranica to kaže umjesto da šalje igrača po insight.
+- `points_to_get`: do osam mjesta za sljedeći poen
+  (`Dashboard::pointsToGet()`). Samo dva izvora, i oba sigurna:
+  - **postignuća** iz `nearlyDone` čije nagrade imenuju regiju;
+  - **insighti** koje `account/mastery/points.unlocked` ne navodi.
+
+  Redoslijed: postignuće na jedan korak, pa insighti od najbližeg waypointa,
+  pa postignuća s više koraka. Bez liste otključanih (ključ bez
+  `progression`) nijedan insight se ne proglašava nedostajućim
+  (`insights_known: false`).
+- `zones`: mape regije s okvirom i insightima (pokupljen / nije / ne zna se),
+  iz `MasteryInsights::zones()`.
+
+Uz to, na vrhu: `easy_wins`, pet najbližih postignuća s nagradom.
+
+**Udaljenost je pojas, ne vrijeme.** `MasteryInsights::reach()` vraća
+`close` (≤ 350), `walk` (≤ 950) ili `far`. Granice su **izmjerene** 28. 10.:
+od 307 insighta četvrtina je unutar 350 jedinica od waypointa, tri četvrtine
+unutar 950. Prava linija ne broji litice ni krošnje, i UI to kaže.
+
+**Mapa je iz ArenaNetovog servisa pločica**
+(`tiles.guildwars2.com/1/1/{z}/{x}/{y}.jpg`, dio zvaničnog API-ja, CSP ga
+već pušta). Dvije stvari su provjerene, ne pretpostavljene:
+
+- `max_zoom` kaže 8, ali na zoomu 0 je kontinent širok 2,5 pločice, pa je
+  piksel na zoomu z **2^(7−z)** jedinica. Pločica na zoomu 4 nad Auric
+  Basinom je Tarir.
+- PoF mape su u katalogu samo na spratu 49, za koji pločica nema (404). Sprat
+  1 crta i Crystal Desert, pa se uvijek koristi sprat 1.
+
+`Gw2Map.tsx`: `ZoneMap` je SVG, zoom se bira tako da regija bude oko 800 px.
+`TileThumb` je isječak terena oko jednog insighta, umjesto naslikanih scena
+iz mockupa.
+
+**Umjesto „Currently Training"** stoji „Next tier your points buy": API ne
+kaže koja se traka trenira ni koliko iskustva ima, ali kaže koji tier
+nepotrošeni poeni plaćaju. „Nearby Priorities" u metrima postale su lista s
+chat kodom najbližeg waypointa. Weekly Completion Score ne postoji.
+
+`ChatCode.tsx` je izvučen iz `InsightList` — sad ga koriste dvije stranice.
+
 #### Šta je iz mockupa uzeto, a šta nije
 
 Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:
