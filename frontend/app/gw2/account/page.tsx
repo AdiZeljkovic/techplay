@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { UserRound } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import AccountClient from "@/components/gw2/AccountClient";
 
 export const metadata: Metadata = {
@@ -16,22 +13,13 @@ export const metadata: Metadata = {
 
 export default function Gw2AccountPage() {
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
                 title="Your account"
                 description="What you own and what came with it, your legendaries, your collections and the trading post counter — from your last read."
-                iconNode={<UserRound size={22} aria-hidden />}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2" className="text-[var(--accent-ink)] hover:underline">
-                        ← Back to the advisor
-                    </Link>
-                </nav>
-
-                <AccountClient />
-            </Container>
+            <AccountClient />
         </div>
     );
 }

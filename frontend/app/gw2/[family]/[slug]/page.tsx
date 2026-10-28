@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Container from "@/components/ui/Container";
 import GuidePersonalisation from "@/components/gw2/GuidePersonalisation";
 import WikiLink from "@/components/gw2/WikiLink";
 import { gw2Breadcrumb, gw2GuideArticle, jsonLd } from "@/lib/gw2jsonld";
@@ -64,11 +63,11 @@ export default async function Gw2GuidePage({ params }: Params) {
     ]);
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+        <div className="tp-page pt-5 lg:pt-8">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(gw2GuideArticle(guide)) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
-            <Container className="py-10">
-                <article className="mx-auto max-w-[68ch]">
+            <div>
+                <article className="max-w-[68ch]">
                     <nav className="mb-6 text-sm">
                         <Link href="/gw2/database" className="text-[var(--ink-low)] hover:text-[var(--accent-ink)]">
                             Guild Wars 2
@@ -178,7 +177,7 @@ export default async function Gw2GuidePage({ params }: Params) {
                         </p>
                     )}
                 </article>
-            </Container>
+            </div>
         </div>
     );
 }

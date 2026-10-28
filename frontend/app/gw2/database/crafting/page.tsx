@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import { craftingHref, getCraftable } from "@/lib/gw2public";
 
 /**
@@ -64,19 +63,14 @@ export default async function CraftingIndexPage({ searchParams }: Search) {
     }
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
                 title="Crafting recipes"
                 description={`${data.total.toLocaleString()} craftable items, each one expanded to every material it needs.`}
+                back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2/database" className="text-[var(--ink-low)] hover:text-[var(--accent-ink)]">
-                        Guild Wars 2 database
-                    </Link>
-                </nav>
-
+            <div>
                 <Panel material="matte">
                     <ul className="grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
                         {data.items.map((item) => (
@@ -129,7 +123,7 @@ export default async function CraftingIndexPage({ searchParams }: Search) {
                         <span />
                     )}
                 </nav>
-            </Container>
+            </div>
         </div>
     );
 }

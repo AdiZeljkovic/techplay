@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { History } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WhatsNewClient from "@/components/gw2/WhatsNewClient";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicChanges } from "@/lib/gw2public";
@@ -29,30 +26,22 @@ export default async function WhatsNewPage() {
     const changes = (await getPublicChanges()) ?? [];
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+        <div className="tp-page">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
                     __html: jsonLd(gw2Breadcrumb([{ name: "What changed in Guild Wars 2", path: "/gw2/whats-new" }])),
                 }}
             />
-            <PageHero
+            <Gw2Hero
                 title="What changed while you were away"
                 description="Dated, in plain words, each with the page it came from."
-                iconNode={<History size={22} aria-hidden />}
+                back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2/database" className="text-[var(--ink-low)] hover:text-[var(--accent-ink)]">
-                        Guild Wars 2 database
-                    </Link>
-                </nav>
-
-                <div className="mx-auto max-w-3xl">
-                    <WhatsNewClient initial={changes} />
-                </div>
-            </Container>
+            <div className="max-w-3xl">
+                <WhatsNewClient initial={changes} />
+            </div>
         </div>
     );
 }

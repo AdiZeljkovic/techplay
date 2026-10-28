@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Hammer, History, MapPin, Sparkles } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import { gw2Application, gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getCraftable, getPublicMasteries } from "@/lib/gw2public";
 
@@ -50,7 +49,7 @@ export default async function Gw2DatabasePage() {
     const trackCount = masteries?.reduce((sum, region) => sum + region.tracks.length, 0) ?? 0;
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+        <div className="tp-page">
             {/* The tool's own page is noindex — it is somebody's account —
                 so this public hub is where the tool is described. */}
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(gw2Application) }} />
@@ -60,12 +59,13 @@ export default async function Gw2DatabasePage() {
                     __html: jsonLd(gw2Breadcrumb([{ name: "Guild Wars 2 database", path: "/gw2/database" }])),
                 }}
             />
-            <PageHero
+            <Gw2Hero
+                eyebrow="Guild Wars 2 reference"
                 title="Guild Wars 2 database"
                 description="Recipes broken down to the last material, and every mastery tier with what it costs. No account needed — connecting one just subtracts what you already have."
             />
 
-            <Container className="py-8">
+            <div>
                 <div className="grid gap-5 md:grid-cols-2">
                     <Panel material="lit" crown title="Crafting">
                         <div className="space-y-4">
@@ -145,7 +145,7 @@ export default async function Gw2DatabasePage() {
                         </Link>
                     </div>
                 </Panel>
-            </Container>
+            </div>
         </div>
     );
 }

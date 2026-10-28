@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Hammer } from "lucide-react";
-import Container from "@/components/ui/Container";
 import Panel from "@/components/ui/Panel";
 import WikiLink from "@/components/gw2/WikiLink";
 import { coin } from "@/lib/gw2format";
@@ -112,9 +111,9 @@ export default async function CraftingPage({ params }: Params) {
     ]);
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+        <div className="tp-page pt-5 lg:pt-7">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
-            <Container className="py-8">
+            <div>
                 <nav className="mb-6 flex flex-wrap gap-x-2 text-sm text-[var(--ink-low)]">
                     <Link href="/gw2/database" className="hover:text-[var(--accent-ink)]">
                         Guild Wars 2 database
@@ -308,7 +307,7 @@ export default async function CraftingPage({ params }: Params) {
                         </ul>
                     </Panel>
                 )}
-            </Container>
+            </div>
         </div>
     );
 }

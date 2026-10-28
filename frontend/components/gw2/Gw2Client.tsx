@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import ConnectKey from "@/components/gw2/ConnectKey";
 import DashboardView from "@/components/gw2/DashboardView";
+import { useGw2Shell } from "@/components/gw2/Gw2Shell";
 import {
     disconnect,
     getDashboard,
@@ -58,6 +59,13 @@ export default function Gw2Client() {
      */
     const loadedOnce = useRef(false);
 
+    /*
+     * The menu beside this page shows the connection too, and this page is where
+     * it changes — connected, read, failed, disconnected. Every answer here is
+     * passed along, so the two never disagree until the next navigation.
+     */
+    const reportConnection = useGw2Shell()?.reportConnection;
+
     const load = useCallback(async (next: Gw2Intent, quiet = false) => {
         if (!quiet) setBusy(true);
 
@@ -65,6 +73,7 @@ export default function Gw2Client() {
             const result = await getDashboard(next);
 
             setConnection(result.connection);
+            reportConnection?.(result.connection);
 
             if (result.dashboard) {
                 setDashboard(result.dashboard);
@@ -80,11 +89,13 @@ export default function Gw2Client() {
             // 404 is the documented answer for "no account is connected",
             // which is a state and not a failure.
             setState(status === 404 ? "disconnected" : "error");
+
+            if (status === 404) reportConnection?.(null);
         } finally {
             loadedOnce.current = true;
             setBusy(false);
         }
-    }, []);
+    }, [reportConnection]);
 
     /*
      * Signed out is a branch below, not a state set from here — it is already
@@ -128,6 +139,7 @@ export default function Gw2Client() {
     function disconnected() {
         setDashboard(null);
         setConnection(null);
+        reportConnection?.(null);
         setState("disconnected");
     }
 
@@ -205,7 +217,14 @@ export default function Gw2Client() {
     }
 
     if (state === "disconnected") {
-        return <ConnectKey onConnected={() => setState("reading")} />;
+        return (
+            <ConnectKey
+                onConnected={(connected) => {
+                    reportConnection?.(connected);
+                    setState("reading");
+                }}
+            />
+        );
     }
 
     if (state === "failed") {

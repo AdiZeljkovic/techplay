@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Compass } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import Gw2Client from "@/components/gw2/Gw2Client";
 
 /**
@@ -42,16 +40,14 @@ export const metadata: Metadata = {
 
 export default function Gw2Page() {
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
+                eyebrow="Guild Wars 2 companion"
                 title="What should I do next?"
                 description="Progression guidance built from your own Guild Wars 2 account — not a checklist, and nothing we had to guess."
-                iconNode={<Compass size={22} aria-hidden />}
             />
 
-            <Container className="py-8">
-                <Gw2Client />
-            </Container>
+            <Gw2Client />
         </div>
     );
 }

@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Target } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import GoalsClient from "@/components/gw2/GoalsClient";
 
 export const metadata: Metadata = {
@@ -23,22 +20,13 @@ export const metadata: Metadata = {
 
 export default function Gw2GoalsPage() {
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
                 title="Crafting planner"
                 description="Name the thing you want. We count what you already own — bank, material storage, every character's bags — and tell you what is left."
-                iconNode={<Target size={22} aria-hidden />}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2" className="text-[var(--accent-ink)] hover:underline">
-                        ← Back to the advisor
-                    </Link>
-                </nav>
-
-                <GoalsClient />
-            </Container>
+            <GoalsClient />
         </div>
     );
 }

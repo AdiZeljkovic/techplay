@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicInsights, insightHref } from "@/lib/gw2public";
 
@@ -36,7 +36,7 @@ export default async function InsightsIndexPage() {
     const total = regions.reduce((sum, region) => sum + region.total, 0);
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+        <div className="tp-page">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -48,18 +48,14 @@ export default async function InsightsIndexPage() {
                     ),
                 }}
             />
-            <PageHero
+            <Gw2Hero
                 title="Mastery insights"
                 description={`${total} insights across ${regions.reduce((n, r) => n + r.maps.length, 0)} maps, with the nearest waypoint to each.`}
+                tone={DOMAIN_TONE.masteries}
+                back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2/database" className="text-[var(--ink-low)] hover:text-[var(--accent-ink)]">
-                        Guild Wars 2 database
-                    </Link>
-                </nav>
-
+            <div>
                 <div className="grid gap-5 md:grid-cols-2">
                     {regions.map((region) => (
                         <Panel
@@ -88,7 +84,7 @@ export default async function InsightsIndexPage() {
                 <p className="mt-6 text-xs text-[var(--ink-faint)]">
                     Mastery points also come from achievements; this list is only the insights found on the map.
                 </p>
-            </Container>
+            </div>
         </div>
     );
 }

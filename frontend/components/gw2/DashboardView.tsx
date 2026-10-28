@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import toast from "react-hot-toast";
 import { Check, Compass, Link2Off, Pin, PinOff, RefreshCw, UserRound, Zap } from "lucide-react";
 import Panel from "@/components/ui/Panel";
@@ -60,21 +59,6 @@ const TIMES = [
     { minutes: 30, label: "30 min" },
     { minutes: 120, label: "2 hours" },
     { minutes: null, label: "No limit" },
-];
-
-const LINKS = [
-    { href: "/gw2/masteries", label: "All masteries" },
-    { href: "/gw2/content", label: "Raids & bosses" },
-    { href: "/gw2/story", label: "Story" },
-    { href: "/gw2/tonight", label: "Tonight" },
-    { href: "/gw2/planner", label: "Crafting planner" },
-    { href: "/gw2/legendary", label: "Legendaries" },
-    { href: "/gw2/account", label: "Your account" },
-    { href: "/gw2/whats-new", label: "What changed" },
-    { href: "/gw2/database/insights", label: "Mastery insights" },
-    // The public half, reachable from the private one. Nothing here linked
-    // back to it, so a signed-in player never found the reference pages.
-    { href: "/gw2/database", label: "Database" },
 ];
 
 export default function DashboardView({
@@ -196,22 +180,6 @@ export default function DashboardView({
             <CharacterBar dashboard={dashboard} onPick={pickCharacter} />
 
             <StatCards dashboard={dashboard} />
-
-            {/* The places a card sends you when its number is the one you came
-                to act on. Kept here rather than in the page shell so they do not
-                appear beside the connect form, where none of them works. */}
-            <nav className="flex flex-wrap gap-2">
-                {LINKS.map((link) => (
-                    <Link
-                        key={link.href}
-                        href={link.href}
-                        className="rounded-[var(--radius-inner)] border px-3 py-1.5 text-xs transition-colors hover:bg-[var(--fill-1)]"
-                        style={{ borderColor: "var(--line-strong)", color: "var(--ink-mid)" }}
-                    >
-                        {link.label}
-                    </Link>
-                ))}
-            </nav>
 
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="space-y-5">

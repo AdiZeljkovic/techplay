@@ -2129,6 +2129,30 @@ Pet stanja, i zadnja dva se najlakše promaše:
 je posao u redu; tih pola minute pošteno je napisati rečenicu, a ne nacrtati
 prazan dashboard koji izgleda pokvareno.
 
+#### Okvir — od 28. 10. 2026.
+
+Redizajn po mockupima, plan u `gw2/REDIZAJN.md`. Prvi korak je okvir:
+`app/gw2/layout.tsx` stavlja **svaku** `/gw2` stranicu (i javnu polovinu) u
+`Gw2Shell` — lijevi meni (`Gw2Nav`) **ispod headera sajta**, koji ostaje. Ispod
+`lg` meni je bottom sheet sajta, otvoren iz trake na vrhu stranice koja imenuje
+gdje si.
+
+- Meni ima dvije grupe — „Your account" (noindex, treba ključ) i „Reference"
+  (javno) — i **samo rute koje postoje**. Achievements i Fractals iz mockupa
+  dolaze sa svojim stranicama.
+- Na vrhu menija je stanje veze (`GET /gw2/connection`, jednom po ulasku u
+  alat). Dashboard ga **javlja** meniju (`useGw2Shell().reportConnection`) pri
+  svakom čitanju, povezivanju i odspajanju — inače bi meni pisao „No account
+  connected" pored dashboarda koji je upravo pročitao nalog.
+- `Gw2Hero` zamjenjuje `PageHero` na svim stranicama alata: natpis, naslov u
+  rečeničnom padežu, opis, slika desno (`art`, kad postoji u
+  `/images/gw2/`) ili prelaz u boji domene dok je nema. Fontovi su sajtovi —
+  serif iz mockupa je odbijen.
+- `tp-page` ostaje na svakoj stranici, ne na okviru: animacija ulaska i
+  zatamnjenje pri navigaciji pripadaju stranici koja se mijenja, ne meniju.
+- Red od deset linkova na dashboardu i „← Back to the advisor" na podstranicama
+  su izbačeni — meni ih zamjenjuje.
+
 #### Šta je iz mockupa uzeto, a šta nije
 
 Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:

@@ -5,7 +5,7 @@ import { ExternalLink, KeyRound, ShieldCheck } from "lucide-react";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { connectKey } from "@/lib/gw2";
+import { connectKey, type Gw2Connection } from "@/lib/gw2";
 
 /**
  * Pasting a Guild Wars 2 API key.
@@ -35,7 +35,7 @@ const PERMISSIONS: { name: string; required?: boolean; buys: string }[] = [
     { name: "wallet", buys: "your currencies, for goal and material planning" },
 ];
 
-export default function ConnectKey({ onConnected }: { onConnected: () => void }) {
+export default function ConnectKey({ onConnected }: { onConnected: (connection: Gw2Connection) => void }) {
     const [key, setKey] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -49,11 +49,11 @@ export default function ConnectKey({ onConnected }: { onConnected: () => void })
         setError(null);
 
         try {
-            await connectKey(key);
+            const connection = await connectKey(key);
             // The key never stays in component state a moment longer than the
             // request needs it.
             setKey("");
-            onConnected();
+            onConnected(connection);
         } catch (e: unknown) {
             /*
              * The backend's message is the useful one — it distinguishes a key

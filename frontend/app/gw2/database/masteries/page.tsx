@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicMasteries } from "@/lib/gw2public";
 
@@ -59,20 +59,16 @@ export default async function PublicMasteriesPage() {
     ]);
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+        <div className="tp-page">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
-            <PageHero
+            <Gw2Hero
                 title="Mastery tracks"
                 description={`Every track, every tier, and what each one costs — ${total} mastery points in all.`}
+                tone={DOMAIN_TONE.masteries}
+                back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2/database" className="text-[var(--ink-low)] hover:text-[var(--accent-ink)]">
-                        Guild Wars 2 database
-                    </Link>
-                </nav>
-
+            <div>
                 <div className="space-y-5">
                     {regions.map((region) => (
                         <Panel
@@ -157,7 +153,7 @@ export default async function PublicMasteriesPage() {
                         .
                     </p>
                 </Panel>
-            </Container>
+            </div>
         </div>
     );
 }

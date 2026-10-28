@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Container from "@/components/ui/Container";
 import InsightList from "@/components/gw2/InsightList";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicInsightMap, insightHref } from "@/lib/gw2public";
@@ -52,7 +51,7 @@ export default async function InsightMapPage({ params }: Params) {
     }
 
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
+        <div className="tp-page pt-5 lg:pt-7">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -65,7 +64,7 @@ export default async function InsightMapPage({ params }: Params) {
                     ),
                 }}
             />
-            <Container className="py-8">
+            <div>
                 <nav className="mb-6 flex flex-wrap gap-x-2 text-sm text-[var(--ink-low)]">
                     <Link href="/gw2/database" className="hover:text-[var(--accent-ink)]">
                         Guild Wars 2 database
@@ -86,7 +85,7 @@ export default async function InsightMapPage({ params }: Params) {
                 </header>
 
                 <InsightList map={data} />
-            </Container>
+            </div>
         </div>
     );
 }

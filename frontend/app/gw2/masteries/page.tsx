@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Sparkles } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import MasteriesClient from "@/components/gw2/MasteriesClient";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Mastery Tracker — Points, Tiers and What They Buy",
@@ -23,22 +21,14 @@ export const metadata: Metadata = {
 
 export default function Gw2MasteriesPage() {
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
                 title="Masteries"
                 description="Points are locked to the region that earned them, and the tiers get steeply more expensive. This is where yours can actually go."
-                iconNode={<Sparkles size={22} aria-hidden />}
+                tone={DOMAIN_TONE.masteries}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2" className="text-[var(--accent-ink)] hover:underline">
-                        ← Back to the advisor
-                    </Link>
-                </nav>
-
-                <MasteriesClient />
-            </Container>
+            <MasteriesClient />
         </div>
     );
 }

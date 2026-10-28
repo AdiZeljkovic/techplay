@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { BookOpen } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import StoryClient from "@/components/gw2/StoryClient";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Story Progress",
@@ -17,22 +15,14 @@ export const metadata: Metadata = {
 
 export default function Gw2StoryPage() {
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
                 title="Story"
                 description="What we can detect on one character at a time. The game records story per character, so this is never a verdict on your account."
-                iconNode={<BookOpen size={22} aria-hidden />}
+                tone={DOMAIN_TONE.story}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2" className="text-[var(--accent-ink)] hover:underline">
-                        ← Back to the advisor
-                    </Link>
-                </nav>
-
-                <StoryClient />
-            </Container>
+            <StoryClient />
         </div>
     );
 }

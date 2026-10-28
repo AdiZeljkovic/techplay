@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Swords } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import ContentClient from "@/components/gw2/ContentClient";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Raid, Dungeon and World Boss Tracker",
@@ -22,22 +20,14 @@ export const metadata: Metadata = {
 
 export default function Gw2ContentPage() {
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
                 title="Raids, bosses and dungeons"
                 description="The game remembers this week and today. Everything longer than that, we remember for you — from the day you connected."
-                iconNode={<Swords size={22} aria-hidden />}
+                tone={DOMAIN_TONE.raids}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2" className="text-[var(--accent-ink)] hover:underline">
-                        ← Back to the advisor
-                    </Link>
-                </nav>
-
-                <ContentClient />
-            </Container>
+            <ContentClient />
         </div>
     );
 }

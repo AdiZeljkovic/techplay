@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { CalendarClock } from "lucide-react";
-import Container from "@/components/ui/Container";
-import PageHero from "@/components/ui/PageHero";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import TonightClient from "@/components/gw2/TonightClient";
 
 export const metadata: Metadata = {
@@ -22,22 +19,14 @@ export const metadata: Metadata = {
 
 export default function Gw2TonightPage() {
     return (
-        <div className="tp-page min-h-screen bg-[var(--surface-0)]">
-            <PageHero
+        <div className="tp-page">
+            <Gw2Hero
+                eyebrow="Tonight in GW2"
                 title="Tonight in Guild Wars 2"
                 description="Nothing new is invented here — this is the advice that already holds, ordered to fit the evening you actually have."
-                iconNode={<CalendarClock size={22} aria-hidden />}
             />
 
-            <Container className="py-8">
-                <nav className="mb-6 text-sm">
-                    <Link href="/gw2" className="text-[var(--accent-ink)] hover:underline">
-                        ← Back to the advisor
-                    </Link>
-                </nav>
-
-                <TonightClient />
-            </Container>
+            <TonightClient />
         </div>
     );
 }
