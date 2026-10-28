@@ -108,6 +108,27 @@ class DailyChecklist
         return $reset->lessThanOrEqualTo($now) ? $reset->addWeek() : $reset;
     }
 
+    /**
+     * The last game weeks, oldest first, the current one last.
+     *
+     * For the weekly charts. Game weeks rather than calendar weeks, because
+     * that is the week a player counts in: what reset on Monday morning.
+     *
+     * @return array<int, array{0: Carbon, 1: Carbon}> [start, end) pairs
+     */
+    public static function lastWeeks(int $count, ?Carbon $now = null): array
+    {
+        $reset = self::nextWeeklyReset($now);
+        $weeks = [];
+
+        for ($back = $count; $back >= 1; $back--) {
+            $end = $reset->copy()->subWeeks($back - 1);
+            $weeks[] = [$end->copy()->subWeek(), $end];
+        }
+
+        return $weeks;
+    }
+
     /** @return array<int, string> */
     private function ids(string $kind): array
     {

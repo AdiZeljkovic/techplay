@@ -128,8 +128,50 @@ export function getGuide(family: string, slug: string): Promise<PublicGuide | nu
     return read<PublicGuide>(`/gw2/public/guides/${encodeURIComponent(family)}/${encodeURIComponent(slug)}`, 3600);
 }
 
-export function getGuides(): Promise<{ family: string; slug: string; title: string; standfirst: string | null; path: string; updated_at: string | null }[] | null> {
-    return read("/gw2/public/guides", 3600);
+export interface PublicGuideSummary {
+    family: string;
+    slug: string;
+    title: string;
+    standfirst: string | null;
+    /** A free-text field in the admin; may be empty, absolute, or a site path. */
+    hero_image: string | null;
+    path: string;
+    updated_at: string | null;
+}
+
+export function getGuides(): Promise<PublicGuideSummary[] | null> {
+    return read<PublicGuideSummary[]>("/gw2/public/guides", 3600);
+}
+
+/**
+ * The guide families, in the order the admin lists them (`Gw2Guide::FAMILIES`
+ * on the backend), with the name a reader sees and the colour each one wears.
+ *
+ * The labels are the public half of the admin's: "Progression (pillar)" is a
+ * note to the editor about what the page is for, not a heading. The colour is
+ * the domain the family writes about, so a fractals guide wears the violet the
+ * fractal cards wear everywhere else in the tool. A family the backend adds
+ * later falls back to its slug and the site accent rather than to nothing.
+ */
+export const GUIDE_FAMILIES: Record<string, { label: string; domain: string | null }> = {
+    progression: { label: "Progression", domain: null },
+    "level-80": { label: "Level 80", domain: null },
+    fractals: { label: "Fractals", domain: "fractals" },
+    masteries: { label: "Masteries", domain: "masteries" },
+    achievements: { label: "Achievements", domain: "achievements" },
+    goals: { label: "Goals", domain: "gear" },
+    mounts: { label: "Mounts", domain: "mounts" },
+    legendary: { label: "Legendary", domain: "legendary" },
+    "wizards-vault": { label: "Wizard's Vault", domain: "vault" },
+};
+
+export function guideFamily(family: string): { label: string; domain: string | null } {
+    return (
+        GUIDE_FAMILIES[family] ?? {
+            label: family.replace(/-/g, " ").replace(/^\w/, (c) => c.toUpperCase()),
+            domain: null,
+        }
+    );
 }
 
 export interface InsightRegion {

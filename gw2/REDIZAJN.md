@@ -117,10 +117,26 @@ izmjene plana:
 
 Kartice opreme za oklop vode ovamo.
 
-### Faza 6 — ostale stranice
+### Faza 6 — ostale stranice ✅ 28. 10.
 
-Legendary, Story, Account, Raids, What changed, Database i vodiči u isti jezik.
-Nove stranice iz menija mockupa: **Achievements** i **Fractals**; indeks vodiča.
+Urađeno; detalji u `docs/README.md` §21, „Faza 6".
+
+- **Isti jezik na ostalim stranicama:** Legendary, planer, Story, Raids &
+  bosses, What changed, Account, javna baza i stranica vodiča. Na javnim
+  stranicama SEO nije diran.
+- **`/gw2/achievements`:** zbir poena (API ga nema), grupe i kategorije iz igre,
+  najbliže završetku, završeno po sedmici i titule na dohvat. Bez „48%
+  complete".
+- **`/gw2/fractals`:**
+  - nivo i tier, AR svakog lika na 80 i Fractal Attunement;
+  - relikvije, današnji i sutrašnji fractali, fractal postignuća.
+- **`/gw2/guides`:** javni indeks vodiča, ulazi u sitemap.
+
+Dvije stvari iz nove backend podrške:
+
+- `gw2_achievements.point_cap`. Puni ga
+  `gw2:catalogue --only=achievements --force` poslije deploya.
+- `gw2:daily-fractals` u 00:05 UTC.
 
 ---
 
@@ -129,6 +145,7 @@ Nove stranice iz menija mockupa: **Achievements** i **Fractals**; indeks vodiča
 | Mockup | Element | Zamjena |
 |---|---|---|
 | 1 | „You are ready to start raiding — 100%” | „osnovna oprema zadovoljena” + istorija clearova |
+| 1 | „2,847 AP · 48% complete” | zbir poena na `/gw2/achievements`, bez procenta (udio svih postignuća broji dnevna i nevidljiva) |
 | 2 | „Confidence to complete: High” | da li neko na nalogu može kraftati (disciplina na ocjeni recepta, i ko je najbliži) |
 | 2 | „Gold spent” u sedmičnom napretku | ništa — ništa ne bilježi na šta je zlato potrošeno |
 | 3 | Weekly Completion Score 72/100 | ništa — pet domena nema zajednički imenilac |

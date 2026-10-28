@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import Panel from "@/components/ui/Panel";
+import { ChevronLeft, ChevronRight, Hammer } from "lucide-react";
+import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
+import { SectionHeader } from "@/components/gw2/Gw2Ui";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { craftingHref, getCraftable } from "@/lib/gw2public";
 
 /**
@@ -29,6 +31,8 @@ import { craftingHref, getCraftable } from "@/lib/gw2public";
 export const revalidate = 86400;
 
 const PER_PAGE = 100;
+
+const REFERENCE = DOMAIN_TONE.reference;
 
 type Search = { searchParams: Promise<{ page?: string }> };
 
@@ -65,65 +69,93 @@ export default async function CraftingIndexPage({ searchParams }: Search) {
     return (
         <div className="tp-page">
             <Gw2Hero
+                eyebrow="Guild Wars 2 reference"
                 title="Crafting recipes"
                 description={`${data.total.toLocaleString()} craftable items, each one expanded to every material it needs.`}
+                tone={REFERENCE}
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 
-            <div>
-                <Panel material="matte">
-                    <ul className="grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
-                        {data.items.map((item) => (
-                            <li key={item.id}>
-                                <Link
-                                    href={craftingHref(item.id, item.slug)}
-                                    className="flex items-center gap-2 py-1 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
-                                >
-                                    {item.icon && (
-                                        <Image
-                                            src={item.icon}
-                                            alt=""
-                                            width={20}
-                                            height={20}
-                                            unoptimized
-                                            className="h-5 w-5 shrink-0 rounded-[var(--radius-inner)]"
-                                        />
-                                    )}
-                                    <span className="truncate">{item.name}</span>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </Panel>
+            <section className="space-y-4">
+                <SectionHeader
+                    icon={<Hammer size={18} />}
+                    tone={REFERENCE}
+                    title={current === 1 ? "Every craftable item" : `Page ${current}`}
+                    description="Framed in the game's own rarity colours. Each one opens the full tree."
+                    meta={
+                        <span className="font-numeric text-xs text-[var(--ink-faint)]">
+                            Page {current} of {data.pages} · {PER_PAGE} per page
+                        </span>
+                    }
+                />
 
-                <nav className="mt-6 flex items-center justify-between gap-4 text-sm">
-                    {current > 1 ? (
-                        <Link
-                            href={current === 2 ? "/gw2/database/crafting" : `/gw2/database/crafting?page=${current - 1}`}
-                            className="text-[var(--accent-ink)] hover:underline"
-                        >
-                            ← Previous
-                        </Link>
-                    ) : (
-                        <span />
-                    )}
+                <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {data.items.map((item) => (
+                        <li key={item.id}>
+                            <Link
+                                href={craftingHref(item.id, item.slug)}
+                                className="group flex h-full items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2 transition-colors hover:bg-[var(--fill-1)]"
+                                style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                            >
+                                {item.icon ? (
+                                    <GameIcon src={item.icon} alt="" size="md" rarity={item.rarity} />
+                                ) : (
+                                    <span aria-hidden className="h-9 w-9 shrink-0 rounded-[4px] bg-[var(--fill-2)]" />
+                                )}
+                                <span className="min-w-0">
+                                    <span className="block truncate text-sm text-[var(--ink-hi)] group-hover:text-[var(--accent-ink)]">
+                                        {item.name}
+                                    </span>
+                                    <span className="block truncate text-[11px] text-[var(--ink-faint)]">
+                                        {item.rarity && (
+                                            <span style={{ color: RARITY_COLOUR[item.rarity] ?? undefined }}>{item.rarity}</span>
+                                        )}
+                                        {item.rarity && item.type && " · "}
+                                        {item.type}
+                                    </span>
+                                </span>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            </section>
 
-                    <span className="font-numeric text-xs text-[var(--ink-faint)]">
-                        Page {current} of {data.pages} · {PER_PAGE} per page
-                    </span>
+            <nav aria-label="Pages" className="mt-6 flex items-center justify-between gap-4 text-sm">
+                {current > 1 ? (
+                    <PageLink href={current === 2 ? "/gw2/database/crafting" : `/gw2/database/crafting?page=${current - 1}`}>
+                        <ChevronLeft size={14} aria-hidden />
+                        Previous
+                    </PageLink>
+                ) : (
+                    <span />
+                )}
 
-                    {current < data.pages ? (
-                        <Link
-                            href={`/gw2/database/crafting?page=${current + 1}`}
-                            className="text-[var(--accent-ink)] hover:underline"
-                        >
-                            Next →
-                        </Link>
-                    ) : (
-                        <span />
-                    )}
-                </nav>
-            </div>
+                <span className="font-numeric text-xs text-[var(--ink-faint)]">
+                    Page {current} of {data.pages}
+                </span>
+
+                {current < data.pages ? (
+                    <PageLink href={`/gw2/database/crafting?page=${current + 1}`}>
+                        Next
+                        <ChevronRight size={14} aria-hidden />
+                    </PageLink>
+                ) : (
+                    <span />
+                )}
+            </nav>
         </div>
+    );
+}
+
+/** Previous and next, as the redesign's pill rather than a bare text link. */
+function PageLink({ href, children }: { href: string; children: React.ReactNode }) {
+    return (
+        <Link
+            href={href}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-[13px] text-[var(--ink-hi)] transition-colors hover:bg-[var(--fill-1)]"
+            style={{ borderColor: `color-mix(in srgb, ${REFERENCE} 45%, transparent)` }}
+        >
+            {children}
+        </Link>
     );
 }

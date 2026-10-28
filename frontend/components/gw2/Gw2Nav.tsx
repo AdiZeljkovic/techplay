@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import {
+    BookMarked,
     BookOpen,
     CalendarClock,
     Compass,
@@ -16,6 +17,8 @@ import {
     Sparkles,
     Swords,
     Target,
+    Triangle,
+    Trophy,
     UserRound,
     type LucideIcon,
 } from "lucide-react";
@@ -30,9 +33,9 @@ import type { Gw2Connection } from "@/lib/gw2";
  * needs nothing. A reader who arrived from a search on a recipe page should be
  * able to see which links will ask them to connect before they click one.
  *
- * Only routes that exist. The mockup's menu also has Achievements and Fractals;
- * those arrive with their pages, because a menu entry that opens on "coming
- * soon" is a promise the menu cannot keep.
+ * Only routes that exist — a menu entry that opens on "coming soon" is a
+ * promise the menu cannot keep. Achievements and Fractals, which the mockup's
+ * menu had from the start, arrived with their pages in phase 6.
  */
 export interface Gw2NavItem {
     href: string;
@@ -49,6 +52,8 @@ export const GW2_NAV: { label: string; items: Gw2NavItem[] }[] = [
             { href: "/gw2/ascended", label: "Ascended set", icon: Shield },
             { href: "/gw2/planner", label: "Crafting planner", icon: Target },
             { href: "/gw2/masteries", label: "Masteries", icon: Sparkles },
+            { href: "/gw2/achievements", label: "Achievements", icon: Trophy },
+            { href: "/gw2/fractals", label: "Fractals", icon: Triangle },
             { href: "/gw2/content", label: "Raids & bosses", icon: Swords },
             { href: "/gw2/legendary", label: "Legendary", icon: Gem },
             { href: "/gw2/tonight", label: "Tonight in GW2", icon: CalendarClock },
@@ -59,6 +64,7 @@ export const GW2_NAV: { label: string; items: Gw2NavItem[] }[] = [
     {
         label: "Reference",
         items: [
+            { href: "/gw2/guides", label: "Guides", icon: BookMarked },
             { href: "/gw2/database", label: "Database", icon: Database },
             { href: "/gw2/database/crafting", label: "Crafting recipes", icon: Hammer },
             { href: "/gw2/database/masteries", label: "Mastery tracks", icon: Layers },

@@ -25,6 +25,16 @@ export const DOMAIN_TONE: Record<string, string> = {
     vault: "#EAB308",
     story: "#818CF8",
     content: "#818CF8",
+    /*
+     * The pages rather than the advice. Legendary is not the rarity's own
+     * purple — #4C139D disappears on this background — but the glow players
+     * know from the precursor forge.
+     */
+    legendary: "#E879F9",
+    crafting: "#2DD4BF",
+    account: "#94A3B8",
+    reference: "#60A5FA",
+    changes: "#A3E635",
 };
 
 /** Falls back to the site accent, so an unknown domain is quiet, not wrong. */

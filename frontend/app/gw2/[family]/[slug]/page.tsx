@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { BookMarked, Compass } from "lucide-react";
 import GuidePersonalisation from "@/components/gw2/GuidePersonalisation";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
+import { ActionLink, Gw2Panel } from "@/components/gw2/Gw2Ui";
+import { domainTone } from "@/lib/gw2domain";
 import { gw2Breadcrumb, gw2GuideArticle, jsonLd } from "@/lib/gw2jsonld";
-import { getGuide } from "@/lib/gw2public";
+import { getGuide, guideFamily } from "@/lib/gw2public";
 import { ARTICLE_PROSE } from "@/lib/prose";
 
 /**
@@ -16,8 +19,8 @@ import { ARTICLE_PROSE } from "@/lib/prose";
  * connection. Private dashboards themselves do not rank."*
  *
  * So the substance is here, on the server, complete for a stranger and a
- * crawler. The account-aware part is one client island below the standfirst,
- * and it renders nothing for a signed-out reader — no login wall, no empty box.
+ * crawler. The account-aware part is one client island, and it renders an
+ * invitation rather than a wall for a signed-out reader.
  *
  * Dynamic on the family too, which means this one file serves all nine families
  * §20.1 names. A static route under /gw2 wins over it, so the private tools at
@@ -62,36 +65,57 @@ export default async function Gw2GuidePage({ params }: Params) {
         { name: guide.title, path: guide.path },
     ]);
 
+    const { label, domain } = guideFamily(guide.family);
+    const tone = domainTone(domain);
+    const nextSteps = Object.entries(guide.next_steps ?? {});
+    const sources = guide.sources ?? [];
+
     return (
-        <div className="tp-page pt-5 lg:pt-8">
+        <div className="tp-page">
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(gw2GuideArticle(guide)) }} />
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
-            <div>
-                <article className="max-w-[68ch]">
-                    <nav className="mb-6 text-sm">
-                        <Link href="/gw2/database" className="text-[var(--ink-low)] hover:text-[var(--accent-ink)]">
-                            Guild Wars 2
-                        </Link>
-                    </nav>
 
-                    <h1 className="font-display text-3xl leading-tight text-[var(--ink-hi)] text-balance sm:text-4xl">
-                        {guide.title}
-                    </h1>
+            <Gw2Hero
+                eyebrow={`Guild Wars 2 · ${label} guide`}
+                title={guide.title}
+                description={guide.standfirst ?? undefined}
+                tone={tone}
+                back={{ href: "/gw2/guides", label: "All guides" }}
+            >
+                {guide.wiki && <WikiLink wiki={guide.wiki} name={guide.title} className="-ml-1" />}
+            </Gw2Hero>
 
-                    {guide.standfirst && (
-                        <p className="mt-3 text-lg leading-relaxed text-[var(--ink-mid)]">{guide.standfirst}</p>
-                    )}
+            {/*
+             * Three cells, placed by the grid rather than by source order.
+             *
+             * The reader's own figures sit between the standfirst and the body
+             * on a phone — high enough to be the reason somebody connects an
+             * account, late enough that the page has already said what it is
+             * about — and at the top of the right-hand column on a desktop.
+             * Where to go next and the sources come after the body on a phone,
+             * and under the figures on a desktop.
+             *
+             * The second row is `1fr` so the body, which spans both, does not
+             * size the first: an auto row under a spanning item takes a share
+             * of its height, and the sources would float halfway down the page.
+             */}
+            <div
+                className={`grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start ${
+                    guide.personalise_as ? "xl:grid-rows-[auto_1fr]" : ""
+                }`}
+            >
+                {guide.personalise_as && (
+                    <div className="xl:col-start-2 xl:row-start-1">
+                        <GuidePersonalisation personaliseAs={guide.personalise_as} tone={tone} />
+                    </div>
+                )}
 
-                    <WikiLink wiki={guide.wiki} name={guide.title} className="mt-2 -ml-1" />
-
-                    {/*
-                     * The reader's own figures, between the standfirst and the
-                     * body. High enough to be the reason somebody connects an
-                     * account, and late enough that the page has already said
-                     * what it is about.
-                     */}
-                    {guide.personalise_as && <GuidePersonalisation personaliseAs={guide.personalise_as} />}
-
+                <article
+                    // The measure on the column rather than the prose: the prose
+                    // carries `max-w-none`, and which of two max-widths wins
+                    // would come down to stylesheet order.
+                    className={`min-w-0 max-w-[68ch] xl:col-start-1 xl:row-start-1 ${guide.personalise_as ? "xl:row-span-2" : ""}`}
+                >
                     {guide.body && (
                         <div
                             className={ARTICLE_PROSE}
@@ -101,82 +125,83 @@ export default async function Gw2GuidePage({ params }: Params) {
                             dangerouslySetInnerHTML={{ __html: guide.body }}
                         />
                     )}
-
-                    {guide.next_steps && Object.keys(guide.next_steps).length > 0 && (
-                        <nav
-                            className="mt-10 border-t pt-6"
-                            style={{ borderColor: "var(--line)" }}
-                            aria-label="Where to go next"
-                        >
-                            <h2 className="mb-3 text-[11px] font-medium uppercase tracking-wider text-[var(--ink-faint)]">
-                                Next
-                            </h2>
-                            <ul className="space-y-2">
-                                {Object.entries(guide.next_steps).map(([label, href]) => (
-                                    <li key={label}>
-                                        <Link
-                                            href={href}
-                                            className="text-sm text-[var(--accent-ink)] hover:underline"
-                                        >
-                                            {label} →
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </nav>
-                    )}
-
-                    {guide.sources && guide.sources.length > 0 && (
-                        <section
-                            className="mt-10 border-t pt-6"
-                            style={{ borderColor: "var(--line)" }}
-                            aria-labelledby="guide-sources"
-                        >
-                            <h2
-                                id="guide-sources"
-                                className="mb-3 text-[11px] font-medium uppercase tracking-wider text-[var(--ink-faint)]"
-                            >
-                                Sources
-                            </h2>
-                            {/*
-                             * As recorded, unchecked ones included. A reader
-                             * deciding how far to trust this page gets the same
-                             * distinction an editor does.
-                             */}
-                            <ul className="space-y-2">
-                                {guide.sources.map((source) => (
-                                    <li key={source.label} className="text-sm">
-                                        {source.url ? (
-                                            <a
-                                                href={source.url}
-                                                target="_blank"
-                                                rel="nofollow noopener noreferrer"
-                                                className="text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
-                                            >
-                                                {source.label}
-                                            </a>
-                                        ) : (
-                                            <span className="text-[var(--ink-mid)]">{source.label}</span>
-                                        )}
-                                        <span className="block text-[11px] text-[var(--ink-faint)]">
-                                            {source.kind_label} ·{" "}
-                                            {source.checked_at
-                                                ? `checked ${new Date(source.checked_at).toLocaleDateString()}`
-                                                : "not checked yet"}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </section>
-                    )}
-
-                    {guide.reviewed_at && (
-                        <p className="mt-8 text-[11px] text-[var(--ink-faint)]">
-                            Last checked against the game on{" "}
-                            {new Date(guide.reviewed_at).toLocaleDateString()}.
-                        </p>
-                    )}
                 </article>
+
+                {(nextSteps.length > 0 || sources.length > 0 || guide.reviewed_at) && (
+                    <aside
+                        className={`space-y-5 xl:col-start-2 ${guide.personalise_as ? "xl:row-start-2" : "xl:row-start-1"}`}
+                    >
+                        {nextSteps.length > 0 && (
+                            <Gw2Panel icon={<Compass size={18} />} title="Where to go next" tone={tone}>
+                                <nav aria-label="Where to go next">
+                                    <ul className="space-y-2.5">
+                                        {nextSteps.map(([stepLabel, href]) => (
+                                            <li key={stepLabel}>
+                                                <ActionLink href={href} tone={tone}>
+                                                    {stepLabel}
+                                                </ActionLink>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </nav>
+                            </Gw2Panel>
+                        )}
+
+                        {(sources.length > 0 || guide.reviewed_at) && (
+                            <Gw2Panel
+                                icon={<BookMarked size={18} />}
+                                title="Sources"
+                                description={sources.length > 0 ? "As recorded, checked or not" : undefined}
+                            >
+                                {/*
+                                 * As recorded, unchecked ones included. A reader
+                                 * deciding how far to trust this page gets the same
+                                 * distinction an editor does.
+                                 */}
+                                {sources.length > 0 && (
+                                    <ul className="space-y-2.5">
+                                        {sources.map((source) => (
+                                            <li key={source.label} className="text-sm">
+                                                {source.url ? (
+                                                    <a
+                                                        href={source.url}
+                                                        target="_blank"
+                                                        rel="nofollow noopener noreferrer"
+                                                        className="text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
+                                                    >
+                                                        {source.label}
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-[var(--ink-mid)]">{source.label}</span>
+                                                )}
+                                                <span className="block text-[11px] text-[var(--ink-faint)]">
+                                                    {source.kind_label} ·{" "}
+                                                    {source.checked_at
+                                                        ? `checked ${new Date(source.checked_at).toLocaleDateString()}`
+                                                        : "not checked yet"}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+
+                                {guide.reviewed_at && (
+                                    <p
+                                        className={
+                                            sources.length > 0
+                                                ? "mt-4 border-t pt-3 text-[11px] text-[var(--ink-faint)]"
+                                                : "text-[11px] text-[var(--ink-faint)]"
+                                        }
+                                        style={sources.length > 0 ? { borderColor: "var(--line)" } : undefined}
+                                    >
+                                        Last checked against the game on{" "}
+                                        {new Date(guide.reviewed_at).toLocaleDateString()}.
+                                    </p>
+                                )}
+                            </Gw2Panel>
+                        )}
+                    </aside>
+                )}
             </div>
         </div>
     );

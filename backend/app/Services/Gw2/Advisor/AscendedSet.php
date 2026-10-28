@@ -364,22 +364,14 @@ class AscendedSet
         $ids = $events->pluck('id')->filter()->unique()->all();
         $items = $ids === [] ? collect() : DB::table('gw2_items')->whereIn('id', $ids)->get(['id', 'name', 'icon', 'rarity'])->keyBy('id');
 
-        $reset = DailyChecklist::nextWeeklyReset();
-        $weeks = [];
+        $weeks = array_map(fn (array $week) => [
+            'starts_at' => $week[0]->toIso8601String(),
+            'pieces' => $events->filter(function ($e) use ($week) {
+                $at = Carbon::parse($e['occurred_at']);
 
-        for ($back = self::WEEKS; $back >= 1; $back--) {
-            $end = $reset->copy()->subWeeks($back - 1);
-            $start = $end->copy()->subWeek();
-
-            $weeks[] = [
-                'starts_at' => $start->toIso8601String(),
-                'pieces' => $events->filter(function ($e) use ($start, $end) {
-                    $at = Carbon::parse($e['occurred_at']);
-
-                    return $at->greaterThanOrEqualTo($start) && $at->lessThan($end);
-                })->count(),
-            ];
-        }
+                return $at->greaterThanOrEqualTo($week[0]) && $at->lessThan($week[1]);
+            })->count(),
+        ], DailyChecklist::lastWeeks(self::WEEKS));
 
         return [
             'weeks' => $weeks,
@@ -440,7 +432,7 @@ class AscendedSet
                 'current' => $character->agonyResistance,
                 'target' => CharacterView::TIER_4_AGONY,
                 'domain' => 'fractals',
-                'href' => CardAction::guide('fractals', 'agony-resistance', 'Agony Resistance')['href'] ?? '/gw2/next',
+                'href' => '/gw2/fractals',
             ];
         }
 

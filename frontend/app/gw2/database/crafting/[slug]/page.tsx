@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { Hammer } from "lucide-react";
-import Panel from "@/components/ui/Panel";
+import { Coins, GitBranch, Hammer, Info, KeyRound, Layers, Package, Sparkles } from "lucide-react";
+import GameIcon from "@/components/gw2/GameIcon";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
+import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { coin } from "@/lib/gw2format";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { craftingHref, getPublicRecipe, itemIdFromSlug } from "@/lib/gw2public";
-import type { PlanNode, PublicRecipe } from "@/lib/gw2";
+import type { PlanNode, PublicMaterial, PublicRecipe } from "@/lib/gw2";
 
 /**
  * What one craftable thing takes — for anyone, with no account.
@@ -49,6 +51,8 @@ export async function generateStaticParams() {
 }
 
 type Params = { params: Promise<{ slug: string }> };
+
+const REFERENCE = DOMAIN_TONE.reference;
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
     const { slug } = await params;
@@ -110,204 +114,184 @@ export default async function CraftingPage({ params }: Params) {
         { name: item.name, path: craftingHref(item.id, item.slug) },
     ]);
 
-    return (
-        <div className="tp-page pt-5 lg:pt-7">
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
-            <div>
-                <nav className="mb-6 flex flex-wrap gap-x-2 text-sm text-[var(--ink-low)]">
-                    <Link href="/gw2/database" className="hover:text-[var(--accent-ink)]">
-                        Guild Wars 2 database
-                    </Link>
-                    <span aria-hidden>/</span>
-                    <Link href="/gw2/database/crafting" className="hover:text-[var(--accent-ink)]">
-                        Crafting
-                    </Link>
-                </nav>
+    const facts = [item.rarity, item.type, item.level ? `level ${item.level}` : null].filter(Boolean).join(" · ");
 
-                <header className="mb-6 flex items-start gap-4">
-                    {item.icon && (
-                        <Image
-                            src={item.icon}
-                            alt=""
-                            width={64}
-                            height={64}
-                            unoptimized
-                            className="h-16 w-16 shrink-0 rounded-[var(--radius-card)]"
+    return (
+        <div className="tp-page">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumb) }} />
+
+            <Gw2Hero
+                eyebrow="Crafting recipe"
+                title={item.name}
+                description={facts || undefined}
+                tone={REFERENCE}
+                back={{ href: "/gw2/database/crafting", label: "Crafting recipes" }}
+            >
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+                    {item.icon && <GameIcon src={item.icon} alt="" size="xl" rarity={item.rarity} />}
+
+                    {recipe.prices?.item && (
+                        <PriceLine
+                            sell={recipe.prices.item.sell_unit}
+                            buy={recipe.prices.item.buy_unit}
+                            observedAt={recipe.prices.observed_at}
+                            stale={recipe.prices.stale}
                         />
                     )}
-                    <div>
-                        <h1 className="font-display text-3xl text-[var(--ink-hi)] text-balance">{item.name}</h1>
-                        <p className="mt-1 text-sm text-[var(--ink-low)]">
-                            {[item.rarity, item.type, item.level ? `level ${item.level}` : null]
-                                .filter(Boolean)
-                                .join(" · ")}
-                        </p>
-                        <WikiLink wiki={item.wiki} name={item.name} className="mt-1 -ml-1" />
-                    </div>
-                </header>
 
-                {recipe.prices?.item && (
-                    <PriceLine
-                        label="On the trading post"
-                        sell={recipe.prices.item.sell_unit}
-                        buy={recipe.prices.item.buy_unit}
-                        observedAt={recipe.prices.observed_at}
-                        stale={recipe.prices.stale}
-                    />
-                )}
+                    <WikiLink wiki={item.wiki} name={item.name} />
+                </div>
+            </Gw2Hero>
 
-                {!recipe.craftable ? (
-                    <Panel material="matte">
+            {!recipe.craftable ? (
+                <div className="space-y-6">
+                    <Gw2Panel icon={<Info size={18} />} title="Not crafted" tone={REFERENCE}>
                         <p className="text-sm text-[var(--ink-mid)]">
-                            This is not crafted — it comes from a vendor, a drop or a reward track. What it
-                            goes into is below.
+                            This is not crafted — it comes from a vendor, a drop or a reward track. What it goes
+                            into is below.
                         </p>
-                    </Panel>
-                ) : (
-                    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-                        <div className="space-y-5">
-                            <Panel material="lit" crown title="Everything it takes">
-                                <ul className="space-y-2.5">
-                                    {materials.map((material) => (
-                                        <li
-                                            key={material.currency_id ? `c${material.currency_id}` : material.item_id}
-                                            className="flex items-center gap-3"
+                    </Gw2Panel>
+
+                    {usedIn.length > 0 && (
+                        <section className="space-y-4">
+                            <SectionHeader
+                                icon={<Layers size={18} />}
+                                tone={REFERENCE}
+                                title="Used in"
+                                description={`${usedIn.length} ${usedIn.length === 1 ? "recipe takes" : "recipes take"} it.`}
+                            />
+                            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {usedIn.map((used) => (
+                                    <UsedInRow key={used.id} used={used} boxed />
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+                </div>
+            ) : (
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+                    <div className="min-w-0 space-y-6">
+                        <section className="space-y-4">
+                            <SectionHeader
+                                icon={<Package size={18} />}
+                                tone={REFERENCE}
+                                title="Everything it takes"
+                                description="Every raw material at the bottom of the tree, with nothing subtracted."
+                            />
+
+                            <ul className="grid gap-2.5 sm:grid-cols-2">
+                                {materials.map((material) => (
+                                    <li key={material.currency_id ? `c${material.currency_id}` : material.item_id}>
+                                        <MaterialTile material={material} recipe={recipe} />
+                                    </li>
+                                ))}
+                            </ul>
+
+                            {recipe.prices?.materials && (
+                                <div
+                                    className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-[var(--radius-card)] border px-4 py-3"
+                                    style={{ borderColor: "var(--line-strong)", background: "var(--surface-1)" }}
+                                >
+                                    <span className="inline-flex items-center gap-3">
+                                        <Coins size={20} aria-hidden style={{ color: DOMAIN_TONE.vault }} />
+                                        <span>
+                                            <span className="block text-[11px] text-[var(--ink-low)]">
+                                                Materials, buying outright
+                                            </span>
+                                            <span className="font-display text-lg font-bold text-[var(--ink-hi)]">
+                                                {coin(recipe.prices.materials.buy_now)}
+                                            </span>
+                                            <span className="ml-2 text-xs text-[var(--ink-low)]">
+                                                or {coin(recipe.prices.materials.bid_and_wait)} bidding and waiting
+                                            </span>
+                                        </span>
+                                    </span>
+                                    <span className="text-[11px] text-[var(--ink-faint)]">
+                                        {recipe.prices.materials.not_tradable > 0 &&
+                                            `${recipe.prices.materials.not_tradable} of these are not sold on the trading post and are not in the totals. `}
+                                        {priceDate(recipe.prices.observed_at, recipe.prices.stale)}
+                                    </span>
+                                </div>
+                            )}
+                        </section>
+
+                        <section className="space-y-4">
+                            <SectionHeader
+                                icon={<GitBranch size={18} />}
+                                tone={REFERENCE}
+                                title="How it breaks down"
+                                description="The whole tree, tier by tier. Every line opens its own page."
+                            />
+                            <div
+                                className="rounded-[var(--radius-panel)] border px-4 py-3"
+                                style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                            >
+                                <Branch node={recipe.tree} />
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="space-y-5">
+                        {requires && (
+                            <Gw2Panel icon={<Hammer size={18} />} title="To make it yourself" tone={REFERENCE}>
+                                <p className="text-sm text-[var(--ink-mid)]">
+                                    {requires.disciplines.join(" or ")} at {requires.min_rating}.
+                                </p>
+                            </Gw2Panel>
+                        )}
+
+                        {/* The game does not publish forge recipes, so this one says where it is from. */}
+                        {recipe.forge && (
+                            <Gw2Panel icon={<Sparkles size={18} />} title="Made in the Mystic Forge" tone={DOMAIN_TONE.legendary}>
+                                <p className="text-sm text-[var(--ink-mid)]">
+                                    The game&apos;s API does not list Mystic Forge recipes. This one is from{" "}
+                                    {recipe.forge.source_url ? (
+                                        <a
+                                            href={recipe.forge.source_url}
+                                            target="_blank"
+                                            rel="nofollow noopener noreferrer"
+                                            className="text-[var(--accent-ink)] hover:underline"
                                         >
-                                            {material.icon && (
-                                                <Image
-                                                    src={material.icon}
-                                                    alt=""
-                                                    width={28}
-                                                    height={28}
-                                                    unoptimized
-                                                    className="h-7 w-7 shrink-0 rounded-[var(--radius-inner)]"
-                                                />
-                                            )}
-                                            {material.currency_id ? (
-                                                <span className="min-w-0 flex-1 truncate text-sm text-[var(--ink-hi)]">
-                                                    {material.name}
-                                                </span>
-                                            ) : (
-                                                <Link
-                                                    href={craftingHref(material.item_id, material.slug)}
-                                                    className="min-w-0 flex-1 truncate text-sm text-[var(--ink-hi)] hover:text-[var(--accent-ink)]"
-                                                >
-                                                    {material.name}
-                                                </Link>
-                                            )}
-                                            <WikiLink wiki={material.wiki} name={material.name} compact />
-                                            <span className="shrink-0 font-numeric text-sm text-[var(--ink-low)]">
-                                                ×{material.needed}
-                                            </span>
-                                            <span className="w-24 shrink-0 text-right font-numeric text-xs text-[var(--ink-faint)]">
-                                                {(() => {
-                                                    const unit = recipe.prices?.materials?.per_item[String(material.item_id)]?.sell_unit;
-                                                    return unit != null ? coin(unit * material.needed) : "—";
-                                                })()}
-                                            </span>
-                                        </li>
+                                            {recipe.forge.source_label ?? "its source"}
+                                        </a>
+                                    ) : (
+                                        "an editor's entry"
+                                    )}
+                                    {recipe.forge.checked_at &&
+                                        `, as of ${new Date(recipe.forge.checked_at).toLocaleDateString()}`}
+                                    .
+                                </p>
+                            </Gw2Panel>
+                        )}
+
+                        <Gw2Panel icon={<KeyRound size={18} />} title="With your own account">
+                            <div className="space-y-4">
+                                <p className="text-sm text-[var(--ink-mid)]">
+                                    This is the whole tree with nothing subtracted. Connect your account and we take
+                                    off what is already in your bank, your material storage and your characters&apos;
+                                    bags.
+                                </p>
+                                <ActionLink href={`/gw2/planner?item=${item.id}`}>Plan it against your bank</ActionLink>
+                            </div>
+                        </Gw2Panel>
+
+                        {usedIn.length > 0 && (
+                            <Gw2Panel
+                                icon={<Layers size={18} />}
+                                title="Used in"
+                                description={`${usedIn.length} ${usedIn.length === 1 ? "recipe takes" : "recipes take"} it`}
+                                tone={REFERENCE}
+                            >
+                                <ul className="space-y-2">
+                                    {usedIn.map((used) => (
+                                        <UsedInRow key={used.id} used={used} />
                                     ))}
                                 </ul>
-
-                                {recipe.prices?.materials && (
-                                    <div
-                                        className="mt-4 grid grid-cols-2 gap-3 border-t pt-3 text-sm"
-                                        style={{ borderColor: "var(--line)" }}
-                                    >
-                                        <div>
-                                            <div className="font-numeric text-[var(--ink-hi)]">
-                                                {coin(recipe.prices.materials.buy_now)}
-                                            </div>
-                                            <div className="text-[11px] text-[var(--ink-low)]">materials, buying outright</div>
-                                        </div>
-                                        <div>
-                                            <div className="font-numeric text-[var(--ink-mid)]">
-                                                {coin(recipe.prices.materials.bid_and_wait)}
-                                            </div>
-                                            <div className="text-[11px] text-[var(--ink-low)]">bidding and waiting</div>
-                                        </div>
-                                        <p className="col-span-2 text-[11px] text-[var(--ink-faint)]">
-                                            {recipe.prices.materials.not_tradable > 0 &&
-                                                `${recipe.prices.materials.not_tradable} of these are not sold on the trading post and are not in the totals. `}
-                                            {priceDate(recipe.prices.observed_at, recipe.prices.stale)}
-                                        </p>
-                                    </div>
-                                )}
-
-                                <p
-                                    className="mt-4 border-t pt-3 text-xs text-[var(--ink-low)]"
-                                    style={{ borderColor: "var(--line)" }}
-                                >
-                                    This is the whole tree with nothing subtracted.{" "}
-                                    <Link href="/gw2/planner" className="text-[var(--accent-ink)] hover:underline">
-                                        Connect your account
-                                    </Link>{" "}
-                                    and we take off what is already in your bank, your material storage and
-                                    your characters&apos; bags.
-                                </p>
-                            </Panel>
-
-                            <Panel material="matte" title="How it breaks down">
-                                <Branch node={recipe.tree} />
-                            </Panel>
-                        </div>
-
-                        <div className="space-y-5">
-                            {requires && (
-                                <Panel material="instrument" title="To make it yourself">
-                                    <p className="text-sm text-[var(--ink-mid)]">
-                                        {requires.disciplines.join(" or ")} at {requires.min_rating}.
-                                    </p>
-                                </Panel>
-                            )}
-
-                            {/* The game does not publish forge recipes, so this one says where it is from. */}
-                            {recipe.forge && (
-                                <Panel material="instrument" title="Made in the Mystic Forge">
-                                    <p className="text-sm text-[var(--ink-mid)]">
-                                        The game&apos;s API does not list Mystic Forge recipes. This one is from{" "}
-                                        {recipe.forge.source_url ? (
-                                            <a
-                                                href={recipe.forge.source_url}
-                                                target="_blank"
-                                                rel="nofollow noopener noreferrer"
-                                                className="text-[var(--accent-ink)] hover:underline"
-                                            >
-                                                {recipe.forge.source_label ?? "its source"}
-                                            </a>
-                                        ) : (
-                                            "an editor's entry"
-                                        )}
-                                        {recipe.forge.checked_at &&
-                                            `, as of ${new Date(recipe.forge.checked_at).toLocaleDateString()}`}
-                                        .
-                                    </p>
-                                </Panel>
-                            )}
-
-                            {usedIn.length > 0 && (
-                                <Panel material="matte" title="Used in">
-                                    <ul className="space-y-2">
-                                        {usedIn.map((used) => (
-                                            <UsedInRow key={used.id} used={used} />
-                                        ))}
-                                    </ul>
-                                </Panel>
-                            )}
-                        </div>
+                            </Gw2Panel>
+                        )}
                     </div>
-                )}
-
-                {!recipe.craftable && usedIn.length > 0 && (
-                    <Panel material="matte" title="Used in" className="mt-5">
-                        <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                            {usedIn.map((used) => (
-                                <UsedInRow key={used.id} used={used} />
-                            ))}
-                        </ul>
-                    </Panel>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -328,33 +312,77 @@ function priceDate(observedAt: string | null, stale: boolean): string {
 
 /** Both sides of the market: what it costs to have now, and to wait for. */
 function PriceLine({
-    label,
     sell,
     buy,
     observedAt,
     stale,
 }: {
-    label: string;
     sell: number | null;
     buy: number | null;
     observedAt: string | null;
     stale: boolean;
 }) {
     return (
-        <p className="-mt-2 mb-6 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-[var(--ink-mid)]">
-            <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">{label}</span>
-            {sell != null && (
-                <span>
-                    <strong className="font-numeric text-[var(--ink-hi)]">{coin(sell)}</strong> to buy now
-                </span>
+        <div className="space-y-1">
+            <p className="text-[10.5px] uppercase tracking-[0.18em] text-[var(--ink-faint)]">On the trading post</p>
+            <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-[var(--ink-mid)]">
+                {sell != null && (
+                    <span>
+                        <strong className="font-display text-lg font-bold text-[var(--ink-hi)]">{coin(sell)}</strong> to
+                        buy now
+                    </span>
+                )}
+                {buy != null && (
+                    <span>
+                        <strong className="font-numeric">{coin(buy)}</strong> highest bid
+                    </span>
+                )}
+            </p>
+            <p className="text-[11px] text-[var(--ink-faint)]">{priceDate(observedAt, stale)}</p>
+        </div>
+    );
+}
+
+/**
+ * One material at the bottom of the tree: what it is, how many, and what that
+ * many costs at the nightly price. A currency in a forge recipe has no page of
+ * its own, so it is named rather than linked.
+ */
+function MaterialTile({ material, recipe }: { material: PublicMaterial; recipe: PublicRecipe }) {
+    const unit = recipe.prices?.materials?.per_item[String(material.item_id)]?.sell_unit;
+
+    return (
+        <div
+            className="flex h-full items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5"
+            style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+        >
+            {material.icon ? (
+                <GameIcon src={material.icon} alt="" size="md" rarity={material.rarity} />
+            ) : (
+                <span aria-hidden className="h-9 w-9 shrink-0 rounded-[4px] bg-[var(--fill-2)]" />
             )}
-            {buy != null && (
-                <span>
-                    <strong className="font-numeric">{coin(buy)}</strong> highest bid
-                </span>
-            )}
-            <span className="text-[11px] text-[var(--ink-faint)]">{priceDate(observedAt, stale)}</span>
-        </p>
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1">
+                    {material.currency_id ? (
+                        <span className="truncate text-[13px] text-[var(--ink-hi)]">{material.name}</span>
+                    ) : (
+                        <Link
+                            href={craftingHref(material.item_id, material.slug)}
+                            className="truncate text-[13px] text-[var(--ink-hi)] hover:text-[var(--accent-ink)]"
+                        >
+                            {material.name}
+                        </Link>
+                    )}
+                    <WikiLink wiki={material.wiki} name={material.name} compact />
+                </div>
+                <p className="mt-0.5 flex justify-between gap-2 text-[11px]">
+                    <span className="font-numeric text-[var(--ink-mid)]">×{material.needed}</span>
+                    <span className="font-numeric text-[var(--ink-faint)]">
+                        {unit != null ? coin(unit * material.needed) : "—"}
+                    </span>
+                </p>
+            </div>
+        </div>
     );
 }
 
@@ -362,22 +390,20 @@ function PriceLine({
  * The wiki link sits beside our link, not inside it — an anchor in an anchor is
  * invalid HTML, and browsers repair it by splitting the row in two.
  */
-function UsedInRow({ used }: { used: PublicRecipe["used_in"][number] }) {
+function UsedInRow({ used, boxed = false }: { used: PublicRecipe["used_in"][number]; boxed?: boolean }) {
     return (
-        <li className="flex items-center gap-1">
+        <li
+            className={boxed ? "flex items-center gap-1 rounded-[var(--radius-card)] border px-3 py-2" : "flex items-center gap-1"}
+            style={boxed ? { background: "var(--surface-1)", borderColor: "var(--line)" } : undefined}
+        >
             <Link
                 href={craftingHref(used.id, used.slug)}
-                className="flex min-w-0 flex-1 items-center gap-2 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
+                className="flex min-w-0 flex-1 items-center gap-2.5 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
             >
-                {used.icon && (
-                    <Image
-                        src={used.icon}
-                        alt=""
-                        width={20}
-                        height={20}
-                        unoptimized
-                        className="h-5 w-5 shrink-0 rounded-[var(--radius-inner)]"
-                    />
+                {used.icon ? (
+                    <GameIcon src={used.icon} alt="" size="sm" rarity={used.rarity} />
+                ) : (
+                    <span aria-hidden className="h-6 w-6 shrink-0 rounded-[4px] bg-[var(--fill-2)]" />
                 )}
                 <span className="truncate">{used.name}</span>
             </Link>
@@ -401,7 +427,7 @@ function Branch({ node }: { node: PlanNode }) {
                     style={{ paddingLeft: `${Math.min(node.depth, 6) * 14}px` }}
                 >
                     {node.craftable ? (
-                        <Hammer size={12} className="shrink-0 text-[var(--ink-faint)]" aria-hidden />
+                        <Hammer size={12} className="shrink-0" style={{ color: REFERENCE }} aria-hidden />
                     ) : (
                         <span className="w-3" />
                     )}

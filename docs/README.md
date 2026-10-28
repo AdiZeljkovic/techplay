@@ -1439,6 +1439,19 @@ ne obori ostale — sljedeći run pročita tačno ono što fali.
 kuracija i namjerno su izvan osvježavanja.** Refresh ih ne dira; da ih dira,
 svako čitanje kataloga bi obrisalo ručni rad.
 
+**`gw2_achievements.point_cap`** (od 28. 10. 2026) je plafon poena ponovljivog
+postignuća — 159 od 214 ponovljivih plaća poene svaki put („Party Commander" 10
+po krugu, do 100). Bez njega se poeni naloga ne mogu sabrati. Puni se tek
+čitanjem `achievements` endpointa: novi build to uradi sam, ručno
+`gw2:catalogue --only=achievements --force`. Do tada stranica postignuća broji
+ponavljanja jednom i kaže koliko ih je.
+
+**`gw2_reference` vrsta `daily_fractals`** (jedan red, `ref_id` 88) nije iz
+kataloga nego iz `gw2:daily-fractals` u **00:05 UTC**: današnja i sutrašnja
+lista iz `/v2/achievements/categories/88?v=latest`. Kopija iste kategorije u
+katalogu je beskorisna za to — čita se jednom po buildu, pa drži dan kad je
+patch izašao. Ako noćno čitanje omane, jučerašnje „sutra" je danas.
+
 #### Dvije zamke koje su se ponovile
 
 **Ključ keša zna da se nalog promijenio, ne da se payload promijenio.**
@@ -1725,6 +1738,8 @@ round-robin po domenu preko svih šest mjesta, ne samo prve tri.
 | `GET /api/v1/gw2/masteries` | sve trake po regiji, cijene nivoa, šta tačke dosežu |
 | `GET /api/v1/gw2/plan?item_id=&quantity=` | stablo izrade + spisak za nabavku |
 | `GET /api/v1/gw2/ascended?character=&stats=&weight=` | ascended oklop jednog lika: komadi, materijali iz jedne zalihe, put, sedmični napredak |
+| `GET /api/v1/gw2/achievements` | zbir achievement poena, grupe i kategorije igre, najbliže završetku, završeno po sedmici, titule |
+| `GET /api/v1/gw2/fractals?character=` | fractal nivo i tier, AR po liku, Fractal Attunement, valute, današnji fractali, fractal postignuća |
 | `GET /api/v1/gw2/items?q=` | pretraga 74.265 predmeta, trigram |
 | `GET /api/v1/gw2/tonight?minutes=&avoid[]=` | plan sesije, prioriteti, raspored, Vault |
 | `GET /api/v1/gw2/content` | rajdovi, bosovi, tamnice — prozor i „ikad“ |
@@ -2364,6 +2379,77 @@ Kartice preporuka za oklop (`GearGaps`, `EmptyCoreSlots`) sad vode na
 Migracija `2026_10_28_160000` prebacuje „Plan the materials" u vodiču na novu
 stranicu, ali samo dok je link još onaj zasijani i vodič nije pregledan.
 
+#### Faza 6 — ostale stranice, Achievements, Fractals, indeks vodiča (28. 10. 2026.)
+
+**Ostale stranice u istom jeziku.** Legendary, planer, Story, Raids & bosses,
+What changed, Account, cijela javna baza (`/gw2/database/*`) i stranica vodiča
+imaju `Gw2Hero` u boji domene, sekcije pod `SectionHeader`, kartice obojene po
+domeni i desnu kolonu od 2–4 panela (na telefonu ide ispod). Funkcije i brojke
+su ostale iste; na javnim stranicama metadata, canonical, robots, JSON-LD i
+`revalidate` nisu dirani. Nove boje domena u `lib/gw2domain.ts`: `legendary`,
+`crafting`, `account`, `reference`, `changes`. Zajednički dijelovi:
+`Gw2PageParts.tsx` (`PageSummary`, `SummaryFact`, `ToneCard`) i
+`ReferenceCard.tsx` za javnu polovinu.
+
+Sitne izmjene uz put: na planeru „materijali koji fale" broje samo predmete
+(prije je novčić ušao u broj), a u Legendary se prikazuje i broj Mystic Forge
+recepata s izvorom. Kartice na dashboardu otvaraju svoju stranicu.
+
+**`/gw2/achievements`** — meni mockupa ga ima, slike ga nemaju, pa je oblik onaj
+iz igre: grupe, pa kategorije (`Achievements`).
+
+- **Poeni se sabiraju, ne čitaju.** API nema zbir. Svaki dostignuti tier,
+  ponovljiva postignuća do `point_cap`, plus `daily_ap` i `monthly_ap` iz
+  `/v2/account`. Postignuća s oznakom Daily ili Monthly se preskaču u zbiru, jer
+  su već u ta dva broja. Ponavljanje bez poznatog plafona se broji jednom i
+  payload kaže koliko ih je (`repeats_uncapped`).
+- **Brojevi po grupi** izbacuju ono što se resetuje (Daily, Weekly, Monthly) i
+  skrivena postignuća koja još nisu nađena, jer ih ni igra ne prikazuje. Grupa
+  Historical se više ne može raditi, pa kaže samo koliko je urađeno, bez
+  imenioca.
+- **Sedmični grafikon** broji `achievement_completed` događaje po sedmici igre,
+  bez onih koji se resetuju. Na vlasnikovom nalogu ponavljala su se samo tri
+  postignuća, i sva tri su dnevna.
+- Najbliže završetku dijeli isti mapper s dashboardom (`Achievements::win`).
+  Titule na dohvat dolaze iz `Collections::titlesWithinReach()`.
+
+**Mockupov „48% complete" nije nacrtan:** udio svih postignuća u igri broji
+dnevna, festivale van sezone i ono što niko ne vidi.
+
+**`/gw2/fractals`** (`Fractals`):
+
+- Lični nivo i tier (`Fractals::tier()`: 1–25 je T1 … 76–100 T4).
+- AR svakog lika na 80 prema 150 i stanje ascended slotova, jer infuzije
+  ulaze samo u ascended.
+- Fractal Attunement nivo po nivo, s opisom iz igre.
+- Fractal Relic, Pristine i Unstable Essence iz novčanika.
+- Današnji i sutrašnji fractali (`DailyFractals`, vidi katalog gore).
+- Grupa Fractals of the Mists i njena najbliža postignuća.
+- Vodiči iz porodice `fractals`.
+
+Preporučeni AR po skali i dalje nije tu.
+
+**`/gw2/guides`** je javni indeks vodiča po porodici: server-render, indeksira
+se, `revalidate` 3600, i ulazi u `sitemap-gw2.xml` dok ima objavljenih vodiča.
+Stranica vodiča dobila je `Gw2Hero` s povratkom na indeks.
+
+U meniju su **Achievements** i **Fractals** pod „Your account" i **Guides** pod
+„Reference". Statičke rute `/gw2/achievements` i `/gw2/fractals` stoje pored
+porodica vodiča istog imena: `/gw2/fractals/agony-resistance` je i dalje vodič.
+
+Testovi: `tests/Feature/Gw2AchievementsAndFractalsTest.php`, 6 testova.
+
+Mjereno na vlasnikovom nalogu 28. 10. (kopija u /tmp, bez `point_cap`):
+
+| Šta | Vrijednost |
+|---|---|
+| Achievements, prvi poziv | 256 ms, 58 KB |
+| Achievements, s kešom kataloga | 71 ms |
+| Poeni | 3.253 |
+| Poeni s plafonima iz API-ja | 3.298 |
+| Fractals | ~60 ms, 5 KB |
+| Thief | AR 128/150, Tier 1 (nivo 17) |
+
 #### Šta je iz mockupa uzeto, a šta nije
 
 Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:
@@ -2371,8 +2457,8 @@ Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:
 | Mockup | Šta se crta umjesto toga |
 |---|---|
 | „Mastery Progress 73%" | nepotrošene tačke **po regiji** — tačke su zaključane za regiju, zbir po nalogu mjeri veličinu koja ne postoji |
-| „2.847 AP, 48% complete" | broj postignuća na jedan korak od kraja |
-| „Fractal Level 37 · Tier 4" | nivo i AR cilj; tier se ne imenuje |
+| „2.847 AP, 48% complete" | broj postignuća na jedan korak od kraja; zbir poena je na `/gw2/achievements` (od faze 6), procenta nema |
+| „Fractal Level 37 · Tier 4" | nivo, tier (37 je **Tier 2** — 25 skala po tieru, kao u imenima dnevnih fractala) i AR cilj; AR po skali se ne imenuje |
 | „Tonight in GW2" (plan po minutima) | prvi sat Tonight plana, **rasponi** i označeni kao naša procjena (od 28. 10.; prije: otvoreni Vault ciljevi, koji su sad na `/gw2/tonight`) |
 
 Zbirnog skora nema nigdje.

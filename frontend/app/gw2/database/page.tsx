@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { Hammer, History, MapPin, Sparkles } from "lucide-react";
-import Panel from "@/components/ui/Panel";
+import { BookOpen, Database, Hammer, History, KeyRound, MapPin, Sparkles } from "lucide-react";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
+import ReferenceCard from "@/components/gw2/ReferenceCard";
+import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { gw2Application, gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getCraftable, getPublicMasteries } from "@/lib/gw2public";
 
@@ -43,6 +44,8 @@ export const metadata: Metadata = {
     alternates: { canonical: "/gw2/database" },
 };
 
+const REFERENCE = DOMAIN_TONE.reference;
+
 export default async function Gw2DatabasePage() {
     const [craftable, masteries] = await Promise.all([getCraftable(1), getPublicMasteries()]);
 
@@ -63,88 +66,105 @@ export default async function Gw2DatabasePage() {
                 eyebrow="Guild Wars 2 reference"
                 title="Guild Wars 2 database"
                 description="Recipes broken down to the last material, and every mastery tier with what it costs. No account needed — connecting one just subtracts what you already have."
+                tone={REFERENCE}
             />
 
-            <div>
-                <div className="grid gap-5 md:grid-cols-2">
-                    <Panel material="lit" crown title="Crafting">
-                        <div className="space-y-4">
-                            <p className="text-sm text-[var(--ink-mid)]">
-                                {craftable
-                                    ? `${craftable.total.toLocaleString()} craftable items, each one expanded to every material it needs and everything those need in turn.`
-                                    : "Craftable items, each one expanded to every material it needs."}
-                            </p>
-                            <Link
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+                <section className="min-w-0 space-y-4">
+                    <SectionHeader
+                        icon={<Database size={18} />}
+                        tone={REFERENCE}
+                        title="What is in it"
+                        description="The same for every player, read from the game's own API and refreshed with each patch."
+                    />
+
+                    <ul className="grid gap-4 md:grid-cols-2">
+                        <li>
+                            <ReferenceCard
                                 href="/gw2/database/crafting"
-                                className="inline-flex items-center gap-2 text-sm text-[var(--accent-ink)] hover:underline"
-                            >
-                                <Hammer size={15} aria-hidden />
-                                Browse recipes
-                            </Link>
-                        </div>
-                    </Panel>
-
-                    <Panel material="instrument" title="Masteries">
-                        <div className="space-y-4">
-                            <p className="text-sm text-[var(--ink-mid)]">
-                                {trackCount > 0
-                                    ? `${trackCount} tracks across ${masteries?.length} regions, with the point cost of every tier.`
-                                    : "Every mastery track, with the point cost of every tier."}
-                            </p>
-                            <Link
+                                icon={<Hammer size={20} />}
+                                tone={REFERENCE}
+                                title="Crafting"
+                                body={
+                                    craftable
+                                        ? `${craftable.total.toLocaleString()} craftable items, each one expanded to every material it needs and everything those need in turn.`
+                                        : "Craftable items, each one expanded to every material it needs."
+                                }
+                                cta="Browse recipes"
+                            />
+                        </li>
+                        <li>
+                            <ReferenceCard
                                 href="/gw2/database/masteries"
-                                className="inline-flex items-center gap-2 text-sm text-[var(--accent-ink)] hover:underline"
-                            >
-                                <Sparkles size={15} aria-hidden />
-                                Browse masteries
-                            </Link>
-                        </div>
-                    </Panel>
-
-                    <Panel material="matte" title="Mastery insights">
-                        <div className="space-y-4">
-                            <p className="text-sm text-[var(--ink-mid)]">
-                                Every insight on the map, map by map, with the nearest waypoint&apos;s chat code to
-                                travel there.
-                            </p>
-                            <Link
+                                icon={<Sparkles size={20} />}
+                                tone={DOMAIN_TONE.masteries}
+                                title="Masteries"
+                                body={
+                                    trackCount > 0
+                                        ? `${trackCount} tracks across ${masteries?.length} regions, with the point cost of every tier.`
+                                        : "Every mastery track, with the point cost of every tier."
+                                }
+                                cta="Browse masteries"
+                            />
+                        </li>
+                        <li>
+                            <ReferenceCard
                                 href="/gw2/database/insights"
-                                className="inline-flex items-center gap-2 text-sm text-[var(--accent-ink)] hover:underline"
-                            >
-                                <MapPin size={15} aria-hidden />
-                                Browse insights
-                            </Link>
-                        </div>
-                    </Panel>
+                                icon={<MapPin size={20} />}
+                                tone={DOMAIN_TONE.masteries}
+                                title="Mastery insights"
+                                body="Every insight on the map, map by map, with the nearest waypoint's chat code to travel there."
+                                cta="Browse insights"
+                            />
+                        </li>
+                        <li>
+                            <ReferenceCard
+                                href="/gw2/whats-new"
+                                icon={<History size={20} />}
+                                tone={DOMAIN_TONE.changes}
+                                title="What changed"
+                                body="Back after a break? The changes since 2023 that matter, dated, each with its source."
+                                cta="What changed while you were away"
+                            />
+                        </li>
+                    </ul>
+                </section>
 
-                    <Panel material="matte" title="What changed">
+                <div className="space-y-5">
+                    {/*
+                     * Linked without a count. The guides list is cached for an
+                     * hour and this page for a day; reading it here would pull
+                     * the whole page down to the shorter of the two.
+                     */}
+                    <Gw2Panel
+                        icon={<BookOpen size={18} />}
+                        title="Guides"
+                        description="Written by the desk, checked against the game"
+                        tone={REFERENCE}
+                    >
                         <div className="space-y-4">
                             <p className="text-sm text-[var(--ink-mid)]">
-                                Back after a break? The changes since 2023 that matter, dated, each with its source.
+                                Level 80, fractals, masteries, mounts, the Wizard&apos;s Vault and your first
+                                ascended set — each guide complete as it is, and showing your own figures once an
+                                account is connected.
                             </p>
-                            <Link
-                                href="/gw2/whats-new"
-                                className="inline-flex items-center gap-2 text-sm text-[var(--accent-ink)] hover:underline"
-                            >
-                                <History size={15} aria-hidden />
-                                What changed while you were away
-                            </Link>
+                            <ActionLink href="/gw2/guides" tone={REFERENCE}>
+                                All guides
+                            </ActionLink>
                         </div>
-                    </Panel>
-                </div>
+                    </Gw2Panel>
 
-                <Panel material="matte" title="Or bring your own account" className="mt-5">
-                    <div className="space-y-3 text-sm text-[var(--ink-mid)]">
-                        <p>
-                            The same data, with your own progress against it: what you still need for a
-                            recipe after your bank is counted, which mastery tiers your unspent points
-                            already reach, and what is worth doing tonight.
-                        </p>
-                        <Link href="/gw2" className="inline-block text-[var(--accent-ink)] hover:underline">
-                            Connect a Guild Wars 2 account →
-                        </Link>
-                    </div>
-                </Panel>
+                    <Gw2Panel icon={<KeyRound size={18} />} title="Or bring your own account">
+                        <div className="space-y-4">
+                            <p className="text-sm text-[var(--ink-mid)]">
+                                The same data, with your own progress against it: what you still need for a recipe
+                                after your bank is counted, which mastery tiers your unspent points already reach,
+                                and what is worth doing tonight.
+                            </p>
+                            <ActionLink href="/gw2">Connect a Guild Wars 2 account</ActionLink>
+                        </div>
+                    </Gw2Panel>
+                </div>
             </div>
         </div>
     );

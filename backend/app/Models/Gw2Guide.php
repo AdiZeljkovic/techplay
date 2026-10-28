@@ -75,6 +75,26 @@ class Gw2Guide extends Model
         $query->where('is_published', true);
     }
 
+    /**
+     * The published guides of one family, for the guides panel on a tool page.
+     *
+     * @return array<int, array{href: string, title: string, standfirst: ?string}>
+     */
+    public static function listedIn(string $family): array
+    {
+        return self::query()
+            ->published()
+            ->where('family', $family)
+            ->orderBy('sort_order')
+            ->get(['family', 'slug', 'title', 'standfirst'])
+            ->map(fn (self $guide) => [
+                'href' => $guide->path(),
+                'title' => (string) $guide->title,
+                'standfirst' => $guide->standfirst,
+            ])
+            ->all();
+    }
+
     /** `/gw2/fractals/agony-resistance`, or `/gw2/level-80-what-next` for a family of one. */
     public function path(): string
     {

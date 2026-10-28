@@ -412,10 +412,13 @@ class CatalogueSync
                 'icon' => $r['icon'] ?? null,
                 'prerequisites' => $this->json($r['prerequisites'] ?? null),
                 'mastery_region' => $this->masteryRegion($r['rewards'] ?? null),
+                // Repeatable achievements only. Without it an account's points
+                // cannot be summed: "Party Commander" pays 10 a time up to 100.
+                'point_cap' => isset($r['point_cap']) && $r['point_cap'] >= 0 ? (int) $r['point_cap'] : null,
                 'build_id' => $buildId,
             ], $rows), [
                 'name', 'requirement', 'type', 'tiers', 'rewards', 'flags', 'bits',
-                'description', 'locked_text', 'icon', 'prerequisites', 'mastery_region', 'build_id',
+                'description', 'locked_text', 'icon', 'prerequisites', 'mastery_region', 'point_cap', 'build_id',
             ]),
 
             'recipes' => $this->upsert('gw2_recipes', array_map(fn ($r) => [

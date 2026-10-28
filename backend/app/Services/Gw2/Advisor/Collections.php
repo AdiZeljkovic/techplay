@@ -98,6 +98,28 @@ class Collections
     }
 
     /**
+     * Titles the account has started and not earned, for the achievements
+     * page — the same list as the account page, without reading the wardrobe.
+     *
+     * @return array<int, array<string, mixed>>|null Null when titles were never read.
+     */
+    public function titlesWithinReach(int $gw2AccountId): ?array
+    {
+        $state = DB::table('gw2_account_state')->where('gw2_account_id', $gw2AccountId)->first(['unlocks', 'achievements']);
+        $unlocks = json_decode((string) ($state->unlocks ?? ''), true);
+
+        if (! is_array($unlocks) || ! array_key_exists('titles', $unlocks)) {
+            return null;
+        }
+
+        return $this->closestTitles(
+            $this->reference('titles'),
+            array_fill_keys(array_map('intval', (array) $unlocks['titles']), true),
+            json_decode((string) ($state->achievements ?? ''), true) ?: []
+        );
+    }
+
+    /**
      * The cheapest tradeable item for each missing piece, cheapest first.
      *
      * One row per piece, not per item: an outfit with three unlock items is

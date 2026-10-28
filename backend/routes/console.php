@@ -383,3 +383,14 @@ Schedule::command('gw2:sync-accounts --quick --force')
     ->weeklyOn(1, '07:00')
     ->withoutOverlapping(30)
     ->onFailure($reportFailure('gw2:sync-accounts --quick (before weekly reset)'));
+
+/*
+ * Today's fractals, just after they change. One public request; the answer
+ * carries tomorrow's list as well, so a missed night still leaves the page
+ * with the right day.
+ */
+Schedule::command('gw2:daily-fractals')
+    ->timezone('UTC')
+    ->dailyAt('00:05')
+    ->withoutOverlapping(10)
+    ->onFailure($reportFailure('gw2:daily-fractals'));

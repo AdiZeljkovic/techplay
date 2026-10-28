@@ -1071,6 +1071,117 @@ export async function getContent(): Promise<Gw2Content | null> {
     return data.data ?? null;
 }
 
+export interface Gw2TitleWithinReach {
+    title_id: number;
+    title: string | null;
+    achievement_id: number;
+    achievement: string | null;
+    current: number;
+    max: number;
+    wiki?: Gw2WikiLink | null;
+}
+
+/** One of the game's achievement groups — General, Fractals of the Mists — with its categories. */
+export interface Gw2AchievementGroup {
+    id: string;
+    name: string | null;
+    description: string | null;
+    /** Historical: can no longer be done, so `total` is null. */
+    retired: boolean;
+    done: number;
+    total: number | null;
+    points: number;
+    icon: string | null;
+    categories: { id: number; name: string | null; icon: string | null; done: number; total: number | null; points: number }[];
+}
+
+export interface Gw2Achievements {
+    points: {
+        /** Summed: tiers reached, repeats up to their cap, plus daily and monthly points. */
+        total: number;
+        from_achievements: number;
+        daily: number | null;
+        monthly: number | null;
+        /** Repeats whose cap the catalogue does not hold yet — counted once. */
+        repeats_uncapped: number;
+    };
+    done: number;
+    groups: Gw2AchievementGroup[];
+    closest: NearlyDone[];
+    nearly_done: number;
+    recent: {
+        weeks: { starts_at: string; count: number }[];
+        this_week: number;
+        events: { id: number; name: string; icon: string | null; points: number; wiki?: Gw2WikiLink | null; occurred_at: string }[];
+    };
+    /** Null until titles have been read — a full read, with the unlocks permission. */
+    titles: Gw2TitleWithinReach[] | null;
+    guides: { href: string; title: string; standfirst: string | null }[];
+    observed_at: string | null;
+}
+
+export async function getAchievements(): Promise<Gw2Achievements | null> {
+    const { data } = await axiosInstance.get<Envelope<Gw2Achievements | null>>("/gw2/achievements");
+
+    return data.data ?? null;
+}
+
+export interface Gw2FractalCharacter {
+    name: string;
+    profession: string | null;
+    level: number;
+    agony_resistance: number;
+    shortfall: number;
+    ascended_core: number;
+    core_slots: number;
+}
+
+/** One day's fractals, as the game's daily list names them. */
+export interface Gw2FractalDay {
+    fractals: { name: string; tiers: number[] }[];
+    recommended: number[];
+    /** Names that did not fit the pattern, shown as they are. */
+    other: string[];
+}
+
+export interface Gw2Fractals {
+    personal_level: number | null;
+    tier: number | null;
+    character: Gw2FractalCharacter | null;
+    characters: Gw2FractalCharacter[];
+    agony_target: number;
+    attunement: {
+        name: string;
+        region: string | null;
+        paid: number;
+        total: number;
+        unspent: number | null;
+        tiers: { name: string | null; icon: string | null; cost: number; paid: boolean; description: string | null }[];
+        wiki?: Gw2WikiLink | null;
+    } | null;
+    /** Null when the key cannot see the wallet. */
+    wallet: { id: number; name: string; icon: string | null; amount: number; wiki?: Gw2WikiLink | null }[] | null;
+    /** Null when no current list has been read. */
+    today: {
+        date: string;
+        today: Gw2FractalDay;
+        tomorrow: Gw2FractalDay | null;
+        resets_at: string;
+        read_at: string | null;
+    } | null;
+    achievements: Gw2AchievementGroup | null;
+    closest: NearlyDone[];
+    guides: { href: string; title: string; standfirst: string | null }[];
+    observed_at: string | null;
+}
+
+export async function getFractals(character?: string | null): Promise<Gw2Fractals | null> {
+    const query = character ? `?character=${encodeURIComponent(character)}` : "";
+    const { data } = await axiosInstance.get<Envelope<Gw2Fractals | null>>(`/gw2/fractals${query}`);
+
+    return data.data ?? null;
+}
+
 export interface Gw2Source {
     url: string;
     label: string | null;

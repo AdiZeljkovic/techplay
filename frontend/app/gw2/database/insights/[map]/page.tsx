@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import Gw2Hero from "@/components/gw2/Gw2Hero";
 import InsightList from "@/components/gw2/InsightList";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicInsightMap, insightHref } from "@/lib/gw2public";
 
@@ -51,7 +52,7 @@ export default async function InsightMapPage({ params }: Params) {
     }
 
     return (
-        <div className="tp-page pt-5 lg:pt-7">
+        <div className="tp-page">
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -64,28 +65,19 @@ export default async function InsightMapPage({ params }: Params) {
                     ),
                 }}
             />
-            <div>
-                <nav className="mb-6 flex flex-wrap gap-x-2 text-sm text-[var(--ink-low)]">
-                    <Link href="/gw2/database" className="hover:text-[var(--accent-ink)]">
-                        Guild Wars 2 database
-                    </Link>
-                    <span aria-hidden>/</span>
-                    <Link href="/gw2/database/insights" className="hover:text-[var(--accent-ink)]">
-                        Mastery insights
-                    </Link>
-                </nav>
+            <Gw2Hero
+                eyebrow="Mastery insights"
+                title={data.name}
+                description={
+                    [data.region, data.min_level && data.max_level ? `level ${data.min_level}–${data.max_level}` : null]
+                        .filter(Boolean)
+                        .join(" · ") || undefined
+                }
+                tone={DOMAIN_TONE.masteries}
+                back={{ href: "/gw2/database/insights", label: "Mastery insights" }}
+            />
 
-                <header className="mb-6">
-                    <h1 className="font-display text-3xl text-[var(--ink-hi)] text-balance">{data.name}</h1>
-                    <p className="mt-1 text-sm text-[var(--ink-low)]">
-                        {[data.region, data.min_level && data.max_level ? `level ${data.min_level}–${data.max_level}` : null]
-                            .filter(Boolean)
-                            .join(" · ")}
-                    </p>
-                </header>
-
-                <InsightList map={data} />
-            </div>
+            <InsightList map={data} />
         </div>
     );
 }

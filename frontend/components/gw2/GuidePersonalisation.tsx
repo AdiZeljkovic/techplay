@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { KeyRound, UserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axios";
-import Panel from "@/components/ui/Panel";
 import Meter from "@/components/ui/Meter";
-import { Button } from "@/components/ui/Button";
+import { ActionLink, Gw2Panel } from "@/components/gw2/Gw2Ui";
 
 /**
  * The part of a guide that is about you.
@@ -81,36 +80,45 @@ interface Collection {
 
 type Block = Figure | Checklist | Rows | Recommendations | Collection;
 
-export default function GuidePersonalisation({ personaliseAs }: { personaliseAs: string }) {
+export default function GuidePersonalisation({
+    personaliseAs,
+    tone = "var(--accent)",
+}: {
+    personaliseAs: string;
+    /** The guide's own colour, so the panel reads as part of it. */
+    tone?: string;
+}) {
     const { user, isLoading } = useAuth();
-    const [block, setBlock] = useState<Block | null>(null);
-    const [state, setState] = useState<"idle" | "loading" | "none">("loading");
+    const userId = user?.id ?? null;
+
+    /*
+     * Keyed by the person it was read for, the way the shell keys the
+     * connection: signing in as somebody else must not show the previous
+     * reader's figures for the length of a request. A stale answer is told
+     * apart by its key rather than cleared from inside the effect.
+     */
+    const [read, setRead] = useState<{ user: number; block: Block | null } | null>(null);
 
     useEffect(() => {
-        if (isLoading || !user) {
-            setState("none");
-
-            return;
-        }
+        if (isLoading || userId === null) return;
 
         let cancelled = false;
 
         void axiosInstance
             .get<{ data: Block | null }>(`/gw2/personalise/${personaliseAs}`)
             .then(({ data }) => {
-                if (cancelled) return;
-
-                setBlock(data.data);
-                setState(data.data ? "idle" : "none");
+                if (!cancelled) setRead({ user: userId, block: data.data });
             })
             .catch(() => {
-                if (!cancelled) setState("none");
+                if (!cancelled) setRead({ user: userId, block: null });
             });
 
         return () => {
             cancelled = true;
         };
-    }, [isLoading, user, personaliseAs]);
+    }, [isLoading, userId, personaliseAs]);
+
+    const block = read && read.user === userId ? read.block : null;
 
     /*
      * Signed out: an invitation, not a wall. The guide above it is complete,
@@ -119,34 +127,35 @@ export default function GuidePersonalisation({ personaliseAs }: { personaliseAs:
      */
     if (!isLoading && !user) {
         return (
-            <Panel material="matte" className="my-6">
-                <div className="flex flex-wrap items-center justify-between gap-4">
+            <Gw2Panel icon={<KeyRound size={18} />} title="Your own figures" tone={tone}>
+                <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         Connect a Guild Wars 2 account and this page shows your own figures instead.
                     </p>
-                    <Button variant="secondary" asChild>
-                        <Link href="/gw2">Connect an account</Link>
-                    </Button>
+                    <ActionLink href="/gw2" tone={tone}>
+                        Connect an account
+                    </ActionLink>
                 </div>
-            </Panel>
+            </Gw2Panel>
         );
     }
 
-    if (state === "none" || !block) {
+    // Still reading, or nothing on this account to show: the guide stands alone.
+    if (isLoading || !block) {
         return null;
     }
 
     return (
-        <Panel material="lit" crown title={block.label} className="my-6">
+        <Gw2Panel icon={<UserRound size={18} />} title={block.label} description="From your own account" tone={tone}>
             {block.kind === "figure" && (
                 <div className="space-y-2">
                     <div className="flex items-baseline gap-2">
-                        <span className="font-numeric text-3xl text-[var(--ink-hi)]">{block.value}</span>
+                        <span className="font-display text-3xl font-bold text-[var(--ink-hi)]">{block.value}</span>
                         {block.target !== null && (
                             <span className="font-numeric text-lg text-[var(--ink-low)]">/ {block.target}</span>
                         )}
                     </div>
-                    {block.target !== null && <Meter value={block.value} max={block.target} size="sm" />}
+                    {block.target !== null && <Meter value={block.value} max={block.target} size="sm" tone={tone} />}
                     {block.note && <p className="text-sm text-[var(--ink-mid)]">{block.note}</p>}
                 </div>
             )}
@@ -154,11 +163,11 @@ export default function GuidePersonalisation({ personaliseAs }: { personaliseAs:
             {block.kind === "checklist" && (
                 <div className="space-y-3">
                     <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-numeric text-2xl text-[var(--ink-hi)]">
-                            {block.done} <span className="text-base text-[var(--ink-low)]">/ {block.total}</span>
+                        <span className="font-display text-2xl font-bold text-[var(--ink-hi)]">
+                            {block.done} <span className="text-base font-normal text-[var(--ink-low)]">/ {block.total}</span>
                         </span>
                     </div>
-                    <Meter value={block.done} max={block.total} size="sm" />
+                    <Meter value={block.done} max={block.total} size="sm" tone={tone} />
                     {block.items.length > 0 && (
                         <ul className="space-y-1.5">
                             {block.items.map((item) => (
@@ -189,7 +198,7 @@ export default function GuidePersonalisation({ personaliseAs }: { personaliseAs:
                                         )}
                                     </span>
                                 </div>
-                                <Meter value={row.spent} max={row.of} size="sm" />
+                                <Meter value={row.spent} max={row.of} size="sm" tone={tone} />
                             </li>
                         ))}
                     </ul>
@@ -200,10 +209,11 @@ export default function GuidePersonalisation({ personaliseAs }: { personaliseAs:
             {block.kind === "collection" && (
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <span className="font-numeric text-2xl text-[var(--ink-hi)]">
-                            {block.complete} <span className="text-base text-[var(--ink-low)]">/ {block.total}</span>
+                        <span className="block font-display text-2xl font-bold text-[var(--ink-hi)]">
+                            {block.complete}{" "}
+                            <span className="text-base font-normal text-[var(--ink-low)]">/ {block.total}</span>
                         </span>
-                        <Meter value={block.complete} max={block.total} size="sm" />
+                        <Meter value={block.complete} max={block.total} size="sm" tone={tone} />
                     </div>
 
                     <ol className="space-y-3">
@@ -269,6 +279,6 @@ export default function GuidePersonalisation({ personaliseAs }: { personaliseAs:
                     ))}
                 </ul>
             )}
-        </Panel>
+        </Gw2Panel>
     );
 }

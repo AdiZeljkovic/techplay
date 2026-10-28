@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Map as MapIcon, MapPin, Swords } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import Panel from "@/components/ui/Panel";
+import Meter from "@/components/ui/Meter";
 import ChatCode from "@/components/gw2/ChatCode";
+import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { getInsightMap } from "@/lib/gw2";
 import type { InsightMap } from "@/lib/gw2public";
 
@@ -17,6 +19,9 @@ import type { InsightMap } from "@/lib/gw2public";
  * ticks. Nothing here is placed by hand: positions, waypoints and their chat
  * codes all come from `/v2/continents`.
  */
+
+const TONE = DOMAIN_TONE.masteries;
+
 export default function InsightList({ map }: { map: InsightMap }) {
     const { user, isLoading } = useAuth();
     const [mine, setMine] = useState<InsightMap | null>(null);
@@ -42,33 +47,58 @@ export default function InsightList({ map }: { map: InsightMap }) {
     const left = shown.insights_collected === null ? null : shown.insights_total - shown.insights_collected;
 
     return (
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-            <Panel
-                material="lit"
-                crown
-                title={`${shown.insights_total} mastery insights`}
-                meta={
-                    left !== null ? (
-                        <span className="text-xs text-[var(--accent-ink)]">{left === 0 ? "all collected" : `${left} left for you`}</span>
-                    ) : undefined
-                }
-            >
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <section className="min-w-0 space-y-4">
+                <SectionHeader
+                    icon={<MapPin size={18} />}
+                    tone={TONE}
+                    title={`${shown.insights_total} mastery insights`}
+                    description="Numbered to match the plot, each with the waypoint nearest to it."
+                    meta={
+                        left !== null ? (
+                            <span
+                                className="shrink-0 rounded-full border px-3 py-1 text-xs"
+                                style={{ color: TONE, borderColor: `color-mix(in srgb, ${TONE} 45%, transparent)` }}
+                            >
+                                {left === 0 ? "all collected" : `${left} left for you`}
+                            </span>
+                        ) : undefined
+                    }
+                />
+
+                {shown.insights_collected !== null && (
+                    <Meter value={shown.insights_collected} max={shown.insights_total} tone={TONE} showCount />
+                )}
+
                 <ol className="space-y-2">
                     {shown.insights.map((insight, i) => (
-                        <li key={insight.id} className="flex items-center gap-3 text-sm">
+                        <li
+                            key={insight.id}
+                            className="flex items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5 text-sm"
+                            style={{
+                                background: "var(--surface-1)",
+                                borderColor: insight.collected ? "var(--line)" : `color-mix(in srgb, ${TONE} 22%, var(--line))`,
+                            }}
+                        >
                             <span
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-numeric text-[11px]"
+                                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-numeric text-[11px]"
                                 style={{
-                                    background: insight.collected ? "var(--fill-2)" : "var(--accent-soft)",
-                                    color: insight.collected ? "var(--ink-faint)" : "var(--accent-ink)",
+                                    background: insight.collected ? "var(--fill-2)" : `color-mix(in srgb, ${TONE} 22%, transparent)`,
+                                    color: insight.collected ? "var(--ink-faint)" : "var(--ink-hi)",
                                 }}
                             >
                                 {insight.collected ? <Check size={12} aria-label="collected" /> : i + 1}
                             </span>
-                            <span className="min-w-0 flex-1 text-[var(--ink-mid)]">
+                            <span
+                                className="min-w-0 flex-1"
+                                style={{ color: insight.collected ? "var(--ink-low)" : "var(--ink-mid)" }}
+                            >
                                 {insight.nearest_waypoint?.name ? (
                                     <>
-                                        Near <span className="text-[var(--ink-hi)]">{insight.nearest_waypoint.name}</span>
+                                        Near{" "}
+                                        <span style={{ color: insight.collected ? "var(--ink-mid)" : "var(--ink-hi)" }}>
+                                            {insight.nearest_waypoint.name}
+                                        </span>
                                     </>
                                 ) : (
                                     "No waypoint on this map"
@@ -80,19 +110,20 @@ export default function InsightList({ map }: { map: InsightMap }) {
                         </li>
                     ))}
                 </ol>
-                <p className="mt-4 text-[11px] text-[var(--ink-faint)]">
+
+                <p className="text-[11px] text-[var(--ink-faint)]">
                     The code beside each one is the nearest waypoint&apos;s own chat link — paste it in game and click it
                     to travel there.
                     {!isLoading && !user && " Sign in and connect your account to see which ones you still need."}
                 </p>
-            </Panel>
+            </section>
 
             <div className="space-y-5">
-                <Panel material="matte" title="Where they are">
+                <Gw2Panel icon={<MapIcon size={18} />} title="Where they are" description="From the game's own coordinates" tone={TONE}>
                     <MiniMap map={shown} />
-                </Panel>
+                </Gw2Panel>
                 {map.hero_challenges > 0 && (
-                    <Panel material="matte" title="Hero challenges">
+                    <Gw2Panel icon={<Swords size={18} />} title="Hero challenges">
                         {/* Listed as what exists, not what is left: the game's
                             per-character endpoint for these has answered empty
                             for every character for years. */}
@@ -100,7 +131,7 @@ export default function InsightList({ map }: { map: InsightMap }) {
                             {map.hero_challenges} on this map. The game no longer reports which ones a character has
                             done, so we cannot tick them off.
                         </p>
-                    </Panel>
+                    </Gw2Panel>
                 )}
             </div>
         </div>
@@ -152,7 +183,7 @@ function MiniMap({ map }: { map: InsightMap }) {
                                 cx={insight.coord[0]}
                                 cy={insight.coord[1]}
                                 r={width * 0.022}
-                                fill={insight.collected ? "var(--fill-3)" : "var(--accent)"}
+                                fill={insight.collected ? "var(--fill-3)" : TONE}
                             />
                             {!insight.collected && (
                                 <text
@@ -172,4 +203,3 @@ function MiniMap({ map }: { map: InsightMap }) {
         </svg>
     );
 }
-

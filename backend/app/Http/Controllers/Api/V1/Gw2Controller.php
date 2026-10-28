@@ -669,6 +669,60 @@ class Gw2Controller extends Controller
     }
 
     /**
+     * GET /gw2/achievements
+     *
+     * Points, the game's groups and categories with the account's place in
+     * each, the nearest finishes, and what was finished between our reads.
+     */
+    public function achievements(Request $request): JsonResponse
+    {
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $payload = $this->dashboard->achievements($accountId);
+
+        if (! $payload) {
+            return $this->success(null, 'We have not finished reading your account yet.');
+        }
+
+        return $this->success($payload);
+    }
+
+    /**
+     * GET /gw2/fractals[?character=]
+     *
+     * Fractal level and tier, Agony Resistance per character, the attunement
+     * mastery, fractal currencies, today's fractals and the fractal
+     * achievements. The character defaults to the one the advisor talks about.
+     */
+    public function fractals(Request $request): JsonResponse
+    {
+        $request->validate(['character' => 'nullable|string|max:64']);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $asked = $request->string('character')->toString() ?: null;
+        $payload = $this->dashboard->fractals($accountId, $asked);
+
+        if (! $payload) {
+            return $this->success(null, 'We have not finished reading your account yet.');
+        }
+
+        if ($asked !== null && ($payload['character']['name'] ?? null) !== $asked) {
+            return $this->error('That character is not on this account.', 404);
+        }
+
+        return $this->success($payload);
+    }
+
+    /**
      * GET /gw2/plan
      *
      * What it takes to make one thing, given what this account holds.

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, ExternalLink, HelpCircle, Minus } from "lucide-react";
+import { Check, Coins, ExternalLink, Gem, HelpCircle, History, Minus, Package, Shirt, UserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import Meter from "@/components/ui/Meter";
@@ -12,6 +12,9 @@ import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import ConnectionPanel from "@/components/gw2/ConnectionPanel";
 import { useGw2Shell } from "@/components/gw2/Gw2Shell";
+import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
+import { PageSummary, SummaryFact, ToneCard } from "@/components/gw2/Gw2PageParts";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import {
     coin,
     getAccountOverview,
@@ -27,9 +30,20 @@ import {
  * October 2026, the connection itself and what has changed since it was made,
  * both of which used to sit down the dashboard's right-hand column.
  *
- * Every panel is null when the key cannot see it, and says which permission
+ * Every section is null when the key cannot see it, and says which permission
  * that is rather than drawing an empty shelf.
+ *
+ * In the redesign's language since phase 6: a summary across the top, each
+ * part in the colour of what it is about — legendaries in theirs, the trading
+ * post in gold, collections in the achievements' yellow — and the connection
+ * and its history down the right, where the dashboard used to keep them.
  */
+
+const ACCOUNT = DOMAIN_TONE.account;
+const LEGENDARY = DOMAIN_TONE.legendary;
+const GOLD = DOMAIN_TONE.vault;
+const COLLECTIONS = DOMAIN_TONE.achievements;
+
 export default function AccountClient() {
     const { user, isLoading } = useAuth();
     const reportConnection = useGw2Shell()?.reportConnection;
@@ -99,9 +113,17 @@ export default function AccountClient() {
     }
 
     return (
-        <div className="space-y-5">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="min-w-0 space-y-8">
+                <Summary data={data} connection={connection} />
+                <Ownership products={data.ownership} />
+                <Armory armory={data.legendary_armory} />
+                <TradingPost tp={data.trading_post} />
+                <Collections collections={data.collections} />
+            </div>
+
             {(connection || data.history) && (
-                <div className="grid gap-5 lg:grid-cols-2">
+                <div className="space-y-5">
                     {connection && (
                         <ConnectionPanel
                             connection={connection}
@@ -112,16 +134,59 @@ export default function AccountClient() {
                     {data.history && <HistoryPanel history={data.history} />}
                 </div>
             )}
-
-            <OwnershipPanel products={data.ownership} />
-
-            <div className="grid gap-5 lg:grid-cols-2">
-                <TradingPostPanel tp={data.trading_post} />
-                <ArmoryPanel armory={data.legendary_armory} />
-            </div>
-
-            <CollectionsPanel collections={data.collections} />
         </div>
+    );
+}
+
+/**
+ * The account at a glance: one figure from each part below, so the reader
+ * sees what is here before scrolling for it. Each one is the same number its
+ * section shows, never a total across them.
+ */
+function Summary({ data, connection }: { data: Gw2AccountOverview; connection: Gw2Connection | null }) {
+    const read = connection?.last_synced_at ? new Date(connection.last_synced_at).toLocaleString() : null;
+
+    return (
+        <PageSummary
+            icon={<UserRound size={26} />}
+            tone={ACCOUNT}
+            title={connection?.account_name ?? "Your account"}
+            description={read ? `From your last read, ${read}.` : "From your last read."}
+        >
+            <dl className="grid gap-4 sm:grid-cols-3">
+                <SummaryFact
+                    icon={<Gem size={18} />}
+                    value={data.legendary_armory ? `${data.legendary_armory.owned_count} / ${data.legendary_armory.in_catalogue}` : "—"}
+                    label={data.legendary_armory ? "legendaries in the armory" : "armory not shared"}
+                />
+                <SummaryFact
+                    icon={<Shirt size={18} />}
+                    value={
+                        data.collections
+                            ? `${data.collections.counts.skins.have} / ${data.collections.counts.skins.total}`
+                            : "—"
+                    }
+                    label={data.collections ? "wardrobe skins" : "collections not shared"}
+                />
+                <SummaryFact
+                    icon={<Coins size={18} />}
+                    value={data.trading_post ? coin(data.trading_post.waiting.coins) : "—"}
+                    label={data.trading_post ? "waiting at the trading post" : "trading post not shared"}
+                />
+            </dl>
+        </PageSummary>
+    );
+}
+
+/** What a key without the permission shows instead of a section's contents. */
+function Unshared({ children }: { children: React.ReactNode }) {
+    return (
+        <p
+            className="rounded-[var(--radius-card)] border px-4 py-3 text-sm text-[var(--ink-low)]"
+            style={{ borderColor: "var(--line)", background: "var(--surface-1)" }}
+        >
+            {children}
+        </p>
     );
 }
 
@@ -134,14 +199,19 @@ export default function AccountClient() {
  */
 function HistoryPanel({ history }: { history: NonNullable<Gw2AccountOverview["history"]> }) {
     return (
-        <Panel material="matte" title="Since you connected">
+        <Gw2Panel
+            icon={<History size={18} />}
+            title="Since you connected"
+            description="What changed between our reads"
+            tone={ACCOUNT}
+        >
             {history.events.length === 0 ? (
                 <p className="text-sm text-[var(--ink-low)]">Nothing has changed between reads yet.</p>
             ) : (
                 <ul className="space-y-2">
                     {history.events.slice(0, 8).map((event, i) => (
                         <li key={`${event.type}-${event.id}-${i}`} className="flex gap-2 text-sm">
-                            <Check size={14} className="mt-0.5 shrink-0 text-[var(--ink-faint)]" aria-hidden />
+                            <Check size={14} className="mt-0.5 shrink-0 text-[var(--success)]" aria-hidden />
                             <span className="min-w-0 flex-1 text-[var(--ink-mid)]">
                                 {event.name ?? event.type.replace(/_/g, " ")}
                             </span>
@@ -160,59 +230,74 @@ function HistoryPanel({ history }: { history: NonNullable<Gw2AccountOverview["hi
                     history of its own, so nothing before that can be recovered.
                 </p>
             )}
-        </Panel>
+        </Gw2Panel>
     );
 }
 
-function OwnershipPanel({ products }: { products: Gw2OwnedProduct[] }) {
+const OWNED_LOOK = {
+    yes: { tone: "var(--success)", icon: <Check size={15} /> },
+    unknown: { tone: "var(--warning)", icon: <HelpCircle size={15} /> },
+    no: { tone: "var(--ink-faint)", icon: <Minus size={15} /> },
+} as const;
+
+function Ownership({ products }: { products: Gw2OwnedProduct[] }) {
     const came = products.filter((p) => p.owned && (p.how === "included" || (p.how === "free" && p.kind === "living_world")));
 
     return (
-        <Panel material="lit" crown title="What you own">
-            <div className="space-y-4">
-                {came.length > 0 && (
-                    <p className="text-sm text-[var(--ink-mid)]">
-                        Since 13 October 2026 these come with what you have, or are free:{" "}
-                        <span className="text-[var(--ink-hi)]">{came.map((p) => p.name).join(", ")}</span>.
-                    </p>
-                )}
-                <ul className="divide-y" style={{ borderColor: "var(--line)" }}>
-                    {products.map((product) => (
-                        <li key={product.key} className="flex gap-3 py-3 first:pt-0 last:pb-0">
-                            <span className="mt-0.5 shrink-0" aria-hidden>
-                                {product.owned === true ? (
-                                    <Check size={15} className="text-[var(--accent-ink)]" />
-                                ) : product.owned === null ? (
-                                    <HelpCircle size={15} className="text-[var(--ink-faint)]" />
-                                ) : (
-                                    <Minus size={15} className="text-[var(--ink-faint)]" />
-                                )}
-                            </span>
-                            <div className="min-w-0 flex-1 space-y-0.5">
-                                <div className="flex flex-wrap items-baseline gap-x-2 text-sm">
-                                    <span className={product.owned ? "text-[var(--ink-hi)]" : "text-[var(--ink-low)]"}>
-                                        {product.name}
-                                    </span>
-                                    <span className="text-[11px] text-[var(--ink-faint)]">{ownedLabel(product, products)}</span>
+        <section className="space-y-4">
+            <SectionHeader
+                icon={<Package size={18} />}
+                tone={ACCOUNT}
+                title="What you own"
+                description="What the game reports, what came with it, and what it does not say."
+            />
+
+            {came.length > 0 && (
+                <p className="text-sm text-[var(--ink-mid)]">
+                    Since 13 October 2026 these come with what you have, or are free:{" "}
+                    <span className="text-[var(--ink-hi)]">{came.map((p) => p.name).join(", ")}</span>.
+                </p>
+            )}
+
+            <ul className="grid gap-3 md:grid-cols-2">
+                {products.map((product) => {
+                    const look = product.owned === true ? OWNED_LOOK.yes : product.owned === null ? OWNED_LOOK.unknown : OWNED_LOOK.no;
+
+                    return (
+                        <li key={product.key}>
+                            <ToneCard tone={look.tone} className="flex h-full gap-3">
+                                <span aria-hidden className="mt-0.5 shrink-0" style={{ color: look.tone }}>
+                                    {look.icon}
+                                </span>
+                                <div className="min-w-0 flex-1 space-y-1">
+                                    <div className="flex flex-wrap items-baseline gap-x-2">
+                                        <span
+                                            className="font-display text-[15px] font-bold"
+                                            style={{ color: product.owned ? "var(--ink-hi)" : "var(--ink-low)" }}
+                                        >
+                                            {product.name}
+                                        </span>
+                                        <span className="text-[11px] text-[var(--ink-faint)]">{ownedLabel(product, products)}</span>
+                                    </div>
+                                    {product.grants && (
+                                        <p className="text-xs text-[var(--ink-low)]">
+                                            {product.grants}
+                                            {product.grants_source && <SourceLink source={product.grants_source} />}
+                                        </p>
+                                    )}
+                                    {product.note && (
+                                        <p className="text-[11px] text-[var(--ink-faint)]">
+                                            {product.note}
+                                            {product.source && <SourceLink source={product.source} />}
+                                        </p>
+                                    )}
                                 </div>
-                                {product.grants && (
-                                    <p className="text-xs text-[var(--ink-low)]">
-                                        {product.grants}
-                                        {product.grants_source && <SourceLink source={product.grants_source} />}
-                                    </p>
-                                )}
-                                {product.note && (
-                                    <p className="text-[11px] text-[var(--ink-faint)]">
-                                        {product.note}
-                                        {product.source && <SourceLink source={product.source} />}
-                                    </p>
-                                )}
-                            </div>
+                            </ToneCard>
                         </li>
-                    ))}
-                </ul>
-            </div>
-        </Panel>
+                    );
+                })}
+            </ul>
+        </section>
     );
 }
 
@@ -241,201 +326,233 @@ function SourceLink({ source }: { source: { url: string; label: string | null } 
     );
 }
 
-function TradingPostPanel({ tp }: { tp: Gw2AccountOverview["trading_post"] }) {
-    if (!tp) {
-        return (
-            <Panel material="matte" title="Trading post">
-                <p className="text-sm text-[var(--ink-low)]">
-                    Your key does not include the <strong>tradingpost</strong> permission, or we have not read it yet.
-                </p>
-            </Panel>
-        );
-    }
-
+function Armory({ armory }: { armory: Gw2AccountOverview["legendary_armory"] }) {
     return (
-        <Panel material="instrument" title="Trading post">
-            <div className="space-y-4 text-sm">
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <div className="font-numeric text-lg text-[var(--ink-hi)]">{coin(tp.waiting.coins)}</div>
-                        <div className="text-[11px] text-[var(--ink-low)]">waiting at the counter</div>
-                    </div>
-                    <div>
-                        <div className="font-numeric text-lg text-[var(--ink-mid)]">{tp.waiting.items.length}</div>
-                        <div className="text-[11px] text-[var(--ink-low)]">item stacks waiting</div>
-                    </div>
-                </div>
+        <section className="space-y-4">
+            <SectionHeader
+                icon={<Gem size={18} />}
+                tone={LEGENDARY}
+                title="Legendary armory"
+                description={
+                    armory
+                        ? `${armory.owned_count} of ${armory.in_catalogue} — and how many of each the armory can use.`
+                        : "Every legendary you hold, shared across your characters."
+                }
+                action={{ href: "/gw2/legendary", label: "Every legendary" }}
+            />
 
-                {tp.waiting.items.length > 0 && (
-                    <ul className="space-y-1">
-                        {tp.waiting.items.map((item) => (
-                            <li key={item.item_id} className="flex items-center gap-2 text-xs">
-                                <GameIcon src={item.icon} alt="" size="sm" />
-                                <span className="truncate text-[var(--ink-mid)]">
-                                    {item.count}× {item.name ?? `Item ${item.item_id}`}
-                                </span>
-                                <WikiLink wiki={item.wiki} name={item.name} compact />
-                            </li>
-                        ))}
-                    </ul>
-                )}
-
-                <div className="border-t pt-3 text-xs text-[var(--ink-mid)]" style={{ borderColor: "var(--line)" }}>
-                    <p>
-                        {tp.buys.length} buy orders holding <span className="font-numeric">{coin(tp.in_buy_orders)}</span>
-                        {" · "}
-                        {tp.sells.length} sell orders listed for <span className="font-numeric">{coin(tp.listed_for)}</span>{" "}
-                        before the trading post&apos;s cut.
-                    </p>
-                    {/* No undercut warning: our prices are read once a night, and
-                        a warning built on them would be wrong most of the day. */}
-                    <p className="mt-1 text-[11px] text-[var(--ink-faint)]">
-                        We do not say whether you have been undercut — our prices are from last night, and the
-                        market moves faster than that.
-                    </p>
-                </div>
-            </div>
-        </Panel>
-    );
-}
-
-function ArmoryPanel({ armory }: { armory: Gw2AccountOverview["legendary_armory"] }) {
-    if (!armory) {
-        return (
-            <Panel material="matte" title="Legendary armory">
-                <p className="text-sm text-[var(--ink-low)]">
+            {!armory ? (
+                <Unshared>
                     Your key does not include the <strong>unlocks</strong> permission, or we have not read it yet.
-                </p>
-            </Panel>
-        );
-    }
-
-    return (
-        <Panel
-            material="matte"
-            title="Legendary armory"
-            meta={
-                <span className="font-numeric text-xs text-[var(--ink-faint)]">
-                    {armory.owned_count} of {armory.in_catalogue}
-                </span>
-            }
-        >
-            {armory.owned.length === 0 ? (
-                <p className="text-sm text-[var(--ink-low)]">
+                </Unshared>
+            ) : armory.owned.length === 0 ? (
+                <Unshared>
                     No legendaries in the armory yet.{" "}
                     <Link href="/gw2/legendary" className="text-[var(--accent-ink)] hover:underline">
                         See what each one takes
                     </Link>
                     .
-                </p>
+                </Unshared>
             ) : (
-                <ul className="space-y-2">
-                    {armory.owned.map((item) => (
-                        <li key={item.item_id} className="flex items-center gap-2.5 text-sm">
-                            <GameIcon src={item.icon} alt="" size="sm" rarity="Legendary" />
-                            <span className="min-w-0 flex-1 truncate text-[var(--ink-hi)]">{item.name ?? `Item ${item.item_id}`}</span>
-                            <WikiLink wiki={item.wiki} name={item.name} compact />
-                            <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">
-                                {item.count}
-                                {item.max_count !== null && ` / ${item.max_count}`}
-                            </span>
-                        </li>
-                    ))}
-                </ul>
+                <>
+                    <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                        {armory.owned.map((item) => (
+                            <li key={item.item_id}>
+                                <ToneCard tone={LEGENDARY} className="flex h-full items-center gap-3 px-3 py-2.5">
+                                    <GameIcon src={item.icon} alt="" size="md" rarity="Legendary" />
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-1">
+                                            <span className="truncate text-[13px] text-[var(--ink-hi)]">
+                                                {item.name ?? `Item ${item.item_id}`}
+                                            </span>
+                                            <WikiLink wiki={item.wiki} name={item.name} compact />
+                                        </div>
+                                        <p className="font-numeric text-[11px] text-[var(--ink-low)]">
+                                            {item.count}
+                                            {item.max_count !== null && ` / ${item.max_count}`}
+                                            {item.type && <span className="ml-1.5 text-[var(--ink-faint)]">{item.type}</span>}
+                                        </p>
+                                    </div>
+                                </ToneCard>
+                            </li>
+                        ))}
+                    </ul>
+                    <p className="text-[11px] text-[var(--ink-faint)]">
+                        The second figure is how many the armory can use — rings and accessories take two, some weapons
+                        more.
+                    </p>
+                </>
             )}
-            <p className="mt-3 text-[11px] text-[var(--ink-faint)]">
-                The second figure is how many the armory can use — rings and accessories take two, some weapons more.
-            </p>
-        </Panel>
+        </section>
     );
 }
 
-function CollectionsPanel({ collections }: { collections: Gw2AccountOverview["collections"] }) {
-    if (!collections) {
-        return (
-            <Panel material="matte" title="Collections">
-                <p className="text-sm text-[var(--ink-low)]">
-                    Your key does not include the <strong>unlocks</strong> permission, or we have not read your
-                    collections yet. They arrive with the next full read.
-                </p>
-            </Panel>
-        );
-    }
-
-    const labels = { skins: "Wardrobe skins", minis: "Miniatures", outfits: "Outfits", titles: "Titles" } as const;
-
+function TradingPost({ tp }: { tp: Gw2AccountOverview["trading_post"] }) {
     return (
-        <Panel material="matte" title="Collections">
-            <div className="space-y-6">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => (
-                        <div key={key} className="space-y-1.5">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-[var(--ink-mid)]">{labels[key]}</span>
-                                <span className="font-numeric text-xs text-[var(--ink-low)]">
-                                    {collections.counts[key].have} / {collections.counts[key].total}
-                                </span>
-                            </div>
-                            <Meter value={collections.counts[key].have} max={Math.max(1, collections.counts[key].total)} size="sm" />
-                        </div>
-                    ))}
-                </div>
+        <section className="space-y-4">
+            <SectionHeader
+                icon={<Coins size={18} />}
+                tone={GOLD}
+                title="Trading post"
+                description="What is waiting at the counter, and what your orders hold."
+            />
 
-                <div className="grid gap-5 lg:grid-cols-3">
-                    {(["skins", "minis", "outfits"] as const).map((kind) => (
-                        <div key={kind}>
-                            <h3 className="mb-2 text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
-                                Cheapest missing {labels[kind].toLowerCase()}
-                            </h3>
-                            {collections.cheapest[kind].length === 0 ? (
-                                <p className="text-xs text-[var(--ink-low)]">Nothing missing is on the trading post.</p>
-                            ) : (
-                                <ul className="space-y-1.5">
-                                    {collections.cheapest[kind].map((row) => (
-                                        <li key={`${row.piece_id}-${row.item_id}`} className="flex items-center gap-2 text-xs">
-                                            <GameIcon src={row.icon ?? row.item_icon} alt="" size="sm" />
-                                            <span className="min-w-0 flex-1 truncate text-[var(--ink-mid)]">
-                                                {row.item_name ?? row.name ?? `Item ${row.item_id}`}
-                                            </span>
-                                            <WikiLink wiki={row.wiki} name={row.item_name} compact />
-                                            <span className="shrink-0 font-numeric text-[var(--ink-low)]">{coin(row.sell_unit)}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    ))}
-                </div>
+            {!tp ? (
+                <Unshared>
+                    Your key does not include the <strong>tradingpost</strong> permission, or we have not read it yet.
+                </Unshared>
+            ) : (
+                <ToneCard tone={GOLD} className="space-y-4 p-5">
+                    <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <TpFigure value={coin(tp.waiting.coins)} label="waiting at the counter" strong />
+                        <TpFigure value={String(tp.waiting.items.length)} label="item stacks waiting" />
+                        <TpFigure value={coin(tp.in_buy_orders)} label={`held in ${tp.buys.length} buy orders`} />
+                        <TpFigure
+                            value={coin(tp.listed_for)}
+                            label={`listed in ${tp.sells.length} sell orders, before the trading post's cut`}
+                        />
+                    </dl>
 
-                {collections.closest_titles.length > 0 && (
-                    <div>
-                        <h3 className="mb-2 text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
-                            Titles you are closest to
-                        </h3>
-                        <ul className="grid gap-2 sm:grid-cols-2">
-                            {collections.closest_titles.map((t) => (
-                                <li key={t.title_id} className="space-y-1">
-                                    <div className="flex items-center gap-1.5 text-xs">
-                                        <span className="text-[var(--ink-hi)]">{t.title}</span>
-                                        <span className="truncate text-[var(--ink-faint)]">— {t.achievement}</span>
-                                        <WikiLink wiki={t.wiki} name={t.achievement} compact />
-                                        <span className="ml-auto shrink-0 font-numeric text-[var(--ink-low)]">
-                                            {t.current}/{t.max}
-                                        </span>
-                                    </div>
-                                    <Meter value={t.current} max={Math.max(1, t.max)} size="sm" />
+                    {tp.waiting.items.length > 0 && (
+                        <ul
+                            className="grid grid-cols-1 gap-x-4 gap-y-1.5 border-t pt-3 sm:grid-cols-2"
+                            style={{ borderColor: "var(--line)" }}
+                        >
+                            {tp.waiting.items.map((item) => (
+                                <li key={item.item_id} className="flex items-center gap-2 text-xs">
+                                    <GameIcon src={item.icon} alt="" size="sm" />
+                                    <span className="truncate text-[var(--ink-mid)]">
+                                        {item.count}× {item.name ?? `Item ${item.item_id}`}
+                                    </span>
+                                    <WikiLink wiki={item.wiki} name={item.name} compact />
                                 </li>
                             ))}
                         </ul>
-                    </div>
-                )}
+                    )}
 
-                <p className="text-[11px] text-[var(--ink-faint)]">
-                    Prices are per piece and never added up: most of a collection cannot be bought at all.
-                    {collections.prices_observed_at &&
-                        ` Trading post prices as of ${new Date(collections.prices_observed_at).toLocaleDateString()}.`}
-                </p>
-            </div>
-        </Panel>
+                    {/* No undercut warning: our prices are read once a night, and
+                        a warning built on them would be wrong most of the day. */}
+                    <p className="border-t pt-3 text-[11px] text-[var(--ink-faint)]" style={{ borderColor: "var(--line)" }}>
+                        We do not say whether you have been undercut — our prices are from last night, and the market
+                        moves faster than that.
+                    </p>
+                </ToneCard>
+            )}
+        </section>
+    );
+}
+
+function TpFigure({ value, label, strong = false }: { value: string; label: string; strong?: boolean }) {
+    return (
+        <div className="min-w-0">
+            <dt className="sr-only">{label}</dt>
+            <dd
+                className="font-numeric text-lg leading-tight"
+                style={{ color: strong ? "var(--ink-hi)" : "var(--ink-mid)" }}
+            >
+                {value}
+            </dd>
+            <dd className="text-[11px] text-[var(--ink-low)]">{label}</dd>
+        </div>
+    );
+}
+
+function Collections({ collections }: { collections: Gw2AccountOverview["collections"] }) {
+    const labels = { skins: "Wardrobe skins", minis: "Miniatures", outfits: "Outfits", titles: "Titles" } as const;
+
+    return (
+        <section className="space-y-4">
+            <SectionHeader
+                icon={<Shirt size={18} />}
+                tone={COLLECTIONS}
+                title="Collections"
+                description="How much of each you have, the cheapest missing pieces, and the titles nearest to hand."
+            />
+
+            {!collections ? (
+                <Unshared>
+                    Your key does not include the <strong>unlocks</strong> permission, or we have not read your
+                    collections yet. They arrive with the next full read.
+                </Unshared>
+            ) : (
+                <div className="space-y-5">
+                    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => (
+                            <li key={key}>
+                                <ToneCard tone={COLLECTIONS} className="h-full space-y-2">
+                                    <p className="text-xs text-[var(--ink-low)]">{labels[key]}</p>
+                                    <p className="font-display text-lg font-bold leading-tight text-[var(--ink-hi)]">
+                                        {collections.counts[key].have}
+                                        <span className="text-xs font-normal text-[var(--ink-low)]">
+                                            {" "}
+                                            / {collections.counts[key].total}
+                                        </span>
+                                    </p>
+                                    <Meter
+                                        value={collections.counts[key].have}
+                                        max={Math.max(1, collections.counts[key].total)}
+                                        size="sm"
+                                        tone={COLLECTIONS}
+                                    />
+                                </ToneCard>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <div className="grid gap-3 lg:grid-cols-3">
+                        {(["skins", "minis", "outfits"] as const).map((kind) => (
+                            <ToneCard key={kind} tone={COLLECTIONS} className="space-y-2.5">
+                                <h3 className="text-[13px] font-semibold text-[var(--ink-hi)]">
+                                    Cheapest missing {labels[kind].toLowerCase()}
+                                </h3>
+                                {collections.cheapest[kind].length === 0 ? (
+                                    <p className="text-xs text-[var(--ink-low)]">Nothing missing is on the trading post.</p>
+                                ) : (
+                                    <ul className="space-y-1.5">
+                                        {collections.cheapest[kind].map((row) => (
+                                            <li key={`${row.piece_id}-${row.item_id}`} className="flex items-center gap-2 text-xs">
+                                                <GameIcon src={row.icon ?? row.item_icon} alt="" size="sm" />
+                                                <span className="min-w-0 flex-1 truncate text-[var(--ink-mid)]">
+                                                    {row.item_name ?? row.name ?? `Item ${row.item_id}`}
+                                                </span>
+                                                <WikiLink wiki={row.wiki} name={row.item_name} compact />
+                                                <span className="shrink-0 font-numeric text-[var(--ink-low)]">{coin(row.sell_unit)}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </ToneCard>
+                        ))}
+                    </div>
+
+                    {collections.closest_titles.length > 0 && (
+                        <div className="space-y-2.5">
+                            <h3 className="text-[13px] font-semibold text-[var(--ink-hi)]">Titles you are closest to</h3>
+                            <ul className="grid gap-x-5 gap-y-3 sm:grid-cols-2">
+                                {collections.closest_titles.map((t) => (
+                                    <li key={t.title_id} className="space-y-1">
+                                        <div className="flex items-center gap-1.5 text-xs">
+                                            <span className="text-[var(--ink-hi)]">{t.title}</span>
+                                            <span className="truncate text-[var(--ink-faint)]">— {t.achievement}</span>
+                                            <WikiLink wiki={t.wiki} name={t.achievement} compact />
+                                            <span className="ml-auto shrink-0 font-numeric text-[var(--ink-low)]">
+                                                {t.current}/{t.max}
+                                            </span>
+                                        </div>
+                                        <Meter value={t.current} max={Math.max(1, t.max)} size="sm" tone={COLLECTIONS} />
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    <p className="text-[11px] text-[var(--ink-faint)]">
+                        Prices are per piece and never added up: most of a collection cannot be bought at all.
+                        {collections.prices_observed_at &&
+                            ` Trading post prices as of ${new Date(collections.prices_observed_at).toLocaleDateString()}.`}
+                    </p>
+                </div>
+            )}
+        </section>
     );
 }

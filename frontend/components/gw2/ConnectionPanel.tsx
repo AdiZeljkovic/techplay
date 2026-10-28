@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Link2Off, RefreshCw } from "lucide-react";
-import Panel from "@/components/ui/Panel";
+import { Link2Off, PlugZap, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Gw2Panel } from "@/components/gw2/Gw2Ui";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { disconnect, getConnection, gw2Error, requestSync, type Gw2Connection } from "@/lib/gw2";
 
 /**
@@ -15,7 +16,8 @@ import { disconnect, getConnection, gw2Error, requestSync, type Gw2Connection } 
  * It was the last panel down the dashboard's right-hand column until the
  * redesign of 28 October 2026, which gave that column to two panels. The
  * menu beside every page now says whether the account is connected and when it
- * was read; this is where something is done about it.
+ * was read; this is where something is done about it. Drawn as one of the
+ * account page's right-hand panels since phase 6.
  */
 export default function ConnectionPanel({
     connection,
@@ -86,10 +88,11 @@ export default function ConnectionPanel({
     }
 
     return (
-        <Panel
-            material="matte"
+        <Gw2Panel
+            icon={<PlugZap size={18} />}
             title="Your connection"
-            meta={<span className="truncate text-xs text-[var(--ink-faint)]">{connection.account_name}</span>}
+            description={connection.account_name ?? undefined}
+            tone={DOMAIN_TONE.account}
         >
             <div className="space-y-3 text-xs">
                 <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-[var(--ink-low)]">
@@ -187,6 +190,6 @@ export default function ConnectionPanel({
                     </Button>
                 </div>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }

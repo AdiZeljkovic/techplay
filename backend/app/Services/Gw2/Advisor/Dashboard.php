@@ -1108,34 +1108,34 @@ class Dashboard
             'nearly_done' => count($snapshot->nearlyDone),
             'one_step_away' => count(array_filter($snapshot->nearlyDone, fn (EasyWin $w) => $w->remaining() === 1)),
             'daily_ap' => $snapshot->dailyAp,
-            'closest' => array_map(fn (EasyWin $w) => [
-                'id' => $w->id,
-                'name' => $w->name,
-                'requirement' => $w->requirement,
-                'current' => $w->current,
-                'max' => $w->max,
-                'remaining' => $w->remaining(),
-                // Says plainly whether a human has looked at this row. Some
-                // achievements are seasonal or retired and the API does not say
-                // which.
-                'reviewed' => $w->curated,
-                'effort' => $w->effortBand,
-                'icon' => $w->icon,
-                // What finishing pays, for the reward column of the easy-wins
-                // list: points from the catalogue's tiers, and a mastery point
-                // where the achievement's rewards name a region.
-                'points' => $w->points,
-                // The account's spelling (Heart of Thorns), not the catalogue's (Maguuma).
-                'mastery_region' => MasteryRegions::toAccountName($w->masteryRegion),
-                'wiki' => Wiki::named($w->name),
-                // Only what is left, and only where the game named it. A list
-                // of three things beats a bar at 94% every time.
-                'steps_remaining' => array_values(array_filter(array_map(
-                    fn ($step) => $step->text,
-                    $w->remainingSteps()
-                ))),
-            ], array_slice($snapshot->nearlyDone, 0, 8)),
+            // Shaped by the achievements page's own mapper, so a card reads
+            // the same in both places.
+            'closest' => array_map([Achievements::class, 'win'], array_slice($snapshot->nearlyDone, 0, 8)),
         ];
+    }
+
+    /**
+     * The achievements page.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function achievements(int $gw2AccountId): ?array
+    {
+        $snapshot = $this->reader->for($gw2AccountId);
+
+        return $snapshot ? app(Achievements::class)->for($snapshot) : null;
+    }
+
+    /**
+     * The fractals page.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function fractals(int $gw2AccountId, ?string $characterName = null): ?array
+    {
+        $snapshot = $this->reader->for($gw2AccountId);
+
+        return $snapshot ? app(Fractals::class)->for($snapshot, $characterName) : null;
     }
 
     /** @return array<string, mixed>|null */

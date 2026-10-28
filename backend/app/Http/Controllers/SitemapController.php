@@ -763,19 +763,26 @@ class SitemapController extends Controller
          * section is actually for.
          */
         if (Schema::hasTable('gw2_guides')) {
-            DB::table('gw2_guides')
+            $guides = DB::table('gw2_guides')
                 ->where('is_published', true)
                 ->orderBy('family')
                 ->orderBy('sort_order')
-                ->get(['family', 'slug', 'updated_at'])
-                ->each(function ($guide) use (&$xml) {
-                    $xml .= $this->urlEntry(
-                        "{$this->frontendUrl}/gw2/{$guide->family}/{$guide->slug}",
-                        $guide->updated_at ? Carbon::parse($guide->updated_at)->toIso8601String() : null,
-                        'monthly',
-                        '0.8'
-                    );
-                });
+                ->get(['family', 'slug', 'updated_at']);
+
+            // The index that links them all, only while it has something to
+            // list — with no guide published the page is a 404.
+            if ($guides->isNotEmpty()) {
+                $xml .= $this->urlEntry("{$this->frontendUrl}/gw2/guides", null, 'weekly', '0.8');
+            }
+
+            foreach ($guides as $guide) {
+                $xml .= $this->urlEntry(
+                    "{$this->frontendUrl}/gw2/{$guide->family}/{$guide->slug}",
+                    $guide->updated_at ? Carbon::parse($guide->updated_at)->toIso8601String() : null,
+                    'monthly',
+                    '0.8'
+                );
+            }
         }
 
         /*

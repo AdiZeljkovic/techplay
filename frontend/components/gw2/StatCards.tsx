@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Award, Gem, Layers, Shield, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import Meter from "@/components/ui/Meter";
@@ -12,8 +13,9 @@ import type { Gw2Dashboard } from "@/lib/gw2";
  * Drawn as mockup 1 draws them — a glowing mark in the domain's colour, a large
  * figure, a line under it and a bar — with figures the mockup could not have:
  * "2,847 achievement points, 48% complete" is not a percentage of anything
- * countable, and "Fractal Level 37 · Tier 4" names a tier from a scale with no
- * published mapping (and 37 would be Tier 2 on any of them).
+ * countable, and "Fractal Level 37 · Tier 4" gets the tier wrong — 37 is Tier 2.
+ *
+ * Each card opens the page that says the rest.
  *
  * So the look is the mockup's and the figures are ours. Each card reports
  * something read off the account, and where a card would need a total we do not
@@ -35,13 +37,16 @@ interface CardProps {
      * the cards borrow them: gear pink, fractals violet, masteries green.
      */
     tone: string;
+    /** The page that says the rest. */
+    href: string;
     children?: ReactNode;
 }
 
-function Card({ icon, label, value, detail, tone, children }: CardProps) {
+function Card({ icon, label, value, detail, tone, href, children }: CardProps) {
     return (
-        <div
-            className="relative flex flex-col gap-3 overflow-hidden rounded-[var(--radius-panel)] border p-4"
+        <Link
+            href={href}
+            className="relative flex flex-col gap-3 overflow-hidden rounded-[var(--radius-panel)] border p-4 transition-[filter] hover:brightness-110"
             style={{
                 background: "var(--surface-1)",
                 borderColor: `color-mix(in srgb, ${tone} 22%, var(--line-strong))`,
@@ -78,7 +83,7 @@ function Card({ icon, label, value, detail, tone, children }: CardProps) {
             </div>
 
             {children && <div className="relative">{children}</div>}
-        </div>
+        </Link>
     );
 }
 
@@ -90,6 +95,7 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             <Card
                 icon={<Sparkles size={20} />}
                 tone={DOMAIN_TONE.masteries}
+                href="/gw2/masteries"
                 label="Mastery points"
                 value={masteries.unspent_total}
                 detail={
@@ -118,21 +124,27 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             <Card
                 icon={<Layers size={20} />}
                 tone={DOMAIN_TONE.fractals}
+                href="/gw2/fractals"
                 label="Fractal level"
                 value={fractals?.personal_level ?? "—"}
                 detail={
                     /*
-                     * No tier label. The per-scale requirements are not in the
-                     * API and not in our catalogue, so naming a tier here would
-                     * be the first invented number in the tool.
+                     * The tier is the game's own grouping — 25 scales each, the
+                     * same tiers the daily fractals are named by — and the
+                     * backend's Fractals::tier(). What is still not named is the
+                     * Agony Resistance each scale recommends: that is not in the
+                     * API, and it would be the first invented number in the tool.
                      */
-                    fractals?.personal_level ? "personal level" : "no fractals recorded"
+                    fractals?.personal_level
+                        ? `personal level · Tier ${Math.min(4, Math.floor((fractals.personal_level - 1) / 25) + 1)}`
+                        : "no fractals recorded"
                 }
             />
 
             <Card
                 icon={<Gem size={20} />}
                 tone={DOMAIN_TONE.fractals}
+                href="/gw2/fractals"
                 label="Agony Resistance"
                 value={
                     <>
@@ -157,6 +169,7 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             <Card
                 icon={<Shield size={20} />}
                 tone={DOMAIN_TONE.gear}
+                href="/gw2/ascended"
                 label="Ascended gear"
                 value={
                     <>
@@ -182,6 +195,7 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             <Card
                 icon={<Award size={20} />}
                 tone={DOMAIN_TONE.achievements}
+                href="/gw2/achievements"
                 label="Nearly done"
                 value={achievements.one_step_away}
                 detail={
