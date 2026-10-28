@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import MasteriesClient from "@/components/gw2/MasteriesClient";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Mastery Tracker — Points, Tiers and What They Buy",
@@ -26,6 +26,7 @@ export default function Gw2MasteriesPage() {
                 title="Masteries & easy wins"
                 description="Where each region's next points are, what your unspent ones already buy, and what is closest to done. Points are locked to the region that earned them."
                 tone={DOMAIN_TONE.masteries}
+                art={HERO_ART.masteries}
             />
 
             <MasteriesClient />

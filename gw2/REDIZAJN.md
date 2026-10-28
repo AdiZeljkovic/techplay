@@ -12,7 +12,7 @@ funkcija.
 | Pitanje | Odluka |
 |---|---|
 | Okvir | GW2 bočni meni **ispod postojećeg headera sajta**. Čitalac ostaje na TechPlayu; header, footer, oglasi i consent rade kao svugdje. |
-| Slike | **API slike + vlastite generisane.** ArenaNet umjetnost tek poslije pravnog koraka (Content Use Policy pokriva samo fizička lica). |
+| Slike | **API slike + službeni ArenaNet asset kit za hero dijelove** (izmjena 28. 10. 2026, vlasnikova odluka; prije: vlastite generisane). Content Use Policy pokriva samo fizička lica — status sajta se rješava u pravnom koraku, do tada svaki hero nosi „Art © ArenaNet". |
 | Font | **Bez serifa.** GW2 dio koristi fontove sajta (Instrument Sans, IBM Plex). |
 | Logo | Ne mijenja se sada. |
 | Mobilni | Bočni meni postaje izvlačni meni (sheet sajta), desna kolona ide ispod sadržaja. |
@@ -160,10 +160,44 @@ SotO; svugdje „/254” — svaka regija ima svoj zbir.
 
 ---
 
-## 5. Slike za generisanje
+## 5. Slike
 
-Pravi ih vlasnik (ChatGPT, kao mockupe). Ide u `frontend/public/images/gw2/`,
-format **WebP**, imena tačno kao ispod — kod ih čita po imenu.
+### Hero — urađeno iz ArenaNet asset kita (28. 10. 2026)
+
+Vlasnik je odlučio da hero dijelovi koriste službeni kit
+(guildwars2.com/en/media/asset-kit: osnovni, Heart of Thorns, Path of Fire)
+umjesto generisanih slika. Kit nema vlastitu licencu nego upućuje na Content
+Use Policy — vidi §1 i pravni korak. Nasumične slike s interneta se ne koriste.
+
+17 banera u `frontend/public/images/gw2/hero-*.webp`, 2400×700 (raids
+1920×560, koliko je izvor), motiv desno od sredine. Koja stranica nosi koji je u
+`HERO_ART` i `guideArt()` u `lib/gw2domain.ts`:
+
+| Fajl | Izvor u kitu | Stranice |
+|---|---|---|
+| `hero-dashboard` | Concept Art / Divinitys Reach | `/gw2` |
+| `hero-next` | PoF Concept14 (jahač u pustinji) | `/gw2/next`, vodiči progression i level-80 |
+| `hero-ascended` | PoF Concept25 (mač u vatri) | `/gw2/ascended`, vodiči goals |
+| `hero-crafting` | Concept Art / Divinitys Garden Orrery | planer, `/gw2/database/crafting/*` |
+| `hero-masteries` | Concept Art / Caithe | masteries, baza traka i insighta, vodiči masteries |
+| `hero-achievements` | Concept Art / Broken Ring | `/gw2/achievements`, vodiči achievements |
+| `hero-fractals` | PoF Concept05 (kristali) | `/gw2/fractals`, vodiči fractals |
+| `hero-raids` | HoT screenshot Raids 01 | `/gw2/content` |
+| `hero-legendary` | PoF Balthazar key art | `/gw2/legendary`, vodiči legendary |
+| `hero-tonight` | PoF Concept16 (noć) | `/gw2/tonight` |
+| `hero-story` | Concept Art / Leviathan | `/gw2/story` |
+| `hero-account` | PoF Concept06 (lukovi) | `/gw2/account` |
+| `hero-whats-new` | PoF Concept18 (grad na suncu) | `/gw2/whats-new` |
+| `hero-database` | PoF Concept10 (plava kupola) | `/gw2/database` |
+| `hero-guides` | Concept Art / Great Wall | `/gw2/guides`, ostali vodiči |
+| `hero-mounts` | PoF Mount key art | vodiči mounts |
+| `hero-vault` | PoF Concept20 (zlatne kugle) | vodiči wizards-vault |
+
+### Kartice — još za generisanje
+
+Spisak ispod ostaje za kartice po domeni (960 × 540). Hero motivi ispod su
+zamijenjeni gornjom tabelom i stoje kao zapis plana. Ide u
+`frontend/public/images/gw2/`, format **WebP**, imena tačno kao ispod.
 
 **Pravila za sve:** naslikana digitalna fantazija, tamno, nisko osvjetljenje,
 grimizni akcenti (#DC143C). **Bez teksta, logotipa, UI-ja.** Bez prepoznatljivih

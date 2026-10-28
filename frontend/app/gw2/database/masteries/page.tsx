@@ -4,7 +4,7 @@ import { KeyRound, Layers, ListTree } from "lucide-react";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, regionTone } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART, regionTone } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicMasteries } from "@/lib/gw2public";
 
@@ -65,6 +65,7 @@ export default async function PublicMasteriesPage() {
                 title="Mastery tracks"
                 description={`Every track, every tier, and what each one costs — ${total} mastery points in all.`}
                 tone={DOMAIN_TONE.masteries}
+                art={HERO_ART.masteries}
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 

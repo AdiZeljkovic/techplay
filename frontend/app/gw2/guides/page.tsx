@@ -18,7 +18,7 @@ import {
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import ReferenceCard from "@/components/gw2/ReferenceCard";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, domainTone } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART, domainTone } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { GUIDE_FAMILIES, getGuides, guideFamily, type PublicGuideSummary } from "@/lib/gw2public";
 
@@ -99,6 +99,7 @@ export default async function Gw2GuidesPage() {
                 title="Guides"
                 description={`${guides.length} ${guides.length === 1 ? "guide" : "guides"}, each complete as it is. Connect an account and the ones that can show your own figures do.`}
                 tone={DOMAIN_TONE.reference}
+                art={HERO_ART.guides}
             />
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">

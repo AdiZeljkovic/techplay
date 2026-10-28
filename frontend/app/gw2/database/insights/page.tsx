@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Info, KeyRound, Layers, MapPin } from "lucide-react";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, regionTone } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART, regionTone } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicInsights, insightHref } from "@/lib/gw2public";
 
@@ -53,6 +53,7 @@ export default async function InsightsIndexPage() {
                 title="Mastery insights"
                 description={`${total} insights across ${regions.reduce((n, r) => n + r.maps.length, 0)} maps, with the nearest waypoint to each.`}
                 tone={DOMAIN_TONE.masteries}
+                art={HERO_ART.masteries}
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 

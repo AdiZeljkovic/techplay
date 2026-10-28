@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
+import { HERO_ART } from "@/lib/gw2domain";
 import Gw2Client from "@/components/gw2/Gw2Client";
 
 /**
@@ -23,6 +24,7 @@ export default function Gw2NextPage() {
                 eyebrow="What should I do next?"
                 title="All recommendations"
                 description="Pick a goal, say how long you have, rule out what you are not in the mood for — and the advice is weighed again. Every card says how sure we are."
+                art={HERO_ART.next}
             />
 
             <Gw2Client view="next" />

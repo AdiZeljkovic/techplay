@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import InsightList from "@/components/gw2/InsightList";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicInsightMap, insightHref } from "@/lib/gw2public";
 
@@ -74,6 +74,7 @@ export default async function InsightMapPage({ params }: Params) {
                         .join(" · ") || undefined
                 }
                 tone={DOMAIN_TONE.masteries}
+                art={HERO_ART.masteries}
                 back={{ href: "/gw2/database/insights", label: "Mastery insights" }}
             />
 

@@ -3,7 +3,7 @@ import { BookOpen, Database, Hammer, History, KeyRound, MapPin, Sparkles } from 
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import ReferenceCard from "@/components/gw2/ReferenceCard";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
 import { gw2Application, gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getCraftable, getPublicMasteries } from "@/lib/gw2public";
 
@@ -67,6 +67,7 @@ export default async function Gw2DatabasePage() {
                 title="Guild Wars 2 database"
                 description="Recipes broken down to the last material, and every mastery tier with what it costs. No account needed — connecting one just subtracts what you already have."
                 tone={REFERENCE}
+                art={HERO_ART.database}
             />
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">

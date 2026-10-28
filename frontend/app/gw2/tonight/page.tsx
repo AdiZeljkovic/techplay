@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
+import { HERO_ART } from "@/lib/gw2domain";
 import TonightClient from "@/components/gw2/TonightClient";
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function Gw2TonightPage() {
                 eyebrow="Tonight in GW2"
                 title="Tonight in Guild Wars 2"
                 description="Nothing new is invented here — this is the advice that already holds, ordered to fit the evening you actually have."
+                art={HERO_ART.tonight}
             />
 
             <TonightClient />

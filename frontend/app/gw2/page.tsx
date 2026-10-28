@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
+import { HERO_ART } from "@/lib/gw2domain";
 import Gw2Client from "@/components/gw2/Gw2Client";
 
 /**
@@ -45,6 +46,7 @@ export default function Gw2Page() {
                 eyebrow="Guild Wars 2 companion"
                 title="What should I do next?"
                 description="Progression guidance built from your own Guild Wars 2 account — not a checklist, and nothing we had to guess."
+                art={HERO_ART.dashboard}
             />
 
             <Gw2Client />

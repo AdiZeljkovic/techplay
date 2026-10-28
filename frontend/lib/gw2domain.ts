@@ -54,6 +54,56 @@ export function domainTone(domain: string | null | undefined): string {
 export const DOMAIN_ART: Record<string, string> = {};
 
 /**
+ * The scene behind each page's hero, under `/images/gw2/`.
+ *
+ * Cut from ArenaNet's official Guild Wars 2 asset kits (base game, Heart of
+ * Thorns, Path of Fire; guildwars2.com/en/media/asset-kit). On 28 October 2026
+ * the owner chose these over the generated art planned in REDIZAJN.md §5. The
+ * kits are governed by ArenaNet's Content Use Policy, which is settled as part
+ * of the legal step; until it is, every hero carries the credit.
+ *
+ * Banners are 2400×700 WebP — the raids one is 1920×560, the size of its
+ * source. The motif sits right of centre, because the hero darkens its left
+ * side for the title.
+ */
+export const HERO_ART = {
+    dashboard: "/images/gw2/hero-dashboard.webp",
+    next: "/images/gw2/hero-next.webp",
+    ascended: "/images/gw2/hero-ascended.webp",
+    crafting: "/images/gw2/hero-crafting.webp",
+    masteries: "/images/gw2/hero-masteries.webp",
+    achievements: "/images/gw2/hero-achievements.webp",
+    fractals: "/images/gw2/hero-fractals.webp",
+    raids: "/images/gw2/hero-raids.webp",
+    legendary: "/images/gw2/hero-legendary.webp",
+    tonight: "/images/gw2/hero-tonight.webp",
+    story: "/images/gw2/hero-story.webp",
+    account: "/images/gw2/hero-account.webp",
+    whatsNew: "/images/gw2/hero-whats-new.webp",
+    database: "/images/gw2/hero-database.webp",
+    guides: "/images/gw2/hero-guides.webp",
+    mounts: "/images/gw2/hero-mounts.webp",
+    vault: "/images/gw2/hero-vault.webp",
+} as const;
+
+/** A guide's hero, by its family; the guides index's scene for the rest. */
+export function guideArt(family: string): string {
+    const byFamily: Record<string, string> = {
+        fractals: HERO_ART.fractals,
+        masteries: HERO_ART.masteries,
+        achievements: HERO_ART.achievements,
+        mounts: HERO_ART.mounts,
+        legendary: HERO_ART.legendary,
+        goals: HERO_ART.ascended,
+        "wizards-vault": HERO_ART.vault,
+        progression: HERO_ART.next,
+        "level-80": HERO_ART.next,
+    };
+
+    return byFamily[family] ?? HERO_ART.guides;
+}
+
+/**
  * Mastery regions, in the expansions' own colours.
  *
  * Keyed by the name the **account** endpoint uses, which is not the name the

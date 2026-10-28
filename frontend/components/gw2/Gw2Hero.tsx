@@ -12,11 +12,11 @@ import type { ReactNode } from "react";
  * full-bleed and centred, and inside the tool's frame it would sit under the
  * menu and centre itself on a column it does not own.
  *
- * The scenes are ours to make (see `gw2/REDIZAJN.md` §5) — ArenaNet's art is
- * not ours to use until the site's status with them is settled. Until a page
- * has its scene, the corner carries a wash in the page's own colour, which is
- * the mockup's lighting without a picture under it. No `"use client"`: server
- * pages render this directly.
+ * The scenes come from ArenaNet's official asset kits (`HERO_ART` in
+ * lib/gw2domain.ts says which and why), and a hero that shows one says whose it
+ * is in the corner. A page without a scene gets a wash in its own colour,
+ * which is the mockup's lighting without a picture under it. No
+ * `"use client"`: server pages render this directly.
  */
 export default function Gw2Hero({
     title,
@@ -30,7 +30,7 @@ export default function Gw2Hero({
     title: string;
     description?: string;
     eyebrow?: string;
-    /** A file under /images/gw2/, once it exists. */
+    /** A file under /images/gw2/ — one of `HERO_ART`. */
     art?: string;
     /** The page's domain colour, from `DOMAIN_TONE`; the site accent otherwise. */
     tone?: string;
@@ -107,6 +107,10 @@ export default function Gw2Hero({
 
                 {children && <div className="mt-5">{children}</div>}
             </div>
+
+            {art && (
+                <span className="absolute bottom-2 right-3 text-[10px] text-[var(--ink-faint)]">Art © ArenaNet</span>
+            )}
         </header>
     );
 }

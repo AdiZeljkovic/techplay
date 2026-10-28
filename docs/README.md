@@ -2439,6 +2439,15 @@ porodica vodiča istog imena: `/gw2/fractals/agony-resistance` je i dalje vodič
 
 Testovi: `tests/Feature/Gw2AchievementsAndFractalsTest.php`, 6 testova.
 
+**Hero slike iz ArenaNet asset kita (28. 10. 2026, vlasnikova odluka).** 17
+banera u `frontend/public/images/gw2/hero-*.webp` (2400×700 WebP), izrezanih iz
+službenih kitova (osnovni, Heart of Thorns, Path of Fire). Koja stranica nosi
+koji je u `HERO_ART` / `guideArt()` u `lib/gw2domain.ts`, a izvor svakog je u
+`gw2/REDIZAJN.md` §5. Kit nema svoju licencu, nego upućuje na ArenaNetov
+Content Use Policy, a taj pokriva samo fizička lica. Status sajta je dio
+pravnog koraka. Do tada `Gw2Hero` uz sliku ispisuje „Art © ArenaNet"; puni
+obavezni notice i oznaka u `<title>` su i dalje u pravnom koraku.
+
 Mjereno na vlasnikovom nalogu 28. 10. (kopija u /tmp, bez `point_cap`):
 
 | Šta | Vrijednost |

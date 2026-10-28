@@ -5,7 +5,7 @@ import GuidePersonalisation from "@/components/gw2/GuidePersonalisation";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel } from "@/components/gw2/Gw2Ui";
-import { domainTone } from "@/lib/gw2domain";
+import { domainTone, guideArt } from "@/lib/gw2domain";
 import { gw2Breadcrumb, gw2GuideArticle, jsonLd } from "@/lib/gw2jsonld";
 import { getGuide, guideFamily } from "@/lib/gw2public";
 import { ARTICLE_PROSE } from "@/lib/prose";
@@ -80,6 +80,7 @@ export default async function Gw2GuidePage({ params }: Params) {
                 title={guide.title}
                 description={guide.standfirst ?? undefined}
                 tone={tone}
+                art={guideArt(guide.family)}
                 back={{ href: "/gw2/guides", label: "All guides" }}
             >
                 {guide.wiki && <WikiLink wiki={guide.wiki} name={guide.title} className="-ml-1" />}

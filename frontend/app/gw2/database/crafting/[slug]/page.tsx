@@ -6,7 +6,7 @@ import GameIcon from "@/components/gw2/GameIcon";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
 import { coin } from "@/lib/gw2format";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { craftingHref, getPublicRecipe, itemIdFromSlug } from "@/lib/gw2public";
@@ -125,6 +125,7 @@ export default async function CraftingPage({ params }: Params) {
                 title={item.name}
                 description={facts || undefined}
                 tone={REFERENCE}
+                art={HERO_ART.crafting}
                 back={{ href: "/gw2/database/crafting", label: "Crafting recipes" }}
             >
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-4">

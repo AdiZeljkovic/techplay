@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import AccountClient from "@/components/gw2/AccountClient";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Your Guild Wars 2 account — ownership, armory, collections",
@@ -19,6 +19,7 @@ export default function Gw2AccountPage() {
                 title="Your account"
                 description="What you own and what came with it, your legendaries, your collections and the trading post counter — from your last read."
                 tone={DOMAIN_TONE.account}
+                art={HERO_ART.account}
             />
 
             <AccountClient />

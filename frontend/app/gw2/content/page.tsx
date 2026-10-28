@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import ContentClient from "@/components/gw2/ContentClient";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Raid, Dungeon and World Boss Tracker",
@@ -25,6 +25,7 @@ export default function Gw2ContentPage() {
                 title="Raids, bosses and dungeons"
                 description="The game remembers this week and today. Everything longer than that, we remember for you — from the day you connected."
                 tone={DOMAIN_TONE.raids}
+                art={HERO_ART.raids}
             />
 
             <ContentClient />

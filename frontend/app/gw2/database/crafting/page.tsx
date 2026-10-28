@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Hammer } from "lucide-react";
 import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import { SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
+import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
 import { craftingHref, getCraftable } from "@/lib/gw2public";
 
 /**
@@ -73,6 +73,7 @@ export default async function CraftingIndexPage({ searchParams }: Search) {
                 title="Crafting recipes"
                 description={`${data.total.toLocaleString()} craftable items, each one expanded to every material it needs.`}
                 tone={REFERENCE}
+                art={HERO_ART.crafting}
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 
