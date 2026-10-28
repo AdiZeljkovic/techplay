@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import Meter from "@/components/ui/Meter";
 import { Skeleton } from "@/components/ui/Skeleton";
+import WikiLink from "@/components/gw2/WikiLink";
 import { CONFIDENCE_LABEL, getTonight, type Gw2Tonight, type SessionStep } from "@/lib/gw2";
 
 /**
@@ -162,7 +163,10 @@ export default function TonightClient() {
                                     <li key={step.key + step.subject} className="flex items-start gap-3">
                                         <Clock size={14} className="mt-1 shrink-0 text-[var(--ink-faint)]" aria-hidden />
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-sm text-[var(--ink-hi)]">{step.title}</p>
+                                            <p className="text-sm text-[var(--ink-hi)]">
+                                                {step.title}
+                                                <WikiLink wiki={step.wiki} name={step.title} compact className="ml-1 align-middle" />
+                                            </p>
                                             <p className="text-xs text-[var(--ink-low)]">{step.body}</p>
                                         </div>
                                         {step.minutes_low && (
@@ -282,6 +286,7 @@ function Step({ step, last }: { step: SessionStep; last: boolean }) {
                               : ""}
                     </span>
                     <span className="text-sm font-medium text-[var(--ink-hi)]">{step.title}</span>
+                    <WikiLink wiki={step.wiki} name={step.title} compact className="self-center" />
                 </div>
 
                 <p className="mt-1 text-sm text-[var(--ink-mid)]">{step.body}</p>

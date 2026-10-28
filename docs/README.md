@@ -2227,6 +2227,55 @@ se pamti, ali ga **ništa ne čita** — ni pravila, ni savjetnik, ni priča. Pi
 čiji odgovor ništa ne mijenja je tačno ono što ovaj alat svugdje drugdje odbija;
 prvo treba pravilo koje ga koristi.
 
+### 28. 10. 2026 — linkovi na wiki
+
+Sve o čemu alat govori vodi na službeni wiki (`wiki.guildwars2.com`). **Wiki se
+nikad ne čita** — link se slaže iz naših podataka u `Services/Gw2/Wiki`, a wiki je
+samo odredište. Kad wiki ne radi (od ~21. 10. vraća 200 sa stranicom za
+održavanje), ništa kod nas ne pada.
+
+**Predmet ide po chat kodu, ne po imenu.** 74.265 predmeta dijeli 51.604 imena,
+pa link po imenu za hiljade njih otvara pogrešnu stranicu. Chat kod je ono što
+igra ispiše u chatu: `[&` + base64(`0x02`, količina, id kao 4 bajta LE) + `]`
+— 19721 je `[&AgEJTQAA]`. Wikijeva pretraga ga dekodira i otvori stranicu čiji
+infobox nosi taj id:
+
+```
+https://wiki.guildwars2.com/index.php?title=Special%3ASearch&search=%5B%26AgEJTQAA%5D&go=Go
+```
+
+Taj URL u testu je onaj kojim gw2treasures linkuje isti predmet u produkciji, a
+ne vrijednost koju je naš kod proizveo pa je prepisana u vlastiti test.
+
+**Sve ostalo ide po tačnom imenu** — postignuća, mastery trake, mountovi,
+rajdovi, krila, bosovi, tamnice, Agony Resistance, Wizard's Vault. `go=Go` otvori
+stranicu kad se naslov poklapa, a inače pokaže rezultate pretrage — nikad 404.
+Imena rajdova i bosova su **humanizovani id-jevi** (`vale_guardian` → „Vale
+Guardian"), ne naslovi sa wikija, pa će poneki završiti na rezultatima umjesto
+na stranici. To je svjesno: tabela naslova bi bila prepisivanje wikija.
+
+Vodič za mount nosi ime koje igra daje mountu iz `gw2_reference`
+(`mounts_types`: naš URL kaže `turtle`, wiki „Siege Turtle"). Vodič o cijelom
+sistemu nema link — nijedna stranica mu ne odgovara, a pogođena je gora od nijedne.
+
+**Dugme za kopiranje chat koda** stoji uz svaki predmet. To je dio koji radi i kad
+wiki ne radi: kod zalijepljen u igru otvori predmet. Ako preglednik odbije
+clipboard, poruka ispiše kod.
+
+`rel="nofollow"` jer wikijev `robots.txt` zabranjuje `index.php` i `Special:`
+stranice. Čitalac koji klikne nije crawler, ali naše indeksirane stranice ne
+trebaju slati pretraživače tamo gdje ih vlasnici ne žele.
+
+Gdje se vidi: kartice savjeta, Easy wins, oprema, plan za večeras, masteries,
+sadržaj (krila, bosovi, tamnice), planer (cilj, lista, „ne kupuje se", stablo), i
+javno: recept (predmet, materijali, „u šta ulazi"), masteries, vodič za mount.
+**Stablo na javnoj stranici recepta namjerno nema link po čvoru** — svaki čvor
+vodi na našu stranicu tog predmeta, koja ga ima, a stablo legendarnog ima desetine
+redova.
+
+`PAYLOAD_VERSION` je 3 i na dashboardu i na javnim stranicama — oblik se
+promijenio.
+
 ### Otvoreno
 
 - ~~**Polje `access`**~~ **riješeno 28. 9.** — `access` imenuje kupljeni

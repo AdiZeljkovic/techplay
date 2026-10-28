@@ -356,6 +356,7 @@ class SnapshotReader
                     $rarity[$slot] = (string) $item->rarity;
 
                     $slotItems[$slot] = [
+                        'id' => (int) $item->id,
                         'name' => (string) $item->name,
                         'icon' => $item->icon ?: null,
                         'rarity' => (string) $item->rarity,

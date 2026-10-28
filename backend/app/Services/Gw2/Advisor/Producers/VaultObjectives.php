@@ -8,6 +8,7 @@ use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\Signal;
 use App\Services\Gw2\Advisor\Snapshot;
 use App\Services\Gw2\Advisor\VaultObjective;
+use App\Services\Gw2\Wiki;
 
 /**
  * Wizard's Vault objectives that are still open.
@@ -67,6 +68,9 @@ class VaultObjectives implements Producer
                 ],
                 blockers: [],
                 pushes: ['astral_acclaim'],
+                // The objective itself has no page; the vault does, and says
+                // what the acclaim buys.
+                details: ['wiki' => Wiki::named("Wizard's Vault")],
             );
         }
 

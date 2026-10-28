@@ -4,6 +4,7 @@ import Link from "next/link";
 import Container from "@/components/ui/Container";
 import PageHero from "@/components/ui/PageHero";
 import Panel from "@/components/ui/Panel";
+import WikiLink from "@/components/gw2/WikiLink";
 import { getPublicMasteries } from "@/lib/gw2public";
 
 /**
@@ -96,7 +97,10 @@ export default async function PublicMasteriesPage() {
                                 {region.tracks.map((track) => (
                                     <article key={track.id} className="space-y-2">
                                         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                                            <h2 className="text-base text-[var(--ink-hi)]">{track.name}</h2>
+                                            <div className="flex items-baseline gap-1.5">
+                                                <h2 className="text-base text-[var(--ink-hi)]">{track.name}</h2>
+                                                <WikiLink wiki={track.wiki} name={track.name} className="self-center" />
+                                            </div>
                                             <span className="font-numeric text-xs text-[var(--ink-low)]">
                                                 {track.tiers} tiers · {track.points_total} points
                                             </span>

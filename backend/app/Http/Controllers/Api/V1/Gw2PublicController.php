@@ -7,6 +7,7 @@ use App\Models\Gw2Guide;
 use App\Services\Gw2\Advisor\MasteryRegions;
 use App\Services\Gw2\Advisor\RecipeNode;
 use App\Services\Gw2\Advisor\RecipeTree;
+use App\Services\Gw2\Wiki;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\JsonResponse;
@@ -48,7 +49,7 @@ class Gw2PublicController extends Controller
      * cached page for a day while the code that set it was live. A build id
      * says when ArenaNet changed; this says when we did.
      */
-    private const PAYLOAD_VERSION = 2;
+    private const PAYLOAD_VERSION = 3;
 
     /**
      * GET /gw2/public/recipe/{item}
@@ -85,6 +86,7 @@ class Gw2PublicController extends Controller
                         'type' => $row->type,
                         'level' => (int) $row->level,
                         'icon' => $row->icon,
+                        'wiki' => Wiki::item((int) $row->id),
                     ],
                     'craftable' => $root->craftable(),
                     /*
@@ -109,6 +111,7 @@ class Gw2PublicController extends Controller
                         'slug' => $n->name ? $this->slug($n->name) : null,
                         'rarity' => $n->rarity,
                         'icon' => $n->icon,
+                        'wiki' => Wiki::item($n->itemId),
                         'needed' => $n->needed,
                     ], $tree->shoppingList($root)),
                     'used_in' => $this->usedIn((int) $row->id),
@@ -160,6 +163,7 @@ class Gw2PublicController extends Controller
                     'name' => $track->name,
                     'slug' => $this->slug($track->name),
                     'requirement' => $track->requirement,
+                    'wiki' => Wiki::named($track->name),
                     'tiers' => count($levels),
                     'points_total' => $cost,
                     'levels' => array_map(fn ($l) => [
@@ -234,6 +238,7 @@ class Gw2PublicController extends Controller
                      * own account and cannot be in a page cached for everyone.
                      */
                     'personalise_as' => $guide->personalise_as,
+                    'wiki' => $this->guideWiki($guide),
                     'seo' => [
                         'title' => $guide->seo_title ?: $guide->title,
                         'description' => $guide->seo_description ?: $guide->standfirst,
@@ -384,8 +389,37 @@ class Gw2PublicController extends Controller
                 'slug' => $this->slug($i->name),
                 'rarity' => $i->rarity,
                 'icon' => $i->icon,
+                'wiki' => Wiki::item((int) $i->id),
             ])
             ->all();
+    }
+
+    /**
+     * The wiki page a guide is about, where it is about one thing.
+     *
+     * Only the mount pages are: each covers one mount, and the game's own name
+     * for it comes out of the mirrored `mounts/types` catalogue — "Siege
+     * Turtle", not the "turtle" in our URL. The other families are about a
+     * system ("how mastery points work") that no single wiki page matches, so
+     * they get no link rather than a guessed one.
+     *
+     * @return array{url: string, chat_link: null}|null
+     */
+    private function guideWiki(Gw2Guide $guide): ?array
+    {
+        if ($guide->family !== 'mounts') {
+            return null;
+        }
+
+        $id = str_replace('-', '_', $guide->slug);
+
+        $name = DB::table('gw2_reference')
+            ->where('kind', 'mounts_types')
+            ->pluck('payload')
+            ->map(fn ($payload) => json_decode($payload, true) ?: [])
+            ->firstWhere('id', $id)['name'] ?? null;
+
+        return Wiki::named($name);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Services\Gw2\Advisor;
 
+use App\Services\Gw2\Wiki;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -47,7 +48,7 @@ class Dashboard
      * The public pages carry the same constant for the same reason. Change the
      * shape, change this number, in the same commit.
      */
-    private const PAYLOAD_VERSION = 2;
+    private const PAYLOAD_VERSION = 3;
 
     public function __construct(
         private readonly SnapshotReader $reader,
@@ -207,6 +208,7 @@ class Dashboard
                     // Both come out of /v2/masteries and neither was carried.
                     'tier_icons' => $t->tierIcons,
                     'background' => $t->background,
+                    'wiki' => Wiki::named($t->name),
                     'next_tier' => $t->nextTierName(),
                     'next_cost' => $t->nextTierCost(),
                     'points_spent' => $t->pointsSpent(),
@@ -246,6 +248,7 @@ class Dashboard
                 'catalogue_region' => $t->catalogueRegion,
                 'tiers' => $t->tiers(),
                 'points_total' => $t->pointsTotal(),
+                'wiki' => Wiki::named($t->name),
             ], $unpaired),
             'observed_at' => $snapshot->observedAt,
         ];
@@ -299,6 +302,7 @@ class Dashboard
                 'type' => $target->type,
                 'icon' => $target->icon,
                 'quantity' => $quantity,
+                'wiki' => Wiki::item((int) $target->id),
             ],
             'craftable' => $root->craftable(),
             'already_have' => $root->owned,
@@ -313,6 +317,7 @@ class Dashboard
                 'name' => $n->name,
                 'rarity' => $n->rarity,
                 'icon' => $n->icon,
+                'wiki' => Wiki::item($n->itemId),
                 'needed' => $n->needed,
                 'owned' => $n->owned,
                 'missing' => $n->missing(),
@@ -554,7 +559,14 @@ class Dashboard
             $price = $prices[$node->itemId] ?? null;
 
             if (! $price || ($price->sell_unit === null && $price->buy_unit === null)) {
-                $untradable[] = ['item_id' => $node->itemId, 'name' => $node->name, 'missing' => $node->missing()];
+                // Linked, because "cannot be bought" leaves exactly one question
+                // — where it comes from — and the wiki is where that is written.
+                $untradable[] = [
+                    'item_id' => $node->itemId,
+                    'name' => $node->name,
+                    'missing' => $node->missing(),
+                    'wiki' => Wiki::item($node->itemId),
+                ];
 
                 continue;
             }
@@ -713,7 +725,10 @@ class Dashboard
              * is the layer on top: a row of twelve rarities is a table, and a
              * row of twelve items somebody recognises is their character.
              */
-            'items' => $character->slotItems,
+            'items' => array_map(
+                fn (array $item) => $item + ['wiki' => Wiki::item($item['id'])],
+                $character->slotItems
+            ),
             'crafting' => $character->craftingDisciplines,
         ];
     }
@@ -761,6 +776,7 @@ class Dashboard
                 'reviewed' => $w->curated,
                 'effort' => $w->effortBand,
                 'icon' => $w->icon,
+                'wiki' => Wiki::named($w->name),
                 // Only what is left, and only where the game named it. A list
                 // of three things beats a bar at 94% every time.
                 'steps_remaining' => array_values(array_filter(array_map(

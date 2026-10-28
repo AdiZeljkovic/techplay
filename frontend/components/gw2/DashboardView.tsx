@@ -12,6 +12,7 @@ import Select from "@/components/ui/Select";
 import StatCards from "@/components/gw2/StatCards";
 import RecommendationCard from "@/components/gw2/RecommendationCard";
 import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
+import WikiLink from "@/components/gw2/WikiLink";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import {
     chooseCharacter,
@@ -349,9 +350,10 @@ export default function DashboardView({
                                                 <span className="truncate text-sm text-[var(--ink-hi)]">
                                                     {win.name ?? `#${win.id}`}
                                                 </span>
-                                                <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">
+                                                <span className="ml-auto shrink-0 font-numeric text-xs text-[var(--ink-low)]">
                                                     {win.current}/{win.max}
                                                 </span>
+                                                <WikiLink wiki={win.wiki} name={win.name} compact className="self-center" />
                                             </div>
                                             {/*
                                              * What is left, in the game's words,
@@ -780,6 +782,7 @@ function GearPanel({ gear }: { gear: NonNullable<Gw2Dashboard["cards"]["gear"]> 
                                     {item?.name ?? rarity}
                                 </div>
                             </div>
+                            <WikiLink wiki={item?.wiki} name={item?.name} compact />
                         </div>
                     );
                 })}

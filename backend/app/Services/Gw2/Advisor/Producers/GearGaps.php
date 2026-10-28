@@ -8,6 +8,7 @@ use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\Signal;
 use App\Services\Gw2\Advisor\Snapshot;
+use App\Services\Gw2\Wiki;
 
 /**
  * Core slots below ascended, one signal per slot.
@@ -75,6 +76,11 @@ class GearGaps implements Producer
                     // one case where there is nothing to show a picture of.
                     'icon' => $character->slotItems[$slot]['icon'] ?? null,
                     'item' => $character->slotItems[$slot]['name'] ?? null,
+                    // The piece being worn, by chat code — exact even where
+                    // dozens of items share its name.
+                    'wiki' => isset($character->slotItems[$slot]['id'])
+                        ? Wiki::item($character->slotItems[$slot]['id'])
+                        : null,
                 ]),
             );
         }

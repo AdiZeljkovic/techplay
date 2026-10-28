@@ -129,8 +129,12 @@ class Gw2AchievementStepsTest extends TestCase
 
         $this->assertSame('Complete 10 dungeon paths.', $signal->facts['next_step']);
 
-        // Nothing structured to send, so the key is absent rather than empty.
-        $this->assertArrayNotHasKey('details', $signal->toArray());
+        // No step list to send, so those keys are absent rather than empty.
+        // What is left is the link to the achievement's own page.
+        $details = $signal->toArray()['details'];
+        $this->assertArrayNotHasKey('steps_total', $details);
+        $this->assertArrayNotHasKey('steps_remaining', $details);
+        $this->assertSame(\App\Services\Gw2\Wiki::named('Dungeon Frequenter'), $details['wiki']);
     }
 
     public function test_the_steps_that_are_left_reach_the_payload(): void

@@ -8,6 +8,7 @@ import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import Meter from "@/components/ui/Meter";
 import { Skeleton } from "@/components/ui/Skeleton";
+import WikiLink from "@/components/gw2/WikiLink";
 import { getContent, type Gw2Content, type RaidWing } from "@/lib/gw2";
 
 /**
@@ -139,6 +140,7 @@ export default function ContentClient() {
                                 >
                                     {boss.name}
                                 </span>
+                                <WikiLink wiki={boss.wiki} name={boss.name} compact />
                             </li>
                         ))}
                     </ul>
@@ -160,7 +162,8 @@ export default function ContentClient() {
                         {data.dungeons.dungeons.map((dungeon) => (
                             <li key={dungeon.id} className="flex items-baseline justify-between gap-3 text-sm">
                                 <span className="truncate text-[var(--ink-mid)]">{dungeon.name}</span>
-                                <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">
+                                <WikiLink wiki={dungeon.wiki} name={dungeon.name} compact className="self-center" />
+                                <span className="ml-auto shrink-0 font-numeric text-xs text-[var(--ink-low)]">
                                     {dungeon.run_today} / {dungeon.paths.length}
                                 </span>
                             </li>
@@ -182,6 +185,7 @@ function Wing({ wing }: { wing: RaidWing }) {
                     <Swords size={13} className="self-center text-[var(--ink-faint)]" aria-hidden />
                     <span className="text-sm text-[var(--ink-hi)]">{wing.wing}</span>
                     <span className="text-[11px] text-[var(--ink-faint)]">{wing.raid}</span>
+                    <WikiLink wiki={wing.wiki} name={wing.wing} compact className="self-center" />
                 </div>
                 <span className="font-numeric text-xs text-[var(--ink-low)]">
                     {wing.cleared_this_week} / {wing.bosses} this week
@@ -212,6 +216,7 @@ function Wing({ wing }: { wing: RaidWing }) {
                         >
                             {boss.name}
                         </span>
+                        <WikiLink wiki={boss.wiki} name={boss.name} compact />
                     </li>
                 ))}
             </ul>

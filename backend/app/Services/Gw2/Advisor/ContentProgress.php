@@ -2,6 +2,7 @@
 
 namespace App\Services\Gw2\Advisor;
 
+use App\Services\Gw2\Wiki;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -70,6 +71,7 @@ class ContentProgress
                     $encounters[] = [
                         'id' => $id,
                         'name' => $this->humanise($id),
+                        'wiki' => Wiki::named($this->humanise($id)),
                         // Boss or Checkpoint. A checkpoint is not a kill and
                         // counting it as one would inflate every wing.
                         'type' => $event['type'] ?? 'Boss',
@@ -83,6 +85,7 @@ class ContentProgress
                 $wings[] = [
                     'raid' => $this->humanise($raid['id'] ?? ''),
                     'wing' => $this->humanise($wing['id'] ?? ''),
+                    'wiki' => Wiki::named($this->humanise($wing['id'] ?? '')),
                     'encounters' => $encounters,
                     'bosses' => count($bosses),
                     'cleared_this_week' => count(array_filter($bosses, fn ($e) => $e['cleared_this_week'])),
@@ -117,6 +120,7 @@ class ContentProgress
             $bosses[] = [
                 'id' => $id,
                 'name' => $this->humanise($id),
+                'wiki' => Wiki::named($this->humanise($id)),
                 'killed_today' => isset($today[$id]),
                 'ever_killed' => isset($ever[$id]),
             ];
@@ -160,6 +164,7 @@ class ContentProgress
             $dungeons[] = [
                 'id' => $dungeon['id'] ?? '',
                 'name' => $this->humanise($dungeon['id'] ?? ''),
+                'wiki' => Wiki::named($this->humanise($dungeon['id'] ?? '')),
                 'paths' => $paths,
                 'run_today' => count(array_filter($paths, fn ($p) => $p['run_today'])),
             ];

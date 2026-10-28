@@ -112,6 +112,8 @@ class SessionPlan
              */
             'starts_at' => $startsAt,
             'costs' => $costs,
+            // The one detail a step needs: where to read up on it before going.
+            'wiki' => $candidate['details']['wiki'] ?? null,
         ];
     }
 }

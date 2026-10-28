@@ -21,6 +21,16 @@ export type Confidence = "confirmed" | "high" | "medium" | "needs_confirmation";
 /** What the player is being asked to spend. `null` means the rule does not say. */
 export type Effort = "quick" | "session" | "long" | null;
 
+/**
+ * Where something lives on the official GW2 Wiki, built by the backend from our
+ * own catalogue. Items carry their chat code — exact, and still useful in game
+ * when the wiki is down; everything else is a search for its exact name.
+ */
+export interface Gw2WikiLink {
+    url: string;
+    chat_link: string | null;
+}
+
 export interface Recommendation {
     key: string;
     domain: string;
@@ -62,6 +72,8 @@ export interface Recommendation {
         steps_total?: number;
         /** Only what is left. The wording is the game's own. */
         steps_remaining?: { index: number; text: string | null }[];
+        /** The wiki page for what the card is about. */
+        wiki?: Gw2WikiLink;
     };
 }
 
@@ -123,6 +135,7 @@ export interface NearlyDone {
     icon: string | null;
     /** The game's own wording for what is left, where it gave any. */
     steps_remaining: string[];
+    wiki?: Gw2WikiLink | null;
 }
 
 export interface MasteryTrackView {
@@ -142,6 +155,7 @@ export interface MasteryTrackView {
      * row look like the place it is about. Null on a track that has none.
      */
     background: string | null;
+    wiki?: Gw2WikiLink | null;
     next_tier: string | null;
     next_cost: number | null;
     points_spent: number;
@@ -172,7 +186,14 @@ export interface Gw2Masteries {
      * region has no counterpart at all. Rather than file its points under a
      * guessed expansion, those tracks are listed apart and the page says why.
      */
-    unpaired: { id: number; name: string; catalogue_region: string | null; tiers: number; points_total: number }[];
+    unpaired: {
+        id: number;
+        name: string;
+        catalogue_region: string | null;
+        tiers: number;
+        points_total: number;
+        wiki?: Gw2WikiLink | null;
+    }[];
     observed_at: string | null;
 }
 
@@ -190,6 +211,7 @@ export interface PlanLine {
     name: string | null;
     rarity: string | null;
     icon: string | null;
+    wiki?: Gw2WikiLink;
     needed: number;
     owned: number;
     missing: number;
@@ -205,7 +227,7 @@ export interface PlanNode extends PlanLine {
 }
 
 export interface Gw2Plan {
-    target: Gw2ItemSummary & { item_id: number; quantity: number };
+    target: Gw2ItemSummary & { item_id: number; quantity: number; wiki?: Gw2WikiLink };
     craftable: boolean;
     already_have: number;
     tree: PlanNode;
@@ -243,7 +265,7 @@ export interface Gw2Plan {
             buy_unit: number | null;
             sell_quantity: number;
         }[];
-        not_tradable: { item_id: number; name: string | null; missing: number }[];
+        not_tradable: { item_id: number; name: string | null; missing: number; wiki?: Gw2WikiLink }[];
         observed_at: string | null;
     } | null;
     observed_at: string | null;
@@ -265,6 +287,7 @@ export interface SessionStep {
      */
     minutes_low: number | null;
     minutes_high: number | null;
+    wiki?: Gw2WikiLink | null;
     /** Minutes from the start of the session, or null when there is no estimate. */
     starts_at: number | null;
     costs: number | null;
@@ -322,7 +345,15 @@ export interface Gw2Tonight {
 export interface RaidWing {
     raid: string;
     wing: string;
-    encounters: { id: string; name: string; type: string; cleared_this_week: boolean; ever_cleared: boolean }[];
+    wiki?: Gw2WikiLink | null;
+    encounters: {
+        id: string;
+        name: string;
+        type: string;
+        cleared_this_week: boolean;
+        ever_cleared: boolean;
+        wiki?: Gw2WikiLink | null;
+    }[];
     bosses: number;
     cleared_this_week: number;
     /** Since the day the account connected, never before — the API keeps no history. */
@@ -332,12 +363,18 @@ export interface RaidWing {
 export interface Gw2Content {
     raids: { wings: RaidWing[]; cleared_this_week: number; bosses_total: number };
     world_bosses: {
-        bosses: { id: string; name: string; killed_today: boolean; ever_killed: boolean }[];
+        bosses: { id: string; name: string; killed_today: boolean; ever_killed: boolean; wiki?: Gw2WikiLink | null }[];
         killed_today: number;
         total: number;
     };
     dungeons: {
-        dungeons: { id: string; name: string; paths: { id: string; name: string; type: string; run_today: boolean }[]; run_today: number }[];
+        dungeons: {
+            id: string;
+            name: string;
+            wiki?: Gw2WikiLink | null;
+            paths: { id: string; name: string; type: string; run_today: boolean }[];
+            run_today: number;
+        }[];
         paths_today: number;
     };
     /**
@@ -367,11 +404,12 @@ export interface PublicMaterial {
     slug: string | null;
     rarity: string | null;
     icon: string | null;
+    wiki?: Gw2WikiLink;
     needed: number;
 }
 
 export interface PublicRecipe {
-    item: Gw2ItemSummary & { item_id?: number; slug: string };
+    item: Gw2ItemSummary & { item_id?: number; slug: string; wiki?: Gw2WikiLink };
     craftable: boolean;
     /**
      * Whether Google should be told about this page.
@@ -387,7 +425,7 @@ export interface PublicRecipe {
     tree: PlanNode;
     materials: PublicMaterial[];
     /** What this goes into. It is what turns 13,000 pages into a graph. */
-    used_in: { id: number; name: string; slug: string; rarity: string | null; icon: string | null }[];
+    used_in: { id: number; name: string; slug: string; rarity: string | null; icon: string | null; wiki?: Gw2WikiLink }[];
 }
 
 export interface PublicMasteryRegion {
@@ -404,6 +442,7 @@ export interface PublicMasteryRegion {
         name: string;
         slug: string;
         requirement: string | null;
+        wiki?: Gw2WikiLink | null;
         tiers: number;
         points_total: number;
         levels: { name: string; description: string | null; point_cost: number }[];
@@ -457,7 +496,7 @@ export interface Gw2Dashboard {
              * built on it; this is the layer that makes the panel a character
              * rather than a table.
              */
-            items: Record<string, { name: string; icon: string | null; rarity: string }>;
+            items: Record<string, { id?: number; name: string; icon: string | null; rarity: string; wiki?: Gw2WikiLink }>;
             crafting: string[];
         } | null;
         fractals: {

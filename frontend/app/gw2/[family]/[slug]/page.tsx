@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Container from "@/components/ui/Container";
 import GuidePersonalisation from "@/components/gw2/GuidePersonalisation";
+import WikiLink from "@/components/gw2/WikiLink";
 import { getGuide } from "@/lib/gw2public";
 import { ARTICLE_PROSE } from "@/lib/prose";
 
@@ -73,6 +74,8 @@ export default async function Gw2GuidePage({ params }: Params) {
                     {guide.standfirst && (
                         <p className="mt-3 text-lg leading-relaxed text-[var(--ink-mid)]">{guide.standfirst}</p>
                     )}
+
+                    <WikiLink wiki={guide.wiki} name={guide.title} className="mt-2 -ml-1" />
 
                     {/*
                      * The reader's own figures, between the standfirst and the

@@ -8,6 +8,7 @@ use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\RegionMastery;
 use App\Services\Gw2\Advisor\Signal;
 use App\Services\Gw2\Advisor\Snapshot;
+use App\Services\Gw2\Wiki;
 
 /**
  * The mastery tier the account can buy right now.
@@ -85,6 +86,7 @@ class MasteryTierToBuy implements Producer
                         // masteries endpoint; neither was being carried.
                         'icon' => $track->tierIcons[$track->tiersPaid] ?? ($track->tierIcons[0] ?? null),
                         'background' => $track->background,
+                        'wiki' => Wiki::named($track->name),
                     ]),
                 );
             }

@@ -55,7 +55,7 @@ readonly class CharacterView
          * because every count in this class is built on it and a count should
          * not have to reach through a picture to get at a rarity.
          *
-         * @var array<string, array{name: string, icon: ?string, rarity: string}>
+         * @var array<string, array{id: int, name: string, icon: ?string, rarity: string}>
          */
         public array $slotItems = [],
     ) {}

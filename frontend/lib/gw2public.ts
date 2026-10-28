@@ -1,5 +1,5 @@
 import { getServerApiUrl, serverHeaders } from "@/lib/api";
-import type { PublicMasteryRegion, PublicRecipe } from "@/lib/gw2";
+import type { Gw2WikiLink, PublicMasteryRegion, PublicRecipe } from "@/lib/gw2";
 
 /**
  * The Guild Wars 2 reference, read on the server.
@@ -106,6 +106,8 @@ export interface PublicGuide {
      */
     personalise_as: string | null;
     seo: { title: string; description: string | null; keywords: string[] };
+    /** The wiki page for the one thing the guide is about. Null for a guide about a whole system. */
+    wiki: Gw2WikiLink | null;
     reviewed_at: string | null;
     updated_at: string | null;
 }

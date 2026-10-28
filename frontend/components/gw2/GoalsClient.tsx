@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/Input";
 import Meter from "@/components/ui/Meter";
 import Chip from "@/components/ui/Chip";
 import { Skeleton } from "@/components/ui/Skeleton";
+import WikiLink from "@/components/gw2/WikiLink";
 import {
     coin,
     getPlan,
@@ -216,7 +217,12 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
     return (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-5">
-                <Panel material="lit" crown title={`${plan.target.quantity}× ${plan.target.name}`}>
+                <Panel
+                    material="lit"
+                    crown
+                    title={`${plan.target.quantity}× ${plan.target.name}`}
+                    meta={<WikiLink wiki={plan.target.wiki} name={plan.target.name} />}
+                >
                     <div className="space-y-4">
                         {!plan.craftable && (
                             <p className="text-sm text-[var(--ink-mid)]">
@@ -278,7 +284,8 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                                             <span className="truncate text-sm text-[var(--ink-hi)]">
                                                 {line.name ?? `#${line.item_id}`}
                                             </span>
-                                            <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">
+                                            <WikiLink wiki={line.wiki} name={line.name} compact className="self-center" />
+                                            <span className="ml-auto shrink-0 font-numeric text-xs text-[var(--ink-low)]">
                                                 {line.owned} / {line.needed}
                                             </span>
                                         </div>
@@ -341,7 +348,8 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                                                 className="flex justify-between gap-2 text-sm text-[var(--ink-mid)]"
                                             >
                                                 <span className="truncate">{line.name}</span>
-                                                <span className="shrink-0 font-numeric text-xs">×{line.missing}</span>
+                                                <WikiLink wiki={line.wiki} name={line.name} compact />
+                                                <span className="ml-auto shrink-0 font-numeric text-xs">×{line.missing}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -420,6 +428,7 @@ function Branch({ node }: { node: PlanNode }) {
                     >
                         {node.name ?? `#${node.item_id}`}
                     </span>
+                    <WikiLink wiki={node.wiki} name={node.name} compact />
                     <span className="ml-auto shrink-0 font-numeric text-xs text-[var(--ink-low)]">
                         {node.missing > 0 ? `${node.missing} of ${node.needed}` : "have it"}
                     </span>

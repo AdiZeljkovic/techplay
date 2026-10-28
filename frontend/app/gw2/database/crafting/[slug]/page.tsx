@@ -5,8 +5,9 @@ import Image from "next/image";
 import { Hammer } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Panel from "@/components/ui/Panel";
+import WikiLink from "@/components/gw2/WikiLink";
 import { craftingHref, getPublicRecipe, itemIdFromSlug } from "@/lib/gw2public";
-import type { PlanNode } from "@/lib/gw2";
+import type { PlanNode, PublicRecipe } from "@/lib/gw2";
 
 /**
  * What one craftable thing takes — for anyone, with no account.
@@ -133,6 +134,7 @@ export default async function CraftingPage({ params }: Params) {
                                 .filter(Boolean)
                                 .join(" · ")}
                         </p>
+                        <WikiLink wiki={item.wiki} name={item.name} className="mt-1 -ml-1" />
                     </div>
                 </header>
 
@@ -166,6 +168,7 @@ export default async function CraftingPage({ params }: Params) {
                                             >
                                                 {material.name}
                                             </Link>
+                                            <WikiLink wiki={material.wiki} name={material.name} compact />
                                             <span className="shrink-0 font-numeric text-sm text-[var(--ink-low)]">
                                                 ×{material.needed}
                                             </span>
@@ -204,24 +207,7 @@ export default async function CraftingPage({ params }: Params) {
                                 <Panel material="matte" title="Used in">
                                     <ul className="space-y-2">
                                         {usedIn.map((used) => (
-                                            <li key={used.id}>
-                                                <Link
-                                                    href={craftingHref(used.id, used.slug)}
-                                                    className="flex items-center gap-2 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
-                                                >
-                                                    {used.icon && (
-                                                        <Image
-                                                            src={used.icon}
-                                                            alt=""
-                                                            width={20}
-                                                            height={20}
-                                                            unoptimized
-                                                            className="h-5 w-5 shrink-0 rounded-[var(--radius-inner)]"
-                                                        />
-                                                    )}
-                                                    <span className="truncate">{used.name}</span>
-                                                </Link>
-                                            </li>
+                                            <UsedInRow key={used.id} used={used} />
                                         ))}
                                     </ul>
                                 </Panel>
@@ -234,24 +220,7 @@ export default async function CraftingPage({ params }: Params) {
                     <Panel material="matte" title="Used in" className="mt-5">
                         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                             {usedIn.map((used) => (
-                                <li key={used.id}>
-                                    <Link
-                                        href={craftingHref(used.id, used.slug)}
-                                        className="flex items-center gap-2 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
-                                    >
-                                        {used.icon && (
-                                            <Image
-                                                src={used.icon}
-                                                alt=""
-                                                width={20}
-                                                height={20}
-                                                unoptimized
-                                                className="h-5 w-5 shrink-0 rounded-[var(--radius-inner)]"
-                                            />
-                                        )}
-                                        <span className="truncate">{used.name}</span>
-                                    </Link>
-                                </li>
+                                <UsedInRow key={used.id} used={used} />
                             ))}
                         </ul>
                     </Panel>
@@ -261,7 +230,40 @@ export default async function CraftingPage({ params }: Params) {
     );
 }
 
-/** One level of the tree. Server-rendered, so a crawler reads the whole thing. */
+/*
+ * The wiki link sits beside our link, not inside it — an anchor in an anchor is
+ * invalid HTML, and browsers repair it by splitting the row in two.
+ */
+function UsedInRow({ used }: { used: PublicRecipe["used_in"][number] }) {
+    return (
+        <li className="flex items-center gap-1">
+            <Link
+                href={craftingHref(used.id, used.slug)}
+                className="flex min-w-0 flex-1 items-center gap-2 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
+            >
+                {used.icon && (
+                    <Image
+                        src={used.icon}
+                        alt=""
+                        width={20}
+                        height={20}
+                        unoptimized
+                        className="h-5 w-5 shrink-0 rounded-[var(--radius-inner)]"
+                    />
+                )}
+                <span className="truncate">{used.name}</span>
+            </Link>
+            <WikiLink wiki={used.wiki} name={used.name} compact />
+        </li>
+    );
+}
+
+/*
+ * One level of the tree. Server-rendered, so a crawler reads the whole thing.
+ *
+ * No wiki link per node: every node links to its own page here, which carries
+ * one, and a legendary's tree runs to dozens of rows.
+ */
 function Branch({ node }: { node: PlanNode }) {
     return (
         <ul>

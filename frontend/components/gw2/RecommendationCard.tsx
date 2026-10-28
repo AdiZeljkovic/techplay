@@ -3,6 +3,7 @@
 import { AlertTriangle, Clock } from "lucide-react";
 import Chip from "@/components/ui/Chip";
 import GameIcon from "@/components/gw2/GameIcon";
+import WikiLink from "@/components/gw2/WikiLink";
 import { domainTone } from "@/lib/gw2domain";
 import { CONFIDENCE_LABEL, EFFORT_LABEL, type Recommendation } from "@/lib/gw2";
 
@@ -107,6 +108,7 @@ export default function RecommendationCard({
             <div className="relative flex items-start gap-3">
                 <GameIcon src={details?.icon} alt="" size="lg" tone={tone} />
                 <h3 className="font-display text-base leading-snug text-[var(--ink-hi)] text-balance">{title}</h3>
+                <WikiLink wiki={details?.wiki} name={title} compact className="ml-auto" />
             </div>
 
             <p className="relative text-sm leading-relaxed text-[var(--ink-mid)]">{body}</p>

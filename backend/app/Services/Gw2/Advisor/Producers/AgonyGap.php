@@ -8,6 +8,7 @@ use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\Signal;
 use App\Services\Gw2\Advisor\Snapshot;
+use App\Services\Gw2\Wiki;
 
 /**
  * How much Agony Resistance is missing, and nothing beyond that.
@@ -45,6 +46,7 @@ class AgonyGap implements Producer
             ],
             blockers: $this->blockers($character),
             pushes: ['fractal_tier:'.$character->name],
+            details: ['wiki' => Wiki::named('Agony Resistance')],
         )];
     }
 

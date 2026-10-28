@@ -8,6 +8,7 @@ use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\Signal;
 use App\Services\Gw2\Advisor\Snapshot;
+use App\Services\Gw2\Wiki;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -63,7 +64,10 @@ class MountsToUnlock implements Producer
                 ],
                 blockers: $this->blockers($slug, $guides),
                 pushes: ['mounts'],
-                details: array_filter(['icon' => $this->icons()[$slug] ?? null]),
+                details: array_filter([
+                    'icon' => $this->icons()[$slug] ?? null,
+                    'wiki' => Wiki::named($name),
+                ]),
             );
         }
 

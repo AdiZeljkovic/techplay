@@ -349,6 +349,40 @@ class Gw2AdvisorTest extends TestCase
         $this->assertSame(['Nothing equipped in the first ring on Isara Moonbloom'], $empty);
     }
 
+    public function test_a_card_links_to_the_wiki_for_the_thing_it_is_about(): void
+    {
+        $this->rule(['key' => 'one-step', 'producer' => NearlyDoneAchievements::KEY, 'domain' => 'achievements',
+            'title' => 'Finish {name}', 'base_score' => 80,
+            'requires' => [['path' => 'achievements.one_step_away', 'op' => '>', 'value' => 0]]]);
+
+        $this->rule(['key' => 'gear-thing', 'producer' => GearGaps::KEY, 'domain' => 'gear',
+            'title' => 'Upgrade the {slot}', 'base_score' => 70,
+            'requires' => [['path' => 'character.ascended_missing', 'op' => '>', 'value' => 0]]]);
+
+        $cards = collect([...$this->advise()['headline'], ...$this->advise()['alternatives']]);
+
+        // An achievement by its exact name...
+        $achievement = $cards->firstWhere('key', 'one-step');
+        $this->assertStringContainsString('search=Auric%20Basin%20Explorer', $achievement['details']['wiki']['url']);
+
+        // ...and a worn piece by the chat code of the item actually worn, which
+        // is exact even where dozens of items share its name.
+        // The three exotic trinkets are the slots below ascended on the fixture.
+        $gear = $cards->firstWhere('key', 'gear-thing');
+        $this->assertContains($gear['details']['wiki']['chat_link'], [
+            \App\Services\Gw2\Wiki::itemCode(80251),
+            \App\Services\Gw2\Wiki::itemCode(80252),
+            \App\Services\Gw2\Wiki::itemCode(80253),
+        ]);
+
+        // The evening plan keeps the link, though it drops the rest of the details.
+        $plan = app(\App\Services\Gw2\Advisor\SessionPlan::class)->build($cards->all(), null);
+        $this->assertSame(
+            $achievement['details']['wiki'],
+            collect($plan['steps'])->firstWhere('key', 'one-step')['wiki']
+        );
+    }
+
     public function test_an_achievement_our_catalogue_does_not_have_yet_does_not_break_the_snapshot(): void
     {
         // A patch adds an achievement; the account reports progress on it before

@@ -8,6 +8,7 @@ import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import Meter from "@/components/ui/Meter";
 import GameIcon from "@/components/gw2/GameIcon";
+import WikiLink from "@/components/gw2/WikiLink";
 import { regionTone } from "@/lib/gw2domain";
 import Chip from "@/components/ui/Chip";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -120,10 +121,11 @@ export default function MasteriesClient() {
                         </div>
                         <ul className="flex flex-wrap gap-2">
                             {data.unpaired.map((track) => (
-                                <li key={track.id}>
+                                <li key={track.id} className="inline-flex items-center gap-0.5">
                                     <Chip variant="neutral" size="sm">
                                         {track.name} · {track.points_total} points
                                     </Chip>
+                                    <WikiLink wiki={track.wiki} name={track.name} compact />
                                 </li>
                             ))}
                         </ul>
@@ -268,6 +270,7 @@ function TrackRow({ track, tone }: { track: MasteryTrackView; tone: string }) {
                         <Check size={14} className="shrink-0 text-[var(--ink-low)]" aria-hidden />
                     )}
                     <span className="truncate text-sm text-[var(--ink-hi)]">{track.name}</span>
+                    <WikiLink wiki={track.wiki} name={track.name} compact />
                 </div>
                 {track.next_tier && (
                     <p className="truncate text-[11px] text-[var(--ink-faint)]">

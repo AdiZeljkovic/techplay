@@ -2,6 +2,8 @@
 
 namespace App\Services\Gw2\Advisor;
 
+use App\Services\Gw2\Wiki;
+
 /**
  * One item in a crafting plan, and what the account already has of it.
  *
@@ -67,6 +69,7 @@ readonly class RecipeNode
             'name' => $this->name,
             'rarity' => $this->rarity,
             'icon' => $this->icon,
+            'wiki' => Wiki::item($this->itemId),
             'needed' => $this->needed,
             'owned' => $this->owned,
             'missing' => $this->missing(),
