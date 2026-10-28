@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
  *
  * Two of the game's own lists are known to be short, and the payload says so
  * rather than presenting them as complete: `/v2/mapchests` has nineteen chests
- * and none from Janthir Wilds or Visions of Eternity (checked 29 October 2026 —
+ * and none from Janthir Wilds or Visions of Eternity (checked 28 October 2026 —
  * whether those maps have such chests at all is not established), and
  * `/v2/raids` stops before the newest encounters.
  */

@@ -22,7 +22,7 @@ beside it.
 
 ## Changes from the source
 
-Dated 29 Oct 2026:
+Dated 28 Oct 2026:
 
 - Only records with discipline `Mystic Forge` are kept: 2,332 of 9,344.
 - 95 promotions are removed. A promotion is a recipe whose output is also one

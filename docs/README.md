@@ -430,7 +430,7 @@ nisu puštene (`products`, `orders`, `support_tiers`), dio je mrtav ostatak
   redova) obrisane 29. 8.; arhiva je na
   `/var/backups/igdb-archive/igdb-staging-2026-08-29.dump`
 - API **nikad** ne proksira živi zahtjev prema prodavnici
-- `gw2_*` tabele su opisane u §21. Promjene šeme od 29. 10. 2026:
+- `gw2_*` tabele su opisane u §21. Promjene šeme od 28. 10. 2026:
   - `gw2_sources.subject` (nullable, unique) — red je wiki link za raid, krilo,
     tamnicu ili world bossa, i vidi se tek s `checked_at`
   - `gw2_account_state.map_chests`, `.vault_listings`, `.trading_post` (jsonb) —
@@ -439,7 +439,7 @@ nisu puštene (`products`, `orders`, `support_tiers`), dio je mrtav ostatak
     s izvorom; početni podaci iz `backend/database/data/*.json`, učitani samo u
     praznu tabelu
   - `gw2_forge_recipes` — Mystic Forge recepti; koristi se samo red sa
-    `source_url` i `checked_at`. Od 29. 10. puni je `ForgeDataset` iz
+    `source_url` i `checked_at`. Od 28. 10. puni je `ForgeDataset` iz
     gw2efficiency `custom-recipes` (GPL-3.0, commit 82343e2f, 7. 2. 2026):
     2.237 recepata, `checked_at` = datum commita, ne provjera u igri
   - `gw2_events.waypoint` proširen na 64 (sad je ime waypointa), nove
@@ -2308,7 +2308,7 @@ redova.
 `PAYLOAD_VERSION` je 3 i na dashboardu i na javnim stranicama — oblik se
 promijenio.
 
-### 29. 10. 2026 — izvori na vodičima
+### 28. 10. 2026 — izvori na vodičima
 
 Svaki vodič na dnu ima blok **Sources**: redovi iz `gw2_sources` po
 `source_ids`, sa vrstom i datumom provjere. **Neprovjeren izvor se pokazuje kao
@@ -2318,7 +2318,7 @@ vjeruje stranici zaslužuje istu razliku koju vidi urednik. `internal://` izvori
 (wiki stranice za rajdove i bosove) nisu citati i ne pojavljuju se ovdje, osim
 ako ih urednik izričito doda vodiču.
 
-### 29. 10. 2026 — ostatak plana (tačke 3–14)
+### 28. 10. 2026 — ostatak plana (tačke 3–14)
 
 Plan je na https://claude.ai/artifact/X4s3fkfKj5hinZfpBVxTvr. Pravni korak (15)
 je namjerno ostao zadnji i nije dio ovoga.
@@ -2383,7 +2383,7 @@ reset prošao. Dvije granice su napisane u panelu: `/v2/mapchests` nema JW ni Vo
 **9 — mastery insighti**: `/gw2/database/insights` i stranica po mapi (javno,
 sitemap), s najbližim waypointom i njegovim chat kodom (računato iz koordinata
 igre). Prijavljenom igraču se dodaju kvačice. **Id-jevi su provjereni na
-vlasnikovom nalogu 29. 10.**: od 104 otključana, 22 su insighti s mape, 82 su
+vlasnikovom nalogu 28. 10.**: od 104 otključana, 22 su insighti s mape, 82 su
 mastery nagrade iz postignuća — isti prostor id-jeva. Hero challenge se samo
 broji: `characters/:id/heropoints` vraća prazno za sve od EoD-a.
 
@@ -2415,7 +2415,7 @@ Forge recept gdje API nema nijedan, troši valute iz walleta kao predmete iz
 banke, a nasumičan Forge (Mystic Clover ~0,33) planira u pokušajima i kaže da je
 prosjek.
 
-**Forge recepti, 29. 10.** — vlasnik je odlučio uvesti gw2efficiency
+**Forge recepti, 28. 10.** — vlasnik je odlučio uvesti gw2efficiency
 `custom-recipes` (GPL-3.0; originalni repo obrisan, commit 82343e2f preživio u
 forkovima). U repou je samo Forge dio, kao zaseban GPL fajl s licencom i
 `NOTICE.md`: `backend/database/data/gw2efficiency-custom-recipes/`. Izbačeno je
@@ -2440,6 +2440,15 @@ Dva pravila u `RecipeTree` su došla s njim:
 Nema ih za *Wages of Stars*, *Stella Radians* i *Strife Unending* (poslije
 februara 2026) — ti pišu „recipe not in yet". Ništa nije provjereno u igri.
 Pravna provjera licence je dio posljednjeg, pravnog koraka.
+
+**Zamka iz deploya 28. 10.** — javni GW2 keš je ključan na build igre, ne na
+sadržaj. Frontend build je `/gw2/database/insights` napravio prije nego što je
+`gw2:catalogue` pročitao `continents`, pa je prazna lista zapamćena za cijeli
+build (Redis `gw2:public:v3:{build}:insights`), Next je napravio statičan 404, a
+Cloudflare ga je držao sat vremena. Kad deploy donosi **nove** endpointe
+kataloga: odmah `gw2:catalogue`, pa obrisati taj ključ, `revalidatePaths`, zagrijati
+origin i tek onda očistiti Cloudflare. Jednom pokrenut, katalog drži podatke i
+preko sljedećih buildova, pa se ovo ne ponavlja samo od sebe.
 
 ### Otvoreno
 

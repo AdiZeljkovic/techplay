@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
  * The list is the API's own (`/v2/legendaryarmory`, 206 items), so nothing on
  * it is ours to get wrong. What is ours is the "can we plan it" column: an item
  * is plannable when its last step is either a discipline recipe the API has or
- * a Mystic Forge recipe with a named source — since 29 Oct 2026 mostly the
+ * a Mystic Forge recipe with a named source — since 28 Oct 2026 mostly the
  * gw2efficiency dataset (`ForgeDataset`), as of February 2026. Everything else
  * says plainly that the recipe is not in yet, rather than planning half a
  * legendary and letting the missing half look like nothing.

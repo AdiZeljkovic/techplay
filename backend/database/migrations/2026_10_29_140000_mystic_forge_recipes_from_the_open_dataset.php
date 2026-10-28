@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Fill `gw2_forge_recipes` from gw2efficiency custom-recipes — the owner's
- * decision of 29 Oct 2026, since nobody can enter two thousand recipes by hand.
+ * decision of 28 Oct 2026, since nobody can enter two thousand recipes by hand.
  *
  * Where the catalogue has not been read yet (a fresh database, the tests) this
  * does nothing, and `gw2:catalogue` loads it after its first read.

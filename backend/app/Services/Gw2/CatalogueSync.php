@@ -224,7 +224,7 @@ class CatalogueSync
      * Floor by floor, because that is the only call that returns whole maps
      * with their points — and because a map's points are spread over its
      * floors: Verdant Brink's canopy and its jungle floor list different
-     * insights. Measured 29 October 2026: 307 distinct insights across all
+     * insights. Measured 28 October 2026: 307 distinct insights across all
      * floors, against 221 on floor 1 alone.
      *
      * One floor is up to eight megabytes, so each is decoded, boiled down and
@@ -232,7 +232,7 @@ class CatalogueSync
      * only; it is the one read here that needs it.
      *
      * Insight ids are the same ids `account/mastery/points` reports as
-     * unlocked — checked against the owner's account on 29 October 2026, when
+     * unlocked — checked against the owner's account on 28 October 2026, when
      * every unlocked id was either one of these or an achievement's mastery
      * reward. That is what makes "which insights are left" answerable.
      */

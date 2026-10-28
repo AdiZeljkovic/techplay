@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * The table shipped empty on purpose: spawn times are external knowledge, and
  * typing a timetable from memory is the invented data this project refuses.
- * These rows are not from memory. They were researched on 28–29 October 2026
+ * These rows are not from memory. They were researched on 28 October 2026
  * and the times agree in every source that lists them; for the thirteen core
  * bosses that includes ArenaNet's own 2014 UTC table, which still matches. The
  * waypoints are the game's own, from `/v2/continents`.

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
  *
  * Everything here comes from `/v2/continents` (mirrored per map by the
  * catalogue) and `account/mastery/points`. Whether the two share ids was not
- * documented anywhere, so it was checked before this was built: on 29 October
+ * documented anywhere, so it was checked before this was built: on 28 October
  * 2026 every one of the owner's 104 unlocked ids was either an insight id on
  * some floor (22) or an achievement's mastery reward (82). An insight is
  * collected exactly when its id is unlocked.

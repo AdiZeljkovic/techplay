@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
  * Mystic Forge recipes from gw2efficiency custom-recipes, the one open dataset.
  *
  * The API publishes no forge recipes, and the owner cannot enter two thousand
- * by hand, so on 29 Oct 2026 they chose this dataset (GPL-3.0, frozen at
+ * by hand, so on 28 Oct 2026 they chose this dataset (GPL-3.0, frozen at
  * February 2026; see NOTICE.md beside the file). Every row keeps its source,
  * and `checked_at` is the date the source vouches for — the commit's — not a
  * check in game, which is why the pages say "as of" rather than "checked".

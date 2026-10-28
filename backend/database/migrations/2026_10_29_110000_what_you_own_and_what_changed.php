@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Schema;
  * what they own. Summaries are ours, written from the cited page; nothing is
  * copied from ArenaNet beyond the facts.
  *
- * Both start from `database/data/*.json`, researched 28–29 October 2026 and
+ * Both start from `database/data/*.json`, researched 28 October 2026 and
  * read against each cited page. Inserted only into an empty table, so an
  * editor's later corrections are never overwritten by a re-run.
  */
