@@ -78,7 +78,13 @@ tri četvrtine unutar 950), mapa je iz zvaničnih pločica na spratu 1.
 - Umjesto Currently Training → „sljedeća stepenica koju tvoji poeni kupuju”.
 - Easy wins kao kartice (ikona, x/y, nagrada AP / mastery poen).
 
-### Faza 4 — Tonight (mockup 4)
+### Faza 4 — Tonight (mockup 4) ✅ 28. 10.
+
+Urađeno; detalji u `docs/README.md` §21, „Tonight po mockupu 4". Jedna izmjena
+plana ispod: nagrade **nisu** nova kolona `reward_tags` na pravilima, nego
+`details.rewards` iz producera — svaki zna šta njegov korak plaća (acclaim,
+AP, mastery poen, tier, slot, mount), pa nema ništa za ručno unositi. Zlato se
+ne prikazuje jer ga nijedan korak ne zna.
 
 - Plan kao vremenska linija s karticama (slika, raspon minuta, oznake nagrada,
   objašnjenje desno).

@@ -46,6 +46,8 @@ class UnclaimedAcclaim implements Producer
             ],
             blockers: [],
             pushes: ['astral_acclaim'],
+            // Already earned; claiming it is the whole step.
+            details: ['rewards' => [['kind' => 'acclaim', 'amount' => $snapshot->vault->unclaimedAcclaim()]]],
         )];
     }
 }

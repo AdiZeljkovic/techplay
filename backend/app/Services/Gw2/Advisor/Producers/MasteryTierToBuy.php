@@ -94,6 +94,7 @@ class MasteryTierToBuy implements Producer
                             'unit' => 'tiers',
                         ],
                         'action' => CardAction::page('/gw2/masteries', 'Open masteries'),
+                        'rewards' => [['kind' => 'mastery_tier', 'name' => $track->nextTierName() ?: $track->name]],
                     ]),
                 );
             }

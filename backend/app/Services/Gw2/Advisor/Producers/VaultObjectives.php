@@ -77,6 +77,7 @@ class VaultObjectives implements Producer
                     // Where the rest of the vault is: every open objective, the
                     // season and what is left on its shelf.
                     'action' => CardAction::page('/gw2/tonight', 'Open the vault'),
+                    'rewards' => [['kind' => 'acclaim', 'amount' => $objective->acclaim]],
                 ],
             );
         }

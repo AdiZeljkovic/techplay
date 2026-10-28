@@ -466,6 +466,28 @@ class Gw2AdvisorTest extends TestCase
         $this->assertNotNull($account->json('data.history.tracked_since'));
     }
 
+    public function test_tonight_leaves_out_what_the_player_said_is_not_for_tonight(): void
+    {
+        $this->rule(['key' => 'vault-open', 'producer' => VaultObjectives::KEY, 'domain' => 'vault',
+            'title' => '{title}', 'base_score' => 50]);
+        $this->rule(['key' => 'gear-thing', 'producer' => GearGaps::KEY, 'domain' => 'gear',
+            'title' => 'Upgrade the {slot}', 'base_score' => 70]);
+
+        $keys = fn (array $avoid) => array_column(
+            app(Dashboard::class)->tonight($this->accountId, null, $avoid)['plan']['steps'],
+            'key'
+        );
+
+        $this->assertContains('vault-open', $keys([]));
+        $this->assertNotContains('vault-open', $keys(['vault']));
+        $this->assertContains('gear-thing', $keys(['vault']));
+
+        // And the vault card says what it pays, which is what the evening's
+        // reward total is summed from.
+        $steps = app(Dashboard::class)->tonight($this->accountId, null)['plan']['steps'];
+        $this->assertSame([['kind' => 'acclaim', 'amount' => 50]], collect($steps)->firstWhere('key', 'vault-open')['rewards']);
+    }
+
     public function test_a_raid_boss_links_to_the_wiki_only_once_an_editor_has_checked_the_page(): void
     {
         DB::table('gw2_reference')->insert([

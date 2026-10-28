@@ -49,9 +49,10 @@ class Dashboard
      * shape, change this number, in the same commit.
      *
      * 4 (28 October 2026): `progress` and `action` on recommendation details,
-     * `points` and `mastery_region` on the easy wins.
+     * `points` and `mastery_region` on the easy wins. 5, the same day:
+     * `rewards` on recommendation details.
      */
-    private const PAYLOAD_VERSION = 4;
+    private const PAYLOAD_VERSION = 5;
 
     /** How long the masteries page's "best points" list runs. The rest are on the insight pages. */
     private const POINTS_TO_GET = 8;
@@ -495,9 +496,13 @@ class Dashboard
      * into something that fits the time. A planner that generated its own
      * activities would be a second advisor with no rules behind it.
      *
+     * Weighed like the dashboard: for the pinned goal when there is one, and
+     * without whatever the player has said is not for tonight.
+     *
+     * @param  array<int, string>  $avoid
      * @return array<string, mixed>|null
      */
-    public function tonight(int $gw2AccountId, ?int $minutes): ?array
+    public function tonight(int $gw2AccountId, ?int $minutes, array $avoid = []): ?array
     {
         $snapshot = $this->reader->for($gw2AccountId);
 
@@ -505,7 +510,11 @@ class Dashboard
             return null;
         }
 
-        $advice = $this->advisor->advise($snapshot, new Intent(minutes: $minutes));
+        $advice = $this->advisor->advise($snapshot, new Intent(
+            goal: $this->choices->pins($snapshot->accountId)[0]['slug'] ?? null,
+            minutes: $minutes,
+            avoid: $avoid,
+        ));
 
         return [
             'plan' => app(SessionPlan::class)->build(

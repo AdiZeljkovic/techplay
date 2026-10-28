@@ -79,6 +79,7 @@ class MountsToUnlock implements Producer
                     'action' => isset($guides[$slug])
                         ? CardAction::page($guides[$slug]->path(), "How to get the {$name}")
                         : null,
+                    'rewards' => [['kind' => 'mount', 'name' => $name]],
                 ]),
             );
         }

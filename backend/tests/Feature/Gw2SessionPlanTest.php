@@ -96,6 +96,38 @@ class Gw2SessionPlanTest extends TestCase
         $this->assertCount(4, $plan['if_you_have_longer']);
     }
 
+    /**
+     * Mockup 4's "Potential rewards tonight", from what the planned steps
+     * themselves pay — and only those: what fell below the budget's line is
+     * not tonight's.
+     */
+    public function test_the_rewards_are_what_the_planned_steps_pay_and_nothing_else(): void
+    {
+        $with = fn (string $key, int $low, array $rewards) => $this->candidate($key, $low, $low) + [
+            'details' => ['rewards' => $rewards, 'icon' => "https://render.example/{$key}.png"],
+        ];
+
+        $plan = app(SessionPlan::class)->build([
+            $with('vault-a', 10, [['kind' => 'acclaim', 'amount' => 50]]),
+            $with('vault-b', 10, [['kind' => 'acclaim', 'amount' => 30]]),
+            $with('achievement', 10, [['kind' => 'ap', 'amount' => 10], ['kind' => 'mastery_point', 'amount' => 1, 'region' => 'Heart of Thorns']]),
+            $with('tier', 20, [['kind' => 'mastery_tier', 'name' => 'Gliding Proficiency']]),
+            // Over the hour: in "if you have longer", and not counted.
+            $with('mount', 30, [['kind' => 'mount', 'name' => 'Skyscale']]),
+        ], 60);
+
+        $this->assertSame([
+            ['kind' => 'acclaim', 'amount' => 80],
+            ['kind' => 'ap', 'amount' => 10],
+            ['kind' => 'mastery_point', 'amount' => 1],
+            ['kind' => 'mastery_tier', 'names' => ['Gliding Proficiency']],
+        ], $plan['rewards']);
+
+        // A step carries the card's picture and its own rewards.
+        $this->assertSame('https://render.example/tier.png', $plan['steps'][3]['icon']);
+        $this->assertSame([['kind' => 'mount', 'name' => 'Skyscale']], $plan['if_you_have_longer'][0]['rewards']);
+    }
+
     /** @return array<string, mixed> */
     private function candidate(string $key, ?int $low, ?int $high): array
     {

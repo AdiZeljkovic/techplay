@@ -602,7 +602,11 @@ class Gw2Controller extends Controller
      */
     public function tonight(Request $request): JsonResponse
     {
-        $request->validate(['minutes' => 'nullable|integer|min:5|max:600']);
+        $request->validate([
+            'minutes' => 'nullable|integer|min:5|max:600',
+            'avoid' => 'nullable|array|max:8',
+            'avoid.*' => 'string|max:24',
+        ]);
 
         $accountId = $this->accountId($request);
 
@@ -610,7 +614,11 @@ class Gw2Controller extends Controller
             return $this->error('No Guild Wars 2 account is connected.', 404);
         }
 
-        $payload = $this->dashboard->tonight($accountId, $request->integer('minutes') ?: null);
+        $payload = $this->dashboard->tonight(
+            $accountId,
+            $request->integer('minutes') ?: null,
+            $request->input('avoid', []),
+        );
 
         if (! $payload) {
             return $this->success(null, 'We have not finished reading your account yet.');

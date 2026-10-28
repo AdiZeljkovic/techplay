@@ -2241,6 +2241,51 @@ chat kodom najbližeg waypointa. Weekly Completion Score ne postoji.
 
 `ChatCode.tsx` je izvučen iz `InsightList` — sad ga koriste dvije stranice.
 
+#### Tonight po mockupu 4 — faza 4, 28. 10. 2026.
+
+**Nagrade dolaze iz producera, ne iz pravila.** `details.rewards` je lista
+`{kind, amount?, name?}`. Svaki producer zna šta njegov korak plaća, bez ijedne
+nove kolone:
+
+| Producer | Nagrada |
+|---|---|
+| VaultObjectives, UnclaimedAcclaim | `acclaim` s iznosom iz igre |
+| NearlyDoneAchievements | `ap` (iz tierova) i `mastery_point` kad nagrade imenuju regiju |
+| MasteryTierToBuy | `mastery_tier` s imenom tiera |
+| GearGaps | `ascended` sa slotom |
+| MountsToUnlock | `mount` s imenom |
+
+AgonyGap, EmptyCoreSlots i UnspentMasteryPoints nemaju nagradu koju bi mogli
+imenovati, pa je ne izmišljaju.
+
+`SessionPlan` prenosi `rewards`, `icon` i `background` u korak i sabira
+`plan.rewards` **samo preko planiranih koraka**. Ono što je palo ispod
+budžeta nije večerašnje. Iznosi se sabiraju, a stvari se navode po imenu.
+**Zlata nema** — mockup ga crta, ali nijedan korak ne zna koliko zlata
+donosi.
+
+**Tonight se vaga kao dashboard:**
+
+- prema prikačenom cilju, ako ga ima;
+- bez onoga što je izbačeno u „Not tonight". `GET /gw2/tonight` prima
+  `avoid[]`.
+
+„Adjust plan" iz mockupa je upravo to: igrač kaže šta mu se ne radi, i plan
+se ponovo izvaga.
+
+Stranica, po mockupu:
+
+- izbor vremena i „Not tonight";
+- vremenska osa s karticama (ikona ili scena, raspon minuta, oznake nagrada,
+  obrazloženje desno);
+- „If you have extra time" kao kartice.
+
+Desno su Active priorities, Current events (samo provjereni rasporedi, sa
+oznakama Live now / Soon / Upcoming i „done today" iz naloga) i Potential
+rewards tonight, pa Vault, sezona i Today.
+
+`Dashboard::PAYLOAD_VERSION` je 5.
+
 #### Šta je iz mockupa uzeto, a šta nije
 
 Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:

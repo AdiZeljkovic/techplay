@@ -88,6 +88,12 @@ class NearlyDoneAchievements implements Producer
                     // No action: there is no page of ours about one
                     // achievement, and the wiki link above is the way there.
                     'progress' => ['current' => $win->current, 'target' => $win->max, 'unit' => null],
+                    // What finishing pays, from the catalogue: its tiers'
+                    // points, and a mastery point where its rewards name one.
+                    'rewards' => array_values(array_filter([
+                        $win->points ? ['kind' => 'ap', 'amount' => $win->points] : null,
+                        $region !== null ? ['kind' => 'mastery_point', 'amount' => 1, 'region' => $region] : null,
+                    ])),
                     ...($win->stepsKnown() ? [
                         'steps_total' => count($win->steps),
                         'steps_remaining' => array_map(fn (AchievementStep $s) => [

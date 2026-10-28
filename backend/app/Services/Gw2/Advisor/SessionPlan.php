@@ -76,6 +76,7 @@ class SessionPlan
              * their mind should find them rather than an empty page.
              */
             'if_you_have_longer' => array_slice($extra, 0, 4),
+            'rewards' => $this->rewards($steps),
             'accounted_for' => $spent,
             /*
              * How much of the stated time the estimates cover. Deliberately
@@ -112,8 +113,55 @@ class SessionPlan
              */
             'starts_at' => $startsAt,
             'costs' => $costs,
-            // The one detail a step needs: where to read up on it before going.
+            // Where to read up on it before going.
             'wiki' => $candidate['details']['wiki'] ?? null,
+            // What the step is about, pictured, and what doing it pays — both
+            // from the producer, so a step looks like the card it came from.
+            'icon' => $candidate['details']['icon'] ?? null,
+            'background' => $candidate['details']['background'] ?? null,
+            'rewards' => $candidate['details']['rewards'] ?? [],
         ];
+    }
+
+    /**
+     * What the plan pays if it is followed — mockup 4's "Potential rewards
+     * tonight", summed from the steps rather than drawn as a row of icons.
+     *
+     * Only what the steps themselves name: acclaim and achievement points
+     * added up, mastery points counted, and the things that are not amounts —
+     * a tier, an ascended slot, a mount — listed by name. Gold is not here,
+     * because no step knows what it pays in gold.
+     *
+     * @param  array<int, array<string, mixed>>  $steps
+     * @return array<int, array<string, mixed>>
+     */
+    private function rewards(array $steps): array
+    {
+        $sums = [];
+        $named = [];
+
+        foreach ($steps as $step) {
+            foreach ($step['rewards'] as $reward) {
+                $kind = (string) ($reward['kind'] ?? '');
+
+                if (isset($reward['amount'])) {
+                    $sums[$kind] = ($sums[$kind] ?? 0) + (int) $reward['amount'];
+                } elseif (isset($reward['name'])) {
+                    $named[$kind][] = (string) $reward['name'];
+                }
+            }
+        }
+
+        $out = [];
+
+        foreach ($sums as $kind => $amount) {
+            $out[] = ['kind' => $kind, 'amount' => $amount];
+        }
+
+        foreach ($named as $kind => $names) {
+            $out[] = ['kind' => $kind, 'names' => array_values(array_unique($names))];
+        }
+
+        return $out;
     }
 }

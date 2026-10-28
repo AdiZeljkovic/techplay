@@ -88,7 +88,21 @@ export interface Recommendation {
          * published, and a card about one achievement has its wiki link instead.
          */
         action?: { href: string; label: string };
+        /** What doing it pays, as the producer knows it — never gold, which nothing knows. */
+        rewards?: Gw2Reward[];
     };
+}
+
+/**
+ * One thing a step pays. An amount where it is counted (acclaim, achievement
+ * points, mastery points), a name where it is a thing (a tier, an ascended
+ * slot, a mount).
+ */
+export interface Gw2Reward {
+    kind: "acclaim" | "ap" | "mastery_point" | "mastery_tier" | "ascended" | "mount" | string;
+    amount?: number;
+    name?: string;
+    region?: string;
 }
 
 export interface MasteryRegion {
@@ -396,6 +410,10 @@ export interface SessionStep {
     /** Minutes from the start of the session, or null when there is no estimate. */
     starts_at: number | null;
     costs: number | null;
+    /** The card's picture and scene, carried into the plan so a step looks like the card it came from. */
+    icon?: string | null;
+    background?: string | null;
+    rewards?: Gw2Reward[];
 }
 
 export interface Priority {
@@ -429,6 +447,8 @@ export interface Gw2Tonight {
         steps: SessionStep[];
         /** The same recommendations, below the line the budget drew. */
         if_you_have_longer: SessionStep[];
+        /** What the planned steps pay, summed: amounts added up, things listed by name. */
+        rewards?: { kind: string; amount?: number; names?: string[] }[];
         accounted_for: number;
         /**
          * How much of the stated time the estimates do not cover.
@@ -919,10 +939,15 @@ export async function getPlan(itemId: number, quantity = 1): Promise<Gw2Plan> {
     return data.data;
 }
 
-export async function getTonight(minutes?: number | null): Promise<Gw2Tonight | null> {
-    const { data } = await axiosInstance.get<Envelope<Gw2Tonight | null>>(
-        `/gw2/tonight${minutes ? `?minutes=${minutes}` : ""}`
-    );
+export async function getTonight(minutes?: number | null, avoid: string[] = []): Promise<Gw2Tonight | null> {
+    const params = new URLSearchParams();
+
+    if (minutes) params.set("minutes", String(minutes));
+    // Repeated `avoid[]` keys, as the dashboard sends them.
+    for (const domain of avoid) params.append("avoid[]", domain);
+
+    const query = params.toString();
+    const { data } = await axiosInstance.get<Envelope<Gw2Tonight | null>>(`/gw2/tonight${query ? `?${query}` : ""}`);
 
     return data.data ?? null;
 }

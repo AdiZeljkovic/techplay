@@ -86,6 +86,7 @@ class GearGaps implements Producer
                         : null,
                     'progress' => $progress,
                     'action' => $action,
+                    'rewards' => [['kind' => 'ascended', 'name' => self::readable($slot)]],
                 ]),
             );
         }
