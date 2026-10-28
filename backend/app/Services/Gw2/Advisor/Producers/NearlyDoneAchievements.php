@@ -85,6 +85,9 @@ class NearlyDoneAchievements implements Producer
                 details: array_filter([
                     'icon' => $win->icon,
                     'wiki' => Wiki::named($win->name),
+                    // No action: there is no page of ours about one
+                    // achievement, and the wiki link above is the way there.
+                    'progress' => ['current' => $win->current, 'target' => $win->max, 'unit' => null],
                     ...($win->stepsKnown() ? [
                         'steps_total' => count($win->steps),
                         'steps_remaining' => array_map(fn (AchievementStep $s) => [

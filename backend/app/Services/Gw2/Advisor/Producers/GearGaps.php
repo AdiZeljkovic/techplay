@@ -3,6 +3,7 @@
 namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\CardAction;
 use App\Services\Gw2\Advisor\CharacterView;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
@@ -54,6 +55,8 @@ class GearGaps implements Producer
 
         usort($slots, fn ($a, $b) => (self::ORDER[$a] ?? 99) <=> (self::ORDER[$b] ?? 99));
 
+        $progress = self::progress($character);
+        $action = self::action();
         $signals = [];
 
         foreach ($slots as $slot) {
@@ -81,11 +84,34 @@ class GearGaps implements Producer
                     'wiki' => isset($character->slotItems[$slot]['id'])
                         ? Wiki::item($character->slotItems[$slot]['id'])
                         : null,
+                    'progress' => $progress,
+                    'action' => $action,
                 ]),
             );
         }
 
         return $signals;
+    }
+
+    /**
+     * The set the slot belongs to, counted. Shared with EmptyCoreSlots, whose
+     * cards are about the same twelve slots.
+     *
+     * @return array{current: int, target: int, unit: string}
+     */
+    public static function progress(CharacterView $character): array
+    {
+        return [
+            'current' => $character->ascendedSlots,
+            'target' => $character->coreSlots,
+            'unit' => 'core slots ascended',
+        ];
+    }
+
+    /** @return array{href: string, label: string}|null */
+    public static function action(): ?array
+    {
+        return CardAction::guide('goals', 'first-ascended-set', 'Ascended gear guide');
     }
 
     /**

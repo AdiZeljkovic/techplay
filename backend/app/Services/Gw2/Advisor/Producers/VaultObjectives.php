@@ -3,6 +3,7 @@
 namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\CardAction;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\Signal;
@@ -68,9 +69,15 @@ class VaultObjectives implements Producer
                 ],
                 blockers: [],
                 pushes: ['astral_acclaim'],
-                // The objective itself has no page; the vault does, and says
-                // what the acclaim buys.
-                details: ['wiki' => Wiki::named("Wizard's Vault")],
+                details: [
+                    // The objective itself has no page; the vault does, and says
+                    // what the acclaim buys.
+                    'wiki' => Wiki::named("Wizard's Vault"),
+                    'progress' => ['current' => $objective->current, 'target' => $objective->target, 'unit' => null],
+                    // Where the rest of the vault is: every open objective, the
+                    // season and what is left on its shelf.
+                    'action' => CardAction::page('/gw2/tonight', 'Open the vault'),
+                ],
             );
         }
 

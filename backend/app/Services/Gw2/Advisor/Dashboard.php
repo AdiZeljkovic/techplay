@@ -47,8 +47,11 @@ class Dashboard
      *
      * The public pages carry the same constant for the same reason. Change the
      * shape, change this number, in the same commit.
+     *
+     * 4 (28 October 2026): `progress` and `action` on recommendation details,
+     * `points` and `mastery_region` on the easy wins.
      */
-    private const PAYLOAD_VERSION = 3;
+    private const PAYLOAD_VERSION = 4;
 
     public function __construct(
         private readonly SnapshotReader $reader,
@@ -403,6 +406,15 @@ class Dashboard
             ),
             'priorities' => $this->priorities($snapshot),
             'events' => $this->events($snapshot),
+            /*
+             * The vault, its season and the daily checklist live here since
+             * the redesign of 28 October 2026. They were down the dashboard's
+             * right-hand column, which the mockup gives to two panels; what
+             * resets tonight belongs on the page about tonight.
+             */
+            'vault' => $this->vaultCard($snapshot),
+            'season' => app(VaultSeason::class)->for($snapshot),
+            'today' => app(DailyChecklist::class)->for($snapshot),
             'observed_at' => $snapshot->observedAt,
         ];
     }
@@ -844,6 +856,12 @@ class Dashboard
                 'reviewed' => $w->curated,
                 'effort' => $w->effortBand,
                 'icon' => $w->icon,
+                // What finishing pays, for the reward column of the easy-wins
+                // list: points from the catalogue's tiers, and a mastery point
+                // where the achievement's rewards name a region.
+                'points' => $w->points,
+                // The account's spelling (Heart of Thorns), not the catalogue's (Maguuma).
+                'mastery_region' => MasteryRegions::toAccountName($w->masteryRegion),
                 'wiki' => Wiki::named($w->name),
                 // Only what is left, and only where the game named it. A list
                 // of three things beats a bar at 94% every time.
@@ -902,8 +920,19 @@ class Dashboard
      */
     private function delta(Snapshot $snapshot): array
     {
+        return $this->history($snapshot->accountId);
+    }
+
+    /**
+     * The same history, for the account page — which has no snapshot to hand
+     * and needs none, since none of this is read from one.
+     *
+     * @return array<string, mixed>
+     */
+    public function history(int $gw2AccountId): array
+    {
         $events = DB::table('gw2_progress_events')
-            ->where('gw2_account_id', $snapshot->accountId)
+            ->where('gw2_account_id', $gw2AccountId)
             ->orderByDesc('occurred_at')
             ->limit(20)
             ->get(['type', 'payload', 'occurred_at']);
@@ -927,7 +956,7 @@ class Dashboard
                 'name' => $names[json_decode($e->payload, true)['id'] ?? 0] ?? null,
                 'occurred_at' => $e->occurred_at,
             ])->all(),
-            'tracked_since' => DB::table('gw2_accounts')->where('id', $snapshot->accountId)->value('created_at'),
+            'tracked_since' => DB::table('gw2_accounts')->where('id', $gw2AccountId)->value('created_at'),
         ];
     }
 }

@@ -39,7 +39,7 @@ funkcija.
 
 ## 3. Faze
 
-### Faza 1 — temelj ✅ započeto 28. 10.
+### Faza 1 — temelj ✅ 28. 10.
 
 - `app/gw2/layout.tsx` + `components/gw2/shell/` — bočni meni, stanje veze,
   mobilni sheet.
@@ -49,7 +49,9 @@ funkcija.
 Komponente za faze 2+ (zaglavlje sekcije, nova kartica) prave se kad ih prva
 stranica koristi, ne unaprijed.
 
-### Faza 2 — Dashboard (mockup 1)
+### Faza 2 — Dashboard (mockup 1) ✅ 28. 10.
+
+Sve ispod je urađeno; detalji u `docs/README.md` §21, „Dashboard po mockupu 1".
 
 - Razdvajanje: **Dashboard** = pregled (5 kartica, 3 preporuke, Tonight teaser,
   Easy wins); **What should I do next?** (`/gw2/next`) = puna stranica savjeta s

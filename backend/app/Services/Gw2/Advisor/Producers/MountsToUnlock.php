@@ -4,6 +4,7 @@ namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Guide;
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\CardAction;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\Signal;
@@ -44,7 +45,8 @@ class MountsToUnlock implements Producer
         $guides = Gw2Guide::query()
             ->published()
             ->where('family', 'mounts')
-            ->pluck('slug', 'slug')
+            ->get(['family', 'slug'])
+            ->keyBy('slug')
             ->all();
 
         $signals = [];
@@ -67,6 +69,16 @@ class MountsToUnlock implements Producer
                 details: array_filter([
                     'icon' => $this->icons()[$slug] ?? null,
                     'wiki' => Wiki::named($name),
+                    'progress' => [
+                        'current' => count($unlocked),
+                        'target' => count($this->catalogue()),
+                        'unit' => 'mounts unlocked',
+                    ],
+                    // The page that says how — the same one whose absence is
+                    // the blocker below, so a card has one or the other.
+                    'action' => isset($guides[$slug])
+                        ? CardAction::page($guides[$slug]->path(), "How to get the {$name}")
+                        : null,
                 ]),
             );
         }
@@ -75,7 +87,7 @@ class MountsToUnlock implements Producer
     }
 
     /**
-     * @param  array<string, string>  $guides
+     * @param  array<string, Gw2Guide>  $guides
      * @return array<int, string>
      */
     private function blockers(string $slug, array $guides): array

@@ -3,6 +3,7 @@
 namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\CardAction;
 use App\Services\Gw2\Advisor\CharacterView;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
@@ -46,7 +47,15 @@ class AgonyGap implements Producer
             ],
             blockers: $this->blockers($character),
             pushes: ['fractal_tier:'.$character->name],
-            details: ['wiki' => Wiki::named('Agony Resistance')],
+            details: array_filter([
+                'wiki' => Wiki::named('Agony Resistance'),
+                'progress' => [
+                    'current' => $character->agonyResistance,
+                    'target' => CharacterView::TIER_4_AGONY,
+                    'unit' => 'Agony Resistance',
+                ],
+                'action' => CardAction::guide('fractals', 'agony-resistance', 'Agony Resistance guide'),
+            ]),
         )];
     }
 

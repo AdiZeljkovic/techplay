@@ -33,6 +33,17 @@ export function domainTone(domain: string | null | undefined): string {
 }
 
 /**
+ * The scene at the top of a recommendation card, per domain.
+ *
+ * Empty until the generated art lands in `/images/gw2/` (the list and the
+ * rules for it are in `gw2/REDIZAJN.md` §5). A path goes in here only once
+ * the file is in the repo — a card pointing at a missing image is a broken
+ * picture on every dashboard, where a card with no entry falls back to its
+ * own scene or a wash in the domain's colour.
+ */
+export const DOMAIN_ART: Record<string, string> = {};
+
+/**
  * Mastery regions, in the expansions' own colours.
  *
  * Keyed by the name the **account** endpoint uses, which is not the name the

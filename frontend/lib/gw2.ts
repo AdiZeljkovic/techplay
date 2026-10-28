@@ -75,6 +75,19 @@ export interface Recommendation {
         steps_remaining?: { index: number; text: string | null }[];
         /** The wiki page for what the card is about. */
         wiki?: Gw2WikiLink;
+        /**
+         * How far along the card's subject is, counted off the account: nine
+         * of twelve slots ascended, 20 of 150 Agony Resistance. Absent where
+         * there is nothing to count towards — spent against earned points is
+         * not a goal anybody has.
+         */
+        progress?: { current: number; target: number; unit: string | null };
+        /**
+         * The page of ours that answers the card, for the button at its foot.
+         * Absent rather than vague: a guide is linked only while it is
+         * published, and a card about one achievement has its wiki link instead.
+         */
+        action?: { href: string; label: string };
     };
 }
 
@@ -137,6 +150,10 @@ export interface NearlyDone {
     /** The game's own wording for what is left, where it gave any. */
     steps_remaining: string[];
     wiki?: Gw2WikiLink | null;
+    /** Achievement points that finishing pays. Null where the catalogue has no tiers for it. */
+    points?: number | null;
+    /** The region a mastery point lands in, in the account's spelling, when the achievement pays one. */
+    mastery_region?: string | null;
 }
 
 export interface MasteryTrackView {
@@ -376,6 +393,10 @@ export interface Gw2Tonight {
      * failure.
      */
     events: ScheduledEvent[];
+    /** Moved here from the dashboard in the redesign of 28 October 2026 — what resets tonight, on the page about tonight. */
+    vault?: Gw2Dashboard["cards"]["vault"];
+    season?: Gw2VaultSeason | null;
+    today?: Gw2Today;
     observed_at: string | null;
 }
 
@@ -931,6 +952,8 @@ export interface Gw2AccountOverview {
         listed_for: number;
         observed_at: string | null;
     } | null;
+    /** What changed between our reads — moved here from the dashboard in the redesign. */
+    history?: Gw2Dashboard["since_last_sync"];
 }
 
 export interface Gw2Order {

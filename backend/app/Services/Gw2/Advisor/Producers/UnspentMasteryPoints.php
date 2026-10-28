@@ -3,6 +3,7 @@
 namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\CardAction;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\RegionMastery;
@@ -60,6 +61,11 @@ class UnspentMasteryPoints implements Producer
                  */
                 blockers: [],
                 pushes: ['mastery:'.$region->region],
+                /*
+                 * No progress bar: spent against earned is not a goal anybody
+                 * is working towards, and a bar would say it was.
+                 */
+                details: ['action' => CardAction::page('/gw2/masteries', 'Open masteries')],
             );
         }
 

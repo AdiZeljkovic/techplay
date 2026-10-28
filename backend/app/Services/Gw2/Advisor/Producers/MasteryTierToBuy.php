@@ -3,6 +3,7 @@
 namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\CardAction;
 use App\Services\Gw2\Advisor\Intent;
 use App\Services\Gw2\Advisor\Producer;
 use App\Services\Gw2\Advisor\RegionMastery;
@@ -87,6 +88,12 @@ class MasteryTierToBuy implements Producer
                         'icon' => $track->tierIcons[$track->tiersPaid] ?? ($track->tierIcons[0] ?? null),
                         'background' => $track->background,
                         'wiki' => Wiki::named($track->name),
+                        'progress' => [
+                            'current' => $track->tiersPaid,
+                            'target' => $track->tiers(),
+                            'unit' => 'tiers',
+                        ],
+                        'action' => CardAction::page('/gw2/masteries', 'Open masteries'),
                     ]),
                 );
             }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
     BookOpen,
     CalendarClock,
+    Compass,
     Database,
     Gem,
     Hammer,
@@ -43,6 +44,7 @@ export const GW2_NAV: { label: string; items: Gw2NavItem[] }[] = [
         label: "Your account",
         items: [
             { href: "/gw2", label: "Dashboard", icon: House },
+            { href: "/gw2/next", label: "What should I do next?", icon: Compass },
             { href: "/gw2/planner", label: "Crafting planner", icon: Target },
             { href: "/gw2/masteries", label: "Masteries", icon: Sparkles },
             { href: "/gw2/content", label: "Raids & bosses", icon: Swords },

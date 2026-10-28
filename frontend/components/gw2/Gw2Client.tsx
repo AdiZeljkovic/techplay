@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import ConnectKey from "@/components/gw2/ConnectKey";
 import DashboardView from "@/components/gw2/DashboardView";
+import AdviceView from "@/components/gw2/AdviceView";
 import { useGw2Shell } from "@/components/gw2/Gw2Shell";
 import {
     disconnect,
@@ -39,8 +40,13 @@ import {
  * "Failed" exists because a first read can fail, and until the connection came
  * back with the dashboard there was no way to tell that apart from one still
  * running: the page said "reading" for ever.
+ *
+ * Two pages draw the ready state, from the same payload: the dashboard
+ * (`overview`) and "What should I do next?" (`next`), which is where the
+ * question can be re-asked with a goal, a time budget and things to leave out.
+ * One client for both, so the five states above are handled in one place.
  */
-export default function Gw2Client() {
+export default function Gw2Client({ view = "overview" }: { view?: "overview" | "next" }) {
     const { user, isLoading: authLoading } = useAuth();
 
     const [dashboard, setDashboard] = useState<Gw2Dashboard | null>(null);
@@ -180,7 +186,7 @@ export default function Gw2Client() {
                     </p>
                     <div className="flex gap-3">
                         <Button asChild>
-                            <Link href="/login?redirect=/gw2">Sign in</Link>
+                            <Link href={`/login?redirect=${view === "next" ? "/gw2/next" : "/gw2"}`}>Sign in</Link>
                         </Button>
                         <Button variant="secondary" asChild>
                             <Link href="/register">Create an account</Link>
@@ -266,14 +272,17 @@ export default function Gw2Client() {
         );
     }
 
-    return (
-        <DashboardView
-            dashboard={dashboard}
-            intent={intent}
-            onIntentChange={setIntent}
-            onRefresh={() => void load(intent)}
-            onDisconnected={disconnected}
-            busy={busy}
-        />
-    );
+    if (view === "next") {
+        return (
+            <AdviceView
+                dashboard={dashboard}
+                intent={intent}
+                onIntentChange={setIntent}
+                onRefresh={() => void load(intent)}
+                busy={busy}
+            />
+        );
+    }
+
+    return <DashboardView dashboard={dashboard} onRefresh={() => void load(intent)} />;
 }

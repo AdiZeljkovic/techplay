@@ -237,7 +237,7 @@ class SnapshotReader
             ->whereIn('id', array_keys($candidates))
             ->get([
                 'id', 'name', 'requirement', 'advisor_eligible', 'effort_band',
-                'reviewed_at', 'flags', 'bits', 'mastery_region', 'icon', 'category_id',
+                'reviewed_at', 'flags', 'bits', 'mastery_region', 'icon', 'category_id', 'tiers',
             ])
             ->keyBy('id');
 
@@ -283,6 +283,7 @@ class SnapshotReader
                 // before the nightly refresh) has no $meta, and reading ->icon
                 // off null took the whole dashboard down with a 500.
                 icon: ($meta->icon ?? null) ?: ($categoryIcons[$meta->category_id ?? 0] ?? null),
+                points: $this->pointsLeft($meta->tiers ?? null, $progress['current']),
             );
         }
 
@@ -290,6 +291,26 @@ class SnapshotReader
         usort($wins, fn (EasyWin $a, EasyWin $b) => [$a->remaining(), -$a->ratio()] <=> [$b->remaining(), -$b->ratio()]);
 
         return $wins;
+    }
+
+    /**
+     * Achievement points still to be paid: every tier whose count is above
+     * where the account stands. Tiers are cumulative thresholds — 10, 17 —
+     * so an account at 16 of 17 has the first one banked and the second to
+     * come. Null when the catalogue holds no tiers for the row.
+     */
+    private function pointsLeft(mixed $tiers, int $current): ?int
+    {
+        $tiers = $this->json($tiers);
+
+        if ($tiers === []) {
+            return null;
+        }
+
+        return (int) array_sum(array_map(
+            fn ($tier) => (int) ($tier['count'] ?? 0) > $current ? (int) ($tier['points'] ?? 0) : 0,
+            $tiers
+        ));
     }
 
     /**

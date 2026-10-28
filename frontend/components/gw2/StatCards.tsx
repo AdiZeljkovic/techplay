@@ -9,13 +9,13 @@ import type { Gw2Dashboard } from "@/lib/gw2";
 /**
  * Five readouts across the top of the dashboard.
  *
- * The mockup draws five too, and three of its numbers are not ones this tool can
- * honestly produce: "Mastery Progress 73%" has no denominator we hold, "2,847
- * achievement points, 48% complete" is neither what the API returns nor a
- * percentage of anything countable, and "Fractal Level 37 · Tier 4" states a tier
- * from a scale we have no published mapping for.
+ * Drawn as mockup 1 draws them — a glowing mark in the domain's colour, a large
+ * figure, a line under it and a bar — with figures the mockup could not have:
+ * "2,847 achievement points, 48% complete" is not a percentage of anything
+ * countable, and "Fractal Level 37 · Tier 4" names a tier from a scale with no
+ * published mapping (and 37 would be Tier 2 on any of them).
  *
- * So the layout is the mockup's and the figures are ours. Each card reports
+ * So the look is the mockup's and the figures are ours. Each card reports
  * something read off the account, and where a card would need a total we do not
  * have, it reports a count instead of a percentage. A bar that is honest about
  * measuring nine of twelve slots is worth more than a percentage that had to
@@ -41,36 +41,43 @@ interface CardProps {
 function Card({ icon, label, value, detail, tone, children }: CardProps) {
     return (
         <div
-            className="relative flex flex-col gap-3 overflow-hidden rounded-[var(--radius-card)] border p-4"
+            className="relative flex flex-col gap-3 overflow-hidden rounded-[var(--radius-panel)] border p-4"
             style={{
-                background: "var(--surface-2)",
-                borderColor: "var(--line-strong)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07)",
+                background: "var(--surface-1)",
+                borderColor: `color-mix(in srgb, ${tone} 22%, var(--line-strong))`,
             }}
         >
-            {/* A rail rather than a tinted card. The number stays the thing
-                being read; the colour only says which of the five this is. */}
+            {/* The card's own light, from the corner its mark sits in. */}
             <span
                 aria-hidden
-                className="absolute inset-y-0 left-0 w-[2px]"
-                style={{ background: tone }}
+                className="pointer-events-none absolute inset-0"
+                style={{ background: `radial-gradient(80% 90% at 0% 0%, color-mix(in srgb, ${tone} 13%, transparent), transparent 70%)` }}
             />
 
-            <div className="flex items-center gap-2.5">
-                <span aria-hidden style={{ color: tone }}>
+            <div className="relative flex items-start gap-3.5">
+                <span
+                    aria-hidden
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border"
+                    style={{
+                        color: tone,
+                        borderColor: `color-mix(in srgb, ${tone} 45%, transparent)`,
+                        background: `color-mix(in srgb, ${tone} 12%, transparent)`,
+                        boxShadow: `0 0 20px color-mix(in srgb, ${tone} 28%, transparent)`,
+                    }}
+                >
                     {icon}
                 </span>
-                <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-low)]">
-                    {label}
-                </span>
+
+                <div className="min-w-0">
+                    <div className="truncate text-[13px] text-[var(--ink-mid)]">{label}</div>
+                    <div className="mt-0.5 font-display text-[28px] font-bold leading-none text-[var(--ink-hi)]">
+                        {value}
+                    </div>
+                    <div className="mt-1.5 text-xs text-[var(--ink-low)]">{detail}</div>
+                </div>
             </div>
 
-            <div>
-                <div className="font-numeric text-2xl leading-none text-[var(--ink-hi)]">{value}</div>
-                <div className="mt-1.5 text-xs text-[var(--ink-low)]">{detail}</div>
-            </div>
-
-            {children}
+            {children && <div className="relative">{children}</div>}
         </div>
     );
 }
@@ -79,9 +86,9 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
     const { masteries, gear, fractals, achievements, vault } = dashboard.cards;
 
     return (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
             <Card
-                icon={<Sparkles size={15} />}
+                icon={<Sparkles size={20} />}
                 tone={DOMAIN_TONE.masteries}
                 label="Mastery points"
                 value={masteries.unspent_total}
@@ -109,7 +116,7 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             </Card>
 
             <Card
-                icon={<Layers size={15} />}
+                icon={<Layers size={20} />}
                 tone={DOMAIN_TONE.fractals}
                 label="Fractal level"
                 value={fractals?.personal_level ?? "—"}
@@ -124,13 +131,13 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             />
 
             <Card
-                icon={<Gem size={15} />}
+                icon={<Gem size={20} />}
                 tone={DOMAIN_TONE.fractals}
                 label="Agony Resistance"
                 value={
                     <>
                         {fractals?.agony_resistance ?? 0}
-                        <span className="text-base text-[var(--ink-low)]"> / {fractals?.tier_4_target ?? 150}</span>
+                        <span className="text-base font-normal text-[var(--ink-low)]"> / {fractals?.tier_4_target ?? 150}</span>
                     </>
                 }
                 detail={
@@ -148,13 +155,13 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             </Card>
 
             <Card
-                icon={<Shield size={15} />}
+                icon={<Shield size={20} />}
                 tone={DOMAIN_TONE.gear}
                 label="Ascended gear"
                 value={
                     <>
                         {gear?.ascended_core ?? 0}
-                        <span className="text-base text-[var(--ink-low)]"> / {gear?.core_slots ?? 12}</span>
+                        <span className="text-base font-normal text-[var(--ink-low)]"> / {gear?.core_slots ?? 12}</span>
                     </>
                 }
                 detail={
@@ -173,7 +180,7 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             </Card>
 
             <Card
-                icon={<Award size={15} />}
+                icon={<Award size={20} />}
                 tone={DOMAIN_TONE.achievements}
                 label="Nearly done"
                 value={achievements.one_step_away}

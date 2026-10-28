@@ -34,6 +34,7 @@ class EmptyCoreSlots implements Producer
         }
 
         $empty = $character->emptySlots();
+        $action = GearGaps::action();
         $signals = [];
 
         foreach ($empty as $slot) {
@@ -49,6 +50,10 @@ class EmptyCoreSlots implements Producer
                 ],
                 blockers: [],
                 pushes: ['ascended_set:'.$character->name],
+                details: array_filter([
+                    'progress' => GearGaps::progress($character),
+                    'action' => $action,
+                ]),
             );
         }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, ExternalLink, HelpCircle, Minus } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -10,19 +10,39 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
-import { coin, getAccountOverview, type Gw2AccountOverview, type Gw2OwnedProduct } from "@/lib/gw2";
+import ConnectionPanel from "@/components/gw2/ConnectionPanel";
+import { useGw2Shell } from "@/components/gw2/Gw2Shell";
+import {
+    coin,
+    getAccountOverview,
+    getConnection,
+    type Gw2AccountOverview,
+    type Gw2Connection,
+    type Gw2OwnedProduct,
+} from "@/lib/gw2";
 
 /**
  * What the account owns and what came with it, the legendary armory,
- * collections, and the trading post counter.
+ * collections, and the trading post counter — and, since the redesign of 28
+ * October 2026, the connection itself and what has changed since it was made,
+ * both of which used to sit down the dashboard's right-hand column.
  *
  * Every panel is null when the key cannot see it, and says which permission
  * that is rather than drawing an empty shelf.
  */
 export default function AccountClient() {
     const { user, isLoading } = useAuth();
+    const reportConnection = useGw2Shell()?.reportConnection;
     const [data, setData] = useState<Gw2AccountOverview | null>(null);
+    const [connection, setConnection] = useState<Gw2Connection | null>(null);
     const [state, setState] = useState<"loading" | "ready" | "none">("loading");
+
+    const loadOverview = useCallback(async () => {
+        const overview = await getAccountOverview();
+
+        setData(overview);
+        setState(overview ? "ready" : "none");
+    }, []);
 
     useEffect(() => {
         // Signed out is derived at render, not stored: nothing to fetch.
@@ -30,10 +50,12 @@ export default function AccountClient() {
 
         let cancelled = false;
 
-        getAccountOverview()
-            .then((overview) => {
+        // The connection panel is extra; failing to read it must not cost the page.
+        Promise.all([getAccountOverview(), getConnection().catch(() => null)])
+            .then(([overview, connected]) => {
                 if (cancelled) return;
                 setData(overview);
+                setConnection(connected);
                 setState(overview ? "ready" : "none");
             })
             .catch(() => {
@@ -44,6 +66,18 @@ export default function AccountClient() {
             cancelled = true;
         };
     }, [isLoading, user]);
+
+    function connectionChanged(next: Gw2Connection | null) {
+        setConnection(next);
+        reportConnection?.(next);
+
+        // Disconnected: everything on this page was read with the key that
+        // has just been deleted.
+        if (!next) {
+            setData(null);
+            setState("none");
+        }
+    }
 
     const signedOut = !isLoading && !user;
 
@@ -66,6 +100,19 @@ export default function AccountClient() {
 
     return (
         <div className="space-y-5">
+            {(connection || data.history) && (
+                <div className="grid gap-5 lg:grid-cols-2">
+                    {connection && (
+                        <ConnectionPanel
+                            connection={connection}
+                            onChanged={connectionChanged}
+                            onRead={() => void loadOverview().catch(() => undefined)}
+                        />
+                    )}
+                    {data.history && <HistoryPanel history={data.history} />}
+                </div>
+            )}
+
             <OwnershipPanel products={data.ownership} />
 
             <div className="grid gap-5 lg:grid-cols-2">
@@ -75,6 +122,45 @@ export default function AccountClient() {
 
             <CollectionsPanel collections={data.collections} />
         </div>
+    );
+}
+
+/**
+ * What changed between our reads.
+ *
+ * The date under it has to be shown. The game's API reports raid clears only
+ * for the current week and has no lifetime view anywhere, so nothing before the
+ * day this account connected exists in any record and never will.
+ */
+function HistoryPanel({ history }: { history: NonNullable<Gw2AccountOverview["history"]> }) {
+    return (
+        <Panel material="matte" title="Since you connected">
+            {history.events.length === 0 ? (
+                <p className="text-sm text-[var(--ink-low)]">Nothing has changed between reads yet.</p>
+            ) : (
+                <ul className="space-y-2">
+                    {history.events.slice(0, 8).map((event, i) => (
+                        <li key={`${event.type}-${event.id}-${i}`} className="flex gap-2 text-sm">
+                            <Check size={14} className="mt-0.5 shrink-0 text-[var(--ink-faint)]" aria-hidden />
+                            <span className="min-w-0 flex-1 text-[var(--ink-mid)]">
+                                {event.name ?? event.type.replace(/_/g, " ")}
+                            </span>
+                            <span className="shrink-0 text-[11px] text-[var(--ink-faint)]">
+                                {new Date(event.occurred_at.replace(" ", "T")).toLocaleDateString()}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+
+            {history.tracked_since && (
+                <p className="mt-3 border-t pt-3 text-[11px] text-[var(--ink-faint)]" style={{ borderColor: "var(--line)" }}>
+                    We have been watching since{" "}
+                    {new Date(history.tracked_since.replace(" ", "T")).toLocaleDateString()}. Guild Wars 2 keeps no
+                    history of its own, so nothing before that can be recovered.
+                </p>
+            )}
+        </Panel>
     );
 }
 

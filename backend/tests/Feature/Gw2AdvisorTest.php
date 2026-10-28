@@ -3,11 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\ConnectedAccount;
+use App\Models\Gw2Guide;
 use App\Models\Gw2Rule;
 use App\Models\User;
 use App\Services\Gw2\Advisor\Advisor;
+use App\Services\Gw2\Advisor\Dashboard;
 use App\Services\Gw2\Advisor\Facts;
 use App\Services\Gw2\Advisor\Intent;
+use App\Services\Gw2\Advisor\Producers\AgonyGap;
 use App\Services\Gw2\Advisor\Producers\GearGaps;
 use App\Services\Gw2\Advisor\Producers\NearlyDoneAchievements;
 use App\Services\Gw2\Advisor\Producers\UnspentMasteryPoints;
@@ -381,6 +384,86 @@ class Gw2AdvisorTest extends TestCase
             $achievement['details']['wiki'],
             collect($plan['steps'])->firstWhere('key', 'one-step')['wiki']
         );
+    }
+
+    /**
+     * The redesign's card: a bar for how far along the subject is, and a
+     * button to the page that answers it — and the button only where that
+     * page exists.
+     */
+    public function test_a_card_says_how_far_along_it_is_and_sends_you_only_to_a_page_that_exists(): void
+    {
+        $this->rule(['key' => 'gear-thing', 'producer' => GearGaps::KEY, 'domain' => 'gear',
+            'title' => 'Upgrade the {slot}', 'base_score' => 70]);
+        $this->rule(['key' => 'agony', 'producer' => AgonyGap::KEY, 'domain' => 'fractals',
+            'title' => 'Raise Agony Resistance', 'base_score' => 60]);
+        $this->rule(['key' => 'vault-open', 'producer' => VaultObjectives::KEY, 'domain' => 'vault',
+            'title' => '{title}', 'base_score' => 50]);
+
+        $card = function (string $key): array {
+            $advice = $this->advise();
+
+            return collect([...$advice['headline'], ...$advice['alternatives']])->firstWhere('key', $key);
+        };
+
+        // Counted off the fixture, not chosen: nine of twelve core slots are
+        // ascended, and two +10 infusions make 20.
+        $this->assertSame(['current' => 9, 'target' => 12, 'unit' => 'core slots ascended'], $card('gear-thing')['details']['progress']);
+        $this->assertSame(['current' => 20, 'target' => 150, 'unit' => 'Agony Resistance'], $card('agony')['details']['progress']);
+        $this->assertSame(['current' => 0, 'target' => 1, 'unit' => null], $card('vault-open')['details']['progress']);
+
+        // A page of the tool's own is always there...
+        $this->assertSame('/gw2/tonight', $card('vault-open')['details']['action']['href']);
+
+        // ...a guide only once it is published. Before that it is a 404, and
+        // the card goes without a button rather than carry one that leads there.
+        $this->assertArrayNotHasKey('action', $card('gear-thing')['details']);
+
+        Gw2Guide::create(['family' => 'goals', 'slug' => 'first-ascended-set', 'title' => 'First ascended set', 'is_published' => false]);
+        $this->assertArrayNotHasKey('action', $card('gear-thing')['details']);
+
+        Gw2Guide::query()->update(['is_published' => true]);
+        $this->assertSame('/gw2/goals/first-ascended-set', $card('gear-thing')['details']['action']['href']);
+    }
+
+    public function test_an_easy_win_says_what_finishing_it_pays(): void
+    {
+        // Two cumulative tiers; at 16 of 17 the first is already banked.
+        DB::table('gw2_achievements')->where('id', 1)->update([
+            'tiers' => json_encode([['count' => 10, 'points' => 5], ['count' => 17, 'points' => 10]]),
+            'mastery_region' => 'Maguuma',
+        ]);
+
+        $closest = collect(app(Dashboard::class)->for($this->accountId)['cards']['achievements']['closest']);
+
+        $this->assertSame(10, $closest->firstWhere('id', 1)['points']);
+        // In the account's spelling, which is what a reader knows it by.
+        $this->assertSame('Heart of Thorns', $closest->firstWhere('id', 1)['mastery_region']);
+
+        // No tiers in our catalogue is not the same as worth nothing.
+        $this->assertNull($closest->firstWhere('id', 2)['points']);
+    }
+
+    public function test_the_vault_and_the_history_moved_with_the_redesign_and_are_still_served(): void
+    {
+        $tonight = app(Dashboard::class)->tonight($this->accountId, 60);
+
+        $this->assertSame('Complete the Loreclaw Expanse Jumping Puzzle', $tonight['vault']['open'][0]['title']);
+        $this->assertArrayHasKey('daily_reset_at', $tonight['today']);
+        $this->assertArrayHasKey('season', $tonight);
+
+        DB::table('gw2_progress_events')->insert([
+            'gw2_account_id' => $this->accountId,
+            'type' => 'achievement_completed',
+            'payload' => json_encode(['id' => 2]),
+            'occurred_at' => now(),
+        ]);
+
+        $user = User::find(DB::table('gw2_accounts')->where('id', $this->accountId)->value('user_id'));
+        $account = $this->actingAs($user)->getJson('/api/v1/gw2/account')->assertOk();
+
+        $this->assertSame('Bava Nisos Explorer', $account->json('data.history.events.0.name'));
+        $this->assertNotNull($account->json('data.history.tracked_since'));
     }
 
     public function test_a_raid_boss_links_to_the_wiki_only_once_an_editor_has_checked_the_page(): void

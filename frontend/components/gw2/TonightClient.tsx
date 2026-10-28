@@ -11,6 +11,8 @@ import Chip from "@/components/ui/Chip";
 import Meter from "@/components/ui/Meter";
 import { Skeleton } from "@/components/ui/Skeleton";
 import WikiLink from "@/components/gw2/WikiLink";
+import SeasonPanel from "@/components/gw2/SeasonPanel";
+import TodayPanel from "@/components/gw2/TodayPanel";
 import { CONFIDENCE_LABEL, getTonight, type Gw2Tonight, type SessionStep } from "@/lib/gw2";
 
 /**
@@ -210,6 +212,12 @@ export default function TonightClient() {
                         )}
                     </Panel>
 
+                    <VaultPanel vault={data.vault} />
+
+                    {data.season && <SeasonPanel season={data.season} />}
+
+                    {data.today && <TodayPanel today={data.today} />}
+
                     {/*
                      * Only when somebody has entered and verified the times. The
                      * game has no schedule endpoint, so an empty panel is the
@@ -267,6 +275,57 @@ export default function TonightClient() {
                 </div>
             </div>
         </div>
+    );
+}
+
+/**
+ * What is open in the Wizard's Vault right now — moved here from the
+ * dashboard's right-hand column in the redesign, because the vault resets with
+ * the evening this page is about.
+ *
+ * The objectives arrive from the game with their own titles, targets and
+ * acclaim, so nothing on this panel is estimated.
+ */
+function VaultPanel({ vault }: { vault: Gw2Tonight["vault"] }) {
+    // Undefined only from a backend older than this page — the two halves
+    // deploy a minute apart. Nothing is drawn rather than a false "not read".
+    if (vault === undefined) return null;
+
+    return (
+        <Panel material="instrument" title="Open right now" meta={<span className="text-xs text-[var(--ink-faint)]">Wizard&apos;s Vault</span>}>
+            {!vault ? (
+                // Absent is not empty, and absent has two causes: a key without
+                // `progression` never read the vault, and a key with it has not
+                // been read since the vault arrived. "Nothing open" would be
+                // inventing either.
+                <p className="text-sm text-[var(--ink-low)]">
+                    We have not read your vault. It needs the <strong>progression</strong> permission on your key, and
+                    arrives with the next read once it has it.
+                </p>
+            ) : vault.open.length === 0 ? (
+                <p className="text-sm text-[var(--ink-low)]">Everything is done for this period.</p>
+            ) : (
+                <ul className="space-y-3">
+                    {vault.open.map((objective) => (
+                        <li key={`${objective.period}-${objective.id}`} className="space-y-1.5">
+                            <div className="flex items-start justify-between gap-2">
+                                <span className="text-sm leading-snug text-[var(--ink-hi)]">{objective.title}</span>
+                                <span className="shrink-0 font-numeric text-xs text-[var(--accent-ink)]">
+                                    +{objective.acclaim}
+                                </span>
+                            </div>
+                            <Meter value={objective.current} max={objective.target} size="sm" />
+                            <div className="flex justify-between text-[11px] text-[var(--ink-faint)]">
+                                <span>{objective.period}</span>
+                                <span className="font-numeric">
+                                    {objective.current} / {objective.target}
+                                </span>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </Panel>
     );
 }
 

@@ -305,6 +305,9 @@ class Gw2Controller extends Controller
             'legendary_armory' => app(LegendaryArmory::class)->for($accountId),
             'collections' => app(Collections::class)->for($accountId),
             'trading_post' => app(TradingPost::class)->for($accountId),
+            // What changed between our reads, moved here from the dashboard's
+            // right-hand column in the redesign of 28 October 2026.
+            'history' => $this->dashboard->history($accountId),
         ]);
     }
 

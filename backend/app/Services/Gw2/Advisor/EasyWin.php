@@ -52,6 +52,12 @@ readonly class EasyWin
          * job an icon on a card has.
          */
         public ?string $icon = null,
+        /**
+         * Achievement points that finishing would pay: every tier above the
+         * current count, summed. Null where our catalogue has no tiers for it,
+         * which is not the same as an achievement worth nothing.
+         */
+        public ?int $points = null,
     ) {}
 
     /**

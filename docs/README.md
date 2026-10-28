@@ -2153,6 +2153,46 @@ gdje si.
 - Red od deset linkova na dashboardu i „← Back to the advisor" na podstranicama
   su izbačeni — meni ih zamjenjuje.
 
+#### Dashboard po mockupu 1 — faza 2, 28. 10. 2026.
+
+**Dvije stranice iz jednog klijenta.** `Gw2Client view="overview"` (`/gw2`) je
+pregled: pet kartica, tri preporuke s „View all recommendations →", oprema, i
+desno samo **Tonight u jednom satu** (`getTonight(60)`, vlastiti zahtjev) i
+**Easy wins**. `Gw2Client view="next"` (`/gw2/next`, noindex, u meniju kao „What
+should I do next?") je puna stranica savjeta: izbor cilja s pinovima, vrijeme,
+„not tonight", i svih šest kartica. Pet stanja (odjavljen, bez veze, čita, palo,
+spreman) ostaje na jednom mjestu.
+
+**Šta se preselilo s desne kolone** — ništa nije izbačeno:
+
+| Panel | Sada |
+|---|---|
+| Wizard's Vault „Open right now", sezona, Today | `/gw2/tonight` — `GET /gw2/tonight` vraća `vault`, `season`, `today` |
+| „Since you connected" | `/gw2/account` — `GET /gw2/account` vraća `history` (`Dashboard::history()`) |
+| „Your connection" (refresh, full read, odspoji, dozvole koje fale) | `/gw2/account`, komponenta `ConnectionPanel`; stanje veze je i u meniju |
+
+**Kartica preporuke** ima scenu na vrhu (`DOMAIN_ART` iz `lib/gw2domain.ts`
+kad slika postoji, inače scena mastery trake, inače prelaz u boji domene),
+predmet u prstenu, traku i dugme. Traka i dugme dolaze **samo s backenda**, u
+`details`:
+
+- `progress` `{current, target, unit}` — gear 9/12 core slotova, AR 20/150,
+  mountovi, nivoi trake, vault cilj, koraci postignuća. Nema ga na
+  „unspent points" — potrošeno naspram zarađenog nije cilj.
+- `action` `{href, label}` — `CardAction::page()` za naše stranice
+  (`/gw2/masteries`, `/gw2/tonight`), `CardAction::guide()` za vodič **samo dok
+  je objavljen** (neobjavljen je 404). Postignuće nema dugme — ima wiki link.
+  `CardAction::guide()` pita bazu svaki put, namjerno: statički keš bi pod
+  Octaneom nadživio zahtjev.
+
+Gear kartica crta i red od dvanaest nošenih komada (`wornPieces()`).
+
+**Easy wins** nosi nagradu: `points` (AP iz tierova kataloga — svi tierovi iznad
+trenutnog broja, sabrani; `null` kad katalog nema tierove, što nije isto što i
+nula) i `mastery_region` u pravopisu naloga.
+
+`Dashboard::PAYLOAD_VERSION` je 4 — oblik payloada se promijenio.
+
 #### Šta je iz mockupa uzeto, a šta nije
 
 Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:
@@ -2162,7 +2202,7 @@ Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:
 | „Mastery Progress 73%" | nepotrošene tačke **po regiji** — tačke su zaključane za regiju, zbir po nalogu mjeri veličinu koja ne postoji |
 | „2.847 AP, 48% complete" | broj postignuća na jedan korak od kraja |
 | „Fractal Level 37 · Tier 4" | nivo i AR cilj; tier se ne imenuje |
-| „Tonight in GW2" (plan po minutima) | **šta je stvarno otvoreno u trezoru** — dolazi s vlastitim naslovima, ciljevima i acclaimom |
+| „Tonight in GW2" (plan po minutima) | prvi sat Tonight plana, **rasponi** i označeni kao naša procjena (od 28. 10.; prije: otvoreni Vault ciljevi, koji su sad na `/gw2/tonight`) |
 
 Zbirnog skora nema nigdje.
 
