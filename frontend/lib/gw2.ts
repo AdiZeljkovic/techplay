@@ -227,14 +227,17 @@ export interface PlanNode extends PlanLine {
     recipe_was_chosen: boolean;
     /** Taught by a recipe sheet: learned or not. Null when it comes with the discipline, or is unknown. */
     recipe_learned?: boolean | null;
-    /** Made in the Mystic Forge from a checked recipe. Null for everything else. */
+    /** Made in the Mystic Forge from a sourced recipe. Null for everything else. */
     forge?: {
         source_url: string | null;
         source_label: string | null;
+        /** The date the source vouches for — a dataset's, or an editor's check. */
         checked_at: string | null;
         /** The forge is random for this one; `attempts` is the average needed. */
         random: boolean;
         attempts: number;
+        /** Other recipes for the same item; the planned one uses what the account holds most of. */
+        other_recipes?: number;
     } | null;
     depth: number;
     children: PlanNode[];
@@ -962,11 +965,20 @@ export interface Gw2Legendaries {
         icon: string | null;
         max_count: number;
         held: number | null;
-        /** `recipe`: a discipline recipe. `forge`: a checked Mystic Forge recipe. null: not plannable yet. */
+        /** `recipe`: a discipline recipe. `forge`: a sourced Mystic Forge recipe. null: not plannable yet. */
         plannable: "recipe" | "forge" | null;
         wiki?: Gw2WikiLink;
     }[];
     forge_recipes_checked: number;
+    /** Where the forge recipes come from, largest first — credited on the page. */
+    forge_sources?: {
+        label: string | null;
+        url: string | null;
+        recipes: number;
+        as_of: string | null;
+        /** What the source does not cover, said once beside its credit. */
+        note: string | null;
+    }[];
     armory_known: boolean;
     today?: { id: string; item_id: number; name: string | null; missing: number; crafted_today: boolean | null }[];
 }

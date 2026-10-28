@@ -2,6 +2,7 @@
 
 namespace App\Services\Gw2\Advisor;
 
+use App\Services\Gw2\ForgeDataset;
 use App\Services\Gw2\Wiki;
 use Illuminate\Support\Facades\DB;
 
@@ -11,7 +12,8 @@ use Illuminate\Support\Facades\DB;
  * The list is the API's own (`/v2/legendaryarmory`, 206 items), so nothing on
  * it is ours to get wrong. What is ours is the "can we plan it" column: an item
  * is plannable when its last step is either a discipline recipe the API has or
- * a Mystic Forge recipe somebody has checked against a source. Everything else
+ * a Mystic Forge recipe with a named source — since 29 Oct 2026 mostly the
+ * gw2efficiency dataset (`ForgeDataset`), as of February 2026. Everything else
  * says plainly that the recipe is not in yet, rather than planning half a
  * legendary and letting the missing half look like nothing.
  *
@@ -72,6 +74,26 @@ class LegendaryPlanner
         return [
             'legendaries' => $rows,
             'forge_recipes_checked' => DB::table('gw2_forge_recipes')->whereNotNull('checked_at')->whereNotNull('source_url')->count(),
+            /*
+             * Where the forge recipes come from, so the page can credit them.
+             * Most are one open dataset whose licence asks for exactly that;
+             * the rest are an editor's, each under its own label.
+             */
+            'forge_sources' => DB::table('gw2_forge_recipes')
+                ->whereNotNull('checked_at')
+                ->whereNotNull('source_url')
+                ->selectRaw('source_label, min(source_url) as url, count(*) as recipes, max(checked_at) as as_of')
+                ->groupBy('source_label')
+                ->orderByDesc('recipes')
+                ->get()
+                ->map(fn ($r) => [
+                    'label' => $r->source_label,
+                    'url' => $r->url,
+                    'recipes' => (int) $r->recipes,
+                    'as_of' => $r->as_of ? (string) $r->as_of : null,
+                    'note' => $r->source_label === ForgeDataset::LABEL ? ForgeDataset::NOTE : null,
+                ])
+                ->all(),
             // Null when the armory was never read for this account.
             'armory_known' => $held !== null,
         ];

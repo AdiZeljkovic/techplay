@@ -14,6 +14,7 @@ use App\Services\Gw2\Advisor\SnapshotReader;
 use App\Services\Gw2\Advisor\TradingPost;
 use App\Services\Gw2\Advisor\VaultSeason;
 use App\Services\Gw2\CatalogueSync;
+use App\Services\Gw2\ForgeDataset;
 use App\Services\Gw2\Gw2Client;
 use App\Services\Gw2\Gw2Connection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -174,6 +175,84 @@ class Gw2PlanItemsTest extends TestCase
         // A draft — no check date — is used nowhere.
         DB::table('gw2_forge_recipes')->where('id', $forge)->update(['checked_at' => null]);
         $this->assertFalse(app(Dashboard::class)->plan($id, 500, 1)['craftable']);
+    }
+
+    public function test_the_forge_dataset_loads_once_with_its_source_and_only_for_known_items(): void
+    {
+        $this->assertNull(app(ForgeDataset::class)->load(), 'no catalogue yet, nothing to check ids against');
+
+        // The Mystic Clover recipe and its four ingredients; nothing else is known.
+        $this->items([[19675, 'Mystic Clover'], [19925, 'Obsidian Shard'], [19976, 'Mystic Coin'], [19721, 'Glob of Ectoplasm'], [20796, "Philosopher's Stone"]]);
+        $editor = DB::table('gw2_forge_recipes')->insertGetId([
+            'output_item_id' => 19675, 'output_count' => 1, 'ingredients' => json_encode([]),
+            'source_url' => 'https://example.test/editor', 'source_label' => 'An editor', 'checked_at' => now(),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        $loaded = app(ForgeDataset::class)->load();
+
+        $this->assertSame(1, $loaded['inserted']);
+        $this->assertSame(2236, $loaded['skipped'], 'every recipe with an item the game does not list');
+
+        $clover = DB::table('gw2_forge_recipes')->where('source_label', ForgeDataset::LABEL)->first();
+        $this->assertSame(ForgeDataset::URL, $clover->source_url);
+        $this->assertSame(0.31, (float) $clover->output_count, 'the yield as the source has it');
+        $this->assertNull(app(ForgeDataset::class)->load(), 'this version is in already');
+
+        // A newer version replaces the old one whole; the editor's row stays.
+        DB::table('gw2_forge_recipes')->where('source_label', ForgeDataset::LABEL)->update(['source_url' => 'https://example.test/older']);
+        $this->assertSame(1, app(ForgeDataset::class)->load()['replaced']);
+        $this->assertTrue(DB::table('gw2_forge_recipes')->where('id', $editor)->exists());
+    }
+
+    public function test_the_forge_is_opened_only_for_what_cannot_be_bought(): void
+    {
+        DB::table('gw2_items')->insert([
+            ['id' => 600, 'name' => 'Tribute', 'level' => 0, 'flags' => json_encode(['AccountBound'])],
+            ['id' => 601, 'name' => 'Lodestone', 'level' => 0, 'flags' => json_encode([])],
+            ['id' => 602, 'name' => 'Core', 'level' => 0, 'flags' => json_encode([])],
+            ['id' => 603, 'name' => 'Clover', 'level' => 0, 'flags' => json_encode(['AccountBound'])],
+            ['id' => 604, 'name' => 'Shard', 'level' => 0, 'flags' => json_encode([])],
+        ]);
+        $this->forge(600, 1, [[601, 5], [603, 2]]);
+        $this->forge(601, 1, [[602, 2]]);
+        $this->forge(603, 0.31, [[604, 1]]);
+
+        $id = $this->account();
+        $children = collect(app(Dashboard::class)->plan($id, 600, 1)['tree']['children'])->keyBy('item_id');
+
+        $this->assertSame([], $children[601]['children'], 'sold on the trading post: a line to obtain, not a conversion ladder');
+        $this->assertNull($children[601]['forge']);
+        $this->assertNotEmpty($children[603]['children'], 'account bound: the forge is the only way in');
+
+        // Asked for by name, it is opened like any target.
+        $this->assertNotNull(app(Dashboard::class)->plan($id, 601, 1)['tree']['forge']);
+    }
+
+    public function test_of_several_forge_recipes_the_plan_takes_what_the_account_holds(): void
+    {
+        DB::table('gw2_items')->insert([
+            ['id' => 700, 'name' => 'Facet', 'level' => 0, 'flags' => json_encode(['AccountBound'])],
+            ['id' => 710, 'name' => 'Relic A', 'level' => 0, 'flags' => json_encode([])],
+            ['id' => 711, 'name' => 'Relic B', 'level' => 0, 'flags' => json_encode([])],
+            ['id' => 800, 'name' => 'Amalgam', 'level' => 0, 'flags' => json_encode([])],
+            ['id' => 810, 'name' => 'Stone', 'level' => 0, 'flags' => json_encode([])],
+        ]);
+        $this->forge(700, 1, [[710, 1]]);
+        $this->forge(700, 1, [[711, 1]]);
+        // Twenty-five at once, or one at a time.
+        $this->forge(800, 25, [[810, 250]]);
+        $this->forge(800, 1, [[810, 10]]);
+
+        $id = $this->account();
+        DB::table('gw2_item_ledger')->insert(['gw2_account_id' => $id, 'item_id' => 711, 'quantity' => 1, 'location_type' => 'bank']);
+
+        $facet = app(Dashboard::class)->plan($id, 700, 1)['tree'];
+        $this->assertSame(711, $facet['children'][0]['item_id'], 'the relic already in the bank');
+        $this->assertSame(1, $facet['forge']['other_recipes']);
+
+        $amalgam = app(Dashboard::class)->plan($id, 800, 5)['tree'];
+        $this->assertSame(50, $amalgam['children'][0]['needed'], 'five at ten stones each, not twenty-five at 250');
     }
 
     public function test_ownership_reads_access_and_says_what_came_with_it(): void
@@ -439,6 +518,17 @@ class Gw2PlanItemsTest extends TestCase
         foreach ($items as [$id, $name]) {
             DB::table('gw2_items')->insert(['id' => $id, 'name' => $name, 'level' => 80]);
         }
+    }
+
+    /** @param  array<int, array{0: int, 1: int}>  $ingredients */
+    private function forge(int $output, float $count, array $ingredients): void
+    {
+        DB::table('gw2_forge_recipes')->insert([
+            'output_item_id' => $output, 'output_count' => $count,
+            'ingredients' => json_encode(array_map(fn ($i) => ['type' => 'Item', 'id' => $i[0], 'count' => $i[1]], $ingredients)),
+            'source_url' => 'https://example.test/recipes', 'source_label' => 'Test source', 'checked_at' => now(),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 
     /**

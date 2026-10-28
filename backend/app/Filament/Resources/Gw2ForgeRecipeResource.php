@@ -23,6 +23,10 @@ use Illuminate\Support\Facades\DB;
  * That is the whole safety of this table — a wrong ingredient is found at the
  * forge, after a month of play, and nothing else in the tool can cost a player
  * that much.
+ *
+ * Most rows are the gw2efficiency dataset (`ForgeDataset`), dated by its
+ * commit rather than a check. Those are replaced as a whole when the dataset
+ * is, so a correction to one should change its source and label too.
  */
 class Gw2ForgeRecipeResource extends Resource
 {
@@ -92,6 +96,9 @@ class Gw2ForgeRecipeResource extends Resource
             ->defaultSort('checked_at', 'asc')
             ->filters([
                 Tables\Filters\TernaryFilter::make('checked_at')->label('Checked')->nullable(),
+                Tables\Filters\SelectFilter::make('source_label')
+                    ->label('Source')
+                    ->options(fn () => DB::table('gw2_forge_recipes')->whereNotNull('source_label')->distinct()->orderBy('source_label')->pluck('source_label', 'source_label')->all()),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
             ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])]);

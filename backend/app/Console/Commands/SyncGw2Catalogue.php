@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Gw2\CatalogueSync;
+use App\Services\Gw2\ForgeDataset;
 use App\Services\Gw2\Gw2Client;
 use App\Services\Gw2\Gw2RateLimited;
 use App\Services\Gw2\Gw2Unavailable;
@@ -31,7 +32,7 @@ class SyncGw2Catalogue extends Command
 
     protected $description = 'Mirror the Guild Wars 2 game catalogue into TechPlay';
 
-    public function handle(Gw2Client $api, CatalogueSync $catalogue, WikiPages $pages): int
+    public function handle(Gw2Client $api, CatalogueSync $catalogue, WikiPages $pages, ForgeDataset $forgeDataset): int
     {
         try {
             $build = $api->buildId();
@@ -93,6 +94,12 @@ class SyncGw2Catalogue extends Command
          */
         if ($added = $pages->ensure()) {
             $this->line("  {$added} wiki page(s) waiting to be checked");
+        }
+
+        // Forge recipes need items to check their ids against, so on a fresh
+        // database they arrive with the first catalogue read. Once in, a no-op.
+        if ($forge = $forgeDataset->load()) {
+            $this->line("  Mystic Forge recipes: {$forge['inserted']} loaded, {$forge['skipped']} skipped for unknown items");
         }
 
         $this->newLine();

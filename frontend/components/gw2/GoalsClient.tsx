@@ -500,6 +500,7 @@ function Branch({ node }: { node: PlanNode }) {
                         <span className="shrink-0 text-[11px] text-[var(--ink-faint)]">
                             Mystic Forge
                             {node.forge.random && ` · about ${node.forge.attempts} attempts, on average`}
+                            {!!node.forge.other_recipes && ` · 1 of ${node.forge.other_recipes + 1} recipes`}
                             {node.forge.source_url && (
                                 <>
                                     {" · "}
@@ -507,6 +508,7 @@ function Branch({ node }: { node: PlanNode }) {
                                         href={node.forge.source_url}
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
+                                        title={node.forge.source_label ?? undefined}
                                         className="underline hover:text-[var(--accent-ink)]"
                                     >
                                         source

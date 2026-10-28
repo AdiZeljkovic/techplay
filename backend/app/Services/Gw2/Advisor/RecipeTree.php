@@ -184,7 +184,18 @@ class RecipeTree
 
         $recipes = $this->recipes[$itemId] ?? [];
 
-        if ($recipes === [] && isset($this->forge[$itemId])) {
+        /*
+         * The forge only for what cannot be bought, or for the target itself.
+         *
+         * Half the forge is conversion between things the trading post sells:
+         * a Destroyer Lodestone from two Cores, a Core from two Shards, down to
+         * Slivers, with wine, dust and a Mystic Crystal at every step. Walking
+         * that would turn the five Amalgamated Draconic Lodestones of a Draconic
+         * Tribute into a few thousand Slivers — a plan nobody follows. What can
+         * be bought stays a line to obtain; what is bound to the account has no
+         * other way in, so it is opened.
+         */
+        if ($recipes === [] && isset($this->forge[$itemId]) && ($depth === 0 || $this->bound($item))) {
             $path[$itemId] = true;
 
             return $this->expandForge($itemId, $item, $needed, $taken, $missing, $pool, $disciplines, $path, $depth);
@@ -267,7 +278,8 @@ class RecipeTree
      */
     private function expandForge(int $itemId, ?object $item, int $needed, int $taken, int $missing, array &$pool, array $disciplines, array $path, int $depth): RecipeNode
     {
-        $recipe = $this->forge[$itemId][0];
+        $recipes = $this->forge[$itemId];
+        $recipe = $this->chooseForge($recipes, $pool, $missing);
         $yield = max(0.001, (float) $recipe->output_count);
         $attempts = (int) ceil($missing / $yield);
         $children = [];
@@ -298,10 +310,60 @@ class RecipeTree
                 'source_url' => $recipe->source_url,
                 'source_label' => $recipe->source_label,
                 'checked_at' => $recipe->checked_at ? (string) $recipe->checked_at : null,
-                'random' => $yield < 1,
+                // A clover's 0.31 is an average of a random outcome; a whole
+                // number is what every attempt gives.
+                'random' => floor($yield) !== $yield,
                 'attempts' => $attempts,
+                'other_recipes' => count($recipes) - 1,
             ],
         );
+    }
+
+    /**
+     * Which forge recipe, when an item has several.
+     *
+     * A Mystic Facet takes any one of forty relics; Orrax Contained has two
+     * routes; an Amalgamated Draconic Lodestone comes one at a time or
+     * twenty-five at once. The one the account already holds most of is the
+     * one to plan; between equals, the one that makes the fewest spare; after
+     * that, the dataset's order. The node says how many others there were, so
+     * the choice is not hidden.
+     *
+     * @param  array<int, object>  $recipes
+     * @param  array<int, int>  $pool
+     */
+    private function chooseForge(array $recipes, array $pool, int $missing): object
+    {
+        $best = $recipes[0];
+        $bestRank = null;
+
+        foreach ($recipes as $recipe) {
+            $held = 0.0;
+
+            foreach ($this->json($recipe->ingredients) as $ingredient) {
+                if (($ingredient['type'] ?? 'Item') === 'Item' && ($count = (int) ($ingredient['count'] ?? 0)) > 0) {
+                    $held += min($pool[(int) $ingredient['id']] ?? 0, $count) / $count;
+                }
+            }
+
+            $yield = max(0.001, (float) $recipe->output_count);
+            $spare = ceil($missing / $yield) * $yield - $missing;
+            $rank = [-$held, $spare];
+
+            if ($bestRank === null || $rank < $bestRank) {
+                [$best, $bestRank] = [$recipe, $rank];
+            }
+        }
+
+        return $best;
+    }
+
+    /** Bound to the account or the character — nobody can sell it to you. */
+    private function bound(?object $item): bool
+    {
+        $flags = $this->json($item->flags ?? null);
+
+        return in_array('AccountBound', $flags, true) || in_array('SoulbindOnAcquire', $flags, true);
     }
 
     /** A currency in a forge recipe, drawn from the wallet the way items are drawn from the bank. */
@@ -440,7 +502,7 @@ class RecipeTree
 
         $this->items = DB::table('gw2_items')
             ->whereIn('id', array_unique($seen))
-            ->get(['id', 'name', 'rarity', 'icon'])
+            ->get(['id', 'name', 'rarity', 'icon', 'flags'])
             ->keyBy('id')
             ->all();
     }

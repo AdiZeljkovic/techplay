@@ -280,7 +280,7 @@ export default async function CraftingPage({ params }: Params) {
                                             "an editor's entry"
                                         )}
                                         {recipe.forge.checked_at &&
-                                            `, checked ${new Date(recipe.forge.checked_at).toLocaleDateString()}`}
+                                            `, as of ${new Date(recipe.forge.checked_at).toLocaleDateString()}`}
                                         .
                                     </p>
                                 </Panel>
@@ -416,9 +416,24 @@ function Branch({ node }: { node: PlanNode }) {
                             {node.name ?? `#${node.item_id}`}
                         </Link>
                     )}
+                    {/* A forge step credits its source: the game does not publish these. */}
                     {node.forge && (
                         <span className="shrink-0 text-[11px] text-[var(--ink-faint)]">
                             Mystic Forge{node.forge.random && " · average, the forge is random"}
+                            {node.forge.source_url && (
+                                <>
+                                    {" · "}
+                                    <a
+                                        href={node.forge.source_url}
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        title={node.forge.source_label ?? undefined}
+                                        className="underline hover:text-[var(--accent-ink)]"
+                                    >
+                                        source
+                                    </a>
+                                </>
+                            )}
                         </span>
                     )}
                     <span className="ml-auto shrink-0 font-numeric text-xs text-[var(--ink-low)]">

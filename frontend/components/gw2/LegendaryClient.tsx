@@ -16,9 +16,10 @@ import { getLegendaries, type Gw2Legendaries } from "@/lib/gw2";
  * Every legendary, what the account holds of it, and whether we can plan it.
  *
  * The list is the game's own. "Can plan" is ours, and strict: the last step
- * has to be a discipline recipe from the API or a Mystic Forge recipe somebody
- * checked against a source. A legendary planned halfway, with the forge step
- * silently missing, would be worse than one that says the recipe is not in yet.
+ * has to be a discipline recipe from the API or a Mystic Forge recipe with a
+ * named source. A legendary planned halfway, with the forge step silently
+ * missing, would be worse than one that says the recipe is not in yet. The
+ * sources are credited here because the main one, an open dataset, asks for it.
  */
 export default function LegendaryClient() {
     const { user, isLoading } = useAuth();
@@ -105,12 +106,33 @@ export default function LegendaryClient() {
                 <Panel material="instrument">
                     <p className="text-sm text-[var(--ink-mid)]">
                         {plannable} of {data.legendaries.length} legendaries can be planned now. Most legendaries end in
-                        the Mystic Forge, and the game&apos;s API does not publish forge recipes — so each one is
-                        entered here with its source and checked before a plan may use it.{" "}
-                        <span className="text-[var(--ink-low)]">
-                            {data.forge_recipes_checked} forge recipes are checked so far.
-                        </span>
+                        the Mystic Forge, and the game&apos;s API does not publish forge recipes — so every one used
+                        here carries its source, and a legendary without one says so rather than being planned
+                        halfway.
                     </p>
+                    {!!data.forge_sources?.length && (
+                        <ul className="mt-3 space-y-1 text-xs text-[var(--ink-low)]">
+                            {data.forge_sources.map((source) => (
+                                <li key={source.label ?? "editor"}>
+                                    {source.recipes} forge recipes from{" "}
+                                    {source.url ? (
+                                        <a
+                                            href={source.url}
+                                            target="_blank"
+                                            rel="nofollow noopener noreferrer"
+                                            className="text-[var(--accent-ink)] hover:underline"
+                                        >
+                                            {source.label ?? "an editor's entry"}
+                                        </a>
+                                    ) : (
+                                        (source.label ?? "an editor's entry")
+                                    )}
+                                    {source.as_of && `, as of ${new Date(source.as_of).toLocaleDateString()}`}.
+                                    {source.note && ` ${source.note}`}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </Panel>
 
                 {groups.map(([type, items]) => (
@@ -165,7 +187,7 @@ export default function LegendaryClient() {
                             <div className="flex flex-wrap gap-2">
                                 <Chip variant={choice.plannable ? "accent" : "neutral"} size="sm">
                                     {choice.plannable === "forge"
-                                        ? "Mystic Forge recipe checked"
+                                        ? "Mystic Forge recipe, sourced"
                                         : choice.plannable === "recipe"
                                           ? "Crafting recipe from the game"
                                           : "Recipe not in yet"}

@@ -438,8 +438,10 @@ nisu puštene (`products`, `orders`, `support_tiers`), dio je mrtav ostatak
   - `gw2_products` (12 redova) i `gw2_changes` (45 redova) — urednički, svaki red
     s izvorom; početni podaci iz `backend/database/data/*.json`, učitani samo u
     praznu tabelu
-  - `gw2_forge_recipes` — Mystic Forge recepti; **prazna**, koristi se samo red
-    sa `source_url` i `checked_at`
+  - `gw2_forge_recipes` — Mystic Forge recepti; koristi se samo red sa
+    `source_url` i `checked_at`. Od 29. 10. puni je `ForgeDataset` iz
+    gw2efficiency `custom-recipes` (GPL-3.0, commit 82343e2f, 7. 2. 2026):
+    2.237 recepata, `checked_at` = datum commita, ne provjera u igri
   - `gw2_events.waypoint` proširen na 64 (sad je ime waypointa), nove
     `waypoint_chat_link` i `sources`; 15 world bossova unaprijed upisano, **neobjavljeno**
   - nove vrste u `gw2_reference`: `legendaryarmory`, `mapchests`, `dailycrafting`,
@@ -2411,9 +2413,33 @@ stanje armoryja, i „Plan it" samo kad posljednji korak ima recept — API rece
 ili **provjeren** Forge recept iz `gw2_forge_recipes`. `RecipeTree` sad koristi
 Forge recept gdje API nema nijedan, troši valute iz walleta kao predmete iz
 banke, a nasumičan Forge (Mystic Clover ~0,33) planira u pokušajima i kaže da je
-prosjek. **Tabela je prazna.** Jedini otvoreni skup podataka (gw2efficiency
-`custom-recipes`) je GPL-3.0, a originalni repo je obrisan — uvoz je vlasnikova
-odluka.
+prosjek.
+
+**Forge recepti, 29. 10.** — vlasnik je odlučio uvesti gw2efficiency
+`custom-recipes` (GPL-3.0; originalni repo obrisan, commit 82343e2f preživio u
+forkovima). U repou je samo Forge dio, kao zaseban GPL fajl s licencom i
+`NOTICE.md`: `backend/database/data/gw2efficiency-custom-recipes/`. Izbačeno je
+95 unapređenja materijala (izlaz je i sastojak), ostalo je 2.237 recepata.
+`ForgeDataset::load()` učitava ih jednom (migracija `2026_10_29_140000`, a na
+praznoj bazi `gw2:catalogue` poslije prvog čitanja), preskače svaki recept s
+predmetom kojeg igra više ne vodi, a novu verziju skupa mijenja cijelu; urednički
+redovi ostaju. Stranice kažu „as of" datum skupa i navode izvor, legendarna
+stranica ga kreditira.
+
+Dva pravila u `RecipeTree` su došla s njim:
+
+- **Forge se otvara samo za ono što se ne može kupiti** (`AccountBound` /
+  `SoulbindOnAcquire`) ili za sam cilj. Bez toga bi pet Amalgamated Draconic
+  Lodestonea iz Draconic Tributea postalo par hiljada Slivera kroz lanac
+  Fragment → Shard → Core → Lodestone. Ono što TP prodaje ostaje stavka za
+  nabavku.
+- **Od više recepata za isti predmet** (Mystic Facet ima 40, po jedan za svaki
+  relic) bira se onaj čije sastojke nalog najviše drži, pa onaj s najmanje
+  viška, pa redoslijed skupa. Čvor kaže koliko je drugih (`other_recipes`).
+
+Nema ih za *Wages of Stars*, *Stella Radians* i *Strife Unending* (poslije
+februara 2026) — ti pišu „recipe not in yet". Ništa nije provjereno u igri.
+Pravna provjera licence je dio posljednjeg, pravnog koraka.
 
 ### Otvoreno
 
