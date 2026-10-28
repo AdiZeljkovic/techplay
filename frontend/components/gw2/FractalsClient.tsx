@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarClock, Check, Coins, Gauge, Layers, Shield, Sparkles, Target, Triangle, Trophy } from "lucide-react";
+import { Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -12,9 +12,9 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { PageSummary, SummaryFact, ToneCard } from "@/components/gw2/Gw2PageParts";
+import { Gw2Card, PageSummary, SummaryFact } from "@/components/gw2/Gw2PageParts";
 import { GroupCard, GuidesPanel, NearlyDoneCard } from "@/components/gw2/AchievementsClient";
-import { DOMAIN_TONE, regionTone } from "@/lib/gw2domain";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { getFractals, type Gw2FractalDay, type Gw2Fractals } from "@/lib/gw2";
 
 /**
@@ -110,7 +110,7 @@ export default function FractalsClient() {
         <div className="space-y-6" style={{ opacity: busy ? 0.6 : 1, transition: "opacity 200ms" }} aria-busy={busy}>
             {data.characters.length > 1 && data.character && (
                 <div>
-                    <span className="mb-1.5 block text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">Character</span>
+                    <span className="mb-1.5 block text-xs font-medium text-[var(--ink-low)]">Character</span>
                     <Select
                         value={data.character.name}
                         onChange={choose}
@@ -136,7 +136,7 @@ export default function FractalsClient() {
                 <div className="space-y-5">
                     <WalletPanel wallet={data.wallet} />
                     {data.character && <GearPanel character={data.character} target={data.agony_target} />}
-                    {data.guides.length > 0 && <GuidesPanel guides={data.guides} tone={TONE} />}
+                    {data.guides.length > 0 && <GuidesPanel guides={data.guides} />}
                 </div>
             </div>
         </div>
@@ -145,7 +145,7 @@ export default function FractalsClient() {
 
 function ConnectFirst() {
     return (
-        <Panel material="lit" crown title="Connect your account first">
+        <Gw2Panel title="Connect your account first">
             <div className="space-y-4">
                 <p className="text-sm text-[var(--ink-mid)]">
                     Your fractal level, Agony Resistance and relics are read off your own account, and nothing has been read
@@ -155,7 +155,7 @@ function ConnectFirst() {
                     <Link href="/gw2">Go to the advisor</Link>
                 </Button>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }
 
@@ -165,8 +165,6 @@ function Summary({ data }: { data: Gw2Fractals }) {
 
     return (
         <PageSummary
-            icon={<Triangle size={26} />}
-            tone={TONE}
             title={level ? `Fractal level ${level} — Tier ${data.tier}` : "No fractal run yet"}
             description={
                 character
@@ -180,17 +178,14 @@ function Summary({ data }: { data: Gw2Fractals }) {
 
             <dl className="grid gap-4 sm:grid-cols-3">
                 <SummaryFact
-                    icon={<Gauge size={18} />}
                     value={level ? String(level) : "—"}
                     label={level ? `personal fractal level, Tier ${data.tier} of 4` : "personal fractal level"}
                 />
                 <SummaryFact
-                    icon={<Shield size={18} />}
                     value={character ? `${character.agony_resistance} / ${data.agony_target}` : "—"}
                     label="Agony Resistance, summed from the infusions worn"
                 />
                 <SummaryFact
-                    icon={<Layers size={18} />}
                     value={data.attunement ? `${data.attunement.paid} / ${data.attunement.total}` : "—"}
                     label="Fractal Attunement tiers trained"
                 />
@@ -209,8 +204,6 @@ function Today({ today }: { today: Gw2Fractals["today"] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<CalendarClock size={18} />}
-                tone={TONE}
                 title="Today's fractals"
                 description={
                     today
@@ -225,7 +218,7 @@ function Today({ today }: { today: Gw2Fractals["today"] }) {
 
                     {today.tomorrow && (
                         <div className="space-y-2.5">
-                            <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">Tomorrow</p>
+                            <p className="text-xs font-medium text-[var(--ink-low)]">Tomorrow</p>
                             <DayCards day={today.tomorrow} quiet />
                         </div>
                     )}
@@ -240,13 +233,13 @@ function Today({ today }: { today: Gw2Fractals["today"] }) {
 }
 
 function DayCards({ day, quiet = false }: { day: Gw2FractalDay; quiet?: boolean }) {
+    const heading = quiet ? "text-[13px] text-[var(--ink-mid)]" : "font-display text-[15px] font-semibold text-[var(--ink-hi)]";
+
     return (
         <div className={quiet ? "grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4" : "grid gap-3 sm:grid-cols-2 lg:grid-cols-4"}>
             {day.fractals.map((fractal) => (
-                <ToneCard key={fractal.name} tone={quiet ? "var(--ink-faint)" : TONE} className={quiet ? "space-y-2 p-3" : "space-y-3"}>
-                    <p className={quiet ? "text-[13px] text-[var(--ink-mid)]" : "font-display text-[15px] font-bold text-[var(--ink-hi)]"}>
-                        {fractal.name}
-                    </p>
+                <Gw2Card key={fractal.name} className={quiet ? "space-y-2 p-3" : "space-y-3"}>
+                    <p className={heading}>{fractal.name}</p>
                     <ul className="flex gap-1.5" aria-label="Tiers">
                         {[1, 2, 3, 4].map((tier) => {
                             const on = fractal.tiers.includes(tier);
@@ -256,9 +249,9 @@ function DayCards({ day, quiet = false }: { day: Gw2FractalDay; quiet?: boolean 
                                     key={tier}
                                     className="rounded-full border px-2 py-0.5 font-numeric text-[11px]"
                                     style={{
-                                        borderColor: on ? `color-mix(in srgb, ${TONE} 55%, transparent)` : "var(--line)",
+                                        borderColor: on ? "var(--line-strong)" : "var(--line)",
                                         color: on ? "var(--ink-hi)" : "var(--ink-faint)",
-                                        background: on && !quiet ? `color-mix(in srgb, ${TONE} 18%, transparent)` : "transparent",
+                                        background: on && !quiet ? "var(--fill-2)" : "transparent",
                                     }}
                                 >
                                     T{tier}
@@ -266,22 +259,20 @@ function DayCards({ day, quiet = false }: { day: Gw2FractalDay; quiet?: boolean 
                             );
                         })}
                     </ul>
-                </ToneCard>
+                </Gw2Card>
             ))}
 
             {day.recommended.length > 0 && (
-                <ToneCard tone={quiet ? "var(--ink-faint)" : TONE} className={quiet ? "space-y-2 p-3" : "space-y-3"}>
-                    <p className={quiet ? "text-[13px] text-[var(--ink-mid)]" : "font-display text-[15px] font-bold text-[var(--ink-hi)]"}>
-                        Recommended scales
-                    </p>
+                <Gw2Card className={quiet ? "space-y-2 p-3" : "space-y-3"}>
+                    <p className={heading}>Recommended scales</p>
                     <p className="font-numeric text-[13px] text-[var(--ink-mid)]">{day.recommended.join(" · ")}</p>
-                </ToneCard>
+                </Gw2Card>
             )}
 
             {day.other.map((name) => (
-                <ToneCard key={name} tone="var(--ink-faint)" className="p-3 text-[13px] text-[var(--ink-mid)]">
+                <Gw2Card key={name} className="p-3 text-[13px] text-[var(--ink-mid)]">
                     {name}
-                </ToneCard>
+                </Gw2Card>
             ))}
         </div>
     );
@@ -292,8 +283,6 @@ function Agony({ data }: { data: Gw2Fractals }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Shield size={18} />}
-                tone={TONE}
                 title="Agony Resistance"
                 description={`Every level 80, summed from the infusions each one wears. Tier 4 asks for ${data.agony_target}.`}
                 action={{ href: "/gw2/ascended", label: "Ascended set" }}
@@ -302,14 +291,15 @@ function Agony({ data }: { data: Gw2Fractals }) {
             <ul className="space-y-2">
                 {data.characters.map((c) => {
                     const done = c.shortfall === 0;
+                    const chosen = c.name === data.character?.name;
 
                     return (
                         <li
                             key={c.name}
                             className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1.5 rounded-[var(--radius-card)] border px-4 py-3 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)_auto]"
                             style={{
-                                background: "var(--surface-1)",
-                                borderColor: c.name === data.character?.name ? `color-mix(in srgb, ${TONE} 45%, var(--line))` : "var(--line)",
+                                background: chosen ? "var(--fill-2)" : "var(--surface-1)",
+                                borderColor: chosen ? "var(--accent)" : "var(--line-strong)",
                             }}
                         >
                             <span className="min-w-0">
@@ -345,14 +335,11 @@ function Agony({ data }: { data: Gw2Fractals }) {
 }
 
 function Attunement({ attunement }: { attunement: NonNullable<Gw2Fractals["attunement"]> }) {
-    const region = regionTone(attunement.region);
     const next = attunement.tiers.find((t) => !t.paid);
 
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Layers size={18} />}
-                tone={TONE}
                 title={attunement.name}
                 description={
                     next
@@ -367,22 +354,29 @@ function Attunement({ attunement }: { attunement: NonNullable<Gw2Fractals["attun
             <ol className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-4">
                 {attunement.tiers.map((tier, i) => (
                     <li key={tier.name ?? i}>
-                        <ToneCard tone={tier.paid ? "var(--success)" : tier === next ? TONE : "var(--ink-faint)"} className="flex h-full flex-col gap-2">
+                        <Gw2Card className="flex h-full flex-col gap-2">
                             <div className="flex items-center gap-2.5">
                                 {tier.icon ? (
-                                    <GameIcon src={tier.icon} alt="" size="md" tone={tier.paid ? undefined : region} />
+                                    <GameIcon src={tier.icon} alt="" size="md" />
                                 ) : (
                                     <span aria-hidden className="h-9 w-9 shrink-0" />
                                 )}
                                 <div className="min-w-0">
                                     <p className="text-[14px] font-semibold leading-snug text-[var(--ink-hi)]">{tier.name}</p>
-                                    <p className="text-[11px]" style={{ color: tier.paid ? "var(--success)" : "var(--ink-low)" }}>
+                                    {/* Trained in the success colour; the next tier to buy in plain ink, the rest quieter. */}
+                                    <p
+                                        className="inline-flex items-center gap-1 text-[11px]"
+                                        style={{
+                                            color: tier.paid ? "var(--success)" : tier === next ? "var(--ink-hi)" : "var(--ink-low)",
+                                        }}
+                                    >
+                                        {tier.paid && <Check size={11} aria-hidden />}
                                         {tier.paid ? "Trained" : `${tier.cost} ${tier.cost === 1 ? "point" : "points"}`}
                                     </p>
                                 </div>
                             </div>
                             {tier.description && <p className="line-clamp-4 text-[12px] text-[var(--ink-low)]">{tier.description}</p>}
-                        </ToneCard>
+                        </Gw2Card>
                     </li>
                 ))}
             </ol>
@@ -394,8 +388,6 @@ function FractalAchievements({ data }: { data: Gw2Fractals }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Trophy size={18} />}
-                tone={TONE}
                 title="Fractal achievements"
                 description="The Fractals of the Mists group, and what in it is closest to done."
                 action={{ href: "/gw2/achievements", label: "All achievements" }}
@@ -418,7 +410,7 @@ function FractalAchievements({ data }: { data: Gw2Fractals }) {
 
 function WalletPanel({ wallet }: { wallet: Gw2Fractals["wallet"] }) {
     return (
-        <Gw2Panel icon={<Coins size={18} />} title="Fractal currencies" description="In your wallet at the last read" tone={TONE}>
+        <Gw2Panel title="Fractal currencies" description="In your wallet at the last read">
             {wallet === null ? (
                 <p className="text-xs text-[var(--ink-low)]">Your key does not share the wallet, so we cannot see these.</p>
             ) : (
@@ -430,7 +422,7 @@ function WalletPanel({ wallet }: { wallet: Gw2Fractals["wallet"] }) {
                                 <span className="truncate text-[13px] text-[var(--ink-mid)]">{currency.name}</span>
                                 <WikiLink wiki={currency.wiki} name={currency.name} compact />
                             </span>
-                            <span className="shrink-0 font-display text-[15px] font-bold text-[var(--ink-hi)]">
+                            <span className="shrink-0 font-numeric text-[15px] font-semibold text-[var(--ink-hi)]">
                                 {currency.amount.toLocaleString()}
                             </span>
                         </li>
@@ -450,7 +442,7 @@ function GearPanel({ character, target }: { character: NonNullable<Gw2Fractals["
     const gear = DOMAIN_TONE.gear;
 
     return (
-        <Gw2Panel icon={<Target size={18} />} title="Room for infusions" description="Agony infusions go into ascended and legendary slots" tone={gear}>
+        <Gw2Panel title="Room for infusions" description="Agony infusions go into ascended and legendary slots">
             <div className="space-y-4">
                 <div className="space-y-1.5">
                     <p className="flex items-baseline justify-between gap-3 text-sm">
@@ -471,10 +463,7 @@ function GearPanel({ character, target }: { character: NonNullable<Gw2Fractals["
                 ) : (
                     <p className="text-xs text-[var(--ink-low)]">At the Tier 4 target.</p>
                 )}
-                <ActionLink href="/gw2/ascended" tone={gear}>
-                    <Sparkles size={14} aria-hidden />
-                    Plan the ascended set
-                </ActionLink>
+                <ActionLink href="/gw2/ascended">Plan the ascended set</ActionLink>
             </div>
         </Gw2Panel>
     );

@@ -1,7 +1,6 @@
 "use client";
 
 import toast from "react-hot-toast";
-import { Compass, Shield, UserRound } from "lucide-react";
 import Chip from "@/components/ui/Chip";
 import Select from "@/components/ui/Select";
 import StatCards from "@/components/gw2/StatCards";
@@ -10,7 +9,6 @@ import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import { EasyWins, TonightTeaser } from "@/components/gw2/DashboardRail";
 import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { chooseCharacter, gw2Error, slotLabel, type Gw2Dashboard } from "@/lib/gw2";
 
 /**
@@ -46,7 +44,6 @@ export default function DashboardView({
                 <div className="space-y-6">
                     <section className="space-y-4">
                         <SectionHeader
-                            icon={<Compass size={18} />}
                             title="Recommended next steps"
                             description="From your account, your goals and what is open right now."
                             action={{ href: "/gw2/next", label: "View all recommendations" }}
@@ -128,10 +125,7 @@ export function CharacterBar({ dashboard, onChanged }: { dashboard: Gw2Dashboard
 
     return (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-            <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
-                <UserRound size={12} aria-hidden />
-                Advice is about
-            </span>
+            <span className="text-xs font-medium text-[var(--ink-low)]">Advice is about</span>
 
             {characters.length > 1 ? (
                 <Select
@@ -162,8 +156,6 @@ export function CharacterBar({ dashboard, onChanged }: { dashboard: Gw2Dashboard
 function GearPanel({ gear }: { gear: NonNullable<Gw2Dashboard["cards"]["gear"]> }) {
     return (
         <Gw2Panel
-            icon={<Shield size={18} />}
-            tone={DOMAIN_TONE.gear}
             title={`${gear.character} — equipment`}
             description={`${gear.ascended_core} of ${gear.core_slots} core slots ascended · ${gear.ascended_weapons} of ${gear.weapon_slots} weapons`}
         >

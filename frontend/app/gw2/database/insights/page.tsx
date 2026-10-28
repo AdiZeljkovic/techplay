@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Info, KeyRound, Layers, MapPin } from "lucide-react";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, HERO_ART, regionTone } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicInsights, insightHref } from "@/lib/gw2public";
 
@@ -52,7 +51,6 @@ export default async function InsightsIndexPage() {
             <Gw2Hero
                 title="Mastery insights"
                 description={`${total} insights across ${regions.reduce((n, r) => n + r.maps.length, 0)} maps, with the nearest waypoint to each.`}
-                tone={DOMAIN_TONE.masteries}
                 art={HERO_ART.masteries}
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
@@ -60,77 +58,54 @@ export default async function InsightsIndexPage() {
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
                 <section className="min-w-0 space-y-4">
                     <SectionHeader
-                        icon={<MapPin size={18} />}
-                        tone={DOMAIN_TONE.masteries}
                         title="Maps by expansion"
                         description="Each map opens its insights in order, with the nearest waypoint to every one."
                     />
 
                     <div className="grid gap-4 md:grid-cols-2">
-                        {regions.map((region) => {
-                            // `label` is the account's name for the region, which
-                            // is what the expansion colours are keyed by.
-                            const tone = regionTone(region.label);
-
-                            return (
-                                <article
-                                    key={region.region}
-                                    className="relative overflow-hidden rounded-[var(--radius-panel)] border"
-                                    style={{
-                                        background: "var(--surface-1)",
-                                        borderColor: `color-mix(in srgb, ${tone} 28%, var(--line))`,
-                                    }}
+                        {regions.map((region) => (
+                            <article
+                                key={region.region}
+                                className="rounded-[var(--radius-panel)] border"
+                                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
+                            >
+                                <header
+                                    className="flex items-baseline justify-between gap-3 border-b px-5 py-3.5"
+                                    style={{ borderColor: "var(--line)" }}
                                 >
-                                    <span
-                                        aria-hidden
-                                        className="pointer-events-none absolute inset-0"
-                                        style={{
-                                            background: `radial-gradient(70% 50% at 0% 0%, color-mix(in srgb, ${tone} 12%, transparent), transparent 70%)`,
-                                        }}
-                                    />
-                                    <header className="relative flex items-baseline justify-between gap-3 px-5 pb-3 pt-4">
-                                        <h3 className="font-display text-[17px] font-bold text-[var(--ink-hi)]">
-                                            <span aria-hidden className="mr-2 inline-block h-2 w-2 rounded-full" style={{ background: tone }} />
-                                            {region.label}
-                                        </h3>
-                                        <span className="font-numeric text-xs" style={{ color: tone }}>
-                                            {region.total} insights
-                                        </span>
-                                    </header>
-                                    <ul className="relative space-y-0.5 px-3 pb-4">
-                                        {region.maps.map((map) => (
-                                            <li key={map.id}>
-                                                <Link
-                                                    href={insightHref(map.id, map.slug)}
-                                                    className="flex justify-between gap-3 rounded-[var(--radius-card)] px-2 py-1.5 text-sm text-[var(--ink-mid)] transition-colors hover:bg-[var(--fill-1)] hover:text-[var(--accent-ink)]"
-                                                >
-                                                    <span className="truncate">{map.name}</span>
-                                                    <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">{map.total}</span>
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </article>
-                            );
-                        })}
+                                    <h3 className="font-display text-[17px] font-semibold text-[var(--ink-hi)]">{region.label}</h3>
+                                    <span className="font-numeric text-xs text-[var(--ink-low)]">{region.total} insights</span>
+                                </header>
+                                <ul className="space-y-0.5 px-3 py-3">
+                                    {region.maps.map((map) => (
+                                        <li key={map.id}>
+                                            <Link
+                                                href={insightHref(map.id, map.slug)}
+                                                className="flex justify-between gap-3 rounded-[var(--radius-card)] px-2 py-1.5 text-sm text-[var(--ink-mid)] transition-colors hover:bg-[var(--fill-1)] hover:text-[var(--ink-hi)]"
+                                            >
+                                                <span className="truncate">{map.name}</span>
+                                                <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">{map.total}</span>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </article>
+                        ))}
                     </div>
                 </section>
 
                 <div className="space-y-5">
-                    <Gw2Panel icon={<Info size={18} />} title="Not the only source" tone={DOMAIN_TONE.masteries}>
+                    <Gw2Panel title="Not the only source">
                         <div className="space-y-4">
                             <p className="text-sm text-[var(--ink-mid)]">
                                 Mastery points also come from achievements; this list is only the insights found on the
                                 map.
                             </p>
-                            <ActionLink href="/gw2/database/masteries" tone={DOMAIN_TONE.masteries}>
-                                <Layers size={14} aria-hidden />
-                                What each tier costs
-                            </ActionLink>
+                            <ActionLink href="/gw2/database/masteries">What each tier costs</ActionLink>
                         </div>
                     </Gw2Panel>
 
-                    <Gw2Panel icon={<KeyRound size={18} />} title="With your own account">
+                    <Gw2Panel title="With your own account">
                         <div className="space-y-4">
                             <p className="text-sm text-[var(--ink-mid)]">
                                 Signed in with an account connected, each map page ticks off the insights you already

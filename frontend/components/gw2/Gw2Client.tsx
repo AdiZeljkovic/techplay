@@ -4,10 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
-import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import ConnectKey from "@/components/gw2/ConnectKey";
+import { Gw2Panel } from "@/components/gw2/Gw2Ui";
+import { Gw2Card } from "@/components/gw2/Gw2PageParts";
 import DashboardView from "@/components/gw2/DashboardView";
 import AdviceView from "@/components/gw2/AdviceView";
 import { useGw2Shell } from "@/components/gw2/Gw2Shell";
@@ -178,7 +179,7 @@ export default function Gw2Client({ view = "overview" }: { view?: "overview" | "
 
     if (!authLoading && !user) {
         return (
-            <Panel material="lit" crown title="Sign in to connect your account">
+            <Gw2Panel title="Sign in to connect your account">
                 <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         The advisor reads your own Guild Wars 2 account, so it needs a TechPlay profile to
@@ -193,7 +194,7 @@ export default function Gw2Client({ view = "overview" }: { view?: "overview" | "
                         </Button>
                     </div>
                 </div>
-            </Panel>
+            </Gw2Panel>
         );
     }
 
@@ -208,7 +209,7 @@ export default function Gw2Client({ view = "overview" }: { view?: "overview" | "
 
     if (state === "error") {
         return (
-            <Panel material="matte">
+            <Gw2Card>
                 <div className="space-y-3">
                     <p className="text-sm text-[var(--ink-mid)]">
                         We could not load your advisor. Your data is not lost — this is a problem reaching
@@ -218,7 +219,7 @@ export default function Gw2Client({ view = "overview" }: { view?: "overview" | "
                         Try again
                     </Button>
                 </div>
-            </Panel>
+            </Gw2Card>
         );
     }
 
@@ -235,7 +236,7 @@ export default function Gw2Client({ view = "overview" }: { view?: "overview" | "
 
     if (state === "failed") {
         return (
-            <Panel material="matte" title="We could not read your account">
+            <Gw2Panel title="We could not read your account">
                 <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         {connection?.sync_error ??
@@ -250,13 +251,13 @@ export default function Gw2Client({ view = "overview" }: { view?: "overview" | "
                         </Button>
                     </div>
                 </div>
-            </Panel>
+            </Gw2Panel>
         );
     }
 
     if (state === "reading" || !dashboard) {
         return (
-            <Panel material="instrument" title="Reading your account">
+            <Gw2Panel title="Reading your account">
                 <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         We are pulling your characters, masteries, achievements and inventory from ArenaNet.
@@ -268,7 +269,7 @@ export default function Gw2Client({ view = "overview" }: { view?: "overview" | "
                         Check now
                     </Button>
                 </div>
-            </Panel>
+            </Gw2Panel>
         );
     }
 

@@ -1,13 +1,11 @@
 /**
  * A colour per domain, and per mastery region.
  *
- * The mockups lean on this harder than on any other single device: gear is
- * crimson, fractals are violet, raids are green, the Wizard's Vault is gold,
- * and the five expansions each own a hue. It is what lets six cards in a row
- * read as six different kinds of thing before a word of any of them is read.
- *
- * The built version had one accent for everything, so every card looked like
- * every other card and the eye had nowhere to go.
+ * Gear is crimson, fractals are violet, raids are orange, the Wizard's Vault is
+ * gold. They colour data — the fill of a bar, a segment, a status dot — and
+ * nothing else. The first cut of the redesign also tinted the cards, panels and
+ * heroes they sat on, and across a page the colour was all anyone saw (owner,
+ * 28 Oct 2026); containers are neutral now, and the colour is where a figure is.
  *
  * These are deliberately not `--accent`. The site's accent belongs to TechPlay
  * and follows the user's own setting; these belong to Guild Wars 2 and have to
@@ -27,8 +25,8 @@ export const DOMAIN_TONE: Record<string, string> = {
     content: "#818CF8",
     /*
      * The pages rather than the advice. Legendary is not the rarity's own
-     * purple — #4C139D disappears on this background — but the glow players
-     * know from the precursor forge.
+     * purple — #4C139D disappears on this background as a bar fill — but the
+     * glow players know from the precursor forge.
      */
     legendary: "#E879F9",
     crafting: "#2DD4BF",
@@ -49,7 +47,7 @@ export function domainTone(domain: string | null | undefined): string {
  * rules for it are in `gw2/REDIZAJN.md` §5). A path goes in here only once
  * the file is in the repo — a card pointing at a missing image is a broken
  * picture on every dashboard, where a card with no entry falls back to its
- * own scene or a wash in the domain's colour.
+ * own scene or to no picture at all.
  */
 export const DOMAIN_ART: Record<string, string> = {};
 

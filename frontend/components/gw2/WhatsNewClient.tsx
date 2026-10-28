@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarClock, ExternalLink, Filter, History, Info } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "@/context/AuthContext";
 import Chip from "@/components/ui/Chip";
@@ -20,10 +20,11 @@ import { getWhatsNew, gw2Error, setReturnedFrom, type Gw2Change } from "@/lib/gw
  * left — a question the API cannot answer, so it is asked. Every row carries
  * the page it was written from.
  *
- * In the redesign's language since phase 6: the question at the top of the
- * column, where a phone reaches it before the list; the changes as a dated line
- * grouped by year; and down the right, the list by category — which narrows it
- * here in the browser, never asking the server for anything new.
+ * The question at the top of the column, where a phone reaches it before the
+ * list; the changes as a dated line grouped by year; and down the right, the
+ * list by category — which narrows it here in the browser, never asking the
+ * server for anything new. The category bars carry this page's colour, and
+ * nothing else does.
  */
 
 const CHANGES = DOMAIN_TONE.changes;
@@ -104,8 +105,6 @@ export default function WhatsNewClient({ initial }: { initial: Gw2Change[] }) {
             <div className="min-w-0 space-y-6">
                 {mine ? (
                     <PageSummary
-                        icon={<CalendarClock size={26} />}
-                        tone={CHANGES}
                         title="When did you last play?"
                         description="The game cannot tell us — it keeps no record of absences."
                     >
@@ -114,7 +113,7 @@ export default function WhatsNewClient({ initial }: { initial: Gw2Change[] }) {
                                 <div>
                                     <label
                                         htmlFor="gw2-returned"
-                                        className="mb-1.5 block text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]"
+                                        className="mb-1.5 block text-xs font-medium text-[var(--ink-low)]"
                                     >
                                         Last played
                                     </label>
@@ -146,12 +145,10 @@ export default function WhatsNewClient({ initial }: { initial: Gw2Change[] }) {
                 ) : (
                     !isLoading && (
                         <PageSummary
-                            icon={<CalendarClock size={26} />}
-                            tone={CHANGES}
                             title="Everything since 2023, for every purchase"
                             description="Connect your account to see only what applies to what you own, since the day you left."
                         >
-                            <ActionLink href="/gw2" tone={CHANGES} className="sm:w-auto">
+                            <ActionLink href="/gw2" className="sm:w-auto">
                                 Connect your account
                             </ActionLink>
                         </PageSummary>
@@ -160,8 +157,6 @@ export default function WhatsNewClient({ initial }: { initial: Gw2Change[] }) {
 
                 <section className="space-y-4">
                     <SectionHeader
-                        icon={<History size={18} />}
-                        tone={CHANGES}
                         title="Changes, newest first"
                         description={
                             category
@@ -195,13 +190,8 @@ export default function WhatsNewClient({ initial }: { initial: Gw2Change[] }) {
                         <div className="space-y-6">
                             {years.map((group) => (
                                 <div key={group.year} className="space-y-3">
-                                    <h3 className="font-display text-sm font-bold tracking-[0.18em] text-[var(--ink-low)]">
-                                        {group.year}
-                                    </h3>
-                                    <ol
-                                        className="space-y-3 border-l pl-5"
-                                        style={{ borderColor: `color-mix(in srgb, ${CHANGES} 30%, var(--line))` }}
-                                    >
+                                    <h3 className="font-numeric text-sm font-semibold text-[var(--ink-hi)]">{group.year}</h3>
+                                    <ol className="space-y-3 border-l pl-5" style={{ borderColor: "var(--line-strong)" }}>
                                         {group.changes.map((change) => (
                                             <li key={`${change.date}-${change.title}`} className="relative">
                                                 <ChangeCard change={change} signedIn={mine !== null} />
@@ -220,7 +210,7 @@ export default function WhatsNewClient({ initial }: { initial: Gw2Change[] }) {
                     <CategoryPanel changes={changes} selected={category} onSelect={setCategory} />
                 )}
 
-                <Gw2Panel icon={<Info size={18} />} title="How to read this" tone={CHANGES}>
+                <Gw2Panel title="How to read this">
                     <ul className="space-y-2 text-[13px] text-[var(--ink-mid)]">
                         <li>Every entry is dated, written in our words, and links the page it came from.</li>
                         <li>
@@ -245,20 +235,18 @@ function ChangeCard({ change, signedIn }: { change: Gw2Change; signedIn: boolean
         <>
             <span
                 aria-hidden
-                className="absolute -left-[25px] top-[18px] h-2.5 w-2.5 rounded-full"
-                style={{ background: CHANGES, boxShadow: `0 0 10px color-mix(in srgb, ${CHANGES} 60%, transparent)` }}
+                className="absolute -left-[24px] top-[19px] h-2 w-2 rounded-full"
+                style={{ background: "var(--ink-low)" }}
             />
             <article
                 className="rounded-[var(--radius-panel)] border p-4"
-                style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
             >
                 <div className="flex flex-wrap items-center gap-2">
                     <time dateTime={change.date} className="font-numeric text-xs text-[var(--ink-low)]">
                         {formatDate(change.date)}
                     </time>
-                    <span className="text-[11px]" style={{ color: CHANGES }}>
-                        {categoryLabel(change.category)}
-                    </span>
+                    <span className="text-[11px] text-[var(--ink-mid)]">· {categoryLabel(change.category)}</span>
                     {change.applies_to_name && (
                         <Chip variant={change.yours === null && signedIn ? "warning" : "neutral"} size="sm">
                             {change.applies_to_name}
@@ -307,7 +295,7 @@ function CategoryPanel({
     const peak = Math.max(1, ...rows.map(([, n]) => n));
 
     return (
-        <Gw2Panel icon={<Filter size={18} />} title="By category" description="Pick one to read only that" tone={CHANGES}>
+        <Gw2Panel title="By category" description="Pick one to read only that">
             <ul className="space-y-1">
                 {rows.map(([category, count]) => {
                     const on = category === selected;
@@ -318,8 +306,12 @@ function CategoryPanel({
                                 type="button"
                                 onClick={() => onSelect(on ? null : category)}
                                 aria-pressed={on}
-                                className="block w-full space-y-1 rounded-[var(--radius-card)] px-2 py-1.5 text-left transition-colors hover:bg-[var(--fill-1)]"
-                                style={on ? { background: `color-mix(in srgb, ${CHANGES} 14%, transparent)` } : undefined}
+                                className="block w-full space-y-1 rounded-[var(--radius-card)] border px-2 py-1.5 text-left transition-colors hover:bg-[var(--fill-1)]"
+                                style={
+                                    on
+                                        ? { background: "var(--fill-2)", borderColor: "var(--accent)" }
+                                        : { borderColor: "transparent" }
+                                }
                             >
                                 <span className="flex items-baseline justify-between gap-3 text-[13px]">
                                     <span style={{ color: on ? "var(--ink-hi)" : "var(--ink-mid)" }}>

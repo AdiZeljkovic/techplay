@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Compass, Pin, PinOff } from "lucide-react";
+import { Pin, PinOff } from "lucide-react";
 import RecommendationCard from "@/components/gw2/RecommendationCard";
 import { CharacterBar, wornPieces } from "@/components/gw2/DashboardView";
 import { SectionHeader } from "@/components/gw2/Gw2Ui";
@@ -94,7 +94,6 @@ export default function AdviceView({
 
             <section className="space-y-4">
                 <SectionHeader
-                    icon={<Compass size={18} />}
                     title="Recommended next steps"
                     description="Based on your account and the goal you pick. Every card says how sure we are."
                     meta={
@@ -135,9 +134,7 @@ export default function AdviceView({
 
                     {advice.alternatives.length > 0 && (
                         <div className="mt-6 space-y-3">
-                            <h3 className="text-[11px] font-medium uppercase tracking-wider text-[var(--ink-faint)]">
-                                Or instead
-                            </h3>
+                            <h3 className="text-sm font-semibold text-[var(--ink-hi)]">Or instead</h3>
                             <div className="grid gap-4 md:grid-cols-3">
                                 {advice.alternatives.map((recommendation) => (
                                     <RecommendationCard
@@ -181,14 +178,12 @@ function IntentBar({
     return (
         <div
             className="space-y-3 rounded-[var(--radius-panel)] border p-4"
-            style={{ borderColor: "var(--line)", background: "var(--surface-1)" }}
+            style={{ borderColor: "var(--line-strong)", background: "var(--surface-1)" }}
         >
             {goals.length > 0 && (
                 <div className="space-y-1.5">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                        <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">
-                            Working towards
-                        </span>
+                        <span className="text-xs font-medium text-[var(--ink-low)]">Working towards</span>
                         <div className="flex flex-wrap gap-1.5">
                             {goals.map((goal) => {
                                 // Lit by what the answer was weighted for, which is
@@ -204,10 +199,8 @@ function IntentBar({
                                         key={goal.slug}
                                         className="inline-flex items-stretch overflow-hidden rounded-[var(--radius-inner)] border text-xs transition-colors"
                                         style={{
-                                            borderColor: on
-                                                ? "color-mix(in srgb, var(--accent) 45%, transparent)"
-                                                : "var(--line-strong)",
-                                            background: on ? "var(--accent-soft)" : "transparent",
+                                            borderColor: on ? "var(--accent)" : "var(--line-strong)",
+                                            background: on ? "var(--fill-2)" : "transparent",
                                         }}
                                     >
                                         <button
@@ -264,7 +257,7 @@ function IntentBar({
             )}
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">I have</span>
+                <span className="text-xs font-medium text-[var(--ink-low)]">I have</span>
 
                 <div className="flex gap-1.5">
                     {TIMES.map((time) => {
@@ -278,8 +271,8 @@ function IntentBar({
                                 aria-pressed={on}
                                 className="rounded-[var(--radius-inner)] border px-2.5 py-1 text-xs transition-colors"
                                 style={{
-                                    borderColor: on ? "color-mix(in srgb, var(--accent) 45%, transparent)" : "var(--line-strong)",
-                                    background: on ? "var(--accent-soft)" : "transparent",
+                                    borderColor: on ? "var(--accent)" : "var(--line-strong)",
+                                    background: on ? "var(--fill-2)" : "transparent",
                                     color: on ? "var(--ink-hi)" : "var(--ink-low)",
                                 }}
                             >
@@ -289,7 +282,7 @@ function IntentBar({
                     })}
                 </div>
 
-                <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">Not tonight</span>
+                <span className="text-xs font-medium text-[var(--ink-low)]">Not tonight</span>
 
                 <div className="flex flex-wrap gap-1.5">
                     {AVOIDABLE.map((option) => {

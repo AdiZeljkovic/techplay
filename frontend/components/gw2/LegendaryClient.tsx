@@ -2,9 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { BookMarked, Check, Clock, Gem, Hammer, Library, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import Meter from "@/components/ui/Meter";
 import Segmented from "@/components/ui/Segmented";
@@ -12,6 +11,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
+import { PageSummary, SummaryFact } from "@/components/gw2/Gw2PageParts";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { getLegendaries, type Gw2Legendaries } from "@/lib/gw2";
 
@@ -24,10 +24,10 @@ import { getLegendaries, type Gw2Legendaries } from "@/lib/gw2";
  * missing, would be worse than one that says the recipe is not in yet. The
  * sources are credited here because the main one, an open dataset, asks for it.
  *
- * Drawn in the redesign's language (phase 6): the count across the top, the
- * legendaries as tiles grouped by type, and the one picked — its time-gated
- * crafts and the way into its plan — in the right-hand column, with the credit
- * for the forge recipes under it.
+ * The count across the top, the legendaries as tiles grouped by type, and the
+ * one picked — its time-gated crafts and the way into its plan — in the
+ * right-hand column, with the credit for the forge recipes under it. The
+ * legendary colour is in the bar and nowhere else.
  */
 
 const LEGENDARY = DOMAIN_TONE.legendary;
@@ -128,7 +128,7 @@ export default function LegendaryClient() {
 
     if (signedOut || state === "none" || !data) {
         return (
-            <Panel material="lit" crown title="Connect your account first">
+            <Gw2Panel title="Connect your account first">
                 <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         What you hold and what a legendary still needs come from your own Guild Wars 2 account.
@@ -137,7 +137,7 @@ export default function LegendaryClient() {
                         <Link href="/gw2">Go to the advisor</Link>
                     </Button>
                 </div>
-            </Panel>
+            </Gw2Panel>
         );
     }
 
@@ -151,8 +151,6 @@ export default function LegendaryClient() {
 
                 <section className="space-y-5">
                     <SectionHeader
-                        icon={<Gem size={18} />}
-                        tone={LEGENDARY}
                         title="Every legendary"
                         description="Pick one to see the crafts it waits on each day. A tick is what your armory already holds."
                         meta={
@@ -173,9 +171,9 @@ export default function LegendaryClient() {
 
                     {shown.map(([groupType, items]) => (
                         <div key={groupType} className="space-y-3">
-                            <h3 className="flex items-baseline gap-2 text-[13px] font-semibold uppercase tracking-[0.14em] text-[var(--ink-low)]">
+                            <h3 className="flex items-baseline gap-2 text-sm font-semibold text-[var(--ink-hi)]">
                                 {typeLabel(groupType)}
-                                <span className="font-numeric text-[11px] font-normal tracking-normal text-[var(--ink-faint)]">
+                                <span className="font-numeric text-xs font-normal text-[var(--ink-low)]">
                                     {items.filter((i) => i.plannable).length} of {items.length} plannable
                                 </span>
                             </h3>
@@ -206,83 +204,27 @@ function Summary({ data }: { data: Gw2Legendaries }) {
     const held = data.legendaries.filter((l) => (l.held ?? 0) > 0).length;
 
     return (
-        <section
-            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-5 md:p-6"
-            style={{ background: "var(--surface-1)", borderColor: `color-mix(in srgb, ${LEGENDARY} 40%, var(--line-strong))` }}
+        <PageSummary
+            title={`${plannable} of ${total} legendaries can be planned now`}
+            description="Most legendaries end in the Mystic Forge, and the game's API does not publish forge recipes — so every one used here carries its source, and a legendary without one says so rather than being planned halfway."
         >
-            <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: `radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, ${LEGENDARY} 16%, transparent), transparent 70%)` }}
-            />
+            <Meter value={plannable} max={total} tone={LEGENDARY} showCount />
 
-            <div className="relative space-y-5">
-                <div className="flex items-start gap-4">
-                    <span
-                        aria-hidden
-                        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2"
-                        style={{
-                            color: LEGENDARY,
-                            borderColor: `color-mix(in srgb, ${LEGENDARY} 70%, transparent)`,
-                            boxShadow: `0 0 24px color-mix(in srgb, ${LEGENDARY} 30%, transparent)`,
-                        }}
-                    >
-                        <Sparkles size={26} />
-                    </span>
-                    <div className="min-w-0">
-                        <h2 className="font-display text-xl font-bold leading-tight text-[var(--ink-hi)] md:text-2xl">
-                            {plannable} of {total} legendaries can be planned now
-                        </h2>
-                        <p className="mt-1 text-sm text-[var(--ink-mid)]">
-                            Most legendaries end in the Mystic Forge, and the game&apos;s API does not publish forge
-                            recipes — so every one used here carries its source, and a legendary without one says so
-                            rather than being planned halfway.
-                        </p>
-                    </div>
-                </div>
+            <dl className="grid gap-4 sm:grid-cols-3">
+                <SummaryFact value={`${plannable} / ${total}`} label="can be planned" />
+                <SummaryFact
+                    value={data.armory_known ? String(held) : "—"}
+                    label={data.armory_known ? "already in your armory" : "armory not read yet"}
+                />
+                <SummaryFact value={String(data.forge_recipes_checked)} label="Mystic Forge recipes with a source" />
+            </dl>
 
-                <Meter value={plannable} max={total} tone={LEGENDARY} showCount />
-
-                <dl className="grid gap-4 sm:grid-cols-3">
-                    <Fact icon={<Hammer size={18} />} value={`${plannable} / ${total}`} label="can be planned" />
-                    <Fact
-                        icon={<Library size={18} />}
-                        value={data.armory_known ? String(held) : "—"}
-                        label={data.armory_known ? "already in your armory" : "armory not read yet"}
-                    />
-                    <Fact
-                        icon={<BookMarked size={18} />}
-                        value={String(data.forge_recipes_checked)}
-                        label="Mystic Forge recipes with a source"
-                    />
-                </dl>
-
-                {!data.armory_known && (
-                    <p className="text-xs text-[var(--ink-low)]">
-                        We have no read of your Legendary Armory yet, so nothing below is ticked as held.
-                    </p>
-                )}
-            </div>
-        </section>
-    );
-}
-
-function Fact({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-    return (
-        <div className="flex items-start gap-3">
-            <span
-                aria-hidden
-                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-card)]"
-                style={{ background: "var(--fill-1)", color: "var(--ink-mid)" }}
-            >
-                {icon}
-            </span>
-            <div className="min-w-0">
-                <dt className="sr-only">{label}</dt>
-                <dd className="font-display text-lg font-bold leading-tight text-[var(--ink-hi)]">{value}</dd>
-                <dd className="text-xs text-[var(--ink-low)]">{label}</dd>
-            </div>
-        </div>
+            {!data.armory_known && (
+                <p className="text-xs text-[var(--ink-low)]">
+                    We have no read of your Legendary Armory yet, so nothing below is ticked as held.
+                </p>
+            )}
+        </PageSummary>
     );
 }
 
@@ -292,15 +234,13 @@ function Fact({ icon, value, label }: { icon: React.ReactNode; value: string; la
  */
 function LegendaryTile({ item, on, onPick }: { item: Legendary; on: boolean; onPick: () => void }) {
     const held = item.held !== null && item.held > 0;
-    const tone = on ? LEGENDARY : held ? "var(--success)" : "var(--line)";
 
     return (
         <div
             className="flex h-full items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5 transition-colors"
             style={{
-                background: on ? `color-mix(in srgb, ${LEGENDARY} 10%, var(--surface-1))` : "var(--surface-1)",
-                borderColor: on || held ? `color-mix(in srgb, ${tone} 50%, var(--line))` : "var(--line)",
-                boxShadow: on ? `inset 0 -28px 40px -30px color-mix(in srgb, ${LEGENDARY} 40%, transparent)` : undefined,
+                background: on ? "var(--fill-2)" : "var(--surface-1)",
+                borderColor: on ? "var(--accent)" : "var(--line-strong)",
             }}
         >
             {item.icon ? (
@@ -319,7 +259,7 @@ function LegendaryTile({ item, on, onPick }: { item: Legendary; on: boolean; onP
                     {item.name ?? `Item ${item.item_id}`}
                 </button>
                 <p className="flex items-center gap-2 text-[11px]">
-                    {item.subtype && <span className="truncate text-[var(--ink-faint)]">{item.subtype}</span>}
+                    {item.subtype && <span className="truncate text-[var(--ink-low)]">{item.subtype}</span>}
                     {held && (
                         <span className="inline-flex shrink-0 items-center gap-1 font-numeric text-[var(--success)]">
                             <Check size={11} aria-hidden />
@@ -334,11 +274,7 @@ function LegendaryTile({ item, on, onPick }: { item: Legendary; on: boolean; onP
                 {item.plannable ? (
                     <Link
                         href={`/gw2/planner?item=${item.item_id}`}
-                        className="rounded-full border px-2.5 py-1 text-[11px] text-[var(--ink-hi)] transition-[filter] hover:brightness-125"
-                        style={{
-                            background: `color-mix(in srgb, ${LEGENDARY} 18%, var(--surface-2))`,
-                            borderColor: `color-mix(in srgb, ${LEGENDARY} 45%, transparent)`,
-                        }}
+                        className="rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--fill-1)] px-2.5 py-1 text-[12px] text-[var(--ink-hi)] transition-colors hover:bg-[var(--fill-3)]"
                     >
                         Plan it
                     </Link>
@@ -354,7 +290,7 @@ function LegendaryTile({ item, on, onPick }: { item: Legendary; on: boolean; onP
 function PickedPanel({ choice, today }: { choice: Legendary | null; today: Gw2Legendaries["today"] | null }) {
     if (!choice) {
         return (
-            <Gw2Panel icon={<Gem size={18} />} title="Pick a legendary" tone={LEGENDARY}>
+            <Gw2Panel title="Pick a legendary">
                 <p className="text-sm text-[var(--ink-low)]">
                     Pick one to see which time-gated crafts its plan still needs, and whether today&apos;s is used.
                 </p>
@@ -364,17 +300,15 @@ function PickedPanel({ choice, today }: { choice: Legendary | null; today: Gw2Le
 
     return (
         <Gw2Panel
-            icon={<Gem size={18} />}
             title={choice.name ?? `Item ${choice.item_id}`}
             description={choice.subtype ?? choice.type ?? undefined}
-            tone={LEGENDARY}
             meta={<WikiLink wiki={choice.wiki} name={choice.name} compact />}
         >
             <div className="space-y-4 text-sm">
                 <div className="flex items-center gap-3">
                     {choice.icon && <GameIcon src={choice.icon} alt="" size="xl" rarity="Legendary" />}
                     <div className="flex min-w-0 flex-wrap gap-1.5">
-                        <Pill tone={choice.plannable ? LEGENDARY : "var(--ink-low)"}>
+                        <Pill>
                             {choice.plannable === "forge"
                                 ? "Mystic Forge recipe, sourced"
                                 : choice.plannable === "recipe"
@@ -382,7 +316,7 @@ function PickedPanel({ choice, today }: { choice: Legendary | null; today: Gw2Le
                                   : "Recipe not in yet"}
                         </Pill>
                         {choice.held !== null && (
-                            <Pill tone={choice.held > 0 ? "var(--success)" : "var(--ink-low)"}>
+                            <Pill tone={choice.held > 0 ? "var(--success)" : undefined}>
                                 In your armory: {choice.held} of {choice.max_count}
                             </Pill>
                         )}
@@ -393,19 +327,19 @@ function PickedPanel({ choice, today }: { choice: Legendary | null; today: Gw2Le
 
                 {choice.plannable && today && today.length > 0 && (
                     <div className="space-y-2 border-t pt-3" style={{ borderColor: "var(--line)" }}>
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">
-                            Time-gated — one craft a day
-                        </p>
+                        <p className="text-xs font-medium text-[var(--ink-low)]">Time-gated — one craft a day</p>
                         <ul className="space-y-1.5">
                             {today.map((gate) => (
                                 <li key={gate.id} className="flex items-center gap-2 text-xs">
-                                    <Clock size={12} className="shrink-0 text-[var(--ink-faint)]" aria-hidden />
                                     <span className="flex-1 text-[var(--ink-mid)]">
                                         {gate.name} — {gate.missing} still needed
                                     </span>
                                     <span
-                                        className="shrink-0"
-                                        style={{ color: gate.crafted_today ? "var(--ink-faint)" : LEGENDARY }}
+                                        className={
+                                            gate.crafted_today
+                                                ? "shrink-0 text-[var(--ink-faint)]"
+                                                : "shrink-0 font-medium text-[var(--ink-hi)]"
+                                        }
                                     >
                                         {gate.crafted_today === null ? "" : gate.crafted_today ? "done today" : "craft today"}
                                     </span>
@@ -422,9 +356,7 @@ function PickedPanel({ choice, today }: { choice: Legendary | null; today: Gw2Le
                 )}
 
                 {choice.plannable && (
-                    <ActionLink href={`/gw2/planner?item=${choice.item_id}`} tone={LEGENDARY}>
-                        Open the full plan
-                    </ActionLink>
+                    <ActionLink href={`/gw2/planner?item=${choice.item_id}`}>Open the full plan</ActionLink>
                 )}
             </div>
         </Gw2Panel>
@@ -437,11 +369,7 @@ function PickedPanel({ choice, today }: { choice: Legendary | null; today: Gw2Le
  */
 function SourcesPanel({ sources }: { sources: NonNullable<Gw2Legendaries["forge_sources"]> }) {
     return (
-        <Gw2Panel
-            icon={<BookMarked size={18} />}
-            title="Where the recipes come from"
-            description="The game does not publish Mystic Forge recipes"
-        >
+        <Gw2Panel title="Where the recipes come from" description="The game does not publish Mystic Forge recipes">
             <ul className="space-y-2.5 text-xs text-[var(--ink-low)]">
                 {sources.map((source) => (
                     <li key={source.label ?? "editor"}>
@@ -467,14 +395,12 @@ function SourcesPanel({ sources }: { sources: NonNullable<Gw2Legendaries["forge_
     );
 }
 
-function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
+/** A neutral badge; a status changes the text colour and nothing else. */
+function Pill({ tone, children }: { tone?: string; children: React.ReactNode }) {
     return (
         <span
-            className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] text-[var(--ink-hi)]"
-            style={{
-                borderColor: `color-mix(in srgb, ${tone} 50%, transparent)`,
-                background: `color-mix(in srgb, ${tone} 14%, transparent)`,
-            }}
+            className="inline-flex items-center rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 text-[11px]"
+            style={{ color: tone ?? "var(--ink-mid)" }}
         >
             {children}
         </span>

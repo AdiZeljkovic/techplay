@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Coins, ExternalLink, Gem, HelpCircle, History, Minus, Package, Shirt, UserRound } from "lucide-react";
+import { Check, ExternalLink, HelpCircle, Minus } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import Panel from "@/components/ui/Panel";
 import Meter from "@/components/ui/Meter";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -13,7 +12,7 @@ import WikiLink from "@/components/gw2/WikiLink";
 import ConnectionPanel from "@/components/gw2/ConnectionPanel";
 import { useGw2Shell } from "@/components/gw2/Gw2Shell";
 import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { PageSummary, SummaryFact, ToneCard } from "@/components/gw2/Gw2PageParts";
+import { Gw2Card, PageSummary, SummaryFact } from "@/components/gw2/Gw2PageParts";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import {
     coin,
@@ -33,15 +32,12 @@ import {
  * Every section is null when the key cannot see it, and says which permission
  * that is rather than drawing an empty shelf.
  *
- * In the redesign's language since phase 6: a summary across the top, each
- * part in the colour of what it is about — legendaries in theirs, the trading
- * post in gold, collections in the achievements' yellow — and the connection
- * and its history down the right, where the dashboard used to keep them.
+ * A summary across the top, each part its own section of plain cards, and the
+ * connection and its history down the right, where the dashboard used to keep
+ * them. Colour is in the collection bars and the owned/unknown/not-owned marks,
+ * and nowhere else.
  */
 
-const ACCOUNT = DOMAIN_TONE.account;
-const LEGENDARY = DOMAIN_TONE.legendary;
-const GOLD = DOMAIN_TONE.vault;
 const COLLECTIONS = DOMAIN_TONE.achievements;
 
 export default function AccountClient() {
@@ -99,7 +95,7 @@ export default function AccountClient() {
 
     if (signedOut || state === "none" || !data) {
         return (
-            <Panel material="lit" crown title="Connect your account first">
+            <Gw2Panel title="Connect your account first">
                 <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         This page is read from your own Guild Wars 2 account.
@@ -108,7 +104,7 @@ export default function AccountClient() {
                         <Link href="/gw2">Go to the advisor</Link>
                     </Button>
                 </div>
-            </Panel>
+            </Gw2Panel>
         );
     }
 
@@ -148,19 +144,15 @@ function Summary({ data, connection }: { data: Gw2AccountOverview; connection: G
 
     return (
         <PageSummary
-            icon={<UserRound size={26} />}
-            tone={ACCOUNT}
             title={connection?.account_name ?? "Your account"}
             description={read ? `From your last read, ${read}.` : "From your last read."}
         >
             <dl className="grid gap-4 sm:grid-cols-3">
                 <SummaryFact
-                    icon={<Gem size={18} />}
                     value={data.legendary_armory ? `${data.legendary_armory.owned_count} / ${data.legendary_armory.in_catalogue}` : "—"}
                     label={data.legendary_armory ? "legendaries in the armory" : "armory not shared"}
                 />
                 <SummaryFact
-                    icon={<Shirt size={18} />}
                     value={
                         data.collections
                             ? `${data.collections.counts.skins.have} / ${data.collections.counts.skins.total}`
@@ -169,7 +161,6 @@ function Summary({ data, connection }: { data: Gw2AccountOverview; connection: G
                     label={data.collections ? "wardrobe skins" : "collections not shared"}
                 />
                 <SummaryFact
-                    icon={<Coins size={18} />}
                     value={data.trading_post ? coin(data.trading_post.waiting.coins) : "—"}
                     label={data.trading_post ? "waiting at the trading post" : "trading post not shared"}
                 />
@@ -199,12 +190,7 @@ function Unshared({ children }: { children: React.ReactNode }) {
  */
 function HistoryPanel({ history }: { history: NonNullable<Gw2AccountOverview["history"]> }) {
     return (
-        <Gw2Panel
-            icon={<History size={18} />}
-            title="Since you connected"
-            description="What changed between our reads"
-            tone={ACCOUNT}
-        >
+        <Gw2Panel title="Since you connected" description="What changed between our reads">
             {history.events.length === 0 ? (
                 <p className="text-sm text-[var(--ink-low)]">Nothing has changed between reads yet.</p>
             ) : (
@@ -246,8 +232,6 @@ function Ownership({ products }: { products: Gw2OwnedProduct[] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Package size={18} />}
-                tone={ACCOUNT}
                 title="What you own"
                 description="What the game reports, what came with it, and what it does not say."
             />
@@ -265,14 +249,14 @@ function Ownership({ products }: { products: Gw2OwnedProduct[] }) {
 
                     return (
                         <li key={product.key}>
-                            <ToneCard tone={look.tone} className="flex h-full gap-3">
+                            <Gw2Card className="flex h-full gap-3">
                                 <span aria-hidden className="mt-0.5 shrink-0" style={{ color: look.tone }}>
                                     {look.icon}
                                 </span>
                                 <div className="min-w-0 flex-1 space-y-1">
                                     <div className="flex flex-wrap items-baseline gap-x-2">
                                         <span
-                                            className="font-display text-[15px] font-bold"
+                                            className="font-display text-[15px] font-semibold"
                                             style={{ color: product.owned ? "var(--ink-hi)" : "var(--ink-low)" }}
                                         >
                                             {product.name}
@@ -292,7 +276,7 @@ function Ownership({ products }: { products: Gw2OwnedProduct[] }) {
                                         </p>
                                     )}
                                 </div>
-                            </ToneCard>
+                            </Gw2Card>
                         </li>
                     );
                 })}
@@ -330,8 +314,6 @@ function Armory({ armory }: { armory: Gw2AccountOverview["legendary_armory"] }) 
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Gem size={18} />}
-                tone={LEGENDARY}
                 title="Legendary armory"
                 description={
                     armory
@@ -358,7 +340,7 @@ function Armory({ armory }: { armory: Gw2AccountOverview["legendary_armory"] }) 
                     <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                         {armory.owned.map((item) => (
                             <li key={item.item_id}>
-                                <ToneCard tone={LEGENDARY} className="flex h-full items-center gap-3 px-3 py-2.5">
+                                <Gw2Card className="flex h-full items-center gap-3 px-3 py-2.5">
                                     <GameIcon src={item.icon} alt="" size="md" rarity="Legendary" />
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-1">
@@ -373,7 +355,7 @@ function Armory({ armory }: { armory: Gw2AccountOverview["legendary_armory"] }) 
                                             {item.type && <span className="ml-1.5 text-[var(--ink-faint)]">{item.type}</span>}
                                         </p>
                                     </div>
-                                </ToneCard>
+                                </Gw2Card>
                             </li>
                         ))}
                     </ul>
@@ -391,8 +373,6 @@ function TradingPost({ tp }: { tp: Gw2AccountOverview["trading_post"] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Coins size={18} />}
-                tone={GOLD}
                 title="Trading post"
                 description="What is waiting at the counter, and what your orders hold."
             />
@@ -402,7 +382,7 @@ function TradingPost({ tp }: { tp: Gw2AccountOverview["trading_post"] }) {
                     Your key does not include the <strong>tradingpost</strong> permission, or we have not read it yet.
                 </Unshared>
             ) : (
-                <ToneCard tone={GOLD} className="space-y-4 p-5">
+                <Gw2Card className="space-y-4 p-5">
                     <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         <TpFigure value={coin(tp.waiting.coins)} label="waiting at the counter" strong />
                         <TpFigure value={String(tp.waiting.items.length)} label="item stacks waiting" />
@@ -436,7 +416,7 @@ function TradingPost({ tp }: { tp: Gw2AccountOverview["trading_post"] }) {
                         We do not say whether you have been undercut — our prices are from last night, and the market
                         moves faster than that.
                     </p>
-                </ToneCard>
+                </Gw2Card>
             )}
         </section>
     );
@@ -463,8 +443,6 @@ function Collections({ collections }: { collections: Gw2AccountOverview["collect
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Shirt size={18} />}
-                tone={COLLECTIONS}
                 title="Collections"
                 description="How much of each you have, the cheapest missing pieces, and the titles nearest to hand."
             />
@@ -479,9 +457,9 @@ function Collections({ collections }: { collections: Gw2AccountOverview["collect
                     <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                         {(Object.keys(labels) as (keyof typeof labels)[]).map((key) => (
                             <li key={key}>
-                                <ToneCard tone={COLLECTIONS} className="h-full space-y-2">
+                                <Gw2Card className="h-full space-y-2">
                                     <p className="text-xs text-[var(--ink-low)]">{labels[key]}</p>
-                                    <p className="font-display text-lg font-bold leading-tight text-[var(--ink-hi)]">
+                                    <p className="font-numeric text-lg font-semibold leading-tight text-[var(--ink-hi)]">
                                         {collections.counts[key].have}
                                         <span className="text-xs font-normal text-[var(--ink-low)]">
                                             {" "}
@@ -494,14 +472,14 @@ function Collections({ collections }: { collections: Gw2AccountOverview["collect
                                         size="sm"
                                         tone={COLLECTIONS}
                                     />
-                                </ToneCard>
+                                </Gw2Card>
                             </li>
                         ))}
                     </ul>
 
                     <div className="grid gap-3 lg:grid-cols-3">
                         {(["skins", "minis", "outfits"] as const).map((kind) => (
-                            <ToneCard key={kind} tone={COLLECTIONS} className="space-y-2.5">
+                            <Gw2Card key={kind} className="space-y-2.5">
                                 <h3 className="text-[13px] font-semibold text-[var(--ink-hi)]">
                                     Cheapest missing {labels[kind].toLowerCase()}
                                 </h3>
@@ -521,7 +499,7 @@ function Collections({ collections }: { collections: Gw2AccountOverview["collect
                                         ))}
                                     </ul>
                                 )}
-                            </ToneCard>
+                            </Gw2Card>
                         ))}
                     </div>
 

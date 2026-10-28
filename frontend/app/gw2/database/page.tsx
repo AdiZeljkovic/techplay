@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { BookOpen, Database, Hammer, History, KeyRound, MapPin, Sparkles } from "lucide-react";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import ReferenceCard from "@/components/gw2/ReferenceCard";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import { gw2Application, gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getCraftable, getPublicMasteries } from "@/lib/gw2public";
 
@@ -44,8 +43,6 @@ export const metadata: Metadata = {
     alternates: { canonical: "/gw2/database" },
 };
 
-const REFERENCE = DOMAIN_TONE.reference;
-
 export default async function Gw2DatabasePage() {
     const [craftable, masteries] = await Promise.all([getCraftable(1), getPublicMasteries()]);
 
@@ -66,15 +63,12 @@ export default async function Gw2DatabasePage() {
                 eyebrow="Guild Wars 2 reference"
                 title="Guild Wars 2 database"
                 description="Recipes broken down to the last material, and every mastery tier with what it costs. No account needed — connecting one just subtracts what you already have."
-                tone={REFERENCE}
                 art={HERO_ART.database}
             />
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <section className="min-w-0 space-y-4">
                     <SectionHeader
-                        icon={<Database size={18} />}
-                        tone={REFERENCE}
                         title="What is in it"
                         description="The same for every player, read from the game's own API and refreshed with each patch."
                     />
@@ -83,8 +77,6 @@ export default async function Gw2DatabasePage() {
                         <li>
                             <ReferenceCard
                                 href="/gw2/database/crafting"
-                                icon={<Hammer size={20} />}
-                                tone={REFERENCE}
                                 title="Crafting"
                                 body={
                                     craftable
@@ -97,8 +89,6 @@ export default async function Gw2DatabasePage() {
                         <li>
                             <ReferenceCard
                                 href="/gw2/database/masteries"
-                                icon={<Sparkles size={20} />}
-                                tone={DOMAIN_TONE.masteries}
                                 title="Masteries"
                                 body={
                                     trackCount > 0
@@ -111,8 +101,6 @@ export default async function Gw2DatabasePage() {
                         <li>
                             <ReferenceCard
                                 href="/gw2/database/insights"
-                                icon={<MapPin size={20} />}
-                                tone={DOMAIN_TONE.masteries}
                                 title="Mastery insights"
                                 body="Every insight on the map, map by map, with the nearest waypoint's chat code to travel there."
                                 cta="Browse insights"
@@ -121,8 +109,6 @@ export default async function Gw2DatabasePage() {
                         <li>
                             <ReferenceCard
                                 href="/gw2/whats-new"
-                                icon={<History size={20} />}
-                                tone={DOMAIN_TONE.changes}
                                 title="What changed"
                                 body="Back after a break? The changes since 2023 that matter, dated, each with its source."
                                 cta="What changed while you were away"
@@ -137,25 +123,20 @@ export default async function Gw2DatabasePage() {
                      * hour and this page for a day; reading it here would pull
                      * the whole page down to the shorter of the two.
                      */}
-                    <Gw2Panel
-                        icon={<BookOpen size={18} />}
-                        title="Guides"
-                        description="Written by the desk, checked against the game"
-                        tone={REFERENCE}
-                    >
+                    <Gw2Panel title="Guides" description="From the TechPlay desk">
                         <div className="space-y-4">
                             <p className="text-sm text-[var(--ink-mid)]">
                                 Level 80, fractals, masteries, mounts, the Wizard&apos;s Vault and your first
                                 ascended set — each guide complete as it is, and showing your own figures once an
                                 account is connected.
                             </p>
-                            <ActionLink href="/gw2/guides" tone={REFERENCE}>
+                            <ActionLink href="/gw2/guides">
                                 All guides
                             </ActionLink>
                         </div>
                     </Gw2Panel>
 
-                    <Gw2Panel icon={<KeyRound size={18} />} title="Or bring your own account">
+                    <Gw2Panel title="Or bring your own account">
                         <div className="space-y-4">
                             <p className="text-sm text-[var(--ink-mid)]">
                                 The same data, with your own progress against it: what you still need for a recipe

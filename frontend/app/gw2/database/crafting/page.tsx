@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Hammer } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import { SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import { craftingHref, getCraftable } from "@/lib/gw2public";
 
 /**
@@ -31,8 +31,6 @@ import { craftingHref, getCraftable } from "@/lib/gw2public";
 export const revalidate = 86400;
 
 const PER_PAGE = 100;
-
-const REFERENCE = DOMAIN_TONE.reference;
 
 type Search = { searchParams: Promise<{ page?: string }> };
 
@@ -72,15 +70,12 @@ export default async function CraftingIndexPage({ searchParams }: Search) {
                 eyebrow="Guild Wars 2 reference"
                 title="Crafting recipes"
                 description={`${data.total.toLocaleString()} craftable items, each one expanded to every material it needs.`}
-                tone={REFERENCE}
                 art={HERO_ART.crafting}
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
 
             <section className="space-y-4">
                 <SectionHeader
-                    icon={<Hammer size={18} />}
-                    tone={REFERENCE}
                     title={current === 1 ? "Every craftable item" : `Page ${current}`}
                     description="Framed in the game's own rarity colours. Each one opens the full tree."
                     meta={
@@ -96,7 +91,7 @@ export default async function CraftingIndexPage({ searchParams }: Search) {
                             <Link
                                 href={craftingHref(item.id, item.slug)}
                                 className="group flex h-full items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2 transition-colors hover:bg-[var(--fill-1)]"
-                                style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
                             >
                                 {item.icon ? (
                                     <GameIcon src={item.icon} alt="" size="md" rarity={item.rarity} />
@@ -148,13 +143,12 @@ export default async function CraftingIndexPage({ searchParams }: Search) {
     );
 }
 
-/** Previous and next, as the redesign's pill rather than a bare text link. */
+/** Previous and next, as a quiet button rather than a bare text link. */
 function PageLink({ href, children }: { href: string; children: React.ReactNode }) {
     return (
         <Link
             href={href}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-[13px] text-[var(--ink-hi)] transition-colors hover:bg-[var(--fill-1)]"
-            style={{ borderColor: `color-mix(in srgb, ${REFERENCE} 45%, transparent)` }}
+            className="inline-flex h-9 items-center gap-1.5 rounded-[var(--radius-card)] border border-[var(--line-strong)] bg-[var(--fill-1)] px-4 text-[13px] text-[var(--ink-hi)] transition-colors hover:bg-[var(--fill-3)]"
         >
             {children}
         </Link>

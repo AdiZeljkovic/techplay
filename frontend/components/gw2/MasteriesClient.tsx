@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Award, Check, CircleDollarSign, Compass, Info, Layers, MapPin, Sparkles, Zap } from "lucide-react";
+import { Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -142,17 +142,14 @@ export default function MasteriesClient() {
             {data.easy_wins.length > 0 && <EasyWinsRow wins={data.easy_wins} />}
 
             {data.unpaired.length > 0 && (
-                <Panel material="matte" title="Tracks we cannot place yet">
+                <Gw2Panel title="Tracks we cannot place yet">
                     <div className="space-y-3">
-                        <div className="flex gap-3">
-                            <Info size={16} className="mt-0.5 shrink-0 text-[var(--ink-low)]" aria-hidden />
-                            <p className="text-sm text-[var(--ink-mid)]">
-                                Guild Wars 2 names regions differently in its two endpoints — the catalogue says{" "}
-                                <em>Maguuma</em> where your account says <em>Heart of Thorns</em> — and these tracks
-                                belong to a region with no counterpart at all. We would rather show them apart than
-                                file your points under a guessed expansion.
-                            </p>
-                        </div>
+                        <p className="text-sm text-[var(--ink-mid)]">
+                            Guild Wars 2 names regions differently in its two endpoints — the catalogue says{" "}
+                            <em>Maguuma</em> where your account says <em>Heart of Thorns</em> — and these tracks belong
+                            to a region with no counterpart at all. We would rather show them apart than file your
+                            points under a guessed expansion.
+                        </p>
                         <ul className="flex flex-wrap gap-2">
                             {data.unpaired.map((track) => (
                                 <li key={track.id} className="inline-flex items-center gap-0.5">
@@ -164,7 +161,7 @@ export default function MasteriesClient() {
                             ))}
                         </ul>
                     </div>
-                </Panel>
+                </Gw2Panel>
             )}
         </div>
     );
@@ -189,14 +186,14 @@ function opening(regions: MasteryRegionView[]): MasteryRegionView | undefined {
 
 function ConnectFirst() {
     return (
-        <Panel material="lit" crown title="Connect your account first">
+        <Gw2Panel title="Connect your account first">
             <div className="space-y-4">
                 <p className="text-sm text-[var(--ink-mid)]">Mastery progress is read from your own Guild Wars 2 account.</p>
                 <Button asChild>
                     <Link href="/gw2">Go to the advisor</Link>
                 </Button>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }
 
@@ -246,22 +243,15 @@ function RegionCard({ region, on, onSelect }: { region: MasteryRegionView; on: b
             type="button"
             onClick={onSelect}
             aria-pressed={on}
-            className="relative flex w-[212px] shrink-0 flex-col gap-3 overflow-hidden rounded-[var(--radius-panel)] border p-4 text-left transition-colors"
+            className="relative flex w-[212px] shrink-0 flex-col gap-3 overflow-hidden rounded-[var(--radius-panel)] border p-4 text-left transition-colors hover:border-[var(--ink-faint)]"
             style={{
-                background: on ? `color-mix(in srgb, ${tone} 10%, var(--surface-1))` : "var(--surface-1)",
-                /*
-                 * The expansion's own colour. Seven regions in one accent read
-                 * as one long list; in seven hues they read as seven places,
-                 * which is what they are — points do not move between them.
-                 */
-                borderColor: on
-                    ? `color-mix(in srgb, ${tone} 75%, transparent)`
-                    : `color-mix(in srgb, ${tone} 22%, var(--line-strong))`,
-                boxShadow: on ? `0 0 26px -6px color-mix(in srgb, ${tone} 55%, transparent)` : undefined,
+                background: on ? "var(--fill-2)" : "var(--surface-1)",
+                borderColor: on ? "var(--accent)" : "var(--line-strong)",
             }}
         >
             {/* A track's scene render, borrowed as the region's. The API has no
-                art for a region — this is the nearest honest thing. */}
+                art for a region — this is the nearest honest thing. The scrim
+                is what keeps the name and the figure on top of it readable. */}
             {art && (
                 <span
                     aria-hidden
@@ -276,26 +266,26 @@ function RegionCard({ region, on, onSelect }: { region: MasteryRegionView; on: b
             )}
 
             <div className="relative flex items-center gap-3">
-                {emblem ? (
-                    <GameIcon src={emblem} alt="" size="md" tone={tone} />
-                ) : (
-                    <span aria-hidden style={{ color: tone }}>
-                        <Sparkles size={22} />
-                    </span>
-                )}
+                <GameIcon src={emblem} alt="" size="md" />
                 <span className="text-[13px] font-medium leading-tight text-[var(--ink-hi)]">{region.region}</span>
             </div>
 
             <div className="relative">
-                <div className="font-display text-[26px] font-bold leading-none text-[var(--ink-hi)]">{region.percent}%</div>
+                <div className="font-numeric text-[26px] font-semibold leading-none text-[var(--ink-hi)]">{region.percent}%</div>
                 <div className="mt-2">
+                    {/*
+                     * The expansion's own colour, on the bar. Seven regions in
+                     * one accent read as one long list; in seven hues they read
+                     * as seven places, which is what they are — points do not
+                     * move between them.
+                     */}
                     <Meter value={region.points_spent} max={region.points_total} size="sm" tone={tone} />
                 </div>
                 <div className="mt-1.5 flex justify-between gap-2 font-numeric text-[11px] text-[var(--ink-low)]">
                     <span>
                         {region.points_spent} / {region.points_total} points
                     </span>
-                    {region.unspent > 0 && <span style={{ color: tone }}>{region.unspent} to spend</span>}
+                    {region.unspent > 0 && <span className="text-[var(--ink-hi)]">{region.unspent} to spend</span>}
                 </div>
             </div>
         </button>
@@ -309,9 +299,6 @@ const REACH: Record<"close" | "walk" | "far", { label: string; colour: string }>
 };
 
 function BestPoints({ region, known }: { region: MasteryRegionView; known: boolean }) {
-    const tone = regionTone(region.region);
-    const masteryTone = DOMAIN_TONE.masteries;
-
     const description =
         region.points_needed === 0
             ? `Every tier in ${region.region} is already paid for — another point here would sit unspent.`
@@ -319,10 +306,13 @@ function BestPoints({ region, known }: { region: MasteryRegionView; known: boole
 
     return (
         <section className="space-y-4">
-            <SectionHeader icon={<Compass size={18} />} tone={tone} title="Best mastery points for you" description={description} />
+            <SectionHeader title="Best mastery points for you" description={description} />
 
             {region.points_needed === 0 ? null : region.points_to_get.length === 0 ? (
-                <p className="rounded-[var(--radius-panel)] border px-5 py-4 text-sm text-[var(--ink-low)]" style={{ borderColor: "var(--line)" }}>
+                <p
+                    className="rounded-[var(--radius-panel)] border px-5 py-4 text-sm text-[var(--ink-low)]"
+                    style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
+                >
                     {known
                         ? `Nothing in ${region.region} is close enough to name. Its other points come from achievements further from done, and from story.`
                         : "Your key does not share which insights you have — that needs the progression permission — so none can be called missing."}
@@ -333,16 +323,13 @@ function BestPoints({ region, known }: { region: MasteryRegionView; known: boole
                         <li
                             key={`${point.kind}-${point.id}`}
                             className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-[var(--radius-panel)] border p-3 sm:flex-nowrap"
-                            style={{
-                                background: "var(--surface-1)",
-                                borderColor: `color-mix(in srgb, ${tone} ${i === 0 ? "40%" : "16%"}, var(--line-strong))`,
-                            }}
+                            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
                         >
-                            <span className="w-6 shrink-0 text-center font-display text-2xl font-bold" style={{ color: tone }}>
+                            <span className="w-6 shrink-0 text-center font-numeric text-lg font-semibold text-[var(--ink-low)]">
                                 {i + 1}
                             </span>
 
-                            <PointPicture point={point} tone={tone} />
+                            <PointPicture point={point} />
 
                             <div className="min-w-0 flex-1 basis-48">
                                 <PointText point={point} />
@@ -352,27 +339,21 @@ function BestPoints({ region, known }: { region: MasteryRegionView; known: boole
                                 {point.kind === "insight" ? (
                                     point.reach && (
                                         <span
-                                            className="rounded-full border px-2.5 py-0.5 text-[11px]"
-                                            style={{
-                                                color: REACH[point.reach].colour,
-                                                borderColor: `color-mix(in srgb, ${REACH[point.reach].colour} 50%, transparent)`,
-                                            }}
+                                            className="rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 text-[11px]"
+                                            style={{ color: REACH[point.reach].colour }}
                                             title="A straight line from the nearest waypoint — climbs, canopies and jumping puzzles are not counted."
                                         >
                                             {REACH[point.reach].label}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="rounded-full border px-2.5 py-0.5 text-[11px] text-[var(--ink-mid)]" style={{ borderColor: "var(--line-strong)" }}>
+                                    <span className="rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 text-[11px] text-[var(--ink-mid)]">
                                         {point.remaining === 1 ? "1 step left" : `${point.remaining} steps left`}
                                     </span>
                                 )}
 
                                 <div className="w-[118px] text-right">
-                                    <div className="inline-flex items-center gap-1 text-xs" style={{ color: masteryTone }}>
-                                        <Sparkles size={12} aria-hidden />
-                                        +1 mastery point
-                                    </div>
+                                    <div className="text-xs text-[var(--ink-hi)]">+1 mastery point</div>
                                     <div className="text-[11px] text-[var(--ink-faint)]">
                                         {point.kind === "achievement" && point.points ? `and ${point.points} AP` : point.kind === "insight" ? "Mastery insight" : "Achievement"}
                                     </div>
@@ -392,24 +373,13 @@ function BestPoints({ region, known }: { region: MasteryRegionView; known: boole
     );
 }
 
-function PointPicture({ point, tone }: { point: PointToGet; tone: string }) {
+/** The map tile an insight sits on, or the achievement's own icon. Nothing stands in when there is neither. */
+function PointPicture({ point }: { point: PointToGet }) {
     if (point.kind === "insight") {
-        return point.coord ? (
-            <TileThumb coord={point.coord} size={64} />
-        ) : (
-            <span aria-hidden className="flex h-16 w-16 shrink-0 items-center justify-center" style={{ color: tone }}>
-                <MapPin size={20} />
-            </span>
-        );
+        return point.coord ? <TileThumb coord={point.coord} size={64} /> : null;
     }
 
-    return point.icon ? (
-        <GameIcon src={point.icon} alt="" size="xl" tone={tone} />
-    ) : (
-        <span aria-hidden className="flex h-16 w-16 shrink-0 items-center justify-center" style={{ color: tone }}>
-            <Award size={20} />
-        </span>
-    );
+    return <GameIcon src={point.icon} alt="" size="xl" />;
 }
 
 function PointText({ point }: { point: PointToGet }) {
@@ -422,8 +392,7 @@ function PointText({ point }: { point: PointToGet }) {
                 >
                     Mastery insight in {point.map}
                 </Link>
-                <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-[var(--ink-low)]">
-                    <MapPin size={11} className="shrink-0" aria-hidden />
+                <p className="mt-0.5 truncate text-xs text-[var(--ink-low)]">
                     {point.waypoint ? `Nearest waypoint: ${point.waypoint}` : "No waypoint on this map"}
                 </p>
             </>
@@ -455,7 +424,7 @@ function NextTier({ region }: { region: MasteryRegionView }) {
     const track: MasteryTrackView | undefined = affordable[0] ?? cheapest;
 
     return (
-        <Gw2Panel icon={<Sparkles size={18} />} tone={tone} title="Next tier your points buy" description={region.region}>
+        <Gw2Panel title="Next tier your points buy" description={region.region}>
             {!track ? (
                 <p className="text-sm text-[var(--ink-low)]">Every track in {region.region} is finished.</p>
             ) : (
@@ -464,6 +433,7 @@ function NextTier({ region }: { region: MasteryRegionView }) {
                         className="relative flex items-center gap-3 overflow-hidden rounded-[var(--radius-card)] border p-3"
                         style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}
                     >
+                        {/* The track's render behind its name, with a scrim on the text side. */}
                         {track.background && (
                             <span
                                 aria-hidden
@@ -480,7 +450,6 @@ function NextTier({ region }: { region: MasteryRegionView }) {
                             src={track.tier_icons?.[Math.min(track.tiers_paid, (track.tier_icons?.length ?? 1) - 1)]}
                             alt=""
                             size="lg"
-                            tone={tone}
                             className="relative"
                         />
                         <div className="relative min-w-0">
@@ -497,7 +466,7 @@ function NextTier({ region }: { region: MasteryRegionView }) {
 
                     <Meter value={track.tiers_paid} max={track.tiers} size="sm" tone={tone} />
 
-                    <p className="text-xs" style={{ color: track.affordable ? tone : "var(--ink-mid)" }}>
+                    <p className="text-xs" style={{ color: track.affordable ? "var(--success)" : "var(--ink-mid)" }}>
                         {track.affordable
                             ? `Costs ${track.next_cost} of your ${region.unspent} unspent points — within reach now.`
                             : `Costs ${track.next_cost}; you have ${region.unspent} unspent, so ${
@@ -520,8 +489,6 @@ function ZonesPanel({ region, known }: { region: MasteryRegionView; known: boole
 
     return (
         <Gw2Panel
-            icon={<MapPin size={18} />}
-            tone={tone}
             title={`${region.region} zones`}
             description={
                 known
@@ -556,7 +523,7 @@ function ZonesPanel({ region, known }: { region: MasteryRegionView; known: boole
                                     ) : (
                                         <>
                                             {zone.collected} / {zone.total}
-                                            <span className="ml-2" style={{ color: tone }}>
+                                            <span className="ml-2 text-[var(--ink-mid)]">
                                                 {Math.round((zone.collected / zone.total) * 100)}%
                                             </span>
                                         </>
@@ -577,8 +544,6 @@ function RegionTracks({ region }: { region: MasteryRegionView }) {
 
     return (
         <Gw2Panel
-            icon={<Layers size={18} />}
-            tone={tone}
             title={`Tracks in ${region.region}`}
             description={region.unspent > 0 ? `${region.unspent} unspent · ${affordable} within reach` : "Nothing to spend here"}
         >
@@ -602,7 +567,6 @@ function TrackRow({ track, tone }: { track: MasteryTrackView; tone: string }) {
                 src={track.tier_icons?.[Math.min(track.tiers_paid, (track.tier_icons?.length ?? 1) - 1)]}
                 alt=""
                 size="lg"
-                tone={tone}
                 dim={track.finished}
             />
 
@@ -633,12 +597,11 @@ function TrackRow({ track, tone }: { track: MasteryTrackView; tone: string }) {
                     <span className="text-[11px] text-[var(--ink-faint)]">done</span>
                 ) : (
                     <span
-                        className="inline-flex items-center gap-1 font-numeric text-xs"
-                        style={{ color: track.affordable ? tone : "var(--ink-low)" }}
+                        className="inline-flex items-baseline gap-1 font-numeric text-xs"
+                        style={{ color: track.affordable ? "var(--success)" : "var(--ink-low)" }}
                     >
-                        <CircleDollarSign size={12} aria-hidden />
-                        {track.next_cost}
-                        {track.affordable && <span className="text-[10px] uppercase">now</span>}
+                        {track.next_cost} pts
+                        {track.affordable && <span className="text-[10px]">· now</span>}
                     </span>
                 )}
             </div>
@@ -657,8 +620,6 @@ function EasyWinsRow({ wins }: { wins: NearlyDone[] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Zap size={18} />}
-                tone={tone}
                 title="Easy wins today"
                 description="The achievements closest to finishing, and what finishing pays."
             />
@@ -668,19 +629,10 @@ function EasyWinsRow({ wins }: { wins: NearlyDone[] }) {
                     <article
                         key={win.id}
                         className="flex flex-col gap-3 rounded-[var(--radius-panel)] border p-4"
-                        style={{
-                            background: "var(--surface-1)",
-                            borderColor: `color-mix(in srgb, ${tone} 22%, var(--line-strong))`,
-                        }}
+                        style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
                     >
                         <div className="flex items-start gap-3">
-                            {win.icon ? (
-                                <GameIcon src={win.icon} alt="" size="md" tone={tone} />
-                            ) : (
-                                <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center" style={{ color: tone }}>
-                                    <Award size={18} />
-                                </span>
-                            )}
+                            <GameIcon src={win.icon} alt="" size="md" />
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-start gap-1">
                                     <h3 className="line-clamp-2 text-sm font-medium leading-snug text-[var(--ink-hi)]">
@@ -702,22 +654,9 @@ function EasyWinsRow({ wins }: { wins: NearlyDone[] }) {
                         </div>
 
                         {(win.points || win.mastery_region) && (
-                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
-                                {win.points ? (
-                                    <span className="inline-flex items-center gap-1" style={{ color: tone }}>
-                                        <Award size={12} aria-hidden />+{win.points} AP
-                                    </span>
-                                ) : null}
-                                {win.mastery_region && (
-                                    <span
-                                        className="inline-flex items-center gap-1"
-                                        style={{ color: DOMAIN_TONE.masteries }}
-                                        title={win.mastery_region}
-                                    >
-                                        <Sparkles size={12} aria-hidden />
-                                        +1 mastery point
-                                    </span>
-                                )}
+                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-[var(--ink-mid)]">
+                                {win.points ? <span className="font-numeric">+{win.points} AP</span> : null}
+                                {win.mastery_region && <span title={win.mastery_region}>+1 mastery point</span>}
                             </div>
                         )}
                     </article>

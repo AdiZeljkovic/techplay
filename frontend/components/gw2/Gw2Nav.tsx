@@ -131,7 +131,7 @@ export default function Gw2Nav({
 
             {GW2_NAV.map((group) => (
                 <nav key={group.label} aria-label={group.label}>
-                    <p className="mb-1.5 px-3 text-[10px] font-medium uppercase tracking-[0.22em] text-[var(--ink-faint)]">
+                    <p className="mb-1.5 px-3 text-[11px] font-medium text-[var(--ink-faint)]">
                         {group.label}
                     </p>
                     <ul className="space-y-0.5">
@@ -145,30 +145,24 @@ export default function Gw2Nav({
                                         href={item.href}
                                         onClick={onNavigate}
                                         aria-current={on ? "page" : undefined}
-                                        className="relative flex h-11 items-center gap-3 rounded-[var(--radius-card)] px-3 text-[14px] transition-colors hover:bg-[var(--fill-1)] lg:h-10"
+                                        className="relative flex h-11 items-center gap-3 rounded-[var(--radius-card)] px-3 text-[14px] transition-colors hover:bg-[var(--fill-1)] lg:h-9"
                                         style={
                                             on
-                                                ? {
-                                                      // The mockup's lit row: the accent washing in
-                                                      // from the left edge, and a bar on that edge.
-                                                      background:
-                                                          "linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), transparent 92%)",
-                                                      color: "var(--ink-hi)",
-                                                  }
+                                                ? { background: "var(--fill-2)", color: "var(--ink-hi)" }
                                                 : { color: "var(--ink-mid)" }
                                         }
                                     >
                                         {on && (
                                             <span
                                                 aria-hidden
-                                                className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-[var(--accent)]"
+                                                className="absolute inset-y-2 left-0 w-[2px] rounded-full bg-[var(--accent)]"
                                             />
                                         )}
                                         <Icon
-                                            size={17}
-                                            strokeWidth={1.6}
+                                            size={16}
+                                            strokeWidth={1.75}
                                             aria-hidden
-                                            style={{ color: on ? "var(--accent-ink)" : "var(--ink-low)" }}
+                                            style={{ color: on ? "var(--ink-hi)" : "var(--ink-faint)" }}
                                         />
                                         <span className="truncate">{item.label}</span>
                                     </Link>
@@ -178,15 +172,6 @@ export default function Gw2Nav({
                     </ul>
                 </nav>
             ))}
-
-            <div className="hidden px-3 pt-4 lg:block">
-                <p className="text-[10px] uppercase tracking-[0.32em] text-[var(--ink-faint)]">Tyria awaits</p>
-                <span aria-hidden className="mt-2 block h-px w-6 bg-[var(--accent)]" />
-                <p className="mt-3 text-[13px] italic leading-relaxed text-[var(--ink-low)]">
-                    Same world.
-                    <br />A more epic you.
-                </p>
-            </div>
         </div>
     );
 }
@@ -222,11 +207,7 @@ function ConnectionStatus({ state, onNavigate }: { state: Gw2ConnectionState; on
             className="flex items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5 transition-colors hover:bg-[var(--fill-1)]"
             style={{ borderColor: "var(--line)", background: "var(--surface-1)" }}
         >
-            <span
-                aria-hidden
-                className="h-2 w-2 shrink-0 rounded-full"
-                style={{ background: view.dot, boxShadow: `0 0 8px ${view.dot}` }}
-            />
+            <span aria-hidden className="h-2 w-2 shrink-0 rounded-full" style={{ background: view.dot }} />
             <span className="min-w-0">
                 <span className="block truncate text-[13px] text-[var(--ink-hi)]">{view.label}</span>
                 <span className="block truncate text-[11px] text-[var(--ink-low)]">{view.detail}</span>

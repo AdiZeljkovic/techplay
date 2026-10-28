@@ -2,20 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import {
-    AlertTriangle,
-    BookOpen,
-    Coins,
-    GitBranch,
-    Hammer,
-    Info,
-    Package,
-    PackageCheck,
-    Search,
-    Target,
-} from "lucide-react";
+import { AlertTriangle, Check, Hammer, Search } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import Meter from "@/components/ui/Meter";
@@ -23,6 +11,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
+import { Gw2Card, SummaryFact } from "@/components/gw2/Gw2PageParts";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import {
     coin,
@@ -58,6 +47,7 @@ import {
  * counted and the account's disciplines in the right-hand column.
  */
 
+/** Crafting's colour, for the bars on the shopping list and nowhere else. */
 const CRAFTING = DOMAIN_TONE.crafting;
 
 export default function GoalsClient() {
@@ -137,7 +127,7 @@ export default function GoalsClient() {
 
     if (!authLoading && !user) {
         return (
-            <Panel material="lit" crown title="Connect your account first">
+            <Gw2Panel title="Connect your account first">
                 <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         A plan is only useful once we know what you already have. That comes from your own
@@ -147,7 +137,7 @@ export default function GoalsClient() {
                         <Link href="/gw2">Go to the advisor</Link>
                     </Button>
                 </div>
-            </Panel>
+            </Gw2Panel>
         );
     }
 
@@ -158,19 +148,11 @@ export default function GoalsClient() {
     return (
         <div className="space-y-6">
             <section
-                className="relative overflow-hidden rounded-[var(--radius-panel)] border p-5 md:p-6"
-                style={{ background: "var(--surface-1)", borderColor: `color-mix(in srgb, ${CRAFTING} 35%, var(--line-strong))` }}
+                className="rounded-[var(--radius-panel)] border p-5 md:p-6"
+                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
             >
-                <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0"
-                    style={{ background: `radial-gradient(55% 90% at 0% 0%, color-mix(in srgb, ${CRAFTING} 12%, transparent), transparent 70%)` }}
-                />
-
-                <div className="relative space-y-4">
+                <div className="space-y-4">
                     <SectionHeader
-                        icon={<Search size={18} />}
-                        tone={CRAFTING}
                         title="What are you making?"
                         description="Anything with a recipe. What you already own is counted once, wherever it sits."
                     />
@@ -179,7 +161,7 @@ export default function GoalsClient() {
                         <div className="min-w-0 flex-1">
                             <label
                                 htmlFor="gw2-item"
-                                className="mb-1.5 block text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]"
+                                className="mb-1.5 block text-xs font-medium text-[var(--ink-low)]"
                             >
                                 Search the item
                             </label>
@@ -203,7 +185,7 @@ export default function GoalsClient() {
                         <div className="w-24">
                             <label
                                 htmlFor="gw2-qty"
-                                className="mb-1.5 block text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]"
+                                className="mb-1.5 block text-xs font-medium text-[var(--ink-low)]"
                             >
                                 How many
                             </label>
@@ -235,7 +217,7 @@ export default function GoalsClient() {
                     {results.length > 0 && (
                         <ul
                             className="divide-y overflow-hidden rounded-[var(--radius-card)] border"
-                            style={{ borderColor: "var(--line)", background: "var(--surface-0)" }}
+                            style={{ borderColor: "var(--line-strong)", background: "var(--fill-1)" }}
                         >
                             {results.map((item) => (
                                 <li key={item.id} style={{ borderColor: "var(--line)" }}>
@@ -260,9 +242,9 @@ export default function GoalsClient() {
             </section>
 
             {error && (
-                <Panel material="matte">
+                <Gw2Card>
                     <p className="text-sm text-[var(--ink-mid)]">{error}</p>
-                </Panel>
+                </Gw2Card>
             )}
 
             {planning && <Skeleton className="h-64 w-full" />}
@@ -292,14 +274,12 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                 {plan.craftable && (
                     <section className="space-y-4">
                         <SectionHeader
-                            icon={<GitBranch size={18} />}
-                            tone={CRAFTING}
                             title="How it breaks down"
                             description="Every step from the item down to what you gather or buy. A branch you already have stays closed."
                         />
                         <div
                             className="rounded-[var(--radius-panel)] border px-4 py-3"
-                            style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
                         >
                             <Branch node={plan.tree} />
                         </div>
@@ -310,7 +290,7 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
             <div className="space-y-5">
                 {plan.prices && <CostPanel prices={plan.prices} />}
 
-                <Gw2Panel icon={<Info size={18} />} title="What this counts" description="Where the figures on this page come from">
+                <Gw2Panel title="What this counts" description="Where the figures on this page come from">
                     <div className="space-y-3 text-sm text-[var(--ink-mid)]">
                         <p>
                             Everything you own, wherever it is: material storage, the bank, the shared inventory and
@@ -334,21 +314,12 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
                 </Gw2Panel>
 
                 {plan.disciplines_used.length > 0 && (
-                    <Gw2Panel
-                        icon={<Hammer size={18} />}
-                        title="Your crafting"
-                        description="Disciplines on your characters"
-                        tone={CRAFTING}
-                    >
+                    <Gw2Panel title="Your crafting" description="Disciplines on your characters">
                         <ul className="flex flex-wrap gap-1.5">
                             {plan.disciplines_used.map((discipline) => (
                                 <li
                                     key={discipline}
-                                    className="rounded-full border px-2.5 py-0.5 text-[12px] text-[var(--ink-hi)]"
-                                    style={{
-                                        borderColor: `color-mix(in srgb, ${CRAFTING} 45%, transparent)`,
-                                        background: `color-mix(in srgb, ${CRAFTING} 12%, transparent)`,
-                                    }}
+                                    className="rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 text-[11px] text-[var(--ink-mid)]"
                                 >
                                     {discipline}
                                 </li>
@@ -361,35 +332,23 @@ function PlanView({ plan }: { plan: Gw2Plan }) {
     );
 }
 
-/** The item being made: what it is, what stands in the way, and the three numbers that matter. */
+/**
+ * The item being made: what it is, what stands in the way, and the three
+ * numbers that matter. `PageSummary`'s box, drawn here rather than through it
+ * because the title carries the item's own icon and its wiki link.
+ */
 function TargetSummary({ plan, outstanding, held }: { plan: Gw2Plan; outstanding: number; held: number }) {
     return (
         <section
-            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-5 md:p-6"
-            style={{ background: "var(--surface-1)", borderColor: `color-mix(in srgb, ${CRAFTING} 40%, var(--line-strong))` }}
+            className="rounded-[var(--radius-panel)] border p-5 md:p-6"
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
-            <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: `radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, ${CRAFTING} 16%, transparent), transparent 70%)` }}
-            />
-
-            <div className="relative space-y-5">
+            <div className="space-y-5">
                 <div className="flex items-start gap-4">
-                    {plan.target.icon ? (
-                        <GameIcon src={plan.target.icon} alt="" size="xl" rarity={plan.target.rarity} />
-                    ) : (
-                        <span
-                            aria-hidden
-                            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2"
-                            style={{ color: CRAFTING, borderColor: `color-mix(in srgb, ${CRAFTING} 70%, transparent)` }}
-                        >
-                            <Target size={26} />
-                        </span>
-                    )}
+                    <GameIcon src={plan.target.icon} alt="" size="xl" rarity={plan.target.rarity} />
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <h2 className="font-display text-xl font-bold leading-tight text-[var(--ink-hi)] md:text-2xl">
+                            <h2 className="font-display text-xl font-semibold leading-tight text-[var(--ink-hi)] md:text-2xl">
                                 {plan.target.quantity}× {plan.target.name}
                             </h2>
                             <WikiLink wiki={plan.target.wiki} name={plan.target.name} />
@@ -411,7 +370,7 @@ function TargetSummary({ plan, outstanding, held }: { plan: Gw2Plan; outstanding
 
                 {plan.already_have > 0 && (
                     <p className="inline-flex items-center gap-2 text-sm text-[var(--ink-mid)]">
-                        <PackageCheck size={15} className="text-[var(--success)]" aria-hidden />
+                        <Check size={15} className="text-[var(--success)]" aria-hidden />
                         You already have {plan.already_have} of these.
                     </p>
                 )}
@@ -419,10 +378,7 @@ function TargetSummary({ plan, outstanding, held }: { plan: Gw2Plan; outstanding
                 {plan.requires && !plan.requires.have_it && (
                     <div
                         className="flex gap-3 rounded-[var(--radius-card)] border px-3 py-2.5"
-                        style={{
-                            borderColor: "color-mix(in srgb, var(--warning) 45%, transparent)",
-                            background: "color-mix(in srgb, var(--warning) 10%, transparent)",
-                        }}
+                        style={{ borderColor: "var(--line-strong)", background: "var(--fill-1)" }}
                     >
                         <AlertTriangle size={16} className="mt-0.5 shrink-0 text-[var(--warning)]" aria-hidden />
                         <p className="text-sm text-[var(--ink-hi)]">
@@ -441,10 +397,9 @@ function TargetSummary({ plan, outstanding, held }: { plan: Gw2Plan; outstanding
                 {plan.recipes_to_learn && plan.recipes_to_learn.length > 0 && (
                     <div
                         className="space-y-2 rounded-[var(--radius-card)] border px-3 py-2.5"
-                        style={{ borderColor: "var(--line-strong)" }}
+                        style={{ borderColor: "var(--line-strong)", background: "var(--fill-1)" }}
                     >
-                        <p className="inline-flex items-center gap-2 text-sm text-[var(--ink-hi)]">
-                            <BookOpen size={15} className="shrink-0" style={{ color: CRAFTING }} aria-hidden />
+                        <p className="text-sm text-[var(--ink-hi)]">
                             {plan.recipes_to_learn.length === 1
                                 ? "One recipe here has to be learned from a recipe sheet first:"
                                 : `${plan.recipes_to_learn.length} recipes here have to be learned from a recipe sheet first:`}
@@ -464,10 +419,9 @@ function TargetSummary({ plan, outstanding, held }: { plan: Gw2Plan; outstanding
 
                 {plan.craftable && (
                     <dl className="grid gap-4 sm:grid-cols-3">
-                        <Fact icon={<Package size={18} />} value={String(outstanding)} label="materials still to get" />
-                        <Fact icon={<PackageCheck size={18} />} value={String(held)} label="already yours" />
-                        <Fact
-                            icon={<Coins size={18} />}
+                        <SummaryFact value={String(outstanding)} label="materials still to get" />
+                        <SummaryFact value={String(held)} label="already yours" />
+                        <SummaryFact
                             value={plan.prices ? coin(plan.prices.buy_now) : "—"}
                             label={plan.prices ? "the missing part, bought now" : "no prices loaded"}
                         />
@@ -478,32 +432,11 @@ function TargetSummary({ plan, outstanding, held }: { plan: Gw2Plan; outstanding
     );
 }
 
-function Fact({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-    return (
-        <div className="flex items-start gap-3">
-            <span
-                aria-hidden
-                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-card)]"
-                style={{ background: "var(--fill-1)", color: "var(--ink-mid)" }}
-            >
-                {icon}
-            </span>
-            <div className="min-w-0">
-                <dt className="sr-only">{label}</dt>
-                <dd className="font-display text-lg font-bold leading-tight text-[var(--ink-hi)]">{value}</dd>
-                <dd className="text-xs text-[var(--ink-low)]">{label}</dd>
-            </div>
-        </div>
-    );
-}
-
 /** The leaves of the plan, as tiles: what each one is, how much of it is yours, and what is left. */
 function StillToGet({ lines }: { lines: PlanLine[] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Package size={18} />}
-                tone={CRAFTING}
                 title="Still to get"
                 description="Only what you gather, buy or earn — intermediates you can make are in the breakdown below."
             />
@@ -525,7 +458,7 @@ function MaterialTile({ line }: { line: PlanLine }) {
     return (
         <div
             className="flex h-full items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5"
-            style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
             <ItemIcon icon={line.icon} rarity={line.rarity} />
             <div className="min-w-0 flex-1 space-y-1">
@@ -538,7 +471,7 @@ function MaterialTile({ line }: { line: PlanLine }) {
                     <span className="font-numeric text-[var(--ink-mid)]">
                         {line.currency_id === 1 ? `${coin(line.owned)} / ${coin(line.needed)}` : `${line.owned} / ${line.needed}`}
                     </span>
-                    <span className="font-numeric" style={{ color: covered ? "var(--success)" : CRAFTING }}>
+                    <span className="font-numeric" style={{ color: covered ? "var(--success)" : "var(--ink-hi)" }}>
                         {/* Coin is copper: the game's own notation reads better than a raw count. */}
                         {covered ? "covered" : line.currency_id === 1 ? coin(line.missing) : `+${line.missing}`}
                     </span>
@@ -557,27 +490,22 @@ function MaterialTile({ line }: { line: PlanLine }) {
  */
 function CostPanel({ prices }: { prices: NonNullable<Gw2Plan["prices"]> }) {
     return (
-        <Gw2Panel
-            icon={<Coins size={18} />}
-            title="What the missing part costs"
-            description="Trading post, nightly read"
-            tone="#EAB308"
-        >
+        <Gw2Panel title="What the missing part costs" description="Trading post, nightly read">
             <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <div className="font-display text-lg font-bold text-[var(--ink-hi)]">{coin(prices.buy_now)}</div>
+                        <div className="font-numeric text-lg font-semibold text-[var(--ink-hi)]">{coin(prices.buy_now)}</div>
                         <div className="text-[11px] text-[var(--ink-low)]">buying outright</div>
                     </div>
                     <div>
-                        <div className="font-display text-lg font-bold text-[var(--ink-mid)]">{coin(prices.bid_and_wait)}</div>
+                        <div className="font-numeric text-lg font-semibold text-[var(--ink-mid)]">{coin(prices.bid_and_wait)}</div>
                         <div className="text-[11px] text-[var(--ink-low)]">bidding and waiting</div>
                     </div>
                 </div>
 
                 {prices.not_tradable.length > 0 && (
                     <div className="space-y-1.5 border-t pt-3" style={{ borderColor: "var(--line)" }}>
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">Not buyable at any price</p>
+                        <p className="text-xs font-medium text-[var(--ink-low)]">Not buyable at any price</p>
                         <ul className="space-y-1">
                             {prices.not_tradable.map((line) => (
                                 <li key={line.item_id} className="flex items-center justify-between gap-2 text-sm text-[var(--ink-mid)]">
@@ -596,7 +524,7 @@ function CostPanel({ prices }: { prices: NonNullable<Gw2Plan["prices"]> }) {
 
                 {prices.currencies && prices.currencies.length > 0 && (
                     <div className="space-y-1.5 border-t pt-3" style={{ borderColor: "var(--line)" }}>
-                        <p className="text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">Currencies still short</p>
+                        <p className="text-xs font-medium text-[var(--ink-low)]">Currencies still short</p>
                         <ul className="space-y-1">
                             {prices.currencies.map((c) => (
                                 <li key={c.currency_id} className="flex justify-between gap-2 text-sm text-[var(--ink-mid)]">

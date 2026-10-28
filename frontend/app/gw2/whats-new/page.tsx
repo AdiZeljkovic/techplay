@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WhatsNewClient from "@/components/gw2/WhatsNewClient";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
-import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import { getPublicChanges } from "@/lib/gw2public";
 
 /**
@@ -38,7 +38,6 @@ export default async function WhatsNewPage() {
                 title="What changed while you were away"
                 description="Dated, in plain words, each with the page it came from."
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
-                tone={DOMAIN_TONE.changes}
                 art={HERO_ART.whatsNew}
             />
 

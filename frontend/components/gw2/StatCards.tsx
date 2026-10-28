@@ -1,88 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { Award, Gem, Layers, Shield, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import Meter from "@/components/ui/Meter";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import type { Gw2Dashboard } from "@/lib/gw2";
 
 /**
- * Five readouts across the top of the dashboard.
+ * Five readouts across the top of the dashboard: a label, a large figure, a
+ * line under it and, where there is something to count towards, a bar.
  *
- * Drawn as mockup 1 draws them — a glowing mark in the domain's colour, a large
- * figure, a line under it and a bar — with figures the mockup could not have:
- * "2,847 achievement points, 48% complete" is not a percentage of anything
- * countable, and "Fractal Level 37 · Tier 4" gets the tier wrong — 37 is Tier 2.
+ * The figures are ours, not the mockup's: "2,847 achievement points, 48%
+ * complete" is not a percentage of anything countable, and "Fractal Level 37 ·
+ * Tier 4" gets the tier wrong — 37 is Tier 2. Each card reports something read
+ * off the account, and where a card would need a total we do not have, it
+ * reports a count instead of a percentage. A bar that is honest about measuring
+ * nine of twelve slots is worth more than a percentage that had to invent its
+ * own denominator.
  *
- * Each card opens the page that says the rest.
- *
- * So the look is the mockup's and the figures are ours. Each card reports
- * something read off the account, and where a card would need a total we do not
- * have, it reports a count instead of a percentage. A bar that is honest about
- * measuring nine of twelve slots is worth more than a percentage that had to
- * invent its own denominator.
+ * Each card opens the page that says the rest. The domain's colour is in the
+ * bar and nowhere else — Guild Wars 2 already colours these subjects and
+ * players know the colours, but five tinted cards in a row read as decoration.
  */
 
 interface CardProps {
-    icon: ReactNode;
     label: string;
     value: ReactNode;
     detail: string;
-    /**
-     * The domain this card belongs to.
-     *
-     * Five cards in one accent read as one object cut into five. Guild Wars 2
-     * already colours these subjects and players already know the colours, so
-     * the cards borrow them: gear pink, fractals violet, masteries green.
-     */
-    tone: string;
     /** The page that says the rest. */
     href: string;
     children?: ReactNode;
 }
 
-function Card({ icon, label, value, detail, tone, href, children }: CardProps) {
+function Card({ label, value, detail, href, children }: CardProps) {
     return (
         <Link
             href={href}
-            className="relative flex flex-col gap-3 overflow-hidden rounded-[var(--radius-panel)] border p-4 transition-[filter] hover:brightness-110"
-            style={{
-                background: "var(--surface-1)",
-                borderColor: `color-mix(in srgb, ${tone} 22%, var(--line-strong))`,
-            }}
+            className="flex flex-col gap-3 rounded-[var(--radius-panel)] border p-4 transition-colors hover:border-[var(--ink-faint)]"
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
-            {/* The card's own light, from the corner its mark sits in. */}
-            <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: `radial-gradient(80% 90% at 0% 0%, color-mix(in srgb, ${tone} 13%, transparent), transparent 70%)` }}
-            />
-
-            <div className="relative flex items-start gap-3.5">
-                <span
-                    aria-hidden
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border"
-                    style={{
-                        color: tone,
-                        borderColor: `color-mix(in srgb, ${tone} 45%, transparent)`,
-                        background: `color-mix(in srgb, ${tone} 12%, transparent)`,
-                        boxShadow: `0 0 20px color-mix(in srgb, ${tone} 28%, transparent)`,
-                    }}
-                >
-                    {icon}
-                </span>
-
-                <div className="min-w-0">
-                    <div className="truncate text-[13px] text-[var(--ink-mid)]">{label}</div>
-                    <div className="mt-0.5 font-display text-[28px] font-bold leading-none text-[var(--ink-hi)]">
-                        {value}
-                    </div>
-                    <div className="mt-1.5 text-xs text-[var(--ink-low)]">{detail}</div>
-                </div>
+            <div className="min-w-0">
+                <div className="truncate text-xs font-medium text-[var(--ink-low)]">{label}</div>
+                <div className="mt-1.5 font-numeric text-[28px] font-semibold leading-none text-[var(--ink-hi)]">{value}</div>
+                <div className="mt-1.5 text-xs text-[var(--ink-low)]">{detail}</div>
             </div>
 
-            {children && <div className="relative">{children}</div>}
+            {children && <div className="mt-auto">{children}</div>}
         </Link>
     );
 }
@@ -93,8 +56,6 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
     return (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
             <Card
-                icon={<Sparkles size={20} />}
-                tone={DOMAIN_TONE.masteries}
                 href="/gw2/masteries"
                 label="Mastery points"
                 value={masteries.unspent_total}
@@ -122,8 +83,6 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             </Card>
 
             <Card
-                icon={<Layers size={20} />}
-                tone={DOMAIN_TONE.fractals}
                 href="/gw2/fractals"
                 label="Fractal level"
                 value={fractals?.personal_level ?? "—"}
@@ -142,8 +101,6 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             />
 
             <Card
-                icon={<Gem size={20} />}
-                tone={DOMAIN_TONE.fractals}
                 href="/gw2/fractals"
                 label="Agony Resistance"
                 value={
@@ -167,8 +124,6 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             </Card>
 
             <Card
-                icon={<Shield size={20} />}
-                tone={DOMAIN_TONE.gear}
                 href="/gw2/ascended"
                 label="Ascended gear"
                 value={
@@ -193,8 +148,6 @@ export default function StatCards({ dashboard }: { dashboard: Gw2Dashboard }) {
             </Card>
 
             <Card
-                icon={<Award size={20} />}
-                tone={DOMAIN_TONE.achievements}
                 href="/gw2/achievements"
                 label="Nearly done"
                 value={achievements.one_step_away}

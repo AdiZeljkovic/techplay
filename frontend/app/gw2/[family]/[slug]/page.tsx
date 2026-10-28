@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BookMarked, Compass } from "lucide-react";
 import GuidePersonalisation from "@/components/gw2/GuidePersonalisation";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
@@ -66,6 +65,7 @@ export default async function Gw2GuidePage({ params }: Params) {
     ]);
 
     const { label, domain } = guideFamily(guide.family);
+    // For the bars in the reader's own figures — the only colour on the page.
     const tone = domainTone(domain);
     const nextSteps = Object.entries(guide.next_steps ?? {});
     const sources = guide.sources ?? [];
@@ -79,7 +79,6 @@ export default async function Gw2GuidePage({ params }: Params) {
                 eyebrow={`Guild Wars 2 · ${label} guide`}
                 title={guide.title}
                 description={guide.standfirst ?? undefined}
-                tone={tone}
                 art={guideArt(guide.family)}
                 back={{ href: "/gw2/guides", label: "All guides" }}
             >
@@ -133,12 +132,12 @@ export default async function Gw2GuidePage({ params }: Params) {
                         className={`space-y-5 xl:col-start-2 ${guide.personalise_as ? "xl:row-start-2" : "xl:row-start-1"}`}
                     >
                         {nextSteps.length > 0 && (
-                            <Gw2Panel icon={<Compass size={18} />} title="Where to go next" tone={tone}>
+                            <Gw2Panel title="Where to go next">
                                 <nav aria-label="Where to go next">
                                     <ul className="space-y-2.5">
                                         {nextSteps.map(([stepLabel, href]) => (
                                             <li key={stepLabel}>
-                                                <ActionLink href={href} tone={tone}>
+                                                <ActionLink href={href}>
                                                     {stepLabel}
                                                 </ActionLink>
                                             </li>
@@ -150,7 +149,6 @@ export default async function Gw2GuidePage({ params }: Params) {
 
                         {(sources.length > 0 || guide.reviewed_at) && (
                             <Gw2Panel
-                                icon={<BookMarked size={18} />}
                                 title="Sources"
                                 description={sources.length > 0 ? "As recorded, checked or not" : undefined}
                             >

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { KeyRound, Layers, ListTree } from "lucide-react";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, HERO_ART, regionTone } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { getPublicMasteries } from "@/lib/gw2public";
 
@@ -64,7 +63,6 @@ export default async function PublicMasteriesPage() {
             <Gw2Hero
                 title="Mastery tracks"
                 description={`Every track, every tier, and what each one costs — ${total} mastery points in all.`}
-                tone={DOMAIN_TONE.masteries}
                 art={HERO_ART.masteries}
                 back={{ href: "/gw2/database", label: "Guild Wars 2 database" }}
             />
@@ -72,13 +70,9 @@ export default async function PublicMasteriesPage() {
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
                 <div className="min-w-0 space-y-10">
                     {regions.map((region) => {
-                        const tone = regionTone(region.region);
-
                         return (
                             <section key={region.region} id={anchor(region.region)} className="scroll-mt-24 space-y-4">
                                 <SectionHeader
-                                    icon={<Layers size={18} />}
-                                    tone={tone}
                                     title={region.region}
                                     description={`${region.tracks.length} tracks · ${region.points_total} points`}
                                 />
@@ -101,21 +95,13 @@ export default async function PublicMasteriesPage() {
                                     {region.tracks.map((track) => (
                                         <article
                                             key={track.id}
-                                            className="relative space-y-3 overflow-hidden rounded-[var(--radius-panel)] border p-4"
-                                            style={{
-                                                background: "var(--surface-1)",
-                                                borderColor: `color-mix(in srgb, ${tone} 26%, var(--line))`,
-                                            }}
+                                            className="space-y-3 rounded-[var(--radius-panel)] border p-4"
+                                            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
                                         >
-                                            <span
-                                                aria-hidden
-                                                className="pointer-events-none absolute inset-x-0 top-0 h-0.5"
-                                                style={{ background: tone }}
-                                            />
                                             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                                                 <div className="flex items-baseline gap-1.5">
                                                     {/* h3 now: the region above is the h2. */}
-                                                    <h3 className="font-display text-base font-bold text-[var(--ink-hi)]">
+                                                    <h3 className="font-display text-base font-semibold text-[var(--ink-hi)]">
                                                         {track.name}
                                                     </h3>
                                                     <WikiLink wiki={track.wiki} name={track.name} className="self-center" />
@@ -143,13 +129,7 @@ export default async function PublicMasteriesPage() {
                                                                 </span>
                                                             )}
                                                         </span>
-                                                        <span
-                                                            className="shrink-0 rounded-full px-2 py-0.5 font-numeric text-[11px]"
-                                                            style={{
-                                                                color: tone,
-                                                                background: `color-mix(in srgb, ${tone} 14%, transparent)`,
-                                                            }}
-                                                        >
+                                                        <span className="shrink-0 rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 font-numeric text-[11px] text-[var(--ink-mid)]">
                                                             {level.point_cost}
                                                         </span>
                                                     </li>
@@ -164,22 +144,15 @@ export default async function PublicMasteriesPage() {
                 </div>
 
                 <div className="space-y-5 xl:sticky xl:top-[88px] xl:self-start">
-                    <Gw2Panel icon={<ListTree size={18} />} title="Regions" tone={DOMAIN_TONE.masteries}>
+                    <Gw2Panel title="Regions">
                         <ul className="space-y-1.5">
                             {regions.map((region) => (
                                 <li key={region.region}>
                                     <a
                                         href={`#${anchor(region.region)}`}
-                                        className="flex items-center justify-between gap-3 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
+                                        className="flex items-center justify-between gap-3 text-sm text-[var(--ink-mid)] hover:text-[var(--ink-hi)]"
                                     >
-                                        <span className="flex min-w-0 items-center gap-2">
-                                            <span
-                                                aria-hidden
-                                                className="h-2 w-2 shrink-0 rounded-full"
-                                                style={{ background: regionTone(region.region) }}
-                                            />
-                                            <span className="truncate">{region.region}</span>
-                                        </span>
+                                        <span className="min-w-0 truncate">{region.region}</span>
                                         <span className="shrink-0 font-numeric text-xs text-[var(--ink-faint)]">
                                             {region.points_total}
                                         </span>
@@ -189,13 +162,13 @@ export default async function PublicMasteriesPage() {
                         </ul>
                     </Gw2Panel>
 
-                    <Gw2Panel icon={<KeyRound size={18} />} title="With your own account">
+                    <Gw2Panel title="With your own account">
                         <div className="space-y-4">
                             <p className="text-sm text-[var(--ink-mid)]">
                                 Connect a Guild Wars 2 key and the same tracks show how far you are into each one, and
                                 which tiers your unspent points already reach.
                             </p>
-                            <ActionLink href="/gw2" tone={DOMAIN_TONE.masteries}>
+                            <ActionLink href="/gw2">
                                 Open the advisor
                             </ActionLink>
                         </div>

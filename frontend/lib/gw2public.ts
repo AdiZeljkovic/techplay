@@ -145,13 +145,15 @@ export function getGuides(): Promise<PublicGuideSummary[] | null> {
 
 /**
  * The guide families, in the order the admin lists them (`Gw2Guide::FAMILIES`
- * on the backend), with the name a reader sees and the colour each one wears.
+ * on the backend), with the name a reader sees and the domain each one writes
+ * about.
  *
  * The labels are the public half of the admin's: "Progression (pillar)" is a
- * note to the editor about what the page is for, not a heading. The colour is
- * the domain the family writes about, so a fractals guide wears the violet the
- * fractal cards wear everywhere else in the tool. A family the backend adds
- * later falls back to its slug and the site accent rather than to nothing.
+ * note to the editor about what the page is for, not a heading. The domain
+ * colours the bars in a guide's personal figures, so a fractals guide fills its
+ * bars in the violet the fractal bars use everywhere else in the tool. A family
+ * the backend adds later falls back to its slug and the site accent rather than
+ * to nothing.
  */
 export const GUIDE_FAMILIES: Record<string, { label: string; domain: string | null }> = {
     progression: { label: "Progression", domain: null },

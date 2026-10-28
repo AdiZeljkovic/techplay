@@ -2383,13 +2383,14 @@ stranicu, ali samo dok je link još onaj zasijani i vodič nije pregledan.
 
 **Ostale stranice u istom jeziku.** Legendary, planer, Story, Raids & bosses,
 What changed, Account, cijela javna baza (`/gw2/database/*`) i stranica vodiča
-imaju `Gw2Hero` u boji domene, sekcije pod `SectionHeader`, kartice obojene po
-domeni i desnu kolonu od 2–4 panela (na telefonu ide ispod). Funkcije i brojke
-su ostale iste; na javnim stranicama metadata, canonical, robots, JSON-LD i
-`revalidate` nisu dirani. Nove boje domena u `lib/gw2domain.ts`: `legendary`,
-`crafting`, `account`, `reference`, `changes`. Zajednički dijelovi:
-`Gw2PageParts.tsx` (`PageSummary`, `SummaryFact`, `ToneCard`) i
-`ReferenceCard.tsx` za javnu polovinu.
+imaju `Gw2Hero`, sekcije pod `SectionHeader` i desnu kolonu od 2–4 panela (na
+telefonu ide ispod). Funkcije i brojke su ostale iste; na javnim stranicama
+metadata, canonical, robots, JSON-LD i `revalidate` nisu dirani. Nove boje
+domena u `lib/gw2domain.ts`: `legendary`, `crafting`, `account`, `reference`,
+`changes`. Zajednički dijelovi: `Gw2PageParts.tsx` (`PageSummary`,
+`SummaryFact`, `Gw2Card`) i `ReferenceCard.tsx` za javnu polovinu. Kartice i
+paneli su prvo bili obojeni po domeni, s ikonom u krugu; to je skinuto isti dan
+(„Ravan izgled" niže).
 
 Sitne izmjene uz put: na planeru „materijali koji fale" broje samo predmete
 (prije je novčić ušao u broj), a u Legendary se prikazuje i broj Mystic Forge
@@ -2458,6 +2459,33 @@ Mjereno na vlasnikovom nalogu 28. 10. (kopija u /tmp, bez `point_cap`):
 | Poeni s plafonima iz API-ja | 3.298 |
 | Fractals | ~60 ms, 5 KB |
 | Thief | AR 128/150, Tier 1 (nivo 17) |
+
+#### Ravan izgled (28. 10. 2026, vlasnikova odluka)
+
+Prvi rez je crtao mockupe doslovno: svako zaglavlje s ikonom u krugu koja
+svijetli, svaki panel s mrljom boje domene u uglu, dugmad i obrubi u boji
+domene. Preko cijele stranice ukras je bio sve što se vidi, i vlasnik ga je
+odbio kao „AI slop". Pravilo od tada, za sve `/gw2` stranice:
+
+- **Bez gradijenata i bez sjaja.** Prelaz ostaje samo tamo gdje tekst stoji
+  preko slike, da se čita: `Gw2Hero` i slike mastery traka na Masteries i
+  Tonight. To nije ukras.
+- **Bez ukrasnih ikona.** Nema ikona u krugovima, u zaglavljima, u brojkama,
+  ni pred redovima liste. Ostaju funkcionalne: strelice na linkovima, kvačica
+  za urađeno, upozorenje za blokadu, wiki, kopiranje, ikone u meniju — i sve
+  slike iz igre (`GameIcon`).
+- **Boja pripada podacima.** Kontejneri su `--surface-1` s obrubom
+  `--line-strong`; boja domene ide samo u traku napretka, grafikon i tačku
+  statusa. Izabrana stavka ima obrub u akcentu sajta. Dugmad su jedan tihi stil
+  (`ActionLink`).
+- **Tipografija bez razmaknutih velikih slova.** Natpisi su u rečeničnom
+  padežu; naslovi `font-semibold`.
+
+Primitivi koji to nose: `SectionHeader`, `Gw2Panel`, `ActionLink` (bez
+`icon`/`tone`), `PageSummary`, `SummaryFact`, `Gw2Card` (bivši `ToneCard`),
+`ReferenceCard`, `RecommendationCard`, `StatCards`, `Gw2Nav` (aktivna stavka
+ravna, bez sjaja i bez slogana „Tyria awaits"). `DOMAIN_TONE` ostaje, ali samo
+za trake i grafikone.
 
 #### Šta je iz mockupa uzeto, a šta nije
 

@@ -1,13 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarClock, Clock, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
-import DomainGlyph from "@/components/gw2/DomainGlyph";
 import { ActionLink, Gw2Panel } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, domainTone } from "@/lib/gw2domain";
 import { getTonight, type Gw2Tonight, type NearlyDone } from "@/lib/gw2";
 
 /**
@@ -52,7 +49,6 @@ export function TonightTeaser() {
 
     return (
         <Gw2Panel
-            icon={<CalendarClock size={18} />}
             title="Tonight in Guild Wars 2"
             description="An hour, built from what your account still has open."
         >
@@ -62,13 +58,12 @@ export function TonightTeaser() {
                 <>
                     <div
                         className="rounded-[var(--radius-card)] border p-3.5"
-                        style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}
+                        style={{ borderColor: "var(--line)", background: "var(--fill-1)" }}
                     >
-                        <div className="flex items-center justify-between gap-2 text-[10.5px] uppercase tracking-[0.18em]">
-                            <span className="text-[var(--accent-ink)]">1-hour session plan</span>
+                        <div className="flex items-center justify-between gap-2 text-xs">
+                            <span className="font-medium text-[var(--ink-low)]">1-hour session plan</span>
                             {tonight.plan.accounted_for > 0 && (
-                                <span className="inline-flex items-center gap-1 normal-case tracking-normal text-[var(--ink-low)]">
-                                    <Clock size={11} aria-hidden />
+                                <span className="font-numeric text-[var(--ink-low)]">
                                     {tonight.plan.accounted_for} min planned
                                 </span>
                             )}
@@ -85,16 +80,6 @@ export function TonightTeaser() {
                                             {step.starts_at !== null && step.costs !== null
                                                 ? `${step.starts_at}–${step.starts_at + step.costs} min`
                                                 : "—"}
-                                        </span>
-                                        <span
-                                            aria-hidden
-                                            className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border"
-                                            style={{
-                                                color: domainTone(step.domain),
-                                                borderColor: `color-mix(in srgb, ${domainTone(step.domain)} 45%, transparent)`,
-                                            }}
-                                        >
-                                            <DomainGlyph domain={step.domain} size={14} />
                                         </span>
                                         <div className="min-w-0 flex-1">
                                             <p className="truncate text-sm text-[var(--ink-hi)]">{step.title}</p>
@@ -127,13 +112,10 @@ export function TonightTeaser() {
  * Nothing where neither is known, rather than a "+0".
  */
 export function EasyWins({ wins, oneStepAway }: { wins: NearlyDone[]; oneStepAway: number }) {
-    const tone = DOMAIN_TONE.achievements;
     const shown = wins.slice(0, 4);
 
     return (
         <Gw2Panel
-            icon={<Zap size={18} />}
-            tone={tone}
             title="Easy wins"
             description={
                 oneStepAway > 0
@@ -149,15 +131,9 @@ export function EasyWins({ wins, oneStepAway }: { wins: NearlyDone[]; oneStepAwa
                         <li
                             key={win.id}
                             className="flex items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5"
-                            style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}
+                            style={{ borderColor: "var(--line)", background: "var(--fill-1)" }}
                         >
-                            {win.icon ? (
-                                <GameIcon src={win.icon} alt="" size="md" tone={tone} />
-                            ) : (
-                                <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center" style={{ color: tone }}>
-                                    <Zap size={16} />
-                                </span>
-                            )}
+                            <GameIcon src={win.icon} alt="" size="md" />
 
                             <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
@@ -177,12 +153,10 @@ export function EasyWins({ wins, oneStepAway }: { wins: NearlyDone[]; oneStepAwa
 
                             <div className="shrink-0 text-right">
                                 {win.points ? (
-                                    <div className="font-numeric text-xs" style={{ color: tone }}>
-                                        +{win.points} AP
-                                    </div>
+                                    <div className="font-numeric text-xs text-[var(--ink-hi)]">+{win.points} AP</div>
                                 ) : null}
                                 {win.mastery_region && (
-                                    <div className="text-[11px]" style={{ color: DOMAIN_TONE.masteries }} title={win.mastery_region}>
+                                    <div className="text-[11px] text-[var(--ink-mid)]" title={win.mastery_region}>
                                         +1 mastery point
                                     </div>
                                 )}

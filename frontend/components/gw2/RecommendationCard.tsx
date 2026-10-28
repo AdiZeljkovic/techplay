@@ -5,15 +5,15 @@ import Chip from "@/components/ui/Chip";
 import Meter from "@/components/ui/Meter";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
-import DomainGlyph from "@/components/gw2/DomainGlyph";
 import { ActionLink } from "@/components/gw2/Gw2Ui";
 import { DOMAIN_ART, domainTone } from "@/lib/gw2domain";
 import { CONFIDENCE_LABEL, EFFORT_LABEL, slotLabel, type Recommendation } from "@/lib/gw2";
 
 /**
- * One recommendation, laid out as mockup 1 lays it out: a scene across the top,
- * the subject in a ring, the title, the reason, how far along it is, and a
- * button to the page that answers it.
+ * One recommendation: the scene when there is one, the subject's own icon, the
+ * title, the reason, how far along it is, and a button to the page that
+ * answers it. Flat, like the rest of the tool — the domain's colour is in the
+ * bar, not in the card.
  *
  * Two things on this card are the product, not decoration.
  *
@@ -72,10 +72,10 @@ export default function RecommendationCard({
     const shown = steps.filter((step) => step.text !== null).slice(0, 3);
 
     /*
-     * The tone is Guild Wars 2's, not the site's: a player already associates
-     * crimson with gear and violet with fractals before reading either word.
-     * The scene is our art for the domain once it exists, else the mastery
-     * track's own render where the card is about one, else a wash.
+     * The bar's colour is Guild Wars 2's, not the site's: a player already
+     * associates crimson with gear and violet with fractals before reading
+     * either word. The scene is our art for the domain once it exists, else the
+     * mastery track's own render where the card is about one, else nothing.
      */
     const tone = domainTone(domain);
     const scene = DOMAIN_ART[domain] ?? details?.background;
@@ -84,74 +84,52 @@ export default function RecommendationCard({
     const percent =
         progress && progress.target > 0 ? Math.min(100, Math.round((progress.current / progress.target) * 100)) : null;
 
+    const chips = (
+        <div className="flex items-start justify-between gap-2">
+            <Chip variant={CONFIDENCE_VARIANT[confidence]} size="sm">
+                {CONFIDENCE_LABEL[confidence]}
+            </Chip>
+            {effort && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-[var(--surface-0)]/80 px-2 py-0.5 text-[11px] text-[var(--ink-mid)]">
+                    <Clock size={11} aria-hidden />
+                    {EFFORT_LABEL[effort] ?? effort}
+                </span>
+            )}
+        </div>
+    );
+
     return (
         <article
-            className="relative flex h-full flex-col overflow-hidden rounded-[var(--radius-panel)] border"
+            className="flex h-full flex-col overflow-hidden rounded-[var(--radius-panel)] border"
             style={{
                 background: "var(--surface-1)",
-                borderColor: `color-mix(in srgb, ${tone} ${featured ? "48%" : "28%"}, var(--line-strong))`,
-                boxShadow: featured ? `0 20px 44px -28px color-mix(in srgb, ${tone} 70%, transparent)` : undefined,
+                borderColor: featured ? "var(--ink-faint)" : "var(--line-strong)",
             }}
         >
-            <div className="relative h-28 shrink-0 overflow-hidden">
-                <span
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={
-                        scene
-                            ? {
-                                  backgroundImage: `url(${scene})`,
-                                  backgroundSize: "cover",
-                                  backgroundPosition: "center",
-                                  opacity: 0.6,
-                              }
-                            : {
-                                  background: `radial-gradient(90% 130% at 25% 0%, color-mix(in srgb, ${tone} 34%, transparent), transparent 72%)`,
-                              }
-                    }
-                />
-                <span
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{ background: "linear-gradient(to bottom, transparent 25%, var(--surface-1))" }}
-                />
-
-                <div className="relative flex items-start justify-between gap-2 p-3.5">
-                    <Chip variant={CONFIDENCE_VARIANT[confidence]} size="sm">
-                        {CONFIDENCE_LABEL[confidence]}
-                    </Chip>
-                    {effort && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-black/45 px-2 py-0.5 text-[11px] text-[var(--ink-mid)]">
-                            <Clock size={11} aria-hidden />
-                            {EFFORT_LABEL[effort] ?? effort}
-                        </span>
-                    )}
+            {scene && (
+                <div className="relative h-28 shrink-0 border-b" style={{ borderColor: "var(--line)" }}>
+                    <span
+                        aria-hidden
+                        className="absolute inset-0"
+                        style={{ backgroundImage: `url(${scene})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                    />
+                    <div className="relative p-3">{chips}</div>
                 </div>
-            </div>
+            )}
 
-            <div className="relative -mt-10 flex flex-1 flex-col gap-3 px-4 pb-4">
-                <span
-                    aria-hidden
-                    className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2"
-                    style={{
-                        borderColor: `color-mix(in srgb, ${tone} 75%, transparent)`,
-                        background: "var(--surface-2)",
-                        color: tone,
-                        boxShadow: `0 0 22px color-mix(in srgb, ${tone} 32%, transparent)`,
-                    }}
-                >
-                    {details?.icon ? <GameIcon src={details.icon} alt="" size="lg" /> : <DomainGlyph domain={domain} size={22} />}
-                </span>
+            <div className="flex flex-1 flex-col gap-3 p-4">
+                {!scene && chips}
 
-                <div>
-                    <span className="text-[10px] uppercase tracking-[0.18em]" style={{ color: tone }}>
-                        {domain}
-                    </span>
-                    <div className="mt-0.5 flex items-start gap-2">
-                        <h3 className="font-display text-lg font-bold leading-snug text-[var(--ink-hi)] text-balance">
-                            {title}
-                        </h3>
-                        <WikiLink wiki={details?.wiki} name={title} compact className="ml-auto mt-1.5" />
+                <div className="flex items-start gap-3">
+                    {details?.icon && <GameIcon src={details.icon} alt="" size="lg" />}
+                    <div className="min-w-0 flex-1">
+                        <span className="text-xs capitalize text-[var(--ink-low)]">{domain}</span>
+                        <div className="mt-0.5 flex items-start gap-2">
+                            <h3 className="font-display text-lg font-semibold leading-snug text-[var(--ink-hi)] text-balance">
+                                {title}
+                            </h3>
+                            <WikiLink wiki={details?.wiki} name={title} compact className="ml-auto mt-1.5" />
+                        </div>
                     </div>
                 </div>
 
@@ -180,7 +158,7 @@ export default function RecommendationCard({
                 {progress && percent !== null && (
                     <div className="space-y-1.5">
                         <div className="flex items-baseline justify-between gap-3 text-xs">
-                            <span style={{ color: tone }}>{percent}% complete</span>
+                            <span className="text-[var(--ink-mid)]">{percent}% complete</span>
                             <span className="font-numeric text-[var(--ink-low)]">
                                 {progress.current} / {progress.target}
                                 {progress.unit ? ` ${progress.unit}` : ""}
@@ -233,7 +211,7 @@ export default function RecommendationCard({
 
                 {details?.action && (
                     <div className="mt-auto pt-1">
-                        <ActionLink href={details.action.href} tone={tone}>
+                        <ActionLink href={details.action.href}>
                             {details.action.label}
                         </ActionLink>
                     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, BookOpen, CheckCircle2, ChevronDown, Crown, Layers, Sparkles, Target, Trophy, Zap } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -11,8 +11,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { PageSummary, SummaryFact, ToneCard } from "@/components/gw2/Gw2PageParts";
-import { DOMAIN_TONE, regionTone } from "@/lib/gw2domain";
+import { Gw2Card, PageSummary, SummaryFact } from "@/components/gw2/Gw2PageParts";
+import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { getAchievements, type Gw2AchievementGroup, type Gw2Achievements, type Gw2TitleWithinReach, type NearlyDone } from "@/lib/gw2";
 
 /**
@@ -106,7 +106,7 @@ export default function AchievementsClient() {
             <div className="space-y-5">
                 <WeeklyPanel recent={data.recent} />
                 <TitlesPanel titles={data.titles} />
-                {data.guides.length > 0 && <GuidesPanel guides={data.guides} tone={TONE} />}
+                {data.guides.length > 0 && <GuidesPanel guides={data.guides} />}
             </div>
         </div>
     );
@@ -114,7 +114,7 @@ export default function AchievementsClient() {
 
 function ConnectFirst() {
     return (
-        <Panel material="lit" crown title="Connect your account first">
+        <Gw2Panel title="Connect your account first">
             <div className="space-y-4">
                 <p className="text-sm text-[var(--ink-mid)]">
                     Your points and progress are read off your own account, and nothing has been read yet.
@@ -123,7 +123,7 @@ function ConnectFirst() {
                     <Link href="/gw2">Go to the advisor</Link>
                 </Button>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }
 
@@ -136,17 +136,15 @@ function Summary({ data }: { data: Gw2Achievements }) {
 
     return (
         <PageSummary
-            icon={<Trophy size={26} />}
-            tone={TONE}
             title={`${points.total.toLocaleString()} achievement points`}
             description={`Every tier you have reached, repeatable achievements up to their cap${
                 extra.length > 0 ? `, and the ${extra.join(" and ")} points the game counts on their own` : ""
             }. Guild Wars 2 publishes no total, so this is the sum.`}
         >
             <dl className="grid gap-4 sm:grid-cols-3">
-                <SummaryFact icon={<CheckCircle2 size={18} />} value={data.done.toLocaleString()} label="achievements done, dailies aside" />
-                <SummaryFact icon={<Target size={18} />} value={String(data.nearly_done)} label="four fifths of the way or more" />
-                <SummaryFact icon={<Zap size={18} />} value={`+${data.recent.this_week}`} label="finished this game week" />
+                <SummaryFact value={data.done.toLocaleString()} label="achievements done, dailies aside" />
+                <SummaryFact value={String(data.nearly_done)} label="four fifths of the way or more" />
+                <SummaryFact value={`+${data.recent.this_week}`} label="finished this game week" />
             </dl>
 
             {points.repeats_uncapped > 0 && (
@@ -164,8 +162,6 @@ function Closest({ wins, total }: { wins: NearlyDone[]; total: number }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Target size={18} />}
-                tone={TONE}
                 title="Closest to done"
                 description={
                     total > wins.length
@@ -192,20 +188,15 @@ function Closest({ wins, total }: { wins: NearlyDone[]; total: number }) {
 /**
  * One achievement close to finishing: what is left in the game's own words,
  * and what finishing pays — points, and a mastery point where it gives one.
+ * `tone` colours the bar, the one place on the card a colour says something.
  */
 export function NearlyDoneCard({ win, tone }: { win: NearlyDone; tone: string }) {
     const steps = win.steps_remaining.slice(0, 3);
 
     return (
-        <ToneCard tone={tone} className="flex h-full flex-col gap-3">
+        <Gw2Card className="flex h-full flex-col gap-3">
             <div className="flex items-start gap-3">
-                {win.icon ? (
-                    <GameIcon src={win.icon} alt="" size="md" tone={tone} />
-                ) : (
-                    <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center" style={{ color: tone }}>
-                        <Trophy size={16} />
-                    </span>
-                )}
+                <GameIcon src={win.icon} alt="" size="md" />
                 <div className="min-w-0 flex-1">
                     <p className="flex items-center gap-1.5">
                         <span className="text-[15px] font-semibold leading-snug text-[var(--ink-hi)]">{win.name ?? `#${win.id}`}</span>
@@ -219,7 +210,7 @@ export function NearlyDoneCard({ win, tone }: { win: NearlyDone; tone: string })
                 <ul className="space-y-1">
                     {steps.map((step) => (
                         <li key={step} className="flex items-start gap-1.5 text-[12px] text-[var(--ink-mid)]">
-                            <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full" style={{ background: tone }} />
+                            <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[var(--ink-faint)]" />
                             {step}
                         </li>
                     ))}
@@ -235,15 +226,13 @@ export function NearlyDoneCard({ win, tone }: { win: NearlyDone; tone: string })
                     <span className="font-numeric text-[var(--ink-mid)]">
                         {win.current.toLocaleString()} / {win.max.toLocaleString()}
                     </span>
-                    <span className="flex items-center gap-2">
-                        {win.points ? <span style={{ color: tone }}>+{win.points} AP</span> : null}
-                        {win.mastery_region && (
-                            <span style={{ color: regionTone(win.mastery_region) }}>+1 {win.mastery_region} mastery</span>
-                        )}
+                    <span className="flex items-center gap-2 text-[var(--ink-mid)]">
+                        {win.points ? <span className="font-numeric">+{win.points} AP</span> : null}
+                        {win.mastery_region && <span>+1 {win.mastery_region} mastery</span>}
                     </span>
                 </p>
             </div>
-        </ToneCard>
+        </Gw2Card>
     );
 }
 
@@ -251,8 +240,6 @@ function Groups({ groups }: { groups: Gw2AchievementGroup[] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Layers size={18} />}
-                tone={TONE}
                 title="By group"
                 description="The game's own groups and categories. Dailies are left out, and so are hidden achievements you have not found."
             />
@@ -271,20 +258,14 @@ function Groups({ groups }: { groups: Gw2AchievementGroup[] }) {
 /**
  * A group with its categories folded under it. `<details>` rather than state:
  * nineteen groups each holding up to sixty-eight categories is a long page
- * open, and the browser already knows how to fold one.
+ * open, and the browser already knows how to fold one. `tone` colours the bars.
  */
 export function GroupCard({ group, tone, open = false }: { group: Gw2AchievementGroup; tone: string; open?: boolean }) {
     return (
-        <ToneCard tone={tone} className="p-0">
+        <Gw2Card className="p-0">
             <details className="group" open={open}>
                 <summary className="flex cursor-pointer list-none items-start gap-3 p-4 [&::-webkit-details-marker]:hidden">
-                    {group.icon ? (
-                        <GameIcon src={group.icon} alt="" size="md" tone={tone} />
-                    ) : (
-                        <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center" style={{ color: tone }}>
-                            <Trophy size={16} />
-                        </span>
-                    )}
+                    <GameIcon src={group.icon} alt="" size="md" />
                     <div className="min-w-0 flex-1 space-y-2">
                         <div className="flex items-baseline justify-between gap-3">
                             <span className="text-[15px] font-semibold text-[var(--ink-hi)]">{group.name}</span>
@@ -339,7 +320,7 @@ export function GroupCard({ group, tone, open = false }: { group: Gw2Achievement
                     ))}
                 </ul>
             </details>
-        </ToneCard>
+        </Gw2Card>
     );
 }
 
@@ -353,9 +334,9 @@ function WeeklyPanel({ recent }: { recent: Gw2Achievements["recent"] }) {
     const peak = Math.max(1, ...recent.weeks.map((w) => w.count));
 
     return (
-        <Gw2Panel icon={<BarChart3 size={18} />} title="Weekly progress" description="Achievements finished, by game week" tone={TONE}>
+        <Gw2Panel title="Weekly progress" description="Achievements finished, by game week">
             <div className="space-y-4">
-                <p className="font-display text-2xl font-bold text-[var(--ink-hi)]">
+                <p className="font-numeric text-2xl font-semibold text-[var(--ink-hi)]">
                     +{recent.this_week}
                     <span className="ml-2 text-xs font-normal text-[var(--ink-low)]">this week</span>
                 </p>
@@ -387,7 +368,7 @@ function WeeklyPanel({ recent }: { recent: Gw2Achievements["recent"] }) {
                     <ul className="space-y-2 border-t pt-3" style={{ borderColor: "var(--line)" }}>
                         {recent.events.map((event, i) => (
                             <li key={`${event.id}-${i}`} className="flex items-center gap-2.5">
-                                <GameIcon src={event.icon} alt="" size="sm" tone={TONE} />
+                                <GameIcon src={event.icon} alt="" size="sm" />
                                 <span className="min-w-0 flex-1">
                                     <span className="block truncate text-[13px] text-[var(--ink-hi)]">{event.name}</span>
                                     <span className="block text-[11px] text-[var(--ink-faint)]">
@@ -395,7 +376,7 @@ function WeeklyPanel({ recent }: { recent: Gw2Achievements["recent"] }) {
                                     </span>
                                 </span>
                                 {event.points > 0 && (
-                                    <span className="shrink-0 font-numeric text-[11px]" style={{ color: TONE }}>
+                                    <span className="shrink-0 font-numeric text-[11px] text-[var(--ink-mid)]">
                                         +{event.points} AP
                                     </span>
                                 )}
@@ -415,7 +396,7 @@ function WeeklyPanel({ recent }: { recent: Gw2Achievements["recent"] }) {
 
 function TitlesPanel({ titles }: { titles: Gw2TitleWithinReach[] | null }) {
     return (
-        <Gw2Panel icon={<Crown size={18} />} title="Titles within reach" description="Started, and not yet yours" tone={TONE}>
+        <Gw2Panel title="Titles within reach" description="Started, and not yet yours">
             {titles === null ? (
                 <p className="text-xs text-[var(--ink-low)]">
                     Your titles have not been read yet. They come with a full read of your account, and only with a key
@@ -447,21 +428,14 @@ function TitlesPanel({ titles }: { titles: Gw2TitleWithinReach[] | null }) {
 }
 
 /** The published guides of the page's family. */
-export function GuidesPanel({
-    guides,
-    tone,
-}: {
-    guides: { href: string; title: string; standfirst: string | null }[];
-    tone: string;
-}) {
+export function GuidesPanel({ guides }: { guides: { href: string; title: string; standfirst: string | null }[] }) {
     return (
-        <Gw2Panel icon={<BookOpen size={18} />} title="Guides" description="From the TechPlay desk" tone={tone}>
+        <Gw2Panel title="Guides" description="From the TechPlay desk">
             <ul className="space-y-3">
                 {guides.map((guide) => (
                     <li key={guide.href}>
                         <Link href={guide.href} className="group block">
-                            <span className="flex items-center gap-1.5 text-sm text-[var(--ink-hi)] group-hover:text-[var(--accent-ink)]">
-                                <Sparkles size={13} aria-hidden style={{ color: tone }} />
+                            <span className="block text-sm text-[var(--ink-hi)] group-hover:text-[var(--accent-ink)]">
                                 {guide.title}
                             </span>
                             {guide.standfirst && (

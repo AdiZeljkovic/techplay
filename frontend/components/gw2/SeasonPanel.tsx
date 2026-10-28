@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Info } from "lucide-react";
-import Panel from "@/components/ui/Panel";
-import Chip from "@/components/ui/Chip";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
+import { Gw2Panel } from "@/components/gw2/Gw2Ui";
 import type { Gw2VaultSeason } from "@/lib/gw2";
 
 /**
@@ -24,8 +22,7 @@ export default function SeasonPanel({ season }: { season: Gw2VaultSeason }) {
     const shown = all ? listings : listings.slice(0, 6);
 
     return (
-        <Panel
-            material="instrument"
+        <Gw2Panel
             title={season.title ?? "Wizard's Vault season"}
             meta={
                 <span className="font-numeric text-xs text-[var(--ink-faint)]">
@@ -70,9 +67,12 @@ export default function SeasonPanel({ season }: { season: Gw2VaultSeason }) {
                                             {listing.type} · {listing.left} left
                                         </div>
                                     </div>
-                                    <Chip variant={listing.affordable ? "accent" : "neutral"} size="sm">
+                                    <span
+                                        className="shrink-0 rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 font-numeric text-[11px]"
+                                        style={{ color: listing.affordable ? "var(--success)" : "var(--ink-low)" }}
+                                    >
                                         {listing.cost}
-                                    </Chip>
+                                    </span>
                                 </li>
                             ))}
                         </ul>
@@ -91,8 +91,7 @@ export default function SeasonPanel({ season }: { season: Gw2VaultSeason }) {
                 {season.notes && season.notes.length > 0 && (
                     <ul className="space-y-1 border-t pt-3" style={{ borderColor: "var(--line)" }}>
                         {season.notes.map((note) => (
-                            <li key={note.text} className="flex gap-1.5 text-[11px] text-[var(--ink-faint)]">
-                                <Info size={11} className="mt-0.5 shrink-0" aria-hidden />
+                            <li key={note.text} className="text-[11px] text-[var(--ink-faint)]">
                                 <span>
                                     {note.text}{" "}
                                     <a
@@ -109,6 +108,6 @@ export default function SeasonPanel({ season }: { season: Gw2VaultSeason }) {
                     </ul>
                 )}
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }

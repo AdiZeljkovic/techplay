@@ -1,24 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {
-    Award,
-    Bird,
-    BookOpen,
-    Flag,
-    Gem,
-    Gift,
-    KeyRound,
-    Layers,
-    ListTree,
-    Shield,
-    Sparkles,
-    TrendingUp,
-    type LucideIcon,
-} from "lucide-react";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import ReferenceCard from "@/components/gw2/ReferenceCard";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, HERO_ART, domainTone } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { GUIDE_FAMILIES, getGuides, guideFamily, type PublicGuideSummary } from "@/lib/gw2public";
 
@@ -59,23 +44,6 @@ export const metadata: Metadata = {
     },
 };
 
-/**
- * One icon per family, for the section heads and the cards under them — the
- * same marks `DomainGlyph` gives each domain, so a fractals guide carries the
- * glyph a fractals card does.
- */
-const FAMILY_ICON: Record<string, LucideIcon> = {
-    progression: TrendingUp,
-    "level-80": Flag,
-    fractals: Layers,
-    masteries: Sparkles,
-    achievements: Award,
-    goals: Shield,
-    mounts: Bird,
-    legendary: Gem,
-    "wizards-vault": Gift,
-};
-
 export default async function Gw2GuidesPage() {
     const guides = await getGuides();
 
@@ -98,22 +66,17 @@ export default async function Gw2GuidesPage() {
                 eyebrow="Guild Wars 2 reference"
                 title="Guides"
                 description={`${guides.length} ${guides.length === 1 ? "guide" : "guides"}, each complete as it is. Connect an account and the ones that can show your own figures do.`}
-                tone={DOMAIN_TONE.reference}
                 art={HERO_ART.guides}
             />
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
                 <div className="min-w-0 space-y-10">
                     {families.map(({ family, guides: list }) => {
-                        const { label, domain } = guideFamily(family);
-                        const tone = domainTone(domain);
-                        const Icon = FAMILY_ICON[family] ?? BookOpen;
+                        const { label } = guideFamily(family);
 
                         return (
                             <section key={family} id={family} className="scroll-mt-24 space-y-4">
                                 <SectionHeader
-                                    icon={<Icon size={18} />}
-                                    tone={tone}
                                     title={label}
                                     description={`${list.length} ${list.length === 1 ? "guide" : "guides"}`}
                                 />
@@ -123,8 +86,6 @@ export default async function Gw2GuidesPage() {
                                         <li key={guide.path}>
                                             <ReferenceCard
                                                 href={guide.path}
-                                                icon={<Icon size={20} />}
-                                                tone={tone}
                                                 eyebrow={label}
                                                 title={guide.title}
                                                 body={guide.standfirst}
@@ -141,22 +102,15 @@ export default async function Gw2GuidesPage() {
                 </div>
 
                 <div className="space-y-5 xl:sticky xl:top-[88px] xl:self-start">
-                    <Gw2Panel icon={<ListTree size={18} />} title="Families" tone={DOMAIN_TONE.reference}>
+                    <Gw2Panel title="Families">
                         <ul className="space-y-1.5">
                             {families.map(({ family, guides: list }) => (
                                 <li key={family}>
                                     <a
                                         href={`#${family}`}
-                                        className="flex items-center justify-between gap-3 text-sm text-[var(--ink-mid)] hover:text-[var(--accent-ink)]"
+                                        className="flex items-center justify-between gap-3 text-sm text-[var(--ink-mid)] hover:text-[var(--ink-hi)]"
                                     >
-                                        <span className="flex min-w-0 items-center gap-2">
-                                            <span
-                                                aria-hidden
-                                                className="h-2 w-2 shrink-0 rounded-full"
-                                                style={{ background: domainTone(guideFamily(family).domain) }}
-                                            />
-                                            <span className="truncate">{guideFamily(family).label}</span>
-                                        </span>
+                                        <span className="min-w-0 truncate">{guideFamily(family).label}</span>
                                         <span className="shrink-0 font-numeric text-xs text-[var(--ink-faint)]">
                                             {list.length}
                                         </span>
@@ -166,7 +120,7 @@ export default async function Gw2GuidesPage() {
                         </ul>
                     </Gw2Panel>
 
-                    <Gw2Panel icon={<KeyRound size={18} />} title="With your own account">
+                    <Gw2Panel title="With your own account">
                         <div className="space-y-4">
                             <p className="text-sm text-[var(--ink-mid)]">
                                 Connect a Guild Wars 2 key and a guide shows where you stand — your Agony Resistance,

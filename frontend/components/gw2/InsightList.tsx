@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Map as MapIcon, MapPin, Swords } from "lucide-react";
+import { Check } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Meter from "@/components/ui/Meter";
 import ChatCode from "@/components/gw2/ChatCode";
@@ -20,6 +20,7 @@ import type { InsightMap } from "@/lib/gw2public";
  * codes all come from `/v2/continents`.
  */
 
+/** Masteries' colour, for the bar and the marks on the plot. */
 const TONE = DOMAIN_TONE.masteries;
 
 export default function InsightList({ map }: { map: InsightMap }) {
@@ -50,15 +51,13 @@ export default function InsightList({ map }: { map: InsightMap }) {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
             <section className="min-w-0 space-y-4">
                 <SectionHeader
-                    icon={<MapPin size={18} />}
-                    tone={TONE}
                     title={`${shown.insights_total} mastery insights`}
                     description="Numbered to match the plot, each with the waypoint nearest to it."
                     meta={
                         left !== null ? (
                             <span
-                                className="shrink-0 rounded-full border px-3 py-1 text-xs"
-                                style={{ color: TONE, borderColor: `color-mix(in srgb, ${TONE} 45%, transparent)` }}
+                                className="shrink-0 rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 text-[11px]"
+                                style={{ color: left === 0 ? "var(--success)" : "var(--ink-mid)" }}
                             >
                                 {left === 0 ? "all collected" : `${left} left for you`}
                             </span>
@@ -77,14 +76,14 @@ export default function InsightList({ map }: { map: InsightMap }) {
                             className="flex items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5 text-sm"
                             style={{
                                 background: "var(--surface-1)",
-                                borderColor: insight.collected ? "var(--line)" : `color-mix(in srgb, ${TONE} 22%, var(--line))`,
+                                borderColor: insight.collected ? "var(--line)" : "var(--line-strong)",
                             }}
                         >
                             <span
                                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-numeric text-[11px]"
                                 style={{
-                                    background: insight.collected ? "var(--fill-2)" : `color-mix(in srgb, ${TONE} 22%, transparent)`,
-                                    color: insight.collected ? "var(--ink-faint)" : "var(--ink-hi)",
+                                    background: insight.collected ? "var(--fill-1)" : "var(--fill-2)",
+                                    color: insight.collected ? "var(--success)" : "var(--ink-hi)",
                                 }}
                             >
                                 {insight.collected ? <Check size={12} aria-label="collected" /> : i + 1}
@@ -119,11 +118,11 @@ export default function InsightList({ map }: { map: InsightMap }) {
             </section>
 
             <div className="space-y-5">
-                <Gw2Panel icon={<MapIcon size={18} />} title="Where they are" description="From the game's own coordinates" tone={TONE}>
+                <Gw2Panel title="Where they are" description="From the game's own coordinates">
                     <MiniMap map={shown} />
                 </Gw2Panel>
                 {map.hero_challenges > 0 && (
-                    <Gw2Panel icon={<Swords size={18} />} title="Hero challenges">
+                    <Gw2Panel title="Hero challenges">
                         {/* Listed as what exists, not what is left: the game's
                             per-character endpoint for these has answered empty
                             for every character for years. */}

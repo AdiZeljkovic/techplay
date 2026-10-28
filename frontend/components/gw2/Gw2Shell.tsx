@@ -118,11 +118,11 @@ export default function Gw2Shell({ children }: { children: ReactNode }) {
                         >
                             <span className="flex min-w-0 items-center gap-2.5 text-[14px] text-[var(--ink-hi)]">
                                 {EntryIcon && (
-                                    <EntryIcon size={16} strokeWidth={1.6} aria-hidden className="text-[var(--accent-ink)]" />
+                                    <EntryIcon size={16} strokeWidth={1.75} aria-hidden className="text-[var(--ink-low)]" />
                                 )}
                                 <span className="truncate">{entry?.label ?? "Guild Wars 2"}</span>
                             </span>
-                            <span className="flex shrink-0 items-center gap-1.5 text-[10.5px] uppercase tracking-[0.18em] text-[var(--ink-low)]">
+                            <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-[var(--ink-low)]">
                                 Guild Wars 2
                                 <Menu size={16} aria-hidden />
                             </span>

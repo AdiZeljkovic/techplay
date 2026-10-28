@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { BookMarked, BookOpen, Footprints, Info, Layers, UserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +9,7 @@ import Meter from "@/components/ui/Meter";
 import Select from "@/components/ui/Select";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { PageSummary, SummaryFact, ToneCard } from "@/components/gw2/Gw2PageParts";
+import { Gw2Card, PageSummary, SummaryFact } from "@/components/gw2/Gw2PageParts";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { getStory, gw2Error, type Gw2Story, type Gw2StorySeason } from "@/lib/gw2";
 
@@ -29,9 +28,9 @@ import { getStory, gw2Error, type Gw2Story, type Gw2StorySeason } from "@/lib/gw
  * denominator at all. "49 steps seen" is honest. "49 of 137" would read as a
  * third done for somebody who may have finished.
  *
- * In the redesign's language since phase 6: a summary across the top, each
- * season its own card, and down the right an index of seasons and the reason
- * the page says "detected".
+ * A summary across the top, each season its own card, and down the right an
+ * index of seasons and the reason the page says "detected". The story colour
+ * is in the bars and nowhere else.
  */
 
 const STORY = DOMAIN_TONE.story;
@@ -116,30 +115,16 @@ export default function StoryClient() {
                     aria-busy={busy}
                 >
                     <PageSummary
-                        icon={<BookOpen size={26} />}
-                        tone={STORY}
                         title={data.known ? `Story detected on ${data.character}` : `Nothing read for ${data.character} yet`}
                         description={who || undefined}
                     >
                         {data.known ? (
                             <dl className="grid gap-4 sm:grid-cols-3">
                                 {typeof data.steps_seen === "number" && (
-                                    <SummaryFact
-                                        icon={<Footprints size={18} />}
-                                        value={String(data.steps_seen)}
-                                        label="story steps detected"
-                                    />
+                                    <SummaryFact value={String(data.steps_seen)} label="story steps detected" />
                                 )}
-                                <SummaryFact
-                                    icon={<BookMarked size={18} />}
-                                    value={String(chaptersStarted)}
-                                    label="chapters with a step detected"
-                                />
-                                <SummaryFact
-                                    icon={<Layers size={18} />}
-                                    value={String(seasonsStarted)}
-                                    label="seasons with a step detected"
-                                />
+                                <SummaryFact value={String(chaptersStarted)} label="chapters with a step detected" />
+                                <SummaryFact value={String(seasonsStarted)} label="seasons with a step detected" />
                             </dl>
                         ) : (
                             <div className="space-y-4 text-sm text-[var(--ink-mid)]">
@@ -148,7 +133,7 @@ export default function StoryClient() {
                                     <strong className="text-[var(--ink-hi)]">characters</strong> permission on your
                                     key. If your key has it, a full read from the advisor will fill this in.
                                 </p>
-                                <ActionLink href="/gw2" tone={STORY} className="sm:w-auto">
+                                <ActionLink href="/gw2" className="sm:w-auto">
                                     Back to the advisor
                                 </ActionLink>
                             </div>
@@ -161,7 +146,7 @@ export default function StoryClient() {
                 <div className="space-y-5">
                     {data.known && data.seasons.length > 0 && <SeasonIndex seasons={data.seasons} />}
 
-                    <Gw2Panel icon={<Info size={18} />} title="Why it says “detected”" tone={STORY}>
+                    <Gw2Panel title="Why it says “detected”">
                         <p className="text-sm text-[var(--ink-mid)]">{data.note}</p>
                     </Gw2Panel>
                 </div>
@@ -181,10 +166,7 @@ function CharacterBar({
 }) {
     return (
         <div className="min-w-0">
-            <span className="mb-1.5 flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">
-                <UserRound size={12} aria-hidden />
-                Character
-            </span>
+            <span className="mb-1.5 block text-xs font-medium text-[var(--ink-low)]">Character</span>
 
             {data.characters.length > 1 ? (
                 <Select
@@ -215,8 +197,6 @@ function Seasons({ seasons }: { seasons: Gw2StorySeason[] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Layers size={18} />}
-                tone={STORY}
                 title="Chapters by season"
                 description="Steps detected per chapter. A season that branches has no total to measure against."
             />
@@ -236,9 +216,9 @@ function SeasonCard({ season }: { season: Gw2StorySeason }) {
     const counted = season.steps_total !== null;
 
     return (
-        <ToneCard tone={season.steps_seen > 0 ? STORY : "var(--ink-faint)"} className="h-full space-y-3">
+        <Gw2Card className="h-full space-y-3">
             <div className="flex items-baseline justify-between gap-3">
-                <h3 className="min-w-0 font-display text-[16px] font-bold leading-snug text-[var(--ink-hi)]">
+                <h3 className="min-w-0 font-display text-[16px] font-semibold leading-snug text-[var(--ink-hi)]">
                     {season.name}
                 </h3>
                 <span className="shrink-0 font-numeric text-xs text-[var(--ink-mid)]">
@@ -288,14 +268,14 @@ function SeasonCard({ season }: { season: Gw2StorySeason }) {
                     );
                 })}
             </ul>
-        </ToneCard>
+        </Gw2Card>
     );
 }
 
 /** The seasons in one column, each a jump to its card — the page is long. */
 function SeasonIndex({ seasons }: { seasons: Gw2StorySeason[] }) {
     return (
-        <Gw2Panel icon={<Layers size={18} />} title="Seasons at a glance" description="Jump to one" tone={STORY}>
+        <Gw2Panel title="Seasons at a glance" description="Jump to one">
             <ul className="space-y-3">
                 {seasons.map((season, i) => {
                     const counted = season.steps_total !== null && season.steps_total > 0;
@@ -328,7 +308,7 @@ function SeasonIndex({ seasons }: { seasons: Gw2StorySeason[] }) {
 
 function ConnectFirst({ signedOut = false }: { signedOut?: boolean }) {
     return (
-        <Panel material="lit" crown title={signedOut ? "Sign in first" : "Connect your account first"}>
+        <Gw2Panel title={signedOut ? "Sign in first" : "Connect your account first"}>
             <div className="space-y-4">
                 <p className="text-sm text-[var(--ink-mid)]">
                     Story progress is read from your own Guild Wars 2 account, one character at a time.
@@ -339,6 +319,6 @@ function ConnectFirst({ signedOut = false }: { signedOut?: boolean }) {
                     </Link>
                 </Button>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }

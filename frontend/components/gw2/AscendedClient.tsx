@@ -3,24 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import {
-    BarChart3,
-    Check,
-    Circle,
-    Coins,
-    Flame,
-    Hammer,
-    Hourglass,
-    Info,
-    Package,
-    PackageCheck,
-    Pin,
-    PinOff,
-    Shield,
-    ShieldCheck,
-    ShoppingCart,
-    Target,
-} from "lucide-react";
+import { Check, Pin, PinOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -31,6 +14,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon, { RARITY_COLOUR } from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
+import { PageSummary, SummaryFact } from "@/components/gw2/Gw2PageParts";
 import { DOMAIN_TONE, domainTone } from "@/lib/gw2domain";
 import {
     coin,
@@ -179,7 +163,7 @@ export default function AscendedClient() {
 
 function ConnectFirst() {
     return (
-        <Panel material="lit" crown title="Connect your account first">
+        <Gw2Panel title="Connect your account first">
             <div className="space-y-4">
                 <p className="text-sm text-[var(--ink-mid)]">
                     The set is read off your own characters, and nothing has been read yet.
@@ -188,7 +172,7 @@ function ConnectFirst() {
                     <Link href="/gw2">Go to the advisor</Link>
                 </Button>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }
 
@@ -262,13 +246,14 @@ function ChoiceBar({
                     type="button"
                     onClick={onPin}
                     aria-pressed={data.pinned}
-                    className="ml-auto inline-flex h-10 items-center gap-2 rounded-[var(--radius-card)] border px-3.5 text-[13px] transition-colors hover:bg-[var(--fill-1)]"
+                    className="ml-auto inline-flex h-10 items-center gap-2 rounded-[var(--radius-card)] border px-3.5 text-[13px] transition-colors hover:bg-[var(--fill-3)]"
                     style={{
-                        borderColor: data.pinned ? `color-mix(in srgb, ${GEAR} 55%, transparent)` : "var(--line-strong)",
+                        borderColor: data.pinned ? "var(--accent)" : "var(--line-strong)",
+                        background: data.pinned ? "var(--fill-2)" : "var(--fill-1)",
                         color: data.pinned ? "var(--ink-hi)" : "var(--ink-mid)",
                     }}
                 >
-                    {data.pinned ? <Pin size={14} aria-hidden style={{ color: GEAR }} /> : <PinOff size={14} aria-hidden />}
+                    {data.pinned ? <Pin size={14} aria-hidden /> : <PinOff size={14} aria-hidden />}
                     {data.pinned ? "Your pinned goal" : "Pin this goal"}
                 </button>
             </div>
@@ -286,7 +271,7 @@ function ChoiceBar({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div className="min-w-0">
-            <span className="mb-1.5 block text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">{label}</span>
+            <span className="mb-1.5 block text-xs font-medium text-[var(--ink-low)]">{label}</span>
             {children}
         </div>
     );
@@ -298,97 +283,46 @@ function Summary({ data }: { data: Gw2Ascended }) {
     const toCraft = data.pieces.filter((p) => p.state === "craft").length;
 
     return (
-        <section
-            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-5 md:p-6"
-            style={{ background: "var(--surface-1)", borderColor: `color-mix(in srgb, ${GEAR} 40%, var(--line-strong))` }}
+        <PageSummary
+            title={
+                finished ? `${data.character.name}'s armour is all ascended` : `Finish ${data.character.name}'s ascended armour`
+            }
+            description={
+                finished
+                    ? `All six pieces are ascended or better. ${data.core.done} of ${data.core.total} core slots counting trinkets and the back item.`
+                    : `${data.done} of ${data.total} pieces are ascended${
+                          data.stats ? ` — planning the rest in ${data.stats}` : ""
+                      }${data.weight ? `, ${data.weight.toLowerCase()} armour` : ""}.`
+            }
         >
-            <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: `radial-gradient(60% 90% at 0% 0%, color-mix(in srgb, ${GEAR} 16%, transparent), transparent 70%)` }}
-            />
+            <Meter value={data.done} max={data.total} tone={GEAR} showCount />
 
-            <div className="relative space-y-5">
-                <div className="flex items-start gap-4">
-                    <span
-                        aria-hidden
-                        className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2"
-                        style={{
-                            color: GEAR,
-                            borderColor: `color-mix(in srgb, ${GEAR} 70%, transparent)`,
-                            boxShadow: `0 0 24px color-mix(in srgb, ${GEAR} 30%, transparent)`,
-                        }}
-                    >
-                        {finished ? <ShieldCheck size={26} /> : <Shield size={26} />}
-                    </span>
-                    <div className="min-w-0">
-                        <h2 className="font-display text-xl font-bold leading-tight text-[var(--ink-hi)] md:text-2xl">
-                            {finished
-                                ? `${data.character.name}'s armour is all ascended`
-                                : `Finish ${data.character.name}'s ascended armour`}
-                        </h2>
-                        <p className="mt-1 text-sm text-[var(--ink-mid)]">
-                            {finished
-                                ? `All six pieces are ascended or better. ${data.core.done} of ${data.core.total} core slots counting trinkets and the back item.`
-                                : `${data.done} of ${data.total} pieces are ascended${
-                                      data.stats ? ` — planning the rest in ${data.stats}` : ""
-                                  }${data.weight ? `, ${data.weight.toLowerCase()} armour` : ""}.`}
-                        </p>
-                    </div>
-                </div>
-
-                <Meter value={data.done} max={data.total} tone={GEAR} showCount />
-
-                <dl className="grid gap-4 sm:grid-cols-3">
-                    <Fact icon={<Shield size={18} />} value={`${data.done} / ${data.total}`} label="armour pieces ascended" />
-                    <Fact
-                        icon={<Coins size={18} />}
-                        value={data.prices ? coin(data.prices.buy_now) : "—"}
-                        label={
-                            data.prices
-                                ? "still to buy at today's prices"
-                                : toCraft > 0
-                                  ? "no prices loaded"
-                                  : "nothing left to buy"
-                        }
-                    />
-                    <Fact
-                        icon={<Hammer size={18} />}
-                        value={
-                            data.crafting
-                                ? `${data.crafting.disciplines.join(" / ")} ${data.crafting.min_rating}`
-                                : "—"
-                        }
-                        label={
-                            data.crafting
-                                ? data.crafting.ready
-                                    ? "someone on your account can craft it"
-                                    : "nobody on your account can craft it yet"
-                                : "nothing left to craft"
-                        }
-                    />
-                </dl>
-            </div>
-        </section>
-    );
-}
-
-function Fact({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-    return (
-        <div className="flex items-start gap-3">
-            <span
-                aria-hidden
-                className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-card)]"
-                style={{ background: "var(--fill-1)", color: "var(--ink-mid)" }}
-            >
-                {icon}
-            </span>
-            <div className="min-w-0">
-                <dt className="sr-only">{label}</dt>
-                <dd className="font-display text-lg font-bold leading-tight text-[var(--ink-hi)]">{value}</dd>
-                <dd className="text-xs text-[var(--ink-low)]">{label}</dd>
-            </div>
-        </div>
+            <dl className="grid gap-4 sm:grid-cols-3">
+                <SummaryFact value={`${data.done} / ${data.total}`} label="armour pieces ascended" />
+                <SummaryFact
+                    value={data.prices ? coin(data.prices.buy_now) : "—"}
+                    label={
+                        data.prices
+                            ? "still to buy at today's prices"
+                            : toCraft > 0
+                              ? "no prices loaded"
+                              : "nothing left to buy"
+                    }
+                />
+                <SummaryFact
+                    value={
+                        data.crafting ? `${data.crafting.disciplines.join(" / ")} ${data.crafting.min_rating}` : "—"
+                    }
+                    label={
+                        data.crafting
+                            ? data.crafting.ready
+                                ? "someone on your account can craft it"
+                                : "nobody on your account can craft it yet"
+                            : "nothing left to craft"
+                    }
+                />
+            </dl>
+        </PageSummary>
     );
 }
 
@@ -397,8 +331,6 @@ function Pieces({ data }: { data: Gw2Ascended }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Shield size={18} />}
-                tone={GEAR}
                 title="Your armour"
                 description={`What ${data.character.name} wears now, and the crafted piece that replaces it.`}
             />
@@ -416,7 +348,10 @@ function Pieces({ data }: { data: Gw2Ascended }) {
              * and vendors, and which of those is right is not something the
              * account says. The state and the wiki are what we have.
              */}
-            <div className="rounded-[var(--radius-card)] border px-4 py-3" style={{ borderColor: "var(--line)" }}>
+            <div
+                className="rounded-[var(--radius-card)] border px-4 py-3"
+                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
+            >
                 <p className="mb-2.5 text-xs text-[var(--ink-low)]">
                     Trinkets and the back item — ascended too, not crafted ·{" "}
                     <span className="text-[var(--ink-mid)]">
@@ -453,12 +388,13 @@ function Pieces({ data }: { data: Gw2Ascended }) {
     );
 }
 
-const PIECE_STATE: Record<Gw2SetPiece["state"], { label: string; tone: string }> = {
-    done: { label: "Ascended", tone: "var(--success)" },
-    craft: { label: "To craft", tone: GEAR },
-    owned: { label: "In your account — equip it", tone: "var(--warning)" },
-    choose: { label: "Pick the stats", tone: "var(--ink-low)" },
-    unavailable: { label: "No crafted piece in these stats", tone: "var(--ink-low)" },
+/** Each state's label, and the colour of its text — a status colour, or plain ink. */
+const PIECE_STATE: Record<Gw2SetPiece["state"], { label: string; ink: string }> = {
+    done: { label: "Ascended", ink: "var(--success)" },
+    craft: { label: "To craft", ink: "var(--ink-hi)" },
+    owned: { label: "In your account — equip it", ink: "var(--warning)" },
+    choose: { label: "Pick the stats", ink: "var(--ink-low)" },
+    unavailable: { label: "No crafted piece in these stats", ink: "var(--ink-low)" },
 };
 
 function PieceCard({ piece }: { piece: Gw2SetPiece }) {
@@ -469,11 +405,7 @@ function PieceCard({ piece }: { piece: Gw2SetPiece }) {
     return (
         <div
             className="flex h-full flex-col items-center gap-2 rounded-[var(--radius-panel)] border px-3 pb-3 pt-4 text-center"
-            style={{
-                background: "var(--surface-1)",
-                borderColor: `color-mix(in srgb, ${look.tone} 45%, var(--line))`,
-                boxShadow: `inset 0 -40px 60px -40px color-mix(in srgb, ${look.tone} 22%, transparent)`,
-            }}
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
             {shown?.icon ? (
                 <GameIcon src={shown.icon} alt="" size="xl" rarity={done ? piece.worn?.rarity : (piece.target ? "Ascended" : piece.worn?.rarity)} />
@@ -482,9 +414,9 @@ function PieceCard({ piece }: { piece: Gw2SetPiece }) {
             )}
 
             <div className="min-w-0 space-y-0.5">
-                <p className="font-display text-[15px] font-bold text-[var(--ink-hi)]">{slotLabel(piece.slot)}</p>
-                <p className="inline-flex items-center gap-1 text-[12px]" style={{ color: look.tone }}>
-                    {done ? <Check size={12} aria-hidden /> : <Circle size={10} aria-hidden />}
+                <p className="font-display text-[15px] font-semibold text-[var(--ink-hi)]">{slotLabel(piece.slot)}</p>
+                <p className="inline-flex items-center gap-1 text-[12px]" style={{ color: look.ink }}>
+                    {done && <Check size={12} aria-hidden />}
                     {look.label}
                 </p>
             </div>
@@ -505,9 +437,7 @@ function PieceCard({ piece }: { piece: Gw2SetPiece }) {
 
             <div className="mt-auto flex w-full items-center justify-center gap-1 pt-1">
                 {piece.state === "craft" && piece.target ? (
-                    <ActionLink href={`/gw2/planner?item=${piece.target.item_id}`} tone={GEAR} className="h-9">
-                        Plan
-                    </ActionLink>
+                    <ActionLink href={`/gw2/planner?item=${piece.target.item_id}`}>Plan</ActionLink>
                 ) : (
                     <WikiLink wiki={shown?.wiki} name={shown?.name} />
                 )}
@@ -536,8 +466,6 @@ function Materials({ data }: { data: Gw2Ascended }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Package size={18} />}
-                tone={GEAR}
                 title="Materials"
                 description="For the pieces still to craft — bank, material storage and every character's bags counted once."
                 meta={
@@ -583,14 +511,11 @@ function Materials({ data }: { data: Gw2Ascended }) {
                     className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-[var(--radius-card)] border px-4 py-3"
                     style={{ borderColor: "var(--line-strong)", background: "var(--surface-1)" }}
                 >
-                    <span className="inline-flex items-center gap-3">
-                        <Coins size={20} aria-hidden style={{ color: "#EAB308" }} />
-                        <span>
-                            <span className="block text-[11px] text-[var(--ink-low)]">What is missing costs</span>
-                            <span className="font-display text-lg font-bold text-[var(--ink-hi)]">{coin(data.prices.buy_now)}</span>
-                            <span className="ml-2 text-xs text-[var(--ink-low)]">
-                                or {coin(data.prices.bid_and_wait)} bidding and waiting
-                            </span>
+                    <span>
+                        <span className="block text-[11px] text-[var(--ink-low)]">What is missing costs</span>
+                        <span className="font-numeric text-lg font-semibold text-[var(--ink-hi)]">{coin(data.prices.buy_now)}</span>
+                        <span className="ml-2 text-xs text-[var(--ink-low)]">
+                            or {coin(data.prices.bid_and_wait)} bidding and waiting
                         </span>
                     </span>
                     <span className="text-[11px] text-[var(--ink-faint)]">
@@ -611,7 +536,7 @@ function MaterialTile({ line, view }: { line: PlanLine; view: "missing" | "total
     return (
         <div
             className="flex h-full items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5"
-            style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
             {line.icon ? (
                 <GameIcon src={line.icon} alt="" size="md" rarity={line.rarity} />
@@ -643,23 +568,11 @@ function MaterialTile({ line, view }: { line: PlanLine; view: "missing" | "total
     );
 }
 
-const STEP_ICON: Record<string, React.ReactNode> = {
-    equip: <PackageCheck size={16} />,
-    discipline: <Hammer size={16} />,
-    recipes: <Info size={16} />,
-    time_gated: <Hourglass size={16} />,
-    buy: <ShoppingCart size={16} />,
-    gather: <Package size={16} />,
-    craft: <Shield size={16} />,
-};
-
 /** The way there, in the order it has to be done. */
 function ThePath({ steps }: { steps: Gw2SetStep[] }) {
     return (
         <section className="space-y-4">
             <SectionHeader
-                icon={<Target size={18} />}
-                tone={GEAR}
                 title="The way there"
                 description="Built from your plan, in order. A step that does not apply to you is not here."
             />
@@ -682,30 +595,29 @@ function StepCard({ step, number }: { step: Gw2SetStep; number: number }) {
     return (
         <div
             className="flex h-full flex-col gap-2.5 rounded-[var(--radius-panel)] border p-4"
-            style={{ background: "var(--surface-1)", borderColor: `color-mix(in srgb, ${tone} 30%, var(--line))` }}
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
             <div className="flex items-start gap-3">
                 <span
                     aria-hidden
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-[13px] font-bold"
-                    style={{ background: `color-mix(in srgb, ${tone} 30%, transparent)`, color: "var(--ink-hi)" }}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border font-numeric text-[13px] font-semibold"
+                    style={{
+                        borderColor: "var(--line-strong)",
+                        background: "var(--fill-2)",
+                        color: done ? "var(--success)" : "var(--ink-hi)",
+                    }}
                 >
                     {done ? <Check size={14} /> : number}
                 </span>
                 <div className="min-w-0">
-                    <h3 className="flex items-center gap-1.5 text-[15px] font-semibold leading-snug text-[var(--ink-hi)]">
-                        <span aria-hidden style={{ color: tone }}>
-                            {STEP_ICON[step.key]}
-                        </span>
-                        {step.title}
-                    </h3>
+                    <h3 className="text-[15px] font-semibold leading-snug text-[var(--ink-hi)]">{step.title}</h3>
                     <p className="mt-1 text-[13px] text-[var(--ink-low)]">{step.body}</p>
                 </div>
             </div>
 
             {step.cost && (
                 <p className="text-[13px] text-[var(--ink-mid)]">
-                    <span className="font-display font-bold text-[var(--ink-hi)]">{coin(step.cost.buy_now)}</span>{" "}
+                    <span className="font-numeric font-semibold text-[var(--ink-hi)]">{coin(step.cost.buy_now)}</span>{" "}
                     <span className="text-[var(--ink-low)]">· {coin(step.cost.bid_and_wait)} bidding</span>
                 </p>
             )}
@@ -744,10 +656,10 @@ function StepCard({ step, number }: { step: Gw2SetStep; number: number }) {
 
 function WhyPanel({ guide }: { guide: NonNullable<Gw2Ascended["guide"]> }) {
     return (
-        <Gw2Panel icon={<Flame size={18} />} title="Why this matters" tone={GEAR}>
+        <Gw2Panel title="Why this matters">
             <div className="space-y-4">
                 {guide.standfirst && <p className="text-sm text-[var(--ink-mid)]">{guide.standfirst}</p>}
-                <ActionLink href={guide.href} tone={GEAR}>
+                <ActionLink href={guide.href}>
                     Read: {guide.title}
                 </ActionLink>
             </div>
@@ -767,14 +679,9 @@ function ProgressPanel({ data }: { data: Gw2Ascended }) {
     const peak = Math.max(1, ...weeks.map((w) => w.pieces));
 
     return (
-        <Gw2Panel
-            icon={<BarChart3 size={18} />}
-            title="Weekly progress"
-            description="Pieces that turned ascended, by game week"
-            tone={GEAR}
-        >
+        <Gw2Panel title="Weekly progress" description="Pieces that turned ascended, by game week">
             <div className="space-y-4">
-                <p className="font-display text-2xl font-bold text-[var(--ink-hi)]">
+                <p className="font-numeric text-2xl font-semibold text-[var(--ink-hi)]">
                     +{this_week}
                     <span className="ml-2 text-xs font-normal text-[var(--ink-low)]">this week</span>
                 </p>
@@ -828,7 +735,7 @@ function ProgressPanel({ data }: { data: Gw2Ascended }) {
 
 function RelatedPanel({ related }: { related: Gw2Ascended["related"] }) {
     return (
-        <Gw2Panel icon={<Target size={18} />} title="Related goals" description="What an ascended set feeds into">
+        <Gw2Panel title="Related goals" description="What an ascended set feeds into">
             <ul className="space-y-4">
                 {related.map((goal) => {
                     const tone = domainTone(goal.domain);

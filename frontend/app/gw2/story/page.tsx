@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import StoryClient from "@/components/gw2/StoryClient";
-import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 Story Progress",
@@ -19,7 +19,6 @@ export default function Gw2StoryPage() {
             <Gw2Hero
                 title="Story"
                 description="What we can detect on one character at a time. The game records story per character, so this is never a verdict on your account."
-                tone={DOMAIN_TONE.story}
                 art={HERO_ART.story}
             />
 

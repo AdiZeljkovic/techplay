@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Link2Off, PlugZap, RefreshCw } from "lucide-react";
+import { Link2Off, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Gw2Panel } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { disconnect, getConnection, gw2Error, requestSync, type Gw2Connection } from "@/lib/gw2";
 
 /**
@@ -88,12 +87,7 @@ export default function ConnectionPanel({
     }
 
     return (
-        <Gw2Panel
-            icon={<PlugZap size={18} />}
-            title="Your connection"
-            description={connection.account_name ?? undefined}
-            tone={DOMAIN_TONE.account}
-        >
+        <Gw2Panel title="Your connection" description={connection.account_name ?? undefined}>
             <div className="space-y-3 text-xs">
                 <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-[var(--ink-low)]">
                     <dt>Last read</dt>

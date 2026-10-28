@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Circle, Crown, DoorOpen, Info, Swords } from "lucide-react";
+import { Check, Circle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +10,7 @@ import Meter from "@/components/ui/Meter";
 import { Skeleton } from "@/components/ui/Skeleton";
 import WikiLink from "@/components/gw2/WikiLink";
 import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { PageSummary, SummaryFact, ToneCard } from "@/components/gw2/Gw2PageParts";
+import { Gw2Card, PageSummary, SummaryFact } from "@/components/gw2/Gw2PageParts";
 import { DOMAIN_TONE } from "@/lib/gw2domain";
 import { getContent, type Gw2Content, type RaidWing } from "@/lib/gw2";
 
@@ -31,9 +31,9 @@ import { getContent, type Gw2Content, type RaidWing } from "@/lib/gw2";
  * infers the second from the first is setting people up to be kicked from a
  * group.
  *
- * In the redesign's language since phase 6: each wing is a card with its
- * bosses as rows, and the daily half — world bosses and dungeons — sits down
- * the right beside the note on where each number comes from.
+ * Each wing is a card with its bosses as rows, and the daily half — world
+ * bosses and dungeons — sits down the right beside the note on where each
+ * number comes from. The raid colour is in the bars and nowhere else.
  */
 
 const RAIDS = DOMAIN_TONE.raids;
@@ -100,8 +100,6 @@ export default function ContentClient() {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
             <div className="min-w-0 space-y-6">
                 <PageSummary
-                    icon={<Swords size={26} />}
-                    tone={RAIDS}
                     title={`${data.raids.cleared_this_week} of ${data.raids.bosses_total} raid bosses this week`}
                     description="Raids reset weekly, world bosses and dungeon paths daily. Each figure here is for the reset you are in."
                 >
@@ -109,27 +107,19 @@ export default function ContentClient() {
 
                     <dl className="grid gap-4 sm:grid-cols-3">
                         <SummaryFact
-                            icon={<Swords size={18} />}
                             value={`${data.raids.cleared_this_week} / ${data.raids.bosses_total}`}
                             label="raid bosses this week"
                         />
                         <SummaryFact
-                            icon={<Crown size={18} />}
                             value={`${data.world_bosses.killed_today} / ${data.world_bosses.total}`}
                             label="world bosses today"
                         />
-                        <SummaryFact
-                            icon={<DoorOpen size={18} />}
-                            value={String(data.dungeons.paths_today)}
-                            label="dungeon paths today"
-                        />
+                        <SummaryFact value={String(data.dungeons.paths_today)} label="dungeon paths today" />
                     </dl>
                 </PageSummary>
 
                 <section className="space-y-4">
                     <SectionHeader
-                        icon={<Swords size={18} />}
-                        tone={RAIDS}
                         title="Raid wings"
                         description={`Cleared this week comes from the game. Since you connected is ours${
                             since ? ` — counted from ${since}` : ""
@@ -147,7 +137,7 @@ export default function ContentClient() {
             </div>
 
             <div className="space-y-5">
-                <Gw2Panel icon={<Info size={18} />} title="Where these numbers come from" tone={RAIDS}>
+                <Gw2Panel title="Where these numbers come from">
                     <p className="text-sm text-[var(--ink-mid)]">
                         <strong className="text-[var(--ink-hi)]">This week</strong> and{" "}
                         <strong className="text-[var(--ink-hi)]">today</strong> come from the game.{" "}
@@ -168,38 +158,48 @@ export default function ContentClient() {
 /**
  * One wing, its bosses as rows.
  *
- * A wing cleared in full this week turns green — the one state worth seeing
- * from across the page. Checkpoints stay out of the rows as they stay out of
- * the count: an event between two bosses is not a boss.
+ * A wing cleared in full this week turns its bar and its ticks green — the one
+ * state worth seeing from across the page. Checkpoints stay out of the rows as
+ * they stay out of the count: an event between two bosses is not a boss.
  */
 function WingCard({ wing }: { wing: RaidWing }) {
     const bosses = wing.encounters.filter((e) => e.type === "Boss");
     const full = wing.bosses > 0 && wing.cleared_this_week >= wing.bosses;
-    const tone = full ? "var(--success)" : RAIDS;
 
     return (
-        <ToneCard tone={tone} className="flex h-full flex-col gap-3">
+        <Gw2Card className="flex h-full flex-col gap-3">
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="truncate text-[11px] uppercase tracking-[0.14em] text-[var(--ink-faint)]">{wing.raid}</p>
-                    <h3 className="mt-0.5 flex min-w-0 items-center gap-1 font-display text-[16px] font-bold leading-snug text-[var(--ink-hi)]">
+                    <p className="truncate text-xs font-medium text-[var(--ink-low)]">{wing.raid}</p>
+                    <h3 className="mt-0.5 flex min-w-0 items-center gap-1 font-display text-[16px] font-semibold leading-snug text-[var(--ink-hi)]">
                         <span className="min-w-0 truncate">{wing.wing}</span>
                         <WikiLink wiki={wing.wiki} name={wing.wing} compact />
                     </h3>
                 </div>
-                <span className="shrink-0 font-display text-lg font-bold leading-tight text-[var(--ink-hi)]">
+                <span className="shrink-0 font-numeric text-lg font-semibold leading-tight text-[var(--ink-hi)]">
                     {wing.cleared_this_week}
                     <span className="text-xs font-normal text-[var(--ink-low)]"> / {wing.bosses} this week</span>
                 </span>
             </div>
 
-            <Meter value={wing.cleared_this_week} max={wing.bosses} segmentLimit={12} size="sm" tone={tone} />
+            <Meter
+                value={wing.cleared_this_week}
+                max={wing.bosses}
+                segmentLimit={12}
+                size="sm"
+                tone={full ? "var(--success)" : RAIDS}
+            />
 
             <ul className="space-y-1.5">
                 {bosses.map((boss) => (
                     <li key={boss.id} className="flex items-center gap-2 text-[13px]">
                         {boss.cleared_this_week ? (
-                            <Check size={14} className="shrink-0" style={{ color: tone }} aria-label="Cleared this week" />
+                            <Check
+                                size={14}
+                                className="shrink-0"
+                                style={{ color: full ? "var(--success)" : "var(--ink-mid)" }}
+                                aria-label="Cleared this week"
+                            />
                         ) : (
                             <Circle size={11} className="mx-[1.5px] shrink-0 text-[var(--ink-faint)]" aria-label="Not cleared this week" />
                         )}
@@ -218,7 +218,7 @@ function WingCard({ wing }: { wing: RaidWing }) {
                         <WikiLink wiki={boss.wiki} name={boss.name} compact />
                         <span
                             className="w-[72px] shrink-0 text-right text-[11px]"
-                            style={{ color: boss.cleared_this_week ? tone : "var(--ink-faint)" }}
+                            style={{ color: boss.cleared_this_week ? "var(--ink-mid)" : "var(--ink-faint)" }}
                         >
                             {boss.cleared_this_week ? "this week" : boss.ever_cleared ? "seen before" : ""}
                         </span>
@@ -231,17 +231,15 @@ function WingCard({ wing }: { wing: RaidWing }) {
                     ? `${wing.ever_cleared} of ${wing.bosses} cleared since you connected`
                     : "None cleared since you connected"}
             </p>
-        </ToneCard>
+        </Gw2Card>
     );
 }
 
 function WorldBosses({ bosses }: { bosses: Gw2Content["world_bosses"] }) {
     return (
         <Gw2Panel
-            icon={<Crown size={18} />}
             title="World bosses"
             description="Today, from the game"
-            tone={RAIDS}
             meta={
                 <span className="shrink-0 font-numeric text-xs text-[var(--ink-mid)]">
                     {bosses.killed_today} / {bosses.total}
@@ -252,7 +250,7 @@ function WorldBosses({ bosses }: { bosses: Gw2Content["world_bosses"] }) {
                 {bosses.bosses.map((boss) => (
                     <li key={boss.id} className="flex items-center gap-2 text-sm">
                         {boss.killed_today ? (
-                            <Check size={14} className="shrink-0" style={{ color: RAIDS }} aria-label="Killed today" />
+                            <Check size={14} className="shrink-0 text-[var(--success)]" aria-label="Killed today" />
                         ) : (
                             <span
                                 className="mx-[4px] h-1.5 w-1.5 shrink-0 rounded-full"
@@ -280,10 +278,8 @@ function WorldBosses({ bosses }: { bosses: Gw2Content["world_bosses"] }) {
 function Dungeons({ dungeons }: { dungeons: Gw2Content["dungeons"] }) {
     return (
         <Gw2Panel
-            icon={<DoorOpen size={18} />}
             title="Dungeons"
             description="Paths run today"
-            tone={RAIDS}
             meta={<span className="shrink-0 text-xs text-[var(--ink-mid)]">{dungeons.paths_today} today</span>}
         >
             <ul className="space-y-2.5">
@@ -311,7 +307,7 @@ function Dungeons({ dungeons }: { dungeons: Gw2Content["dungeons"] }) {
 
 function ConnectFirst() {
     return (
-        <Panel material="lit" crown title="Connect your account first">
+        <Gw2Panel title="Connect your account first">
             <div className="space-y-4">
                 <p className="text-sm text-[var(--ink-mid)]">
                     What you have cleared is read from your own Guild Wars 2 account.
@@ -320,6 +316,6 @@ function ConnectFirst() {
                     <Link href="/gw2">Go to the advisor</Link>
                 </Button>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }

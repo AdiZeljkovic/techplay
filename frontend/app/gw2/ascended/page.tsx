@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
-import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import AscendedClient from "@/components/gw2/AscendedClient";
 
 export const metadata: Metadata = {
@@ -24,7 +24,6 @@ export default function Gw2AscendedPage() {
                 eyebrow="Guild Wars 2 · Goal"
                 title="Ascended set"
                 description="Your armour piece by piece, what the missing ones take out of what you already own, and the way there."
-                tone={DOMAIN_TONE.gear}
                 art={HERO_ART.ascended}
             />
 

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Info } from "lucide-react";
-import Panel from "@/components/ui/Panel";
+import { Check } from "lucide-react";
 import Meter from "@/components/ui/Meter";
+import { Gw2Panel } from "@/components/gw2/Gw2Ui";
 import type { Gw2DailyList, Gw2Today } from "@/lib/gw2";
 
 /**
@@ -24,8 +24,7 @@ export default function TodayPanel({ today }: { today: Gw2Today }) {
     const { world_bosses: bosses, heros_choice_chests: chests, time_gated_crafts: crafts } = today.daily;
 
     return (
-        <Panel
-            material="matte"
+        <Gw2Panel
             title="Today"
             meta={
                 <span className="font-numeric text-xs text-[var(--ink-faint)]">
@@ -69,8 +68,7 @@ export default function TodayPanel({ today }: { today: Gw2Today }) {
                 {/* Where the game's own lists are short — said, not hidden. */}
                 <ul className="space-y-1">
                     {today.notes.map((note) => (
-                        <li key={note.source} className="flex gap-1.5 text-[11px] text-[var(--ink-faint)]">
-                            <Info size={11} className="mt-0.5 shrink-0" aria-hidden />
+                        <li key={note.source} className="text-[11px] text-[var(--ink-faint)]">
                             <span>
                                 {note.text}{" "}
                                 <a
@@ -86,7 +84,7 @@ export default function TodayPanel({ today }: { today: Gw2Today }) {
                     ))}
                 </ul>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }
 
@@ -118,7 +116,7 @@ function Row({ label, done, total, list }: { label: string; done: number; total:
                     {list.items.map((item) => (
                         <li key={item.id} className="flex items-center gap-1.5 text-[11px]">
                             {item.done ? (
-                                <Check size={11} className="shrink-0 text-[var(--accent-ink)]" aria-hidden />
+                                <Check size={11} className="shrink-0 text-[var(--success)]" aria-hidden />
                             ) : (
                                 <span className="w-[11px] shrink-0" />
                             )}

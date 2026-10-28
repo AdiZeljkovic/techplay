@@ -2,22 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import {
-    AlertTriangle,
-    Award,
-    Bird,
-    Clock,
-    Gem,
-    Gift,
-    CirclePlus,
-    Hourglass,
-    Radio,
-    Shield,
-    Sparkles,
-    Swords,
-    Target,
-    Timer,
-} from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import Panel from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
@@ -26,11 +11,10 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import GameIcon from "@/components/gw2/GameIcon";
 import WikiLink from "@/components/gw2/WikiLink";
 import ChatCode from "@/components/gw2/ChatCode";
-import DomainGlyph from "@/components/gw2/DomainGlyph";
 import SeasonPanel from "@/components/gw2/SeasonPanel";
 import TodayPanel from "@/components/gw2/TodayPanel";
 import { Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_ART, DOMAIN_TONE, domainTone, regionTone } from "@/lib/gw2domain";
+import { DOMAIN_ART, DOMAIN_TONE, regionTone } from "@/lib/gw2domain";
 import {
     CONFIDENCE_LABEL,
     getTonight,
@@ -75,6 +59,9 @@ const AVOIDABLE = [
     { domain: "gear", label: "Gear" },
     { domain: "fractals", label: "Fractals" },
 ];
+
+/** The neutral badge every tag and estimate on this page wears. */
+const TAG = "inline-flex items-center rounded-full border border-[var(--line-strong)] bg-[var(--fill-1)] px-2 py-0.5 text-[11px] text-[var(--ink-mid)]";
 
 export default function TonightClient() {
     const { user, isLoading: authLoading } = useAuth();
@@ -154,15 +141,11 @@ export default function TonightClient() {
                 <div className={`min-w-0 space-y-8 transition-opacity ${busy ? "opacity-60" : ""}`}>
                     <section className="space-y-4">
                         <SectionHeader
-                            icon={<Timer size={18} />}
                             title={minutes ? `Your ${minutes >= 60 ? `${minutes / 60}-hour` : `${minutes}-minute`} session plan` : "Your session plan"}
                             description="What your account still has open, ordered to fit the time — weighed for your pinned goal."
                             meta={
                                 data.plan.unaccounted !== null && data.plan.accounted_for > 0 ? (
-                                    <span className="inline-flex items-center gap-1 text-xs text-[var(--ink-faint)]">
-                                        <Clock size={12} aria-hidden />
-                                        {data.plan.accounted_for} min planned
-                                    </span>
+                                    <span className="text-xs text-[var(--ink-low)]">{data.plan.accounted_for} min planned</span>
                                 ) : undefined
                             }
                         />
@@ -198,7 +181,6 @@ export default function TonightClient() {
                     {data.plan.if_you_have_longer.length > 0 && (
                         <section className="space-y-4">
                             <SectionHeader
-                                icon={<CirclePlus size={18} />}
                                 title="If you have extra time"
                                 description="The same advice, below the line your time drew."
                             />
@@ -248,36 +230,15 @@ function TimePanel({
 }) {
     return (
         <section
-            className="relative overflow-hidden rounded-[var(--radius-panel)] border p-5"
-            style={{
-                background: "var(--surface-1)",
-                borderColor: "color-mix(in srgb, var(--accent) 35%, var(--line-strong))",
-            }}
+            className="rounded-[var(--radius-panel)] border p-5"
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
-            <span
-                aria-hidden
-                className="pointer-events-none absolute inset-0"
-                style={{ background: "radial-gradient(60% 120% at 0% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%)" }}
-            />
-
-            <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-start gap-4">
-                    <span
-                        aria-hidden
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 text-[var(--accent-ink)]"
-                        style={{
-                            borderColor: "color-mix(in srgb, var(--accent) 70%, transparent)",
-                            boxShadow: "0 0 20px color-mix(in srgb, var(--accent) 25%, transparent)",
-                        }}
-                    >
-                        <Hourglass size={20} />
-                    </span>
-                    <div>
-                        <h2 className="font-display text-xl font-bold text-[var(--ink-hi)]">How much time do you have?</h2>
-                        <p className="mt-1 text-sm text-[var(--ink-low)]">
-                            We build the plan from your account and what is open right now.
-                        </p>
-                    </div>
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h2 className="font-display text-xl font-semibold text-[var(--ink-hi)]">How much time do you have?</h2>
+                    <p className="mt-1 text-sm text-[var(--ink-low)]">
+                        We build the plan from your account and what is open right now.
+                    </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -290,10 +251,10 @@ function TimePanel({
                                 type="button"
                                 onClick={() => onMinutes(time.minutes)}
                                 aria-pressed={on}
-                                className="h-12 min-w-[120px] rounded-[var(--radius-card)] border px-4 text-sm transition-colors"
+                                className="h-11 min-w-[120px] rounded-[var(--radius-card)] border px-4 text-sm transition-colors hover:bg-[var(--fill-2)]"
                                 style={{
-                                    borderColor: on ? "color-mix(in srgb, var(--accent) 70%, transparent)" : "var(--line-strong)",
-                                    background: on ? "color-mix(in srgb, var(--accent) 30%, var(--surface-2))" : "var(--surface-2)",
+                                    borderColor: on ? "var(--accent)" : "var(--line-strong)",
+                                    background: on ? "var(--fill-2)" : "var(--fill-1)",
                                     color: on ? "var(--ink-hi)" : "var(--ink-mid)",
                                 }}
                             >
@@ -309,8 +270,8 @@ function TimePanel({
              * player says what they are not in the mood for, and the plan is
              * weighed again without it.
              */}
-            <div className="relative mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4" style={{ borderColor: "var(--line)" }}>
-                <span className="text-[11px] uppercase tracking-wider text-[var(--ink-faint)]">Not tonight</span>
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 border-t pt-4" style={{ borderColor: "var(--line)" }}>
+                <span className="text-xs font-medium text-[var(--ink-low)]">Not tonight</span>
                 {AVOIDABLE.map((option) => {
                     const off = avoid.includes(option.domain);
 
@@ -351,7 +312,6 @@ function slot(step: SessionStep): string {
 }
 
 function Step({ step, last }: { step: SessionStep; last: boolean }) {
-    const tone = domainTone(step.domain);
     const scene = DOMAIN_ART[step.domain] ?? step.background ?? null;
 
     return (
@@ -364,7 +324,7 @@ function Step({ step, last }: { step: SessionStep; last: boolean }) {
                     <span
                         aria-hidden
                         className="relative mt-[3px] h-3 w-3 shrink-0 rounded-full border-2"
-                        style={{ borderColor: "var(--accent)", background: "var(--surface-0)" }}
+                        style={{ borderColor: "var(--ink-faint)", background: "var(--surface-0)" }}
                     />
                     <span className="font-numeric text-[11px] leading-tight text-[var(--ink-low)]">{slot(step)}</span>
                 </div>
@@ -372,11 +332,13 @@ function Step({ step, last }: { step: SessionStep; last: boolean }) {
 
             <article
                 className="relative flex gap-4 overflow-hidden rounded-[var(--radius-panel)] border p-3.5"
-                style={{
-                    background: "var(--surface-1)",
-                    borderColor: `color-mix(in srgb, ${tone} 22%, var(--line-strong))`,
-                }}
+                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
             >
+                {/*
+                 * The mastery track's render behind the reasoning column. The
+                 * fade is a scrim, not decoration: the text on wide screens sits
+                 * on top of the picture.
+                 */}
                 {scene && (
                     <span
                         aria-hidden
@@ -390,29 +352,23 @@ function Step({ step, last }: { step: SessionStep; last: boolean }) {
                     />
                 )}
 
-                <span
-                    aria-hidden
-                    className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2"
-                    style={{
-                        borderColor: `color-mix(in srgb, ${tone} 70%, transparent)`,
-                        background: "var(--surface-2)",
-                        color: tone,
-                    }}
-                >
-                    {step.icon ? <GameIcon src={step.icon} alt="" size="lg" /> : <DomainGlyph domain={step.domain} size={22} />}
-                </span>
+                {step.icon && (
+                    <span className="relative shrink-0">
+                        <GameIcon src={step.icon} alt="" size="lg" />
+                    </span>
+                )}
 
                 <div className="relative min-w-0 flex-1 space-y-1.5 lg:max-w-[58%]">
                     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                        <h3 className="font-display text-base font-bold leading-snug text-[var(--ink-hi)]">{step.title}</h3>
+                        <h3 className="font-display text-base font-semibold leading-snug text-[var(--ink-hi)]">{step.title}</h3>
                         <WikiLink wiki={step.wiki} name={step.title} compact />
                         {step.minutes_low && (
-                            <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-numeric text-[11px] text-[var(--ink-mid)]" style={{ borderColor: "var(--line-strong)" }}>
-                                <Clock size={11} aria-hidden />≈{step.minutes_low}–{step.minutes_high} min
+                            <span className={`${TAG} font-numeric`}>
+                                ≈{step.minutes_low}–{step.minutes_high} min
                             </span>
                         )}
                     </div>
-                    <p className="text-[10px] uppercase tracking-[0.18em]" style={{ color: tone }}>
+                    <p className="text-xs font-medium text-[var(--ink-low)] first-letter:uppercase">
                         {step.domain} · {CONFIDENCE_LABEL[step.confidence]}
                     </p>
                     <RewardTags rewards={step.rewards ?? []} />
@@ -435,29 +391,21 @@ function Step({ step, last }: { step: SessionStep; last: boolean }) {
 }
 
 function ExtraCard({ step }: { step: SessionStep }) {
-    const tone = domainTone(step.domain);
-
     return (
         <article
             className="flex flex-col gap-3 rounded-[var(--radius-panel)] border p-4"
-            style={{ background: "var(--surface-1)", borderColor: `color-mix(in srgb, ${tone} 20%, var(--line-strong))` }}
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
             <div className="flex items-start gap-3">
-                <span
-                    aria-hidden
-                    className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border"
-                    style={{ borderColor: `color-mix(in srgb, ${tone} 55%, transparent)`, color: tone }}
-                >
-                    {step.icon ? <GameIcon src={step.icon} alt="" size="md" /> : <DomainGlyph domain={step.domain} size={17} />}
-                </span>
+                {step.icon && <GameIcon src={step.icon} alt="" size="md" />}
                 <div className="min-w-0">
                     <div className="flex items-start gap-1">
                         <h3 className="line-clamp-2 text-sm font-medium leading-snug text-[var(--ink-hi)]">{step.title}</h3>
                         <WikiLink wiki={step.wiki} name={step.title} compact className="mt-0.5" />
                     </div>
                     {step.minutes_low && (
-                        <p className="mt-0.5 inline-flex items-center gap-1 font-numeric text-[11px] text-[var(--ink-low)]">
-                            <Clock size={11} aria-hidden />≈{step.minutes_low}–{step.minutes_high} min
+                        <p className="mt-0.5 font-numeric text-[11px] text-[var(--ink-low)]">
+                            ≈{step.minutes_low}–{step.minutes_high} min
                         </p>
                     )}
                 </div>
@@ -468,23 +416,17 @@ function ExtraCard({ step }: { step: SessionStep }) {
     );
 }
 
-/**
- * How each kind of reward is drawn: its mark, its colour, and its words.
- * The colours are the domains' — acclaim gold like the vault, points green
- * like masteries — so a tag reads as part of the thing it came from.
- */
-const REWARD: Record<string, { icon: typeof Gift; tone: string; one: (r: Gw2Reward) => string; total: string }> = {
-    acclaim: { icon: Gift, tone: DOMAIN_TONE.vault, one: (r) => `+${r.amount} acclaim`, total: "Astral Acclaim" },
-    ap: { icon: Award, tone: DOMAIN_TONE.achievements, one: (r) => `+${r.amount} AP`, total: "Achievement points" },
+/** How each kind of reward is said, one at a time on a step and summed in the panel. */
+const REWARD: Record<string, { one: (r: Gw2Reward) => string; total: string }> = {
+    acclaim: { one: (r) => `+${r.amount} acclaim`, total: "Astral Acclaim" },
+    ap: { one: (r) => `+${r.amount} AP`, total: "Achievement points" },
     mastery_point: {
-        icon: Sparkles,
-        tone: DOMAIN_TONE.masteries,
         one: (r) => (r.amount === 1 ? "+1 mastery point" : `+${r.amount} mastery points`),
         total: "Mastery points",
     },
-    mastery_tier: { icon: Sparkles, tone: DOMAIN_TONE.masteries, one: (r) => r.name ?? "Mastery tier", total: "Mastery tiers" },
-    ascended: { icon: Shield, tone: DOMAIN_TONE.gear, one: (r) => `Ascended ${r.name ?? "slot"}`, total: "Ascended slots" },
-    mount: { icon: Bird, tone: DOMAIN_TONE.mounts, one: (r) => r.name ?? "Mount", total: "Mounts" },
+    mastery_tier: { one: (r) => r.name ?? "Mastery tier", total: "Mastery tiers" },
+    ascended: { one: (r) => `Ascended ${r.name ?? "slot"}`, total: "Ascended slots" },
+    mount: { one: (r) => r.name ?? "Mount", total: "Mounts" },
 };
 
 function RewardTags({ rewards }: { rewards: Gw2Reward[] }) {
@@ -497,19 +439,8 @@ function RewardTags({ rewards }: { rewards: Gw2Reward[] }) {
 
                 if (!meta) return null;
 
-                const Icon = meta.icon;
-
                 return (
-                    <li
-                        key={`${reward.kind}-${i}`}
-                        className="inline-flex items-center gap-1 rounded-[var(--radius-inner)] border px-2 py-0.5 text-[11px]"
-                        style={{
-                            color: meta.tone,
-                            borderColor: `color-mix(in srgb, ${meta.tone} 40%, transparent)`,
-                            background: `color-mix(in srgb, ${meta.tone} 8%, transparent)`,
-                        }}
-                    >
-                        <Icon size={11} aria-hidden />
+                    <li key={`${reward.kind}-${i}`} className={TAG}>
                         {meta.one(reward)}
                     </li>
                 );
@@ -521,8 +452,6 @@ function RewardTags({ rewards }: { rewards: Gw2Reward[] }) {
 function RewardsPanel({ rewards }: { rewards: NonNullable<Gw2Tonight["plan"]["rewards"]> }) {
     return (
         <Gw2Panel
-            icon={<Gift size={18} />}
-            tone={DOMAIN_TONE.vault}
             title="Potential rewards tonight"
             description="What the planned steps pay, if you do them. Gold is not counted — no step knows it."
         >
@@ -532,19 +461,14 @@ function RewardsPanel({ rewards }: { rewards: NonNullable<Gw2Tonight["plan"]["re
 
                     if (!meta) return null;
 
-                    const Icon = meta.icon;
-
                     return (
                         <li
                             key={reward.kind}
-                            className="flex flex-col gap-1.5 rounded-[var(--radius-card)] border p-3"
-                            style={{ borderColor: "var(--line)", background: "var(--surface-2)" }}
+                            className="flex flex-col gap-1 rounded-[var(--radius-card)] border p-3"
+                            style={{ borderColor: "var(--line)", background: "var(--fill-1)" }}
                         >
-                            <span aria-hidden style={{ color: meta.tone }}>
-                                <Icon size={18} />
-                            </span>
                             {reward.amount !== undefined ? (
-                                <span className="font-display text-xl font-bold leading-none text-[var(--ink-hi)]">+{reward.amount}</span>
+                                <span className="font-numeric text-xl font-semibold leading-none text-[var(--ink-hi)]">+{reward.amount}</span>
                             ) : (
                                 <span className="line-clamp-2 text-xs text-[var(--ink-hi)]">{(reward.names ?? []).join(", ")}</span>
                             )}
@@ -557,44 +481,35 @@ function RewardsPanel({ rewards }: { rewards: NonNullable<Gw2Tonight["plan"]["re
     );
 }
 
-/** A priority's mark and colour, from its key: the same domains the cards use. */
-function priorityLook(key: string): { icon: typeof Gift; tone: string } {
-    if (key === "agony") return { icon: Gem, tone: DOMAIN_TONE.fractals };
-    if (key === "ascended") return { icon: Shield, tone: DOMAIN_TONE.gear };
-    if (key === "vault_weekly") return { icon: Gift, tone: DOMAIN_TONE.vault };
-    if (key.startsWith("mastery:")) return { icon: Sparkles, tone: regionTone(key.slice("mastery:".length)) };
+/** A priority's bar colour, from its key: the same domains the cards use. */
+function priorityTone(key: string): string {
+    if (key === "agony") return DOMAIN_TONE.fractals;
+    if (key === "ascended") return DOMAIN_TONE.gear;
+    if (key === "vault_weekly") return DOMAIN_TONE.vault;
+    if (key.startsWith("mastery:")) return regionTone(key.slice("mastery:".length));
 
-    return { icon: Target, tone: "var(--accent)" };
+    return "var(--accent)";
 }
 
 function PrioritiesPanel({ priorities }: { priorities: Priority[] }) {
     return (
-        <Gw2Panel icon={<Target size={18} />} title="Active priorities" description="What tonight moves, measured from your account.">
+        <Gw2Panel title="Active priorities" description="What tonight moves, measured from your account.">
             {priorities.length === 0 ? (
                 <p className="text-sm text-[var(--ink-low)]">Nothing is outstanding right now.</p>
             ) : (
                 <ul className="space-y-3.5">
-                    {priorities.map((priority) => {
-                        const { icon: Icon, tone } = priorityLook(priority.key);
-
-                        return (
-                            <li key={priority.key} className="flex items-start gap-3">
-                                <span aria-hidden className="mt-0.5 shrink-0" style={{ color: tone }}>
-                                    <Icon size={17} />
+                    {priorities.map((priority) => (
+                        <li key={priority.key} className="space-y-1.5">
+                            <div className="flex items-baseline justify-between gap-2">
+                                <span className="truncate text-sm text-[var(--ink-hi)]">{priority.label}</span>
+                                <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">
+                                    {priority.current} / {priority.target}
                                 </span>
-                                <div className="min-w-0 flex-1 space-y-1.5">
-                                    <div className="flex items-baseline justify-between gap-2">
-                                        <span className="truncate text-sm text-[var(--ink-hi)]">{priority.label}</span>
-                                        <span className="shrink-0 font-numeric text-xs text-[var(--ink-low)]">
-                                            {priority.current} / {priority.target}
-                                        </span>
-                                    </div>
-                                    <Meter value={priority.current} max={priority.target} size="sm" tone={tone} />
-                                    {priority.note && <p className="text-[11px]" style={{ color: tone }}>{priority.note}</p>}
-                                </div>
-                            </li>
-                        );
-                    })}
+                            </div>
+                            <Meter value={priority.current} max={priority.target} size="sm" tone={priorityTone(priority.key)} />
+                            {priority.note && <p className="text-[11px] text-[var(--ink-low)]">{priority.note}</p>}
+                        </li>
+                    ))}
                 </ul>
             )}
         </Gw2Panel>
@@ -603,14 +518,14 @@ function PrioritiesPanel({ priorities }: { priorities: Priority[] }) {
 
 function EventsPanel({ events }: { events: ScheduledEvent[] }) {
     return (
-        <Gw2Panel icon={<Radio size={18} />} title="Current events" description="World bosses, from times checked in game.">
+        <Gw2Panel title="Current events" description="World bosses, from times checked in game.">
             <ul className="space-y-2">
                 {events.map((event) => {
                     const status = event.live_now
-                        ? { label: "Live now", style: { background: "var(--accent)", color: "#fff", borderColor: "var(--accent)" } }
+                        ? { label: "Live now", color: "var(--accent-ink)" }
                         : event.minutes_away <= 15
-                          ? { label: "Soon", style: { color: "var(--accent-ink)", borderColor: "color-mix(in srgb, var(--accent) 60%, transparent)" } }
-                          : { label: "Upcoming", style: { color: "var(--ink-low)", borderColor: "var(--line-strong)" } };
+                          ? { label: "Soon", color: "var(--warning)" }
+                          : { label: "Upcoming", color: "var(--ink-low)" };
 
                     return (
                         <li
@@ -618,13 +533,10 @@ function EventsPanel({ events }: { events: ScheduledEvent[] }) {
                             className="flex items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5"
                             style={{
                                 borderColor: "var(--line)",
-                                background: "var(--surface-2)",
+                                background: "var(--fill-1)",
                                 opacity: event.killed_today ? 0.6 : 1,
                             }}
                         >
-                            <span aria-hidden className="shrink-0" style={{ color: DOMAIN_TONE.raids }}>
-                                <Swords size={17} />
-                            </span>
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm text-[var(--ink-hi)]">{event.name}</p>
                                 <p className="truncate text-[11px] text-[var(--ink-low)]">
@@ -645,7 +557,7 @@ function EventsPanel({ events }: { events: ScheduledEvent[] }) {
                                 )}
                             </div>
                             {event.waypoint_chat_link && <ChatCode code={event.waypoint_chat_link} label={event.waypoint} />}
-                            <span className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider" style={status.style}>
+                            <span className={`${TAG} shrink-0 font-medium`} style={{ color: status.color }}>
                                 {status.label}
                             </span>
                         </li>
@@ -669,10 +581,8 @@ function VaultPanel({ vault }: { vault: Gw2Tonight["vault"] }) {
     // deploy a minute apart. Nothing is drawn rather than a false "not read".
     if (vault === undefined) return null;
 
-    const tone = DOMAIN_TONE.vault;
-
     return (
-        <Gw2Panel icon={<Gift size={18} />} tone={tone} title="Open right now" description="Wizard's Vault">
+        <Gw2Panel title="Open right now" description="Wizard's Vault">
             {!vault ? (
                 // Absent is not empty, and absent has two causes: a key without
                 // `progression` never read the vault, and a key with it has not
@@ -690,11 +600,9 @@ function VaultPanel({ vault }: { vault: Gw2Tonight["vault"] }) {
                         <li key={`${objective.period}-${objective.id}`} className="space-y-1.5">
                             <div className="flex items-start justify-between gap-2">
                                 <span className="text-sm leading-snug text-[var(--ink-hi)]">{objective.title}</span>
-                                <span className="shrink-0 font-numeric text-xs" style={{ color: tone }}>
-                                    +{objective.acclaim}
-                                </span>
+                                <span className="shrink-0 font-numeric text-xs text-[var(--ink-mid)]">+{objective.acclaim}</span>
                             </div>
-                            <Meter value={objective.current} max={objective.target} size="sm" tone={tone} />
+                            <Meter value={objective.current} max={objective.target} size="sm" tone={DOMAIN_TONE.vault} />
                             <div className="flex justify-between text-[11px] text-[var(--ink-faint)]">
                                 <span>{objective.period}</span>
                                 <span className="font-numeric">
@@ -711,7 +619,7 @@ function VaultPanel({ vault }: { vault: Gw2Tonight["vault"] }) {
 
 function ConnectFirst() {
     return (
-        <Panel material="lit" crown title="Connect your account first">
+        <Gw2Panel title="Connect your account first">
             <div className="space-y-4">
                 <p className="text-sm text-[var(--ink-mid)]">
                     A session plan is built from what your own account still has outstanding.
@@ -720,6 +628,6 @@ function ConnectFirst() {
                     <Link href="/gw2">Go to the advisor</Link>
                 </Button>
             </div>
-        </Panel>
+        </Gw2Panel>
     );
 }

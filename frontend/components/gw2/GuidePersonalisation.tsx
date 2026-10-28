@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { KeyRound, UserRound } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import axiosInstance from "@/lib/axios";
 import Meter from "@/components/ui/Meter";
@@ -85,7 +84,7 @@ export default function GuidePersonalisation({
     tone = "var(--accent)",
 }: {
     personaliseAs: string;
-    /** The guide's own colour, so the panel reads as part of it. */
+    /** The guide's own colour, for its bars — the panel itself stays neutral. */
     tone?: string;
 }) {
     const { user, isLoading } = useAuth();
@@ -127,12 +126,12 @@ export default function GuidePersonalisation({
      */
     if (!isLoading && !user) {
         return (
-            <Gw2Panel icon={<KeyRound size={18} />} title="Your own figures" tone={tone}>
+            <Gw2Panel title="Your own figures">
                 <div className="space-y-4">
                     <p className="text-sm text-[var(--ink-mid)]">
                         Connect a Guild Wars 2 account and this page shows your own figures instead.
                     </p>
-                    <ActionLink href="/gw2" tone={tone}>
+                    <ActionLink href="/gw2">
                         Connect an account
                     </ActionLink>
                 </div>
@@ -146,11 +145,11 @@ export default function GuidePersonalisation({
     }
 
     return (
-        <Gw2Panel icon={<UserRound size={18} />} title={block.label} description="From your own account" tone={tone}>
+        <Gw2Panel title={block.label} description="From your own account">
             {block.kind === "figure" && (
                 <div className="space-y-2">
                     <div className="flex items-baseline gap-2">
-                        <span className="font-display text-3xl font-bold text-[var(--ink-hi)]">{block.value}</span>
+                        <span className="font-numeric text-3xl font-semibold text-[var(--ink-hi)]">{block.value}</span>
                         {block.target !== null && (
                             <span className="font-numeric text-lg text-[var(--ink-low)]">/ {block.target}</span>
                         )}
@@ -163,7 +162,7 @@ export default function GuidePersonalisation({
             {block.kind === "checklist" && (
                 <div className="space-y-3">
                     <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-display text-2xl font-bold text-[var(--ink-hi)]">
+                        <span className="font-numeric text-2xl font-semibold text-[var(--ink-hi)]">
                             {block.done} <span className="text-base font-normal text-[var(--ink-low)]">/ {block.total}</span>
                         </span>
                     </div>
@@ -209,7 +208,7 @@ export default function GuidePersonalisation({
             {block.kind === "collection" && (
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <span className="block font-display text-2xl font-bold text-[var(--ink-hi)]">
+                        <span className="block font-numeric text-2xl font-semibold text-[var(--ink-hi)]">
                             {block.complete}{" "}
                             <span className="text-base font-normal text-[var(--ink-low)]">/ {block.total}</span>
                         </span>

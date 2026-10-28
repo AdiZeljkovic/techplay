@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Coins, GitBranch, Hammer, Info, KeyRound, Layers, Package, Sparkles } from "lucide-react";
+import { Hammer } from "lucide-react";
 import GameIcon from "@/components/gw2/GameIcon";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import WikiLink from "@/components/gw2/WikiLink";
 import { ActionLink, Gw2Panel, SectionHeader } from "@/components/gw2/Gw2Ui";
-import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 import { coin } from "@/lib/gw2format";
 import { gw2Breadcrumb, jsonLd } from "@/lib/gw2jsonld";
 import { craftingHref, getPublicRecipe, itemIdFromSlug } from "@/lib/gw2public";
@@ -51,8 +51,6 @@ export async function generateStaticParams() {
 }
 
 type Params = { params: Promise<{ slug: string }> };
-
-const REFERENCE = DOMAIN_TONE.reference;
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
     const { slug } = await params;
@@ -124,7 +122,6 @@ export default async function CraftingPage({ params }: Params) {
                 eyebrow="Crafting recipe"
                 title={item.name}
                 description={facts || undefined}
-                tone={REFERENCE}
                 art={HERO_ART.crafting}
                 back={{ href: "/gw2/database/crafting", label: "Crafting recipes" }}
             >
@@ -146,7 +143,7 @@ export default async function CraftingPage({ params }: Params) {
 
             {!recipe.craftable ? (
                 <div className="space-y-6">
-                    <Gw2Panel icon={<Info size={18} />} title="Not crafted" tone={REFERENCE}>
+                    <Gw2Panel title="Not crafted">
                         <p className="text-sm text-[var(--ink-mid)]">
                             This is not crafted — it comes from a vendor, a drop or a reward track. What it goes
                             into is below.
@@ -156,8 +153,6 @@ export default async function CraftingPage({ params }: Params) {
                     {usedIn.length > 0 && (
                         <section className="space-y-4">
                             <SectionHeader
-                                icon={<Layers size={18} />}
-                                tone={REFERENCE}
                                 title="Used in"
                                 description={`${usedIn.length} ${usedIn.length === 1 ? "recipe takes" : "recipes take"} it.`}
                             />
@@ -174,8 +169,6 @@ export default async function CraftingPage({ params }: Params) {
                     <div className="min-w-0 space-y-6">
                         <section className="space-y-4">
                             <SectionHeader
-                                icon={<Package size={18} />}
-                                tone={REFERENCE}
                                 title="Everything it takes"
                                 description="Every raw material at the bottom of the tree, with nothing subtracted."
                             />
@@ -193,18 +186,15 @@ export default async function CraftingPage({ params }: Params) {
                                     className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-[var(--radius-card)] border px-4 py-3"
                                     style={{ borderColor: "var(--line-strong)", background: "var(--surface-1)" }}
                                 >
-                                    <span className="inline-flex items-center gap-3">
-                                        <Coins size={20} aria-hidden style={{ color: DOMAIN_TONE.vault }} />
-                                        <span>
-                                            <span className="block text-[11px] text-[var(--ink-low)]">
-                                                Materials, buying outright
-                                            </span>
-                                            <span className="font-display text-lg font-bold text-[var(--ink-hi)]">
-                                                {coin(recipe.prices.materials.buy_now)}
-                                            </span>
-                                            <span className="ml-2 text-xs text-[var(--ink-low)]">
-                                                or {coin(recipe.prices.materials.bid_and_wait)} bidding and waiting
-                                            </span>
+                                    <span>
+                                        <span className="block text-[11px] text-[var(--ink-low)]">
+                                            Materials, buying outright
+                                        </span>
+                                        <span className="font-numeric text-lg font-semibold text-[var(--ink-hi)]">
+                                            {coin(recipe.prices.materials.buy_now)}
+                                        </span>
+                                        <span className="ml-2 text-xs text-[var(--ink-low)]">
+                                            or {coin(recipe.prices.materials.bid_and_wait)} bidding and waiting
                                         </span>
                                     </span>
                                     <span className="text-[11px] text-[var(--ink-faint)]">
@@ -218,14 +208,12 @@ export default async function CraftingPage({ params }: Params) {
 
                         <section className="space-y-4">
                             <SectionHeader
-                                icon={<GitBranch size={18} />}
-                                tone={REFERENCE}
                                 title="How it breaks down"
                                 description="The whole tree, tier by tier. Every line opens its own page."
                             />
                             <div
                                 className="rounded-[var(--radius-panel)] border px-4 py-3"
-                                style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+                                style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
                             >
                                 <Branch node={recipe.tree} />
                             </div>
@@ -234,7 +222,7 @@ export default async function CraftingPage({ params }: Params) {
 
                     <div className="space-y-5">
                         {requires && (
-                            <Gw2Panel icon={<Hammer size={18} />} title="To make it yourself" tone={REFERENCE}>
+                            <Gw2Panel title="To make it yourself">
                                 <p className="text-sm text-[var(--ink-mid)]">
                                     {requires.disciplines.join(" or ")} at {requires.min_rating}.
                                 </p>
@@ -243,7 +231,7 @@ export default async function CraftingPage({ params }: Params) {
 
                         {/* The game does not publish forge recipes, so this one says where it is from. */}
                         {recipe.forge && (
-                            <Gw2Panel icon={<Sparkles size={18} />} title="Made in the Mystic Forge" tone={DOMAIN_TONE.legendary}>
+                            <Gw2Panel title="Made in the Mystic Forge">
                                 <p className="text-sm text-[var(--ink-mid)]">
                                     The game&apos;s API does not list Mystic Forge recipes. This one is from{" "}
                                     {recipe.forge.source_url ? (
@@ -265,7 +253,7 @@ export default async function CraftingPage({ params }: Params) {
                             </Gw2Panel>
                         )}
 
-                        <Gw2Panel icon={<KeyRound size={18} />} title="With your own account">
+                        <Gw2Panel title="With your own account">
                             <div className="space-y-4">
                                 <p className="text-sm text-[var(--ink-mid)]">
                                     This is the whole tree with nothing subtracted. Connect your account and we take
@@ -278,10 +266,8 @@ export default async function CraftingPage({ params }: Params) {
 
                         {usedIn.length > 0 && (
                             <Gw2Panel
-                                icon={<Layers size={18} />}
                                 title="Used in"
                                 description={`${usedIn.length} ${usedIn.length === 1 ? "recipe takes" : "recipes take"} it`}
-                                tone={REFERENCE}
                             >
                                 <ul className="space-y-2">
                                     {usedIn.map((used) => (
@@ -325,11 +311,11 @@ function PriceLine({
 }) {
     return (
         <div className="space-y-1">
-            <p className="text-[10.5px] uppercase tracking-[0.18em] text-[var(--ink-faint)]">On the trading post</p>
+            <p className="text-xs font-medium text-[var(--ink-low)]">On the trading post</p>
             <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-[var(--ink-mid)]">
                 {sell != null && (
                     <span>
-                        <strong className="font-display text-lg font-bold text-[var(--ink-hi)]">{coin(sell)}</strong> to
+                        <strong className="font-numeric text-lg font-semibold text-[var(--ink-hi)]">{coin(sell)}</strong> to
                         buy now
                     </span>
                 )}
@@ -355,7 +341,7 @@ function MaterialTile({ material, recipe }: { material: PublicMaterial; recipe: 
     return (
         <div
             className="flex h-full items-center gap-3 rounded-[var(--radius-card)] border px-3 py-2.5"
-            style={{ background: "var(--surface-1)", borderColor: "var(--line)" }}
+            style={{ background: "var(--surface-1)", borderColor: "var(--line-strong)" }}
         >
             {material.icon ? (
                 <GameIcon src={material.icon} alt="" size="md" rarity={material.rarity} />
@@ -395,7 +381,7 @@ function UsedInRow({ used, boxed = false }: { used: PublicRecipe["used_in"][numb
     return (
         <li
             className={boxed ? "flex items-center gap-1 rounded-[var(--radius-card)] border px-3 py-2" : "flex items-center gap-1"}
-            style={boxed ? { background: "var(--surface-1)", borderColor: "var(--line)" } : undefined}
+            style={boxed ? { background: "var(--surface-1)", borderColor: "var(--line-strong)" } : undefined}
         >
             <Link
                 href={craftingHref(used.id, used.slug)}
@@ -427,8 +413,9 @@ function Branch({ node }: { node: PlanNode }) {
                     className="flex items-center gap-2 py-1 text-sm"
                     style={{ paddingLeft: `${Math.min(node.depth, 6) * 14}px` }}
                 >
+                    {/* Marks a node that is crafted in turn, not a raw material. */}
                     {node.craftable ? (
-                        <Hammer size={12} className="shrink-0" style={{ color: REFERENCE }} aria-hidden />
+                        <Hammer size={12} className="shrink-0 text-[var(--ink-faint)]" aria-hidden />
                     ) : (
                         <span className="w-3" />
                     )}

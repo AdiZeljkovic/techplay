@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Gw2Hero from "@/components/gw2/Gw2Hero";
 import LegendaryClient from "@/components/gw2/LegendaryClient";
-import { DOMAIN_TONE, HERO_ART } from "@/lib/gw2domain";
+import { HERO_ART } from "@/lib/gw2domain";
 
 export const metadata: Metadata = {
     title: "Guild Wars 2 legendary planner",
@@ -19,7 +19,6 @@ export default function Gw2LegendaryPage() {
                 eyebrow="Guild Wars 2 · Legendary"
                 title="Legendaries"
                 description="What your armory holds, and a plan for each legendary whose recipe we have checked — against your bank and your wallet."
-                tone={DOMAIN_TONE.legendary}
                 art={HERO_ART.legendary}
             />
 

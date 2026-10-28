@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, KeyRound, ShieldCheck } from "lucide-react";
-import Panel from "@/components/ui/Panel";
+import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Gw2Panel } from "@/components/gw2/Gw2Ui";
+import { Gw2Card } from "@/components/gw2/Gw2PageParts";
 import { connectKey, type Gw2Connection } from "@/lib/gw2";
 
 /**
@@ -77,7 +78,7 @@ export default function ConnectKey({ onConnected }: { onConnected: (connection: 
 
     return (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <Panel material="lit" crown title="Connect your Guild Wars 2 account">
+            <Gw2Panel title="Connect your Guild Wars 2 account">
                 <form onSubmit={submit} className="space-y-5">
                     <div className="space-y-2">
                         <label htmlFor="gw2-key" className="block text-sm font-medium text-[var(--ink-mid)]">
@@ -103,18 +104,14 @@ export default function ConnectKey({ onConnected }: { onConnected: (connection: 
                         <p
                             role="alert"
                             className="rounded-[var(--radius-card)] border px-3 py-2 text-sm"
-                            style={{
-                                borderColor: "color-mix(in srgb, var(--accent) 40%, transparent)",
-                                background: "var(--accent-soft)",
-                                color: "var(--ink-hi)",
-                            }}
+                            style={{ borderColor: "var(--line-strong)", background: "var(--fill-1)", color: "var(--danger)" }}
                         >
                             {error}
                         </p>
                     )}
 
                     <div className="flex flex-wrap items-center gap-3">
-                        <Button type="submit" isLoading={busy} icon={<KeyRound size={16} />}>
+                        <Button type="submit" isLoading={busy}>
                             Connect account
                         </Button>
                         <a
@@ -128,10 +125,10 @@ export default function ConnectKey({ onConnected }: { onConnected: (connection: 
                         </a>
                     </div>
                 </form>
-            </Panel>
+            </Gw2Panel>
 
             <div className="space-y-4">
-                <Panel material="instrument" title="What to tick">
+                <Gw2Panel title="What to tick">
                     <ul className="space-y-3">
                         {PERMISSIONS.map((permission) => (
                             <li key={permission.name} className="text-sm">
@@ -139,36 +136,29 @@ export default function ConnectKey({ onConnected }: { onConnected: (connection: 
                                     {permission.name}
                                 </span>
                                 {permission.required && (
-                                    <span className="ml-2 text-[10px] uppercase tracking-wider text-[var(--accent-ink)]">
-                                        required
-                                    </span>
+                                    <span className="ml-2 text-[11px] text-[var(--accent-ink)]">required</span>
                                 )}
                                 <span className="mt-0.5 block text-[var(--ink-low)]">{permission.buys}</span>
                             </li>
                         ))}
                     </ul>
-                </Panel>
+                </Gw2Panel>
 
-                <Panel material="matte">
-                    <div className="flex gap-3">
-                        <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[var(--ink-low)]" aria-hidden />
-                        <div className="space-y-2 text-sm text-[var(--ink-mid)]">
-                            <p>
-                                A Guild Wars 2 key is <strong className="text-[var(--ink-hi)]">read-only</strong>.
-                                It cannot spend, trade, move or delete anything, and it is not your password.
-                            </p>
-                            <p>
-                                We store it encrypted and never show it again — not even to you, and not
-                                partly masked.
-                            </p>
-                            <p>
-                                Disconnecting deletes the key and everything we read with it. You can also
-                                delete the key at account.arena.net at any time, and it stops working
-                                immediately.
-                            </p>
-                        </div>
-                    </div>
-                </Panel>
+                <Gw2Card className="space-y-2 p-5 text-sm text-[var(--ink-mid)]">
+                    <p>
+                        A Guild Wars 2 key is <strong className="text-[var(--ink-hi)]">read-only</strong>.
+                        It cannot spend, trade, move or delete anything, and it is not your password.
+                    </p>
+                    <p>
+                        We store it encrypted and never show it again — not even to you, and not
+                        partly masked.
+                    </p>
+                    <p>
+                        Disconnecting deletes the key and everything we read with it. You can also
+                        delete the key at account.arena.net at any time, and it stops working
+                        immediately.
+                    </p>
+                </Gw2Card>
             </div>
         </div>
     );

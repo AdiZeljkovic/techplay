@@ -17,22 +17,28 @@ funkcija.
 | Logo | Ne mijenja se sada. |
 | Mobilni | Bočni meni postaje izvlačni meni (sheet sajta), desna kolona ide ispod sadržaja. |
 | Ono što mockupi crtaju a ne crtamo | Ostaje van: zbirni skor, „Confidence to complete: High”, „ready to raid”, Currently Training, udaljenosti u metrima. Zamjene su u §4. |
+| Ukras | **Ravno, bez gradijenata, sjaja i ikona u krugovima** (28. 10. 2026, vlasnikova odluka poslije faze 6 — „želim profesionalno”). Boja domene samo na trakama i grafikonima. §2 je prepisan po tome. |
 
 ---
 
 ## 2. Vizuelni jezik koji preuzimamo
 
-- **Okvir:** lijevi meni (~240 px) s aktivnom stavkom u crvenom prelazu i crvenom
-  linijom lijevo; stanje veze (nalog, zadnje čitanje) na vrhu menija, jer gornje
-  trake nema.
-- **Hero po stranici:** mali razmaknuti natpis („GUILD WARS 2”), veliki naslov u
-  rečeničnom padežu, podnaslov; slika desno koja se pretapa u crno lijevo i dolje.
-  Dok slike ne stignu — obojeni prelaz u boji domene.
-- **Boja po domeni** (`lib/gw2domain.ts`) jača nego danas: obrub kartice, krug
-  oko ikone, traka napretka i dugme u boji domene, ne samo rub od 2 px.
-- **Zaglavlje sekcije:** ikona u krugu, naslov, sivi podnaslov, „View all →” desno.
-- **Kartica preporuke:** slika na vrhu, oznaka (pouzdanost), naslov, tekst, traka
-  „x / y”, red ikona predmeta, puno dugme na dnu.
+Od mockupa je uzet raspored, ne ukras. Prvi rez (faze 2–6) crtao je i ukras —
+ikone u krugovima koje svijetle, mrlje boje domene u uglovima panela, dugmad u
+boji domene — i vlasnik ga je 28. 10. odbio. Sad važi:
+
+- **Okvir:** lijevi meni (~240 px), aktivna stavka ravno osvijetljena s tankom
+  crvenom linijom lijevo; stanje veze (nalog, zadnje čitanje) na vrhu menija,
+  jer gornje trake nema.
+- **Hero po stranici:** mali natpis u rečeničnom padežu, veliki naslov,
+  podnaslov; slika desno koja se pretapa u pozadinu lijevo, ispod naslova. To
+  je jedini prelaz u alatu.
+- **Boja po domeni** (`lib/gw2domain.ts`) samo na podacima: traka napretka,
+  grafikon, tačka statusa. Obrubi, pozadine, tekst i dugmad su neutralni.
+- **Zaglavlje sekcije:** naslov, sivi podnaslov, „View all →” desno. Bez ikone.
+- **Kartica preporuke:** slika na vrhu kad postoji, oznaka (pouzdanost), ikona
+  iz igre kad postoji, naslov, tekst, traka „x / y”, red ikona predmeta, dugme
+  na dnu.
 - **Desna kolona rijetka:** 2–4 panela.
 
 ---
@@ -56,7 +62,8 @@ Sve ispod je urađeno; detalji u `docs/README.md` §21, „Dashboard po mockupu 
 - Razdvajanje: **Dashboard** = pregled (5 kartica, 3 preporuke, Tonight teaser,
   Easy wins); **What should I do next?** (`/gw2/next`) = puna stranica savjeta s
   izborom cilja, vremena i „not tonight”.
-- Kartice stanja po mockupu: velika ikona, broj, traka u boji domene.
+- Kartice stanja po mockupu: broj, red ispod, traka u boji domene (ikona u
+  krugu skinuta 28. 10., §2).
 - Kartica preporuke po mockupu.
 - Konekcija, istorija, Vault, sezona i Today sele se s desne kolone (konekcija →
   meni i `/gw2/account`, istorija → `/gw2/account`, Vault/sezona/Today → Tonight).
