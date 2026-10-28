@@ -1577,7 +1577,7 @@ Tabele:
 | `gw2_characters` | jedan red po liku; `equipment` je **nošeni** set |
 | `gw2_account_state` | **jedan red po nalogu, prepisuje se** |
 | `gw2_item_ledger` | sve što nalog ima, gdje god stoji |
-| `gw2_progress_events` | **razlika između dva čitanja** |
+| `gw2_progress_events` | **razlika između dva čitanja** — `raid_encounter_cleared`, `world_boss_killed`, `dungeon_path_run`, `mount_unlocked`, `achievement_completed`, i od 28. 10. `ascended_piece` (`{id, character, slot}`: core slot koji je između dva puna čitanja postao ascended/legendary) |
 | `gw2_rules` | šta savjetnik smije reći i kad — uredničko, ne kod |
 | `gw2_events` | vremena bosova i meta; **prazna**, puni je čovjek koji provjeri |
 
@@ -1724,8 +1724,9 @@ round-robin po domenu preko svih šest mjesta, ne samo prve tri.
 | `GET /api/v1/gw2/dashboard` | kartice + savjeti + istorija; `?minutes=`, `?goal=`, `?avoid[]=` |
 | `GET /api/v1/gw2/masteries` | sve trake po regiji, cijene nivoa, šta tačke dosežu |
 | `GET /api/v1/gw2/plan?item_id=&quantity=` | stablo izrade + spisak za nabavku |
+| `GET /api/v1/gw2/ascended?character=&stats=&weight=` | ascended oklop jednog lika: komadi, materijali iz jedne zalihe, put, sedmični napredak |
 | `GET /api/v1/gw2/items?q=` | pretraga 74.265 predmeta, trigram |
-| `GET /api/v1/gw2/tonight?minutes=` | plan sesije, prioriteti, raspored |
+| `GET /api/v1/gw2/tonight?minutes=&avoid[]=` | plan sesije, prioriteti, raspored, Vault |
 | `GET /api/v1/gw2/content` | rajdovi, bosovi, tamnice — prozor i „ikad“ |
 | `GET /api/v1/gw2/public/recipe/{id}` | **bez ključa** — stablo + u šta ulazi |
 | `GET /api/v1/gw2/public/masteries` | **bez ključa** — 40 traka, cijene nivoa |
@@ -2286,6 +2287,83 @@ rewards tonight, pa Vault, sezona i Today.
 
 `Dashboard::PAYLOAD_VERSION` je 5.
 
+#### Ascended set po mockupu 2 — faza 5, 28. 10. 2026.
+
+**Ruta je `/gw2/ascended`, ne `/gw2/goals/...`.** `/gw2/goals/first-ascended-set`
+je vodič od septembra, a `/gw2/goals` je 301 na `/gw2/planner`. Alat stoji pored
+vodiča, kao `/gw2/legendary` pored vodiča o legendarnima. U meniju je „Ascended
+set", odmah ispod „What should I do next?".
+
+**Cilj se čita s lika, a igrač ga može promijeniti.** Crafting planner traži da
+igrač imenuje predmet, jer API ne kaže koje statove ni koju težinu neko želi.
+`AscendedSet::choose()` i dalje ne pogađa:
+
+- **Težina** se čita iz `weight_class` nošenog oklopa, ne iz tabele profesija.
+  Bira se samo kad lik nema oklopa iz kojeg bi se pročitala.
+- **Statovi** su prefiks koji nosi većina od šest komada, i nude se kao izbor.
+  Uparuju se **po imenu**, ne po id-u: igra ima pet itemstatova „Berserker's"
+  (161, 584, 599, 1046, 1077), a egzotik i ascended koji ga mijenja ne dijele id.
+- Komad s izborom statova nosi izbor na nošenoj kopiji (`equipment[].stats.id`),
+  ne na predmetu. Vlasnikov Thief nosi šest takvih. `SnapshotReader` sad stavlja
+  `stats` i `weight` u `slotItems` (`PAYLOAD_VERSION` 6).
+- **Kraftani** znači da ga pravi recept. Tako se set odvaja od rajd, fractal i
+  WvW komada iste rijetkosti. Komad s izborom statova se preskače jer nema
+  prefiks pod koji bi se svrstao. Izmjereno 28. 10.: po slotu i težini ima oko 38
+  prefiksa.
+
+**Jedna zaliha za cijeli set.** `RecipeTree::planMany()` troši isti pool komad
+po komad. Šest planova koji čitaju istu banku našlo bi istih 48 ektoplazmi
+svaki put. Komad koji već postoji na nalogu (`owned`) planira se prvi, pa se
+izbacuje iz materijala: njegova kartica kaže „equip it".
+
+`shoppingList($root, held: true)` vraća i pokrivene listove. To je tab „Already
+yours".
+
+**Put je iz plana, ne napisan unaprijed** (`AscendedSet::path()`). Korak koji se
+ne odnosi na igrača ne crta se. Mogući koraci:
+
+| Korak | Kad postoji |
+|---|---|
+| equip | zamjena je već na nalogu |
+| discipline | Leatherworker/Armorsmith/Tailor na ocjeni recepta. Gleda se **svaki** lik, i neaktivna disciplina se računa: vraćanje na nju je posjeta stanici, ne 400 nivoa |
+| recipes | recept se uči s lista, a `account/recipes` je pročitan |
+| time_gated | dnevne izrade (`LegendaryPlanner::today()`). „N dana" je najveći broj koji fali, jer se svaka može jednom dnevno |
+| buy | trading post, kupi odmah / ponuda i čekanje |
+| gather | ono što niko ne prodaje, bez zlatnog iznosa |
+| craft | komadi, x/6 |
+
+**Sedmični napredak je novi tip događaja.** `AccountSync::newAscendedPieces()`
+upoređuje opremu koju je sačuvalo zadnje puno čitanje s novom, prije nego je
+prepiše. Događaj nastaje kad core slot pređe iz ispod-ascended (ili praznog) u
+ascended/legendary. Ne nastaje:
+
+- kad se jedan ascended zamijeni drugim;
+- za lika viđenog prvi put.
+
+Brzo čitanje ne čita likove, pa ništa ne piše. Grafikon broji po sedmici igre
+(ponedjeljak 07:30 UTC), šest sedmica unazad, samo za izabranog lika. **Počinje
+prazan:** igra ne čuva datum ni za jedan komad opreme, i stranica to kaže.
+`Dashboard::history()` imenuje i ove događaje.
+
+Šta mockup crta, a ovdje ga nema:
+
+| Mockup | Umjesto toga |
+|---|---|
+| „Confidence to complete: High" | da li neko na nalogu može kraftati, i ko je najbliži |
+| „Gold spent" | ništa — ništa ne bilježi na šta je zlato potrošeno |
+| „You are ready to start raiding 100%" (Related goals) | ovosedmični clearovi; uz to AR na liku i mastery poeni |
+| četiri koraka puta, napisana unaprijed | koraci iz plana |
+| „Why this matters" kao lista prednosti | `standfirst` vodiča i link, **samo dok je objavljen** |
+
+Nakit i leđa su red ispod oklopa, sa stanjem i wiki linkom. Plana nema jer
+dolaze iz lovorika, relikvija, postignuća i prodavača, a koji je izvor pravi
+nije nešto što nalog kaže.
+
+Kartice preporuka za oklop (`GearGaps`, `EmptyCoreSlots`) sad vode na
+`/gw2/ascended` („Plan the armour"), a za nakit na vodič, dok je objavljen.
+Migracija `2026_10_28_160000` prebacuje „Plan the materials" u vodiču na novu
+stranicu, ali samo dok je link još onaj zasijani i vodič nije pregledan.
+
 #### Šta je iz mockupa uzeto, a šta nije
 
 Raspored je mockupov. Četiri broja nisu, jer ih ništa ne računa:
@@ -2328,28 +2406,25 @@ Traka koja se broji je **ona koja se kupuje** (`tiers_paid + 1`), ne broj
 plaćenih — inače piše „tier 0 of 4" za traku koju niko nije počeo, što je
 aritmetika koja curi u engleski.
 
-#### `/gw2/goals`
+#### `/gw2/planner` (bivši `/gw2/goals`, 301)
 
 Pretraga predmeta, pa plan: šta treba, šta već imaš i šta fali. Razlaganje se
 crta kao stablo, a **spisak za nabavku samo listove**.
 
-Mockup 2 je „Ascended Set Planner" sa već odabranim ciljem (Berserker's, šest
-komada). Mi ga ne biramo — vidi „Cilj imenuje igrač". I nema zlatnog zbira.
-
-Na testnom nalogu ta konkretna meta je ionako **već završena**: svih šest
-komada oklopa je ascended, a ono što fali su tri nakita (Ring2, Accessory1,
-Accessory2), koji se ne izrađuju receptom nego dolaze iz lovorika i valuta.
+Mockup 2 („Ascended Set Planner") je od faze 5 vlastita stranica,
+`/gw2/ascended` — vidi gore. Ovdje ostaje planer za bilo koji predmet; kartice
+komada na `/gw2/ascended` vode ovamo s `?item=`.
 
 #### `/gw2/tonight`
 
-Izbor vremena (30 min / 1 h / 2 h / bez limita), pa **vremenska osa** koraka,
-ispod nje „ako imaš duže", a sa strane mjereni prioriteti. Panel sa rasporedom
-događaja se crta tek kad neko unese i provjeri vremena.
+Izbor vremena (30 min / 1 h / 2 h / bez limita) i „Not tonight", pa
+**vremenska osa** koraka, ispod nje „ako imaš duže", a sa strane mjereni
+prioriteti. Panel sa rasporedom događaja se crta tek kad neko unese i provjeri
+vremena.
 
-Tri stvari sa mockupa 4 nisu nacrtane: **„Potential Rewards Tonight"** (ikone
-nagrada koje ništa ne izvodi iz plana), **„Current Events"** dok tabela
-`gw2_events` ne dobije provjerene redove, i minutne brojke kao tvrdnje — ovdje
-su rasponi, i piše da su naši.
+„Potential Rewards Tonight" se crta od faze 4, iz `details.rewards`. Nije
+nacrtano: „Current Events" dok tabela `gw2_events` ne dobije provjerene redove,
+i minutne brojke kao tvrdnje. Ovdje su rasponi, i piše da su naši.
 
 #### `/gw2/content`
 

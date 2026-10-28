@@ -80,7 +80,7 @@ class RecipeTree
     {
         $this->learned = $learned === null ? null : array_fill_keys(array_map('intval', $learned), true);
         $this->wallet = $wallet;
-        $this->warm($itemId);
+        $this->warm([$itemId]);
 
         /*
          * The stock is a pool that gets spent, not a figure each branch reads.
@@ -99,20 +99,56 @@ class RecipeTree
     }
 
     /**
+     * Several targets out of one stock — the pieces of a set.
+     *
+     * Not one plan per piece. Six plans each reading the same bank would each
+     * find the same forty-eight ectoplasm, and the set would come out short by
+     * five times that at the crafting station. One pool, spent piece by piece in
+     * the order given, is the same rule `plan()` keeps between branches.
+     *
+     * The root holds nothing itself — no item, nothing needed — so the walks
+     * below pass straight through it to the pieces.
+     *
+     * @param  array<int, int>  $targets  Item ids, one of each.
+     * @param  array<int, int>  $owned
+     * @param  array<int, string>  $disciplines
+     * @param  array<int, int>|null  $learned
+     * @param  array<int, int>  $wallet
+     */
+    public function planMany(array $targets, array $owned, array $disciplines = [], ?array $learned = null, array $wallet = []): RecipeNode
+    {
+        $this->learned = $learned === null ? null : array_fill_keys(array_map('intval', $learned), true);
+        $this->wallet = $wallet;
+        $this->warm($targets);
+
+        $pool = $owned;
+        $pieces = [];
+
+        foreach ($targets as $itemId) {
+            $pieces[] = $this->expand($itemId, 1, $pool, $disciplines, [], 0);
+        }
+
+        return new RecipeNode(itemId: 0, name: null, rarity: null, icon: null, needed: 0, owned: 0, children: $pieces);
+    }
+
+    /**
      * Everything with nothing beneath it that is still missing.
      *
      * The shopping list. Intermediates are interesting to look at and useless to
      * act on — nobody buys a Deldrimor Steel Ingot they are going to make.
      *
+     * With `$held`, the lines already covered stay in too: what a set planner
+     * shows under "already yours" is exactly the part this list otherwise drops.
+     *
      * @return array<int, RecipeNode>
      */
-    public function shoppingList(RecipeNode $root): array
+    public function shoppingList(RecipeNode $root, bool $held = false): array
     {
         $leaves = [];
 
-        $walk = function (RecipeNode $node) use (&$walk, &$leaves): void {
+        $walk = function (RecipeNode $node) use (&$walk, &$leaves, $held): void {
             if ($node->children === []) {
-                if ($node->missing() > 0) {
+                if ($node->missing() > 0 || ($held && $node->owned > 0)) {
                     // Merge rather than append: the same material reaches the
                     // same plan down several branches, and six entries for
                     // Mithril Ore is a list nobody can read. Both figures sum,
@@ -434,10 +470,12 @@ class RecipeTree
      * One query per level rather than one per node: a ninety-node tree would
      * otherwise be ninety round trips, and `preventLazyLoading` exists in this
      * codebase precisely because that pattern keeps reappearing.
+     *
+     * @param  array<int, int>  $itemIds
      */
-    private function warm(int $itemId): void
+    private function warm(array $itemIds): void
     {
-        $frontier = [$itemId];
+        $frontier = array_values(array_unique($itemIds));
         $seen = [];
 
         for ($level = 0; $level < self::MAX_DEPTH && $frontier !== []; $level++) {

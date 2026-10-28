@@ -138,7 +138,7 @@ class Gw2GuideLibrarySeeder extends Seeder
                     'gw2 ascended trinkets first',
                 ],
                 'next_steps' => [
-                    'Plan the materials' => '/gw2/planner',
+                    'Plan your ascended armour' => '/gw2/ascended',
                     'Why ascended matters for fractals' => '/gw2/fractals/agony-resistance',
                 ],
                 'body' => $this->ascended(),

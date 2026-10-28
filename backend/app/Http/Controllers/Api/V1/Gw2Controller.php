@@ -628,6 +628,47 @@ class Gw2Controller extends Controller
     }
 
     /**
+     * GET /gw2/ascended[?character=&stats=&weight=]
+     *
+     * One character's ascended armour and what the missing pieces take. Stats
+     * and weight default to what the character wears; `weight` is only read
+     * when there is no armour to read it from.
+     */
+    public function ascended(Request $request): JsonResponse
+    {
+        $request->validate([
+            'character' => 'nullable|string|max:64',
+            'stats' => 'nullable|string|max:40',
+            'weight' => 'nullable|in:Heavy,Medium,Light',
+        ]);
+
+        $accountId = $this->accountId($request);
+
+        if (! $accountId) {
+            return $this->error('No Guild Wars 2 account is connected.', 404);
+        }
+
+        $asked = $request->string('character')->toString() ?: null;
+
+        $payload = $this->dashboard->ascended(
+            $accountId,
+            $asked,
+            $request->string('stats')->toString() ?: null,
+            $request->string('weight')->toString() ?: null,
+        );
+
+        if (! $payload) {
+            // The same two answers as the story page: a name that is not on
+            // the account, and an account with no characters read yet.
+            return $asked
+                ? $this->error('That character is not on this account.', 404)
+                : $this->success(null, 'We have not read any characters on your account yet.');
+        }
+
+        return $this->success($payload);
+    }
+
+    /**
      * GET /gw2/plan
      *
      * What it takes to make one thing, given what this account holds.

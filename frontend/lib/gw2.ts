@@ -390,6 +390,103 @@ export interface Gw2Plan {
     observed_at: string | null;
 }
 
+/** A worn piece, or the crafted one that replaces it. */
+export interface Gw2SetItem {
+    item_id: number;
+    name: string;
+    icon: string | null;
+    rarity?: string;
+    wiki?: Gw2WikiLink;
+}
+
+export interface Gw2SetPiece {
+    slot: string;
+    /**
+     * `owned` is a replacement already on the account — equip it, do not craft
+     * it. `choose` means no stats are picked yet; `unavailable` that no crafted
+     * piece has these stats in this slot.
+     */
+    state: "done" | "craft" | "owned" | "choose" | "unavailable";
+    worn: Gw2SetItem | null;
+    target: Gw2SetItem | null;
+}
+
+/** One step of the way there, built from the plan rather than written in advance. */
+export interface Gw2SetStep {
+    key: string;
+    title: string;
+    body: string;
+    state: "done" | "todo";
+    progress?: { current: number; target: number } | null;
+    /** Copper. */
+    cost?: { buy_now: number; bid_and_wait: number };
+    items?: { name: string | null; missing?: number; done_today?: boolean | null; wiki?: Gw2WikiLink | null }[];
+}
+
+/**
+ * One character's ascended armour — mockup 2.
+ *
+ * Weight and stats are read off what the character wears and come back as a
+ * choice: `stats` is the player's pick when they made one and the worn prefix
+ * when they did not, and `weight_known` says whether there was armour to read
+ * the weight from at all.
+ */
+export interface Gw2Ascended {
+    character: { name: string; profession: string | null; level: number };
+    characters: { name: string; profession: string | null; level: number; armour_done: number }[];
+    weight: "Heavy" | "Medium" | "Light" | null;
+    weight_known: boolean;
+    stats: string | null;
+    stats_worn: string | null;
+    stat_options: string[];
+    done: number;
+    total: number;
+    core: { done: number; total: number };
+    pieces: Gw2SetPiece[];
+    others: { slot: string; state: "done" | "below" | "empty"; worn: Gw2SetItem | null }[];
+    /** Every leaf the pieces still to make draw on, covered ones included. */
+    materials: PlanLine[];
+    prices: Gw2Plan["prices"];
+    crafting: {
+        disciplines: string[];
+        min_rating: number;
+        crafters: { character: string; discipline: string; rating: number; active: boolean }[];
+        ready: boolean;
+    } | null;
+    recipes_to_learn?: Gw2Plan["recipes_to_learn"];
+    /** Crafts the game allows once a day. `days` is how long they hold the set up. */
+    time_gated: {
+        items: { id: string; item_id: number; name: string; missing: number; crafted_today: boolean | null }[];
+        days: number;
+    } | null;
+    path: Gw2SetStep[];
+    progress: {
+        weeks: { starts_at: string; pieces: number }[];
+        this_week: number;
+        events: {
+            slot: string | null;
+            item_id: number | null;
+            name: string | null;
+            icon: string | null;
+            rarity: string | null;
+            occurred_at: string;
+        }[];
+    };
+    /** Only while the guide is published. */
+    guide: { href: string; title: string; standfirst: string | null } | null;
+    related: {
+        slug: string;
+        title: string;
+        label: string;
+        current: number | null;
+        target: number | null;
+        domain: string;
+        href: string;
+    }[];
+    pinned: boolean;
+    observed_at: string | null;
+}
+
 export interface SessionStep {
     key: string;
     subject: string;
@@ -937,6 +1034,22 @@ export async function getPlan(itemId: number, quantity = 1): Promise<Gw2Plan> {
     );
 
     return data.data;
+}
+
+/** Null when the account has no characters read yet. */
+export async function getAscended(
+    choice: { character?: string | null; stats?: string | null; weight?: string | null } = {}
+): Promise<Gw2Ascended | null> {
+    const params = new URLSearchParams();
+
+    if (choice.character) params.set("character", choice.character);
+    if (choice.stats) params.set("stats", choice.stats);
+    if (choice.weight) params.set("weight", choice.weight);
+
+    const query = params.toString();
+    const { data } = await axiosInstance.get<Envelope<Gw2Ascended | null>>(`/gw2/ascended${query ? `?${query}` : ""}`);
+
+    return data.data ?? null;
 }
 
 export async function getTonight(minutes?: number | null, avoid: string[] = []): Promise<Gw2Tonight | null> {

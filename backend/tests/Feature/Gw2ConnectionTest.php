@@ -176,6 +176,43 @@ class Gw2ConnectionTest extends TestCase
         $this->assertSame(['raid_encounter_cleared', 'achievement_completed'], $types);
     }
 
+    /**
+     * The ascended set page charts these, and the game keeps no date on any
+     * piece — so the difference between two reads is the only record there is.
+     */
+    public function test_a_slot_that_turns_ascended_between_reads_is_written_down_once(): void
+    {
+        DB::table('gw2_items')->insert([
+            ['id' => 5001, 'name' => "Berserker's Emblazoned Boots", 'type' => 'Armor', 'rarity' => 'Exotic', 'level' => 80],
+            ['id' => 5002, 'name' => "Zojja's Boots", 'type' => 'Armor', 'rarity' => 'Ascended', 'level' => 80],
+            ['id' => 5003, 'name' => "Zojja's Masque", 'type' => 'Armor', 'rarity' => 'Ascended', 'level' => 80],
+        ]);
+
+        $connection = $this->connect();
+        $sync = app(AccountSync::class);
+
+        // What a character wears when we first see it was not made between
+        // two of our reads, so the first read records none of it.
+        $this->api->equipment = [['id' => 5001, 'slot' => 'Boots'], ['id' => 5003, 'slot' => 'Helm']];
+        $sync->full($connection);
+
+        // The boots go ascended; the helm already was.
+        $this->api->equipment = [['id' => 5002, 'slot' => 'Boots'], ['id' => 5003, 'slot' => 'Helm']];
+        $sync->full($connection);
+        $sync->full($connection);
+
+        // A quick sync reads no characters, and absent is not empty.
+        $sync->quick($connection);
+
+        $pieces = DB::table('gw2_progress_events')
+            ->where('type', 'ascended_piece')
+            ->pluck('payload')
+            ->map(fn ($p) => json_decode($p, true))
+            ->all();
+
+        $this->assertSame([['id' => 5002, 'character' => 'Isara Moonbloom', 'slot' => 'Boots']], $pieces);
+    }
+
     public function test_a_quick_sync_does_not_blank_what_only_a_full_sync_reads(): void
     {
         $connection = $this->connect();
@@ -379,6 +416,9 @@ class Gw2Stub extends Gw2Client
     /** @var array<int, int> Completed quest ids, for every character. */
     public array $quests = [];
 
+    /** @var array<int, array<string, mixed>> What the one character wears. */
+    public array $equipment = [['id' => 80248, 'slot' => 'WeaponA1']];
+
     /** The per-character story read answers 429. */
     public bool $rateLimitQuests = false;
 
@@ -452,7 +492,7 @@ class Gw2Stub extends Gw2Client
                 'age' => 900,
                 'deaths' => 520,
                 'created' => '2015-02-02T00:00:00Z',
-                'equipment' => [['id' => 80248, 'slot' => 'WeaponA1']],
+                'equipment' => $this->equipment,
                 'specializations' => ['pve' => [['id' => 7, 'traits' => [1, 2, 3]]], 'pvp' => [], 'wvw' => []],
                 'skills' => ['pve' => ['heal' => 13, 'utilities' => []], 'pvp' => [], 'wvw' => []],
                 'crafting' => [['discipline' => 'Chef', 'rating' => 400, 'active' => true]],

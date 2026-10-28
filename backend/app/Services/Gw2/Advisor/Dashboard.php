@@ -50,9 +50,10 @@ class Dashboard
      *
      * 4 (28 October 2026): `progress` and `action` on recommendation details,
      * `points` and `mastery_region` on the easy wins. 5, the same day:
-     * `rewards` on recommendation details.
+     * `rewards` on recommendation details. 6, the same day: `stats` and
+     * `weight` on the gear card's worn pieces.
      */
-    private const PAYLOAD_VERSION = 5;
+    private const PAYLOAD_VERSION = 6;
 
     /** How long the masteries page's "best points" list runs. The rest are on the insight pages. */
     private const POINTS_TO_GET = 8;
@@ -468,6 +469,153 @@ class Dashboard
                 'wiki' => Wiki::item($n->itemId),
             ], $tree->toLearn($root)),
             'prices' => $this->priceBuckets($list),
+            'observed_at' => $snapshot->observedAt,
+        ];
+    }
+
+    /**
+     * One character's ascended armour: the pieces, what the missing ones take
+     * out of one stock, and how the set has come along — mockup 2.
+     *
+     * The weight and stats are read off what the character wears and handed
+     * back as a choice (see AscendedSet), so `stats` here is the player's
+     * answer when they gave one and the worn prefix when they did not.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function ascended(int $gw2AccountId, ?string $characterName = null, ?string $stats = null, ?string $weight = null): ?array
+    {
+        $snapshot = $this->reader->for($gw2AccountId);
+
+        if (! $snapshot) {
+            return null;
+        }
+
+        $set = app(AscendedSet::class);
+        $character = $set->character($snapshot, $characterName);
+
+        if (! $character) {
+            return null;
+        }
+
+        $choice = $set->choose($character, $stats, $weight);
+        $targets = array_intersect_key($choice['targets'], array_flip($set->missing($character)));
+
+        $tree = app(RecipeTree::class);
+        $learned = $this->learnedRecipes($gw2AccountId);
+        $root = null;
+
+        if ($targets !== []) {
+            // Every character's disciplines, for the same reason as plan():
+            // the account crafts, not the character the page is about.
+            $disciplines = array_values(array_unique(array_merge(
+                ...array_map(fn (CharacterView $c) => $c->craftingDisciplines, $snapshot->characters)
+            )));
+
+            $root = $tree->planMany(
+                array_map(fn ($t) => $t['id'], array_values($targets)),
+                $snapshot->owned,
+                $disciplines,
+                $learned,
+                $snapshot->wallet
+            );
+        }
+
+        $pieces = $set->pieces($character, $choice['targets'], $root, $choice['stats']);
+
+        /*
+         * What is still to make. A piece already in the bank is planned like
+         * the rest so that its stock is spent first, and is then left out of
+         * the materials — its row says "equip it", and its own materials are
+         * not missing from anything.
+         */
+        $making = $root === null ? null : new RecipeNode(
+            itemId: 0, name: null, rarity: null, icon: null, needed: 0, owned: 0,
+            children: array_values(array_filter($root->children, fn (RecipeNode $p) => $p->missing() > 0)),
+        );
+
+        $prices = $making !== null && $making->children !== [] ? $this->priceBuckets($tree->shoppingList($making)) : null;
+
+        $crafting = null;
+
+        if ($making !== null && $making->children !== []) {
+            $required = array_values(array_unique(array_merge(...array_map(fn (RecipeNode $p) => $p->disciplines, $making->children))));
+            $crafters = $set->crafters($gw2AccountId, $required);
+            $minRating = max(array_map(fn (RecipeNode $p) => $p->minRating, $making->children));
+
+            $crafting = [
+                'disciplines' => $required,
+                'min_rating' => $minRating,
+                'crafters' => $crafters,
+                'ready' => array_filter($crafters, fn ($c) => $c['active'] && $c['rating'] >= $minRating) !== [],
+            ];
+        }
+
+        $toLearn = $making === null || $learned === null ? null : array_map(fn (RecipeNode $n) => [
+            'recipe_id' => $n->recipeId,
+            'item_id' => $n->itemId,
+            'name' => $n->name,
+            'icon' => $n->icon,
+            'disciplines' => $n->disciplines,
+            'wiki' => Wiki::item($n->itemId),
+        ], $tree->toLearn($making));
+
+        /*
+         * The crafts the game allows once a day. They set the pace of the
+         * whole set — five Lumps of Mithrillium are five days whatever the
+         * budget — so the plan says how many days, not just how many lumps.
+         */
+        $gated = null;
+
+        if ($making !== null && $making->children !== []) {
+            $done = json_decode((string) DB::table('gw2_account_state')->where('gw2_account_id', $gw2AccountId)->value('daily_crafting'), true);
+            $items = app(LegendaryPlanner::class)->today($making->toArray(), is_array($done) ? $done : null);
+
+            $gated = $items === [] ? null : [
+                'items' => $items,
+                'days' => max(array_column($items, 'missing')),
+            ];
+        }
+
+        return [
+            'character' => [
+                'name' => $character->name,
+                'profession' => $character->profession,
+                'level' => $character->level,
+            ],
+            'characters' => $set->characters($snapshot->characters),
+            'weight' => $choice['weight'],
+            'weight_known' => $choice['weight_known'],
+            'stats' => $choice['stats'],
+            'stats_worn' => $choice['stats_worn'],
+            'stat_options' => $choice['options'],
+            'done' => count(array_filter($pieces, fn ($p) => $p['state'] === 'done')),
+            'total' => count(AscendedSet::ARMOUR),
+            'core' => ['done' => $character->ascendedSlots, 'total' => $character->coreSlots],
+            'pieces' => $pieces,
+            'others' => $set->others($character),
+            // Every leaf the pieces still to make draw on, the ones already
+            // covered included: the page's "already yours" tab is this list.
+            'materials' => $making === null ? [] : array_map(fn (RecipeNode $n) => [
+                'item_id' => $n->itemId,
+                'currency_id' => $n->currencyId,
+                'name' => $n->name,
+                'rarity' => $n->rarity,
+                'icon' => $n->icon,
+                'wiki' => $n->currencyId === null ? Wiki::item($n->itemId) : null,
+                'needed' => $n->needed,
+                'owned' => $n->owned,
+                'missing' => $n->missing(),
+            ], $tree->shoppingList($making, held: true)),
+            'prices' => $prices,
+            'crafting' => $crafting,
+            'recipes_to_learn' => $toLearn,
+            'time_gated' => $gated,
+            'path' => $set->path($pieces, $crafting, $toLearn, $gated, $prices),
+            'progress' => $set->progress($gw2AccountId, $character->name),
+            'guide' => $set->guide(),
+            'related' => $set->related($snapshot, $character),
+            'pinned' => in_array(AscendedSet::GOAL, array_column($this->choices->pins($gw2AccountId), 'slug'), true),
             'observed_at' => $snapshot->observedAt,
         ];
     }
@@ -1064,13 +1212,25 @@ class Dashboard
             ? collect()
             : DB::table('gw2_achievements')->whereIn('id', $ids)->pluck('name', 'id');
 
+        // A piece's id is an item id, which overlaps the achievement ids, so
+        // the two are looked up apart.
+        $pieceIds = $events
+            ->filter(fn ($e) => $e->type === 'ascended_piece')
+            ->map(fn ($e) => json_decode($e->payload, true)['id'] ?? null)
+            ->filter()
+            ->all();
+
+        $pieces = $pieceIds === []
+            ? collect()
+            : DB::table('gw2_items')->whereIn('id', $pieceIds)->pluck('name', 'id');
+
         return [
             'events' => $events->map(fn ($e) => [
                 'type' => $e->type,
                 'id' => json_decode($e->payload, true)['id'] ?? null,
                 // Named where we can. An id on its own is not a thing anybody
                 // recognises as their own progress.
-                'name' => $names[json_decode($e->payload, true)['id'] ?? 0] ?? null,
+                'name' => ($e->type === 'ascended_piece' ? $pieces : $names)[json_decode($e->payload, true)['id'] ?? 0] ?? null,
                 'occurred_at' => $e->occurred_at,
             ])->all(),
             'tracked_since' => DB::table('gw2_accounts')->where('id', $gw2AccountId)->value('created_at'),

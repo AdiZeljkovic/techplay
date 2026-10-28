@@ -12,6 +12,7 @@ import {
     House,
     Layers,
     MapPin,
+    Shield,
     Sparkles,
     Swords,
     Target,
@@ -45,6 +46,7 @@ export const GW2_NAV: { label: string; items: Gw2NavItem[] }[] = [
         items: [
             { href: "/gw2", label: "Dashboard", icon: House },
             { href: "/gw2/next", label: "What should I do next?", icon: Compass },
+            { href: "/gw2/ascended", label: "Ascended set", icon: Shield },
             { href: "/gw2/planner", label: "Crafting planner", icon: Target },
             { href: "/gw2/masteries", label: "Masteries", icon: Sparkles },
             { href: "/gw2/content", label: "Raids & bosses", icon: Swords },

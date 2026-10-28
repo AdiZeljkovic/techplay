@@ -92,13 +92,30 @@ ne prikazuje jer ga nijedan korak ne zna.
 - **Backend:** oznake nagrada na pravilima (`reward_tags`), pa tek onda
   „Potential rewards tonight” kao zbir oznaka iz plana.
 
-### Faza 5 — stranica cilja (mockup 2)
+### Faza 5 — stranica cilja (mockup 2) ✅ 28. 10.
 
-- Nova `/gw2/goals/[slug]`, prvo `first-ascended-set`: slotovi (12 core),
-  materijali s tabovima Total / Still needed / Have, cijena s TP-a, put nabavke,
-  „Why this matters” iz vodiča `goals/first-ascended-set`, sedmični napredak i
-  istorija iz `gw2_progress_events`, povezani ciljevi.
-- **Backend:** endpoint cilja, sedmični zbir istorije.
+Urađeno; detalji u `docs/README.md` §21, „Ascended set po mockupu 2". Dvije
+izmjene plana:
+
+- **Ruta je `/gw2/ascended`**, ne `/gw2/goals/[slug]`. Na
+  `/gw2/goals/first-ascended-set` stoji vodič, a `/gw2/goals` je 301 na planer.
+- **Sedmični napredak traži novi događaj.** `gw2_progress_events` nije imao
+  ništa o opremi. Sync sad piše `ascended_piece` kad slot postane ascended
+  između dva puna čitanja, pa grafikon počinje prazan od deploya.
+
+Šta je napravljeno:
+
+- **Lik, težina i statovi.** Čitaju se s lika i nude kao izbor. Težina se bira
+  samo kad lik nema oklopa.
+- **Komadi.** Šest komada oklopa (done / craft / owned / unavailable), plus red
+  nakita i leđa.
+- **Materijali iz jedne zalihe**, s tabovima Still needed / Total / Already
+  yours, i cijenom s TP-a.
+- **Put iz plana.** Disciplina (i na drugom liku), recepti, dnevne izrade s
+  brojem dana, kupovina, ono što se ne prodaje, izrada.
+- **Desno:** Why this matters (iz vodiča), Weekly progress i Related goals.
+
+Kartice opreme za oklop vode ovamo.
 
 ### Faza 6 — ostale stranice
 
@@ -112,7 +129,8 @@ Nove stranice iz menija mockupa: **Achievements** i **Fractals**; indeks vodiča
 | Mockup | Element | Zamjena |
 |---|---|---|
 | 1 | „You are ready to start raiding — 100%” | „osnovna oprema zadovoljena” + istorija clearova |
-| 2 | „Confidence to complete: High” | oznaka pouzdanosti preporuke (Confirmed / High / …) |
+| 2 | „Confidence to complete: High” | da li neko na nalogu može kraftati (disciplina na ocjeni recepta, i ko je najbliži) |
+| 2 | „Gold spent” u sedmičnom napretku | ništa — ništa ne bilježi na šta je zlato potrošeno |
 | 3 | Weekly Completion Score 72/100 | ništa — pet domena nema zajednički imenilac |
 | 3 | Currently Training | sljedeća stepenica koju unspent poeni kupuju |
 | 3 | Nearby Priorities u metrima | insighti mape s kodom najbližeg waypointa |

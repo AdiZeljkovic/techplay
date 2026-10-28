@@ -375,12 +375,25 @@ class SnapshotReader
 
                 if ($slot !== null && in_array($slot, CharacterView::CORE_SLOTS, true) && $item) {
                     $rarity[$slot] = (string) $item->rarity;
+                    $details = $this->json($item->details);
 
                     $slotItems[$slot] = [
                         'id' => (int) $item->id,
                         'name' => (string) $item->name,
                         'icon' => $item->icon ?: null,
                         'rarity' => (string) $item->rarity,
+                        /*
+                         * The stats it was worn with. A piece with a choice of
+                         * stats carries the choice on the worn copy and nothing
+                         * on the item — the account's Thief wears six such
+                         * pieces — so the worn copy is asked first.
+                         */
+                        'stats' => isset($piece['stats']['id'])
+                            ? (int) $piece['stats']['id']
+                            : (isset($details['infix_upgrade']['id']) ? (int) $details['infix_upgrade']['id'] : null),
+                        // Armour only. The game's own weight, not a table of
+                        // which profession wears what.
+                        'weight' => $details['weight_class'] ?? null,
                     ];
                 }
 

@@ -3,6 +3,7 @@
 namespace App\Services\Gw2\Advisor\Producers;
 
 use App\Models\Gw2Rule;
+use App\Services\Gw2\Advisor\AscendedSet;
 use App\Services\Gw2\Advisor\CardAction;
 use App\Services\Gw2\Advisor\CharacterView;
 use App\Services\Gw2\Advisor\Intent;
@@ -56,7 +57,6 @@ class GearGaps implements Producer
         usort($slots, fn ($a, $b) => (self::ORDER[$a] ?? 99) <=> (self::ORDER[$b] ?? 99));
 
         $progress = self::progress($character);
-        $action = self::action();
         $signals = [];
 
         foreach ($slots as $slot) {
@@ -85,7 +85,7 @@ class GearGaps implements Producer
                         ? Wiki::item($character->slotItems[$slot]['id'])
                         : null,
                     'progress' => $progress,
-                    'action' => $action,
+                    'action' => self::action($slot),
                     'rewards' => [['kind' => 'ascended', 'name' => self::readable($slot)]],
                 ]),
             );
@@ -109,10 +109,17 @@ class GearGaps implements Producer
         ];
     }
 
-    /** @return array{href: string, label: string}|null */
-    public static function action(): ?array
+    /**
+     * Armour goes to the set planner, which can plan it; a trinket goes to
+     * the guide, because nothing of ours can plan where a ring comes from.
+     *
+     * @return array{href: string, label: string}|null
+     */
+    public static function action(string $slot): ?array
     {
-        return CardAction::guide('goals', 'first-ascended-set', 'Ascended gear guide');
+        return in_array($slot, AscendedSet::ARMOUR, true)
+            ? CardAction::page('/gw2/ascended', 'Plan the armour')
+            : CardAction::guide('goals', 'first-ascended-set', 'Ascended gear guide');
     }
 
     /**

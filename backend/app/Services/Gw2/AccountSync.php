@@ -3,6 +3,7 @@
 namespace App\Services\Gw2;
 
 use App\Models\ConnectedAccount;
+use App\Services\Gw2\Advisor\CharacterView;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -557,7 +558,84 @@ class AccountSync
             $read['account/achievements'] ?? null
         ));
 
+        $events = array_merge($events, $this->newAscendedPieces($accountId, $read['characters'] ?? null));
+
         return $this->record($accountId, $events, false);
+    }
+
+    /**
+     * Core slots that became ascended since the last read, per character.
+     *
+     * The ascended set page charts these week by week, and the game has
+     * nothing to chart them from: a character's equipment is reported as it is
+     * now, with no date on any piece. So the difference is taken here, against
+     * the equipment the last full read stored, before this read overwrites it.
+     *
+     * A slot counts when it goes from below ascended — or empty — to ascended
+     * or legendary. Swapping one ascended piece for another is not progress,
+     * and a character seen for the first time is not either: whatever it wears
+     * was not made between two of our reads.
+     *
+     * @param  array<int, array<string, mixed>>|null  $characters
+     * @return array<int, array{type: string, payload: array<string, mixed>}>
+     */
+    private function newAscendedPieces(int $accountId, ?array $characters): array
+    {
+        // Characters are only read on a full sync. Absent is not empty.
+        if ($characters === null) {
+            return [];
+        }
+
+        $before = DB::table('gw2_characters')
+            ->where('gw2_account_id', $accountId)
+            ->pluck('equipment', 'name')
+            ->map(fn ($json) => $this->coreSlots(json_decode((string) $json, true) ?: []));
+
+        $after = [];
+
+        foreach ($characters as $character) {
+            if (isset($character['name'], $before[$character['name']])) {
+                $after[$character['name']] = $this->coreSlots($character['equipment'] ?? []);
+            }
+        }
+
+        $ids = $before->flatten()->merge(collect($after)->flatten())->unique()->values()->all();
+        $rarity = $ids === [] ? collect() : DB::table('gw2_items')->whereIn('id', $ids)->pluck('rarity', 'id');
+        $high = fn (?int $id) => $id !== null && in_array($rarity[$id] ?? null, ['Ascended', 'Legendary'], true);
+
+        $events = [];
+
+        foreach ($after as $name => $slots) {
+            foreach ($slots as $slot => $id) {
+                if ($high($id) && ! $high($before[$name][$slot] ?? null)) {
+                    $events[] = ['type' => 'ascended_piece', 'payload' => ['id' => $id, 'character' => $name, 'slot' => $slot]];
+                }
+            }
+        }
+
+        return $events;
+    }
+
+    /**
+     * Slot => item id, for the twelve slots an ascended figure counts.
+     *
+     * The last entry for a slot wins, as it does in SnapshotReader — the two
+     * must agree on what "worn" means or the chart and the set disagree.
+     *
+     * @param  array<int, array<string, mixed>>  $equipment
+     * @return array<string, int>
+     */
+    private function coreSlots(array $equipment): array
+    {
+        $slots = [];
+
+        foreach ($equipment as $piece) {
+            if (isset($piece['slot'], $piece['id']) && in_array($piece['slot'], CharacterView::CORE_SLOTS, true)) {
+                $slots[$piece['slot']] = (int) $piece['id'];
+            }
+        }
+
+        return $slots;
     }
 
     /**

@@ -49,13 +49,14 @@ readonly class CharacterView
         public array $craftingDisciplines,
         public ?int $deaths,
         /**
-         * The worn piece in each core slot — name, icon and rarity.
+         * The worn piece in each core slot — name, icon, rarity, the item
+         * stat it carries and, for armour, its weight.
          *
          * Separate from `slotRarity`, which stays a bare string per slot
          * because every count in this class is built on it and a count should
          * not have to reach through a picture to get at a rarity.
          *
-         * @var array<string, array{id: int, name: string, icon: ?string, rarity: string}>
+         * @var array<string, array{id: int, name: string, icon: ?string, rarity: string, stats: ?int, weight: ?string}>
          */
         public array $slotItems = [],
     ) {}

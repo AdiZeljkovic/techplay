@@ -262,6 +262,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/gw2/story', [Gw2Controller::class, 'story']);
         Route::get('/gw2/personalise/{key}', [Gw2Controller::class, 'personalise']);
         Route::get('/gw2/plan', [Gw2Controller::class, 'plan']);
+        Route::get('/gw2/ascended', [Gw2Controller::class, 'ascended']);
         Route::get('/gw2/items', [Gw2Controller::class, 'items']);
         Route::delete('/gw2/connection', [Gw2Controller::class, 'disconnect']);
         Route::get('/gw2/insights', [Gw2Controller::class, 'insights']);
